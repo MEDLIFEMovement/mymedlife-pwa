@@ -108,8 +108,8 @@ set local "request.jwt.claim.role" = 'authenticated';
 
 select is(
   (select count(*)::int from app.memberships where chapter_id = '10000000-0000-4000-8000-000000000001'),
-  3,
-  'Chapter leader can read memberships for their chapter'
+  4,
+  'Chapter leader can read approved and requested memberships for their chapter'
 );
 
 select lives_ok(
