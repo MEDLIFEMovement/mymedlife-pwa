@@ -1,7 +1,7 @@
 # Future RLS Test Plan
 
-Planning status: Goal 4 test plan only. No live Supabase project is wired in
-this goal.
+Planning status: Goal 4 test plan plus Goal 5 local test foundation. No live
+Supabase project is wired in this goal.
 
 ## Purpose
 
@@ -149,6 +149,13 @@ Use the smallest standard setup consistent with the repo when Goal 5 begins:
 - SQL assertions or pgTAP-style tests
 - app-level tests for permission helper functions if helper functions are
   mirrored in TypeScript
+
+Goal 5 implemented the first local version:
+
+- `supabase/seed.sql`
+- `supabase/tests/database/rls_goal_5.test.sql`
+- `pnpm supabase:reset`
+- `pnpm supabase:test`
 
 ## Pass Criteria
 

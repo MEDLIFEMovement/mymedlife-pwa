@@ -161,31 +161,29 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 4: Supabase schema, auth, and RLS design planning.
+The active goal is Goal 5: local Supabase implementation and RLS test
+foundation.
 
 Allowed:
 
-- Supabase architecture documentation
-- proposed table and relationship model
-- role and permission boundary documentation
-- RLS policy strategy documentation
-- chapter, coach, admin, and super-admin access planning
-- audit logging requirements
-- TypeScript-to-database mapping notes
-- future RLS test-plan notes
-- draft SQL files clearly marked as not applied
+- local Supabase project structure
+- local-only migration files under `supabase/migrations`
+- fake seed data under `supabase/seed.sql`
+- local pgTAP RLS/security tests
+- TypeScript persistence types that document the database shape
 - README and documentation updates
+- normal app checks
 
 Not allowed without Nick's next approval:
 
-- live Supabase auth wiring
-- applied production migrations
-- real database persistence from the app
-- real users or role assignments
+- production Supabase connection or linked project changes
+- live Supabase auth wiring in the student UI
+- real users or real role assignments
 - real HubSpot writes
 - real Luma writes
 - real n8n workflows
 - warehouse or Power BI exports
-- complex AI workflows
+- email, SMS, or AI writes
+- complex data-access frameworks
 - all-campaign buildout
 - native iOS or Android apps
