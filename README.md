@@ -167,6 +167,7 @@ applied migration.
 
 Goal 5 local Supabase implementation lives in:
 
+- `.github/workflows/goal-5-ci.yml`
 - `supabase/config.toml`
 - `supabase/migrations/20260615110000_initial_supabase_foundation.sql`
 - `supabase/seed.sql`
@@ -192,4 +193,5 @@ apply migrations, seed fake data, and run RLS/security tests proving the first
 permission model works locally.
 
 This Codex environment does not have Docker installed, so Supabase local stack
-execution must be verified on a Docker-capable machine.
+execution must be verified on a Docker-capable machine or by the Goal 5 GitHub
+CI workflow.

@@ -55,6 +55,14 @@ pnpm test
 pnpm build
 ```
 
+## GitHub CI
+
+The PR workflow at `.github/workflows/goal-5-ci.yml` runs two jobs:
+
+- app checks: lint, typecheck, unit tests, and build
+- Supabase RLS tests: starts local Supabase on an Ubuntu runner, resets the
+  database with fake seed data, and runs `supabase test db`
+
 ## Fake Users
 
 The seed file creates fake local-only users:
@@ -83,9 +91,10 @@ All seed data is fake and local-only.
 - External sends remain disabled or mocked until Nick explicitly approves live
   integrations.
 
-## Known Local Limitation
+## Known Codex Environment Limitation
 
 This Codex environment did not have Docker installed, so the SQL files and tests
 were added but the Supabase local stack could not be started here. A developer
 with Docker can run the commands above to execute the migration, seed data, and
-pgTAP RLS tests.
+pgTAP RLS tests. GitHub CI is also configured to run the Supabase reset/test
+path on a Docker-capable Ubuntu runner.
