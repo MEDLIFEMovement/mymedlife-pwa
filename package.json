@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "supabase:start": "pnpm dlx supabase@2.106.0 start",
+    "supabase:reset": "pnpm dlx supabase@2.106.0 db reset",
+    "supabase:test": "pnpm dlx supabase@2.106.0 test db"
   },
   "dependencies": {
     "next": "16.2.9",

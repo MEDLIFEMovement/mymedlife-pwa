@@ -10,22 +10,23 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 4: Supabase schema, auth, and RLS design planning.
+The current goal is Goal 5: local Supabase implementation and RLS test
+foundation.
 
-Goal 4 keeps the app mock-only while defining the reviewable database and
-permission plan for future implementation:
+Goal 5 turns the approved Goal 4 database plan into a local-only Supabase
+foundation:
 
-- Supabase table and relationship plan
-- auth/profile model
-- role and permission boundaries
-- RLS policy strategy
-- chapter, coach, admin, and super-admin access rules
-- audit logging requirements
-- event and outbox persistence model
-- future RLS test plan
+- local Supabase project structure
+- first migration for core tables, role helpers, RLS policies, and safety
+  triggers
+- fake seed data for Rush Month, chapters, roles, proof/testimonials, coach
+  portfolio access, and disabled/mock integration rows
+- pgTAP RLS/security tests
+- documentation for local setup and reset/test commands
 
-Do not wire the app to live Supabase auth, apply production migrations, create
-real users, or enable external writes until Nick approves Goal 5.
+The app UI still uses mock data. Do not connect production Supabase, enable live
+auth in the student UI, create real users, or enable external writes until Nick
+approves Goal 6.
 
 ## Recommended Stack
 
@@ -78,6 +79,7 @@ All external integrations are mock-first until explicitly approved.
 - [Foundation and Rush Month MVP architecture](./docs/architecture/foundation-and-rush-month-mvp.md)
 - [Supabase schema, auth, and RLS design plan](./docs/architecture/supabase-schema-auth-rls-plan.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
+- [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
 
 ## Local Development
@@ -105,10 +107,18 @@ pnpm test
 pnpm build
 ```
 
+Run local Supabase when Docker is available:
+
+```bash
+pnpm supabase:start
+pnpm supabase:reset
+pnpm supabase:test
+```
+
 ## Environment Variables
 
-No live external services are required for the current mock app or Goal 4
-planning work.
+No live external services are required for the current mock app or Goal 5 local
+database foundation.
 
 Future Supabase implementation should document required variables here before
 use:
@@ -155,6 +165,15 @@ Goal 4 Supabase planning lives in
 in `docs/architecture/drafts/0001_supabase_schema_draft.sql` and is not an
 applied migration.
 
+Goal 5 local Supabase implementation lives in:
+
+- `.github/workflows/goal-5-ci.yml`
+- `supabase/config.toml`
+- `supabase/migrations/20260615110000_initial_supabase_foundation.sql`
+- `supabase/seed.sql`
+- `supabase/tests/database/rls_goal_5.test.sql`
+- `docs/supabase-local-development.md`
+
 ## Linear Lane
 
 Primary live issues:
@@ -167,15 +186,12 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 4
+## Definition of Done for Goal 5
 
-Goal 4 is complete when the team can review and approve:
+Goal 5 is complete when a human developer can run the local Supabase setup,
+apply migrations, seed fake data, and run RLS/security tests proving the first
+permission model works locally.
 
-- Supabase architecture document
-- proposed table list and relationship model
-- proposed RLS policy plan by role
-- TypeScript/schema mismatch notes
-- draft SQL marked not applied
-- future RLS test plan
-- open questions and assumptions
-- checks run and recorded
+This Codex environment does not have Docker installed, so Supabase local stack
+execution must be verified on a Docker-capable machine or by the Goal 5 GitHub
+CI workflow.

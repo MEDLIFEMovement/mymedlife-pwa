@@ -1,8 +1,9 @@
 # Supabase Schema, Auth, And RLS Design Plan
 
-Planning status: Goal 4 architecture document only. Do not wire the app to
-Supabase, apply migrations, create real users, or enable external writes from
-this goal.
+Planning status: Goal 4 architecture document. Goal 5 converted the approved
+plan into a local-only Supabase migration and test foundation. Do not wire the
+app to production Supabase, create real users, or enable external writes from
+this repo until Nick approves a later goal.
 
 Recommended model for this plan: GPT-5.5 Thinking or the strongest available
 reasoning model.
@@ -1009,14 +1010,23 @@ It is intentionally not placed in `supabase/migrations`. It must not be applied
 to any live Supabase project until Nick approves Goal 5 and the team reviews the
 schema/RLS plan.
 
+Goal 5 implementation lives at:
+
+- `supabase/migrations/20260615110000_initial_supabase_foundation.sql`
+- `supabase/seed.sql`
+- `supabase/tests/database/rls_goal_5.test.sql`
+
+Goal 5 remains local-only. It is not a production migration, not a linked
+Supabase project change, and not live auth wiring.
+
 ## Future RLS Test Plan
 
 The future RLS test plan lives at:
 
 - `docs/testing/rls-test-plan.md`
 
-Goal 4 does not implement live RLS tests because no Supabase project is wired
-yet.
+Goal 5 adds local pgTAP RLS tests. They require Docker and the Supabase CLI
+through `pnpm supabase:test`.
 
 ## Open Questions
 
