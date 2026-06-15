@@ -161,14 +161,15 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 2: minimal app scaffold plus a mock-data Rush Month
-shell.
+The active goal is Goal 3: typed validation schemas plus tested Rush Month mock
+workflow services.
 
 Allowed:
 
-- small Next.js route pages
-- simple reusable UI components
 - shared TypeScript types
+- validation schemas for mock domain objects
+- pure service/helper functions
+- tests for mock Rush Month workflows
 - mock Rush Month data
 - mock role contexts
 - mock evidence, review, points/KPI, event, and outbox displays

@@ -10,19 +10,15 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 2: minimal app scaffold plus Rush Month shell.
+The current goal is Goal 3: domain validation plus service tests for the Rush
+Month mock shell.
 
-Goal 2 creates a human-readable Next.js scaffold with mock data only:
+Goal 3 keeps the app mock-only while adding maintainable foundations:
 
-- basic app navigation
-- mock role contexts for member, leader, coach, and admin
-- chapter home shell
-- Rush Month campaign shell
-- this week's actions
-- assignment detail and mock proof submission UI
-- leader/coach review queue
-- points/KPI summary cards
-- event/outbox display for future automation readiness
+- typed validation schemas for core domain objects
+- pure service/helper functions for Rush Month mock workflows
+- tests for role visibility, evidence review, points, KPIs, coach decisions,
+  and event/outbox creation
 
 Do not continue into real database, auth, RLS, or integration implementation
 until Nick approves the next goal.
@@ -99,6 +95,7 @@ Run checks:
 ```bash
 pnpm lint
 pnpm typecheck
+pnpm test
 pnpm build
 ```
 
@@ -140,7 +137,9 @@ Goal 2 route shells:
 - `/admin`: admin/super-admin integration placeholder
 
 Mock data lives in `src/data/mock-rush-month.ts`. Shared domain types live in
-`src/shared/types/domain.ts`. Small reusable UI components live in
+`src/shared/types/domain.ts`. Validation schemas live in
+`src/shared/schemas/domain.ts`. Pure mock workflow logic lives in
+`src/services/rush-month-service.ts`. Small reusable UI components live in
 `src/components`.
 
 ## Linear Lane

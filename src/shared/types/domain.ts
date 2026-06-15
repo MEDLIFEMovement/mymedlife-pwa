@@ -1,5 +1,11 @@
 export type RoleKey = "member" | "leader" | "coach" | "admin";
 
+export type User = {
+  id: string;
+  displayName: string;
+  email: string;
+};
+
 export type RoleContext = {
   key: RoleKey;
   label: string;
@@ -23,7 +29,23 @@ export type ChapterRole =
   | "Action Committee Chair"
   | "E-Board Member"
   | "Chapter President / Vice President"
+  | "Admin"
+  | "Super Admin"
   | "Coach";
+
+export type Membership = {
+  id: string;
+  userId: string;
+  chapterId: string;
+  roles: ChapterRole[];
+  status: "requested" | "approved" | "inactive";
+};
+
+export type Role = {
+  key: ChapterRole;
+  label: string;
+  chapterScoped: boolean;
+};
 
 export type Chapter = {
   id: string;
@@ -39,6 +61,24 @@ export type Campaign = {
   objective: string;
   weekLabel: string;
   status: "draft" | "active" | "complete";
+};
+
+export type Phase = {
+  id: string;
+  campaignId: string;
+  title: string;
+  objective: string;
+  status: "not_started" | "active" | "complete";
+};
+
+export type ActionTemplate = {
+  id: string;
+  campaignId: string;
+  title: string;
+  defaultOwnerRole: ChapterRole;
+  evidenceRequired: string;
+  points: number;
+  kpi: string;
 };
 
 export type Assignment = {
@@ -61,6 +101,29 @@ export type EvidenceItem = {
   evidenceType: "text" | "link" | "mock_file";
   summary: string;
   status: "pending_review" | "approved" | "changes_requested";
+};
+
+export type Approval = {
+  id: string;
+  evidenceItemId: string;
+  reviewerRole: ChapterRole;
+  decision: "approved" | "rejected" | "changes_requested";
+  note: string;
+};
+
+export type PointsEvent = {
+  id: string;
+  assignmentId: string;
+  userId: string;
+  points: number;
+  reason: string;
+};
+
+export type KPIEvent = {
+  id: string;
+  assignmentId: string;
+  metric: string;
+  value: number;
 };
 
 export type PointsSummary = {
@@ -86,10 +149,20 @@ export type IntegrationEvent = {
   occurredAt: string;
 };
 
-export type OutboxItem = {
+export type AutomationOutbox = {
   id: string;
   sourceEventId: string;
   destination: "n8n" | "HubSpot" | "Luma" | "warehouse";
   status: "recorded" | "mocked" | "disabled";
   payloadSummary: string;
 };
+
+export type AuditLog = {
+  id: string;
+  actorUserId: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+};
+
+export type OutboxItem = AutomationOutbox;
