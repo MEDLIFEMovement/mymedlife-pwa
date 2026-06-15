@@ -76,9 +76,72 @@ insert into app.action_templates (id, chapter_id, campaign_id, title, instructio
   ('43000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', '40000000-0000-4000-8000-000000000002', 'Run invite push', 'Fake second chapter assignment template.', 'general_member', 'Fake proof.', 10, 'students_invited')
 on conflict (id) do nothing;
 
-insert into app.assignments (id, chapter_id, campaign_id, phase_id, action_template_id, action_committee_id, title, instructions, assigned_to_user_id, assigned_to_role_key, assigned_by_user_id, status, evidence_required, points, kpi_key) values
-  ('50000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000001', '41000000-0000-4000-8000-000000000001', '43000000-0000-4000-8000-000000000001', '42000000-0000-4000-8000-000000000001', 'Invite three students to Rush Month', 'Ask three students to attend the first event and submit a short reflection.', '00000000-0000-4000-8000-000000000001', 'general_member', '00000000-0000-4000-8000-000000000002', 'in_progress', 'Short testimonial, link, or note about the invite push.', 15, 'students_invited'),
-  ('50000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', '40000000-0000-4000-8000-000000000002', '41000000-0000-4000-8000-000000000002', '43000000-0000-4000-8000-000000000002', '42000000-0000-4000-8000-000000000002', 'Lakeside invite task', 'Fake second chapter task for isolation tests.', '00000000-0000-4000-8000-000000000007', 'general_member', '00000000-0000-4000-8000-000000000004', 'in_progress', 'Fake proof.', 10, 'students_invited')
+insert into app.assignments (
+  id,
+  chapter_id,
+  campaign_id,
+  phase_id,
+  action_template_id,
+  action_committee_id,
+  title,
+  instructions,
+  assigned_to_user_id,
+  assigned_to_role_key,
+  assigned_by_user_id,
+  status,
+  evidence_required,
+  points,
+  kpi_key,
+  priority,
+  expected_output,
+  support_role_labels,
+  late_next_step,
+  risk_flagged
+) values
+  (
+    '50000000-0000-4000-8000-000000000001',
+    '10000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    '41000000-0000-4000-8000-000000000001',
+    '43000000-0000-4000-8000-000000000001',
+    '42000000-0000-4000-8000-000000000001',
+    'Invite three students to Rush Month',
+    'Ask three students to attend the first event and submit a short reflection.',
+    '00000000-0000-4000-8000-000000000001',
+    'general_member',
+    '00000000-0000-4000-8000-000000000002',
+    'in_progress',
+    'Short testimonial, link, or note about the invite push.',
+    15,
+    'students_invited',
+    'high',
+    'Three real student invites and a short reflection about what happened.',
+    array['Recruitment Director', 'Follow-Up Chair'],
+    'Leader checks in and reassigns before the next Rush event.',
+    false
+  ),
+  (
+    '50000000-0000-4000-8000-000000000002',
+    '10000000-0000-4000-8000-000000000002',
+    '40000000-0000-4000-8000-000000000002',
+    '41000000-0000-4000-8000-000000000002',
+    '43000000-0000-4000-8000-000000000002',
+    '42000000-0000-4000-8000-000000000002',
+    'Lakeside invite task',
+    'Fake second chapter task for isolation tests.',
+    '00000000-0000-4000-8000-000000000007',
+    'general_member',
+    '00000000-0000-4000-8000-000000000004',
+    'in_progress',
+    'Fake proof.',
+    10,
+    'students_invited',
+    'normal',
+    'Fake second chapter invite output.',
+    array['Social Host'],
+    'Fake leader follows up locally.',
+    false
+  )
 on conflict (id) do nothing;
 
 insert into app.chapter_events (id, chapter_id, campaign_id, phase_id, action_committee_id, assignment_id, title, event_type, status, planned_by_user_id, owner_user_id, starts_at, ends_at, attendance_count, eligible_member_count, attendance_rate, nps_score, feedback_summary, warehouse_status) values
@@ -225,15 +288,6 @@ where id in (
   '41000000-0000-4000-8000-000000000001',
   '41000000-0000-4000-8000-000000000002'
 );
-
-update app.assignments
-set
-  priority = 'high',
-  expected_output = 'Three real student invites and a short reflection about what happened.',
-  support_role_labels = array['Recruitment Director', 'Follow-Up Chair'],
-  late_next_step = 'Leader checks in and reassigns before the next Rush event.',
-  risk_flagged = false
-where id = '50000000-0000-4000-8000-000000000001';
 
 insert into app.campaign_role_assignments (
   id,
