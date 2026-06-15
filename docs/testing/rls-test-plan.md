@@ -94,6 +94,9 @@ Seed these records:
 - Authorized MEDLIFE HQ staff can mark a testimonial/proof item as approved for
   sharing or not shared.
 - Reviewed testimonial/proof cannot be silently edited by the submitter.
+- Proof library metadata, such as target audience, proof category, messenger
+  type, lifecycle stage, and hesitation addressed, follows the same read and
+  edit boundaries as the underlying testimonial/proof row.
 - NPS scores are visible only at the appropriate aggregation level for each
   role.
 

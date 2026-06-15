@@ -48,6 +48,29 @@ Chapter leaders and Action Committee leaders can submit and organize this
 material. MEDLIFE HQ decides whether a testimonial/proof item should be shared
 with other chapters, universities, or public online surfaces.
 
+Proof should also be treated as a reusable belief-building library asset, not
+only as evidence that an assignment happened. A useful proof item should help
+answer a specific hesitation or internal question for a specific audience: Is
+MEDLIFE legitimate? Is it ethical? Is it safe? Will I belong? Can I afford it?
+Can I lead this? Will this help me become the kind of person I want to become?
+
+This means proof records need enough metadata to be useful later across
+campaigns, nurture, coaching, AI search, and approved automation:
+
+- target audience, such as student, parent, advisor, alumni, chapter founder,
+  chapter leader, or traveler
+- proof category, such as trust, ethics, impact, safety, value, capability,
+  belonging, fundraising/access, future/career, or identity
+- messenger type, such as student, parent, coach, staff, physician, local
+  partner, advisor, or alumni
+- lifecycle stage or hesitation being answered
+- format, source event, campaign, consent, and sharing status
+
+The strongest proof is usually specific, human, and close to the experience:
+raw bridge videos, student reflections, event photos, turnout context, quotes,
+and measurable outcomes. The app should preserve that authenticity while still
+giving HQ clear review, consent, and sharing controls.
+
 The main operating loop should be event-centered:
 
 1. A student or small group is assigned to plan a campus activity.
@@ -358,6 +381,11 @@ Key fields:
 - `summary text not null`
 - `url text`
 - `storage_path text`
+- `target_audiences text[] not null default '{}'`
+- `proof_categories text[] not null default '{}'`
+- `messenger_type text`
+- `lifecycle_stage text`
+- `hesitation_addressed text`
 - `status evidence_status not null`
 - `sharing_status content_sharing_status not null`
 - `nps_score numeric`
