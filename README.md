@@ -10,18 +10,22 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 3: domain validation plus service tests for the Rush
-Month mock shell.
+The current goal is Goal 4: Supabase schema, auth, and RLS design planning.
 
-Goal 3 keeps the app mock-only while adding maintainable foundations:
+Goal 4 keeps the app mock-only while defining the reviewable database and
+permission plan for future implementation:
 
-- typed validation schemas for core domain objects
-- pure service/helper functions for Rush Month mock workflows
-- tests for role visibility, evidence review, points, KPIs, coach decisions,
-  and event/outbox creation
+- Supabase table and relationship plan
+- auth/profile model
+- role and permission boundaries
+- RLS policy strategy
+- chapter, coach, admin, and super-admin access rules
+- audit logging requirements
+- event and outbox persistence model
+- future RLS test plan
 
-Do not continue into real database, auth, RLS, or integration implementation
-until Nick approves the next goal.
+Do not wire the app to live Supabase auth, apply production migrations, create
+real users, or enable external writes until Nick approves Goal 5.
 
 ## Recommended Stack
 
@@ -72,6 +76,8 @@ All external integrations are mock-first until explicitly approved.
 
 - [Agent standards](./AGENTS.md)
 - [Foundation and Rush Month MVP architecture](./docs/architecture/foundation-and-rush-month-mvp.md)
+- [Supabase schema, auth, and RLS design plan](./docs/architecture/supabase-schema-auth-rls-plan.md)
+- [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Codex operating brief](./docs/operating-brief.md)
 
 ## Local Development
@@ -101,9 +107,11 @@ pnpm build
 
 ## Environment Variables
 
-No live external services are required for the Goal 2 mock shell.
+No live external services are required for the current mock app or Goal 4
+planning work.
 
-Future Supabase work should document required variables here before use:
+Future Supabase implementation should document required variables here before
+use:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=
@@ -142,6 +150,11 @@ Mock data lives in `src/data/mock-rush-month.ts`. Shared domain types live in
 `src/services/rush-month-service.ts`. Small reusable UI components live in
 `src/components`.
 
+Goal 4 Supabase planning lives in
+`docs/architecture/supabase-schema-auth-rls-plan.md`. The draft SQL sketch lives
+in `docs/architecture/drafts/0001_supabase_schema_draft.sql` and is not an
+applied migration.
+
 ## Linear Lane
 
 Primary live issues:
@@ -154,14 +167,15 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for This Foundation Goal
+## Definition of Done for Goal 4
 
-This goal is complete when the repo has:
+Goal 4 is complete when the team can review and approve:
 
-- chosen or recommended stack
-- README and AGENTS guidance
-- architecture note for domain model, roles, permissions, event log, and outbox
-- Rush Month MVP flow for leader/member/coach
-- prioritized next-cycle task list
+- Supabase architecture document
+- proposed table list and relationship model
+- proposed RLS policy plan by role
+- TypeScript/schema mismatch notes
+- draft SQL marked not applied
+- future RLS test plan
 - open questions and assumptions
 - checks run and recorded
