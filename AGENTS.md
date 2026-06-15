@@ -161,16 +161,17 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 7: local campaign operating model refinement.
+The active goal is Goal 8: local data connection and read-only app foundation.
 
 Allowed:
 
-- local-only migration files under `supabase/migrations`
-- fake seed data under `supabase/seed.sql`
-- local pgTAP RLS/security tests
-- TypeScript persistence types that document the database shape
-- campaign templates, phase templates, campaign officer lanes, readiness
-  reviews, risk flags, closeouts, and assignment operating fields
+- server-only, read-only local Supabase client setup
+- mock fallback when Supabase env vars are missing or unsafe
+- local Supabase environment documentation and `.env.example`
+- small read-only data-access/service functions
+- connecting `/chapter`, `/rush-month`, or `/coach` to read-only local data
+- loading, empty, fallback, and error states
+- tests for read-only services and fallback behavior
 - README and documentation updates
 - normal app checks
 
@@ -178,6 +179,7 @@ Not allowed without Nick's next approval:
 
 - production Supabase connection or linked project changes
 - live Supabase auth wiring in the student UI
+- app write paths to Supabase
 - real users or real role assignments
 - real HubSpot writes
 - real Luma writes

@@ -1,0 +1,258 @@
+import { describe, expect, it } from "vitest";
+import {
+  getMockReadOnlyAppData,
+  getSupabaseReadOnlyAppData,
+  readLocalDataSnapshot,
+} from "@/services/read-only-app-data";
+import type { SupabaseReadonlyClient } from "@/lib/supabase-readonly";
+
+describe("read-only app data service", () => {
+  it("keeps mock fallback available", () => {
+    const data = getMockReadOnlyAppData("Testing fallback.");
+
+    expect(data.source.status).toBe("mock_fallback");
+    expect(data.chapter.name).toContain("Northview");
+    expect(data.assignments.length).toBeGreaterThan(0);
+  });
+
+  it("reads every Goal 8 table in the local data snapshot", async () => {
+    const requestedTables: string[] = [];
+    const client = createFakeClient({}, requestedTables);
+
+    await readLocalDataSnapshot(client);
+
+    expect(requestedTables).toEqual([
+      "chapters",
+      "campaigns",
+      "phases",
+      "assignments",
+      "campaign_templates",
+      "campaign_phase_templates",
+      "campaign_role_assignments",
+      "phase_readiness_reviews",
+      "risk_flags",
+      "campaign_closeouts",
+    ]);
+  });
+
+  it("maps fake local Supabase rows into the app read model", async () => {
+    const data = await getSupabaseReadOnlyAppData(createFakeClient(fakeRows));
+
+    expect(data.source.status).toBe("supabase_ready");
+    expect(data.chapter.name).toBe("Northview MEDLIFE");
+    expect(data.campaign.name).toBe("Rush Month");
+    expect(data.campaign.weekLabel).toBe("Invite week");
+    expect(data.assignments).toEqual([
+      expect.objectContaining({
+        title: "Invite three students",
+        lane: "Member",
+        ownerRole: "General Member",
+      }),
+    ]);
+    expect(data.campaignTemplates).toHaveLength(1);
+    expect(data.campaignRoleAssignments).toHaveLength(1);
+    expect(data.readinessReviews).toHaveLength(1);
+    expect(data.riskFlags).toHaveLength(1);
+    expect(data.closeouts).toHaveLength(1);
+  });
+});
+
+function createFakeClient(
+  rows: Record<string, unknown[]> = fakeRows,
+  requestedTables: string[] = [],
+): SupabaseReadonlyClient {
+  return {
+    async selectRows<TRow>(tableName: string): Promise<TRow[]> {
+      requestedTables.push(tableName);
+      return (rows[tableName] ?? []) as TRow[];
+    },
+  };
+}
+
+const fakeRows: Record<string, unknown[]> = {
+  chapters: [
+    {
+      id: "chapter-1",
+      name: "Northview MEDLIFE",
+      campus: "Northview University",
+      region: "Midwest",
+      status: "active",
+      created_by: "admin-1",
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  campaigns: [
+    {
+      id: "campaign-1",
+      chapter_id: "chapter-1",
+      campaign_template_id: "template-1",
+      name: "Rush Month",
+      slug: "rush-month-2026",
+      objective: "Turn campus interest into action.",
+      status: "active",
+      semester: "Fall",
+      academic_year: "2026-2027",
+      opened_by: "leader-1",
+      opened_at: "2026-06-15T00:00:00Z",
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  phases: [
+    {
+      id: "phase-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      phase_template_id: "phase-template-1",
+      title: "Invite week",
+      objective: "Invite students.",
+      starts_at: null,
+      ends_at: null,
+      status: "active",
+      readiness_status: "ready",
+      coach_validation_status: "pending",
+      required_outputs: [],
+      entry_criteria: [],
+      exit_criteria: [],
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  assignments: [
+    {
+      id: "assignment-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      phase_id: "phase-1",
+      action_template_id: null,
+      action_committee_id: null,
+      chapter_event_id: null,
+      title: "Invite three students",
+      instructions: "Invite three students and submit a reflection.",
+      assigned_to_user_id: "member-1",
+      assigned_to_role_key: "general_member",
+      assigned_by_user_id: "leader-1",
+      status: "in_progress",
+      due_at: null,
+      evidence_required: "Short reflection.",
+      points: 15,
+      kpi_key: "students_invited",
+      priority: "high",
+      expected_output: "Three invites.",
+      support_role_labels: ["Recruitment Director"],
+      late_next_step: "Leader checks in.",
+      risk_flagged: false,
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  campaign_templates: [
+    {
+      id: "template-1",
+      registry_key: "coach_02_rush_recruitment_campus_awareness",
+      name: "Rush / Recruitment / Campus Awareness",
+      slug: "rush-recruitment-campus-awareness",
+      audience: "coach_and_chapter",
+      summary: "Rush Month operating template.",
+      annual_order: 20,
+      status: "active",
+      default_kpis: [],
+      source_metadata: {},
+      created_by: "admin-1",
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  campaign_phase_templates: [
+    {
+      id: "phase-template-1",
+      campaign_template_id: "template-1",
+      title: "Invite week",
+      phase_order: 1,
+      objective: "Invite students.",
+      entry_criteria: [],
+      exit_criteria: [],
+      required_outputs: [],
+      coach_validation_required: true,
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  campaign_role_assignments: [
+    {
+      id: "lane-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      user_id: "leader-1",
+      role_key: "rush_recruitment_director",
+      role_label: "Rush Recruitment Director",
+      lane: "recruitment",
+      status: "active",
+      starts_at: "2026-06-15",
+      ends_at: null,
+      assigned_by: "admin-1",
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  phase_readiness_reviews: [
+    {
+      id: "readiness-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      phase_id: "phase-1",
+      reviewer_user_id: "coach-1",
+      readiness_status: "ready",
+      decision_note: "Ready with follow-up risk.",
+      blocker_summary: null,
+      reviewed_at: "2026-06-15T00:00:00Z",
+      created_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  risk_flags: [
+    {
+      id: "risk-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      phase_id: "phase-1",
+      assignment_id: "assignment-1",
+      chapter_event_id: null,
+      severity: "medium",
+      visibility: "leader_visible",
+      signal: "Follow-up owner not confirmed.",
+      root_cause: null,
+      owner_user_id: "leader-1",
+      response_plan: "Confirm owner before next event.",
+      status: "watching",
+      due_at: null,
+      created_by: "coach-1",
+      resolved_at: null,
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  campaign_closeouts: [
+    {
+      id: "closeout-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      status: "draft",
+      submitted_by: "leader-1",
+      validated_by: null,
+      goals_summary: "Invite students.",
+      results_summary: "In progress.",
+      kpi_summary: {},
+      proof_summary: null,
+      top_contributors: [],
+      lessons_learned: null,
+      unresolved_risks: null,
+      recommendations: null,
+      next_handoff: null,
+      submitted_at: null,
+      validated_at: null,
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+};

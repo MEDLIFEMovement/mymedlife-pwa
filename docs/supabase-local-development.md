@@ -1,10 +1,10 @@
 # Supabase Local Development
 
-Goals 5 and 7 add the local-only Supabase foundation for myMEDLIFE.
+Goals 5, 7, and 8 add the local-only Supabase foundation for myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
-users, enable live auth in the UI, or trigger HubSpot, Luma, n8n, warehouse,
-Power BI, email, SMS, or AI writes.
+users, enable live auth in the UI, add app write paths, or trigger HubSpot,
+Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 
 ## What Was Added
 
@@ -22,6 +22,9 @@ Power BI, email, SMS, or AI writes.
 - `supabase/tests/database/rls_goal_7.test.sql`: pgTAP tests for campaign
   template, readiness, lane ownership, risk, closeout, and assignment-field
   protection boundaries.
+- `src/lib/supabase-readonly.ts`: server-only REST reader for local Supabase.
+- `src/services/read-only-app-data.ts`: mock-safe read model used by app pages.
+- `.env.example`: local-only read configuration template.
 
 ## Requirements
 
@@ -61,6 +64,43 @@ pnpm typecheck
 pnpm test
 pnpm build
 ```
+
+## Optional Read-Only App Connection
+
+The app uses mock data by default. To test the first local Supabase read path:
+
+```bash
+cp .env.example .env.local
+```
+
+Set these values in `.env.local`:
+
+```bash
+MYMEDLIFE_DATA_SOURCE=supabase
+MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+SUPABASE_SERVICE_ROLE_KEY=<local service role key from supabase start>
+```
+
+Then run:
+
+```bash
+pnpm supabase:start
+pnpm supabase:reset
+pnpm dev
+```
+
+Open these routes:
+
+- `http://localhost:3000/chapter`
+- `http://localhost:3000/rush-month`
+- `http://localhost:3000/coach`
+
+Each route shows a small data-source notice. If the local Supabase URL or key is
+missing, unsafe, or unavailable, the app falls back to mock data.
+
+Goal 8 intentionally uses a server-only read path. It does not add browser auth,
+student sign-in, role switching, or app writes.
 
 ## GitHub CI
 
