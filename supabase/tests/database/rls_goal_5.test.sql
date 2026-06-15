@@ -4,21 +4,10 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(26);
 
-create schema if not exists tests;
-
-create or replace function tests.authenticate_as(user_uuid uuid)
-returns void
-language plpgsql
-as $$
-begin
-  perform set_config('request.jwt.claim.sub', user_uuid::text, true);
-  perform set_config('request.jwt.claim.role', 'authenticated', true);
-end;
-$$;
-
 set local role authenticated;
 
-select tests.authenticate_as('00000000-0000-4000-8000-000000000001');
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select is(
   (select count(*)::int from app.assignments),
@@ -114,7 +103,8 @@ select is(
   'Assigned member can update allowed assignment status'
 );
 
-select tests.authenticate_as('00000000-0000-4000-8000-000000000002');
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select is(
   (select count(*)::int from app.memberships where chapter_id = '10000000-0000-4000-8000-000000000001'),
@@ -209,7 +199,8 @@ select throws_ok(
   'Chapter E-board cannot approve proof for broad sharing'
 );
 
-select tests.authenticate_as('00000000-0000-4000-8000-000000000003');
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000003';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select is(
   (select count(*)::int from app.chapters),
@@ -242,7 +233,8 @@ select lives_ok(
   'Coach can log a mock coach decision event'
 );
 
-select tests.authenticate_as('00000000-0000-4000-8000-000000000004');
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select lives_ok(
   $$
@@ -281,7 +273,8 @@ select is(
   'Admin cannot approve live external sends'
 );
 
-select tests.authenticate_as('00000000-0000-4000-8000-000000000005');
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000005';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select lives_ok(
   $$
@@ -298,7 +291,8 @@ select is(
   'DS Admin outbox update took effect'
 );
 
-select tests.authenticate_as('00000000-0000-4000-8000-000000000008');
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000008';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select is(
   (select count(*)::int from app.chapters),
@@ -339,7 +333,8 @@ select throws_ok(
   'Unapproved user cannot insert chapter-scoped events for another chapter'
 );
 
-select tests.authenticate_as('00000000-0000-4000-8000-000000000006');
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000006';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select lives_ok(
   $$
