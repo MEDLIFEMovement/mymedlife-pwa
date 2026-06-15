@@ -19,7 +19,7 @@ Supabase should become the myMEDLIFE app source of truth for:
 - role approvals
 - campaign status
 - assignment truth
-- evidence and proof review
+- testimonial/proof submissions and HQ sharing decisions
 - points ledger truth
 - KPI ledger truth
 - internal events
@@ -28,7 +28,25 @@ Supabase should become the myMEDLIFE app source of truth for:
 
 n8n should remain an external orchestration layer. It can later consume approved
 outbox rows, but it should not own permissions, membership truth, assignments,
-proof decisions, points, KPIs, or the student-facing experience.
+testimonial sharing decisions, points, KPIs, or the student-facing experience.
+
+## Clarified Operating Model
+
+In myMEDLIFE, "proof" usually means a student testimonial, bridge video, link,
+or short reflection submitted after a chapter activity. It is not primarily a
+chapter-level evidence approval workflow.
+
+Action Committees organize experiences such as Luma events, fundraisers, local
+volunteering events, mobile clinic support, or other campaign actions. After the
+experience, MEDLIFE may collect:
+
+- Luma event or attendance context
+- NPS or student feedback form results
+- student testimonials, bridge videos, links, or other proof of experience
+
+Chapter leaders and Action Committee leaders can submit and organize this
+material. MEDLIFE HQ decides whether a testimonial/proof item should be shared
+with other chapters, universities, or public online surfaces.
 
 ## Auth Model
 
@@ -58,8 +76,9 @@ Use stable database keys even when UI labels change.
 | `action_committee_chair` | Action Committee Chair | Chapter |
 | `e_board_member` | E-Board Member | Chapter |
 | `president_vp` | President / VP | Chapter |
-| `coach` | Coach | Chapter portfolio |
-| `admin` | Admin | Platform or assigned admin scope |
+| `coach` | Coach | Staff role plus assigned chapter portfolio |
+| `admin` | Admin | General MEDLIFE staff |
+| `ds_admin` | DS Admin | Data systems and integration administration |
 | `super_admin` | Super Admin | Platform |
 
 ## Core Table Plan
@@ -107,6 +126,25 @@ Key fields:
 - `chapter_scoped boolean not null`
 - `sort_order integer not null`
 
+### `staff_role_assignments`
+
+Platform or staff role assignment for MEDLIFE employees and trusted operators.
+Use this for Coach, Admin, DS Admin, and Super Admin roles instead of forcing
+platform roles into chapter memberships.
+
+Key fields:
+
+- `id uuid primary key`
+- `user_id uuid not null references profiles(id)`
+- `role_key text not null references roles(key)`
+- `status staff_role_status not null`
+- `assigned_by uuid references profiles(id)`
+- `assigned_at timestamptz not null`
+- `ended_at timestamptz`
+- `created_at timestamptz not null`
+- `updated_at timestamptz not null`
+- unique constraint on active `user_id`, `role_key`
+
 ### `memberships`
 
 Approved or requested role relationship between a profile and a chapter.
@@ -128,8 +166,33 @@ Key fields:
 - `updated_at timestamptz not null`
 - unique constraint on `user_id`, `chapter_id`, `role_key`
 
-Coach portfolio access should be represented by approved `coach` membership
-rows for each chapter in the coach's portfolio.
+Student and chapter-leader roles should live here. Coaches, Admins, DS Admins,
+and Super Admins should live in `staff_role_assignments`. Coach chapter
+portfolio access should come from `coach_chapter_assignments` because coach
+ownership changes by year, phase, and staffing needs.
+
+### `coach_chapter_assignments`
+
+Time-bounded relationship between a coach and a chapter.
+
+Key fields:
+
+- `id uuid primary key`
+- `coach_user_id uuid not null references profiles(id)`
+- `chapter_id uuid not null references chapters(id)`
+- `coach_type coach_assignment_type not null`
+- `status assignment_owner_status not null`
+- `starts_at date not null`
+- `ends_at date`
+- `assigned_by uuid references profiles(id)`
+- `handoff_reason text`
+- `created_at timestamptz not null`
+- `updated_at timestamptz not null`
+
+Use `coach_type` values such as `expansion` and `portfolio`. This supports a
+chapter starting with an expansion coach and later being handed off to a
+portfolio coach. A DS Admin, Admin, or Super Admin should be able to reassign a
+chapter if a staff member leaves or portfolios change.
 
 ### `campaigns`
 
@@ -209,7 +272,9 @@ At least one of `assigned_to_user_id` or `assigned_to_role_key` should be set.
 
 ### `evidence_items`
 
-Proof submitted for an assignment.
+Student testimonial/proof submitted for an assignment or chapter activity.
+Examples include bridge videos, testimonial text, links, or mock file
+references.
 
 Key fields:
 
@@ -222,13 +287,19 @@ Key fields:
 - `url text`
 - `storage_path text`
 - `status evidence_status not null`
+- `sharing_status content_sharing_status not null`
+- `nps_score numeric`
+- `activity_label text`
 - `submitted_at timestamptz not null`
 - `created_at timestamptz not null`
 - `updated_at timestamptz not null`
 
 ### `approvals`
 
-Review decision for evidence.
+HQ or authorized staff decision about a testimonial/proof item. This should
+mostly represent whether MEDLIFE wants to share the submitted proof with other
+chapters, universities, or public online surfaces. It should not imply that
+E-Board or Action Committee leaders are approving proof.
 
 Key fields:
 
@@ -237,6 +308,7 @@ Key fields:
 - `chapter_id uuid not null references chapters(id)`
 - `reviewer_user_id uuid not null references profiles(id)`
 - `decision approval_decision not null`
+- `review_type text not null`
 - `note text not null`
 - `reviewed_at timestamptz not null`
 - `created_at timestamptz not null`
@@ -303,14 +375,16 @@ Example event types:
 - `campaign_opened`
 - `action_assigned`
 - `action_started`
-- `evidence_submitted`
-- `evidence_approved`
-- `evidence_rejected`
+- `testimonial_submitted`
+- `testimonial_approved_for_sharing`
+- `testimonial_not_shared`
 - `points_awarded`
 - `kpi_event_recorded`
+- `nps_score_recorded`
 - `luma_event_linked`
 - `luma_attendance_import_mocked`
 - `hubspot_handoff_mocked`
+- `coach_assignment_changed`
 - `coach_decision_logged`
 - `phase_completed`
 
@@ -419,6 +493,8 @@ Recommended helper functions:
 - `app.is_chapter_leader(chapter_uuid uuid)`
 - `app.is_coach_for_chapter(chapter_uuid uuid)`
 - `app.is_admin()`
+- `app.is_ds_admin()`
+- `app.can_manage_integrations()`
 - `app.is_super_admin()`
 
 ## Permission Plan By Role
@@ -431,25 +507,28 @@ Can read:
 - own approved/requested memberships
 - chapter basics for approved chapters
 - Rush Month campaigns, phases, and assignments visible to general members
-- own evidence submissions
-- own points and KPI impact summaries
+- own testimonial/proof submissions
+- own actions, points, recognition, and public chapter impact summaries
+- chapter leaderboards intended for friendly student competition
 - non-sensitive integration status summaries for own chapter
 
 Can create:
 
 - own chapter join requests
-- evidence for assignments visible to them
+- testimonial/proof for assignments or chapter activities visible to them
 - internal app events for their actions
 
 Can update:
 
 - own profile
-- own pending evidence before review, if the app supports edits
+- own pending testimonial/proof before HQ review, if the app supports edits
 
 Can never access:
 
 - coach-only dashboards
-- other members' private proof by default
+- private testimonial/proof that is not intended for chapter-visible recognition
+  or leaderboards
+- leadership-only SOP/KPI data
 - admin settings
 - role approval controls
 - raw automation payloads
@@ -464,17 +543,17 @@ Can read:
 
 Can create:
 
-- evidence for committee assignments they own
+- testimonial/proof for committee assignments or organized events
 - internal action-started and evidence-submitted events
 
 Can update:
 
-- own pending committee evidence before review
+- own pending testimonial/proof before HQ review
 
 Can never access:
 
 - platform admin settings
-- unrelated member private proof
+- unrelated member private testimonial/proof
 - final role approval controls
 
 ### Action Committee Chair
@@ -482,27 +561,29 @@ Can never access:
 Can read:
 
 - committee-lane assignments in their chapter
-- submitted evidence for committee actions
+- submitted testimonials/proof for committee actions they organize
 - committee progress summaries
 
 Can create:
 
 - committee assignment drafts or requests if enabled by chapter leadership
+- Luma event link records or event setup requests when enabled
+- testimonial/proof submissions for events they organize
 - internal events for coordination activity
 
 Can update:
 
 - committee action status where assigned
-- review notes only if chapter leadership grants review authority
 
 Can never access:
 
 - platform admin settings
 - unrelated chapters
+- HQ testimonial sharing decisions unless surfaced back to the chapter
 - super-admin controls
 
-Open question: confirm whether Action Committee Chairs can approve evidence or
-only prepare proof for President/VP review.
+Action Committee Chairs do not approve proof. They organize events and submit
+testimonials/proof to MEDLIFE HQ.
 
 ### E-Board Member
 
@@ -510,30 +591,30 @@ Can read:
 
 - chapter campaign progress
 - leadership assignments in their chapter
-- evidence queues assigned to E-Board review
+- submitted testimonial/proof status for chapter activities they help run
 
 Can create:
 
 - assignments inside approved chapter campaigns if chapter policy allows
-- evidence review events when granted review authority
+- testimonial/proof submissions for chapter activities
 
 Can update:
 
 - assignments they own or manage
-- evidence review decisions when granted review authority
 
 Can never access:
 
 - platform integration settings
 - unrelated chapters
+- HQ testimonial sharing controls unless explicitly granted as staff
 - super-admin controls
 
 ### President / VP
 
 Can read:
 
-- all chapter campaign, assignment, evidence, points, KPI, and event summaries
-  for their chapter
+- chapter campaign, assignment, testimonial/proof status, points, KPI, and event
+  summaries for their chapter
 - chapter membership requests
 - coach-readable chapter state
 
@@ -541,7 +622,7 @@ Can create:
 
 - chapter campaigns
 - phases and assignments from approved templates
-- evidence review decisions
+- chapter testimonial/proof submissions
 - role approvals for chapter-scoped roles
 - chapter-scoped events and outbox records
 
@@ -550,19 +631,19 @@ Can update:
 - chapter campaign status
 - chapter assignments
 - membership status for chapter-scoped roles
-- evidence decisions and review notes
 
 Can never access:
 
 - platform-wide admin settings
 - unrelated chapters
+- HQ testimonial sharing controls unless separately granted as staff
 - super-admin emergency overrides
 
 ### Coach
 
 Can read:
 
-- assigned portfolio chapters represented by approved `coach` membership rows
+- assigned portfolio chapters represented by active `coach_chapter_assignments`
 - campaign status, assignments, proof readiness, overdue work, KPI movement, and
   risk signals for portfolio chapters
 - integration status summaries for portfolio chapters
@@ -588,11 +669,12 @@ Can never access:
 Can read:
 
 - operational data needed for support within assigned admin scope
-- integration and outbox summaries needed for troubleshooting
+- chapter, testimonial/proof, impact, and support data needed for staff work
 
 Can create:
 
 - configuration records where explicitly allowed
+- HQ testimonial sharing decisions if assigned to that operating role
 - audited support events
 
 Can update:
@@ -601,9 +683,30 @@ Can update:
 
 Can never access:
 
-- super-admin-only integration approvals
+- DS Admin or Super Admin integration credentials and connection controls
 - emergency override powers unless separately granted
 - secrets or service role credentials
+
+### DS Admin
+
+Can read:
+
+- integration configuration status
+- outbox and integration event details needed to manage systems safely
+- operational records needed to debug HubSpot, Luma, n8n, warehouse, or Power BI
+  sync behavior
+
+Can create/update:
+
+- HubSpot, Luma, n8n, warehouse, and Power BI connection settings
+- approved external-send controls
+- integration health and retry controls
+
+Can never access:
+
+- unnecessary student private content beyond what is needed for integration
+  debugging
+- super-admin emergency powers unless separately granted
 
 ### Super Admin
 
@@ -628,22 +731,24 @@ Can never access:
 | Table | Read | Create | Update | Delete |
 | --- | --- | --- | --- | --- |
 | `profiles` | self, chapter leaders for chapter members, coach portfolio summaries, admin | self profile bootstrap | self profile, admin support | super admin only if ever allowed |
-| `chapters` | approved members, coach portfolio, admin | admin/super admin | president/vp for limited chapter fields, admin | super admin only |
+| `chapters` | approved members, active coach assignments, admin | admin/super admin | president/vp for limited chapter fields, admin | super admin only |
 | `roles` | authenticated users | super admin | super admin | super admin |
-| `memberships` | self, chapter leaders, coach portfolio summary, admin | self join request, chapter leader invite | president/vp/admin approvals | super admin only |
+| `staff_role_assignments` | self, admin, DS admin, super admin | super admin | super admin | super admin only |
+| `memberships` | self, chapter leaders, admin | self join request, chapter leader invite | president/vp/admin approvals | super admin only |
+| `coach_chapter_assignments` | assigned coach, admin, DS admin, super admin | admin, DS admin, super admin | admin, DS admin, super admin | super admin only |
 | `campaigns` | chapter members, coach portfolio, admin | president/vp, admin | president/vp, admin | super admin only |
 | `phases` | chapter members, coach portfolio, admin | president/vp, admin | president/vp, admin | super admin only |
 | `action_templates` | chapter leaders, coach portfolio, admin | admin or president/vp from approved SOP | admin or president/vp | super admin only |
 | `assignments` | assigned users/roles, chapter leaders, coach portfolio, admin | chapter leaders | chapter leaders, assigned owner for status only | super admin only |
-| `evidence_items` | submitter, chapter reviewers, coach portfolio, admin | assigned user | submitter before review, reviewers for status | super admin only |
-| `approvals` | submitter, reviewers, chapter leaders, coach portfolio, admin | authorized reviewers | no normal update after create | super admin only |
+| `evidence_items` | submitter, chapter leaders for chapter activity status, active coach assignments, admin | assigned user or chapter organizer | submitter before HQ review, staff for sharing status | super admin only |
+| `approvals` | submitter, HQ staff, admin, DS admin, super admin | authorized HQ staff/admin | no normal update after create | super admin only |
 | `points_events` | user, chapter leaders, coach portfolio, admin | review flow/system | append-only | super admin correction event preferred |
 | `kpi_events` | chapter members for summaries, coach portfolio, admin | review flow/system | append-only | super admin correction event preferred |
 | `events` | actor, chapter leaders, coach portfolio, admin | app flows/system | append-only | super admin only |
 | `luma_event_links` | chapter leaders, coach portfolio, admin | chapter leaders/admin mocked | chapter leaders/admin mocked | super admin only |
-| `integration_events` | chapter leaders, coach portfolio, admin | app flows/system | status updates by admin/system | super admin only |
-| `automation_outbox` | chapter leaders summary, coach summary, admin detail | app flows/system | admin/system status only | super admin only |
-| `audit_logs` | admin/super admin, limited self/chapter views if needed | system/admin | append-only | never through app |
+| `integration_events` | chapter leaders summary, coach summary, admin/DS admin detail | app flows/system | status updates by DS admin/system | super admin only |
+| `automation_outbox` | chapter leaders summary, coach summary, admin/DS admin detail | app flows/system | DS admin/system status only | super admin only |
+| `audit_logs` | admin, DS admin, super admin, limited self/chapter views if needed | system/admin | append-only | never through app |
 
 ## Chapter-Scoped Rules
 
@@ -654,22 +759,27 @@ every access check.
 Rules:
 
 - A user can read chapter-scoped rows only when they have an approved membership
-  for that chapter, an approved coach portfolio role for that chapter, or an
-  admin/super-admin role.
+  for that chapter, an active coach assignment for that chapter, or an admin,
+  DS admin, or super-admin role.
 - Chapter leader writes require approved `president_vp`, `e_board_member`, or
   explicitly approved `action_committee_chair` roles depending on the table.
-- Members can only create evidence for assignments visible to their approved
-  role or assigned directly to their user.
+- Members can only create testimonial/proof submissions for assignments or
+  chapter activities visible to their approved role or assigned directly to
+  their user.
 - Cross-chapter reads are denied by default.
 
 ## Coach Portfolio Rules
 
-For MVP, represent coach portfolio access with approved `coach` membership rows.
+Represent coach portfolio access with `coach_chapter_assignments`, not only
+chapter membership rows.
 
 Rules:
 
-- A coach can read operational state for chapters where they hold an approved
-  `coach` membership row.
+- A coach can read operational state for chapters where they have an active
+  coach assignment.
+- Coach assignment type should distinguish expansion coach from portfolio coach.
+- Coach assignments should support start/end dates so yearly portfolio changes
+  and staff transitions are clean.
 - A coach can create coach decision logs for those chapters.
 - A coach cannot approve student membership truth unless a later role explicitly
   grants that ability.
@@ -681,10 +791,13 @@ Admin roles need extra care because broad access can become invisible.
 
 Rules:
 
-- `admin` should be used for support operations, not unchecked global power.
-- `super_admin` should be reserved for platform settings, integration approvals,
-  emergency overrides, and global administration.
-- All admin and super-admin writes should produce audit logs.
+- `admin` should be used for general MEDLIFE staff support operations, not
+  unchecked global power.
+- `ds_admin` should manage HubSpot, Luma, n8n, warehouse, Power BI, API, and
+  connection controls.
+- `super_admin` should be reserved for platform settings, emergency overrides,
+  and global administration.
+- All admin, DS admin, and super-admin writes should produce audit logs.
 - Service role access should stay server-only and never appear in client code.
 
 ## Audit Logging Requirements
@@ -693,14 +806,17 @@ Audit logs are required for:
 
 - membership approvals and rejections
 - role changes
+- coach assignment changes and coach handoffs
 - campaign open/close decisions
 - assignment creation or reassignment
-- evidence approvals, rejections, and change requests
+- testimonial/proof submissions
+- HQ testimonial sharing decisions
 - points awards or corrections
 - KPI event corrections
+- NPS score imports or recorded feedback summaries
 - integration status changes
 - outbox approval for any real external send
-- admin and super-admin configuration changes
+- admin, DS admin, and super-admin configuration changes
 - emergency overrides
 
 Audit logs should include actor, target, before/after values when useful, reason,
@@ -717,9 +833,12 @@ Recommended changes before Goal 5 implementation:
 - Add stable role keys to TypeScript instead of relying only on display labels.
 - Add `chapterId`, `campaignId`, `phaseId`, `assignedToUserId`,
   `assignedToRoleKey`, and `assignedByUserId` to `Assignment` persistence types.
-- Add `submittedByUserId`, `url`, `storagePath`, and `submittedAt` to
-  `EvidenceItem` persistence types.
-- Add `reviewerUserId` and `reviewedAt` to `Approval` persistence types.
+- Add `submittedByUserId`, `url`, `storagePath`, `sharingStatus`, `npsScore`,
+  `activityLabel`, and `submittedAt` to `EvidenceItem` persistence types.
+- Treat `Approval` as an HQ content-sharing review record, not an E-Board proof
+  review. Add `reviewerUserId`, `reviewType`, and `reviewedAt`.
+- Add a `CoachChapterAssignment` persistence type for expansion and portfolio
+  coach assignments.
 - Expand `PointsEvent` to include chapter, campaign, evidence, approval, actor,
   and signed point delta fields.
 - Expand `KPIEvent` to include chapter, campaign, phase, metric key, value,
@@ -755,17 +874,17 @@ yet.
 
 ## Open Questions
 
-1. Should Action Committee Chairs be allowed to approve evidence, or only
-   prepare proof for President/VP review?
-2. Should E-Board review powers be automatic, or granted per campaign/phase?
-3. Should coach portfolio access be stored only as `coach` membership rows, or
-   should Goal 5 add a dedicated `coach_chapter_assignments` table?
-4. Should General Members see chapter-level aggregate points/KPI summaries, or
-   only their own contribution and public recognition?
-5. What is the minimum audit detail MEDLIFE wants for student privacy while
-   keeping operational accountability?
-6. Who is allowed to approve an outbox row for real external sending after the
-   mock-only phase ends?
+1. What exact statuses should MEDLIFE HQ use for testimonial sharing decisions?
+   Current draft uses submitted, in HQ review, approved for sharing, not shared,
+   and archived.
+2. Should NPS scores be stored directly on testimonial/proof rows, only as KPI
+   events, or both?
+3. Should coach assignment history be visible to chapter leaders, or only to
+   coaches/admins?
+4. Which staff roles besides Admin can decide that a testimonial should be
+   shared with other universities or public online surfaces?
+5. Should DS Admins be separate from Super Admins in production from day one, or
+   should one trusted group hold both roles during the first pilot?
 
 ## Goal 4 Assumptions
 

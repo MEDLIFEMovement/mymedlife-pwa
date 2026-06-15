@@ -9,6 +9,9 @@ create schema if not exists app;
 create type app.profile_status as enum ('active', 'inactive');
 create type app.chapter_status as enum ('active', 'inactive', 'archived');
 create type app.membership_status as enum ('requested', 'approved', 'rejected', 'inactive');
+create type app.staff_role_status as enum ('active', 'inactive', 'ended');
+create type app.coach_assignment_type as enum ('expansion', 'portfolio');
+create type app.assignment_owner_status as enum ('active', 'inactive', 'ended');
 create type app.campaign_status as enum ('draft', 'active', 'complete', 'archived');
 create type app.phase_status as enum ('not_started', 'active', 'complete');
 create type app.assignment_status as enum (
@@ -26,7 +29,18 @@ create type app.evidence_status as enum (
   'rejected',
   'changes_requested'
 );
-create type app.approval_decision as enum ('approved', 'rejected', 'changes_requested');
+create type app.content_sharing_status as enum (
+  'submitted',
+  'in_hq_review',
+  'approved_for_sharing',
+  'not_shared',
+  'archived'
+);
+create type app.approval_decision as enum (
+  'approved_for_sharing',
+  'not_shared',
+  'changes_requested'
+);
 create type app.integration_destination as enum (
   'internal',
   'n8n',
@@ -96,9 +110,26 @@ insert into app.roles (key, label, chapter_scoped, sort_order) values
   ('action_committee_chair', 'Action Committee Chair', true, 30),
   ('e_board_member', 'E-Board Member', true, 40),
   ('president_vp', 'President / VP', true, 50),
-  ('coach', 'Coach', true, 60),
+  ('coach', 'Coach', false, 60),
   ('admin', 'Admin', false, 70),
-  ('super_admin', 'Super Admin', false, 80);
+  ('ds_admin', 'DS Admin', false, 80),
+  ('super_admin', 'Super Admin', false, 90);
+
+create table app.staff_role_assignments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references app.profiles(id) on delete cascade,
+  role_key text not null references app.roles(key),
+  status app.staff_role_status not null default 'active',
+  assigned_by uuid references app.profiles(id),
+  assigned_at timestamptz not null default now(),
+  ended_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index staff_role_assignments_active_unique
+on app.staff_role_assignments (user_id, role_key)
+where status = 'active';
 
 create table app.memberships (
   id uuid primary key default gen_random_uuid(),
@@ -112,6 +143,21 @@ create table app.memberships (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, chapter_id, role_key)
+);
+
+create table app.coach_chapter_assignments (
+  id uuid primary key default gen_random_uuid(),
+  coach_user_id uuid not null references app.profiles(id) on delete cascade,
+  chapter_id uuid not null references app.chapters(id) on delete cascade,
+  coach_type app.coach_assignment_type not null,
+  status app.assignment_owner_status not null default 'active',
+  starts_at date not null,
+  ends_at date,
+  assigned_by uuid references app.profiles(id),
+  handoff_reason text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (ends_at is null or ends_at >= starts_at)
 );
 
 create table app.campaigns (
@@ -184,6 +230,9 @@ create table app.evidence_items (
   url text,
   storage_path text,
   status app.evidence_status not null default 'pending_review',
+  sharing_status app.content_sharing_status not null default 'submitted',
+  nps_score numeric,
+  activity_label text,
   submitted_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -195,6 +244,7 @@ create table app.approvals (
   chapter_id uuid not null references app.chapters(id) on delete cascade,
   reviewer_user_id uuid not null references app.profiles(id),
   decision app.approval_decision not null,
+  review_type text not null default 'hq_content_sharing',
   note text not null,
   reviewed_at timestamptz not null default now(),
   created_at timestamptz not null default now()
@@ -341,8 +391,7 @@ as $$
     'action_committee_member',
     'action_committee_chair',
     'e_board_member',
-    'president_vp',
-    'coach'
+    'president_vp'
   ])
 $$;
 
@@ -367,7 +416,15 @@ stable
 security definer
 set search_path = app, public
 as $$
-  select app.has_chapter_role(chapter_uuid, array['coach'])
+  select exists (
+    select 1
+    from app.coach_chapter_assignments coach_assignments
+    where coach_assignments.coach_user_id = auth.uid()
+      and coach_assignments.chapter_id = chapter_uuid
+      and coach_assignments.status = 'active'
+      and coach_assignments.starts_at <= current_date
+      and (coach_assignments.ends_at is null or coach_assignments.ends_at >= current_date)
+  )
 $$;
 
 create or replace function app.is_admin()
@@ -379,11 +436,37 @@ set search_path = app, public
 as $$
   select exists (
     select 1
-    from app.memberships memberships
-    where memberships.user_id = auth.uid()
-      and memberships.role_key in ('admin', 'super_admin')
-      and memberships.status = 'approved'
+    from app.staff_role_assignments staff_roles
+    where staff_roles.user_id = auth.uid()
+      and staff_roles.role_key in ('admin', 'ds_admin', 'super_admin')
+      and staff_roles.status = 'active'
   )
+$$;
+
+create or replace function app.is_ds_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = app, public
+as $$
+  select exists (
+    select 1
+    from app.staff_role_assignments staff_roles
+    where staff_roles.user_id = auth.uid()
+      and staff_roles.role_key in ('ds_admin', 'super_admin')
+      and staff_roles.status = 'active'
+  )
+$$;
+
+create or replace function app.can_manage_integrations()
+returns boolean
+language sql
+stable
+security definer
+set search_path = app, public
+as $$
+  select app.is_ds_admin() or app.is_super_admin()
 $$;
 
 create or replace function app.is_super_admin()
@@ -395,17 +478,19 @@ set search_path = app, public
 as $$
   select exists (
     select 1
-    from app.memberships memberships
-    where memberships.user_id = auth.uid()
-      and memberships.role_key = 'super_admin'
-      and memberships.status = 'approved'
+    from app.staff_role_assignments staff_roles
+    where staff_roles.user_id = auth.uid()
+      and staff_roles.role_key = 'super_admin'
+      and staff_roles.status = 'active'
   )
 $$;
 
 alter table app.profiles enable row level security;
 alter table app.chapters enable row level security;
 alter table app.roles enable row level security;
+alter table app.staff_role_assignments enable row level security;
 alter table app.memberships enable row level security;
+alter table app.coach_chapter_assignments enable row level security;
 alter table app.campaigns enable row level security;
 alter table app.phases enable row level security;
 alter table app.action_templates enable row level security;
@@ -429,7 +514,11 @@ using (id = auth.uid() or app.is_admin());
 
 create policy "members can read approved chapter"
 on app.chapters for select
-using (app.is_chapter_member(id) or app.is_admin());
+using (app.is_chapter_member(id) or app.is_coach_for_chapter(id) or app.is_admin());
+
+create policy "staff can read own staff roles"
+on app.staff_role_assignments for select
+using (user_id = auth.uid() or app.is_admin() or app.is_super_admin());
 
 create policy "members can read own memberships"
 on app.memberships for select
@@ -438,6 +527,14 @@ using (
   or app.has_chapter_role(chapter_id, array['president_vp', 'e_board_member'])
   or app.is_coach_for_chapter(chapter_id)
   or app.is_admin()
+);
+
+create policy "coach assignments are staff scoped"
+on app.coach_chapter_assignments for select
+using (
+  coach_user_id = auth.uid()
+  or app.is_admin()
+  or app.is_ds_admin()
 );
 
 create policy "chapter leaders can manage assignments"
@@ -493,6 +590,7 @@ create policy "outbox details are admin scoped"
 on app.automation_outbox for select
 using (
   app.is_admin()
+  or app.is_ds_admin()
   or (chapter_id is not null and app.is_chapter_leader(chapter_id))
   or (chapter_id is not null and app.is_coach_for_chapter(chapter_id))
 );
