@@ -161,27 +161,31 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 3: typed validation schemas plus tested Rush Month mock
-workflow services.
+The active goal is Goal 4: Supabase schema, auth, and RLS design planning.
 
 Allowed:
 
-- shared TypeScript types
-- validation schemas for mock domain objects
-- pure service/helper functions
-- tests for mock Rush Month workflows
-- mock Rush Month data
-- mock role contexts
-- mock evidence, review, points/KPI, event, and outbox displays
+- Supabase architecture documentation
+- proposed table and relationship model
+- role and permission boundary documentation
+- RLS policy strategy documentation
+- chapter, coach, admin, and super-admin access planning
+- audit logging requirements
+- TypeScript-to-database mapping notes
+- future RLS test-plan notes
+- draft SQL files clearly marked as not applied
 - README and documentation updates
 
 Not allowed without Nick's next approval:
 
-- real Supabase auth
-- real RLS/security rules
-- real database migrations or persistence
-- real Supabase schema/RLS finalization
-- real external writes
-- all-campaign buildout
+- live Supabase auth wiring
+- applied production migrations
+- real database persistence from the app
+- real users or role assignments
+- real HubSpot writes
+- real Luma writes
+- real n8n workflows
+- warehouse or Power BI exports
 - complex AI workflows
+- all-campaign buildout
 - native iOS or Android apps
