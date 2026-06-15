@@ -1,6 +1,6 @@
 # Supabase Local Development
 
-Goal 5 adds a local-only Supabase foundation for myMEDLIFE.
+Goals 5 and 7 add the local-only Supabase foundation for myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable live auth in the UI, or trigger HubSpot, Luma, n8n, warehouse,
@@ -11,10 +11,17 @@ Power BI, email, SMS, or AI writes.
 - `supabase/config.toml`: standard local Supabase project config.
 - `supabase/migrations/20260615110000_initial_supabase_foundation.sql`: first
   local schema, role helpers, RLS policies, grants, and safety triggers.
+- `supabase/migrations/20260615130000_goal_7_campaign_operating_model.sql`:
+  local campaign operating model refinements for templates, readiness, campaign
+  lanes, risk flags, closeouts, and assignment operating fields.
 - `supabase/seed.sql`: fake local users, chapters, memberships, staff roles,
-  Rush Month records, proof/testimonial records, and disabled/mock outbox rows.
+  Rush Month records, proof/testimonial records, disabled/mock outbox rows, and
+  fake Goal 7 operating-model records.
 - `supabase/tests/database/rls_goal_5.test.sql`: pgTAP tests for the first RLS
   permission model.
+- `supabase/tests/database/rls_goal_7.test.sql`: pgTAP tests for campaign
+  template, readiness, lane ownership, risk, closeout, and assignment-field
+  protection boundaries.
 
 ## Requirements
 
@@ -90,6 +97,12 @@ All seed data is fake and local-only.
 - DS Admin and Super Admin can manage integration/outbox status.
 - External sends remain disabled or mocked until Nick explicitly approves live
   integrations.
+- HQ/Admin can manage global campaign templates; normal students and DS Admins
+  cannot.
+- Chapter leaders can assign campaign lanes inside their own chapter.
+- Coaches can validate readiness and closeouts only for chapters in their
+  active portfolio.
+- Coach-private risk flags stay hidden from members and chapter leaders.
 
 ## Known Codex Environment Limitation
 

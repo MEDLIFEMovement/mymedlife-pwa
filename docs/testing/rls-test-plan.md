@@ -170,6 +170,11 @@ Goal 6 identified the next local-only RLS test groups to add before live auth:
 - Future lead, traveler, donor, and fundraising privacy after Data Solutions
   object contracts are approved.
 
+Goal 7 implemented the first set of those follow-up tests in
+`supabase/tests/database/rls_goal_7.test.sql`, covering HQ campaign templates,
+campaign officer lanes, readiness validation, coach-private risk flags,
+campaign closeouts, and assignment operating-field protection.
+
 ## Pass Criteria
 
 The RLS test suite should pass only when:
