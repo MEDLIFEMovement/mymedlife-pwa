@@ -1,22 +1,16 @@
 import { assignments } from "@/data/mock-rush-month";
+import {
+  getAssignmentById as findAssignmentById,
+  getAssignmentsForRole as findAssignmentsForRole,
+} from "@/services/rush-month-service";
 import type { Assignment, AssignmentStatus, RoleKey } from "@/shared/types/domain";
 
 export function getAssignmentsForRole(role: RoleKey): Assignment[] {
-  if (role === "member") {
-    return assignments.filter((assignment) => assignment.lane === "Member");
-  }
-
-  if (role === "coach") {
-    return assignments.filter(
-      (assignment) => assignment.lane === "Coach" || assignment.status !== "approved",
-    );
-  }
-
-  return assignments;
+  return findAssignmentsForRole(assignments, role);
 }
 
 export function getAssignmentById(id: string): Assignment | undefined {
-  return assignments.find((assignment) => assignment.id === id);
+  return findAssignmentById(assignments, id);
 }
 
 export function getNextMemberAction(): Assignment {
