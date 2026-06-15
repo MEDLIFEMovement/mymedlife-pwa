@@ -10,16 +10,22 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is foundation only:
+The current goal is Goal 2: minimal app scaffold plus Rush Month shell.
 
-- confirm the custom PWA repo lane
-- document the recommended stack and stack conflict
-- document the core domain model, roles, permissions, event log, and outbox
-- document the Rush Month MVP flow for leaders, members, and coaches
-- define the next build cycle tasks
+Goal 2 creates a human-readable Next.js scaffold with mock data only:
 
-Do not continue into the full Rush Month implementation until Nick approves the
-next goal.
+- basic app navigation
+- mock role contexts for member, leader, coach, and admin
+- chapter home shell
+- Rush Month campaign shell
+- this week's actions
+- assignment detail and mock proof submission UI
+- leader/coach review queue
+- points/KPI summary cards
+- event/outbox display for future automation readiness
+
+Do not continue into real database, auth, RLS, or integration implementation
+until Nick approves the next goal.
 
 ## Recommended Stack
 
@@ -117,18 +123,25 @@ Rules:
 
 ## Current App State
 
-The current `src/app/page.tsx` is a prototype Rush Month shell with mock data and
-local UI state. It is useful as a visual reference, not as the final business
-logic architecture.
+The app currently uses mock data only. There is no live Supabase auth, RLS,
+database persistence, HubSpot write, Luma write, warehouse export, Power BI
+export, n8n workflow, or AI summary.
 
-Before implementation continues, split future real work into conventional layers:
+Goal 2 route shells:
 
-- UI components
-- shared TypeScript types
-- validation schemas
-- data access
-- services for assignments, evidence, points, KPIs, and integrations
-- tests for important logic
+- `/`: mobile-first app front door
+- `/chapter`: chapter home shell
+- `/rush-month`: Rush Month campaign shell
+- `/rush-month/actions`: this week's actions and role-grouped assignments
+- `/rush-month/actions/[assignmentId]`: member action detail and mock proof UI
+- `/rush-month/evidence`: mock evidence list
+- `/rush-month/review`: leader/coach review queue
+- `/coach`: coach dashboard shell
+- `/admin`: admin/super-admin integration placeholder
+
+Mock data lives in `src/data/mock-rush-month.ts`. Shared domain types live in
+`src/shared/types/domain.ts`. Small reusable UI components live in
+`src/components`.
 
 ## Linear Lane
 
