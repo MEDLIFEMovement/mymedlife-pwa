@@ -524,16 +524,6 @@ as $$
   )
 $$;
 
-create or replace function app.can_manage_integrations()
-returns boolean
-language sql
-stable
-security definer
-set search_path = app, public
-as $$
-  select app.is_ds_admin() or app.is_super_admin()
-$$;
-
 create or replace function app.is_super_admin()
 returns boolean
 language sql
@@ -548,6 +538,16 @@ as $$
       and staff_roles.role_key = 'super_admin'
       and staff_roles.status = 'active'
   )
+$$;
+
+create or replace function app.can_manage_integrations()
+returns boolean
+language sql
+stable
+security definer
+set search_path = app, public
+as $$
+  select app.is_ds_admin() or app.is_super_admin()
 $$;
 
 alter table app.profiles enable row level security;
