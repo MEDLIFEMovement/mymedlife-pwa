@@ -37,6 +37,13 @@ Linear issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
+Linear label:
+
+- `Project: myMEDLIFE PWA`
+
+Use this label on myMEDLIFE PWA issues so they are visibly separate from
+Discourse issues when scanning names, lists, or cross-project views.
+
 ## Foundation Deliverables
 
 - README explains stack, domain, build posture, and Discourse comparison.
