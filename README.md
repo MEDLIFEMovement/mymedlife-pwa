@@ -104,7 +104,7 @@ pnpm build
 
 ## Environment Variables
 
-No live external services are required for the foundation goal.
+No live external services are required for the Goal 2 mock shell.
 
 Future Supabase work should document required variables here before use:
 
