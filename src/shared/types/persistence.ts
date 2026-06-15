@@ -25,6 +25,20 @@ export type CoachAssignmentType = "expansion" | "portfolio";
 export type AssignmentOwnerStatus = "active" | "inactive" | "ended";
 export type CampaignStatus = "draft" | "active" | "complete" | "archived";
 export type PhaseStatus = "not_started" | "active" | "complete";
+export type TemplateStatus = "draft" | "active" | "archived";
+export type ReadinessStatus = "not_ready" | "ready" | "validated" | "blocked" | "waived";
+export type CoachValidationStatus =
+  | "not_required"
+  | "pending"
+  | "validated"
+  | "blocked"
+  | "waived";
+export type CampaignRoleAssignmentStatus = "active" | "inactive" | "ended";
+export type RiskSeverity = "low" | "medium" | "high" | "critical";
+export type RiskStatus = "open" | "watching" | "escalated" | "resolved" | "dismissed";
+export type RiskVisibility = "leader_visible" | "coach_private";
+export type CloseoutStatus = "draft" | "submitted" | "validated" | "returned" | "archived";
+export type AssignmentPriority = "low" | "normal" | "high" | "urgent";
 export type AssignmentStatus =
   | "not_started"
   | "in_progress"
@@ -32,7 +46,19 @@ export type AssignmentStatus =
   | "approved"
   | "changes_requested"
   | "canceled";
-export type EvidenceType = "text" | "link" | "mock_file";
+export type EvidenceType =
+  | "text"
+  | "link"
+  | "mock_file"
+  | "testimonial_text"
+  | "bridge_video"
+  | "event_photo"
+  | "attendance_log"
+  | "feedback_form"
+  | "tracker_screenshot"
+  | "planning_doc"
+  | "recap_note"
+  | "external_link";
 export type EvidenceStatus =
   | "pending_review"
   | "approved"
@@ -142,15 +168,67 @@ export type CoachChapterAssignmentRow = {
   updated_at: Timestamp;
 };
 
+export type CampaignTemplateRow = {
+  id: Uuid;
+  registry_key: string;
+  name: string;
+  slug: string;
+  audience: string;
+  summary: string;
+  annual_order: number | null;
+  status: TemplateStatus;
+  default_kpis: JsonValue;
+  source_metadata: JsonValue;
+  created_by: Uuid | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type CampaignPhaseTemplateRow = {
+  id: Uuid;
+  campaign_template_id: Uuid;
+  title: string;
+  phase_order: number;
+  objective: string;
+  entry_criteria: JsonValue;
+  exit_criteria: JsonValue;
+  required_outputs: JsonValue;
+  coach_validation_required: boolean;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
 export type CampaignRow = {
   id: Uuid;
   chapter_id: Uuid;
+  campaign_template_id: Uuid | null;
   name: string;
   slug: string;
   objective: string;
   status: CampaignStatus;
+  semester: string | null;
+  academic_year: string | null;
   opened_by: Uuid | null;
   opened_at: Timestamp | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type PhaseRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid;
+  phase_template_id: Uuid | null;
+  title: string;
+  objective: string;
+  starts_at: Timestamp | null;
+  ends_at: Timestamp | null;
+  status: PhaseStatus;
+  readiness_status: ReadinessStatus;
+  coach_validation_status: CoachValidationStatus;
+  required_outputs: JsonValue;
+  entry_criteria: JsonValue;
+  exit_criteria: JsonValue;
   created_at: Timestamp;
   updated_at: Timestamp;
 };
@@ -173,6 +251,83 @@ export type AssignmentRow = {
   evidence_required: string;
   points: number;
   kpi_key: string;
+  priority: AssignmentPriority;
+  expected_output: string | null;
+  support_role_labels: string[];
+  late_next_step: string | null;
+  risk_flagged: boolean;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type CampaignRoleAssignmentRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid;
+  user_id: Uuid;
+  role_key: string;
+  role_label: string;
+  lane: string;
+  status: CampaignRoleAssignmentStatus;
+  starts_at: string;
+  ends_at: string | null;
+  assigned_by: Uuid | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type PhaseReadinessReviewRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid;
+  phase_id: Uuid;
+  reviewer_user_id: Uuid;
+  readiness_status: Exclude<ReadinessStatus, "not_ready">;
+  decision_note: string;
+  blocker_summary: string | null;
+  reviewed_at: Timestamp;
+  created_at: Timestamp;
+};
+
+export type RiskFlagRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid | null;
+  phase_id: Uuid | null;
+  assignment_id: Uuid | null;
+  chapter_event_id: Uuid | null;
+  severity: RiskSeverity;
+  visibility: RiskVisibility;
+  signal: string;
+  root_cause: string | null;
+  owner_user_id: Uuid | null;
+  response_plan: string;
+  status: RiskStatus;
+  due_at: Timestamp | null;
+  created_by: Uuid | null;
+  resolved_at: Timestamp | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type CampaignCloseoutRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid;
+  status: CloseoutStatus;
+  submitted_by: Uuid | null;
+  validated_by: Uuid | null;
+  goals_summary: string;
+  results_summary: string;
+  kpi_summary: JsonValue;
+  proof_summary: string | null;
+  top_contributors: JsonValue;
+  lessons_learned: string | null;
+  unresolved_risks: string | null;
+  recommendations: string | null;
+  next_handoff: string | null;
+  submitted_at: Timestamp | null;
+  validated_at: Timestamp | null;
   created_at: Timestamp;
   updated_at: Timestamp;
 };

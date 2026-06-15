@@ -1,4 +1,4 @@
-name: myMEDLIFE Goal 5 CI
+name: myMEDLIFE CI
 
 on:
   pull_request:

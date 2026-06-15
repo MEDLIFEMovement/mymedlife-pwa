@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 6: Supabase foundation review and Goal 7 planning.
+The current goal is Goal 7: local campaign operating model refinement.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -23,9 +23,13 @@ foundation:
 - pgTAP RLS/security tests
 - documentation for local setup and reset/test commands
 
-Goal 6 reviews that foundation against MEDLIFE Sales SOP knowledge bases and
+Goal 6 reviewed that foundation against MEDLIFE Sales SOP knowledge bases and
 defines the next safe local schema refinement plan before live auth or real
 integrations.
+
+Goal 7 implements that plan locally by adding campaign templates, phase
+templates, campaign officer lanes, readiness reviews, risk flags, closeouts,
+expanded proof/evidence types, fake seed data, and RLS/security tests.
 
 The app UI still uses mock data. Do not connect production Supabase, enable live
 auth in the student UI, create real users, or enable external writes until Nick
@@ -121,7 +125,7 @@ pnpm supabase:test
 
 ## Environment Variables
 
-No live external services are required for the current mock app or Goal 5 local
+No live external services are required for the current mock app or local
 database foundation.
 
 Future Supabase implementation should document required variables here before
@@ -183,6 +187,12 @@ Goal 6 planning lives in:
 - `docs/architecture/goal-6-supabase-foundation-review.md`
 - `docs/architecture/drafts/0002_goal_6_schema_refinements_draft.sql`
 
+Goal 7 local schema refinement lives in:
+
+- `supabase/migrations/20260615130000_goal_7_campaign_operating_model.sql`
+- `supabase/tests/database/rls_goal_7.test.sql`
+- additional fake Goal 7 records in `supabase/seed.sql`
+
 ## Linear Lane
 
 Primary live issues:
@@ -195,11 +205,11 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 6
+## Definition of Done for Goal 7
 
-Goal 6 is complete when the team can review the merged Goal 5 database
-foundation against MEDLIFE SOP context, understand the remaining schema/RLS
-gaps, see Data Solutions dependencies, and approve a safe Goal 7 path.
+Goal 7 is complete when local migrations, fake seed data, RLS policies, and
+tests prove the refined campaign operating model works locally and remains safe
+for later app wiring.
 
-The app remains mock-first. Goal 6 does not apply new migrations or wire the app
-to production Supabase.
+The app remains mock-first. Goal 7 does not wire the app to production
+Supabase, enable live auth, or activate real integrations.
