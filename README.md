@@ -10,10 +10,9 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 5: local Supabase implementation and RLS test
-foundation.
+The current goal is Goal 6: Supabase foundation review and Goal 7 planning.
 
-Goal 5 turns the approved Goal 4 database plan into a local-only Supabase
+Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
 
 - local Supabase project structure
@@ -24,9 +23,13 @@ foundation:
 - pgTAP RLS/security tests
 - documentation for local setup and reset/test commands
 
+Goal 6 reviews that foundation against MEDLIFE Sales SOP knowledge bases and
+defines the next safe local schema refinement plan before live auth or real
+integrations.
+
 The app UI still uses mock data. Do not connect production Supabase, enable live
 auth in the student UI, create real users, or enable external writes until Nick
-approves Goal 6.
+approves a later implementation goal.
 
 ## Recommended Stack
 
@@ -78,6 +81,7 @@ All external integrations are mock-first until explicitly approved.
 - [Agent standards](./AGENTS.md)
 - [Foundation and Rush Month MVP architecture](./docs/architecture/foundation-and-rush-month-mvp.md)
 - [Supabase schema, auth, and RLS design plan](./docs/architecture/supabase-schema-auth-rls-plan.md)
+- [Goal 6 Supabase foundation review and Goal 7 plan](./docs/architecture/goal-6-supabase-foundation-review.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -174,6 +178,11 @@ Goal 5 local Supabase implementation lives in:
 - `supabase/tests/database/rls_goal_5.test.sql`
 - `docs/supabase-local-development.md`
 
+Goal 6 planning lives in:
+
+- `docs/architecture/goal-6-supabase-foundation-review.md`
+- `docs/architecture/drafts/0002_goal_6_schema_refinements_draft.sql`
+
 ## Linear Lane
 
 Primary live issues:
@@ -186,12 +195,11 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 5
+## Definition of Done for Goal 6
 
-Goal 5 is complete when a human developer can run the local Supabase setup,
-apply migrations, seed fake data, and run RLS/security tests proving the first
-permission model works locally.
+Goal 6 is complete when the team can review the merged Goal 5 database
+foundation against MEDLIFE SOP context, understand the remaining schema/RLS
+gaps, see Data Solutions dependencies, and approve a safe Goal 7 path.
 
-This Codex environment does not have Docker installed, so Supabase local stack
-execution must be verified on a Docker-capable machine or by the Goal 5 GitHub
-CI workflow.
+The app remains mock-first. Goal 6 does not apply new migrations or wire the app
+to production Supabase.

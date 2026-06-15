@@ -161,21 +161,22 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 5: local Supabase implementation and RLS test
-foundation.
+The active goal is Goal 6: Supabase foundation review and Goal 7 planning.
 
 Allowed:
 
-- local Supabase project structure
-- local-only migration files under `supabase/migrations`
-- fake seed data under `supabase/seed.sql`
-- local pgTAP RLS/security tests
-- TypeScript persistence types that document the database shape
+- review the merged Goal 5 local Supabase foundation
+- compare the schema, RLS plan, and auth boundaries to MEDLIFE SOP context
+- document schema/RLS gaps before live auth
+- document Data Solutions knowledge-base dependencies before real integrations
+- create draft-only architecture notes under `docs/architecture/drafts`
 - README and documentation updates
 - normal app checks
 
 Not allowed without Nick's next approval:
 
+- new applied migration files under `supabase/migrations`
+- changes to the local seed data or RLS tests that imply Goal 7 implementation
 - production Supabase connection or linked project changes
 - live Supabase auth wiring in the student UI
 - real users or real role assignments

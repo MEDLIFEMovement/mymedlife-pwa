@@ -157,6 +157,19 @@ Goal 5 implemented the first local version:
 - `pnpm supabase:reset`
 - `pnpm supabase:test`
 
+Goal 6 identified the next local-only RLS test groups to add before live auth:
+
+- HQ-only campaign template management.
+- Campaign officer lane access for recruitment, SLT, fundraising, engagement,
+  and transition work.
+- Phase readiness review creation, validation, waiver, and blocking boundaries.
+- Coach-only risk/intervention records hidden from general members.
+- Campaign closeout draft, submit, validate, return, and archive boundaries.
+- Proof editing locks after HQ sharing review begins.
+- Member-facing impact summaries separated from leadership-only operating KPIs.
+- Future lead, traveler, donor, and fundraising privacy after Data Solutions
+  object contracts are approved.
+
 ## Pass Criteria
 
 The RLS test suite should pass only when:
