@@ -161,19 +161,24 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is foundation plus Rush Month MVP plan only.
+The active goal is Goal 2: minimal app scaffold plus a mock-data Rush Month
+shell.
 
 Allowed:
 
-- README updates
-- AGENTS updates
-- architecture notes
-- operating brief
-- minimal scaffold hygiene
+- small Next.js route pages
+- simple reusable UI components
+- shared TypeScript types
+- mock Rush Month data
+- mock role contexts
+- mock evidence, review, points/KPI, event, and outbox displays
+- README and documentation updates
 
 Not allowed without Nick's next approval:
 
-- full Rush Month implementation
+- real Supabase auth
+- real RLS/security rules
+- real database migrations or persistence
 - real Supabase schema/RLS finalization
 - real external writes
 - all-campaign buildout
