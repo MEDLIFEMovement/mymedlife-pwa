@@ -993,7 +993,14 @@ using (
 create policy "events_insert_actor_or_staff"
 on app.events for insert to authenticated
 with check (
-  actor_user_id = auth.uid()
+  (
+    actor_user_id = auth.uid()
+    and (
+      chapter_id is null
+      or app.is_chapter_member(chapter_id)
+      or app.is_coach_for_chapter(chapter_id)
+    )
+  )
   or app.is_admin()
 );
 

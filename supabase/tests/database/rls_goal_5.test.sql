@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(25);
+select plan(26);
 
 create schema if not exists tests;
 
@@ -316,6 +316,27 @@ select is(
   (select count(*)::int from app.integration_events),
   0,
   'Normal users cannot read raw integration payload rows'
+);
+
+select throws_ok(
+  $$
+    insert into app.events (
+      id,
+      event_type,
+      actor_user_id,
+      chapter_id,
+      payload
+    ) values (
+      '80000000-0000-4000-8000-000000000102',
+      'coach_decision_logged',
+      '00000000-0000-4000-8000-000000000008',
+      '10000000-0000-4000-8000-000000000001',
+      '{"decision":"fake-cross-chapter-event","mockOnly":true}'
+    )
+  $$,
+  '42501',
+  null,
+  'Unapproved user cannot insert chapter-scoped events for another chapter'
 );
 
 select tests.authenticate_as('00000000-0000-4000-8000-000000000006');
