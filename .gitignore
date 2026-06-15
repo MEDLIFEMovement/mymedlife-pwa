@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+/desktop-preview.png
+/mobile-preview.png
 
 # debug
 npm-debug.log*
