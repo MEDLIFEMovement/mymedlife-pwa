@@ -12,6 +12,17 @@ create type app.membership_status as enum ('requested', 'approved', 'rejected', 
 create type app.staff_role_status as enum ('active', 'inactive', 'ended');
 create type app.coach_assignment_type as enum ('expansion', 'portfolio');
 create type app.assignment_owner_status as enum ('active', 'inactive', 'ended');
+create type app.committee_status as enum ('active', 'inactive', 'archived');
+create type app.chapter_event_status as enum (
+  'idea',
+  'planning',
+  'published',
+  'promoting',
+  'completed',
+  'feedback_collected',
+  'shared',
+  'canceled'
+);
 create type app.campaign_status as enum ('draft', 'active', 'complete', 'archived');
 create type app.phase_status as enum ('not_started', 'active', 'complete');
 create type app.assignment_status as enum (
@@ -199,12 +210,24 @@ create table app.action_templates (
   updated_at timestamptz not null default now()
 );
 
+create table app.action_committees (
+  id uuid primary key default gen_random_uuid(),
+  chapter_id uuid not null references app.chapters(id) on delete cascade,
+  name text not null,
+  committee_type text not null,
+  status app.committee_status not null default 'active',
+  chair_user_id uuid references app.profiles(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table app.assignments (
   id uuid primary key default gen_random_uuid(),
   chapter_id uuid not null references app.chapters(id) on delete cascade,
   campaign_id uuid not null references app.campaigns(id) on delete cascade,
   phase_id uuid references app.phases(id) on delete set null,
   action_template_id uuid references app.action_templates(id) on delete set null,
+  action_committee_id uuid references app.action_committees(id) on delete set null,
   title text not null,
   instructions text not null,
   assigned_to_user_id uuid references app.profiles(id),
@@ -220,10 +243,39 @@ create table app.assignments (
   check (assigned_to_user_id is not null or assigned_to_role_key is not null)
 );
 
+create table app.chapter_events (
+  id uuid primary key default gen_random_uuid(),
+  chapter_id uuid not null references app.chapters(id) on delete cascade,
+  campaign_id uuid references app.campaigns(id) on delete set null,
+  phase_id uuid references app.phases(id) on delete set null,
+  action_committee_id uuid references app.action_committees(id) on delete set null,
+  assignment_id uuid references app.assignments(id) on delete set null,
+  title text not null,
+  event_type text not null,
+  status app.chapter_event_status not null default 'idea',
+  planned_by_user_id uuid references app.profiles(id),
+  owner_user_id uuid references app.profiles(id),
+  starts_at timestamptz,
+  ends_at timestamptz,
+  promotion_summary text,
+  attendance_count integer check (attendance_count is null or attendance_count >= 0),
+  eligible_member_count integer check (eligible_member_count is null or eligible_member_count >= 0),
+  attendance_rate numeric,
+  nps_score numeric,
+  feedback_summary text,
+  warehouse_status app.external_sync_status not null default 'disabled',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table app.assignments
+add column chapter_event_id uuid references app.chapter_events(id) on delete set null;
+
 create table app.evidence_items (
   id uuid primary key default gen_random_uuid(),
-  assignment_id uuid not null references app.assignments(id) on delete cascade,
+  assignment_id uuid references app.assignments(id) on delete set null,
   chapter_id uuid not null references app.chapters(id) on delete cascade,
+  chapter_event_id uuid references app.chapter_events(id) on delete set null,
   submitted_by_user_id uuid not null references app.profiles(id),
   evidence_type app.evidence_type not null,
   summary text not null,
@@ -235,7 +287,8 @@ create table app.evidence_items (
   activity_label text,
   submitted_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  check (assignment_id is not null or chapter_event_id is not null)
 );
 
 create table app.approvals (
@@ -255,6 +308,7 @@ create table app.points_events (
   chapter_id uuid not null references app.chapters(id) on delete cascade,
   campaign_id uuid references app.campaigns(id) on delete set null,
   assignment_id uuid references app.assignments(id) on delete set null,
+  chapter_event_id uuid references app.chapter_events(id) on delete set null,
   evidence_item_id uuid references app.evidence_items(id) on delete set null,
   approval_id uuid references app.approvals(id) on delete set null,
   awarded_to_user_id uuid not null references app.profiles(id),
@@ -270,6 +324,7 @@ create table app.kpi_events (
   campaign_id uuid references app.campaigns(id) on delete set null,
   phase_id uuid references app.phases(id) on delete set null,
   assignment_id uuid references app.assignments(id) on delete set null,
+  chapter_event_id uuid references app.chapter_events(id) on delete set null,
   evidence_item_id uuid references app.evidence_items(id) on delete set null,
   metric_key text not null,
   metric_value numeric not null,
@@ -286,6 +341,7 @@ create table app.events (
   chapter_id uuid references app.chapters(id) on delete cascade,
   campaign_id uuid references app.campaigns(id) on delete set null,
   assignment_id uuid references app.assignments(id) on delete set null,
+  chapter_event_id uuid references app.chapter_events(id) on delete set null,
   payload jsonb not null default '{}'::jsonb,
   correlation_id text,
   occurred_at timestamptz not null default now(),
@@ -297,6 +353,7 @@ create table app.luma_event_links (
   chapter_id uuid not null references app.chapters(id) on delete cascade,
   campaign_id uuid references app.campaigns(id) on delete set null,
   phase_id uuid references app.phases(id) on delete set null,
+  chapter_event_id uuid references app.chapter_events(id) on delete set null,
   luma_event_id text,
   luma_event_url text,
   status app.external_sync_status not null default 'disabled',
@@ -306,6 +363,9 @@ create table app.luma_event_links (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table app.chapter_events
+add column luma_event_link_id uuid references app.luma_event_links(id) on delete set null;
 
 create table app.integration_events (
   id uuid primary key default gen_random_uuid(),
@@ -494,7 +554,9 @@ alter table app.coach_chapter_assignments enable row level security;
 alter table app.campaigns enable row level security;
 alter table app.phases enable row level security;
 alter table app.action_templates enable row level security;
+alter table app.action_committees enable row level security;
 alter table app.assignments enable row level security;
+alter table app.chapter_events enable row level security;
 alter table app.evidence_items enable row level security;
 alter table app.approvals enable row level security;
 alter table app.points_events enable row level security;
@@ -542,6 +604,14 @@ on app.assignments for all
 using (app.is_chapter_leader(chapter_id) or app.is_admin())
 with check (app.is_chapter_leader(chapter_id) or app.is_admin());
 
+create policy "chapter members can read action committees"
+on app.action_committees for select
+using (app.is_chapter_member(chapter_id) or app.is_coach_for_chapter(chapter_id) or app.is_admin());
+
+create policy "chapter members can read visible chapter events"
+on app.chapter_events for select
+using (app.is_chapter_member(chapter_id) or app.is_coach_for_chapter(chapter_id) or app.is_admin());
+
 create policy "assigned users can read assignments"
 on app.assignments for select
 using (
@@ -556,15 +626,29 @@ create policy "assigned users can create evidence"
 on app.evidence_items for insert
 with check (
   submitted_by_user_id = auth.uid()
-  and exists (
-    select 1
-    from app.assignments assignments
-    where assignments.id = assignment_id
-      and assignments.chapter_id = evidence_items.chapter_id
-      and (
-        assignments.assigned_to_user_id = auth.uid()
-        or app.has_chapter_role(assignments.chapter_id, array[assignments.assigned_to_role_key])
+  and (
+    exists (
+      select 1
+      from app.assignments assignments
+      where assignments.id = assignment_id
+        and assignments.chapter_id = evidence_items.chapter_id
+        and (
+          assignments.assigned_to_user_id = auth.uid()
+          or app.has_chapter_role(assignments.chapter_id, array[assignments.assigned_to_role_key])
+        )
+    )
+    or exists (
+      select 1
+      from app.chapter_events chapter_events
+      where chapter_events.id = chapter_event_id
+        and chapter_events.chapter_id = evidence_items.chapter_id
+        and (
+          chapter_events.owner_user_id = auth.uid()
+          or chapter_events.planned_by_user_id = auth.uid()
+          or app.is_chapter_member(chapter_events.chapter_id)
+        )
       )
+    )
   )
 );
 

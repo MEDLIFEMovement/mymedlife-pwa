@@ -48,6 +48,21 @@ Chapter leaders and Action Committee leaders can submit and organize this
 material. MEDLIFE HQ decides whether a testimonial/proof item should be shared
 with other chapters, universities, or public online surfaces.
 
+The main operating loop should be event-centered:
+
+1. A student or small group is assigned to plan a campus activity.
+2. The activity belongs to an Action Committee such as recruiting, fundraising,
+   local volunteering, social/community, or campaign support.
+3. The students create or link the activity in Luma.
+4. Members promote the activity online and on campus.
+5. Students attend the activity.
+6. MEDLIFE records attendance totals, participation rate, basic NPS/feedback,
+   and testimonials or bridge videos.
+7. MEDLIFE HQ decides which proof and learnings should be shared with other
+   chapters or universities.
+8. The warehouse later stores cross-chapter event performance so MEDLIFE can see
+   what is working.
+
 ## Auth Model
 
 Use Supabase Auth for identity. The app should not store passwords or auth
@@ -244,6 +259,60 @@ Key fields:
 - `created_at timestamptz not null`
 - `updated_at timestamptz not null`
 
+### `action_committees`
+
+Chapter committee lane that organizes campus events and campaign activity.
+
+Key fields:
+
+- `id uuid primary key`
+- `chapter_id uuid not null references chapters(id)`
+- `name text not null`
+- `committee_type text not null`
+- `status committee_status not null`
+- `chair_user_id uuid references profiles(id)`
+- `created_at timestamptz not null`
+- `updated_at timestamptz not null`
+
+Examples include fundraising, local volunteering, recruiting, social/community,
+and campaign-specific committees.
+
+### `chapter_events`
+
+Campus activity planned by an Action Committee or chapter leader. This is the
+operating object for fundraisers, local volunteering events, med talks, social
+events, recruiting events, and similar activities.
+
+Key fields:
+
+- `id uuid primary key`
+- `chapter_id uuid not null references chapters(id)`
+- `campaign_id uuid references campaigns(id)`
+- `phase_id uuid references phases(id)`
+- `action_committee_id uuid references action_committees(id)`
+- `assignment_id uuid references assignments(id)`
+- `luma_event_link_id uuid references luma_event_links(id)`
+- `title text not null`
+- `event_type text not null`
+- `status chapter_event_status not null`
+- `planned_by_user_id uuid references profiles(id)`
+- `owner_user_id uuid references profiles(id)`
+- `starts_at timestamptz`
+- `ends_at timestamptz`
+- `promotion_summary text`
+- `attendance_count integer`
+- `eligible_member_count integer`
+- `attendance_rate numeric`
+- `nps_score numeric`
+- `feedback_summary text`
+- `warehouse_status external_sync_status not null`
+- `created_at timestamptz not null`
+- `updated_at timestamptz not null`
+
+This table should let MEDLIFE answer: what did the committee run, who owned it,
+how many students came, what percentage of the chapter participated, what was
+the feedback, and should other universities copy it?
+
 ### `assignments`
 
 Concrete action assigned to a user or role inside a chapter.
@@ -255,6 +324,8 @@ Key fields:
 - `campaign_id uuid not null references campaigns(id)`
 - `phase_id uuid references phases(id)`
 - `action_template_id uuid references action_templates(id)`
+- `action_committee_id uuid references action_committees(id)`
+- `chapter_event_id uuid references chapter_events(id)`
 - `title text not null`
 - `instructions text not null`
 - `assigned_to_user_id uuid references profiles(id)`
@@ -279,8 +350,9 @@ references.
 Key fields:
 
 - `id uuid primary key`
-- `assignment_id uuid not null references assignments(id)`
+- `assignment_id uuid references assignments(id)`
 - `chapter_id uuid not null references chapters(id)`
+- `chapter_event_id uuid references chapter_events(id)`
 - `submitted_by_user_id uuid not null references profiles(id)`
 - `evidence_type evidence_type not null`
 - `summary text not null`
@@ -293,6 +365,8 @@ Key fields:
 - `submitted_at timestamptz not null`
 - `created_at timestamptz not null`
 - `updated_at timestamptz not null`
+
+At least one of `assignment_id` or `chapter_event_id` should be set.
 
 ### `approvals`
 
@@ -323,6 +397,7 @@ Key fields:
 - `chapter_id uuid not null references chapters(id)`
 - `campaign_id uuid references campaigns(id)`
 - `assignment_id uuid references assignments(id)`
+- `chapter_event_id uuid references chapter_events(id)`
 - `evidence_item_id uuid references evidence_items(id)`
 - `approval_id uuid references approvals(id)`
 - `awarded_to_user_id uuid not null references profiles(id)`
@@ -342,6 +417,7 @@ Key fields:
 - `campaign_id uuid references campaigns(id)`
 - `phase_id uuid references phases(id)`
 - `assignment_id uuid references assignments(id)`
+- `chapter_event_id uuid references chapter_events(id)`
 - `evidence_item_id uuid references evidence_items(id)`
 - `metric_key text not null`
 - `metric_value numeric not null`
@@ -352,7 +428,8 @@ Key fields:
 
 ### `events`
 
-Structured internal event stream for meaningful app actions.
+Structured internal product event stream for meaningful app actions. This is
+different from `chapter_events`, which are real campus activities.
 
 Key fields:
 
@@ -362,6 +439,7 @@ Key fields:
 - `chapter_id uuid references chapters(id)`
 - `campaign_id uuid references campaigns(id)`
 - `assignment_id uuid references assignments(id)`
+- `chapter_event_id uuid references chapter_events(id)`
 - `payload jsonb not null`
 - `correlation_id text`
 - `occurred_at timestamptz not null`
@@ -375,6 +453,10 @@ Example event types:
 - `campaign_opened`
 - `action_assigned`
 - `action_started`
+- `chapter_event_planned`
+- `chapter_event_promoted`
+- `chapter_event_completed`
+- `chapter_event_attendance_recorded`
 - `testimonial_submitted`
 - `testimonial_approved_for_sharing`
 - `testimonial_not_shared`
@@ -398,6 +480,7 @@ Key fields:
 - `chapter_id uuid not null references chapters(id)`
 - `campaign_id uuid references campaigns(id)`
 - `phase_id uuid references phases(id)`
+- `chapter_event_id uuid references chapter_events(id)`
 - `luma_event_id text`
 - `luma_event_url text`
 - `status external_sync_status not null`
@@ -739,6 +822,8 @@ Can never access:
 | `campaigns` | chapter members, coach portfolio, admin | president/vp, admin | president/vp, admin | super admin only |
 | `phases` | chapter members, coach portfolio, admin | president/vp, admin | president/vp, admin | super admin only |
 | `action_templates` | chapter leaders, coach portfolio, admin | admin or president/vp from approved SOP | admin or president/vp | super admin only |
+| `action_committees` | chapter members, active coach assignments, admin | president/vp, admin | president/vp, action committee chair for own committee, admin | super admin only |
+| `chapter_events` | chapter members for visible events, active coach assignments, admin | action committee chairs, president/vp, admin | event owners, action committee chairs, president/vp, admin | super admin only |
 | `assignments` | assigned users/roles, chapter leaders, coach portfolio, admin | chapter leaders | chapter leaders, assigned owner for status only | super admin only |
 | `evidence_items` | submitter, chapter leaders for chapter activity status, active coach assignments, admin | assigned user or chapter organizer | submitter before HQ review, staff for sharing status | super admin only |
 | `approvals` | submitter, HQ staff, admin, DS admin, super admin | authorized HQ staff/admin | no normal update after create | super admin only |
@@ -809,6 +894,8 @@ Audit logs are required for:
 - coach assignment changes and coach handoffs
 - campaign open/close decisions
 - assignment creation or reassignment
+- action committee creation or chair changes
+- chapter event planning, promotion, attendance, feedback, and warehouse sync
 - testimonial/proof submissions
 - HQ testimonial sharing decisions
 - points awards or corrections
@@ -832,9 +919,14 @@ Recommended changes before Goal 5 implementation:
   rows or add a separate app view model that groups membership roles for UI.
 - Add stable role keys to TypeScript instead of relying only on display labels.
 - Add `chapterId`, `campaignId`, `phaseId`, `assignedToUserId`,
-  `assignedToRoleKey`, and `assignedByUserId` to `Assignment` persistence types.
+  `assignedToRoleKey`, `actionCommitteeId`, `chapterEventId`, and
+  `assignedByUserId` to `Assignment` persistence types.
+- Add `ActionCommittee` and `ChapterEvent` persistence types. `ChapterEvent`
+  should represent campus events, while `Event` should remain the internal app
+  event log.
 - Add `submittedByUserId`, `url`, `storagePath`, `sharingStatus`, `npsScore`,
-  `activityLabel`, and `submittedAt` to `EvidenceItem` persistence types.
+  `activityLabel`, `chapterEventId`, and `submittedAt` to `EvidenceItem`
+  persistence types.
 - Treat `Approval` as an HQ content-sharing review record, not an E-Board proof
   review. Add `reviewerUserId`, `reviewType`, and `reviewedAt`.
 - Add a `CoachChapterAssignment` persistence type for expansion and portfolio
@@ -878,13 +970,14 @@ yet.
    Current draft uses submitted, in HQ review, approved for sharing, not shared,
    and archived.
 2. Should NPS scores be stored directly on testimonial/proof rows, only as KPI
-   events, or both?
+   events, on chapter events, or all three with a clear source of truth?
 3. Should coach assignment history be visible to chapter leaders, or only to
    coaches/admins?
 4. Which staff roles besides Admin can decide that a testimonial should be
    shared with other universities or public online surfaces?
 5. Should DS Admins be separate from Super Admins in production from day one, or
    should one trusted group hold both roles during the first pilot?
+6. Which Action Committee types should be canonical in the database at launch?
 
 ## Goal 4 Assumptions
 

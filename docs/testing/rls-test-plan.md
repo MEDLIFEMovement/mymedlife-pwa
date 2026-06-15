@@ -6,8 +6,9 @@ this goal.
 ## Purpose
 
 Before myMEDLIFE uses live Supabase data, the team should prove that row-level
-security protects chapter data, role boundaries, coach assignment access,
-testimonial/proof submissions, admin actions, event logs, and outbox records.
+security protects chapter data, role boundaries, Action Committee activity,
+chapter events, coach assignment access, testimonial/proof submissions, admin
+actions, event logs, and outbox records.
 
 ## Recommended Test Setup
 
@@ -34,9 +35,10 @@ Seed these records:
 - two chapters
 - approved and requested memberships
 - one active Rush Month campaign per chapter
-- phases, action templates, assignments, testimonial/proof submissions, HQ
-  sharing decisions, coach assignments, points events, KPI events, NPS records,
-  internal events, Luma links, integration events, outbox rows, and audit logs
+- phases, action templates, Action Committees, chapter events,
+  testimonial/proof submissions, HQ sharing decisions, coach assignments, points
+  events, KPI events, NPS records, internal events, Luma links, integration
+  events, outbox rows, and audit logs
 
 ## Test Groups
 
@@ -66,6 +68,20 @@ Seed these records:
 - Chapter leaders can create and update chapter assignments.
 - Assigned users can update only allowed status fields, not points, ownership,
   or review state.
+
+### Action Committee And Chapter Event Access
+
+- Action Committee members can read events for their committee and chapter.
+- Event owners can update planning and promotion status for their assigned
+  event.
+- Action Committee Chairs can create or request Luma-linked chapter events for
+  their committee when enabled.
+- Members can see visible chapter events and friendly participation outcomes.
+- General Members cannot see leadership-only SOP/KPI data for the event.
+- Chapter leaders and coaches can read attendance count, participation rate,
+  NPS summary, and feedback summary at the appropriate operating level.
+- DS Admin can see warehouse sync status, but chapter leaders cannot trigger
+  warehouse exports directly.
 
 ### Testimonial And Proof Access
 
@@ -136,6 +152,7 @@ Use the smallest standard setup consistent with the repo when Goal 5 begins:
 The RLS test suite should pass only when:
 
 - chapter access is isolated
+- Action Committee event access matches chapter and committee roles
 - coach assignments and coach handoffs are isolated
 - role approvals are limited to authorized roles
 - testimonial/proof and HQ sharing rules match the product plan
