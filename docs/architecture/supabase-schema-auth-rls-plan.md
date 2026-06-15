@@ -30,6 +30,32 @@ n8n should remain an external orchestration layer. It can later consume approved
 outbox rows, but it should not own permissions, membership truth, assignments,
 testimonial sharing decisions, points, KPIs, or the student-facing experience.
 
+## Why This App Exists
+
+myMEDLIFE exists because MEDLIFE's strongest chapters behave like student
+action systems, not passive meeting clubs. The chapters that grow the movement
+run events, create Action Committee ownership, assign real work, recognize
+contributors, track points and KPIs, and share proof of what worked. Weaker
+chapters often default to general body meetings where leaders talk at students,
+which creates less energy, less ownership, and fewer student leaders.
+
+The app should help MEDLIFE turn its best chapter behaviors into a repeatable
+operating model. SOPs and playbooks should be treated as living best-practice
+systems, not static manuals. As chapters run campaigns, organize Luma events,
+submit testimonials, record NPS/feedback, and surface successful tactics, the
+platform should make those learnings easier for coaches and HQ to review,
+package, and share across universities.
+
+Proof is central to this model because it breaks self-limiting beliefs. If one
+chapter can send 100 students on SLTs, raise tens of thousands of dollars, or
+create a highly active Action Committee rhythm, the system should help capture
+how that happened and make it believable to chapters that do not yet think it is
+possible. The product should preserve local chapter personality while making
+the proven operating loop repeatable:
+
+`campaign -> committee/action lane -> event/action -> proof -> points/KPIs ->
+recognition -> shared best practice -> stronger chapters`
+
 ## Clarified Operating Model
 
 In myMEDLIFE, "proof" usually means a student testimonial, bridge video, link,
