@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 8: local data connection and read-only app foundation.
+The active goal is Goal 9: local actor context and role-aware read-only foundation.
 
 Allowed:
 
@@ -170,6 +170,10 @@ Allowed:
 - local Supabase environment documentation and `.env.example`
 - small read-only data-access/service functions
 - connecting `/chapter`, `/rush-month`, or `/coach` to read-only local data
+- adding local-only fake actor context from seed profiles, memberships, staff
+  roles, and coach assignments
+- showing role-aware read-only context for fake member, leader, coach, admin,
+  DS admin, and super admin users
 - loading, empty, fallback, and error states
 - tests for read-only services and fallback behavior
 - README and documentation updates
@@ -179,6 +183,7 @@ Not allowed without Nick's next approval:
 
 - production Supabase connection or linked project changes
 - live Supabase auth wiring in the student UI
+- real browser sessions, cookies, sign-in flows, or production auth
 - app write paths to Supabase
 - real users or real role assignments
 - real HubSpot writes

@@ -2,15 +2,21 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
+import { LocalActorNotice } from "@/components/local-actor-notice";
 import { MetricCard } from "@/components/metric-card";
+import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 
 export default async function RushMonthPage() {
-  const data = await getReadOnlyAppData();
+  const [data, actor] = await Promise.all([
+    getReadOnlyAppData(),
+    getLocalActorContext(),
+  ]);
 
   return (
     <AppShell>
       <DataSourceNotice source={data.source} />
+      <LocalActorNotice actor={actor} />
 
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">

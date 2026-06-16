@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 8: local data connection and read-only app foundation.
+The current goal is Goal 9: local actor context and role-aware read-only foundation.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -31,8 +31,12 @@ Goal 7 implements that plan locally by adding campaign templates, phase
 templates, campaign officer lanes, readiness reviews, risk flags, closeouts,
 expanded proof/evidence types, fake seed data, and RLS/security tests.
 
-Goal 8 adds the first safe read-only bridge from the app to local Supabase data
+Goal 8 added the first safe read-only bridge from the app to local Supabase data
 while keeping mock data as the default fallback.
+
+Goal 9 adds a local-only actor context layer so developers can test fake member,
+leader, coach, admin, DS admin, and super admin read context without enabling
+production auth or app writes.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, implement app writes, or enable external writes until Nick approves
@@ -133,6 +137,7 @@ cp .env.example .env.local
 # Set MYMEDLIFE_DATA_SOURCE=supabase
 # Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true
 # Set SUPABASE_SERVICE_ROLE_KEY to the local service role key printed by Supabase
+# Optional: set MYMEDLIFE_LOCAL_ACTOR_EMAIL to one of the fake seed users
 pnpm supabase:start
 pnpm supabase:reset
 pnpm dev
@@ -149,6 +154,7 @@ MYMEDLIFE_DATA_SOURCE=mock
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=false
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
+MYMEDLIFE_LOCAL_ACTOR_EMAIL=member.a@mymedlife.test
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
@@ -159,6 +165,8 @@ Rules:
   Supabase.
 - Goal 8 only permits localhost Supabase reads. Non-local Supabase URLs fall
   back to mock data.
+- Goal 9 actor switching is local-only and reads fake seed users by email. It
+  does not add browser sign-in, sessions, cookies, or production auth.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -167,11 +175,12 @@ Rules:
 
 The app currently uses mock data by default. When local Supabase env vars are
 explicitly enabled, these server-rendered routes can read fake local Supabase
-data:
+data and fake local actor context:
 
 - `/chapter`
 - `/rush-month`
 - `/coach`
+- `/admin`
 
 There is no live Supabase auth, app write path, production database connection,
 HubSpot write, Luma write, warehouse export, Power BI export, n8n workflow, or
@@ -228,6 +237,12 @@ Goal 8 read-only app foundation lives in:
 - `src/components/data-source-notice.tsx`
 - `tests/supabase-readonly.test.ts`
 - `tests/read-only-app-data.test.ts`
+
+Goal 9 local actor context lives in:
+
+- `src/services/local-actor-context.ts`
+- `src/components/local-actor-notice.tsx`
+- `tests/local-actor-context.test.ts`
 
 ## Linear Lane
 
