@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 42: proof-sharing review states with production data,
+The current goal is Goal 43: member recognition with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -208,6 +208,10 @@ Goal 42 adds structured proof-sharing review states to `/proof-library`.
 Leaders, coaches, admins, and super admins can see whether proof/testimonials
 need consent/context, HQ review, internal learning use, or future public review.
 Public publishing and external exports remain disabled.
+
+Goal 43 adds clearer member recognition to `/rush-month/dashboard`. Members can
+see rank, points, recognition, friendly leaderboard context, and understandable
+chapter impact while DS Admin remains restricted from student points truth.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
