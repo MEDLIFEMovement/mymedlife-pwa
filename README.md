@@ -10,10 +10,10 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 62: local proof/testimonial metadata submission from
-the browser after a member starts an assigned action. This remains local-only
-and requires fake local Supabase Auth, a UUID assignment, explicit local write
-flags, and proof uploads disabled. Production data, most browser writes, admin
+The current goal is Goal 63: local HQ proof/testimonial decision recording from
+the browser after proof metadata exists. This remains local-only and requires
+fake local Supabase Auth, a UUID evidence item, explicit local write flags, and
+public proof sharing disabled. Production data, most browser writes, admin
 mutation controls, reminder automation, escalation packets, uploads, public
 proof sharing, and external integrations remain disabled.
 
@@ -306,9 +306,16 @@ and local write posture as Goal 60, plus
 records metadata only through the existing audited database function and does
 not upload files, publish proof, or send automation.
 
+Goal 63 adds the third local browser-to-Supabase write path for
+`hq_sharing_decision` on `/rush-month/review`. It lets fake local Admin or
+Super Admin users record HQ proof-sharing decisions through the existing
+audited database function, while still refusing public proof publishing and all
+external automation.
+
 Do not connect production Supabase, create real users, enable browser app
-writes beyond the approved local action-start and proof metadata slices, or
-enable external writes until Nick approves a later implementation goal.
+writes beyond the approved local action-start, proof metadata, and HQ proof
+decision slices, or enable external writes until Nick approves a later
+implementation goal.
 
 ## Recommended Stack
 
@@ -411,6 +418,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 60 action-start server action](./docs/architecture/goal-60-action-start-server-action.md)
 - [Goal 61 action-start readback proof](./docs/architecture/goal-61-action-start-readback.md)
 - [Goal 62 proof submission server action](./docs/architecture/goal-62-proof-submission-server-action.md)
+- [Goal 63 HQ proof decision server action](./docs/architecture/goal-63-hq-proof-decision-server-action.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -475,6 +483,7 @@ MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=false
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false
 MYMEDLIFE_ENABLE_ACTION_START_WRITE=false
 MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=false
+MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE=false
 MYMEDLIFE_ALLOW_PROOF_UPLOADS=false
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
@@ -618,6 +627,10 @@ Rules:
   It requires local Supabase Auth, a fake seed user, local write flags, an
   in-progress or changes-requested assignment, and uploads disabled. It does
   not upload files, publish proof, or trigger external sends.
+- Goal 63 adds the third local server action for HQ proof/testimonial sharing
+  decisions. It requires local Supabase Auth, a fake Admin or Super Admin seed
+  user, local write flags, a UUID evidence item, and public sharing disabled.
+  It does not publish proof or trigger external sends.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -812,6 +825,15 @@ Goal 62 local proof/testimonial metadata server action lives in:
 - `src/components/proof-submission-server-action-panel.tsx`
 - `src/services/proof-submission-write.ts`
 - `tests/proof-submission-write.test.ts`
+
+Goal 63 local HQ proof decision server action lives in:
+
+- `docs/architecture/goal-63-hq-proof-decision-server-action.md`
+- `src/app/rush-month/review/actions.ts`
+- `src/app/rush-month/review/page.tsx`
+- `src/components/hq-proof-decision-server-action-panel.tsx`
+- `src/services/hq-proof-decision-write.ts`
+- `tests/hq-proof-decision-write.test.ts`
 
 Goal 20 live-data connection planning lives in:
 

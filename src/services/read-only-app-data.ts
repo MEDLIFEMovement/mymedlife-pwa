@@ -1,5 +1,6 @@
 import {
   assignments as mockAssignments,
+  evidenceItems as mockEvidenceItems,
   integrationEvents,
   mockCampaign,
   mockChapter,
@@ -19,6 +20,7 @@ import type {
   Campaign,
   Chapter,
   ChapterRole,
+  EvidenceItem,
   IntegrationEvent,
   KpiSummary,
   OutboxItem,
@@ -32,6 +34,7 @@ import type {
   CampaignRow,
   CampaignTemplateRow,
   ChapterRow,
+  EvidenceItemRow,
   PhaseReadinessReviewRow,
   PhaseRow,
   RiskFlagRow,
@@ -58,6 +61,7 @@ export type ReadOnlyAppData = {
   readinessReviews: PhaseReadinessReviewRow[];
   riskFlags: RiskFlagRow[];
   closeouts: CampaignCloseoutRow[];
+  evidenceItems: EvidenceItem[];
   pointsSummary: PointsSummary;
   kpiSummary: KpiSummary;
   integrationEvents: IntegrationEvent[];
@@ -124,6 +128,13 @@ export async function getSupabaseReadOnlyAppData(
   );
   const riskFlags = snapshot.riskFlags.filter((item) => item.campaign_id === campaign.id);
   const closeouts = snapshot.closeouts.filter((item) => item.campaign_id === campaign.id);
+  const assignmentIds = new Set(assignments.map((item) => item.id));
+  const evidenceItems = snapshot.evidenceItems
+    .filter((item) => {
+      return item.chapter_id === chapter.id &&
+        (item.assignment_id === null || assignmentIds.has(item.assignment_id));
+    })
+    .map(toDomainEvidenceItem);
 
   return {
     source: {
@@ -141,6 +152,7 @@ export async function getSupabaseReadOnlyAppData(
     readinessReviews,
     riskFlags,
     closeouts,
+    evidenceItems,
     pointsSummary: calculatePointsSummary(assignments),
     kpiSummary: calculateKpiSummary(assignments, integrationEvents),
     integrationEvents,
@@ -160,6 +172,7 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     readinessReviews,
     riskFlags,
     closeouts,
+    evidenceItems,
   ] = await Promise.all([
     readChapters(client),
     readCampaigns(client),
@@ -171,6 +184,7 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     readReadinessReviews(client),
     readRiskFlags(client),
     readCloseouts(client),
+    readEvidenceItems(client),
   ]);
 
   return {
@@ -184,6 +198,7 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     readinessReviews,
     riskFlags,
     closeouts,
+    evidenceItems,
   };
 }
 
@@ -243,6 +258,12 @@ export function readCloseouts(client: SupabaseReadonlyClient) {
   });
 }
 
+export function readEvidenceItems(client: SupabaseReadonlyClient) {
+  return client.selectRows<EvidenceItemRow>("evidence_items", {
+    query: { order: "submitted_at.desc.nullslast" },
+  });
+}
+
 export function getMockReadOnlyAppData(
   message: string,
   status: DataSourceStatus = "mock_fallback",
@@ -263,6 +284,7 @@ export function getMockReadOnlyAppData(
     readinessReviews: [],
     riskFlags: [],
     closeouts: [],
+    evidenceItems: mockEvidenceItems,
     pointsSummary: calculatePointsSummary(mockAssignments),
     kpiSummary: calculateKpiSummary(mockAssignments, integrationEvents),
     integrationEvents,
@@ -302,6 +324,17 @@ function toDomainAssignment(row: AssignmentRow): Assignment {
     instructions: row.instructions,
     points: row.points,
     kpi: row.kpi_key,
+  };
+}
+
+function toDomainEvidenceItem(row: EvidenceItemRow): EvidenceItem {
+  return {
+    id: row.id,
+    assignmentId: row.assignment_id ?? row.chapter_event_id ?? row.id,
+    submittedBy: "Local Supabase member",
+    evidenceType: row.evidence_type,
+    summary: row.summary,
+    status: row.status === "rejected" ? "changes_requested" : row.status,
   };
 }
 

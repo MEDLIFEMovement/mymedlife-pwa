@@ -32,6 +32,7 @@ describe("read-only app data service", () => {
       "phase_readiness_reviews",
       "risk_flags",
       "campaign_closeouts",
+      "evidence_items",
     ]);
   });
 
@@ -54,6 +55,13 @@ describe("read-only app data service", () => {
     expect(data.readinessReviews).toHaveLength(1);
     expect(data.riskFlags).toHaveLength(1);
     expect(data.closeouts).toHaveLength(1);
+    expect(data.evidenceItems).toEqual([
+      expect.objectContaining({
+        id: "evidence-1",
+        assignmentId: "assignment-1",
+        status: "pending_review",
+      }),
+    ]);
   });
 });
 
@@ -251,6 +259,31 @@ const fakeRows: Record<string, unknown[]> = {
       next_handoff: null,
       submitted_at: null,
       validated_at: null,
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  evidence_items: [
+    {
+      id: "evidence-1",
+      assignment_id: "assignment-1",
+      chapter_id: "chapter-1",
+      chapter_event_id: null,
+      submitted_by_user_id: "member-1",
+      evidence_type: "testimonial_text",
+      summary: "This local testimonial explains why the invite push mattered.",
+      url: null,
+      storage_path: null,
+      target_audiences: ["student"],
+      proof_categories: ["rush_month"],
+      messenger_type: "student",
+      lifecycle_stage: "rush_month",
+      hesitation_addressed: "Will I belong?",
+      status: "pending_review",
+      sharing_status: "submitted",
+      nps_score: null,
+      activity_label: "Invite push",
+      submitted_at: "2026-06-15T00:00:00Z",
       created_at: "2026-06-15T00:00:00Z",
       updated_at: "2026-06-15T00:00:00Z",
     },

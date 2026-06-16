@@ -11,12 +11,13 @@ describe("environment safety summary", () => {
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "false",
       MYMEDLIFE_ENABLE_ACTION_START_WRITE: "false",
       MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "false",
+      MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "false",
       MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
       MYMEDLIFE_LOCAL_ACTOR_EMAIL: "admin@mymedlife.test",
     });
 
     expect(summary.canReadSummary).toBe(true);
-    expect(summary.items).toHaveLength(8);
+    expect(summary.items).toHaveLength(9);
     expect(summary.counts.secretsShown).toBe(0);
     expect(summary.counts.browserWritesEnabled).toBe(0);
     expect(summary.counts.externalWritesEnabled).toBe(0);
@@ -28,13 +29,19 @@ describe("environment safety summary", () => {
     const summary = getEnvironmentSafetySummary(actor, {
       MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
       MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+      MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
       MYMEDLIFE_ALLOW_PROOF_UPLOADS: "true",
     });
 
-    expect(summary.counts.blocked).toBe(3);
+    expect(summary.counts.blocked).toBe(4);
     expect(
       summary.items.filter((item) => item.status === "blocked").map((item) => item.label),
-    ).toEqual(["Action-start write", "Proof metadata write", "Proof uploads"]);
+    ).toEqual([
+      "Action-start write",
+      "Proof metadata write",
+      "HQ proof decision write",
+      "Proof uploads",
+    ]);
   });
 
   it("counts the approved local action-start write without enabling external sends", () => {
@@ -68,6 +75,28 @@ describe("environment safety summary", () => {
       "Local Supabase writes",
       "Action-start write",
       "Proof metadata write",
+    ]);
+  });
+
+  it("counts approved local HQ proof decision writes without enabling public sharing", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const summary = getEnvironmentSafetySummary(actor, {
+      MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+      MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+      MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+      MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+    });
+
+    expect(summary.counts.browserWritesEnabled).toBe(3);
+    expect(summary.counts.externalWritesEnabled).toBe(0);
+    expect(
+      summary.items.filter((item) => item.status === "watch").map((item) => item.label),
+    ).toEqual([
+      "Local Supabase writes",
+      "Action-start write",
+      "Proof metadata write",
+      "HQ proof decision write",
     ]);
   });
 
