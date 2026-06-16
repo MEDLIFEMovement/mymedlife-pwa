@@ -161,10 +161,10 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 47: MVP release readiness with production data,
-enabled browser writes, admin mutation controls, reminder automation,
-escalation packets, uploads, public proof sharing, and external integrations
-still disabled.
+The active goal is Goal 48: mobile navigation and reviewer UX polish with
+production data, enabled browser writes, admin mutation controls, reminder
+automation, escalation packets, uploads, public proof sharing, and external
+integrations still disabled.
 
 Allowed:
 
@@ -326,6 +326,8 @@ Allowed:
 - a plain-English MVP release-readiness summary on `/admin` that marks the
   local app ready for stakeholder review but not live student launch until auth,
   writes, uploads, production setup, and integrations are approved
+- role-aware mobile quick navigation, active route styling, skip-link
+  accessibility, and reviewer UX polish that keep the app read-only/mock-safe
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

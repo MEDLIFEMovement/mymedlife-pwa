@@ -19,6 +19,10 @@ export type NavigationItem = {
   label: string;
 };
 
+export type MobileNavigationItem = NavigationItem & {
+  helper: string;
+};
+
 const baseNavigation: NavigationItem[] = [
   { href: "/chapter", label: "My Chapter" },
   { href: "/campaigns", label: "Campaigns" },
@@ -173,6 +177,62 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/rush-month/review", label: "Reviews" },
         { href: "/coach", label: "Coach" },
         { href: "/admin", label: "Super Admin" },
+      ];
+  }
+}
+
+export function getMobileQuickNavigationForActor(
+  actor?: LocalActorContext,
+): MobileNavigationItem[] {
+  if (!actor) {
+    return [
+      { href: "/", label: "Home", helper: "Start" },
+      { href: "/rush-month", label: "Rush", helper: "Campaign" },
+      { href: "/rush-month/actions", label: "Actions", helper: "Work" },
+      { href: "/admin", label: "Admin", helper: "Review" },
+    ];
+  }
+
+  switch (actor.audience) {
+    case "chapter_member":
+      return [
+        { href: "/rush-month/dashboard", label: "My Week", helper: "Next" },
+        { href: "/rush-month/actions", label: "Actions", helper: "Do" },
+        { href: "/proof-library", label: "Proof", helper: "Learn" },
+        { href: "/chapter", label: "Chapter", helper: "Home" },
+      ];
+    case "chapter_leader":
+      return [
+        { href: "/rush-month", label: "Rush", helper: "Plan" },
+        { href: "/rush-month/actions", label: "Team", helper: "Nudge" },
+        { href: "/rush-month/review", label: "Review", helper: "Proof" },
+        { href: "/rush-month/loop", label: "Loop", helper: "Demo" },
+      ];
+    case "coach":
+      return [
+        { href: "/rush-month/dashboard", label: "Health", helper: "Read" },
+        { href: "/rush-month/actions", label: "Work", helper: "Open" },
+        { href: "/coach", label: "Coach", helper: "Decide" },
+        { href: "/proof-library", label: "Proof", helper: "Belief" },
+      ];
+    case "admin":
+      return [
+        { href: "/admin", label: "Admin", helper: "Review" },
+        { href: "/proof-library", label: "Proof", helper: "HQ" },
+        { href: "/rush-month/dashboard", label: "Rush", helper: "Health" },
+        { href: "/coach", label: "Coach", helper: "Read" },
+      ];
+    case "ds_admin":
+      return [
+        { href: "/admin", label: "Outbox", helper: "Safety" },
+        { href: "/admin", label: "Checks", helper: "No sends" },
+      ];
+    case "super_admin":
+      return [
+        { href: "/admin", label: "Admin", helper: "Full" },
+        { href: "/rush-month", label: "Rush", helper: "Campaign" },
+        { href: "/rush-month/loop", label: "Loop", helper: "Demo" },
+        { href: "/coach", label: "Coach", helper: "Read" },
       ];
   }
 }
