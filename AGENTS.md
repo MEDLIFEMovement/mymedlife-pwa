@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 49: centralized local actor panels with
+The active goal is Goal 50: PWA install readiness with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -331,6 +331,10 @@ Allowed:
 - centralizing the local actor notice and role switcher in `AppShell` so
   actor-aware routes inherit consistent local-review context without duplicating
   page-level debug panels
+- static PWA install metadata, manifest configuration, and local app icons, as
+  long as service workers, offline caching, push notifications, live auth,
+  browser writes, uploads, public proof sharing, and external integrations stay
+  disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

@@ -16,6 +16,17 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "myMEDLIFE",
   description: "Mobile-first MEDLIFE chapter operating system for Rush Month.",
+  applicationName: "myMEDLIFE",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "myMEDLIFE",
+  },
+  icons: {
+    icon: [{ url: "/icons/my-medlife-icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icons/my-medlife-icon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({
