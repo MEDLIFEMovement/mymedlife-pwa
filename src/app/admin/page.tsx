@@ -7,6 +7,7 @@ import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-approval-plan-panel";
 import { WriteActivationReadinessPanel } from "@/components/write-activation-readiness-panel";
+import { WriteResultStateCoveragePanel } from "@/components/write-result-state-coverage-panel";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -16,6 +17,7 @@ import {
   getVisibleAdminPanelsForActor,
 } from "@/services/role-visibility";
 import { getWriteActivationReadinessSummary } from "@/services/write-activation-readiness";
+import { getWriteResultStateCoverageSummary } from "@/services/write-result-state-coverage";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,7 @@ export default async function AdminPage() {
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
+  const writeResultStateCoverage = getWriteResultStateCoverageSummary();
   const writeActivationSummary = getWriteActivationReadinessSummary(actor, {
     assignments: data.assignments,
     coachDecision: data.kpiSummary.coachDecision,
@@ -87,6 +90,7 @@ export default async function AdminPage() {
 
           <WriteActivationReadinessPanel summary={writeActivationSummary} />
           <WriteActivationApprovalPlanPanel plan={writeActivationApprovalPlan} />
+          <WriteResultStateCoveragePanel summary={writeResultStateCoverage} />
         </>
       ) : (
         <RestrictedState

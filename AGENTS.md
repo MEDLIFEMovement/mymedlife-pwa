@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 34: coach decision result states with production data,
+The active goal is Goal 35: result-state coverage review with production data,
 enabled browser writes, escalation packets, uploads, public proof sharing, and
 external integrations still disabled.
 
@@ -281,6 +281,9 @@ Allowed:
   intervene, disabled, escalation-disabled, auth, permission, portfolio,
   note, blocker-summary, and error messages without saving decisions, sending
   escalation packets, or enabling browser writes
+- an admin result-state coverage review that shows which first write candidates
+  have reviewed result states, keeps assignment creation marked missing until
+  covered, and does not treat coverage as activation approval
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
