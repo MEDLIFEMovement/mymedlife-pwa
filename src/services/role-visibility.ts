@@ -170,6 +170,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/coach", label: "Coach Read" },
         { href: "/admin", label: "HQ Admin" },
         { href: "/admin/first-write", label: "First Write" },
+        { href: "/admin/write-sequence", label: "Write Sequence" },
         { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
@@ -177,6 +178,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
       return [
         { href: "/admin", label: "Integration Outbox" },
         { href: "/admin/first-write", label: "First Write Safety" },
+        { href: "/admin/write-sequence", label: "Write Sequence Safety" },
         { href: "/admin/pilot-scope", label: "Pilot Safety" },
         { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
       ];
@@ -196,6 +198,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/coach", label: "Coach" },
         { href: "/admin", label: "Super Admin" },
         { href: "/admin/first-write", label: "First Write" },
+        { href: "/admin/write-sequence", label: "Write Sequence" },
         { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
@@ -240,21 +243,22 @@ export function getMobileQuickNavigationForActor(
       return [
         { href: "/admin", label: "Admin", helper: "Review" },
         { href: "/admin/first-write", label: "Write", helper: "Drill" },
+        { href: "/admin/write-sequence", label: "Sequence", helper: "Order" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
-        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "Staff" },
       ];
     case "ds_admin":
       return [
         { href: "/admin", label: "Outbox", helper: "Safety" },
         { href: "/admin/first-write", label: "Write", helper: "No sends" },
+        { href: "/admin/write-sequence", label: "Sequence", helper: "No sends" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "No sends" },
       ];
     case "super_admin":
       return [
         { href: "/admin", label: "Admin", helper: "Full" },
         { href: "/admin/first-write", label: "Write", helper: "Drill" },
+        { href: "/admin/write-sequence", label: "Sequence", helper: "Order" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
-        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "Staff" },
       ];
   }
 }

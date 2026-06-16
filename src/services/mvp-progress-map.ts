@@ -91,7 +91,7 @@ export function getMvpProgressMap(actor: LocalActorContext): MvpProgressMap {
     nextBestSteps: [
       "Run a stakeholder review of the local Rush Month loop and role-specific routes.",
       "Approve the production auth and onboarding boundary before real users are invited.",
-      "Choose the first production write path to harden, release, and monitor.",
+      "Use `/admin/write-sequence` to choose and prove each production write path in order.",
       "Approve proof upload, storage, consent, and public sharing rules before bridge videos go live.",
       "Keep n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, and AI writes disabled until each integration has an explicit approval plan.",
     ],
@@ -180,6 +180,7 @@ function getSubprojects(): MvpSubprojectProgress[] {
       risk: "high",
       routeEvidence: [
         "/admin/first-write",
+        "/admin/write-sequence",
         "/rush-month/actions",
         "/rush-month/actions/[assignmentId]",
         "/rush-month/review",
@@ -190,9 +191,9 @@ function getSubprojects(): MvpSubprojectProgress[] {
       technicalEvidence:
         "Server actions, result states, browser gates, and first-write drill coverage exist for action start, proof submission, HQ proof decision, leader assignment creation, and coach decision logging.",
       remainingWork:
-        "Run the localhost action-start drill, review readback/audit proof, then decide whether to promote the pattern to staging.",
+        "Run the localhost action-start drill, review readback/audit proof, then use the write sequence planner to promote the next write safely.",
       nextReviewStep:
-        "Open `/admin/first-write` and confirm every required local check before clicking the candidate action start.",
+        "Open `/admin/first-write` first, then `/admin/write-sequence` to review the next write promotion order.",
       totalWeight: 14,
       localReviewWeight: 10,
       liveMvpWeight: 7,

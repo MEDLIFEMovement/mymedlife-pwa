@@ -8,7 +8,7 @@ describe("stakeholder review plan", () => {
     const plan = getStakeholderReviewPlan(actor);
 
     expect(plan.canReadPlan).toBe(true);
-    expect(plan.counts.steps).toBe(14);
+    expect(plan.counts.steps).toBe(15);
     expect(plan.counts.browserWritesExpected).toBe(0);
     expect(plan.counts.externalWritesExpected).toBe(0);
     expect(plan.steps.every((step) => step.safetyBoundary.length > 0)).toBe(true);
@@ -34,6 +34,7 @@ describe("stakeholder review plan", () => {
       "/admin/staff-dry-run",
       "/admin/pilot-scope",
       "/admin/first-write",
+      "/admin/write-sequence",
     ]);
   });
 

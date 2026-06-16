@@ -10,13 +10,17 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 76: first-write verification packet. This remains
-mock-safe by default and extends `/admin/first-write` so HQ reviewers have one
-operator-ready packet for local env settings, fake sign-in, the action-start
-route sequence, proof expectations, stop conditions, and the staging-review
-decision.
+The current goal is Goal 77: write sequence planner. This remains mock-safe by
+default and adds `/admin/write-sequence` so HQ reviewers can see the safe Rush
+Month write promotion order after the first-write packet: action-start, proof
+metadata, HQ proof decision, leader assignment creation, and coach decision
+logging.
 Production data, broad browser writes, admin mutation controls, real uploads,
 public proof sharing, and external integrations remain disabled.
+
+Goal 76 extended `/admin/first-write` so HQ reviewers have one operator-ready
+packet for local env settings, fake sign-in, the action-start route sequence,
+proof expectations, stop conditions, and the staging-review decision.
 
 Goal 75 extended `/admin/first-write` so HQ reviewers can see the expected
 post-drill readback evidence for assignment status, internal event, integration
@@ -497,6 +501,14 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 67 chapter membership workspace](./docs/architecture/goal-67-chapter-membership-workspace.md)
 - [Goal 68 proof upload intake readiness](./docs/architecture/goal-68-proof-upload-intake.md)
 - [Goal 69 Rush Month event readiness](./docs/architecture/goal-69-rush-month-event-readiness.md)
+- [Goal 70 design QA readiness](./docs/architecture/goal-70-design-qa-readiness.md)
+- [Goal 71 controlled pilot readiness](./docs/architecture/goal-71-controlled-pilot-readiness.md)
+- [Goal 72 staff dry-run guide](./docs/architecture/goal-72-staff-dry-run-guide.md)
+- [Goal 73 pilot scope planner](./docs/architecture/goal-73-pilot-scope-planner.md)
+- [Goal 74 first-write activation drill](./docs/architecture/goal-74-first-write-activation-drill.md)
+- [Goal 75 first-write readback evidence](./docs/architecture/goal-75-first-write-readback-evidence.md)
+- [Goal 76 first-write verification packet](./docs/architecture/goal-76-first-write-verification-packet.md)
+- [Goal 77 write sequence planner](./docs/architecture/goal-77-write-sequence-planner.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -758,10 +770,15 @@ data and fake local actor context. With or without local Supabase running,
 - `/proof-library/upload`
 - `/coach`
 - `/admin`
+- `/admin/first-write`
+- `/admin/write-sequence`
+- `/admin/pilot-scope`
+- `/admin/staff-dry-run`
 
-There is no live Supabase auth, browser app write path, production database
-connection, HubSpot write, Luma write, warehouse export, Power BI export, n8n
-workflow, or AI summary.
+There is no production Supabase auth, production database connection, broad
+browser write launch, HubSpot write, Luma write, warehouse export, Power BI
+export, n8n workflow, or AI summary. Local-only server action paths remain
+guarded behind fake local auth, localhost Supabase, and explicit env flags.
 
 Goal 2 route shells:
 
@@ -783,6 +800,10 @@ Goal 2 route shells:
 - `/proof-library/upload`: mock-safe proof upload intake readiness, consent/context checks, disabled upload controls, and future event/outbox posture
 - `/coach`: coach dashboard shell
 - `/admin`: admin/super-admin integration placeholder
+- `/admin/first-write`: staff-only first local action-start write drill
+- `/admin/write-sequence`: staff-only Rush Month write promotion planner
+- `/admin/pilot-scope`: first-pilot scope decision planner
+- `/admin/staff-dry-run`: fake-user staff rehearsal guide
 
 Mock Rush Month data lives in `src/data/mock-rush-month.ts`. Mock campaign,
 action committee, event, and proof library data lives in

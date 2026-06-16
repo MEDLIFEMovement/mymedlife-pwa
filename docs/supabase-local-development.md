@@ -23,6 +23,9 @@ Goals 74 through 76 add `/admin/first-write` so staff can inspect the first
 action-start write drill, review post-drill readback evidence, and use one
 operator-ready packet for env settings, fake sign-in, route sequence, proof
 expectations, stop conditions, and staging-review posture.
+Goal 77 adds `/admin/write-sequence` so staff can see the safe write promotion
+order after that first action-start proof: proof metadata, HQ proof decision,
+leader assignment creation, and coach decision logging.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
@@ -198,6 +201,13 @@ or AI writes.
   conditions.
 - `tests/first-write-activation-drill.test.ts`: unit tests for first-write
   readiness, readback evidence, and packet decision states.
+- `src/services/write-sequence-planner.ts`: staff-only promotion map for the
+  local Rush Month write sequence, expected tables, events, audit evidence, and
+  disabled outbox posture.
+- `src/components/write-sequence-planner-panel.tsx`: `/admin/write-sequence`
+  panel for reviewing the next safe write after the first action-start drill.
+- `tests/write-sequence-planner.test.ts`: unit tests proving write-sequence
+  visibility, DS Admin safety review, route order, and zero external sends.
 
 ## Requirements
 

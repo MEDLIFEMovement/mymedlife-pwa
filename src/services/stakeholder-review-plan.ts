@@ -171,6 +171,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "The drill does not approve production writes and must keep proof uploads, other browser writes, and external sends disabled.",
   },
+  {
+    id: "write-sequence",
+    title: "Review the Rush Month write sequence",
+    route: "/admin/write-sequence",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see why action-start is the first write to prove, which writes follow, what evidence each write must create, and what external sends stay disabled.",
+    safetyBoundary:
+      "The sequence planner is a promotion map only and must not enable auth, uploads, browser writes, public proof sharing, or external automation.",
+  },
 ];
 
 export function getStakeholderReviewPlan(

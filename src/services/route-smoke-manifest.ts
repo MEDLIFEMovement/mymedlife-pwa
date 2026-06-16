@@ -192,6 +192,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "The drill must not enable production auth, broad browser writes, uploads, public proof sharing, or external automation.",
   },
   {
+    path: "/admin/write-sequence",
+    label: "Rush Month write sequence planner",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ staff can see the safe promotion order for action-start, proof metadata, HQ proof decisions, leader assignments, and coach decisions.",
+    safetyAssertion:
+      "The planner must not enable production auth, browser writes, proof uploads, public proof sharing, or external automation.",
+  },
+  {
     path: "/admin/pilot-scope",
     label: "First pilot scope planner",
     priority: "critical",
