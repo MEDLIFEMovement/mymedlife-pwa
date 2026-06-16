@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
+import { AdminGlossaryPanel } from "@/components/admin-glossary-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { MetricCard } from "@/components/metric-card";
@@ -13,6 +14,7 @@ import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-
 import { WriteActivationReadinessPanel } from "@/components/write-activation-readiness-panel";
 import { WriteResultStateCoveragePanel } from "@/components/write-result-state-coverage-panel";
 import { getAdminControlCenterSummary } from "@/services/admin-control-center";
+import { getAdminGlossary } from "@/services/admin-glossary";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -41,6 +43,7 @@ export default async function AdminPage() {
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
   const adminControlCenter = getAdminControlCenterSummary(data);
+  const adminGlossary = getAdminGlossary(actor);
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
   const writeResultStateCoverage = getWriteResultStateCoverageSummary();
   const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
@@ -94,6 +97,7 @@ export default async function AdminPage() {
 
           <MvpReleaseReadinessPanel summary={releaseReadiness} />
           <StakeholderReviewPlanPanel plan={stakeholderReviewPlan} />
+          <AdminGlossaryPanel glossary={adminGlossary} />
           <section className="grid gap-3 md:grid-cols-2">
             {visiblePanels.map((panel) => (
               <article key={panel.key} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">

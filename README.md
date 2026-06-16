@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 54: stakeholder review path with
+The current goal is Goal 55: admin glossary with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -262,6 +262,10 @@ Goal 54 adds a no-code stakeholder review path to `/admin` so reviewers know
 which local actor email and route to use for member, leader, proof, coach, and
 admin safety review.
 
+Goal 55 adds a plain-English admin glossary for non-coder reviewers. It defines
+local actor, mock data, browser write, external send, outbox, proof, RLS, and
+stakeholder review.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -359,6 +363,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 52 route registry guard](./docs/architecture/goal-52-route-registry-guard.md)
 - [Goal 53 route coverage summary](./docs/architecture/goal-53-route-coverage-summary.md)
 - [Goal 54 stakeholder review path](./docs/architecture/goal-54-stakeholder-review-path.md)
+- [Goal 55 admin glossary](./docs/architecture/goal-55-admin-glossary.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -536,6 +541,9 @@ Rules:
 - Goal 54 adds an admin stakeholder review path. It does not enable auth,
   browser writes, uploads, public proof sharing, reminders, escalation packets,
   or external integrations.
+- Goal 55 adds a plain-English admin glossary. It does not enable auth, writes,
+  uploads, public proof sharing, external sends, reminders, escalation packets,
+  service workers, or production data.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
