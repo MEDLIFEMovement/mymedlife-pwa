@@ -1,13 +1,17 @@
 import {
   canCreateChapterAssignment,
+  canMakeHqSharingDecision,
   canSubmitProofForAssignment,
   createActionStartedMock,
   createChapterAssignmentMock,
+  createHqSharingDecisionMock,
   createProofSubmissionMock,
   type ChapterAssignmentInput,
+  type HqSharingDecisionInput,
   type LocalContractResult,
   type LocalActionStarted,
   type LocalAssignmentCreated,
+  type LocalHqSharingDecision,
   type LocalProofSubmission,
   type ProofSubmissionInput,
 } from "@/services/local-action-contracts";
@@ -15,7 +19,7 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import { canReadAssignment } from "@/services/role-visibility";
 import { getWritePlanOperation } from "@/services/write-plan-matrix";
 import { getWriteReadinessConfig } from "@/services/write-readiness";
-import type { Assignment } from "@/shared/types/domain";
+import type { Assignment, EvidenceItem } from "@/shared/types/domain";
 
 type EnvSource = Record<string, string | undefined>;
 
@@ -23,6 +27,7 @@ export type ActivationCheckKey =
   | "actor_can_read_assignment"
   | "actor_can_create_assignment"
   | "actor_can_submit_proof"
+  | "actor_can_make_hq_sharing_decision"
   | "actor_allowed_by_write_plan"
   | "local_database_function_exists"
   | "rls_tests_exist"
@@ -38,13 +43,18 @@ export type ActivationCheck = {
 };
 
 export type BrowserWriteActivationGate = {
-  operation: "action_started" | "action_assigned" | "evidence_submitted";
-  route: "/rush-month/actions/[assignmentId]" | "/rush-month/actions";
+  operation:
+    | "action_started"
+    | "action_assigned"
+    | "evidence_submitted"
+    | "hq_sharing_decision";
+  route: "/rush-month/actions/[assignmentId]" | "/rush-month/actions" | "/rush-month/review";
   label: string;
   localFunction:
     | "app.start_assignment_action"
     | "app.create_chapter_assignment"
-    | "app.submit_assignment_proof_metadata";
+    | "app.submit_assignment_proof_metadata"
+    | "app.record_hq_proof_sharing_decision";
   functionSignature: string;
   status: "blocked_until_approval";
   canRenderEnabledControl: false;
@@ -52,7 +62,10 @@ export type BrowserWriteActivationGate = {
   nextApprovalNeeded: string;
   checks: ActivationCheck[];
   preview: LocalContractResult<
-    LocalActionStarted | LocalAssignmentCreated | LocalProofSubmission
+    | LocalActionStarted
+    | LocalAssignmentCreated
+    | LocalProofSubmission
+    | LocalHqSharingDecision
   >;
 };
 
@@ -281,6 +294,82 @@ export function getProofSubmissionBrowserWriteGate(
       },
     ],
     preview: createProofSubmissionMock(actor, assignment, input),
+  };
+}
+
+export function getHqSharingDecisionBrowserWriteGate(
+  actor: LocalActorContext,
+  evidenceItem: EvidenceItem,
+  input: HqSharingDecisionInput,
+  env: EnvSource = process.env,
+): BrowserWriteActivationGate {
+  const writePlan = getWritePlanOperation("hq_sharing_decision");
+  const writeReadiness = getWriteReadinessConfig(env);
+  const actorCanMakeDecision = canMakeHqSharingDecision(actor);
+  const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+
+  return {
+    operation: "hq_sharing_decision",
+    route: "/rush-month/review",
+    label: "Record HQ proof-sharing decision browser write",
+    localFunction: "app.record_hq_proof_sharing_decision",
+    functionSignature:
+      "app.record_hq_proof_sharing_decision(evidence_uuid, decision_input, review_note)",
+    status: "blocked_until_approval",
+    canRenderEnabledControl: false,
+    envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
+    nextApprovalNeeded: approvalMessage,
+    checks: [
+      {
+        key: "actor_can_make_hq_sharing_decision",
+        label: "Current local actor can make HQ sharing decisions",
+        passed: actorCanMakeDecision,
+        detail: actorCanMakeDecision
+          ? `${actor.audienceLabel} can shape HQ proof-sharing decisions in the local contract.`
+          : `${actor.audienceLabel} cannot decide whether proof is shared broadly.`,
+      },
+      {
+        key: "actor_allowed_by_write_plan",
+        label: "Actor is allowed by the planned write matrix",
+        passed: actorAllowedByPlan,
+        detail: actorAllowedByPlan
+          ? `${actor.audienceLabel} is allowed for HQ sharing decisions in the write plan.`
+          : `${actor.audienceLabel} is blocked from HQ sharing decisions in the write plan.`,
+      },
+      {
+        key: "local_database_function_exists",
+        label: "Local database function exists",
+        passed: true,
+        detail: "Goal 16 implemented app.record_hq_proof_sharing_decision(...).",
+      },
+      {
+        key: "rls_tests_exist",
+        label: "RLS/security tests exist",
+        passed: true,
+        detail:
+          "supabase/tests/database/rls_goal_16.test.sql proves direct approval inserts are blocked and HQ sharing decisions are function-gated.",
+      },
+      {
+        key: "external_writes_disabled",
+        label: "External writes stay disabled",
+        passed: true,
+        detail:
+          "HQ decisions record internal events and a disabled outbox row; they do not publish proof or send warehouse/automation writes.",
+      },
+      {
+        key: "live_auth_approved",
+        label: "Live auth/browser session approved",
+        passed: false,
+        detail: "Live auth is still disabled, so browser identity cannot be trusted for real writes.",
+      },
+      {
+        key: "browser_write_approved",
+        label: "Browser write approval granted",
+        passed: false,
+        detail: writeReadiness.reason,
+      },
+    ],
+    preview: createHqSharingDecisionMock(actor, evidenceItem, input),
   };
 }
 

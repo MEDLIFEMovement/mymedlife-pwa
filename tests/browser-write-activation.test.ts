@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { assignments } from "@/data/mock-rush-month";
+import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import {
   getAssignmentCreateBrowserWriteGate,
   getActionStartBrowserWriteGate,
   getBlockingActivationChecks,
+  getHqSharingDecisionBrowserWriteGate,
   getPassedActivationChecks,
   getProofSubmissionBrowserWriteGate,
 } from "@/services/browser-write-activation";
@@ -91,6 +92,33 @@ describe("browser write activation gate", () => {
     ]);
   });
 
+  it("keeps HQ sharing decision browser control disabled for an allowed admin", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const evidence = evidenceItems[0];
+    const gate = getHqSharingDecisionBrowserWriteGate(actor, evidence, {
+      decision: "approved",
+      note: "Useful testimonial to share after HQ review.",
+    });
+
+    expect(gate.operation).toBe("hq_sharing_decision");
+    expect(gate.localFunction).toBe("app.record_hq_proof_sharing_decision");
+    expect(gate.functionSignature).toContain("app.record_hq_proof_sharing_decision");
+    expect(gate.canRenderEnabledControl).toBe(false);
+    expect(gate.status).toBe("blocked_until_approval");
+    expect(gate.preview.success).toBe(true);
+    expect(getPassedActivationChecks(gate).map((check) => check.key)).toEqual([
+      "actor_can_make_hq_sharing_decision",
+      "actor_allowed_by_write_plan",
+      "local_database_function_exists",
+      "rls_tests_exist",
+      "external_writes_disabled",
+    ]);
+    expect(getBlockingActivationChecks(gate).map((check) => check.key)).toEqual([
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
   it("does not enable browser writes when the local write env var is requested", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const assignment = requireAssignment("assign-eboard");
@@ -147,6 +175,27 @@ describe("browser write activation gate", () => {
       }),
     ).toEqual([
       "actor_can_submit_proof",
+      "actor_allowed_by_write_plan",
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
+  it("blocks chapter leaders from HQ proof-sharing decisions", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const evidence = evidenceItems[0];
+    const gate = getHqSharingDecisionBrowserWriteGate(actor, evidence, {
+      decision: "approved",
+      note: "Leader should not own HQ sharing decisions.",
+    });
+
+    expect(gate.preview.success).toBe(false);
+    expect(
+      getBlockingActivationChecks(gate).map((check) => {
+        return check.key;
+      }),
+    ).toEqual([
+      "actor_can_make_hq_sharing_decision",
       "actor_allowed_by_write_plan",
       "live_auth_approved",
       "browser_write_approved",
