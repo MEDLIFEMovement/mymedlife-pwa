@@ -10,9 +10,10 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 37: Rush Month local operating loop with production
-data, enabled browser writes, reminder automation, escalation packets, uploads,
-public proof sharing, and external integrations still disabled.
+The current goal is Goal 38: admin control center with production data, enabled
+browser writes, admin mutation controls, reminder automation, escalation
+packets, uploads, public proof sharing, and external integrations still
+disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -181,6 +182,11 @@ submission, local completion review, points/KPI movement, HQ sharing posture,
 coach decision, structured events, disabled outbox rows, and audit logs without
 writing to Supabase or sending external automation.
 
+Goal 38 adds a read-only admin control center to `/admin`. It names the MVP
+admin surfaces for users, roles, chapters, campaign templates, integration
+events, automation outbox, audit logs, and system health placeholders while
+keeping admin mutation controls disabled.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -261,6 +267,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 35 result-state coverage review](./docs/architecture/goal-35-result-state-coverage.md)
 - [Goal 36 assignment creation result states](./docs/architecture/goal-36-assignment-create-result-states.md)
 - [Goal 37 Rush Month local operating loop](./docs/architecture/goal-37-rush-month-local-loop.md)
+- [Goal 38 admin control center](./docs/architecture/goal-38-admin-control-center.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -414,6 +421,8 @@ Rules:
 - Goal 37 adds a browser-local Rush Month operating loop. It is interactive
   review evidence only; it still does not save to Supabase or send external
   automation.
+- Goal 38 adds a read-only admin control center. It names the required admin
+  MVP surfaces but does not enable admin mutations.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -729,6 +738,14 @@ Goal 37 Rush Month local operating loop lives in:
 - `tests/rush-month-local-loop.test.ts`
 - navigation entry in `src/services/role-visibility.ts`
 
+Goal 38 admin control center lives in:
+
+- `docs/architecture/goal-38-admin-control-center.md`
+- `src/services/admin-control-center.ts`
+- `src/components/admin-control-center-panel.tsx`
+- `tests/admin-control-center.test.ts`
+- visible admin control center panel on `/admin`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -747,14 +764,14 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 37
+## Definition of Done for Goal 38
 
-Goal 37 is complete when a human developer can open `/rush-month/loop`, click
-through the local Rush Month path, and see assignment state, proof state,
-points, KPIs, coach decision, events, disabled outbox rows, and audit logs
-update without Supabase writes or external sends.
+Goal 38 is complete when a human developer can open `/admin` and see the
+read-only admin control center for users, roles, chapters, campaign templates,
+integration/outbox posture, audit-log readiness, and system-health placeholders
+with no admin mutation controls enabled.
 
-The app remains mock-first by default. Goal 37 does not wire production
+The app remains mock-first by default. Goal 38 does not wire production
 Supabase, create a server action, enable browser writes, upload files, publish
-proof, remove mock fallback, send reminders or escalation packets, or activate
-real integrations.
+proof, remove mock fallback, send reminders or escalation packets, enable admin
+mutations, or activate real integrations.

@@ -161,9 +161,10 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 37: Rush Month local operating loop with production
-data, enabled browser writes, reminder automation, escalation packets, uploads,
-public proof sharing, and external integrations still disabled.
+The active goal is Goal 38: admin control center with production data, enabled
+browser writes, admin mutation controls, reminder automation, escalation
+packets, uploads, public proof sharing, and external integrations still
+disabled.
 
 Allowed:
 
@@ -293,6 +294,9 @@ Allowed:
   review, points, KPIs, HQ sharing posture, coach decision, structured events,
   disabled outbox rows, and audit logs without Supabase writes or external
   sends
+- a read-only admin control center on `/admin` that names user, role, chapter,
+  campaign template, integration/outbox, audit log, and system health surfaces
+  without enabling admin mutation controls
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

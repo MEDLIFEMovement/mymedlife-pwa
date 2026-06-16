@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
@@ -8,6 +9,7 @@ import { RestrictedState } from "@/components/restricted-state";
 import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-approval-plan-panel";
 import { WriteActivationReadinessPanel } from "@/components/write-activation-readiness-panel";
 import { WriteResultStateCoveragePanel } from "@/components/write-result-state-coverage-panel";
+import { getAdminControlCenterSummary } from "@/services/admin-control-center";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -28,6 +30,7 @@ export default async function AdminPage() {
   ]);
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
+  const adminControlCenter = getAdminControlCenterSummary(data);
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
   const writeResultStateCoverage = getWriteResultStateCoverageSummary();
   const writeActivationSummary = getWriteActivationReadinessSummary(actor, {
@@ -88,6 +91,7 @@ export default async function AdminPage() {
             ))}
           </section>
 
+          <AdminControlCenterPanel summary={adminControlCenter} />
           <WriteActivationReadinessPanel summary={writeActivationSummary} />
           <WriteActivationApprovalPlanPanel plan={writeActivationApprovalPlan} />
           <WriteResultStateCoveragePanel summary={writeResultStateCoverage} />
