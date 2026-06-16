@@ -167,6 +167,16 @@ function buildCoverageItems(data: ReadOnlyAppData): MvpCoverageItem[] {
         "Run side-by-side Figma, phone viewport, accessibility, and staging checks before launch.",
     },
     {
+      key: "controlled_pilot",
+      label: "Controlled pilot readiness",
+      status: "covered_readonly",
+      plainEnglish:
+        "Admins can see the difference between local review, staff dry run, staging review, first student pilot, and later expansion.",
+      routeEvidence: ["/admin"],
+      nextStep:
+        "Run a staff dry run, choose one pilot group, then approve staging, auth, write, proof, and support gates before student invitations.",
+    },
+    {
       key: "integration_outbox",
       label: "Integration events and disabled outbox",
       status: "covered_readonly",
