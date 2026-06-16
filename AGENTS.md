@@ -161,12 +161,12 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 65: local coach advance / hold / intervene decision
-recording after the leader assignment creation slice. This remains local-only
-and requires fake local Supabase Auth, UUID chapter/campaign/phase rows,
-explicit local write flags, and escalation packets disabled. Production data,
-most browser writes, admin mutation controls, uploads, public proof sharing, and
-external integrations remain disabled.
+The active goal is Goal 66: MVP progress map and remaining-work visibility.
+This remains local-only and gives admins a plain-English map of what is locally
+reviewable, what is partially ready, what needs approval, and what is still
+future build work. Production data, most browser writes, admin mutation
+controls, uploads, public proof sharing, and external integrations remain
+disabled.
 
 Allowed:
 
@@ -361,6 +361,9 @@ Allowed:
   it does not enable auth, writes, uploads, public proof sharing, external
   integrations, service workers, reminders, escalation packets, or production
   data
+- plain-English MVP progress and remaining-work visibility for admin reviewers,
+  as long as it does not mark the live MVP complete or enable auth, writes,
+  uploads, admin mutations, public proof sharing, or external integrations
 - localhost-only Supabase Auth sign-in for fake local seed users, as long as
   production auth, production users, browser writes, uploads, public proof
   sharing, external sends, reminders, escalation packets, service workers, and

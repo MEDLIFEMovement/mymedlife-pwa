@@ -6,6 +6,7 @@ import { EnvironmentSafetySummaryPanel } from "@/components/environment-safety-s
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { MetricCard } from "@/components/metric-card";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
+import { MvpProgressMapPanel } from "@/components/mvp-progress-map-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { RouteCoverageSummaryPanel } from "@/components/route-coverage-summary-panel";
@@ -21,6 +22,7 @@ import { getEnvironmentSafetySummary } from "@/services/environment-safety-summa
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
+import { getMvpProgressMap } from "@/services/mvp-progress-map";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRouteCoverageSummary } from "@/services/route-coverage-summary";
@@ -50,6 +52,7 @@ export default async function AdminPage() {
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
   const writeResultStateCoverage = getWriteResultStateCoverageSummary();
   const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
+  const mvpProgressMap = getMvpProgressMap(actor);
   const releaseReadiness = getMvpReleaseReadinessSummary(actor);
   const routeSmokeManifest = getRouteSmokeManifest(actor);
   const routeCoverageSummary = getRouteCoverageSummary(actor);
@@ -99,6 +102,7 @@ export default async function AdminPage() {
           </section>
 
           <MvpReleaseReadinessPanel summary={releaseReadiness} />
+          <MvpProgressMapPanel progressMap={mvpProgressMap} />
           <EnvironmentSafetySummaryPanel summary={environmentSafetySummary} />
           <StakeholderReviewPlanPanel plan={stakeholderReviewPlan} />
           <AdminGlossaryPanel glossary={adminGlossary} />
