@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { RoleNextActionPanel } from "@/components/role-next-action-panel";
@@ -28,8 +26,6 @@ export default async function ChapterPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
       <RoleNextActionPanel brief={nextActionBrief} />
 
       {!canReadChapterData(actor) ? (

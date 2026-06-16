@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 48: mobile navigation and reviewer UX polish with
+The active goal is Goal 49: centralized local actor panels with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -328,6 +328,9 @@ Allowed:
   writes, uploads, production setup, and integrations are approved
 - role-aware mobile quick navigation, active route styling, skip-link
   accessibility, and reviewer UX polish that keep the app read-only/mock-safe
+- centralizing the local actor notice and role switcher in `AppShell` so
+  actor-aware routes inherit consistent local-review context without duplicating
+  page-level debug panels
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RoleNextActionPanel } from "@/components/role-next-action-panel";
 import { roleContexts } from "@/data/mock-rush-month";
@@ -26,8 +24,6 @@ export default async function Home() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
 
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)]">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">

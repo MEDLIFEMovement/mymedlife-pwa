@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { RestrictedState } from "@/components/restricted-state";
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import { getReviewQueueForActor } from "@/services/local-action-contracts";
@@ -25,9 +23,6 @@ export default async function EvidencePage() {
 
   return (
     <AppShell actor={actor}>
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
-
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
           Evidence

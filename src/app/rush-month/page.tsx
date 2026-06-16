@@ -3,8 +3,6 @@ import { AppShell } from "@/components/app-shell";
 import { CampaignCloseoutReadinessPanel } from "@/components/campaign-closeout-readiness-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { RoleNextActionPanel } from "@/components/role-next-action-panel";
@@ -40,8 +38,6 @@ export default async function RushMonthPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
       <RoleNextActionPanel brief={nextActionBrief} />
 
       {!canReadChapterData(actor) ? (

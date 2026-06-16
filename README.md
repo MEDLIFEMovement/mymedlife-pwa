@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 48: mobile navigation and reviewer UX polish with
+The current goal is Goal 49: centralized local actor panels with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -237,6 +237,10 @@ keyboard skip link, and reviewer-focused accessibility polish. It keeps the app
 read-only/mock-safe and does not enable live auth, browser writes, uploads,
 public proof sharing, or external integrations.
 
+Goal 49 moves the existing local actor notice and local role switcher into the
+shared app shell so every actor-aware route gets consistent reviewer context
+without duplicating the same panels in route files.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -328,6 +332,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 46 route smoke manifest](./docs/architecture/goal-46-route-smoke-manifest.md)
 - [Goal 47 MVP release readiness](./docs/architecture/goal-47-mvp-release-readiness.md)
 - [Goal 48 mobile navigation polish](./docs/architecture/goal-48-mobile-navigation-polish.md)
+- [Goal 49 centralized local actor panels](./docs/architecture/goal-49-centralized-local-actor-panels.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -486,6 +491,9 @@ Rules:
 - Goal 48 adds role-aware mobile quick navigation and active route styling.
   It improves reviewer usability without enabling live auth, browser writes,
   uploads, public proof sharing, or external integrations.
+- Goal 49 centralizes the local actor notice and role switcher in `AppShell`
+  so actor-aware routes inherit consistent reviewer context without duplicating
+  page-level debug panels.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.

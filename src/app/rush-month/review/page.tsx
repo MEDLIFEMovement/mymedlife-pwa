@@ -1,8 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { HqProofDecisionResultStatesPanel } from "@/components/hq-proof-decision-result-states-panel";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
@@ -49,9 +47,6 @@ export default async function ReviewPage() {
 
   return (
     <AppShell actor={actor}>
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
-
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
           HQ proof-sharing review
