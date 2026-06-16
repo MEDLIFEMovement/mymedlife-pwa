@@ -48,6 +48,35 @@ export type FirstWriteReadbackEvidenceItem = {
   detail: string;
 };
 
+export type FirstWriteVerificationPacketStatus =
+  | "blocked"
+  | "ready_to_run_locally"
+  | "needs_manual_audit_check"
+  | "evidence_observed";
+
+export type FirstWriteVerificationPacket = {
+  status: FirstWriteVerificationPacketStatus;
+  title: string;
+  plainEnglishDecision: string;
+  canPromoteToStagingReview: boolean;
+  envSettings: Array<{
+    key: string;
+    value: string;
+    reason: string;
+  }>;
+  fakeMemberCredential: {
+    email: string;
+    passwordLabel: string;
+    route: string;
+  };
+  operatorSequence: Array<{
+    label: string;
+    route: string;
+    expectedProof: string;
+  }>;
+  safetyStops: string[];
+};
+
 export type FirstWriteActivationDrill = {
   canReadDrill: boolean;
   title: string;
@@ -65,6 +94,7 @@ export type FirstWriteActivationDrill = {
   checks: FirstWriteDrillCheck[];
   steps: FirstWriteDrillStep[];
   readbackEvidence: FirstWriteReadbackEvidenceItem[];
+  verificationPacket: FirstWriteVerificationPacket;
   proofToCollect: string[];
   counts: {
     checks: number;
@@ -95,6 +125,7 @@ export function getFirstWriteActivationDrill(
       checks: [],
       steps: [],
       readbackEvidence: [],
+      verificationPacket: buildHiddenVerificationPacket(),
       proofToCollect: [],
       counts: emptyCounts(),
     };
@@ -118,6 +149,12 @@ export function getFirstWriteActivationDrill(
   const browserWritesExpected: 0 | 1 =
     status === "ready_for_local_action_start" ? 1 : 0;
   const readbackEvidence = buildReadbackEvidence(data, candidate);
+  const verificationPacket = buildVerificationPacket(
+    status,
+    candidate,
+    checks,
+    readbackEvidence,
+  );
 
   return {
     canReadDrill: true,
@@ -129,6 +166,7 @@ export function getFirstWriteActivationDrill(
     checks,
     steps: buildSteps(candidate),
     readbackEvidence,
+    verificationPacket,
     proofToCollect: [
       "Screenshot of `/admin/first-write` before the test showing every required check green.",
       "Screenshot of the selected action detail route before clicking Start this action.",
@@ -462,6 +500,173 @@ function buildReadbackEvidence(
           : `${outboxRows.length} action_started outbox row(s) exist; staff must confirm no external send was approved.`,
     },
   ];
+}
+
+function buildVerificationPacket(
+  status: FirstWriteDrillStatus,
+  candidate: FirstWriteActivationDrill["candidateAssignment"],
+  checks: FirstWriteDrillCheck[],
+  readbackEvidence: FirstWriteReadbackEvidenceItem[],
+): FirstWriteVerificationPacket {
+  const evidenceStatuses = Object.fromEntries(
+    readbackEvidence.map((item) => [item.key, item.status]),
+  );
+  const hasAssignmentReadback = evidenceStatuses.assignment_status === "observed";
+  const hasInternalEvent = evidenceStatuses.internal_event === "observed";
+  const hasIntegrationEvent = evidenceStatuses.integration_event === "observed";
+  const hasAuditLog = evidenceStatuses.audit_log === "observed";
+  const hasSafeZeroOutbox = evidenceStatuses.automation_outbox === "safe_zero";
+  const allEvidenceObserved =
+    hasAssignmentReadback &&
+    hasInternalEvent &&
+    hasIntegrationEvent &&
+    hasAuditLog &&
+    hasSafeZeroOutbox;
+  const coreEvidenceObserved =
+    hasAssignmentReadback &&
+    hasInternalEvent &&
+    hasIntegrationEvent &&
+    hasSafeZeroOutbox;
+  const packetStatus: FirstWriteVerificationPacketStatus = allEvidenceObserved
+    ? "evidence_observed"
+    : coreEvidenceObserved
+      ? "needs_manual_audit_check"
+      : status === "ready_for_local_action_start"
+        ? "ready_to_run_locally"
+        : "blocked";
+
+  return {
+    status: packetStatus,
+    title: "First-write verification packet",
+    plainEnglishDecision: getVerificationDecision(packetStatus, checks),
+    canPromoteToStagingReview: packetStatus === "evidence_observed",
+    envSettings: [
+      {
+        key: "MYMEDLIFE_DATA_SOURCE",
+        value: "supabase",
+        reason: "The drill must target local UUID-backed seed data, not mock fallback rows.",
+      },
+      {
+        key: "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS",
+        value: "true",
+        reason: "The app must read local assignment, event, integration, outbox, and audit evidence.",
+      },
+      {
+        key: "MYMEDLIFE_AUTH_MODE",
+        value: "local_supabase",
+        reason: "The write must use a server-derived local auth session.",
+      },
+      {
+        key: "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES",
+        value: "true",
+        reason: "The local write master switch must be deliberate for this drill.",
+      },
+      {
+        key: "MYMEDLIFE_ENABLE_ACTION_START_WRITE",
+        value: "true",
+        reason: "Only the action-start write is enabled for the first drill.",
+      },
+      {
+        key: "MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE",
+        value: "false",
+        reason: "Proof saves stay locked during the first action-start drill.",
+      },
+      {
+        key: "MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE",
+        value: "false",
+        reason: "Leader assignment creation stays locked during the first action-start drill.",
+      },
+      {
+        key: "MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE",
+        value: "false",
+        reason: "HQ proof decisions stay locked during the first action-start drill.",
+      },
+      {
+        key: "MYMEDLIFE_ENABLE_COACH_DECISION_WRITE",
+        value: "false",
+        reason: "Coach decisions stay locked during the first action-start drill.",
+      },
+    ],
+    fakeMemberCredential: {
+      email: "member.a@mymedlife.test",
+      passwordLabel: "password",
+      route: "/login",
+    },
+    operatorSequence: [
+      {
+        label: "Confirm the packet is not blocked",
+        route: "/admin/first-write",
+        expectedProof:
+          "The packet status is ready to run locally or readback evidence is already observed.",
+      },
+      {
+        label: "Sign in as the fake member",
+        route: "/login",
+        expectedProof:
+          "The app actor context uses local_auth_session for member.a@mymedlife.test.",
+      },
+      {
+        label: "Start the candidate action",
+        route: candidate?.route ?? "/rush-month/actions/[assignmentId]",
+        expectedProof:
+          "The action detail page redirects with actionStartResult=started.",
+      },
+      {
+        label: "Return to the verification packet",
+        route: "/admin/first-write",
+        expectedProof:
+          "Assignment, internal event, integration event, audit log, and zero-send evidence are observed.",
+      },
+    ],
+    safetyStops: [
+      "Stop if the app is reading mock fallback data.",
+      "Stop if the candidate action does not use a Supabase UUID.",
+      "Stop if the signed-in user is not a fake local seed member.",
+      "Stop if any non-action-start write flag is enabled.",
+      "Stop if any HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, AI, upload, or public proof control is live.",
+    ],
+  };
+}
+
+function getVerificationDecision(
+  status: FirstWriteVerificationPacketStatus,
+  checks: FirstWriteDrillCheck[],
+): string {
+  if (status === "evidence_observed") {
+    return "Local evidence is strong enough for staff to discuss promoting this exact action-start pattern to staging review. This still does not approve production writes.";
+  }
+
+  if (status === "needs_manual_audit_check") {
+    return "Core readback evidence is visible, but staff must manually confirm the audit log before staging review.";
+  }
+
+  if (status === "ready_to_run_locally") {
+    return "The local drill is ready to run. Staff should execute one fake member action-start write and then return here to confirm readback evidence.";
+  }
+
+  const firstBlockedCheck = checks.find((check) => !check.passed);
+
+  return firstBlockedCheck
+    ? `Do not run the drill yet. First blocker: ${firstBlockedCheck.label}.`
+    : "Do not run the drill yet. Local readiness has not been proven.";
+}
+
+function buildHiddenVerificationPacket(): FirstWriteVerificationPacket {
+  return {
+    status: "blocked",
+    title: "First-write verification packet hidden",
+    plainEnglishDecision:
+      "This packet is available only to HQ, DS Admin, and Super Admin review contexts.",
+    canPromoteToStagingReview: false,
+    envSettings: [],
+    fakeMemberCredential: {
+      email: "member.a@mymedlife.test",
+      passwordLabel: "password",
+      route: "/login",
+    },
+    operatorSequence: [],
+    safetyStops: [],
+  };
 }
 
 function getTitle(actor: LocalActorContext): string {

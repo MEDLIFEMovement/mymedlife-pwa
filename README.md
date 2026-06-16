@@ -10,12 +10,17 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 75: first-write readback evidence. This remains
-mock-safe by default and extends `/admin/first-write` so HQ reviewers can see
-the expected post-drill readback evidence for assignment status, internal event,
-integration event, audit log, and zero automation outbox sends.
+The current goal is Goal 76: first-write verification packet. This remains
+mock-safe by default and extends `/admin/first-write` so HQ reviewers have one
+operator-ready packet for local env settings, fake sign-in, the action-start
+route sequence, proof expectations, stop conditions, and the staging-review
+decision.
 Production data, broad browser writes, admin mutation controls, real uploads,
 public proof sharing, and external integrations remain disabled.
+
+Goal 75 extended `/admin/first-write` so HQ reviewers can see the expected
+post-drill readback evidence for assignment status, internal event, integration
+event, audit log, and zero automation outbox sends.
 
 Goal 74 added `/admin/first-write` so HQ reviewers can see the exact local
 Supabase/auth/flag checks required before the first action-start browser write

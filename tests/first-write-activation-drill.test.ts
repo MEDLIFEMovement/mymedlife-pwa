@@ -20,6 +20,10 @@ describe("first-write activation drill", () => {
       drill.checks.find((check) => check.key === "candidate_assignment_uuid")
         ?.passed,
     ).toBe(false);
+    expect(drill.verificationPacket.status).toBe("blocked");
+    expect(drill.verificationPacket.plainEnglishDecision).toContain(
+      "Do not run",
+    );
   });
 
   it("marks the drill ready only with local Supabase data, auth mode, flags, and UUID assignment", () => {
@@ -32,9 +36,28 @@ describe("first-write activation drill", () => {
     });
 
     expect(drill.status).toBe("ready_for_local_action_start");
+    expect(drill.verificationPacket.status).toBe("ready_to_run_locally");
+    expect(drill.verificationPacket.canPromoteToStagingReview).toBe(false);
     expect(drill.counts.browserWritesExpected).toBe(1);
     expect(drill.counts.externalWritesExpected).toBe(0);
     expect(drill.checks.every((check) => check.passed)).toBe(true);
+    expect(drill.verificationPacket.envSettings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "MYMEDLIFE_ENABLE_ACTION_START_WRITE",
+          value: "true",
+        }),
+        expect.objectContaining({
+          key: "MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE",
+          value: "false",
+        }),
+      ]),
+    );
+    expect(drill.verificationPacket.fakeMemberCredential).toEqual({
+      email: "member.a@mymedlife.test",
+      passwordLabel: "password",
+      route: "/login",
+    });
     expect(
       drill.readbackEvidence.find((item) => item.key === "internal_event")?.status,
     ).toBe("missing");
@@ -104,8 +127,36 @@ describe("first-write activation drill", () => {
       audit_log: "observed",
       automation_outbox: "safe_zero",
     });
+    expect(drill.verificationPacket.status).toBe("evidence_observed");
+    expect(drill.verificationPacket.canPromoteToStagingReview).toBe(true);
+    expect(drill.verificationPacket.plainEnglishDecision).toContain(
+      "staging review",
+    );
     expect(drill.counts.observedReadbackItems).toBe(5);
     expect(drill.counts.externalWritesExpected).toBe(0);
+  });
+
+  it("requires manual audit confirmation when core readback is visible but audit is missing", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const data = withFirstWriteReadback(withSupabaseUuidAssignment(mockData));
+    const drill = getFirstWriteActivationDrill(
+      actor,
+      {
+        ...data,
+        auditLogs: [],
+      },
+      {
+        MYMEDLIFE_AUTH_MODE: "local_supabase",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      },
+    );
+
+    expect(drill.verificationPacket.status).toBe("needs_manual_audit_check");
+    expect(drill.verificationPacket.canPromoteToStagingReview).toBe(false);
+    expect(drill.readbackEvidence.find((item) => item.key === "audit_log")?.status).toBe(
+      "manual_check_needed",
+    );
   });
 
   it("keeps DS Admin eligible and operating roles hidden", () => {
