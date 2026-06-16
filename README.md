@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 44: campaign closeout readiness with production data,
+The current goal is Goal 45: MVP coverage checklist with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -217,6 +217,11 @@ Goal 44 adds a read-only campaign closeout/readiness panel to `/rush-month`.
 Leaders, coaches, admins, and super admins can see whether assignment
 completion, proof posture, event feedback, and coach decision state support
 advance, hold, or intervention. Closeout writes and exports remain disabled.
+
+Goal 45 adds an admin-facing MVP coverage checklist to `/admin`. It summarizes
+what the Rush Month MVP can demonstrate locally, what is read-only/mock-only,
+and what remains blocked until live auth, browser writes, uploads, public proof
+sharing, or integrations are approved.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick

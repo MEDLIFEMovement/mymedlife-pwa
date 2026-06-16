@@ -5,6 +5,7 @@ import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
+import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-approval-plan-panel";
 import { WriteActivationReadinessPanel } from "@/components/write-activation-readiness-panel";
@@ -13,6 +14,7 @@ import { getAdminControlCenterSummary } from "@/services/admin-control-center";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadIntegrationOutbox,
@@ -33,6 +35,7 @@ export default async function AdminPage() {
   const adminControlCenter = getAdminControlCenterSummary(data);
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
   const writeResultStateCoverage = getWriteResultStateCoverageSummary();
+  const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
   const writeActivationSummary = getWriteActivationReadinessSummary(actor, {
     assignments: data.assignments,
     coachDecision: data.kpiSummary.coachDecision,
@@ -91,6 +94,7 @@ export default async function AdminPage() {
             ))}
           </section>
 
+          <MvpCoverageChecklistPanel checklist={mvpCoverageChecklist} />
           <AdminControlCenterPanel summary={adminControlCenter} />
           <WriteActivationReadinessPanel summary={writeActivationSummary} />
           <WriteActivationApprovalPlanPanel plan={writeActivationApprovalPlan} />
