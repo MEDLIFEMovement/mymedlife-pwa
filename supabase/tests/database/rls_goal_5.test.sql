@@ -225,30 +225,18 @@ set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
 set local "request.jwt.claim.role" = 'authenticated';
 
 select lives_ok(
-  $$
-    insert into app.approvals (
-      id,
-      evidence_item_id,
-      chapter_id,
-      reviewer_user_id,
-      decision,
-      note
-    ) values (
-      '61000000-0000-4000-8000-000000000102',
-      '60000000-0000-4000-8000-000000000001',
-      '10000000-0000-4000-8000-000000000001',
-      '00000000-0000-4000-8000-000000000004',
-      'approved_for_sharing',
-      'Admin approves fake proof for sharing in local RLS test.'
-    )
-  $$,
-  'Admin can create HQ proof sharing decisions'
+  $$ select * from app.record_hq_proof_sharing_decision(
+    '60000000-0000-4000-8000-000000000001',
+    'approved_for_sharing',
+    'Admin approves fake proof for sharing through the audited function.'
+  ) $$,
+  'Admin can create HQ proof sharing decisions through the audited function'
 );
 
 select is(
   (select count(*)::int from app.automation_outbox),
-  3,
-  'Admin can read seed and proof-submission outbox rows for support'
+  4,
+  'Admin can read seed, proof-submission, and HQ-decision outbox rows for support'
 );
 
 update app.automation_outbox

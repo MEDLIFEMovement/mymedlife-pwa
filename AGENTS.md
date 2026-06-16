@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 15: local proof/testimonial metadata submission.
+The active goal is Goal 16: local HQ proof/testimonial sharing decisions.
 
 Allowed:
 
@@ -197,6 +197,11 @@ Allowed:
   event, records an integration-ready event row, creates a disabled outbox row,
   and records an audit log together
 - RLS/security tests proving direct evidence inserts are blocked
+- one local Supabase `hq_sharing_decision_logged` function that updates proof
+  sharing status, creates an HQ approval decision, records an internal event,
+  records an integration-ready event row, creates a disabled outbox row, and
+  records an audit log together
+- RLS/security tests proving direct approval inserts are blocked
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

@@ -221,6 +221,23 @@ test suite now proves:
   integration event, disabled outbox, and audit log rows together
 - proof metadata stores no file path and triggers no live external send
 
+Goal 16 implements the first local HQ proof/testimonial sharing decision write
+subset for `hq_sharing_decision_logged` in
+`supabase/tests/database/rls_goal_16.test.sql`. The test suite now proves:
+
+- General Members, Chapter Leaders, Coaches, and DS Admins cannot record HQ
+  sharing decisions
+- direct approval inserts cannot bypass the HQ sharing function
+- DS Admin cannot directly update proof sharing status
+- Admin can record approved-for-sharing, not-shared, and changes-requested
+  decisions
+- Super Admin can record an HQ sharing decision
+- final decisions cannot be silently overwritten
+- short notes are rejected
+- HQ decisions create evidence status, approval, internal event, integration
+  event, disabled outbox, and audit log rows together
+- HQ decisions trigger no public publishing or live external send
+
 ## Pass Criteria
 
 The RLS test suite should pass only when:
