@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 51: page metadata with
+The active goal is Goal 52: route registry guard with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -338,6 +338,9 @@ Allowed:
 - static page titles and descriptions for core routes, as long as permissions,
   data loading, writes, auth, uploads, public proof sharing, and integrations
   stay unchanged
+- route registry tests that prove role-aware navigation and smoke-test links
+  point at known routes, as long as route permissions, visibility, data loading,
+  writes, auth, uploads, public proof sharing, and integrations stay unchanged
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
