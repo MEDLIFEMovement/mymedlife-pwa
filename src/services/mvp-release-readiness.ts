@@ -101,6 +101,12 @@ export function getMvpReleaseReadinessSummary(
         plainEnglish:
           "HQ staff can inspect the local action-start write drill before the first localhost-only save is tested.",
       },
+      {
+        label: "Write sequence planner",
+        status: "ready_for_local_review",
+        plainEnglish:
+          "HQ staff can see which Rush Month write should be promoted next and what evidence each write must create.",
+      },
     ],
     blockers: [
       {
@@ -136,7 +142,7 @@ export function getMvpReleaseReadinessSummary(
     ],
     nextApprovals: [
       "Approve live auth/onboarding plan.",
-      "Run `/admin/first-write` and approve the first browser write path and rollback plan.",
+      "Run `/admin/first-write`, then use `/admin/write-sequence` to approve the next browser write path and rollback plan.",
       "Approve proof upload/storage and consent requirements.",
       "Approve production Supabase/Vercel environment setup.",
       "Approve first pilot chapter or internal test group from `/admin/pilot-scope`.",

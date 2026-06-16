@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(22);
+    expect(entries).toHaveLength(23);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -23,6 +23,9 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("adminFirstWrite")).toMatchObject({
       title: "First Write Drill",
+    });
+    expect(getStaticRouteMetadata("adminWriteSequence")).toMatchObject({
+      title: "Write Sequence",
     });
     expect(getStaticRouteMetadata("adminStaffDryRun")).toMatchObject({
       title: "Staff Dry Run",
