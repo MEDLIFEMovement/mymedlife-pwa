@@ -1,31 +1,76 @@
 import { AppShell } from "@/components/app-shell";
+import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
-import { integrationEvents, outboxItems } from "@/data/mock-rush-month";
+import { LocalRoleSwitcher } from "@/components/local-role-switcher";
+import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadIntegrationOutbox,
+  getVisibleAdminPanelsForActor,
+} from "@/services/role-visibility";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const actor = await getLocalActorContext();
+  const [data, actor] = await Promise.all([
+    getReadOnlyAppData(),
+    getLocalActorContext(),
+  ]);
+  const visiblePanels = getVisibleAdminPanelsForActor(actor);
 
   return (
-    <AppShell>
+    <AppShell actor={actor}>
+      <DataSourceNotice source={data.source} />
       <LocalActorNotice actor={actor} />
+      <LocalRoleSwitcher actor={actor} />
 
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-          Admin / Super Admin placeholder
+          Admin permission proof
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-white">
-          Integration controls stay disabled.
+          Staff context is role-aware and read-only.
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
-          Goal 2 only shows the future event and outbox posture. Real HubSpot,
-          Luma, warehouse, Power BI, and n8n writes remain off until explicitly
-          approved.
+          Admins can inspect support and HQ proof-sharing posture. DS Admin can
+          inspect disabled/mock integration rows only. Super Admin can inspect
+          the full local permission surface. No role can send real external
+          writes from this app.
         </p>
       </section>
 
-      <EventOutboxLog events={integrationEvents} outboxItems={outboxItems} />
+      {visiblePanels.length > 0 ? (
+        <section className="grid gap-3 md:grid-cols-2">
+          {visiblePanels.map((panel) => (
+            <article key={panel.key} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100/70">
+                {panel.key.replace("_", " ")}
+              </p>
+              <h2 className="mt-2 text-xl font-semibold text-white">{panel.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-white/64">{panel.summary}</p>
+            </article>
+          ))}
+        </section>
+      ) : (
+        <RestrictedState
+          title="This local actor has no admin panels."
+          message="Chapter members, chapter leaders, and coaches should use their student or coach routes. Admin panels stay limited to HQ, DS Admin, and Super Admin contexts."
+          nextHref="/rush-month"
+          nextLabel="Back to Rush Month"
+        />
+      )}
+
+      {canReadIntegrationOutbox(actor) ? (
+        <EventOutboxLog events={data.integrationEvents} outboxItems={data.outboxItems} />
+      ) : (
+        <RestrictedState
+          eyebrow="Integration controls"
+          title="Outbox records are hidden for this role."
+          message="Only DS Admin and Super Admin can inspect disabled/mock external-send posture. Admin can read support and proof-sharing context, but does not own connection configuration."
+        />
+      )}
     </AppShell>
   );
 }

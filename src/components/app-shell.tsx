@@ -1,21 +1,16 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-
-const navItems = [
-  { href: "/chapter", label: "Chapter" },
-  { href: "/rush-month", label: "Rush Month" },
-  { href: "/rush-month/actions", label: "Actions" },
-  { href: "/rush-month/evidence", label: "Evidence" },
-  { href: "/rush-month/review", label: "Review" },
-  { href: "/coach", label: "Coach" },
-  { href: "/admin", label: "Admin" },
-];
+import type { LocalActorContext } from "@/services/local-actor-context";
+import { getNavigationForActor } from "@/services/role-visibility";
 
 type AppShellProps = {
   children: ReactNode;
+  actor?: LocalActorContext;
 };
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ actor, children }: AppShellProps) {
+  const navItems = getNavigationForActor(actor);
+
   return (
     <main className="min-h-screen px-4 pb-10 pt-4 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">

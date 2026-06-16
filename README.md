@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 9: local actor context and role-aware read-only foundation.
+The current goal is Goal 10: role-aware read-only app experience and permission proof.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -37,6 +37,9 @@ while keeping mock data as the default fallback.
 Goal 9 adds a local-only actor context layer so developers can test fake member,
 leader, coach, admin, DS admin, and super admin read context without enabling
 production auth or app writes.
+
+Goal 10 turns that local actor context into role-aware navigation, restricted
+state messaging, read filters, and permission tests for the Rush Month shell.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, implement app writes, or enable external writes until Nick approves
@@ -137,7 +140,8 @@ cp .env.example .env.local
 # Set MYMEDLIFE_DATA_SOURCE=supabase
 # Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true
 # Set SUPABASE_SERVICE_ROLE_KEY to the local service role key printed by Supabase
-# Optional: set MYMEDLIFE_LOCAL_ACTOR_EMAIL to one of the fake seed users
+# Optional: set MYMEDLIFE_LOCAL_ACTOR_EMAIL to one of the fake seed users.
+# This also works when the app is using mock fallback data.
 pnpm supabase:start
 pnpm supabase:reset
 pnpm dev
@@ -167,6 +171,9 @@ Rules:
   back to mock data.
 - Goal 9 actor switching is local-only and reads fake seed users by email. It
   does not add browser sign-in, sessions, cookies, or production auth.
+- Goal 10 role filtering is read-only and local-only. It uses
+  `MYMEDLIFE_LOCAL_ACTOR_EMAIL` to preview member, leader, coach, admin, DS
+  admin, and super admin views.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -175,10 +182,12 @@ Rules:
 
 The app currently uses mock data by default. When local Supabase env vars are
 explicitly enabled, these server-rendered routes can read fake local Supabase
-data and fake local actor context:
+data and fake local actor context. With or without local Supabase running,
+`MYMEDLIFE_LOCAL_ACTOR_EMAIL` can preview the Goal 10 local role views:
 
 - `/chapter`
 - `/rush-month`
+- `/rush-month/actions`
 - `/coach`
 - `/admin`
 
@@ -237,6 +246,15 @@ Goal 8 read-only app foundation lives in:
 - `src/components/data-source-notice.tsx`
 - `tests/supabase-readonly.test.ts`
 - `tests/read-only-app-data.test.ts`
+
+Goal 10 role-aware read-only proof lives in:
+
+- `src/services/role-visibility.ts`
+- `src/components/local-role-switcher.tsx`
+- `src/components/restricted-state.tsx`
+- role-aware updates to `/chapter`, `/rush-month`, `/rush-month/actions`,
+  `/coach`, and `/admin`
+- `tests/role-visibility.test.ts`
 
 Goal 9 local actor context lives in:
 

@@ -39,6 +39,16 @@ export type LocalActorContext = {
   isLocalOnly: boolean;
 };
 
+export type LocalActorOption = {
+  email: string;
+  displayName: string;
+  audience: ActorAudience;
+  chapterRoles: string[];
+  staffRoles: string[];
+  chapterNames: string[];
+  coachPortfolioChapterNames: string[];
+};
+
 type LocalActorSnapshot = {
   profiles: ProfileRow[];
   memberships: MembershipRow[];
@@ -46,6 +56,63 @@ type LocalActorSnapshot = {
   coachAssignments: CoachChapterAssignmentRow[];
   chapters: ChapterRow[];
 };
+
+export const localActorOptions: LocalActorOption[] = [
+  {
+    email: "member.a@mymedlife.test",
+    displayName: "Maya Member",
+    audience: "chapter_member",
+    chapterRoles: ["General Member"],
+    staffRoles: [],
+    chapterNames: [mockChapter.name],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "leader.a@mymedlife.test",
+    displayName: "Leo Leader",
+    audience: "chapter_leader",
+    chapterRoles: ["President / VP", "E-Board Member"],
+    staffRoles: [],
+    chapterNames: [mockChapter.name],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "coach@mymedlife.test",
+    displayName: "Cam Coach",
+    audience: "coach",
+    chapterRoles: [],
+    staffRoles: ["Coach"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [mockChapter.name],
+  },
+  {
+    email: "admin@mymedlife.test",
+    displayName: "Ari Admin",
+    audience: "admin",
+    chapterRoles: [],
+    staffRoles: ["Admin"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "ds.admin@mymedlife.test",
+    displayName: "Dee Systems",
+    audience: "ds_admin",
+    chapterRoles: [],
+    staffRoles: ["DS Admin"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "super.admin@mymedlife.test",
+    displayName: "Sam Super",
+    audience: "super_admin",
+    chapterRoles: [],
+    staffRoles: ["Super Admin"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [],
+  },
+];
 
 export async function getLocalActorContext(): Promise<LocalActorContext> {
   const selectedEmail =
@@ -139,6 +206,8 @@ export function getMockLocalActorContext(
   message = "Using mock actor context because local Supabase reads are disabled.",
   status: DataSourceStatus = "mock_fallback",
 ): LocalActorContext {
+  const option = findLocalActorOption(selectedEmail);
+
   return {
     source: {
       mode: "mock",
@@ -146,18 +215,18 @@ export function getMockLocalActorContext(
       message,
     },
     user: {
-      id: "mock-member",
-      displayName: "Maya Member",
+      id: `mock-${option.audience}`,
+      displayName: option.displayName,
       email: selectedEmail,
     },
     selectedEmail,
-    audience: "chapter_member",
-    audienceLabel: "Chapter member",
-    accessSummary: "Mock member view: own actions, points, recognition, and chapter-level progress.",
-    chapterRoles: ["General Member"],
-    staffRoles: [],
-    chapterNames: [mockChapter.name],
-    coachPortfolioChapterNames: [],
+    audience: option.audience,
+    audienceLabel: audienceToLabel(option.audience),
+    accessSummary: audienceToAccessSummary(option.audience),
+    chapterRoles: option.chapterRoles,
+    staffRoles: option.staffRoles,
+    chapterNames: option.chapterNames,
+    coachPortfolioChapterNames: option.coachPortfolioChapterNames,
     isLocalOnly: true,
   };
 }
@@ -235,6 +304,15 @@ function getAudience(
 
 function findChapterName(chapters: ChapterRow[], chapterId: string) {
   return chapters.find((chapter) => chapter.id === chapterId)?.name ?? "";
+}
+
+function findLocalActorOption(selectedEmail: string) {
+  const normalizedEmail = selectedEmail.toLowerCase();
+
+  return (
+    localActorOptions.find((option) => option.email === normalizedEmail) ??
+    localActorOptions[0]
+  );
 }
 
 function roleKeyToLabel(roleKey: DatabaseRoleKey) {

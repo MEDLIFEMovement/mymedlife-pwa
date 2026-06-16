@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { LocalActorNotice } from "@/components/local-actor-notice";
+import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { getAssignmentById } from "@/lib/rush-month";
+import { getLocalActorContext } from "@/services/local-actor-context";
+import { canReadAssignment } from "@/services/role-visibility";
+
+export const dynamic = "force-dynamic";
 
 type ActionDetailPageProps = {
   params: Promise<{
@@ -12,14 +18,30 @@ type ActionDetailPageProps = {
 
 export default async function ActionDetailPage({ params }: ActionDetailPageProps) {
   const { assignmentId } = await params;
+  const actor = await getLocalActorContext();
   const assignment = getAssignmentById(assignmentId);
 
   if (!assignment) {
     notFound();
   }
 
+  if (!canReadAssignment(actor, assignment)) {
+    return (
+      <AppShell actor={actor}>
+        <LocalActorNotice actor={actor} />
+        <RestrictedState
+          title="This action is hidden for the selected local role."
+          message="The assignment exists in mock data, but the current actor should not read it. Use the local role switcher from the actions page to preview another fake role."
+          nextHref="/rush-month/actions"
+          nextLabel="Back to visible actions"
+        />
+      </AppShell>
+    );
+  }
+
   return (
-    <AppShell>
+    <AppShell actor={actor}>
+      <LocalActorNotice actor={actor} />
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
