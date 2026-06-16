@@ -14,9 +14,12 @@ as $$
     and not app.has_staff_role(array['coach', 'admin', 'ds_admin', 'super_admin'])
     and (
       assignment_row.assigned_to_user_id = auth.uid()
-      or app.has_chapter_role(
-        assignment_row.chapter_id,
-        array[assignment_row.assigned_to_role_key]
+      or (
+        assignment_row.assigned_to_user_id is null
+        and app.has_chapter_role(
+          assignment_row.chapter_id,
+          array[assignment_row.assigned_to_role_key]
+        )
       )
       or app.is_chapter_leader(assignment_row.chapter_id)
     )

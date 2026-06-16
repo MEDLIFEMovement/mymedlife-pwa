@@ -2,7 +2,15 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(21);
+
+update app.memberships
+set status = 'approved',
+    approved_at = now(),
+    approved_by = '00000000-0000-4000-8000-000000000002'
+where user_id = '00000000-0000-4000-8000-000000000008'
+  and chapter_id = '10000000-0000-4000-8000-000000000001'
+  and role_key = 'general_member';
 
 insert into app.assignments (
   id,
@@ -173,9 +181,40 @@ insert into app.assignments (
     'Fake proof metadata only.',
     5,
     'goal_15_not_started'
+  ),
+  (
+    'd5000000-0000-4000-8000-000000000010',
+    '10000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    '41000000-0000-4000-8000-000000000001',
+    '43000000-0000-4000-8000-000000000001',
+    '42000000-0000-4000-8000-000000000001',
+    'Goal 15 same-chapter member blocked proof assignment',
+    'Fake member-specific assignment that another same-chapter member must not submit.',
+    '00000000-0000-4000-8000-000000000001',
+    'general_member',
+    '00000000-0000-4000-8000-000000000002',
+    'in_progress',
+    'Fake proof metadata only.',
+    5,
+    'goal_15_same_chapter_member_blocked'
   );
 
 set local role authenticated;
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000008';
+set local "request.jwt.claim.role" = 'authenticated';
+
+select throws_ok(
+  $$ select * from app.submit_assignment_proof_metadata(
+    'd5000000-0000-4000-8000-000000000010',
+    'testimonial_text',
+    'Another same-chapter general member should not submit member-specific proof.'
+  ) $$,
+  '42501',
+  'actor cannot submit proof for this assignment',
+  'Same-chapter member cannot submit proof for another member-specific assignment'
+);
 
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';
 set local "request.jwt.claim.role" = 'authenticated';
