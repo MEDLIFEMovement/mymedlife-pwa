@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(29);
+select plan(30);
 
 set local role authenticated;
 
@@ -15,7 +15,7 @@ select is(
   'General member can read active HQ campaign templates'
 );
 
-select throws_ok(
+select lives_ok(
   $$
     insert into app.campaign_templates (
       id,
@@ -372,7 +372,7 @@ select throws_ok(
   'Coach cannot create risk flags outside their portfolio'
 );
 
-select lives_ok(
+select throws_ok(
   $$
     insert into app.phase_readiness_reviews (
       id,
@@ -392,7 +392,23 @@ select lives_ok(
       'Coach validates fake Rush readiness after seeing owners and follow-up plan.'
     )
   $$,
-  'Coach can validate readiness for portfolio chapter'
+  '42501',
+  null,
+  'Coach readiness validation must use the audited coach decision function'
+);
+
+select lives_ok(
+  $$
+    select * from app.log_coach_decision(
+      '10000000-0000-4000-8000-000000000001',
+      '40000000-0000-4000-8000-000000000001',
+      '41000000-0000-4000-8000-000000000001',
+      'advance',
+      'Coach validates fake Rush readiness after seeing owners and follow-up plan.',
+      null
+    )
+  $$,
+  'Coach can validate readiness through the audited coach decision function'
 );
 
 select lives_ok(

@@ -1,16 +1,20 @@
 import {
   canCreateChapterAssignment,
+  canLogCoachDecision,
   canMakeHqSharingDecision,
   canSubmitProofForAssignment,
   createActionStartedMock,
   createChapterAssignmentMock,
+  createCoachDecisionMock,
   createHqSharingDecisionMock,
   createProofSubmissionMock,
   type ChapterAssignmentInput,
+  type CoachDecisionInput,
   type HqSharingDecisionInput,
   type LocalContractResult,
   type LocalActionStarted,
   type LocalAssignmentCreated,
+  type LocalCoachDecision,
   type LocalHqSharingDecision,
   type LocalProofSubmission,
   type ProofSubmissionInput,
@@ -26,6 +30,7 @@ type EnvSource = Record<string, string | undefined>;
 export type ActivationCheckKey =
   | "actor_can_read_assignment"
   | "actor_can_create_assignment"
+  | "actor_can_log_coach_decision"
   | "actor_can_submit_proof"
   | "actor_can_make_hq_sharing_decision"
   | "actor_allowed_by_write_plan"
@@ -46,13 +51,19 @@ export type BrowserWriteActivationGate = {
   operation:
     | "action_started"
     | "action_assigned"
+    | "coach_decision_logged"
     | "evidence_submitted"
     | "hq_sharing_decision";
-  route: "/rush-month/actions/[assignmentId]" | "/rush-month/actions" | "/rush-month/review";
+  route:
+    | "/coach"
+    | "/rush-month/actions/[assignmentId]"
+    | "/rush-month/actions"
+    | "/rush-month/review";
   label: string;
   localFunction:
     | "app.start_assignment_action"
     | "app.create_chapter_assignment"
+    | "app.log_coach_decision"
     | "app.submit_assignment_proof_metadata"
     | "app.record_hq_proof_sharing_decision";
   functionSignature: string;
@@ -64,6 +75,7 @@ export type BrowserWriteActivationGate = {
   preview: LocalContractResult<
     | LocalActionStarted
     | LocalAssignmentCreated
+    | LocalCoachDecision
     | LocalProofSubmission
     | LocalHqSharingDecision
   >;
@@ -370,6 +382,81 @@ export function getHqSharingDecisionBrowserWriteGate(
       },
     ],
     preview: createHqSharingDecisionMock(actor, evidenceItem, input),
+  };
+}
+
+export function getCoachDecisionBrowserWriteGate(
+  actor: LocalActorContext,
+  input: CoachDecisionInput,
+  env: EnvSource = process.env,
+): BrowserWriteActivationGate {
+  const writePlan = getWritePlanOperation("coach_decision_logged");
+  const writeReadiness = getWriteReadinessConfig(env);
+  const actorCanLogDecision = canLogCoachDecision(actor);
+  const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+
+  return {
+    operation: "coach_decision_logged",
+    route: "/coach",
+    label: "Log coach decision browser write",
+    localFunction: "app.log_coach_decision",
+    functionSignature:
+      "app.log_coach_decision(chapter_uuid, campaign_uuid, phase_uuid, decision_input, decision_note, ...)",
+    status: "blocked_until_approval",
+    canRenderEnabledControl: false,
+    envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
+    nextApprovalNeeded: approvalMessage,
+    checks: [
+      {
+        key: "actor_can_log_coach_decision",
+        label: "Current local actor can log coach decisions",
+        passed: actorCanLogDecision,
+        detail: actorCanLogDecision
+          ? `${actor.audienceLabel} can shape coach decision writes in the local contract.`
+          : `${actor.audienceLabel} cannot log advance, hold, or intervene decisions.`,
+      },
+      {
+        key: "actor_allowed_by_write_plan",
+        label: "Actor is allowed by the planned write matrix",
+        passed: actorAllowedByPlan,
+        detail: actorAllowedByPlan
+          ? `${actor.audienceLabel} is allowed for coach decisions in the write plan.`
+          : `${actor.audienceLabel} is blocked from coach decisions in the write plan.`,
+      },
+      {
+        key: "local_database_function_exists",
+        label: "Local database function exists",
+        passed: true,
+        detail: "Goal 27 implemented app.log_coach_decision(...).",
+      },
+      {
+        key: "rls_tests_exist",
+        label: "RLS/security tests exist",
+        passed: true,
+        detail:
+          "supabase/tests/database/rls_goal_27.test.sql proves coach decisions are function-gated and audited.",
+      },
+      {
+        key: "external_writes_disabled",
+        label: "External writes stay disabled",
+        passed: true,
+        detail:
+          "Coach decisions record internal events and a disabled outbox row; they do not send escalation packets or automation.",
+      },
+      {
+        key: "live_auth_approved",
+        label: "Live auth/browser session approved",
+        passed: false,
+        detail: "Live auth is still disabled, so browser identity cannot be trusted for real writes.",
+      },
+      {
+        key: "browser_write_approved",
+        label: "Browser write approval granted",
+        passed: false,
+        detail: writeReadiness.reason,
+      },
+    ],
+    preview: createCoachDecisionMock(actor, input),
   };
 }
 

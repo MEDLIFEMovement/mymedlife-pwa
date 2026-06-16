@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 26: HQ proof-sharing browser write gate with
+The current goal is Goal 27: coach decision browser write gate with
 production data, enabled browser writes, uploads, and external integrations
 still disabled.
 
@@ -122,6 +122,12 @@ proof-sharing decisions: `hq_sharing_decision` on `/rush-month/review`. It
 references the existing local Supabase HQ decision function and keeps decision
 saves, public proof sharing, browser writes, and external automation disabled.
 
+Goal 27 adds the same visible, testable browser-write activation gate for coach
+advance / hold / intervene decisions: `coach_decision_logged` on `/coach`. It
+adds the local Supabase `app.log_coach_decision(...)` function and keeps coach
+decision saves, browser writes, n8n escalation packets, and external automation
+disabled.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -191,6 +197,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 24 leader assignment browser write gate](./docs/architecture/goal-24-leader-assignment-write-gate.md)
 - [Goal 25 proof submission browser write gate](./docs/architecture/goal-25-proof-submission-browser-write-gate.md)
 - [Goal 26 HQ proof-sharing browser write gate](./docs/architecture/goal-26-hq-proof-sharing-browser-write-gate.md)
+- [Goal 27 coach decision browser write gate](./docs/architecture/goal-27-coach-decision-browser-write-gate.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)

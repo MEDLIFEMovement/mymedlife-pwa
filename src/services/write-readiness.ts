@@ -2,9 +2,11 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   createActionStartedMock,
   createChapterAssignmentMock,
+  createCoachDecisionMock,
   createHqSharingDecisionMock,
   createProofSubmissionMock,
   type ChapterAssignmentInput,
+  type CoachDecisionInput,
   type HqSharingDecisionInput,
   type ProofSubmissionInput,
 } from "@/services/local-action-contracts";
@@ -15,6 +17,7 @@ type EnvSource = Record<string, string | undefined>;
 export type WriteOperation =
   | "action_assigned"
   | "action_started"
+  | "coach_decision_logged"
   | "evidence_submitted"
   | "hq_sharing_decision";
 
@@ -130,5 +133,25 @@ export function prepareDisabledHqSharingDecisionWrite(
       "audit_logs",
     ],
     preview: createHqSharingDecisionMock(actor, evidenceItem, input),
+  };
+}
+
+export function prepareDisabledCoachDecisionWrite(
+  actor: LocalActorContext,
+  input: CoachDecisionInput,
+): DisabledWriteAttempt<ReturnType<typeof createCoachDecisionMock>> {
+  return {
+    success: false,
+    operation: "coach_decision_logged",
+    reason: getWriteReadinessSummary(),
+    wouldWriteTables: [
+      "phases",
+      "phase_readiness_reviews",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ],
+    preview: createCoachDecisionMock(actor, input),
   };
 }

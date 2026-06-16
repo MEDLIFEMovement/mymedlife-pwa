@@ -10,6 +10,7 @@ import {
 import {
   prepareDisabledAssignmentCreateWrite,
   prepareDisabledActionStartWrite,
+  prepareDisabledCoachDecisionWrite,
   prepareDisabledHqSharingDecisionWrite,
   prepareDisabledProofSubmissionWrite,
 } from "@/services/write-readiness";
@@ -19,6 +20,7 @@ describe("write plan matrix", () => {
     expect(writePlanOperations.map((operation) => operation.key)).toEqual([
       "action_assigned",
       "action_started",
+      "coach_decision_logged",
       "evidence_submitted",
       "hq_sharing_decision",
     ]);
@@ -26,7 +28,7 @@ describe("write plan matrix", () => {
     expect(writePlanOperations.every((operation) => operation.stillDisabled)).toBe(true);
     expect(getWritePlanSummary()).toEqual(
       expect.objectContaining({
-        operationCount: 4,
+        operationCount: 5,
         allOperationsStillDisabled: true,
         externalWritesAllowed: false,
       }),
@@ -36,6 +38,7 @@ describe("write plan matrix", () => {
   it("keeps future table targets aligned with the disabled write-readiness service", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const admin = getMockLocalActorContext("admin@mymedlife.test");
+    const coach = getMockLocalActorContext("coach@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const actionAssignment = requireAssignment("member-push");
     const evidenceItem = evidenceItems[0];
@@ -53,6 +56,12 @@ describe("write plan matrix", () => {
     );
     expect(Array.from(getWritePlanOperation("action_started").futureTables)).toEqual(
       prepareDisabledActionStartWrite(member, actionAssignment).wouldWriteTables,
+    );
+    expect(Array.from(getWritePlanOperation("coach_decision_logged").futureTables)).toEqual(
+      prepareDisabledCoachDecisionWrite(coach, {
+        decision: "hold",
+        note: "Local preview only: chapter should hold before advancing.",
+      }).wouldWriteTables,
     );
     expect(Array.from(getWritePlanOperation("evidence_submitted").futureTables)).toEqual(
       prepareDisabledProofSubmissionWrite(member, actionAssignment, {
@@ -76,6 +85,9 @@ describe("write plan matrix", () => {
     ).toBe(true);
     expect(isActorAllowedForPlannedWrite("ds_admin", "action_assigned")).toBe(false);
     expect(isActorAllowedForPlannedWrite("ds_admin", "action_started")).toBe(false);
+    expect(isActorAllowedForPlannedWrite("ds_admin", "coach_decision_logged")).toBe(
+      false,
+    );
     expect(isActorAllowedForPlannedWrite("ds_admin", "evidence_submitted")).toBe(false);
     expect(isActorAllowedForPlannedWrite("ds_admin", "hq_sharing_decision")).toBe(
       false,
@@ -98,6 +110,32 @@ describe("write plan matrix", () => {
     expect(isActorAllowedForPlannedWrite("chapter_leader", "action_assigned")).toBe(true);
     expect(isActorAllowedForPlannedWrite("super_admin", "action_assigned")).toBe(true);
     expect(isActorAllowedForPlannedWrite("admin", "action_assigned")).toBe(false);
+  });
+
+  it("limits coach decisions to coach and HQ support roles", () => {
+    const coachDecision = getWritePlanOperation("coach_decision_logged");
+
+    expect(Array.from(coachDecision.allowedActors)).toEqual([
+      "coach",
+      "admin",
+      "super_admin",
+    ]);
+    expect(coachDecision.blockedActors).toEqual([
+      "chapter_member",
+      "chapter_leader",
+      "ds_admin",
+    ]);
+    expect(isActorAllowedForPlannedWrite("coach", "coach_decision_logged")).toBe(true);
+    expect(isActorAllowedForPlannedWrite("admin", "coach_decision_logged")).toBe(true);
+    expect(isActorAllowedForPlannedWrite("super_admin", "coach_decision_logged")).toBe(
+      true,
+    );
+    expect(
+      isActorAllowedForPlannedWrite("chapter_leader", "coach_decision_logged"),
+    ).toBe(false);
+    expect(isActorAllowedForPlannedWrite("ds_admin", "coach_decision_logged")).toBe(
+      false,
+    );
   });
 
   it("limits proof submission to student or chapter operators", () => {
@@ -134,9 +172,10 @@ describe("write plan matrix", () => {
     );
   });
 
-  it("marks assignment, proof, and HQ decisions as future outbox-producing writes", () => {
+  it("marks assignment, coach, proof, and HQ decisions as future outbox writes", () => {
     expect(getWritePlanSummary().operationsTouchingOutbox).toEqual([
       "action_assigned",
+      "coach_decision_logged",
       "evidence_submitted",
       "hq_sharing_decision",
     ]);

@@ -8,6 +8,7 @@ import type {
   ChapterRole,
   EvidenceItem,
   IntegrationEvent,
+  KpiSummary,
 } from "@/shared/types/domain";
 
 export type LocalContractResult<TData> =
@@ -43,6 +44,15 @@ export type LocalHqSharingDecision = {
   auditLog: AuditLog;
 };
 
+export type LocalCoachDecision = {
+  decision: KpiSummary["coachDecision"];
+  readinessStatus: "ready" | "validated" | "blocked";
+  coachValidationStatus: "pending" | "validated" | "blocked";
+  integrationEvent: IntegrationEvent;
+  automationOutbox: AutomationOutbox;
+  auditLog: AuditLog;
+};
+
 export type ProofSubmissionInput = {
   evidenceType: EvidenceItem["evidenceType"];
   summary: string;
@@ -61,6 +71,12 @@ export type ChapterAssignmentInput = {
 export type HqSharingDecisionInput = {
   decision: Approval["decision"];
   note: string;
+};
+
+export type CoachDecisionInput = {
+  decision: KpiSummary["coachDecision"];
+  note: string;
+  blockerSummary?: string;
 };
 
 const localOccurredAt = "local-mock-time";
@@ -82,6 +98,14 @@ export function canCreateChapterAssignment(actor: LocalActorContext): boolean {
 
 export function canMakeHqSharingDecision(actor: LocalActorContext): boolean {
   return actor.audience === "admin" || actor.audience === "super_admin";
+}
+
+export function canLogCoachDecision(actor: LocalActorContext): boolean {
+  return (
+    actor.audience === "coach" ||
+    actor.audience === "admin" ||
+    actor.audience === "super_admin"
+  );
 }
 
 export function createChapterAssignmentMock(
@@ -335,6 +359,69 @@ export function createHqSharingDecisionMock(
   };
 }
 
+export function createCoachDecisionMock(
+  actor: LocalActorContext,
+  input: CoachDecisionInput,
+): LocalContractResult<LocalCoachDecision> {
+  if (!canLogCoachDecision(actor)) {
+    return {
+      success: false,
+      error:
+        "Only Coach, Admin, or Super Admin can log coach decisions in the local contract.",
+    };
+  }
+
+  const normalizedNote = input.note.trim();
+  const normalizedBlockerSummary = input.blockerSummary?.trim() ?? "";
+
+  if (normalizedNote.length < 12) {
+    return {
+      success: false,
+      error: "Coach decisions need a short plain-English note.",
+    };
+  }
+
+  if (input.decision === "intervene" && normalizedBlockerSummary.length < 8) {
+    return {
+      success: false,
+      error: "Intervene decisions need a blocker summary.",
+    };
+  }
+
+  const statuses = coachDecisionToStatuses(input.decision);
+  const event = createLocalIntegrationEvent({
+    targetId: `coach-decision-${input.decision}-${slugify(actor.user.id)}`,
+    eventType: "coach_decision_logged",
+    title: "Coach decision previewed locally",
+    destination: "internal",
+    detail:
+      "Coach decision was shaped for future persistence. No external escalation packet or automation happened.",
+  });
+
+  return {
+    success: true,
+    data: {
+      decision: input.decision,
+      readinessStatus: statuses.readinessStatus,
+      coachValidationStatus: statuses.coachValidationStatus,
+      integrationEvent: event,
+      automationOutbox: createDisabledOutbox({
+        sourceEventId: event.id,
+        destination: "n8n",
+        eventType: "coach_decision_logged",
+        payloadSummary:
+          "Future n8n workflow could assemble a coach escalation packet after explicit approval.",
+      }),
+      auditLog: createLocalAuditLog(
+        actor,
+        "coach_decision_logged",
+        "phase_readiness_review",
+        event.id,
+      ),
+    },
+  };
+}
+
 export function getReviewQueueForActor(
   actor: LocalActorContext,
   evidenceItems: EvidenceItem[],
@@ -416,6 +503,30 @@ function createLocalAuditLog(
 
 function actorToReviewerRole(actor: LocalActorContext): ChapterRole {
   return actor.audience === "super_admin" ? "Super Admin" : "Admin";
+}
+
+function coachDecisionToStatuses(decision: KpiSummary["coachDecision"]): {
+  readinessStatus: LocalCoachDecision["readinessStatus"];
+  coachValidationStatus: LocalCoachDecision["coachValidationStatus"];
+} {
+  if (decision === "advance") {
+    return {
+      readinessStatus: "validated",
+      coachValidationStatus: "validated",
+    };
+  }
+
+  if (decision === "intervene") {
+    return {
+      readinessStatus: "blocked",
+      coachValidationStatus: "blocked",
+    };
+  }
+
+  return {
+    readinessStatus: "ready",
+    coachValidationStatus: "pending",
+  };
 }
 
 function roleToAssignmentLane(role: ChapterRole): Assignment["lane"] {

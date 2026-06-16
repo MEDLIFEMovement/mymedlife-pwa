@@ -6,8 +6,9 @@ creating storage buckets or upload paths. Goal 18 adds a local-only audited
 chapter-leader assignment creation function. Goal 19 adds auth/onboarding
 planning without enabling live auth or production users. Goal 20 adds the
 route-by-route live-data connection plan without enabling production data.
-Goals 21 and 22 expand read-only campaign/dashboard surfaces. Goal 23 adds the
-first visible browser-write activation gate while keeping enabled controls off.
+Goals 21 and 22 expand read-only campaign/dashboard surfaces. Goals 23 through
+27 add visible browser-write activation gates while keeping enabled controls
+off. Goal 27 also adds the local-only audited coach decision function.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable live auth in the UI, add browser write controls, or trigger
@@ -32,6 +33,9 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `supabase/migrations/20260616110000_goal_18_leader_assignment_create.sql`:
   first local chapter-leader assignment creation function plus direct
   assignment insert bypass protection.
+- `supabase/migrations/20260616120000_goal_27_coach_decision.sql`: first local
+  coach advance / hold / intervene function plus direct readiness validation
+  bypass protection.
 - `supabase/seed.sql`: fake local users, chapters, memberships, staff roles,
   Rush Month records, proof/testimonial records, disabled/mock outbox rows, and
   fake Goal 7 operating-model records.
@@ -48,6 +52,8 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   local `hq_sharing_decision_logged` proof/testimonial sharing decision path.
 - `supabase/tests/database/rls_goal_18.test.sql`: pgTAP tests for the first
   local `action_assigned` assignment creation path.
+- `supabase/tests/database/rls_goal_27.test.sql`: pgTAP tests for the first
+  local `coach_decision_logged` readiness decision path.
 - `src/lib/supabase-readonly.ts`: server-only REST reader for local Supabase.
 - `src/services/read-only-app-data.ts`: mock-safe read model used by app pages.
 - `.env.example`: local-only read configuration template.
@@ -97,6 +103,18 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   dashboard with browser writes still disabled.
 - `docs/architecture/goal-23-action-start-browser-write-gate.md`: visible
   action-start browser write activation gate with enabled controls still
+  disabled.
+- `docs/architecture/goal-24-leader-assignment-write-gate.md`: visible
+  assignment-create browser write activation gate with enabled controls still
+  disabled.
+- `docs/architecture/goal-25-proof-submission-browser-write-gate.md`: visible
+  proof-submission browser write activation gate with enabled controls still
+  disabled.
+- `docs/architecture/goal-26-hq-proof-sharing-browser-write-gate.md`: visible
+  HQ proof-sharing decision browser write activation gate with enabled controls
+  still disabled.
+- `docs/architecture/goal-27-coach-decision-browser-write-gate.md`: visible
+  coach decision browser write activation gate with enabled controls still
   disabled.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
@@ -219,7 +237,10 @@ auth, or external sends. Goal 19 defines the future auth/onboarding path, but
 it still does not enable live auth, browser sessions, production users,
 membership approvals, role assignments, or external sends. Goal 20 defines the
 future route-by-route live-data migration order, but it still does not enable
-production Supabase, browser writes, or external sends.
+production Supabase, browser writes, or external sends. Goal 27 adds the first
+local Supabase coach decision function for `coach_decision_logged` and a visible
+browser gate on `/coach`, but it still does not enable browser saves, live auth,
+n8n escalation packets, or external sends.
 
 ## GitHub CI
 
@@ -287,6 +308,10 @@ development server after changing the env var.
   and audit log are written together.
 - General Members, Coaches, Admin, and DS Admin cannot create routine chapter
   assignments.
+- Coach decisions must use `app.log_coach_decision` so the phase readiness
+  update, readiness review row, event row, integration event row, disabled
+  outbox row, and audit log are written together.
+- General Members, Chapter Leaders, and DS Admin cannot log coach decisions.
 
 ## Known Codex Environment Limitation
 

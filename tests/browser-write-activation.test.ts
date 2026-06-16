@@ -4,6 +4,7 @@ import {
   getAssignmentCreateBrowserWriteGate,
   getActionStartBrowserWriteGate,
   getBlockingActivationChecks,
+  getCoachDecisionBrowserWriteGate,
   getHqSharingDecisionBrowserWriteGate,
   getPassedActivationChecks,
   getProofSubmissionBrowserWriteGate,
@@ -119,6 +120,34 @@ describe("browser write activation gate", () => {
     ]);
   });
 
+  it("keeps coach decision browser control disabled for an allowed coach", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const gate = getCoachDecisionBrowserWriteGate(actor, {
+      decision: "intervene",
+      note: "Local preview only: chapter needs coach support before advancing.",
+      blockerSummary: "Rush ownership and proof quality need follow-up.",
+    });
+
+    expect(gate.operation).toBe("coach_decision_logged");
+    expect(gate.route).toBe("/coach");
+    expect(gate.localFunction).toBe("app.log_coach_decision");
+    expect(gate.functionSignature).toContain("app.log_coach_decision");
+    expect(gate.canRenderEnabledControl).toBe(false);
+    expect(gate.status).toBe("blocked_until_approval");
+    expect(gate.preview.success).toBe(true);
+    expect(getPassedActivationChecks(gate).map((check) => check.key)).toEqual([
+      "actor_can_log_coach_decision",
+      "actor_allowed_by_write_plan",
+      "local_database_function_exists",
+      "rls_tests_exist",
+      "external_writes_disabled",
+    ]);
+    expect(getBlockingActivationChecks(gate).map((check) => check.key)).toEqual([
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
   it("does not enable browser writes when the local write env var is requested", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const assignment = requireAssignment("assign-eboard");
@@ -196,6 +225,46 @@ describe("browser write activation gate", () => {
       }),
     ).toEqual([
       "actor_can_make_hq_sharing_decision",
+      "actor_allowed_by_write_plan",
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
+  it("blocks chapter leaders from coach decision browser writes", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const gate = getCoachDecisionBrowserWriteGate(actor, {
+      decision: "hold",
+      note: "Chapter leaders should not own coach decision truth.",
+    });
+
+    expect(gate.preview.success).toBe(false);
+    expect(
+      getBlockingActivationChecks(gate).map((check) => {
+        return check.key;
+      }),
+    ).toEqual([
+      "actor_can_log_coach_decision",
+      "actor_allowed_by_write_plan",
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
+  it("blocks DS Admin from coach decision browser writes", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getCoachDecisionBrowserWriteGate(actor, {
+      decision: "hold",
+      note: "DS Admin can inspect outbox posture but cannot own coach decisions.",
+    });
+
+    expect(gate.preview.success).toBe(false);
+    expect(
+      getBlockingActivationChecks(gate).map((check) => {
+        return check.key;
+      }),
+    ).toEqual([
+      "actor_can_log_coach_decision",
       "actor_allowed_by_write_plan",
       "live_auth_approved",
       "browser_write_approved",
