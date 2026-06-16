@@ -1,8 +1,7 @@
-import { statusClassName, statusLabel } from "@/lib/rush-month";
-import type { AssignmentStatus } from "@/shared/types/domain";
+import { statusClassName, statusLabel, type DisplayStatus } from "@/lib/rush-month";
 
 type StatusBadgeProps = {
-  status: AssignmentStatus;
+  status: DisplayStatus;
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {

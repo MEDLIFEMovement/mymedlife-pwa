@@ -252,7 +252,19 @@ export const evidenceItemSchema = createSchema<EvidenceItem>("EvidenceItem", (va
     id: stringField(record, "id"),
     assignmentId: stringField(record, "assignmentId"),
     submittedBy: stringField(record, "submittedBy"),
-    evidenceType: enumField(record, "evidenceType", ["text", "link", "mock_file"] as const),
+    evidenceType: enumField(
+      record,
+      "evidenceType",
+      [
+        "text",
+        "link",
+        "mock_file",
+        "testimonial_text",
+        "bridge_video",
+        "event_photo",
+        "external_link",
+      ] as const,
+    ),
     summary: stringField(record, "summary"),
     status: enumField(
       record,

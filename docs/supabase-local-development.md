@@ -1,6 +1,6 @@
 # Supabase Local Development
 
-Goals 5, 7, 8, 9, and 10 add the local-only Supabase foundation for
+Goals 5, 7, 8, 9, 10, and 11 add the local-only Supabase foundation for
 myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
@@ -36,6 +36,10 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   actor emails for `MYMEDLIFE_LOCAL_ACTOR_EMAIL`.
 - `src/components/restricted-state.tsx`: plain-English restricted-state UI for
   roles that should not read a page or panel.
+- `src/services/local-action-contracts.ts`: local-only action/proof/HQ sharing
+  contract previews for future write implementation.
+- `tests/local-action-contracts.test.ts`: unit tests proving the local contract
+  boundaries before any app writes are introduced.
 
 ## Requirements
 
@@ -117,8 +121,9 @@ back to mock data.
 Goal 8 intentionally uses a server-only read path. Goal 9 adds local-only actor
 switching by fake seed email. Goal 10 uses that actor to filter read-only
 navigation, assignments, risks, admin panels, and integration/outbox visibility.
-This does not add browser auth, student sign-in, sessions, cookies, production
-auth, or app writes.
+Goal 11 adds local-only action/proof/HQ sharing contract previews. This does
+not add browser auth, student sign-in, sessions, cookies, production auth, app
+writes, proof uploads, public sharing, or external automation.
 
 ## GitHub CI
 

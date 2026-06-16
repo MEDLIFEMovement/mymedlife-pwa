@@ -3,7 +3,9 @@ import {
   getAssignmentById as findAssignmentById,
   getAssignmentsForRole as findAssignmentsForRole,
 } from "@/services/rush-month-service";
-import type { Assignment, AssignmentStatus, RoleKey } from "@/shared/types/domain";
+import type { Assignment, AssignmentStatus, EvidenceItem, RoleKey } from "@/shared/types/domain";
+
+export type DisplayStatus = AssignmentStatus | EvidenceItem["status"];
 
 export function getAssignmentsForRole(role: RoleKey): Assignment[] {
   return findAssignmentsForRole(assignments, role);
@@ -39,7 +41,7 @@ export function getProgressCounts() {
   };
 }
 
-export function statusLabel(status: AssignmentStatus): string {
+export function statusLabel(status: DisplayStatus): string {
   switch (status) {
     case "not_started":
       return "Not started";
@@ -47,6 +49,8 @@ export function statusLabel(status: AssignmentStatus): string {
       return "In progress";
     case "submitted":
       return "Proof submitted";
+    case "pending_review":
+      return "Pending HQ review";
     case "approved":
       return "Approved";
     case "changes_requested":
@@ -54,11 +58,12 @@ export function statusLabel(status: AssignmentStatus): string {
   }
 }
 
-export function statusClassName(status: AssignmentStatus): string {
+export function statusClassName(status: DisplayStatus): string {
   switch (status) {
     case "approved":
       return "border-emerald-300/30 bg-emerald-300/15 text-emerald-100";
     case "submitted":
+    case "pending_review":
       return "border-sky-300/30 bg-sky-300/15 text-sky-100";
     case "in_progress":
       return "border-amber-300/30 bg-amber-300/15 text-amber-100";

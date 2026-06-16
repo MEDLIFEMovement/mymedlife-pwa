@@ -139,8 +139,8 @@ export const evidenceItems: EvidenceItem[] = [
     id: "evidence-proof-pack",
     assignmentId: "proof-pack",
     submittedBy: "Action Committee Chair",
-    evidenceType: "mock_file",
-    summary: "Proof pack needs clearer owner names before approval.",
+    evidenceType: "bridge_video",
+    summary: "Bridge video needs clearer context before HQ decides whether to share it.",
     status: "changes_requested",
   },
 ];

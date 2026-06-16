@@ -161,8 +161,8 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 10: role-aware read-only app experience and permission
-proof.
+The active goal is Goal 11: local proof/action contracts and HQ sharing review
+preview.
 
 Allowed:
 
@@ -179,6 +179,11 @@ Allowed:
   fallback and local Supabase modes
 - role-aware navigation labels, restricted-state messaging, read filters, and
   tests for the main permission boundaries
+- local-only contract previews for action started, proof submitted, HQ
+  proof-sharing decisions, audit intent, integration events, and disabled
+  outbox rows
+- role-aware proof/evidence and review screens that explain HQ owns broad
+  proof-sharing decisions
 - loading, empty, fallback, and error states
 - tests for read-only services and fallback behavior
 - README and documentation updates
@@ -190,6 +195,8 @@ Not allowed without Nick's next approval:
 - live Supabase auth wiring in the student UI
 - real browser sessions, cookies, sign-in flows, or production auth
 - app write paths to Supabase
+- proof uploads or file storage writes
+- public proof sharing or publishing
 - real users or real role assignments
 - real HubSpot writes
 - real Luma writes
