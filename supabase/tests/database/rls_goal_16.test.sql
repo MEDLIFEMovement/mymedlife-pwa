@@ -188,17 +188,17 @@ select throws_ok(
   'DS Admin cannot record HQ proof sharing decision'
 );
 
+update app.evidence_items
+set sharing_status = 'approved_for_sharing'
+where id = 'd7000000-0000-4000-8000-000000000001';
+
 select is(
   (
-    with updated as (
-      update app.evidence_items
-      set sharing_status = 'approved_for_sharing'
-      where id = 'd7000000-0000-4000-8000-000000000001'
-      returning 1
-    )
-    select count(*)::int from updated
+    select sharing_status::text
+    from app.evidence_items
+    where id = 'd7000000-0000-4000-8000-000000000001'
   ),
-  0,
+  'submitted',
   'DS Admin cannot directly update proof sharing status'
 );
 
