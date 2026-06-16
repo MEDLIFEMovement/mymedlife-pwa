@@ -161,11 +161,12 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 88: member proof status. This remains mock-safe and
-makes `/rush-month/evidence` explain what happens after proof/testimonial
-context is prepared or submitted. Production data, broad browser writes, admin
-mutation controls, real uploads, public proof sharing, role writes, Luma writes,
-reminders, and external integrations remain disabled.
+The active goal is Goal 89: leader evidence follow-up. This remains mock-safe
+and makes `/rush-month/review` separate chapter follow-up on missing or weak
+proof/testimonials from HQ-owned broad sharing decisions. Production data,
+broad browser writes, admin mutation controls, real uploads, public proof
+sharing, role writes, Luma writes, reminders, nudges, and external integrations
+remain disabled.
 
 Allowed:
 
@@ -241,6 +242,10 @@ Allowed:
 - member-facing proof status guidance that distinguishes proof needed, waiting
   for HQ review, changes requested, and internal-learning states while public
   publishing and external exports stay disabled
+- leader-facing evidence follow-up guidance that distinguishes member
+  follow-up, HQ review, not-ready, and closed/internal-learning states while
+  nudges, HQ sharing writes, public publishing, and external exports stay
+  disabled
 - proof-library posture that treats bridge videos, testimonials, UGC, and
   chapter recaps as belief-building assets requiring HQ sharing decisions
 - tests proving DS Admin cannot read campaign, event, proof, student, points,

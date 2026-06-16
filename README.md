@@ -10,7 +10,15 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 88: member proof status. This remains mock-safe by
+The current goal is Goal 89: leader evidence follow-up. This remains mock-safe
+by default and adds a read-only `/rush-month/review` board that separates
+chapter follow-up from HQ proof-sharing decisions. Leaders can see which
+assignments need proof, better testimonial context, or HQ review; coaches and
+admins can inspect the posture; members and DS Admin remain out of this leader
+follow-up board. Nudges, proof saves, uploads, public sharing, warehouse, Power
+BI, HubSpot, Luma, n8n, SMS, email, and AI writes remain disabled.
+
+Goal 88 added member proof status. This remains mock-safe by
 default and makes `/rush-month/evidence` explain proof/testimonial status in
 plain English. Members can see whether proof is needed, waiting for HQ review,
 needs changes, or approved for internal learning. Leaders, coaches, admins, and
@@ -587,6 +595,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 86 event proof bridge](./docs/architecture/goal-86-event-proof-bridge.md)
 - [Goal 87 action proof handoff](./docs/architecture/goal-87-action-proof-handoff.md)
 - [Goal 88 member proof status](./docs/architecture/goal-88-member-proof-status.md)
+- [Goal 89 leader evidence follow-up](./docs/architecture/goal-89-leader-evidence-follow-up.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
