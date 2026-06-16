@@ -1,10 +1,12 @@
 import { AppShell } from "@/components/app-shell";
+import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
+import { getHqSharingDecisionBrowserWriteGate } from "@/services/browser-write-activation";
 import {
   canMakeHqSharingDecision,
   createHqSharingDecisionMock,
@@ -19,17 +21,18 @@ export default async function ReviewPage() {
   const actor = await getLocalActorContext();
   const reviewEvidence = getReviewQueueForActor(actor, evidenceItems);
   const canDecideSharing = canMakeHqSharingDecision(actor);
+  const sampleDecisionInput = {
+    decision: "approved",
+    note: "Local preview only: useful proof to share with other chapters later.",
+  } as const;
   const firstDecisionPreview = reviewEvidence[0]
-    ? createHqSharingDecisionMock(actor, reviewEvidence[0], {
-        decision: "approved",
-        note: "Local preview only: useful proof to share with other chapters later.",
-      })
+    ? createHqSharingDecisionMock(actor, reviewEvidence[0], sampleDecisionInput)
     : undefined;
   const disabledDecisionWrite = reviewEvidence[0]
-    ? prepareDisabledHqSharingDecisionWrite(actor, reviewEvidence[0], {
-        decision: "approved",
-        note: "Local preview only: useful proof to share with other chapters later.",
-      })
+    ? prepareDisabledHqSharingDecisionWrite(actor, reviewEvidence[0], sampleDecisionInput)
+    : undefined;
+  const decisionGate = reviewEvidence[0]
+    ? getHqSharingDecisionBrowserWriteGate(actor, reviewEvidence[0], sampleDecisionInput)
     : undefined;
 
   return (
@@ -122,6 +125,9 @@ export default async function ReviewPage() {
               operationLabel="HQ proof-sharing write remains disabled"
               wouldWriteTables={disabledDecisionWrite.wouldWriteTables}
             />
+          ) : null}
+          {canDecideSharing && decisionGate ? (
+            <BrowserWriteGateNotice gate={decisionGate} />
           ) : null}
         </>
       ) : null}
