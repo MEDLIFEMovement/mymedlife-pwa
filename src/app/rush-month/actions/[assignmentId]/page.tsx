@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ActionStartActivationContractPanel } from "@/components/action-start-activation-contract-panel";
 import { ActionStartResultStatesPanel } from "@/components/action-start-result-states-panel";
 import { ActionStartServerActionPanel } from "@/components/action-start-server-action-panel";
+import { ActionProofHandoffPanel } from "@/components/action-proof-handoff-panel";
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
@@ -21,6 +22,7 @@ import {
   getDisabledActionStartResultPreview,
 } from "@/services/action-start-result-states";
 import { getActionStartWriteReadiness } from "@/services/action-start-write";
+import { getActionProofHandoffWorkspace } from "@/services/action-proof-handoff";
 import {
   canSubmitProofForAssignment,
   createActionStartedMock,
@@ -135,6 +137,7 @@ export default async function ActionDetailPage({
     assignment,
     proofSubmissionInput,
   );
+  const proofHandoff = getActionProofHandoffWorkspace(actor, assignment);
   const disabledProofSubmissionWrite = prepareDisabledProofSubmissionWrite(actor, assignment, {
     ...proofSubmissionInput,
   });
@@ -156,6 +159,8 @@ export default async function ActionDetailPage({
           {assignment.instructions}
         </p>
       </section>
+
+      <ActionProofHandoffPanel workspace={proofHandoff} />
 
       <section className="grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">

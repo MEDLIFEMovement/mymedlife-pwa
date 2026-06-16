@@ -10,7 +10,15 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 86: event proof bridge. This remains mock-safe by
+The current goal is Goal 87: action proof handoff. This remains mock-safe by
+default and makes `/rush-month/actions/[assignmentId]` explain the next
+proof/testimonial step in plain English before a student reaches the deeper
+write-gate panels. Members and action committee roles can see what story to
+prepare, leaders/coaches/admins can inspect proof posture, and DS Admin remains
+out of student proof truth. Proof saves, uploads, public sharing, warehouse,
+Power BI, HubSpot, Luma, n8n, SMS, email, and AI writes remain disabled.
+
+Goal 86 added the event proof bridge. This remains mock-safe by
 default and connects `/rush-month/events` to the member-facing proof/testimonial
 intake loop. Members, action committee roles, leaders, coaches, admins, and
 super admins can see how event attendance, NPS feedback, proof/testimonials,
@@ -569,6 +577,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 84 action committee role personas](./docs/architecture/goal-84-action-committee-role-personas.md)
 - [Goal 85 action committee workspace](./docs/architecture/goal-85-action-committee-workspace.md)
 - [Goal 86 event proof bridge](./docs/architecture/goal-86-event-proof-bridge.md)
+- [Goal 87 action proof handoff](./docs/architecture/goal-87-action-proof-handoff.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)

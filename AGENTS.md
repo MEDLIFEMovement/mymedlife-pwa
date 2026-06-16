@@ -161,11 +161,11 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 86: event proof bridge. This remains mock-safe and
-connects Rush Month events to the member-facing feedback and proof/testimonial
-intake loop. Production data, broad browser writes, admin mutation controls,
-real uploads, public proof sharing, role writes, Luma writes, reminders, and
-external integrations remain disabled.
+The active goal is Goal 87: action proof handoff. This remains mock-safe and
+makes `/rush-month/actions/[assignmentId]` clearly explain the member-facing
+proof/testimonial next step after an action or event. Production data, broad
+browser writes, admin mutation controls, real uploads, public proof sharing,
+role writes, Luma writes, reminders, and external integrations remain disabled.
 
 Allowed:
 
@@ -235,6 +235,9 @@ Allowed:
 - member-facing event-to-proof bridge guidance that names attendance,
   feedback/NPS, proof/testimonial, structured event, disabled outbox, and audit
   posture without enabling Luma, upload, or reminder writes
+- member-facing action-to-proof handoff guidance that tells the student what
+  testimonial/proof context to prepare, which future event/outbox/audit records
+  would exist, and which external destinations remain disabled
 - proof-library posture that treats bridge videos, testimonials, UGC, and
   chapter recaps as belief-building assets requiring HQ sharing decisions
 - tests proving DS Admin cannot read campaign, event, proof, student, points,
