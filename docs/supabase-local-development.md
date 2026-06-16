@@ -19,6 +19,10 @@ local-only browser-to-Supabase write path for `hq_sharing_decision`. Goal 64
 adds the fourth local-only browser-to-Supabase write path for `action_assigned`
 assignment creation. Goal 65 adds the fifth local-only browser-to-Supabase
 write path for `coach_decision_logged`.
+Goals 74 through 76 add `/admin/first-write` so staff can inspect the first
+action-start write drill, review post-drill readback evidence, and use one
+operator-ready packet for env settings, fake sign-in, route sequence, proof
+expectations, stop conditions, and staging-review posture.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
@@ -186,6 +190,14 @@ or AI writes.
   future proof files.
 - `tests/proof-storage-readiness.test.ts`: unit tests proving proof uploads and
   public publishing remain disabled.
+- `src/services/first-write-activation-drill.ts`: staff-only first-write drill,
+  readback evidence, and verification packet for the first action-start local
+  write.
+- `src/components/first-write-activation-drill-panel.tsx`: `/admin/first-write`
+  panel with readiness checks, operator packet, readback evidence, and stop
+  conditions.
+- `tests/first-write-activation-drill.test.ts`: unit tests for first-write
+  readiness, readback evidence, and packet decision states.
 
 ## Requirements
 

@@ -81,6 +81,108 @@ export function FirstWriteActivationDrillPanel({
         </article>
       )}
 
+      <section className="mt-5 rounded-[2rem] border border-teal-300/20 bg-teal-300/10 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-100/80">
+              Operator packet
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              {drill.verificationPacket.title}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+              {drill.verificationPacket.plainEnglishDecision}
+            </p>
+          </div>
+          <span className={verificationStatusClassName(drill.verificationPacket.status)}>
+            {drill.verificationPacket.status.replaceAll("_", " ")}
+          </span>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.9fr]">
+          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+            <p className="text-sm font-semibold text-white">
+              Required local env settings
+            </p>
+            <div className="mt-3 grid gap-2">
+              {drill.verificationPacket.envSettings.map((setting) => (
+                <div
+                  key={setting.key}
+                  className="rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3"
+                >
+                  <p className="font-mono text-xs text-emerald-100/80">
+                    {setting.key}={setting.value}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-white/52">
+                    {setting.reason}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+            <p className="text-sm font-semibold text-white">Fake member sign-in</p>
+            <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3 font-mono text-xs text-emerald-100/80">
+              {drill.verificationPacket.fakeMemberCredential.email}
+            </p>
+            <p className="mt-2 rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3 font-mono text-xs text-emerald-100/80">
+              password={drill.verificationPacket.fakeMemberCredential.passwordLabel}
+            </p>
+            <Link
+              href={drill.verificationPacket.fakeMemberCredential.route}
+              className="mt-3 inline-flex rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+            >
+              Open local sign-in
+            </Link>
+            <p className="mt-3 text-xs leading-5 text-white/54">
+              This fake credential is local seed data only. It is not a production
+              account.
+            </p>
+          </article>
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          {drill.verificationPacket.operatorSequence.map((step, index) => (
+            <article
+              key={`${step.label}-${step.route}`}
+              className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/70">
+                    Packet step {index + 1}
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-white">
+                    {step.label}
+                  </h3>
+                </div>
+                <Link
+                  href={step.route}
+                  className="rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+                >
+                  Open {step.route}
+                </Link>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-white/62">
+                {step.expectedProof}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        <article className="mt-4 rounded-3xl border border-orange-300/20 bg-orange-300/10 p-4">
+          <p className="text-sm font-semibold text-white">Stop conditions</p>
+          <ul className="mt-3 grid gap-2">
+            {drill.verificationPacket.safetyStops.map((stop) => (
+              <li key={stop} className="text-xs leading-5 text-white/62">
+                {stop}
+              </li>
+            ))}
+          </ul>
+        </article>
+      </section>
+
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {drill.checks.map((check) => (
           <article
@@ -248,5 +350,21 @@ function readbackStatusClassName(status: string): string {
     case "blocked":
     default:
       return `${base} text-orange-100`;
+  }
+}
+
+function verificationStatusClassName(status: string): string {
+  const base = "rounded-full border px-3 py-1 text-xs font-semibold";
+
+  switch (status) {
+    case "evidence_observed":
+      return `${base} border-emerald-300/30 bg-emerald-300/15 text-emerald-100`;
+    case "ready_to_run_locally":
+      return `${base} border-sky-300/30 bg-sky-300/15 text-sky-100`;
+    case "needs_manual_audit_check":
+      return `${base} border-amber-300/30 bg-amber-300/15 text-amber-100`;
+    case "blocked":
+    default:
+      return `${base} border-orange-300/30 bg-orange-300/15 text-orange-100`;
   }
 }
