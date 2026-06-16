@@ -10,8 +10,8 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 21: campaign operating shells with production data,
-browser writes, uploads, and external integrations still disabled.
+The current goal is Goal 22: Rush Month role-aware dashboard with production
+data, browser writes, uploads, and external integrations still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -95,6 +95,10 @@ reusable campaign operating system surface. It adds campaign catalog pages,
 campaign detail pages, action committee event planning, proof-library posture,
 role-aware visibility, and tests while keeping the app read-only/mock-safe.
 
+Goal 22 adds a role-aware Rush Month dashboard, a friendly mock leaderboard,
+dashboard service tests, and the exact starter campaign shells required by the
+final MVP goal.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -159,6 +163,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 19 auth and onboarding plan](./docs/architecture/goal-19-auth-onboarding-plan.md)
 - [Goal 20 live data connection plan](./docs/architecture/goal-20-live-data-connection-plan.md)
 - [Goal 21 campaign operating shells](./docs/architecture/goal-21-campaign-operating-shells.md)
+- [Goal 22 Rush Month role-aware dashboard](./docs/architecture/goal-22-rush-month-dashboard.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -269,6 +274,9 @@ Rules:
 - Goal 21 adds read-only campaign shells, action committee event examples, and
   proof-library posture. It still does not build all campaigns, publish proof,
   enable browser writes, or send anything externally.
+- Goal 22 adds a role-aware Rush Month dashboard and exact starter campaign
+  shells. It still does not enable browser writes, live auth, proof uploads, or
+  external sends.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -285,6 +293,7 @@ data and fake local actor context. With or without local Supabase running,
 - `/campaigns/[campaignSlug]`
 - `/action-committees`
 - `/rush-month`
+- `/rush-month/dashboard`
 - `/rush-month/actions`
 - `/rush-month/actions/[assignmentId]`
 - `/rush-month/evidence`
@@ -305,6 +314,7 @@ Goal 2 route shells:
 - `/campaigns/[campaignSlug]`: campaign detail, action lanes, events, proof, KPIs, and disabled integration posture
 - `/action-committees`: action committee and chapter event operating examples
 - `/rush-month`: Rush Month campaign shell
+- `/rush-month/dashboard`: role-aware Rush Month operating dashboard
 - `/rush-month/actions`: role-aware visible assignments
 - `/rush-month/actions/[assignmentId]`: role-aware action detail and local proof contract preview
 - `/rush-month/evidence`: role-aware proof/testimonial list
@@ -444,6 +454,15 @@ Goal 21 campaign operating shells live in:
 - `src/app/proof-library/page.tsx`
 - `tests/campaign-ops-service.test.ts`
 
+Goal 22 Rush Month dashboard lives in:
+
+- `docs/architecture/goal-22-rush-month-dashboard.md`
+- `src/app/rush-month/dashboard/page.tsx`
+- `src/data/mock-leaderboard.ts`
+- `src/services/rush-month-dashboard-service.ts`
+- `src/shared/types/rush-month-dashboard.ts`
+- `tests/rush-month-dashboard-service.test.ts`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -462,13 +481,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 21
+## Definition of Done for Goal 22
 
-Goal 21 is complete when a human developer can run the app and review the
-campaign catalog, campaign details, action committee event examples, and proof
-library posture without any production data, browser writes, proof uploads, or
-external integrations enabled.
+Goal 22 is complete when a human developer can run the app and review the
+role-aware Rush Month dashboard for member, leader, coach, admin, DS admin, and
+super admin contexts without any production data, browser writes, proof uploads,
+or external integrations enabled.
 
-The app remains mock-first by default. Goal 21 does not wire production
+The app remains mock-first by default. Goal 22 does not wire production
 Supabase, enable browser writes, build every campaign deeply, publish proof,
 remove mock fallback, or activate real integrations.

@@ -39,7 +39,7 @@ describe("campaign ops service", () => {
     expect(getCampaignReadinessSummary()).toEqual({
       activeCampaigns: 1,
       plannedCampaigns: 2,
-      templateCampaigns: 3,
+      templateCampaigns: 9,
       linkedMockEvents: 1,
       hqProofItems: 2,
       disabledIntegrationEvents: 2,
@@ -77,7 +77,18 @@ describe("campaign ops service", () => {
   });
 
   it("keeps the catalog intentionally small and readable", () => {
-    expect(campaignShells).toHaveLength(6);
+    expect(campaignShells.map((campaign) => campaign.name)).toEqual(
+      expect.arrayContaining([
+        "Planning / Goal Setting",
+        "Chapter Engagement",
+        "SLT Promotion",
+        "Moving Mountains",
+        "Leadership Transition",
+        "Grow the Movement",
+        "Start a Chapter",
+      ]),
+    );
+    expect(campaignShells).toHaveLength(12);
     expect(actionCommittees).toHaveLength(5);
   });
 });
