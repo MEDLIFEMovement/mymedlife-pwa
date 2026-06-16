@@ -20,6 +20,7 @@ export type StaticRouteMetadataKey =
   | "proofUpload"
   | "coach"
   | "admin"
+  | "adminPilotScope"
   | "adminStaffDryRun";
 
 const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
@@ -102,6 +103,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   admin: {
     title: "Admin",
     description: "Admin review, smoke checks, write readiness, outbox, and launch posture.",
+  },
+  adminPilotScope: {
+    title: "Pilot Scope",
+    description:
+      "Staff-only first pilot scope planner for choosing the smallest safe Rush Month pilot.",
   },
   adminStaffDryRun: {
     title: "Staff Dry Run",

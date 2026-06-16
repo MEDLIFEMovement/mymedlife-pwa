@@ -48,6 +48,10 @@ describe("mvp progress map", () => {
       progressMap.subprojects.find((item) => item.key === "controlled_pilot_readiness")
         ?.routeEvidence,
     ).toContain("/admin/staff-dry-run");
+    expect(
+      progressMap.subprojects.find((item) => item.key === "controlled_pilot_readiness")
+        ?.routeEvidence,
+    ).toContain("/admin/pilot-scope");
   });
 
   it("gives DS Admin the automation-aware progress map without granting ownership", () => {

@@ -21,6 +21,12 @@ describe("controlled pilot readiness", () => {
     ).toContain("Open `/admin/staff-dry-run`.");
     expect(
       readiness.stages.find((stage) => stage.key === "first_student_pilot")
+        ?.requiredProof,
+    ).toContain(
+      "Open `/admin/pilot-scope` and confirm the selected scope is the smallest safe pilot.",
+    );
+    expect(
+      readiness.stages.find((stage) => stage.key === "first_student_pilot")
         ?.status,
     ).toBe("blocked_before_pilot");
   });

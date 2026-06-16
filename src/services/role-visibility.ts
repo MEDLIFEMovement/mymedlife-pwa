@@ -169,11 +169,13 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/rush-month/loop", label: "Rush Loop" },
         { href: "/coach", label: "Coach Read" },
         { href: "/admin", label: "HQ Admin" },
+        { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
     case "ds_admin":
       return [
         { href: "/admin", label: "Integration Outbox" },
+        { href: "/admin/pilot-scope", label: "Pilot Safety" },
         { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
       ];
     case "super_admin":
@@ -191,6 +193,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/rush-month/review", label: "Reviews" },
         { href: "/coach", label: "Coach" },
         { href: "/admin", label: "Super Admin" },
+        { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
   }
@@ -233,21 +236,22 @@ export function getMobileQuickNavigationForActor(
     case "admin":
       return [
         { href: "/admin", label: "Admin", helper: "Review" },
-        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "Staff" },
+        { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
         { href: "/chapter/members", label: "People", helper: "Roles" },
-        { href: "/rush-month/dashboard", label: "Rush", helper: "Health" },
+        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "Staff" },
       ];
     case "ds_admin":
       return [
         { href: "/admin", label: "Outbox", helper: "Safety" },
+        { href: "/admin/pilot-scope", label: "Pilot", helper: "No sends" },
         { href: "/admin/staff-dry-run", label: "Dry Run", helper: "No sends" },
       ];
     case "super_admin":
       return [
         { href: "/admin", label: "Admin", helper: "Full" },
-        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "Staff" },
+        { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
         { href: "/rush-month", label: "Rush", helper: "Campaign" },
-        { href: "/rush-month/loop", label: "Loop", helper: "Demo" },
+        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "Staff" },
       ];
   }
 }

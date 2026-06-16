@@ -182,6 +182,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "Admin mutations, production auth, and external writes remain disabled.",
   },
   {
+    path: "/admin/pilot-scope",
+    label: "First pilot scope planner",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ staff can compare pilot-scope options, minimum pilot routes, decision owners, and safety boundaries before naming real pilot users.",
+    safetyAssertion:
+      "The planner must not approve student invitations, enable browser writes, upload proof, or send external automation.",
+  },
+  {
     path: "/admin/staff-dry-run",
     label: "Staff dry-run guide",
     priority: "critical",

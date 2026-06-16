@@ -19,6 +19,9 @@ describe("mvp release readiness", () => {
     expect(
       summary.achievements.map((achievement) => achievement.label),
     ).toContain("Staff dry-run guide");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("First pilot scope planner");
   });
 
   it("lists the key live-launch blockers", () => {

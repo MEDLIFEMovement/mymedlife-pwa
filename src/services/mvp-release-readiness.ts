@@ -89,6 +89,12 @@ export function getMvpReleaseReadinessSummary(
         plainEnglish:
           "HQ staff can rehearse member, leader, event/NPS, proof, coach, and DS Admin safety paths with fake local actor emails.",
       },
+      {
+        label: "First pilot scope planner",
+        status: "ready_for_local_review",
+        plainEnglish:
+          "HQ staff can compare safe pilot sizes and see which approvals are still required before inviting real students.",
+      },
     ],
     blockers: [
       {
@@ -127,7 +133,7 @@ export function getMvpReleaseReadinessSummary(
       "Approve the first browser write path and rollback plan.",
       "Approve proof upload/storage and consent requirements.",
       "Approve production Supabase/Vercel environment setup.",
-      "Approve first pilot chapter or internal test group.",
+      "Approve first pilot chapter or internal test group from `/admin/pilot-scope`.",
       "Approve any real n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, or AI integration.",
     ],
   };
