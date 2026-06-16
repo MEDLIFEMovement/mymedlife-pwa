@@ -161,11 +161,11 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 64: local chapter-leader assignment creation after the
-HQ proof/testimonial decision slice. This remains local-only and requires fake
-local Supabase Auth, UUID chapter/campaign rows, explicit local write flags, and
-reminder automation disabled. Production data, most browser writes, admin
-mutation controls, escalation packets, uploads, public proof sharing, and
+The active goal is Goal 65: local coach advance / hold / intervene decision
+recording after the leader assignment creation slice. This remains local-only
+and requires fake local Supabase Auth, UUID chapter/campaign/phase rows,
+explicit local write flags, and escalation packets disabled. Production data,
+most browser writes, admin mutation controls, uploads, public proof sharing, and
 external integrations remain disabled.
 
 Allowed:
@@ -259,8 +259,8 @@ Allowed:
   audit log together
 - a visible coach-decision browser-write activation gate on `/coach` that
   references the local `coach_decision_logged` function while keeping decision
-  saves, n8n escalation packets, external automation, and enabled controls
-  disabled
+  saves, n8n escalation packets, and external automation disabled until local
+  auth and explicit write flags are present
 - a consolidated `/admin` write activation readiness panel that summarizes the
   first browser-write gates, their routes, local functions, role posture, and
   remaining blockers while keeping enabled controls at zero
@@ -379,6 +379,11 @@ Allowed:
   Supabase data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`,
   `MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE=true`, UUID chapter/campaign rows,
   and a chapter leader or Super Admin actor are all present
+- a local-only coach-decision server action that calls
+  `app.log_coach_decision(...)` only when local Supabase Auth, local Supabase
+  data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`,
+  `MYMEDLIFE_ENABLE_COACH_DECISION_WRITE=true`, UUID chapter/campaign/phase
+  rows, and a Coach, Admin, or Super Admin actor are all present
 - a fake local seed assignment and plain-English readback state proving the
   first local action-start write can refresh from `not_started` to `in_progress`
 - a local-only proof/testimonial metadata server action that calls

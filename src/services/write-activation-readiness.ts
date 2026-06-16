@@ -96,6 +96,11 @@ export function getWriteActivationReadinessSummary(
             ? "Follow-up owners and proof quality need coach attention."
             : undefined,
       },
+      {
+        chapterId: "mock-chapter",
+        campaignId: "mock-campaign",
+        phaseId: "mock-phase",
+      },
       env,
     ),
   ];

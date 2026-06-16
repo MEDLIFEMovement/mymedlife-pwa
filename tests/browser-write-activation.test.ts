@@ -153,8 +153,13 @@ describe("browser write activation gate", () => {
       "local_database_function_exists",
       "rls_tests_exist",
       "external_writes_disabled",
+      "coach_portfolio_or_staff",
+      "note_long_enough",
+      "blocker_summary_present",
+      "escalation_packets_disabled",
     ]);
     expect(getBlockingActivationChecks(gate).map((check) => check.key)).toEqual([
+      "phase_uuid",
       "live_auth_approved",
       "browser_write_approved",
     ]);
@@ -297,6 +302,36 @@ describe("browser write activation gate", () => {
     expect(getBlockingActivationChecks(gate)).toEqual([]);
   });
 
+  it("can mark coach decision ready only for local auth and explicit approval flags", () => {
+    const actor = getMockLocalActorContext(
+      "coach@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const gate = getCoachDecisionBrowserWriteGate(
+      actor,
+      {
+        decision: "hold",
+        note: "Chapter should complete proof follow-up before advancing.",
+      },
+      {
+        chapterId: "00000000-0000-4000-8000-000000000101",
+        campaignId: "00000000-0000-4000-8000-000000000102",
+        phaseId: "00000000-0000-4000-8000-000000000103",
+      },
+      {
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_COACH_DECISION_WRITE: "true",
+      },
+    );
+
+    expect(gate.status).toBe("ready_for_local_write");
+    expect(gate.canRenderEnabledControl).toBe(true);
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
   it("blocks Admin from the assignment-create write plan", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const gate = getAssignmentCreateBrowserWriteGate(actor, {
@@ -382,6 +417,7 @@ describe("browser write activation gate", () => {
     ).toEqual([
       "actor_can_log_coach_decision",
       "actor_allowed_by_write_plan",
+      "phase_uuid",
       "live_auth_approved",
       "browser_write_approved",
     ]);
@@ -402,6 +438,7 @@ describe("browser write activation gate", () => {
     ).toEqual([
       "actor_can_log_coach_decision",
       "actor_allowed_by_write_plan",
+      "phase_uuid",
       "live_auth_approved",
       "browser_write_approved",
     ]);

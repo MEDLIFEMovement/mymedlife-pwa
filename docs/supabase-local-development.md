@@ -17,12 +17,14 @@ adds the second local-only browser-to-Supabase write path for
 `evidence_submitted` proof/testimonial metadata. Goal 63 adds the third
 local-only browser-to-Supabase write path for `hq_sharing_decision`. Goal 64
 adds the fourth local-only browser-to-Supabase write path for `action_assigned`
-assignment creation.
+assignment creation. Goal 65 adds the fifth local-only browser-to-Supabase
+write path for `coach_decision_logged`.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
-action-start, assignment creation, proof metadata, and HQ proof decision slices,
-or trigger HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
+action-start, assignment creation, proof metadata, HQ proof decision, and coach
+decision slices, or trigger HubSpot, Luma, n8n, warehouse, Power BI, email, SMS,
+or AI writes.
 
 ## What Was Added
 
@@ -144,6 +146,12 @@ or trigger HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   readiness, RPC result mapping, and readback state.
 - `src/components/leader-assignment-server-action-panel.tsx`: local-only
   assignment creation form and readback panel for the actions page.
+- `docs/architecture/goal-65-coach-decision-server-action.md`: local coach
+  decision server action architecture note.
+- `src/services/coach-decision-write.ts`: local coach decision write readiness,
+  RPC result mapping, and readback state.
+- `src/components/coach-decision-server-action-panel.tsx`: local-only coach
+  decision form and readback panel for the coach page.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
@@ -435,6 +443,38 @@ Expected database behavior:
 This test still does not send reminders, enable production auth, upload files,
 publish proof, or send HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or
 AI writes.
+
+## Goal 65 Coach Decision Test
+
+After running the local Supabase reset, use the fake Northview Rush Month coach
+page.
+
+Recommended local test path:
+
+1. Set `MYMEDLIFE_DATA_SOURCE=supabase`.
+2. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true`.
+3. Set `MYMEDLIFE_AUTH_MODE=local_supabase`.
+4. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
+5. Set `MYMEDLIFE_ENABLE_COACH_DECISION_WRITE=true`.
+6. Sign in at `/login` as `coach@mymedlife.test` with password `password`.
+7. Open `/coach`.
+8. Confirm the local coach decision panel is enabled.
+9. Submit the local coach decision form.
+10. Confirm the refreshed page shows the recorded decision result and local
+    readiness readback.
+
+Expected database behavior:
+
+- `app.log_coach_decision(...)` updates phase readiness.
+- A `phase_readiness_reviews` row is recorded.
+- An internal `coach_decision_logged` event is recorded.
+- An integration event is recorded for future automation pickup.
+- A disabled automation outbox row is recorded.
+- An audit log row is recorded.
+
+This test still does not send n8n escalation packets, enable production auth,
+upload files, publish proof, or send HubSpot, Luma, warehouse, Power BI, email,
+SMS, or AI writes.
 
 `MYMEDLIFE_LOCAL_ACTOR_EMAIL` also works when the app is using mock fallback
 data, so developers can preview all role views without Docker. Restart the local

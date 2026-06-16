@@ -10,11 +10,11 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 64: local chapter-leader assignment creation from the
-browser. This remains local-only and requires fake local Supabase Auth, UUID
-chapter/campaign rows, explicit local write flags, and reminder automation
-disabled. Production data, most browser writes, admin mutation controls,
-escalation packets, uploads, public proof sharing, and external integrations
+The current goal is Goal 65: local coach advance / hold / intervene decision
+recording from the browser. This remains local-only and requires fake local
+Supabase Auth, UUID chapter/campaign/phase rows, explicit local write flags, and
+escalation packets disabled. Production data, most browser writes, admin
+mutation controls, uploads, public proof sharing, and external integrations
 remain disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
@@ -318,9 +318,15 @@ or Super Admin users create a local assignment through the existing audited
 database function, while still keeping reminders and all external automation
 disabled.
 
+Goal 65 adds the fifth local browser-to-Supabase write path for
+`coach_decision_logged` on `/coach`. It lets fake local Coach, Admin, or Super
+Admin users record advance / hold / intervene decisions through the existing
+audited database function, while still keeping n8n escalation packets and all
+external automation disabled.
+
 Do not connect production Supabase, create real users, enable browser app
 writes beyond the approved local action-start, assignment creation, proof
-metadata, and HQ proof decision slices, or enable external writes until Nick approves a later
+metadata, HQ proof decision, and coach decision slices, or enable external writes until Nick approves a later
 implementation goal.
 
 ## Recommended Stack
@@ -426,6 +432,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 62 proof submission server action](./docs/architecture/goal-62-proof-submission-server-action.md)
 - [Goal 63 HQ proof decision server action](./docs/architecture/goal-63-hq-proof-decision-server-action.md)
 - [Goal 64 leader assignment server action](./docs/architecture/goal-64-leader-assignment-server-action.md)
+- [Goal 65 coach decision server action](./docs/architecture/goal-65-coach-decision-server-action.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -492,6 +499,7 @@ MYMEDLIFE_ENABLE_ACTION_START_WRITE=false
 MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE=false
 MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=false
 MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE=false
+MYMEDLIFE_ENABLE_COACH_DECISION_WRITE=false
 MYMEDLIFE_ALLOW_PROOF_UPLOADS=false
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
@@ -643,6 +651,11 @@ Rules:
   creation. It requires local Supabase Auth, a fake leader or Super Admin seed
   user, local write flags, UUID chapter/campaign rows, and reminder automation
   disabled. It creates a disabled outbox row but sends no reminders.
+- Goal 65 adds the fifth local server action for coach advance / hold /
+  intervene decisions. It requires local Supabase Auth, a fake Coach, Admin, or
+  Super Admin seed user, local write flags, UUID chapter/campaign/phase rows,
+  and escalation packets disabled. It creates a disabled outbox row but sends no
+  escalation packet.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -855,6 +868,15 @@ Goal 64 local leader assignment server action lives in:
 - `src/components/leader-assignment-server-action-panel.tsx`
 - `src/services/assignment-create-write.ts`
 - `tests/assignment-create-write.test.ts`
+
+Goal 65 local coach decision server action lives in:
+
+- `docs/architecture/goal-65-coach-decision-server-action.md`
+- `src/app/coach/actions.ts`
+- `src/app/coach/page.tsx`
+- `src/components/coach-decision-server-action-panel.tsx`
+- `src/services/coach-decision-write.ts`
+- `tests/coach-decision-write.test.ts`
 
 Goal 20 live-data connection planning lives in:
 
