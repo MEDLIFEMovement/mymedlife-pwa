@@ -10,13 +10,17 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 69: Rush Month event readiness. This remains
-mock-safe and adds `/rush-month/events` so reviewers can see event plans,
-expected student action, NPS prompts, proof prompts, disabled Luma posture,
-future structured events, and disabled outbox rows before any Luma sync,
-attendance import, reminder, warehouse export, or automation is approved.
-Production data, broad browser writes, admin mutation controls, real uploads,
-public proof sharing, and external integrations remain disabled.
+The current goal is Goal 70: design QA readiness. This remains mock-safe and
+adds an admin-visible Figma/mobile QA layer so reviewers can evaluate next-action
+clarity, phone usability, role complexity, accessibility, mission tone, pilot
+safety copy, and final visual launch blockers before any production launch is
+approved. Production data, broad browser writes, admin mutation controls, real
+uploads, public proof sharing, and external integrations remain disabled.
+
+Goal 69 added `/rush-month/events` so reviewers can see event plans, expected
+student action, NPS prompts, proof prompts, disabled Luma posture, future
+structured events, and disabled outbox rows before any Luma sync, attendance
+import, reminder, warehouse export, or automation is approved.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:

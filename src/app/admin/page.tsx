@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app-shell";
 import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
 import { AdminGlossaryPanel } from "@/components/admin-glossary-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
+import { DesignQaReadinessPanel } from "@/components/design-qa-readiness-panel";
 import { EnvironmentSafetySummaryPanel } from "@/components/environment-safety-summary-panel";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { MetricCard } from "@/components/metric-card";
@@ -18,6 +19,7 @@ import { WriteResultStateCoveragePanel } from "@/components/write-result-state-c
 import { getAdminControlCenterSummary } from "@/services/admin-control-center";
 import { getAdminGlossary } from "@/services/admin-glossary";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
+import { getDesignQaReadiness } from "@/services/design-qa-readiness";
 import { getEnvironmentSafetySummary } from "@/services/environment-safety-summary";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -48,6 +50,7 @@ export default async function AdminPage() {
   const campaignSummary = getCampaignReadinessSummary();
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminGlossary = getAdminGlossary(actor);
+  const designQaReadiness = getDesignQaReadiness(actor);
   const environmentSafetySummary = getEnvironmentSafetySummary(actor);
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
   const writeResultStateCoverage = getWriteResultStateCoverageSummary();
@@ -103,6 +106,7 @@ export default async function AdminPage() {
 
           <MvpReleaseReadinessPanel summary={releaseReadiness} />
           <MvpProgressMapPanel progressMap={mvpProgressMap} />
+          <DesignQaReadinessPanel readiness={designQaReadiness} />
           <EnvironmentSafetySummaryPanel summary={environmentSafetySummary} />
           <StakeholderReviewPlanPanel plan={stakeholderReviewPlan} />
           <AdminGlossaryPanel glossary={adminGlossary} />

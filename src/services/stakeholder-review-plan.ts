@@ -116,6 +116,17 @@ const reviewSteps: StakeholderReviewStep[] = [
       "DS Admin can inspect disabled integration/outbox safety, route coverage, smoke manifest, and release posture.",
     safetyBoundary: "All browser writes and external sends should remain at zero.",
   },
+  {
+    id: "design-qa",
+    title: "Run Figma and mobile QA",
+    route: "/admin",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "A reviewer can compare the running app to the Figma target, phone viewport, accessibility expectations, role complexity, and plain-English next-action clarity.",
+    safetyBoundary:
+      "Design QA must not enable auth, browser writes, uploads, public proof sharing, or external sends.",
+  },
 ];
 
 export function getStakeholderReviewPlan(
