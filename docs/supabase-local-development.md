@@ -8,10 +8,11 @@ planning without enabling live auth or production users. Goal 20 adds the
 route-by-route live-data connection plan without enabling production data.
 Goals 21 and 22 expand read-only campaign/dashboard surfaces. Goals 23 through
 27 add visible browser-write activation gates while keeping enabled controls
-off. Goal 27 also adds the local-only audited coach decision function.
+off. Goal 27 also adds the local-only audited coach decision function. Goal 58
+adds localhost-only Supabase Auth sign-in for fake local seed users.
 
 This does not connect the app to production Supabase. It does not create real
-users, enable live auth in the UI, add browser write controls, or trigger
+users, enable production auth in the UI, add browser write controls, or trigger
 HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 
 ## What Was Added
@@ -116,6 +117,8 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `docs/architecture/goal-27-coach-decision-browser-write-gate.md`: visible
   coach decision browser write activation gate with enabled controls still
   disabled.
+- `docs/architecture/goal-58-local-auth-sign-in.md`: local Supabase Auth
+  sign-in architecture note with production auth still disabled.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and

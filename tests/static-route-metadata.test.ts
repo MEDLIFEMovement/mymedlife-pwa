@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(15);
+    expect(entries).toHaveLength(16);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -20,6 +20,9 @@ describe("static route metadata", () => {
   it("keeps safety-sensitive reviewer routes named clearly", () => {
     expect(getStaticRouteMetadata("admin")).toMatchObject({
       title: "Admin",
+    });
+    expect(getStaticRouteMetadata("login")).toMatchObject({
+      title: "Local Sign In",
     });
     expect(getStaticRouteMetadata("rushMonthReview")).toMatchObject({
       title: "HQ Proof Review",

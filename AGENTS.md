@@ -161,10 +161,10 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 57: local MVP review guide with
-production data, enabled browser writes, admin mutation controls, reminder
-automation, escalation packets, uploads, public proof sharing, and external
-integrations still disabled.
+The active goal is Goal 58: local Supabase Auth sign-in with production data,
+browser writes, admin mutation controls, reminder automation, escalation
+packets, uploads, public proof sharing, and external integrations still
+disabled.
 
 Allowed:
 
@@ -358,6 +358,10 @@ Allowed:
   it does not enable auth, writes, uploads, public proof sharing, external
   integrations, service workers, reminders, escalation packets, or production
   data
+- localhost-only Supabase Auth sign-in for fake local seed users, as long as
+  production auth, production users, browser writes, uploads, public proof
+  sharing, external sends, reminders, escalation packets, service workers, and
+  production data stay disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
@@ -368,8 +372,9 @@ Allowed:
 Not allowed without Nick's next approval:
 
 - production Supabase connection or linked project changes
-- live Supabase auth wiring in the student UI
-- real browser sessions, cookies, sign-in flows, or production auth
+- production Supabase auth wiring in the student UI
+- production browser sessions, production cookies, production sign-in flows, or
+  production auth
 - app write paths to Supabase
 - enabling browser app writes or `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES` to
   perform real UI writes
