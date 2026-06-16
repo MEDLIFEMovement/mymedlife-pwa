@@ -9,7 +9,9 @@ import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
+export const metadata = getStaticRouteMetadata("home");
 export const dynamic = "force-dynamic";
 
 export default async function Home() {

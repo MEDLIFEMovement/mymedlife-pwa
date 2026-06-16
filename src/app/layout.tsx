@@ -14,7 +14,10 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "myMEDLIFE",
+  title: {
+    default: "myMEDLIFE",
+    template: "%s | myMEDLIFE",
+  },
   description: "Mobile-first MEDLIFE chapter operating system for Rush Month.",
   applicationName: "myMEDLIFE",
   manifest: "/manifest.webmanifest",

@@ -14,6 +14,7 @@ import {
 } from "@/services/campaign-ops-service";
 import { getCampaignCloseoutReadiness } from "@/services/campaign-closeout-readiness";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
   canReadChapterData,
   canReadIntegrationOutbox,
@@ -21,6 +22,7 @@ import {
   getVisibleRiskFlagsForActor,
 } from "@/services/role-visibility";
 
+export const metadata = getStaticRouteMetadata("rushMonth");
 export const dynamic = "force-dynamic";
 
 export default async function RushMonthPage() {

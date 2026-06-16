@@ -1,7 +1,9 @@
 import { AppShell } from "@/components/app-shell";
 import { RushMonthLocalLoopDemo } from "@/components/rush-month-local-loop-demo";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
+export const metadata = getStaticRouteMetadata("rushMonthLoop");
 export const dynamic = "force-dynamic";
 
 export default async function RushMonthLoopPage() {

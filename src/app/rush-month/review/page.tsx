@@ -16,8 +16,10 @@ import {
   getReviewQueueForActor,
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { prepareDisabledHqSharingDecisionWrite } from "@/services/write-readiness";
 
+export const metadata = getStaticRouteMetadata("rushMonthReview");
 export const dynamic = "force-dynamic";
 
 export default async function ReviewPage() {

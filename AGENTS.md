@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 50: PWA install readiness with
+The active goal is Goal 51: page metadata with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -335,6 +335,9 @@ Allowed:
   long as service workers, offline caching, push notifications, live auth,
   browser writes, uploads, public proof sharing, and external integrations stay
   disabled
+- static page titles and descriptions for core routes, as long as permissions,
+  data loading, writes, auth, uploads, public proof sharing, and integrations
+  stay unchanged
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

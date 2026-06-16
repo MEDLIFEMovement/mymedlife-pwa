@@ -38,7 +38,9 @@ import {
   prepareDisabledActionStartWrite,
   prepareDisabledProofSubmissionWrite,
 } from "@/services/write-readiness";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
+export const metadata = getStaticRouteMetadata("rushMonthActionDetail");
 export const dynamic = "force-dynamic";
 
 type ActionDetailPageProps = {

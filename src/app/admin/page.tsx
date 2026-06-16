@@ -22,9 +22,11 @@ import {
   canReadIntegrationOutbox,
   getVisibleAdminPanelsForActor,
 } from "@/services/role-visibility";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getWriteActivationReadinessSummary } from "@/services/write-activation-readiness";
 import { getWriteResultStateCoverageSummary } from "@/services/write-result-state-coverage";
 
+export const metadata = getStaticRouteMetadata("admin");
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
