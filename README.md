@@ -10,9 +10,8 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 30: action-start activation contract with
-production data, enabled browser writes, uploads, and external integrations
-still disabled.
+The current goal is Goal 31: action-start result states with production data,
+enabled browser writes, uploads, and external integrations still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -142,6 +141,11 @@ Goal 30 defines the future action-start browser/server contract on
 `startAssignmentAction -> app.start_assignment_action` path, requires server-side
 auth identity, and still returns a disabled attempt instead of saving.
 
+Goal 31 defines the plain-English result states for that future action-start
+save. The action detail route now shows the current disabled result, the future
+result for the selected mock action, and the possible success/error states
+without creating a server action or enabling browser writes.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -215,6 +219,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 28 write activation readiness dashboard](./docs/architecture/goal-28-write-activation-readiness.md)
 - [Goal 29 write activation approval plan](./docs/architecture/goal-29-write-activation-approval-plan.md)
 - [Goal 30 action-start activation contract](./docs/architecture/goal-30-action-start-activation-contract.md)
+- [Goal 31 action-start result states](./docs/architecture/goal-31-action-start-result-states.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -340,6 +345,18 @@ Rules:
 - Goal 26 adds a browser-write activation gate for HQ proof-sharing decisions.
   It still keeps decision saves, public sharing, and enabled browser controls
   off, even if the local write env var is set.
+- Goal 27 adds a browser-write activation gate for coach decisions. It still
+  keeps coach decision saves, n8n escalation packets, and enabled browser
+  controls off, even if the local write env var is set.
+- Goal 28 adds the consolidated write activation readiness panel on `/admin`.
+  It keeps every enabled browser control at zero.
+- Goal 29 adds the write activation approval plan on `/admin`. It does not
+  grant approval or activate any write.
+- Goal 30 adds the action-start activation contract on
+  `/rush-month/actions/[assignmentId]`. It does not create a server action or
+  save from the browser.
+- Goal 31 adds action-start result states. It does not wire those states to a
+  real browser write.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -564,6 +581,45 @@ Goal 26 HQ proof-sharing browser write gate lives in:
 - visible gate notice on `/rush-month/review` for roles that can make HQ
   sharing decisions
 
+Goal 27 coach decision browser write gate lives in:
+
+- `docs/architecture/goal-27-coach-decision-browser-write-gate.md`
+- `supabase/migrations/20260616120000_goal_27_coach_decision_write.sql`
+- `supabase/tests/database/rls_goal_27.test.sql`
+- visible gate notice on `/coach`
+
+Goal 28 write activation readiness lives in:
+
+- `docs/architecture/goal-28-write-activation-readiness.md`
+- `src/services/write-activation-readiness.ts`
+- `src/components/write-activation-readiness-panel.tsx`
+- `tests/write-activation-readiness.test.ts`
+- visible readiness panel on `/admin`
+
+Goal 29 write activation approval plan lives in:
+
+- `docs/architecture/goal-29-write-activation-approval-plan.md`
+- `src/services/write-activation-approval-plan.ts`
+- `src/components/write-activation-approval-plan-panel.tsx`
+- `tests/write-activation-approval-plan.test.ts`
+- visible approval plan on `/admin`
+
+Goal 30 action-start activation contract lives in:
+
+- `docs/architecture/goal-30-action-start-activation-contract.md`
+- `src/services/action-start-activation-contract.ts`
+- `src/components/action-start-activation-contract-panel.tsx`
+- `tests/action-start-activation-contract.test.ts`
+- visible contract on `/rush-month/actions/[assignmentId]`
+
+Goal 31 action-start result states live in:
+
+- `docs/architecture/goal-31-action-start-result-states.md`
+- `src/services/action-start-result-states.ts`
+- `src/components/action-start-result-states-panel.tsx`
+- `tests/action-start-result-states.test.ts`
+- visible result-state panel on `/rush-month/actions/[assignmentId]`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -582,13 +638,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 26
+## Definition of Done for Goal 31
 
-Goal 26 is complete when a human developer can open the review page as an HQ
-decision-making role and see the exact readiness checks for enabling the first
-local HQ proof-sharing decision browser write, while tests prove the browser
-control remains disabled until approval.
+Goal 31 is complete when a human developer can open an action detail route and
+see the exact disabled action-start result plus the future plain-English result
+states, while tests prove browser writes remain disabled and duplicate/blocked
+states do not create events.
 
-The app remains mock-first by default. Goal 26 does not wire production
-Supabase, enable browser writes, upload files, publish proof, remove mock
-fallback, or activate real integrations.
+The app remains mock-first by default. Goal 31 does not wire production
+Supabase, create a server action, enable browser writes, upload files, publish
+proof, remove mock fallback, or activate real integrations.

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionStartActivationContractPanel } from "@/components/action-start-activation-contract-panel";
+import { ActionStartResultStatesPanel } from "@/components/action-start-result-states-panel";
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
@@ -14,6 +15,10 @@ import {
   getActionStartActivationContract,
   prepareDisabledActionStartActivationAttempt,
 } from "@/services/action-start-activation-contract";
+import {
+  getActionStartResultStates,
+  getDisabledActionStartResultPreview,
+} from "@/services/action-start-result-states";
 import {
   canSubmitProofForAssignment,
   createActionStartedMock,
@@ -76,6 +81,10 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
   const actionStartContract = getActionStartActivationContract();
   const disabledActionStartWrite = prepareDisabledActionStartWrite(actor, assignment);
   const disabledActionStartActivation = prepareDisabledActionStartActivationAttempt(
+    actor,
+    assignment,
+  );
+  const actionStartResultPreview = getDisabledActionStartResultPreview(
     actor,
     assignment,
   );
@@ -186,6 +195,10 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
       <ActionStartActivationContractPanel
         contract={actionStartContract}
         attempt={disabledActionStartActivation}
+      />
+      <ActionStartResultStatesPanel
+        preview={actionStartResultPreview}
+        states={getActionStartResultStates()}
       />
 
       {proofSubmissionPreview.success ? (
