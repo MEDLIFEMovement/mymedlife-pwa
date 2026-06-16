@@ -161,12 +161,11 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 85: action committee workspace. This remains mock-safe
-and gives each role a clearer `/action-committees` next step, priority event
-focus, future structured events to watch, and safety reminders. Production
-data, broad browser writes, admin mutation controls, real uploads, public proof
-sharing, role writes, Luma writes, reminders, and external integrations remain
-disabled.
+The active goal is Goal 86: event proof bridge. This remains mock-safe and
+connects Rush Month events to the member-facing feedback and proof/testimonial
+intake loop. Production data, broad browser writes, admin mutation controls,
+real uploads, public proof sharing, role writes, Luma writes, reminders, and
+external integrations remain disabled.
 
 Allowed:
 
@@ -233,6 +232,9 @@ Allowed:
 - role-aware action committee workspace guidance that tells members, committee
   members, committee chairs, leaders, coaches, admins, DS admins, and super
   admins what to inspect next while keeping Luma/reminders disabled
+- member-facing event-to-proof bridge guidance that names attendance,
+  feedback/NPS, proof/testimonial, structured event, disabled outbox, and audit
+  posture without enabling Luma, upload, or reminder writes
 - proof-library posture that treats bridge videos, testimonials, UGC, and
   chapter recaps as belief-building assets requiring HQ sharing decisions
 - tests proving DS Admin cannot read campaign, event, proof, student, points,

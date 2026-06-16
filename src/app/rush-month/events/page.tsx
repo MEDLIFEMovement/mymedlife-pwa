@@ -1,6 +1,8 @@
 import { AppShell } from "@/components/app-shell";
 import { RestrictedState } from "@/components/restricted-state";
+import { RushMonthEventProofBridgePanel } from "@/components/rush-month-event-proof-bridge-panel";
 import { RushMonthEventReadinessPanel } from "@/components/rush-month-event-readiness-panel";
+import { getEventProofBridgeWorkspace } from "@/services/rush-month-event-proof-bridge";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getRushMonthEventReadinessWorkspace } from "@/services/rush-month-event-readiness";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -11,6 +13,7 @@ export const dynamic = "force-dynamic";
 export default async function RushMonthEventsPage() {
   const actor = await getLocalActorContext();
   const workspace = getRushMonthEventReadinessWorkspace(actor);
+  const bridgeWorkspace = getEventProofBridgeWorkspace(actor);
 
   return (
     <AppShell actor={actor}>
@@ -22,7 +25,10 @@ export default async function RushMonthEventsPage() {
           nextLabel="Open integration outbox"
         />
       ) : (
-        <RushMonthEventReadinessPanel workspace={workspace} />
+        <>
+          <RushMonthEventProofBridgePanel workspace={bridgeWorkspace} />
+          <RushMonthEventReadinessPanel workspace={workspace} />
+        </>
       )}
     </AppShell>
   );

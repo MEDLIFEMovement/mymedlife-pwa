@@ -10,7 +10,15 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 85: action committee workspace. This remains
+The current goal is Goal 86: event proof bridge. This remains mock-safe by
+default and connects `/rush-month/events` to the member-facing proof/testimonial
+intake loop. Members, action committee roles, leaders, coaches, admins, and
+super admins can see how event attendance, NPS feedback, proof/testimonials,
+future structured records, and disabled outbox destinations fit together. Luma,
+reminders, proof uploads, public sharing, warehouse, Power BI, HubSpot, n8n,
+SMS, email, and AI writes remain disabled.
+
+Goal 85 added the action committee workspace. This remains
 mock-safe by default and makes `/action-committees` more role-aware for general
 members, action committee members, action committee chairs, leaders, coaches,
 admins, DS admins, and super admins. The page now answers "What should I do
@@ -560,6 +568,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 83 five-write staff dry-run rehearsal](./docs/architecture/goal-83-five-write-staff-dry-run.md)
 - [Goal 84 action committee role personas](./docs/architecture/goal-84-action-committee-role-personas.md)
 - [Goal 85 action committee workspace](./docs/architecture/goal-85-action-committee-workspace.md)
+- [Goal 86 event proof bridge](./docs/architecture/goal-86-event-proof-bridge.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
