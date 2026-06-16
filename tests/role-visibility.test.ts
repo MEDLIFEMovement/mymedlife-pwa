@@ -4,6 +4,7 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
   canReadChapterData,
   canReadIntegrationOutbox,
+  getMobileQuickNavigationForActor,
   getNavigationForActor,
   getVisibleAdminPanelsForActor,
   getVisibleAssignmentsForActor,
@@ -83,6 +84,48 @@ describe("role visibility service", () => {
     expect(getNavigationForActor(member).map((item) => item.label)).toContain("My Actions");
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Integration Outbox" },
+    ]);
+  });
+
+  it("gives members a mobile quick path to their week, actions, proof, and chapter", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+
+    expect(getMobileQuickNavigationForActor(actor)).toEqual([
+      { href: "/rush-month/dashboard", label: "My Week", helper: "Next" },
+      { href: "/rush-month/actions", label: "Actions", helper: "Do" },
+      { href: "/proof-library", label: "Proof", helper: "Learn" },
+      { href: "/chapter", label: "Chapter", helper: "Home" },
+    ]);
+  });
+
+  it("gives chapter leaders mobile shortcuts for planning, nudges, proof review, and loop demo", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+
+    expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
+      "Rush",
+      "Team",
+      "Review",
+      "Loop",
+    ]);
+  });
+
+  it("keeps DS Admin mobile navigation focused on disabled outbox safety checks", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+
+    expect(getMobileQuickNavigationForActor(actor)).toEqual([
+      { href: "/admin", label: "Outbox", helper: "Safety" },
+      { href: "/admin", label: "Checks", helper: "No sends" },
+    ]);
+  });
+
+  it("gives super admin mobile oversight without hiding the Rush Month reviewer paths", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+
+    expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
+      "Admin",
+      "Rush",
+      "Loop",
+      "Coach",
     ]);
   });
 });

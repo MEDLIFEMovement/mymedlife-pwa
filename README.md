@@ -10,10 +10,10 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 47: MVP release readiness with production data,
-enabled browser writes, admin mutation controls, reminder automation,
-escalation packets, uploads, public proof sharing, and external integrations
-still disabled.
+The current goal is Goal 48: mobile navigation and reviewer UX polish with
+production data, enabled browser writes, admin mutation controls, reminder
+automation, escalation packets, uploads, public proof sharing, and external
+integrations still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -232,6 +232,11 @@ the local Rush Month MVP as ready for stakeholder review but not ready for live
 student launch until auth, writes, uploads, production setup, and integrations
 are approved.
 
+Goal 48 adds role-aware mobile quick navigation, active route styling, a
+keyboard skip link, and reviewer-focused accessibility polish. It keeps the app
+read-only/mock-safe and does not enable live auth, browser writes, uploads,
+public proof sharing, or external integrations.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -313,6 +318,16 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 36 assignment creation result states](./docs/architecture/goal-36-assignment-create-result-states.md)
 - [Goal 37 Rush Month local operating loop](./docs/architecture/goal-37-rush-month-local-loop.md)
 - [Goal 38 admin control center](./docs/architecture/goal-38-admin-control-center.md)
+- [Goal 39 role next actions](./docs/architecture/goal-39-role-next-actions.md)
+- [Goal 40 leader follow-up board](./docs/architecture/goal-40-leader-follow-up-board.md)
+- [Goal 41 coach portfolio readiness](./docs/architecture/goal-41-coach-portfolio-readiness.md)
+- [Goal 42 proof-sharing review states](./docs/architecture/goal-42-proof-sharing-review-states.md)
+- [Goal 43 member recognition](./docs/architecture/goal-43-member-recognition.md)
+- [Goal 44 campaign closeout readiness](./docs/architecture/goal-44-campaign-closeout-readiness.md)
+- [Goal 45 MVP coverage checklist](./docs/architecture/goal-45-mvp-coverage-checklist.md)
+- [Goal 46 route smoke manifest](./docs/architecture/goal-46-route-smoke-manifest.md)
+- [Goal 47 MVP release readiness](./docs/architecture/goal-47-mvp-release-readiness.md)
+- [Goal 48 mobile navigation polish](./docs/architecture/goal-48-mobile-navigation-polish.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -468,6 +483,9 @@ Rules:
   automation.
 - Goal 38 adds a read-only admin control center. It names the required admin
   MVP surfaces but does not enable admin mutations.
+- Goal 48 adds role-aware mobile quick navigation and active route styling.
+  It improves reviewer usability without enabling live auth, browser writes,
+  uploads, public proof sharing, or external integrations.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
