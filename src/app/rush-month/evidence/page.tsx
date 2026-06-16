@@ -5,7 +5,9 @@ import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import { getReviewQueueForActor } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canReadAssignment } from "@/services/role-visibility";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
+export const metadata = getStaticRouteMetadata("rushMonthEvidence");
 export const dynamic = "force-dynamic";
 
 export default async function EvidencePage() {

@@ -5,11 +5,13 @@ import { ProofSharingReviewPanel } from "@/components/proof-sharing-review-panel
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getProofSharingReviewBoard } from "@/services/proof-sharing-review";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
   getCampaignShellBySlug,
   getProofLibraryItemsForActor,
 } from "@/services/campaign-ops-service";
 
+export const metadata = getStaticRouteMetadata("proofLibrary");
 export const dynamic = "force-dynamic";
 
 export default async function ProofLibraryPage() {

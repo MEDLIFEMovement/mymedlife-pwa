@@ -10,7 +10,9 @@ import {
   getEventPlansForCommittee,
 } from "@/services/campaign-ops-service";
 import { canReadChapterData } from "@/services/role-visibility";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
+export const metadata = getStaticRouteMetadata("actionCommittees");
 export const dynamic = "force-dynamic";
 
 export default async function ActionCommitteesPage() {

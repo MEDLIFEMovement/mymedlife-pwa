@@ -25,8 +25,10 @@ import {
   canReadIntegrationOutbox,
   getVisibleRiskFlagsForActor,
 } from "@/services/role-visibility";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { prepareDisabledCoachDecisionWrite } from "@/services/write-readiness";
 
+export const metadata = getStaticRouteMetadata("coach");
 export const dynamic = "force-dynamic";
 
 export default async function CoachPage() {

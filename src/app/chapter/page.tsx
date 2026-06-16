@@ -7,11 +7,13 @@ import { RoleNextActionPanel } from "@/components/role-next-action-panel";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
   canReadChapterData,
   getVisibleAssignmentsForActor,
 } from "@/services/role-visibility";
 
+export const metadata = getStaticRouteMetadata("chapter");
 export const dynamic = "force-dynamic";
 
 export default async function ChapterPage() {

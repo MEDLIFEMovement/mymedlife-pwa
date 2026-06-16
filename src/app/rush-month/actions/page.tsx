@@ -23,8 +23,10 @@ import { getLeaderFollowUpBoard } from "@/services/leader-follow-up-board";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getVisibleAssignmentsForActor } from "@/services/role-visibility";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { prepareDisabledAssignmentCreateWrite } from "@/services/write-readiness";
 
+export const metadata = getStaticRouteMetadata("rushMonthActions");
 export const dynamic = "force-dynamic";
 
 const sampleAssignmentInput = {

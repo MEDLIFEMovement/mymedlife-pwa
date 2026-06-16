@@ -10,7 +10,9 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRushMonthDashboardForActor } from "@/services/rush-month-dashboard-service";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
+export const metadata = getStaticRouteMetadata("rushMonthDashboard");
 export const dynamic = "force-dynamic";
 
 export default async function RushMonthDashboardPage() {
