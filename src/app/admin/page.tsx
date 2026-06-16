@@ -8,6 +8,7 @@ import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-pan
 import { RestrictedState } from "@/components/restricted-state";
 import { RouteCoverageSummaryPanel } from "@/components/route-coverage-summary-panel";
 import { RouteSmokeManifestPanel } from "@/components/route-smoke-manifest-panel";
+import { StakeholderReviewPlanPanel } from "@/components/stakeholder-review-plan-panel";
 import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-approval-plan-panel";
 import { WriteActivationReadinessPanel } from "@/components/write-activation-readiness-panel";
 import { WriteResultStateCoveragePanel } from "@/components/write-result-state-coverage-panel";
@@ -24,6 +25,7 @@ import {
   canReadIntegrationOutbox,
   getVisibleAdminPanelsForActor,
 } from "@/services/role-visibility";
+import { getStakeholderReviewPlan } from "@/services/stakeholder-review-plan";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getWriteActivationReadinessSummary } from "@/services/write-activation-readiness";
 import { getWriteResultStateCoverageSummary } from "@/services/write-result-state-coverage";
@@ -45,6 +47,7 @@ export default async function AdminPage() {
   const releaseReadiness = getMvpReleaseReadinessSummary(actor);
   const routeSmokeManifest = getRouteSmokeManifest(actor);
   const routeCoverageSummary = getRouteCoverageSummary(actor);
+  const stakeholderReviewPlan = getStakeholderReviewPlan(actor);
   const writeActivationSummary = getWriteActivationReadinessSummary(actor, {
     assignments: data.assignments,
     coachDecision: data.kpiSummary.coachDecision,
@@ -90,6 +93,7 @@ export default async function AdminPage() {
           </section>
 
           <MvpReleaseReadinessPanel summary={releaseReadiness} />
+          <StakeholderReviewPlanPanel plan={stakeholderReviewPlan} />
           <section className="grid gap-3 md:grid-cols-2">
             {visiblePanels.map((panel) => (
               <article key={panel.key} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
