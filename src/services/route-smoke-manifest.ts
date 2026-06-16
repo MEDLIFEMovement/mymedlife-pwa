@@ -80,6 +80,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "No chapter membership write or role approval is expected.",
   },
   {
+    path: "/chapter/members",
+    label: "Chapter members and roles",
+    priority: "critical",
+    audiences: ["chapter_leader", "coach", "admin", "super_admin"],
+    expectedResult:
+      "Leaders and staff see roster health, join requests, role coverage, and disabled membership controls.",
+    safetyAssertion:
+      "Join approvals, role changes, committee moves, and member deactivation remain disabled.",
+  },
+  {
     path: "/rush-month",
     label: "Rush Month campaign",
     priority: "critical",

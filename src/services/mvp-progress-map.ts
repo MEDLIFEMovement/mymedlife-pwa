@@ -124,7 +124,7 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Product and Permissions",
       status: "local_review_ready",
       risk: "medium",
-      routeEvidence: ["/chapter", "/rush-month/actions", "/coach", "/admin"],
+      routeEvidence: ["/chapter", "/chapter/members", "/rush-month/actions", "/coach", "/admin"],
       plainEnglish:
         "Fake member, leader, coach, admin, DS admin, and super admin users see different local information.",
       technicalEvidence:
@@ -253,18 +253,18 @@ function getSubprojects(): MvpSubprojectProgress[] {
       key: "admin_operations",
       label: "Admin operations for users, roles, chapters, and templates",
       ownerLane: "HQ Operations",
-      status: "future_build",
+      status: "partially_ready",
       risk: "high",
-      routeEvidence: ["/admin"],
+      routeEvidence: ["/admin", "/chapter/members"],
       plainEnglish:
-        "Admin can inspect the operating model now, but cannot yet safely create or change real users, memberships, roles, chapters, or campaign templates.",
+        "Admin and leaders can inspect roster, join request, role coverage, and disabled membership controls, but cannot yet safely create or change real users, memberships, roles, chapters, or campaign templates.",
       technicalEvidence:
-        "Read-only admin control center and glossary exist; mutation controls are intentionally absent.",
+        "Read-only admin control center, glossary, and chapter membership workspace exist; mutation controls are intentionally absent.",
       remainingWork:
         "Build guarded admin mutations after auth/RLS review, audit logging, and approval workflows are finalized.",
       nextReviewStep: "Decide which admin operation is needed first for the pilot.",
       totalWeight: 4,
-      localReviewWeight: 0,
+      localReviewWeight: 2,
       liveMvpWeight: 1,
     },
     {

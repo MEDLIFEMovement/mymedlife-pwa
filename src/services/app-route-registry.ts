@@ -8,6 +8,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/", label: "Home", routeType: "exact" },
   { href: "/login", label: "Local sign in", routeType: "exact" },
   { href: "/chapter", label: "Chapter", routeType: "exact" },
+  { href: "/chapter/members", label: "Chapter members", routeType: "exact" },
   { href: "/campaigns", label: "Campaigns", routeType: "exact" },
   { href: "/campaigns/", label: "Campaign detail", routeType: "prefix" },
   { href: "/action-committees", label: "Action committees", routeType: "exact" },

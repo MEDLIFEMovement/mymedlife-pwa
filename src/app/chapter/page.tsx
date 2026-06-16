@@ -84,6 +84,11 @@ export default async function ChapterPage() {
           <section className="grid gap-3 lg:grid-cols-3">
             {[
               {
+                href: "/chapter/members",
+                title: "Members and roles",
+                copy: "Review roster health, join requests, role coverage, and disabled approval controls.",
+              },
+              {
                 href: "/campaigns",
                 title: "Campaigns",
                 copy: "Review the operating shells that turn chapter SOPs into student action.",

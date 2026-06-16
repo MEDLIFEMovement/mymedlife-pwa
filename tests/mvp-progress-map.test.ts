@@ -12,9 +12,9 @@ describe("mvp progress map", () => {
     expect(progressMap.counts).toEqual({
       total: 11,
       localReviewReady: 4,
-      partiallyReady: 2,
+      partiallyReady: 3,
       needsApproval: 2,
-      futureBuild: 3,
+      futureBuild: 2,
     });
     expect(progressMap.localReviewPercent).toBeGreaterThan(progressMap.liveMvpPercent);
     expect(progressMap.liveMvpPercent).toBeLessThan(50);
@@ -49,6 +49,10 @@ describe("mvp progress map", () => {
       progressMap.subprojects.find((item) => item.key === "role_aware_views")
         ?.remainingWork,
     ).toContain("membership truth");
+    expect(
+      progressMap.subprojects.find((item) => item.key === "admin_operations")
+        ?.status,
+    ).toBe("partially_ready");
   });
 
   it("hides the build-status map from chapter and coach roles", () => {

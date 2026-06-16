@@ -44,6 +44,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary: "No assignment creation, reminder send, or browser write should happen.",
   },
   {
+    id: "member-role-coverage",
+    title: "Review member and role coverage",
+    route: "/chapter/members",
+    localActorEmail: "leader.a@mymedlife.test",
+    actorLabel: "Chapter Leader",
+    expectedReview:
+      "A leader can see roster follow-up, join requests, action committee role coverage, and disabled membership controls.",
+    safetyBoundary:
+      "No join approval, role assignment, committee move, or member deactivation should happen.",
+  },
+  {
     id: "operating-loop",
     title: "Click through the Rush Month loop",
     route: "/rush-month/loop",

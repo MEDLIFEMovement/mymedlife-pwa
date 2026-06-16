@@ -4,6 +4,7 @@ export type StaticRouteMetadataKey =
   | "home"
   | "login"
   | "chapter"
+  | "chapterMembers"
   | "campaigns"
   | "campaignDetail"
   | "actionCommittees"
@@ -31,6 +32,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   chapter: {
     title: "Chapter",
     description: "Chapter operating context, role guidance, assignments, and progress.",
+  },
+  chapterMembers: {
+    title: "Chapter Members",
+    description:
+      "Read-only chapter roster, join-request, role coverage, and membership approval posture.",
   },
   campaigns: {
     title: "Campaigns",
