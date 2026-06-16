@@ -212,6 +212,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "The packet must not enable production auth, file uploads, public proof sharing, warehouse export, AI summary, or external automation.",
   },
   {
+    path: "/admin/hq-proof-write",
+    label: "HQ proof decision operator packet",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ staff can see whether proof metadata readback is proven, whether a local HQ decision is blocked or ready, and what readback evidence must appear.",
+    safetyAssertion:
+      "The packet must not enable production auth, public proof publishing, warehouse export, AI summary, or external automation.",
+  },
+  {
     path: "/admin/pilot-scope",
     label: "First pilot scope planner",
     priority: "critical",

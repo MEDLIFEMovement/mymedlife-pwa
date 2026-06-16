@@ -193,6 +193,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "The proof packet must not enable file uploads, public proof sharing, warehouse export, AI summary, or external automation.",
   },
+  {
+    id: "hq-proof-decision-packet",
+    title: "Review the HQ proof decision packet",
+    route: "/admin/hq-proof-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the third local write packet for deciding whether submitted proof/testimonials can be shared later, including proof metadata prerequisites and disabled publish/send posture.",
+    safetyBoundary:
+      "The HQ decision packet must not publish proof, export proof, generate AI summaries, or send external automation.",
+  },
 ];
 
 export function getStakeholderReviewPlan(

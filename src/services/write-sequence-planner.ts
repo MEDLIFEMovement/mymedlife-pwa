@@ -176,10 +176,10 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
       label: "HQ decides whether proof can be shared",
       promotionOrder: 3,
       studentJourneyOrder: 4,
-      route: "/rush-month/review",
+      route: "/admin/hq-proof-write",
       localActorEmail: "admin@mymedlife.test",
       actorLabel: "Admin or Super Admin",
-      status: "server_action_ready",
+      status: "packet_ready",
       plainEnglish:
         "HQ records whether a submitted proof/testimonial should stay internal, needs changes, or can later be shared broadly.",
       expectedTables: ["approvals", "evidence_items", "events", "integration_events", "audit_logs"],
@@ -195,7 +195,7 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
       safetyBoundary:
         "Requires Admin or Super Admin identity, proof consent rules, and public sharing controls staying disabled.",
       nextGate:
-        "Review proof consent/storage requirements before any decision can publish proof outside the app.",
+        "Open `/admin/hq-proof-write` before allowing staff to test HQ proof decisions in a browser.",
     },
     {
       key: "action_assigned",
