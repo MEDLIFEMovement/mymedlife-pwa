@@ -65,6 +65,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary: "The loop stays browser-local and does not save to Supabase or send automation.",
   },
   {
+    id: "event-readiness",
+    title: "Review Rush Month events and NPS",
+    route: "/rush-month/events",
+    localActorEmail: "leader.a@mymedlife.test",
+    actorLabel: "Chapter Leader",
+    expectedReview:
+      "A reviewer can see Rush Month event owners, student actions, NPS prompts, proof prompts, disabled Luma posture, and disabled outbox rows.",
+    safetyBoundary:
+      "No Luma event write, attendance import, NPS reminder, warehouse export, or n8n workflow should happen.",
+  },
+  {
     id: "proof-review",
     title: "Check HQ proof-sharing posture",
     route: "/proof-library",

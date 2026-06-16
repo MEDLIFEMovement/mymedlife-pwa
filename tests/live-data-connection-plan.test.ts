@@ -26,7 +26,7 @@ describe("live data connection plan", () => {
   });
 
   it("starts route migration with low-risk read-only routes", () => {
-    expect(routeMigrationOrder.slice(0, 8).map((item) => item.route)).toEqual([
+    expect(routeMigrationOrder.slice(0, 9).map((item) => item.route)).toEqual([
       "/chapter",
       "/chapter/members",
       "/campaigns",
@@ -34,10 +34,11 @@ describe("live data connection plan", () => {
       "/action-committees",
       "/rush-month",
       "/rush-month/dashboard",
+      "/rush-month/events",
       "/rush-month/actions",
     ]);
     expect(
-      routeMigrationOrder.slice(0, 8).every((item) => {
+      routeMigrationOrder.slice(0, 9).every((item) => {
         return item.firstLiveDataMode === "read_only";
       }),
     ).toBe(true);

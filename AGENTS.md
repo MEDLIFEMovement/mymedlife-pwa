@@ -161,13 +161,12 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 68: proof upload intake readiness. This remains
-mock-safe and gives students, leaders, coaches, admins, and super admins a
-read-only preview of future bridge-video/testimonial file requirements,
-consent/context checks, disabled upload controls, structured event posture, and
-disabled outbox destinations. Production data, broad browser writes, admin
-mutation controls, real uploads, public proof sharing, and external
-integrations remain disabled.
+The active goal is Goal 69: Rush Month event readiness. This remains mock-safe
+and gives members, leaders, coaches, admins, and super admins a read-only
+preview of event plans, expected student action, NPS prompts, proof prompts,
+disabled Luma posture, structured event posture, and disabled outbox
+destinations. Production data, broad browser writes, admin mutation controls,
+real uploads, public proof sharing, and external integrations remain disabled.
 
 Allowed:
 
@@ -372,6 +371,9 @@ Allowed:
 - mock-safe proof upload intake readiness at `/proof-library/upload`, as long
   as storage buckets, file uploads, public proof publishing, raw proof exports,
   and external automation all remain disabled
+- mock-safe Rush Month event readiness at `/rush-month/events`, as long as Luma
+  event writes, attendance imports, NPS reminders, warehouse exports, n8n
+  workflows, and external automation all remain disabled
 - localhost-only Supabase Auth sign-in for fake local seed users, as long as
   production auth, production users, browser writes, uploads, public proof
   sharing, external sends, reminders, escalation packets, service workers, and

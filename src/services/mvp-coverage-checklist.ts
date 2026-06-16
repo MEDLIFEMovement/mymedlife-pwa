@@ -87,8 +87,18 @@ function buildCoverageItems(data: ReadOnlyAppData): MvpCoverageItem[] {
       status: "covered_mock",
       plainEnglish:
         "The app can demonstrate assignment, action start, proof submission, review, points/KPI movement, HQ sharing posture, coach decision, events, outbox, and audit rows locally.",
-      routeEvidence: ["/rush-month/loop"],
+      routeEvidence: ["/rush-month/loop", "/rush-month/events"],
       nextStep: "Keep this as the reviewer demo path until real writes are approved.",
+    },
+    {
+      key: "events_nps",
+      label: "Rush Month events, NPS, and Luma posture",
+      status: "covered_mock",
+      plainEnglish:
+        "Students and leaders can see event plans, expected student actions, feedback/NPS prompts, proof prompts, mock Luma posture, and disabled future outbox rows.",
+      routeEvidence: ["/rush-month/events", "/action-committees"],
+      nextStep:
+        "Keep Luma event writes, attendance imports, NPS reminders, and warehouse exports disabled until approved.",
     },
     {
       key: "assignments",

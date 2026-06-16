@@ -160,11 +160,11 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Chapter Operations",
       status: "local_review_ready",
       risk: "medium",
-      routeEvidence: ["/rush-month/loop", "/rush-month/dashboard"],
+      routeEvidence: ["/rush-month/loop", "/rush-month/events", "/rush-month/dashboard"],
       plainEnglish:
-        "A reviewer can see the Rush Month path from leader assignment through member action, proof, points/KPIs, HQ sharing posture, and coach decision.",
+        "A reviewer can see the Rush Month path from leader assignment through member action, events/NPS, proof, points/KPIs, HQ sharing posture, and coach decision.",
       technicalEvidence:
-        "Browser-local loop state, event/outbox/audit display, dashboard summaries, and service tests cover the operating sequence.",
+        "Browser-local loop state, event/NPS readiness, event/outbox/audit display, dashboard summaries, and service tests cover the operating sequence.",
       remainingWork:
         "Connect the loop to live Supabase reads/writes, real users, and production-safe review states.",
       nextReviewStep: "Click through `/rush-month/loop` and compare it to the intended chapter operating process.",

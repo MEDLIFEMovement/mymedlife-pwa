@@ -73,6 +73,12 @@ export default async function RushMonthPage() {
                 See visible actions
               </Link>
               <Link
+                href="/rush-month/events"
+                className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white"
+              >
+                Review event/NPS readiness
+              </Link>
+              <Link
                 href="/rush-month/review"
                 className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white"
               >
@@ -136,6 +142,12 @@ export default async function RushMonthPage() {
                   </div>
                 ))}
               </div>
+              <Link
+                href="/rush-month/events"
+                className="mt-4 inline-flex rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+              >
+                Open event readiness
+              </Link>
             </article>
 
             <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
