@@ -1,10 +1,18 @@
 import { AppShell } from "@/components/app-shell";
+import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
+import { WriteReadinessNotice } from "@/components/write-readiness-notice";
+import { getCoachDecisionBrowserWriteGate } from "@/services/browser-write-activation";
+import {
+  canLogCoachDecision,
+  createCoachDecisionMock,
+  type CoachDecisionInput,
+} from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
@@ -12,6 +20,7 @@ import {
   canReadIntegrationOutbox,
   getVisibleRiskFlagsForActor,
 } from "@/services/role-visibility";
+import { prepareDisabledCoachDecisionWrite } from "@/services/write-readiness";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +33,25 @@ export default async function CoachPage() {
   const coachPrivateRisks = visibleRisks.filter(
     (risk) => risk.visibility === "coach_private",
   ).length;
+  const sampleCoachDecisionInput = {
+    decision: data.kpiSummary.coachDecision,
+    note:
+      "Local preview only: coach logs whether this chapter should advance, hold, or receive intervention.",
+    blockerSummary:
+      data.kpiSummary.coachDecision === "intervene"
+        ? "Follow-up owners and proof quality need coach attention."
+        : undefined,
+  } satisfies CoachDecisionInput;
+  const canLogDecision = canLogCoachDecision(actor);
+  const coachDecisionPreview = createCoachDecisionMock(actor, sampleCoachDecisionInput);
+  const disabledCoachDecisionWrite = prepareDisabledCoachDecisionWrite(
+    actor,
+    sampleCoachDecisionInput,
+  );
+  const coachDecisionGate = getCoachDecisionBrowserWriteGate(
+    actor,
+    sampleCoachDecisionInput,
+  );
 
   return (
     <AppShell actor={actor}>
@@ -87,6 +115,49 @@ export default async function CoachPage() {
               note="Campaign learning and handoff records"
             />
           </section>
+
+          {coachDecisionPreview.success ? (
+            <section className="grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
+              <article className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+                  Coach decision path
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">
+                  Log advance, hold, or intervene, but keep saving locked.
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-white/66">
+                  This previews the future coach decision save. It would update
+                  phase readiness, create the coach review, record event/audit
+                  history, and leave any n8n escalation packet disabled.
+                </p>
+                <div className="mt-4 rounded-2xl bg-black/20 p-3">
+                  <p className="text-sm font-semibold text-white">
+                    Preview decision: {coachDecisionPreview.data.decision}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-white/58">
+                    Readiness: {coachDecisionPreview.data.readinessStatus}. Coach
+                    validation: {coachDecisionPreview.data.coachValidationStatus}.
+                    Outbox: {coachDecisionPreview.data.automationOutbox.status}.
+                  </p>
+                </div>
+              </article>
+
+              <div className="grid gap-3">
+                <WriteReadinessNotice
+                  operationLabel="Coach decision write remains disabled"
+                  wouldWriteTables={disabledCoachDecisionWrite.wouldWriteTables}
+                />
+                <EventOutboxLog
+                  events={[coachDecisionPreview.data.integrationEvent]}
+                  outboxItems={[coachDecisionPreview.data.automationOutbox]}
+                />
+              </div>
+            </section>
+          ) : null}
+
+          {canLogDecision ? (
+            <BrowserWriteGateNotice gate={coachDecisionGate} />
+          ) : null}
 
           {visibleRisks.length === 0 ? (
             <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">

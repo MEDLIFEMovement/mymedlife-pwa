@@ -5,6 +5,7 @@ import {
   getWriteReadinessConfig,
   prepareDisabledAssignmentCreateWrite,
   prepareDisabledActionStartWrite,
+  prepareDisabledCoachDecisionWrite,
   prepareDisabledHqSharingDecisionWrite,
   prepareDisabledProofSubmissionWrite,
 } from "@/services/write-readiness";
@@ -85,6 +86,27 @@ describe("write readiness service", () => {
     expect(attempt.wouldWriteTables).toEqual([
       "assignments",
       "evidence_items",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ]);
+    expect(attempt.preview.success).toBe(true);
+  });
+
+  it("prepares a disabled coach decision write attempt", () => {
+    const coach = getMockLocalActorContext("coach@mymedlife.test");
+    const attempt = prepareDisabledCoachDecisionWrite(coach, {
+      decision: "intervene",
+      note: "Local preview only: chapter needs coach support before advancing.",
+      blockerSummary: "Rush ownership and proof quality need follow-up.",
+    });
+
+    expect(attempt.success).toBe(false);
+    expect(attempt.operation).toBe("coach_decision_logged");
+    expect(attempt.wouldWriteTables).toEqual([
+      "phases",
+      "phase_readiness_reviews",
       "events",
       "integration_events",
       "automation_outbox",

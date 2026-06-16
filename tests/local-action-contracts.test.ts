@@ -3,10 +3,12 @@ import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
   canCreateChapterAssignment,
+  canLogCoachDecision,
   canMakeHqSharingDecision,
   canSubmitProofForAssignment,
   createActionStartedMock,
   createChapterAssignmentMock,
+  createCoachDecisionMock,
   createHqSharingDecisionMock,
   createProofSubmissionMock,
   getProofSubmissionGuidance,
@@ -161,6 +163,75 @@ describe("local action contracts", () => {
       expect(approved.data.automationOutbox.status).toBe("disabled");
     }
     expect(blocked.success).toBe(false);
+  });
+
+  it("allows coaches, admins, and super admins to preview coach decisions", () => {
+    const coach = getMockLocalActorContext("coach@mymedlife.test");
+    const admin = getMockLocalActorContext("admin@mymedlife.test");
+    const superAdmin = getMockLocalActorContext("super.admin@mymedlife.test");
+
+    expect(canLogCoachDecision(coach)).toBe(true);
+    expect(canLogCoachDecision(admin)).toBe(true);
+    expect(canLogCoachDecision(superAdmin)).toBe(true);
+
+    const advance = createCoachDecisionMock(coach, {
+      decision: "advance",
+      note: "Chapter is ready to move forward after local coach review.",
+    });
+    const hold = createCoachDecisionMock(admin, {
+      decision: "hold",
+      note: "Chapter should pause until the next action owner is clearer.",
+    });
+    const intervene = createCoachDecisionMock(superAdmin, {
+      decision: "intervene",
+      note: "Chapter needs immediate support before the campaign advances.",
+      blockerSummary: "Rush event ownership and proof quality need support.",
+    });
+
+    expect(advance.success).toBe(true);
+    expect(hold.success).toBe(true);
+    expect(intervene.success).toBe(true);
+    if (advance.success && hold.success && intervene.success) {
+      expect(advance.data.readinessStatus).toBe("validated");
+      expect(advance.data.coachValidationStatus).toBe("validated");
+      expect(hold.data.readinessStatus).toBe("ready");
+      expect(hold.data.coachValidationStatus).toBe("pending");
+      expect(intervene.data.readinessStatus).toBe("blocked");
+      expect(intervene.data.coachValidationStatus).toBe("blocked");
+      expect(intervene.data.integrationEvent.eventType).toBe("coach_decision_logged");
+      expect(intervene.data.automationOutbox.destination).toBe("n8n");
+      expect(intervene.data.automationOutbox.status).toBe("disabled");
+      expect(intervene.data.auditLog.action).toBe("coach_decision_logged");
+    }
+  });
+
+  it("blocks members, leaders, and DS Admin from previewing coach decisions", () => {
+    const blockedActors = [
+      getMockLocalActorContext("member.a@mymedlife.test"),
+      getMockLocalActorContext("leader.a@mymedlife.test"),
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
+    ];
+
+    for (const actor of blockedActors) {
+      expect(canLogCoachDecision(actor)).toBe(false);
+      expect(
+        createCoachDecisionMock(actor, {
+          decision: "hold",
+          note: "Blocked actor should not own coach decision truth.",
+        }),
+      ).toEqual(expect.objectContaining({ success: false }));
+    }
+  });
+
+  it("requires blocker context for intervene coach decisions", () => {
+    const coach = getMockLocalActorContext("coach@mymedlife.test");
+
+    expect(
+      createCoachDecisionMock(coach, {
+        decision: "intervene",
+        note: "Chapter needs coach support before moving forward.",
+      }),
+    ).toEqual(expect.objectContaining({ success: false }));
   });
 
   it("returns role-appropriate proof review queues and guidance", () => {

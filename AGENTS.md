@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 26: HQ proof-sharing browser write gate with
+The active goal is Goal 27: coach decision browser write gate with
 production data, enabled browser writes, uploads, and external integrations
 still disabled.
 
@@ -249,6 +249,14 @@ Allowed:
 - a visible HQ proof-sharing browser-write activation gate on
   `/rush-month/review` that references the local `hq_sharing_decision` function
   while keeping decision saves, public sharing, and enabled controls disabled
+- one local Supabase `coach_decision_logged` function that updates phase
+  readiness, records a coach review, records an internal event, records an
+  integration-ready event row, creates a disabled outbox row, and records an
+  audit log together
+- a visible coach-decision browser-write activation gate on `/coach` that
+  references the local `coach_decision_logged` function while keeping decision
+  saves, n8n escalation packets, external automation, and enabled controls
+  disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

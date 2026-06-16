@@ -2,6 +2,8 @@ import type { ActorAudience } from "@/services/local-actor-context";
 import type { WriteOperation } from "@/services/write-readiness";
 
 type FutureTable =
+  | "phases"
+  | "phase_readiness_reviews"
   | "assignments"
   | "evidence_items"
   | "approvals"
@@ -75,6 +77,34 @@ export const writePlanOperations = [
       "ds_admin_cannot_start_assignment",
       "started_assignment_records_audit_log",
       "started_assignment_records_internal_event",
+    ],
+    stillDisabled: true,
+  },
+  {
+    key: "coach_decision_logged",
+    label: "Coach decision logged",
+    plainEnglishOutcome:
+      "A coach or HQ support actor records advance, hold, or intervene for a chapter campaign phase.",
+    transactionBoundary:
+      "Update the phase readiness status, create one readiness review, record one internal event, record one integration event, create one disabled outbox row, and record one audit log entry together.",
+    futureTables: [
+      "phases",
+      "phase_readiness_reviews",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ],
+    allowedActors: ["coach", "admin", "super_admin"],
+    blockedActors: ["chapter_member", "chapter_leader", "ds_admin"],
+    requiredTests: [
+      "coach_can_log_decision_for_portfolio_chapter",
+      "admin_can_log_coach_decision",
+      "member_cannot_log_coach_decision",
+      "chapter_leader_cannot_log_coach_decision",
+      "ds_admin_cannot_log_coach_decision",
+      "coach_cannot_log_decision_outside_portfolio",
+      "coach_decision_creates_disabled_outbox_row",
     ],
     stillDisabled: true,
   },
