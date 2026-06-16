@@ -11,8 +11,8 @@ set local "request.jwt.claim.role" = 'authenticated';
 
 select is(
   (select count(*)::int from app.assignments),
-  1,
-  'Chapter A member sees only their visible Chapter A assignment'
+  2,
+  'Chapter A member sees only their visible Chapter A assignments'
 );
 
 select is(

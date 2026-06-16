@@ -66,6 +66,13 @@ export type ActionStartServerResult =
       plainEnglishMessage: string;
     };
 
+export type ActionStartReadbackState = {
+  assignmentStatus: Assignment["status"];
+  confirmsStarted: boolean;
+  tone: "info" | "success" | "warning";
+  message: string;
+};
+
 export function getActionStartWriteConfig(
   env: EnvSource = process.env,
 ): ActionStartWriteConfig {
@@ -172,6 +179,43 @@ export function getActionStartWriteReadiness(
       ? `${failedCheck.label} is not ready. ${config.reason}`
       : config.reason,
     checks,
+  };
+}
+
+export function getActionStartReadbackState(
+  assignment: Pick<Assignment, "status">,
+  resultCode?: ActionStartResultCode,
+): ActionStartReadbackState | null {
+  if (!resultCode) {
+    return null;
+  }
+
+  if (resultCode !== "started") {
+    return {
+      assignmentStatus: assignment.status,
+      confirmsStarted: false,
+      tone: "info",
+      message:
+        "No local status change is expected for this result. The page is still reading the current assignment state safely.",
+    };
+  }
+
+  if (assignment.status === "in_progress") {
+    return {
+      assignmentStatus: assignment.status,
+      confirmsStarted: true,
+      tone: "success",
+      message:
+        "Local readback confirms this assignment is now in progress in Supabase.",
+    };
+  }
+
+  return {
+    assignmentStatus: assignment.status,
+    confirmsStarted: false,
+    tone: "warning",
+    message:
+      "The start action returned success, but the refreshed page has not read an in-progress assignment yet.",
   };
 }
 

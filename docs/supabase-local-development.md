@@ -279,6 +279,31 @@ The seed file creates fake local-only users:
 
 All seed data is fake and local-only.
 
+## Goal 61 Action-Start Readback Test
+
+After running the local Supabase reset, use this fake Northview assignment to
+test the first localhost-only action-start browser write:
+
+```text
+50000000-0000-4000-8000-000000000003
+```
+
+Recommended local test path:
+
+1. Set `MYMEDLIFE_DATA_SOURCE=supabase`.
+2. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true`.
+3. Set `MYMEDLIFE_AUTH_MODE=local_supabase`.
+4. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
+5. Set `MYMEDLIFE_ENABLE_ACTION_START_WRITE=true`.
+6. Sign in at `/login` as `member.a@mymedlife.test` with password `password`.
+7. Open `/rush-month/actions/50000000-0000-4000-8000-000000000003`.
+8. Click `Start this action`.
+9. Confirm the refreshed page shows the assignment status as `in_progress` and
+   the local readback success message.
+
+This test still does not enable production auth, external sends, proof uploads,
+public proof sharing, or any write path except the local action-start slice.
+
 `MYMEDLIFE_LOCAL_ACTOR_EMAIL` also works when the app is using mock fallback
 data, so developers can preview all role views without Docker. Restart the local
 development server after changing the env var.

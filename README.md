@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 60: local action-start server action with production
+The current goal is Goal 61: local action-start readback proof with production
 data, most browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -290,6 +290,11 @@ and `MYMEDLIFE_ENABLE_ACTION_START_WRITE=true`. All other browser writes,
 production data, uploads, public proof sharing, and external sends remain
 disabled.
 
+Goal 61 adds a stable local seed assignment for that first write path and shows
+plain-English readback after a start result. Local reviewers can use
+`50000000-0000-4000-8000-000000000003` to confirm the page refreshes from
+`not_started` to `in_progress` after the localhost-only action-start write.
+
 Do not connect production Supabase, create real users, enable browser app
 writes beyond the local action-start slice, or enable external writes until Nick
 approves a later implementation goal.
@@ -393,6 +398,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 58 local Supabase Auth sign-in](./docs/architecture/goal-58-local-auth-sign-in.md)
 - [Goal 59 auth-derived actor context](./docs/architecture/goal-59-auth-derived-actor-context.md)
 - [Goal 60 action-start server action](./docs/architecture/goal-60-action-start-server-action.md)
+- [Goal 61 action-start readback proof](./docs/architecture/goal-61-action-start-readback.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)

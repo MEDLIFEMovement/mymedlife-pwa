@@ -141,6 +141,28 @@ insert into app.assignments (
     array['Social Host'],
     'Fake leader follows up locally.',
     false
+  ),
+  (
+    '50000000-0000-4000-8000-000000000003',
+    '10000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    '41000000-0000-4000-8000-000000000001',
+    '43000000-0000-4000-8000-000000000001',
+    '42000000-0000-4000-8000-000000000001',
+    'Start the tabling follow-up sprint',
+    'Open the follow-up sprint for students who signed up at the kickoff table.',
+    '00000000-0000-4000-8000-000000000001',
+    'general_member',
+    '00000000-0000-4000-8000-000000000002',
+    'not_started',
+    'Short note describing the first follow-up batch.',
+    10,
+    'follow_up_started',
+    'normal',
+    'First follow-up batch is started and ready for proof later.',
+    array['Recruitment Director', 'Follow-Up Chair'],
+    'Leader checks whether Maya needs a template or partner.',
+    false
   )
 on conflict (id) do nothing;
 
