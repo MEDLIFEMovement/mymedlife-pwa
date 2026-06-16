@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 14: first local action-start write.
+The active goal is Goal 15: local proof/testimonial metadata submission.
 
 Allowed:
 
@@ -192,6 +192,11 @@ Allowed:
   status, records an internal event, records an integration-ready event row, and
   records an audit log together
 - RLS/security tests proving direct assignment-start table updates are blocked
+- one local Supabase `evidence_submitted` proof/testimonial metadata function
+  that updates assignment status, creates evidence metadata, records an internal
+  event, records an integration-ready event row, creates a disabled outbox row,
+  and records an audit log together
+- RLS/security tests proving direct evidence inserts are blocked
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

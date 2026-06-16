@@ -34,24 +34,12 @@ select is(
 );
 
 select lives_ok(
-  $$
-    insert into app.evidence_items (
-      id,
-      assignment_id,
-      chapter_id,
-      submitted_by_user_id,
-      evidence_type,
-      summary
-    ) values (
-      '60000000-0000-4000-8000-000000000101',
-      '50000000-0000-4000-8000-000000000001',
-      '10000000-0000-4000-8000-000000000001',
-      '00000000-0000-4000-8000-000000000001',
-      'text',
-      'Fake member-submitted Rush Month proof for RLS test.'
-    )
-  $$,
-  'Assigned member can submit proof for visible work'
+  $$ select * from app.submit_assignment_proof_metadata(
+    '50000000-0000-4000-8000-000000000001',
+    'text',
+    'Fake member-submitted Rush Month proof for RLS test.'
+  ) $$,
+  'Assigned member can submit proof for visible work through the audited function'
 );
 
 select throws_ok(
@@ -259,8 +247,8 @@ select lives_ok(
 
 select is(
   (select count(*)::int from app.automation_outbox),
-  2,
-  'Admin can read outbox rows for support'
+  3,
+  'Admin can read seed and proof-submission outbox rows for support'
 );
 
 update app.automation_outbox
