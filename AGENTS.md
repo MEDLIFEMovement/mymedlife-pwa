@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 27: coach decision browser write gate with
+The active goal is Goal 28: write activation readiness dashboard with
 production data, enabled browser writes, uploads, and external integrations
 still disabled.
 
@@ -257,6 +257,9 @@ Allowed:
   references the local `coach_decision_logged` function while keeping decision
   saves, n8n escalation packets, external automation, and enabled controls
   disabled
+- a consolidated `/admin` write activation readiness panel that summarizes the
+  first browser-write gates, their routes, local functions, role posture, and
+  remaining blockers while keeping enabled controls at zero
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
