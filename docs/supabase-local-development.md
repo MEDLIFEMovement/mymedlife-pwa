@@ -32,6 +32,8 @@ readback is proven.
 Goal 79 adds `/admin/hq-proof-write` so staff can prepare the third local
 write, `hq_sharing_decision_logged`, only after proof metadata readback is
 proven.
+Goal 80 adds `/admin/assignment-write` so staff can prepare the fourth local
+write, `action_assigned`, only after HQ proof decision readback is proven.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
@@ -231,6 +233,15 @@ or AI writes.
 - `tests/hq-proof-decision-verification-packet.test.ts`: unit tests proving HQ
   decision packet blocking, ready state, readback, public-sharing safety, and
   role visibility.
+- `src/services/leader-assignment-verification-packet.ts`: staff-only packet
+  for local chapter-leader assignment creation after HQ decision readback is
+  proven.
+- `src/components/leader-assignment-verification-panel.tsx`:
+  `/admin/assignment-write` panel with local env settings, fake leader sign-in,
+  stop conditions, and readback evidence for assignment/event/outbox/audit rows.
+- `tests/leader-assignment-verification-packet.test.ts`: unit tests proving
+  assignment packet blocking, ready state, duplicate safety, readback, reminder
+  safety, and role visibility.
 
 ## Requirements
 
@@ -476,11 +487,17 @@ Recommended local test path:
 3. Set `MYMEDLIFE_AUTH_MODE=local_supabase`.
 4. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
 5. Set `MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE=true`.
-6. Sign in at `/login` as `leader.a@mymedlife.test` with password `password`.
-7. Open `/rush-month/actions`.
-8. Confirm the local leader assignment creation panel is enabled.
-9. Submit the local assignment form.
-10. Confirm the refreshed page shows the assignment-created result and local
+6. Open `/admin/assignment-write`.
+7. Confirm the packet says HQ proof decision readback is proven and reminders
+   remain disabled.
+8. Sign in at `/login` as `leader.a@mymedlife.test` with password `password`.
+9. Open `/rush-month/actions`.
+10. Confirm the local leader assignment creation panel is enabled.
+11. Submit the local assignment form.
+12. Return to `/admin/assignment-write`.
+13. Confirm the packet shows assignment, event, integration event, disabled
+    outbox, and audit readback evidence.
+14. Confirm the refreshed page shows the assignment-created result and local
     readback when the new assignment is visible.
 
 Expected database behavior:

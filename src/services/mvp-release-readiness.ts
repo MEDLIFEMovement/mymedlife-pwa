@@ -119,6 +119,12 @@ export function getMvpReleaseReadinessSummary(
         plainEnglish:
           "HQ staff can inspect the local proof-sharing decision packet before the third localhost-only save is tested.",
       },
+      {
+        label: "Leader assignment packet",
+        status: "ready_for_local_review",
+        plainEnglish:
+          "HQ staff can inspect the local chapter-leader assignment packet before the fourth localhost-only save is tested.",
+      },
     ],
     blockers: [
       {
@@ -154,7 +160,7 @@ export function getMvpReleaseReadinessSummary(
     ],
     nextApprovals: [
       "Approve live auth/onboarding plan.",
-      "Run `/admin/first-write`, then use `/admin/write-sequence`, `/admin/proof-write`, and `/admin/hq-proof-write` to approve the next browser write path and rollback plan.",
+      "Run `/admin/first-write`, then use `/admin/write-sequence`, `/admin/proof-write`, `/admin/hq-proof-write`, and `/admin/assignment-write` to approve the next browser write path and rollback plan.",
       "Approve proof upload/storage and consent requirements.",
       "Approve production Supabase/Vercel environment setup.",
       "Approve first pilot chapter or internal test group from `/admin/pilot-scope`.",

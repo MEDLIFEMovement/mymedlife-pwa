@@ -24,6 +24,7 @@ export type StaticRouteMetadataKey =
   | "adminWriteSequence"
   | "adminProofWrite"
   | "adminHqProofWrite"
+  | "adminAssignmentWrite"
   | "adminPilotScope"
   | "adminStaffDryRun";
 
@@ -127,6 +128,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "HQ Proof Decision Packet",
     description:
       "Staff-only local HQ proof-sharing decision packet with public sharing and external sends disabled.",
+  },
+  adminAssignmentWrite: {
+    title: "Leader Assignment Packet",
+    description:
+      "Staff-only local leader assignment creation packet with reminders and external sends disabled.",
   },
   adminPilotScope: {
     title: "Pilot Scope",

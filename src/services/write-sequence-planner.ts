@@ -202,10 +202,10 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
       label: "Leader creates a new assignment",
       promotionOrder: 4,
       studentJourneyOrder: 1,
-      route: "/rush-month/actions",
+      route: "/admin/assignment-write",
       localActorEmail: "leader.a@mymedlife.test",
       actorLabel: "Chapter Leader",
-      status: "server_action_ready",
+      status: "packet_ready",
       plainEnglish:
         "A chapter leader creates a real assignment for a role or committee after the smaller action-start and proof writes have been proven.",
       expectedTables: ["assignments", "events", "integration_events", "audit_logs"],
@@ -221,7 +221,7 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
       safetyBoundary:
         "Requires leader chapter scope, duplicate checks, rollback, and reminder automation staying disabled.",
       nextGate:
-        "Promote only after role assignment and membership truth are production-auth backed.",
+        "Open `/admin/assignment-write` before allowing staff to test leader assignment creation in a browser.",
     },
     {
       key: "coach_decision_logged",
