@@ -1,6 +1,6 @@
 # Supabase Local Development
 
-Goals 5, 7, and 8 add the local-only Supabase foundation for myMEDLIFE.
+Goals 5, 7, 8, and 9 add the local-only Supabase foundation for myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable live auth in the UI, add app write paths, or trigger HubSpot,
@@ -25,6 +25,10 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `src/lib/supabase-readonly.ts`: server-only REST reader for local Supabase.
 - `src/services/read-only-app-data.ts`: mock-safe read model used by app pages.
 - `.env.example`: local-only read configuration template.
+- `src/services/local-actor-context.ts`: local-only actor context reader for
+  fake seed users, memberships, staff roles, and coach assignments.
+- `src/components/local-actor-notice.tsx`: visible local actor context display
+  used by read-only pages.
 
 ## Requirements
 
@@ -80,6 +84,7 @@ MYMEDLIFE_DATA_SOURCE=supabase
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_SERVICE_ROLE_KEY=<local service role key from supabase start>
+MYMEDLIFE_LOCAL_ACTOR_EMAIL=member.a@mymedlife.test
 ```
 
 Then run:
@@ -95,12 +100,15 @@ Open these routes:
 - `http://localhost:3000/chapter`
 - `http://localhost:3000/rush-month`
 - `http://localhost:3000/coach`
+- `http://localhost:3000/admin`
 
-Each route shows a small data-source notice. If the local Supabase URL or key is
-missing, unsafe, or unavailable, the app falls back to mock data.
+Each route shows a small data-source notice and local actor context notice. If
+the local Supabase URL or key is missing, unsafe, or unavailable, the app falls
+back to mock data.
 
-Goal 8 intentionally uses a server-only read path. It does not add browser auth,
-student sign-in, role switching, or app writes.
+Goal 8 intentionally uses a server-only read path. Goal 9 adds local-only actor
+switching by fake seed email. It does not add browser auth, student sign-in,
+sessions, cookies, production auth, or app writes.
 
 ## GitHub CI
 

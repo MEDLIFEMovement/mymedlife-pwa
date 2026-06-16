@@ -1,10 +1,16 @@
 import { AppShell } from "@/components/app-shell";
 import { EventOutboxLog } from "@/components/event-outbox-log";
+import { LocalActorNotice } from "@/components/local-actor-notice";
 import { integrationEvents, outboxItems } from "@/data/mock-rush-month";
+import { getLocalActorContext } from "@/services/local-actor-context";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const actor = await getLocalActorContext();
+
   return (
     <AppShell>
+      <LocalActorNotice actor={actor} />
+
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
           Admin / Super Admin placeholder
