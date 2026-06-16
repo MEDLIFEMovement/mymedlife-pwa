@@ -161,7 +161,8 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 18: local chapter-leader assignment creation.
+The active goal is Goal 19: auth and onboarding planning with live auth still
+disabled.
 
 Allowed:
 
@@ -211,6 +212,10 @@ Allowed:
   the assignment, records an internal event, records an integration-ready event
   row, creates a disabled outbox row, and records an audit log together
 - RLS/security tests proving direct assignment inserts are blocked
+- auth/onboarding planning that defines future sign-in, profile creation,
+  chapter join request, membership approval, role assignment, coach assignment,
+  and staff role assignment boundaries while keeping live auth disabled
+- tests proving live auth and production users remain disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

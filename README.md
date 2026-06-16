@@ -10,7 +10,8 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 18: local chapter-leader assignment creation.
+The current goal is Goal 19: auth and onboarding planning with live auth still
+disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -80,6 +81,11 @@ path. It adds an auditable database function and RLS/security tests for
 `action_assigned`, but it does not wire browser save controls, production auth,
 or external automation.
 
+Goal 19 defines the future auth/onboarding path for sign-in, profile creation,
+chapter join requests, membership approval, role assignment, coach assignment,
+and staff role assignment. It does not enable live auth, browser sessions,
+production users, or onboarding writes.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -141,6 +147,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 16 HQ proof sharing decision](./docs/architecture/goal-16-hq-proof-sharing-decision.md)
 - [Goal 17 proof and video storage plan](./docs/architecture/goal-17-proof-video-storage-plan.md)
 - [Goal 18 leader assignment creation](./docs/architecture/goal-18-leader-assignment-create.md)
+- [Goal 19 auth and onboarding plan](./docs/architecture/goal-19-auth-onboarding-plan.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -243,6 +250,9 @@ Rules:
 - Goal 18 adds the first local Supabase database write function for
   `action_assigned` chapter-leader assignment creation. The browser UI still
   does not save assignments or send automation.
+- Goal 19 adds auth/onboarding planning and tests. Live auth, browser sessions,
+  production users, join requests, membership approvals, and role assignments
+  remain disabled.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -382,6 +392,12 @@ Goal 18 local leader assignment creation lives in:
 - `supabase/migrations/20260616110000_goal_18_leader_assignment_create.sql`
 - `supabase/tests/database/rls_goal_18.test.sql`
 
+Goal 19 auth/onboarding planning lives in:
+
+- `docs/architecture/goal-19-auth-onboarding-plan.md`
+- `src/services/auth-onboarding-plan.ts`
+- `tests/auth-onboarding-plan.test.ts`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -400,13 +416,12 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 18
+## Definition of Done for Goal 19
 
-Goal 18 is complete when a human developer can run local Supabase migrations
-and RLS tests proving chapter leaders can create own-chapter assignments only
-through the audited database function, with event, integration event, disabled
-outbox, and audit log rows created together.
+Goal 19 is complete when a human developer can review the future auth/onboarding
+path, understand who owns each step, and run tests proving live auth remains
+disabled.
 
-The app remains mock-first by default. Goal 18 does not wire production
-Supabase, enable live auth, add browser save controls, create real users, or
-activate real integrations.
+The app remains mock-first by default. Goal 19 does not wire production
+Supabase, enable live auth, add browser sessions, create real users, approve
+memberships, assign roles, or activate real integrations.
