@@ -90,6 +90,7 @@ describe("role visibility service", () => {
       { href: "/admin/write-sequence", label: "Write Sequence Safety" },
       { href: "/admin/proof-write", label: "Proof Packet Safety" },
       { href: "/admin/hq-proof-write", label: "HQ Decision Safety" },
+      { href: "/admin/assignment-write", label: "Assignment Safety" },
       { href: "/admin/pilot-scope", label: "Pilot Safety" },
       { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
     ]);
@@ -126,6 +127,7 @@ describe("role visibility service", () => {
       { href: "/admin/write-sequence", label: "Sequence", helper: "No sends" },
       { href: "/admin/proof-write", label: "Proof", helper: "No uploads" },
       { href: "/admin/hq-proof-write", label: "HQ", helper: "No publish" },
+      { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
       { href: "/admin/pilot-scope", label: "Pilot", helper: "No sends" },
     ]);
   });
@@ -139,6 +141,7 @@ describe("role visibility service", () => {
       "Sequence",
       "Proof",
       "HQ",
+      "Assign",
       "Pilot",
     ]);
   });

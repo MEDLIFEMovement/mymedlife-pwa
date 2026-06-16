@@ -28,6 +28,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/admin/write-sequence", label: "Write sequence", routeType: "exact" },
   { href: "/admin/proof-write", label: "Proof metadata packet", routeType: "exact" },
   { href: "/admin/hq-proof-write", label: "HQ proof decision packet", routeType: "exact" },
+  { href: "/admin/assignment-write", label: "Leader assignment packet", routeType: "exact" },
   { href: "/admin/pilot-scope", label: "Pilot scope", routeType: "exact" },
   { href: "/admin/staff-dry-run", label: "Staff dry run", routeType: "exact" },
 ];

@@ -183,19 +183,20 @@ function getSubprojects(): MvpSubprojectProgress[] {
         "/admin/write-sequence",
         "/admin/proof-write",
         "/admin/hq-proof-write",
+        "/admin/assignment-write",
         "/rush-month/actions",
         "/rush-month/actions/[assignmentId]",
         "/rush-month/review",
         "/coach",
       ],
       plainEnglish:
-        "The first local-only write paths now exist, and staff packets explain exactly when action-start, proof metadata, and HQ proof decisions can be tested on localhost.",
+        "The first local-only write paths now exist, and staff packets explain exactly when action-start, proof metadata, HQ proof decisions, and leader assignment creation can be tested on localhost.",
       technicalEvidence:
-        "Server actions, result states, browser gates, first-write drill coverage, write-sequence planning, proof metadata packet coverage, and HQ decision packet coverage exist for the first local write sequence.",
+        "Server actions, result states, browser gates, first-write drill coverage, write-sequence planning, proof metadata packet coverage, HQ decision packet coverage, and leader assignment packet coverage exist for the first local write sequence.",
       remainingWork:
-        "Run the localhost action-start drill, review readback/audit proof, then use the proof metadata and HQ decision packets to test the next writes safely.",
+        "Run the localhost action-start drill, review readback/audit proof, then use the proof metadata, HQ decision, and assignment packets to test the next writes safely.",
       nextReviewStep:
-        "Open `/admin/first-write`, `/admin/write-sequence`, `/admin/proof-write`, and `/admin/hq-proof-write` in that order.",
+        "Open `/admin/first-write`, `/admin/write-sequence`, `/admin/proof-write`, `/admin/hq-proof-write`, and `/admin/assignment-write` in that order.",
       totalWeight: 14,
       localReviewWeight: 10,
       liveMvpWeight: 7,

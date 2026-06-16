@@ -222,6 +222,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "The packet must not enable production auth, public proof publishing, warehouse export, AI summary, or external automation.",
   },
   {
+    path: "/admin/assignment-write",
+    label: "Leader assignment operator packet",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ staff can see whether HQ decision readback is proven, whether local assignment creation is blocked or ready, and what readback evidence must appear.",
+    safetyAssertion:
+      "The packet must not enable production auth, reminders, HubSpot handoffs, n8n workflows, Luma writes, or external automation.",
+  },
+  {
     path: "/admin/pilot-scope",
     label: "First pilot scope planner",
     priority: "critical",

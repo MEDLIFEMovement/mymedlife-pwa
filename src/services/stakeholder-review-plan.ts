@@ -204,6 +204,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "The HQ decision packet must not publish proof, export proof, generate AI summaries, or send external automation.",
   },
+  {
+    id: "leader-assignment-packet",
+    title: "Review the leader assignment packet",
+    route: "/admin/assignment-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the fourth local write packet for chapter-leader assignment creation, including HQ decision prerequisites, duplicate checks, disabled reminder posture, and readback evidence.",
+    safetyBoundary:
+      "The leader assignment packet must not send reminders, HubSpot handoffs, n8n workflows, Luma writes, or external automation.",
+  },
 ];
 
 export function getStakeholderReviewPlan(
