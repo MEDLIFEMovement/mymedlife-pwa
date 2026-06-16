@@ -100,6 +100,16 @@ function buildCoverageItems(data: ReadOnlyAppData): MvpCoverageItem[] {
       nextStep: "Do not enable assignment saves until live auth and write activation are approved.",
     },
     {
+      key: "member_management",
+      label: "Member and role management visibility",
+      status: "covered_readonly",
+      plainEnglish:
+        "Leaders and staff can inspect roster follow-up, join requests, role coverage, and disabled membership controls without changing membership truth.",
+      routeEvidence: ["/chapter/members"],
+      nextStep:
+        "Do not enable join approvals or role changes until production auth, RLS, audit, and rollback are approved.",
+    },
+    {
       key: "proof",
       label: "Proof/testimonial sharing posture",
       status: "covered_mock",

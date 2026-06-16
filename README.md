@@ -10,11 +10,12 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 66: MVP progress map and remaining-work visibility.
-This remains local-only and adds a plain-English admin view of what is locally
-reviewable, what is partially ready, what needs approval, and what is still a
-future build. Production data, most browser writes, admin mutation controls,
-uploads, public proof sharing, and external integrations remain disabled.
+The current goal is Goal 67: chapter membership workspace. This remains
+local-only and adds a read-only `/chapter/members` surface for roster follow-up,
+join-request posture, role coverage, disabled membership controls, audit
+previews, and future outbox posture. Production data, most browser writes,
+admin mutation controls, uploads, public proof sharing, and external
+integrations remain disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -329,6 +330,12 @@ percentages, names risks and route evidence, and keeps the app honest about
 auth, uploads, production deploy, admin operations, and external integrations
 still needing approval or future build work.
 
+Goal 67 adds a read-only chapter membership workspace at `/chapter/members`.
+It shows roster follow-up, join requests, role coverage, disabled future
+membership controls, audit previews, and outbox previews for leaders, coaches,
+admins, and super admins while keeping members and DS Admin out of membership
+management truth.
+
 Do not connect production Supabase, create real users, enable browser app
 writes beyond the approved local action-start, assignment creation, proof
 metadata, HQ proof decision, and coach decision slices, or enable external writes until Nick approves a later
@@ -439,6 +446,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 64 leader assignment server action](./docs/architecture/goal-64-leader-assignment-server-action.md)
 - [Goal 65 coach decision server action](./docs/architecture/goal-65-coach-decision-server-action.md)
 - [Goal 66 MVP progress map](./docs/architecture/goal-66-mvp-progress-map.md)
+- [Goal 67 chapter membership workspace](./docs/architecture/goal-67-chapter-membership-workspace.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -674,6 +682,7 @@ data and fake local actor context. With or without local Supabase running,
 `MYMEDLIFE_LOCAL_ACTOR_EMAIL` can preview the Goal 10 local role views:
 
 - `/chapter`
+- `/chapter/members`
 - `/campaigns`
 - `/campaigns/[campaignSlug]`
 - `/action-committees`
@@ -696,6 +705,7 @@ Goal 2 route shells:
 
 - `/`: mobile-first app front door
 - `/chapter`: chapter home shell
+- `/chapter/members`: read-only roster, join request, role coverage, and membership control posture
 - `/campaigns`: role-aware campaign catalog
 - `/campaigns/[campaignSlug]`: campaign detail, action lanes, events, proof, KPIs, and disabled integration posture
 - `/action-committees`: action committee and chapter event operating examples
@@ -890,6 +900,14 @@ Goal 66 MVP progress map lives in:
 - `src/components/mvp-progress-map-panel.tsx`
 - `src/services/mvp-progress-map.ts`
 - `tests/mvp-progress-map.test.ts`
+
+Goal 67 chapter membership workspace lives in:
+
+- `docs/architecture/goal-67-chapter-membership-workspace.md`
+- `src/app/chapter/members/page.tsx`
+- `src/components/chapter-membership-workspace-panel.tsx`
+- `src/services/chapter-membership-workspace.ts`
+- `tests/chapter-membership-workspace.test.ts`
 
 Goal 20 live-data connection planning lives in:
 

@@ -161,12 +161,12 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 66: MVP progress map and remaining-work visibility.
-This remains local-only and gives admins a plain-English map of what is locally
-reviewable, what is partially ready, what needs approval, and what is still
-future build work. Production data, most browser writes, admin mutation
-controls, uploads, public proof sharing, and external integrations remain
-disabled.
+The active goal is Goal 67: chapter membership workspace. This remains
+local-only and gives leaders, coaches, admins, and super admins a read-only
+view of roster follow-up, join-request posture, role coverage, disabled
+membership controls, audit previews, and future outbox posture. Production
+data, most browser writes, admin mutation controls, uploads, public proof
+sharing, and external integrations remain disabled.
 
 Allowed:
 
@@ -364,6 +364,10 @@ Allowed:
 - plain-English MVP progress and remaining-work visibility for admin reviewers,
   as long as it does not mark the live MVP complete or enable auth, writes,
   uploads, admin mutations, public proof sharing, or external integrations
+- read-only chapter membership and role-coverage visibility for leaders,
+  coaches, admins, and super admins, as long as join approval, role assignment,
+  committee lane changes, member deactivation, production auth, and external
+  automation all remain disabled
 - localhost-only Supabase Auth sign-in for fake local seed users, as long as
   production auth, production users, browser writes, uploads, public proof
   sharing, external sends, reminders, escalation packets, service workers, and

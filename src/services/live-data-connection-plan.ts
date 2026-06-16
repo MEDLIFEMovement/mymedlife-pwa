@@ -8,6 +8,7 @@ export type DataConnectionPhaseKey =
 
 export type AppRouteKey =
   | "/chapter"
+  | "/chapter/members"
   | "/campaigns"
   | "/campaigns/[campaignSlug]"
   | "/action-committees"
@@ -93,6 +94,12 @@ export const routeMigrationOrder = [
     route: "/chapter",
     firstLiveDataMode: "read_only",
     reason: "Chapter overview is low-risk and helps validate membership/chapter joins.",
+  },
+  {
+    route: "/chapter/members",
+    firstLiveDataMode: "read_only",
+    reason:
+      "Roster, join-request, and role-coverage visibility should prove membership reads before approval writes exist.",
   },
   {
     route: "/campaigns",

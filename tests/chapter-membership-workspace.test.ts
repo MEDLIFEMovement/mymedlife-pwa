@@ -1,0 +1,81 @@
+import { describe, expect, it } from "vitest";
+import { getChapterMembershipWorkspace } from "@/services/chapter-membership-workspace";
+import { getMockLocalActorContext } from "@/services/local-actor-context";
+import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
+
+const data = getMockReadOnlyAppData("Testing chapter membership workspace.");
+
+describe("chapter membership workspace", () => {
+  it("gives chapter leaders a read-only member management workspace", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const workspace = getChapterMembershipWorkspace(actor, data);
+
+    expect(workspace.canReadWorkspace).toBe(true);
+    expect(workspace.title).toContain("member workspace");
+    expect(workspace.counts.activeMembers).toBe(5);
+    expect(workspace.counts.pendingRequests).toBe(2);
+    expect(workspace.counts.enabledControls).toBe(0);
+    expect(workspace.members.map((member) => member.roleLabel)).toEqual(
+      expect.arrayContaining([
+        "General Member",
+        "Action Committee Member",
+        "Action Committee Chair",
+        "E-Board Member",
+        "President / VP",
+      ]),
+    );
+  });
+
+  it("shows coaches roster health without join approval ownership", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const workspace = getChapterMembershipWorkspace(actor, data);
+
+    expect(workspace.canReadWorkspace).toBe(true);
+    expect(workspace.title).toContain("coach roster readout");
+    expect(workspace.joinRequests).toEqual([]);
+    expect(workspace.summary).toContain("without owning membership approvals");
+  });
+
+  it("keeps DS Admin and general members out of member-management truth", () => {
+    const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const member = getMockLocalActorContext("member.a@mymedlife.test");
+
+    expect(getChapterMembershipWorkspace(dsAdmin, data).canReadWorkspace).toBe(false);
+    expect(getChapterMembershipWorkspace(member, data).canReadWorkspace).toBe(false);
+    expect(getChapterMembershipWorkspace(dsAdmin, data).summary).toContain(
+      "should not read or own chapter membership truth",
+    );
+  });
+
+  it("keeps role approval and membership controls disabled", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const workspace = getChapterMembershipWorkspace(actor, data);
+
+    expect(workspace.disabledControls.map((control) => control.key)).toEqual([
+      "approve_join_request",
+      "assign_chapter_role",
+      "move_committee_lane",
+      "deactivate_member",
+    ]);
+    expect(
+      workspace.disabledControls.every((control) => control.reason.length > 20),
+    ).toBe(true);
+    expect(workspace.auditPreview.join(" ")).toContain("membership_approved");
+    expect(workspace.outboxPreview.join(" ")).toContain("disabled");
+  });
+
+  it("flags thin action committee coverage before live launch", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const workspace = getChapterMembershipWorkspace(actor, data);
+    const chairCoverage = workspace.roleCoverage.find(
+      (item) => item.roleKey === "action_committee_chair",
+    );
+    const memberCoverage = workspace.roleCoverage.find(
+      (item) => item.roleKey === "action_committee_member",
+    );
+
+    expect(chairCoverage?.status).toBe("thin");
+    expect(memberCoverage?.status).toBe("thin");
+    expect(workspace.roleCoverage.some((item) => item.status === "missing")).toBe(false);
+  });
+});

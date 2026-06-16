@@ -80,8 +80,10 @@ describe("role visibility service", () => {
   it("labels navigation by actor role", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const leader = getMockLocalActorContext("leader.a@mymedlife.test");
 
     expect(getNavigationForActor(member).map((item) => item.label)).toContain("My Actions");
+    expect(getNavigationForActor(leader).map((item) => item.label)).toContain("Members");
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Integration Outbox" },
     ]);
@@ -103,7 +105,7 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Rush",
-      "Team",
+      "People",
       "Review",
       "Loop",
     ]);
