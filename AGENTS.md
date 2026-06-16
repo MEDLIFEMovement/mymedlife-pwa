@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 58: local Supabase Auth sign-in with production data,
+The active goal is Goal 59: auth-derived actor context with production data,
 browser writes, admin mutation controls, reminder automation, escalation
 packets, uploads, public proof sharing, and external integrations still
 disabled.
@@ -362,6 +362,11 @@ Allowed:
   production auth, production users, browser writes, uploads, public proof
   sharing, external sends, reminders, escalation packets, service workers, and
   production data stay disabled
+- mapping signed-in local Supabase Auth users into the existing role-aware actor
+  context, as long as debug fallback still works and production auth,
+  production users, browser writes, uploads, public proof sharing, external
+  sends, reminders, escalation packets, service workers, and production data
+  stay disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

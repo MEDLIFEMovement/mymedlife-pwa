@@ -9,7 +9,8 @@ route-by-route live-data connection plan without enabling production data.
 Goals 21 and 22 expand read-only campaign/dashboard surfaces. Goals 23 through
 27 add visible browser-write activation gates while keeping enabled controls
 off. Goal 27 also adds the local-only audited coach decision function. Goal 58
-adds localhost-only Supabase Auth sign-in for fake local seed users.
+adds localhost-only Supabase Auth sign-in for fake local seed users. Goal 59
+maps that local auth session into role-aware app context.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, add browser write controls, or trigger
@@ -119,10 +120,14 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   disabled.
 - `docs/architecture/goal-58-local-auth-sign-in.md`: local Supabase Auth
   sign-in architecture note with production auth still disabled.
+- `docs/architecture/goal-59-auth-derived-actor-context.md`: local Auth session
+  to app actor context architecture note with writes still disabled.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
   production users remain disabled.
+- `src/services/local-actor-context.ts`: actor context service that now prefers
+  the signed-in local auth user and falls back to `MYMEDLIFE_LOCAL_ACTOR_EMAIL`.
 - `src/services/live-data-connection-plan.ts`: disabled live-data migration
   plan for route order and connection mode.
 - `tests/live-data-connection-plan.test.ts`: unit tests proving production

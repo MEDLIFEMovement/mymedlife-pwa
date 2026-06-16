@@ -4,6 +4,7 @@ import {
   getMockLocalActorContext,
   getSupabaseLocalActorContext,
   readLocalActorSnapshot,
+  resolveActorEmailFromSession,
 } from "@/services/local-actor-context";
 
 describe("local actor context service", () => {
@@ -11,6 +12,8 @@ describe("local actor context service", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
 
     expect(actor.source.status).toBe("mock_fallback");
+    expect(actor.identitySource).toBe("local_actor_email");
+    expect(actor.authSessionStatus).toBe("disabled");
     expect(actor.audience).toBe("chapter_member");
     expect(actor.chapterRoles).toContain("General Member");
     expect(actor.isLocalOnly).toBe(true);
@@ -38,6 +41,7 @@ describe("local actor context service", () => {
     );
 
     expect(actor.source.status).toBe("supabase_ready");
+    expect(actor.identitySource).toBe("local_actor_email");
     expect(actor.user.displayName).toBe("Maya Member");
     expect(actor.audience).toBe("chapter_member");
     expect(actor.chapterRoles).toEqual(["General Member"]);
@@ -53,6 +57,76 @@ describe("local actor context service", () => {
     await expectAudience("admin@mymedlife.test", "admin", ["Admin"]);
     await expectAudience("ds.admin@mymedlife.test", "ds_admin", ["DS Admin"]);
     await expectAudience("super.admin@mymedlife.test", "super_admin", ["Super Admin"]);
+  });
+
+  it("can mark Supabase actor context as auth-session derived", async () => {
+    const actor = await getSupabaseLocalActorContext(
+      createFakeClient(fakeActorRows),
+      "leader.a@mymedlife.test",
+      "Using signed-in local user.",
+      "local_auth_session",
+      "signed_in",
+    );
+
+    expect(actor.identitySource).toBe("local_auth_session");
+    expect(actor.authSessionStatus).toBe("signed_in");
+    expect(actor.audience).toBe("chapter_leader");
+  });
+
+  it("resolves signed-in auth email before the debug actor email", () => {
+    const resolution = resolveActorEmailFromSession(
+      {
+        status: "signed_in",
+        isLocalOnly: true,
+        message: "Signed in.",
+        user: {
+          id: "user-3",
+          email: "coach@mymedlife.test",
+          displayName: "Cam Coach",
+        },
+      },
+      "member.a@mymedlife.test",
+    );
+
+    expect(resolution).toMatchObject({
+      email: "coach@mymedlife.test",
+      identitySource: "local_auth_session",
+      authSessionStatus: "signed_in",
+    });
+  });
+
+  it("falls back to debug actor email when auth is disabled or signed out", () => {
+    expect(
+      resolveActorEmailFromSession(
+        {
+          status: "disabled",
+          isLocalOnly: true,
+          message: "Auth disabled.",
+          user: null,
+        },
+        "leader.a@mymedlife.test",
+      ),
+    ).toMatchObject({
+      email: "leader.a@mymedlife.test",
+      identitySource: "local_actor_email",
+      authSessionStatus: "disabled",
+    });
+
+    expect(
+      resolveActorEmailFromSession(
+        {
+          status: "signed_out",
+          isLocalOnly: true,
+          message: "Signed out.",
+          user: null,
+        },
+        "admin@mymedlife.test",
+      ),
+    ).toMatchObject({
+      email: "admin@mymedlife.test",
+      identitySource: "local_actor_email",
+      authSessionStatus: "signed_out",
+    });
   });
 });
 
