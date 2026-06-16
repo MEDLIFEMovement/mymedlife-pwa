@@ -1,6 +1,6 @@
 # Supabase Local Development
 
-Goals 5, 7, 8, 9, 10, 11, 12, 13, 14, and 15 add the local-only Supabase
+Goals 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, and 16 add the local-only Supabase
 foundation for myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
@@ -20,6 +20,9 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `supabase/migrations/20260616093000_goal_15_proof_submission_write.sql`:
   first local proof/testimonial metadata write function plus direct evidence
   insert bypass protection.
+- `supabase/migrations/20260616103000_goal_16_hq_proof_sharing_decision.sql`:
+  first local HQ proof-sharing decision write function plus direct approval
+  insert bypass protection.
 - `supabase/seed.sql`: fake local users, chapters, memberships, staff roles,
   Rush Month records, proof/testimonial records, disabled/mock outbox rows, and
   fake Goal 7 operating-model records.
@@ -32,6 +35,8 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   local `action_started` database write path.
 - `supabase/tests/database/rls_goal_15.test.sql`: pgTAP tests for the first
   local `evidence_submitted` proof/testimonial metadata write path.
+- `supabase/tests/database/rls_goal_16.test.sql`: pgTAP tests for the first
+  local `hq_sharing_decision_logged` proof/testimonial sharing decision path.
 - `src/lib/supabase-readonly.ts`: server-only REST reader for local Supabase.
 - `src/services/read-only-app-data.ts`: mock-safe read model used by app pages.
 - `.env.example`: local-only read configuration template.
@@ -65,6 +70,8 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   architecture note.
 - `docs/architecture/goal-15-proof-submission-write.md`: local
   proof/testimonial metadata write architecture note.
+- `docs/architecture/goal-16-hq-proof-sharing-decision.md`: local HQ
+  proof/testimonial sharing decision architecture note.
 
 ## Requirements
 
@@ -156,7 +163,10 @@ test matrix. Goal 14 adds the first local Supabase database write function for
 `action_started`, but it still does not add browser save controls or production
 auth. Goal 15 adds the first local Supabase proof/testimonial metadata write
 function for `evidence_submitted`, but it still does not add browser save
-controls, file uploads, public proof sharing, or external sends.
+controls, file uploads, public proof sharing, or external sends. Goal 16 adds
+the first local Supabase HQ proof-sharing decision write function for
+`hq_sharing_decision_logged`, but it still does not add browser save controls,
+public publishing, or external sends.
 
 ## GitHub CI
 
@@ -213,6 +223,12 @@ development server after changing the env var.
   log are written together.
 - Coach, Admin, DS Admin, and Super Admin cannot use the normal proof
   submission path.
+- HQ proof/testimonial sharing decisions must use
+  `app.record_hq_proof_sharing_decision` so the evidence update, approval row,
+  event row, integration event row, disabled outbox row, and audit log are
+  written together.
+- General Members, Chapter Leaders, Coaches, and DS Admin cannot record HQ
+  proof-sharing decisions.
 
 ## Known Codex Environment Limitation
 

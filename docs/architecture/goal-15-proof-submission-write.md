@@ -92,13 +92,8 @@ The tests prove:
 - no file storage path is written
 - no outbox row is approved or sent
 
-## Next Step
+## Follow-Up
 
-Goal 16 should implement local HQ proof-sharing decisions with the same safety
-pattern:
-
-- one narrow database function
-- RLS tests first
-- Admin/Super Admin only
-- no public publishing
-- no warehouse or automation send
+Goal 16 implements local HQ proof-sharing decisions with the same safety
+pattern: one narrow database function, RLS tests first, Admin/Super Admin only,
+no public publishing, and no warehouse or automation send.

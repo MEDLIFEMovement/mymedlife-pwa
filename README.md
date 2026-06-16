@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 15: local proof/testimonial metadata submission.
+The current goal is Goal 16: local HQ proof/testimonial sharing decisions.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -64,6 +64,11 @@ Goal 15 implements the first local Supabase proof/testimonial metadata write
 path. It adds an auditable database function and RLS/security tests for
 `evidence_submitted`, but it does not upload files, publish proof, wire browser
 save controls, or send external automation.
+
+Goal 16 implements the first local Supabase HQ proof-sharing decision write
+path. It adds an auditable database function and RLS/security tests for
+`hq_sharing_decision_logged`, but it does not publish proof, wire browser save
+controls, or send external automation.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
@@ -123,6 +128,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 13 local write implementation plan](./docs/architecture/goal-13-local-write-implementation-plan.md)
 - [Goal 14 action start write](./docs/architecture/goal-14-action-start-write.md)
 - [Goal 15 proof submission write](./docs/architecture/goal-15-proof-submission-write.md)
+- [Goal 16 HQ proof sharing decision](./docs/architecture/goal-16-hq-proof-sharing-decision.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -215,6 +221,9 @@ Rules:
 - Goal 15 adds the first local Supabase database write function for
   `evidence_submitted` proof/testimonial metadata. The browser UI still does
   not save proof, upload files, publish proof, or send automation.
+- Goal 16 adds the first local Supabase database write function for
+  `hq_sharing_decision_logged` proof/testimonial sharing decisions. The browser
+  UI still does not save decisions, publish proof, or send automation.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
