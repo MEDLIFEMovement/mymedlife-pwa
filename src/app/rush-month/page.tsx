@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { CampaignCloseoutReadinessPanel } from "@/components/campaign-closeout-readiness-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
@@ -13,6 +14,7 @@ import {
   getEventPlansForCampaign,
   getProofLibraryItemsForCampaign,
 } from "@/services/campaign-ops-service";
+import { getCampaignCloseoutReadiness } from "@/services/campaign-closeout-readiness";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
 import {
   canReadChapterData,
@@ -33,6 +35,7 @@ export default async function RushMonthPage() {
   const rushEventPlans = getEventPlansForCampaign("rush-month");
   const rushProofItems = getProofLibraryItemsForCampaign("rush-month");
   const nextActionBrief = getRoleNextActionBrief(actor, data);
+  const closeout = getCampaignCloseoutReadiness(actor, data);
 
   return (
     <AppShell actor={actor}>
@@ -115,6 +118,8 @@ export default async function RushMonthPage() {
               note="Filtered by role boundary"
             />
           </section>
+
+          <CampaignCloseoutReadinessPanel closeout={closeout} />
 
           <section className="grid gap-3 sm:grid-cols-2">
             <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">

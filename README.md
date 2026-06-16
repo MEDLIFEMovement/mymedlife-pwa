@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 43: member recognition with production data,
+The current goal is Goal 44: campaign closeout readiness with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -212,6 +212,11 @@ Public publishing and external exports remain disabled.
 Goal 43 adds clearer member recognition to `/rush-month/dashboard`. Members can
 see rank, points, recognition, friendly leaderboard context, and understandable
 chapter impact while DS Admin remains restricted from student points truth.
+
+Goal 44 adds a read-only campaign closeout/readiness panel to `/rush-month`.
+Leaders, coaches, admins, and super admins can see whether assignment
+completion, proof posture, event feedback, and coach decision state support
+advance, hold, or intervention. Closeout writes and exports remain disabled.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
