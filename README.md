@@ -10,12 +10,17 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 70: design QA readiness. This remains mock-safe and
-adds an admin-visible Figma/mobile QA layer so reviewers can evaluate next-action
-clarity, phone usability, role complexity, accessibility, mission tone, pilot
-safety copy, and final visual launch blockers before any production launch is
-approved. Production data, broad browser writes, admin mutation controls, real
-uploads, public proof sharing, and external integrations remain disabled.
+The current goal is Goal 71: controlled pilot readiness. This remains mock-safe
+and adds an admin-visible pilot gate so reviewers can distinguish local
+stakeholder review, staff dry run, staging review, first student pilot, and later
+pilot expansion before any production launch is approved. Production data, broad
+browser writes, admin mutation controls, real uploads, public proof sharing, and
+external integrations remain disabled.
+
+Goal 70 added an admin-visible Figma/mobile QA layer so reviewers can evaluate
+next-action clarity, phone usability, role complexity, accessibility, mission
+tone, pilot safety copy, and final visual launch blockers before any production
+launch is approved.
 
 Goal 69 added `/rush-month/events` so reviewers can see event plans, expected
 student action, NPS prompts, proof prompts, disabled Luma posture, future

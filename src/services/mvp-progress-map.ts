@@ -304,6 +304,24 @@ function getSubprojects(): MvpSubprojectProgress[] {
       liveMvpWeight: 1,
     },
     {
+      key: "controlled_pilot_readiness",
+      label: "Controlled pilot readiness",
+      ownerLane: "Launch and HQ Operations",
+      status: "partially_ready",
+      risk: "high",
+      routeEvidence: ["/admin", "/rush-month/loop", "/rush-month/events"],
+      plainEnglish:
+        "The app can support a staff dry run now, but a real student pilot still needs scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership decisions.",
+      technicalEvidence:
+        "Controlled pilot readiness service and admin panel separate local review, staff dry run, staging, first student pilot, and later expansion gates.",
+      remainingWork:
+        "Pick the first pilot group, set up staging, approve production auth/onboarding, choose first write path, approve proof consent/storage, and name coach/support ownership.",
+      nextReviewStep: "Open `/admin` and use the controlled pilot gate before inviting any students.",
+      totalWeight: 8,
+      localReviewWeight: 4,
+      liveMvpWeight: 2,
+    },
+    {
       key: "external_automation",
       label: "External integrations and automation",
       ownerLane: "Data Solutions",

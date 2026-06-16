@@ -127,6 +127,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "Design QA must not enable auth, browser writes, uploads, public proof sharing, or external sends.",
   },
+  {
+    id: "pilot-readiness",
+    title: "Decide controlled pilot readiness",
+    route: "/admin",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "A reviewer can see that staff dry run is ready, but staging, real student pilot, proof/storage, auth, writes, and external integration gates still need approval.",
+    safetyBoundary:
+      "The pilot readiness panel is a decision packet, not approval to invite students or enable production writes.",
+  },
 ];
 
 export function getStakeholderReviewPlan(

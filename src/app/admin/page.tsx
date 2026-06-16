@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell";
 import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
 import { AdminGlossaryPanel } from "@/components/admin-glossary-panel";
+import { ControlledPilotReadinessPanel } from "@/components/controlled-pilot-readiness-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { DesignQaReadinessPanel } from "@/components/design-qa-readiness-panel";
 import { EnvironmentSafetySummaryPanel } from "@/components/environment-safety-summary-panel";
@@ -19,6 +20,7 @@ import { WriteResultStateCoveragePanel } from "@/components/write-result-state-c
 import { getAdminControlCenterSummary } from "@/services/admin-control-center";
 import { getAdminGlossary } from "@/services/admin-glossary";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
+import { getControlledPilotReadiness } from "@/services/controlled-pilot-readiness";
 import { getDesignQaReadiness } from "@/services/design-qa-readiness";
 import { getEnvironmentSafetySummary } from "@/services/environment-safety-summary";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
@@ -50,6 +52,7 @@ export default async function AdminPage() {
   const campaignSummary = getCampaignReadinessSummary();
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminGlossary = getAdminGlossary(actor);
+  const controlledPilotReadiness = getControlledPilotReadiness(actor);
   const designQaReadiness = getDesignQaReadiness(actor);
   const environmentSafetySummary = getEnvironmentSafetySummary(actor);
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
@@ -105,6 +108,7 @@ export default async function AdminPage() {
           </section>
 
           <MvpReleaseReadinessPanel summary={releaseReadiness} />
+          <ControlledPilotReadinessPanel readiness={controlledPilotReadiness} />
           <MvpProgressMapPanel progressMap={mvpProgressMap} />
           <DesignQaReadinessPanel readiness={designQaReadiness} />
           <EnvironmentSafetySummaryPanel summary={environmentSafetySummary} />

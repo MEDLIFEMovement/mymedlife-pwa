@@ -77,6 +77,12 @@ export function getMvpReleaseReadinessSummary(
         plainEnglish:
           "Admin can inspect coverage, route smoke expectations, write gates, result states, outbox posture, and safety blockers.",
       },
+      {
+        label: "Controlled pilot decision packet",
+        status: "ready_for_local_review",
+        plainEnglish:
+          "Admin can see that staff dry run is ready while staging, real student pilot, and scale gates remain blocked until approval.",
+      },
     ],
     blockers: [
       {
@@ -115,6 +121,7 @@ export function getMvpReleaseReadinessSummary(
       "Approve the first browser write path and rollback plan.",
       "Approve proof upload/storage and consent requirements.",
       "Approve production Supabase/Vercel environment setup.",
+      "Approve first pilot chapter or internal test group.",
       "Approve any real n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, or AI integration.",
     ],
   };

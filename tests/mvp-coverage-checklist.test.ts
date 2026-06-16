@@ -12,7 +12,7 @@ describe("mvp coverage checklist", () => {
 
     expect(checklist.canReadChecklist).toBe(true);
     expect(checklist.title).toBe("Admin MVP coverage checklist");
-    expect(checklist.counts.total).toBe(13);
+    expect(checklist.counts.total).toBe(14);
     expect(checklist.counts.coveredMock).toBeGreaterThan(0);
     expect(checklist.counts.coveredReadonly).toBeGreaterThan(0);
     expect(checklist.counts.blockedUntilApproval).toBe(2);
@@ -40,6 +40,7 @@ describe("mvp coverage checklist", () => {
     expect(checklist.items.map((item) => item.key)).toContain("events_nps");
     expect(checklist.items.map((item) => item.key)).toContain("member_management");
     expect(checklist.items.map((item) => item.key)).toContain("design_qa");
+    expect(checklist.items.map((item) => item.key)).toContain("controlled_pilot");
   });
 
   it("hides the admin coverage checklist from chapter roles", () => {

@@ -13,6 +13,9 @@ describe("mvp release readiness", () => {
     expect(summary.browserWritesEnabled).toBe(0);
     expect(summary.externalWritesEnabled).toBe(0);
     expect(summary.plainEnglishVerdict).toContain("not ready for live student launch");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Controlled pilot decision packet");
   });
 
   it("lists the key live-launch blockers", () => {
@@ -38,6 +41,7 @@ describe("mvp release readiness", () => {
     expect(summary.canReadSummary).toBe(true);
     expect(summary.title).toBe("DS Admin release-readiness summary");
     expect(summary.nextApprovals.join(" ")).toContain("n8n");
+    expect(summary.nextApprovals.join(" ")).toContain("first pilot");
   });
 
   it("hides release readiness from chapter and coach roles", () => {
