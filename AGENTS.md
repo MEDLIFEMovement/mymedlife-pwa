@@ -161,12 +161,13 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 67: chapter membership workspace. This remains
-local-only and gives leaders, coaches, admins, and super admins a read-only
-view of roster follow-up, join-request posture, role coverage, disabled
-membership controls, audit previews, and future outbox posture. Production
-data, most browser writes, admin mutation controls, uploads, public proof
-sharing, and external integrations remain disabled.
+The active goal is Goal 68: proof upload intake readiness. This remains
+mock-safe and gives students, leaders, coaches, admins, and super admins a
+read-only preview of future bridge-video/testimonial file requirements,
+consent/context checks, disabled upload controls, structured event posture, and
+disabled outbox destinations. Production data, broad browser writes, admin
+mutation controls, real uploads, public proof sharing, and external
+integrations remain disabled.
 
 Allowed:
 
@@ -368,6 +369,9 @@ Allowed:
   coaches, admins, and super admins, as long as join approval, role assignment,
   committee lane changes, member deactivation, production auth, and external
   automation all remain disabled
+- mock-safe proof upload intake readiness at `/proof-library/upload`, as long
+  as storage buckets, file uploads, public proof publishing, raw proof exports,
+  and external automation all remain disabled
 - localhost-only Supabase Auth sign-in for fake local seed users, as long as
   production auth, production users, browser writes, uploads, public proof
   sharing, external sends, reminders, escalation packets, service workers, and
@@ -417,7 +421,7 @@ Not allowed without Nick's next approval:
 - production browser sessions, production cookies, production sign-in flows, or
   production auth
 - app write paths to Supabase beyond the approved local action-start, proof
-  metadata, and HQ proof decision slices
+  metadata, HQ proof decision, assignment creation, and coach decision slices
 - enabling browser app writes or `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES` to
   perform broad UI writes beyond the approved local slices
 - proof uploads or file storage writes

@@ -235,18 +235,18 @@ function getSubprojects(): MvpSubprojectProgress[] {
       key: "proof_upload_storage",
       label: "Bridge video and proof upload system",
       ownerLane: "Proof Library and HQ Review",
-      status: "future_build",
+      status: "partially_ready",
       risk: "high",
-      routeEvidence: ["/proof-library", "/rush-month/evidence"],
+      routeEvidence: ["/proof-library", "/proof-library/upload", "/rush-month/evidence"],
       plainEnglish:
-        "The app models testimonial/proof metadata and HQ sharing decisions, but real uploads, consent, storage, and publication are not built yet.",
+        "The app models testimonial/proof metadata, HQ sharing decisions, and proof upload requirements, but real uploads, storage, and publication are not built yet.",
       technicalEvidence:
-        "Proof metadata, storage-readiness planning, HQ decision states, and local proof routes exist.",
+        "Proof metadata, storage-readiness planning, upload-readiness UI, HQ decision states, and local proof routes exist.",
       remainingWork:
         "Build storage buckets, upload UI, file validation, consent fields, moderation states, and public/private proof rules.",
       nextReviewStep: "Approve bridge video consent and storage requirements.",
       totalWeight: 8,
-      localReviewWeight: 0,
+      localReviewWeight: 3,
       liveMvpWeight: 0,
     },
     {

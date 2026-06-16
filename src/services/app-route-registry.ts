@@ -20,6 +20,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/rush-month/evidence", label: "Rush Month proof", routeType: "exact" },
   { href: "/rush-month/review", label: "HQ proof review", routeType: "exact" },
   { href: "/proof-library", label: "Proof library", routeType: "exact" },
+  { href: "/proof-library/upload", label: "Proof upload readiness", routeType: "exact" },
   { href: "/coach", label: "Coach", routeType: "exact" },
   { href: "/admin", label: "Admin", routeType: "exact" },
 ];

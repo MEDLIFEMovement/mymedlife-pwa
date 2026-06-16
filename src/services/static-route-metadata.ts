@@ -16,6 +16,7 @@ export type StaticRouteMetadataKey =
   | "rushMonthEvidence"
   | "rushMonthReview"
   | "proofLibrary"
+  | "proofUpload"
   | "coach"
   | "admin";
 
@@ -81,6 +82,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   proofLibrary: {
     title: "Proof Library",
     description: "Bridge videos, testimonials, and proof-sharing review states.",
+  },
+  proofUpload: {
+    title: "Proof Upload Readiness",
+    description:
+      "Mock-safe proof and bridge-video upload intake requirements with uploads disabled.",
   },
   coach: {
     title: "Coach Dashboard",

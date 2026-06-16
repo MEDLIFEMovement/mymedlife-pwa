@@ -12,9 +12,9 @@ describe("mvp progress map", () => {
     expect(progressMap.counts).toEqual({
       total: 11,
       localReviewReady: 4,
-      partiallyReady: 3,
+      partiallyReady: 4,
       needsApproval: 2,
-      futureBuild: 2,
+      futureBuild: 1,
     });
     expect(progressMap.localReviewPercent).toBeGreaterThan(progressMap.liveMvpPercent);
     expect(progressMap.liveMvpPercent).toBeLessThan(50);
@@ -31,7 +31,7 @@ describe("mvp progress map", () => {
       (item) => item.key === "external_automation",
     );
 
-    expect(proofUpload?.status).toBe("future_build");
+    expect(proofUpload?.status).toBe("partially_ready");
     expect(proofUpload?.remainingWork).toContain("storage buckets");
     expect(automation?.status).toBe("needs_approval");
     expect(automation?.plainEnglish).toContain("no real external systems");
