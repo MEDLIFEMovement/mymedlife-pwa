@@ -48,6 +48,55 @@ describe("write sequence planner", () => {
     expect(planner.promotionSummary).toContain("seed assignments already exist");
   });
 
+  it("surfaces live packet status for every write step", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const planner = getWriteSequencePlanner(actor, mockData);
+    const packetStatuses = planner.operations.map((operation) => ({
+      key: operation.key,
+      packetLabel: operation.packetStatus.label,
+      packetRoute: operation.packetStatus.route,
+      externalWritesExpected: operation.packetStatus.externalWritesExpected,
+    }));
+
+    expect(packetStatuses).toEqual([
+      {
+        key: "action_started",
+        packetLabel: "Action-start packet",
+        packetRoute: "/admin/first-write",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "evidence_submitted",
+        packetLabel: "Proof metadata packet",
+        packetRoute: "/admin/proof-write",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "hq_sharing_decision_logged",
+        packetLabel: "HQ proof decision packet",
+        packetRoute: "/admin/hq-proof-write",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "action_assigned",
+        packetLabel: "Leader assignment packet",
+        packetRoute: "/admin/assignment-write",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "coach_decision_logged",
+        packetLabel: "Coach decision packet",
+        packetRoute: "/admin/coach-write",
+        externalWritesExpected: 0,
+      },
+    ]);
+    expect(
+      planner.operations.every((operation) =>
+        operation.packetStatus.plainEnglish.length > 20,
+      ),
+    ).toBe(true);
+  });
+
   it("keeps DS Admin as a safety reviewer without making DS Admin an operator", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const planner = getWriteSequencePlanner(actor, mockData);
