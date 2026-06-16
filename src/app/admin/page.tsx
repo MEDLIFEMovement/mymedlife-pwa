@@ -5,8 +5,10 @@ import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
+import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-approval-plan-panel";
 import { WriteActivationReadinessPanel } from "@/components/write-activation-readiness-panel";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
+import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
@@ -24,6 +26,7 @@ export default async function AdminPage() {
   ]);
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
+  const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
   const writeActivationSummary = getWriteActivationReadinessSummary(actor, {
     assignments: data.assignments,
     coachDecision: data.kpiSummary.coachDecision,
@@ -83,6 +86,7 @@ export default async function AdminPage() {
           </section>
 
           <WriteActivationReadinessPanel summary={writeActivationSummary} />
+          <WriteActivationApprovalPlanPanel plan={writeActivationApprovalPlan} />
         </>
       ) : (
         <RestrictedState
