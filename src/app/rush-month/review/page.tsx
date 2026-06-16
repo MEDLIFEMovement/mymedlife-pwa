@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { HqProofDecisionServerActionPanel } from "@/components/hq-proof-decision-server-action-panel";
 import { HqProofDecisionResultStatesPanel } from "@/components/hq-proof-decision-result-states-panel";
+import { LeaderEvidenceFollowUpBoardPanel } from "@/components/leader-evidence-follow-up-board-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
@@ -18,6 +19,7 @@ import {
   getReviewQueueForActor,
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getLeaderEvidenceFollowUpBoard } from "@/services/leader-evidence-follow-up";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { prepareDisabledHqSharingDecisionWrite } from "@/services/write-readiness";
@@ -42,6 +44,11 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     searchParams ?? Promise.resolve(emptySearchParams),
   ]);
   const reviewEvidence = getReviewQueueForActor(actor, data.evidenceItems);
+  const leaderEvidenceFollowUpBoard = getLeaderEvidenceFollowUpBoard(
+    actor,
+    data.assignments,
+    data.evidenceItems,
+  );
   const canDecideSharing = canMakeHqSharingDecision(actor);
   const sampleDecisionInput = {
     decision: "approved",
@@ -85,6 +92,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           sharing decision.
         </p>
       </section>
+
+      <LeaderEvidenceFollowUpBoardPanel board={leaderEvidenceFollowUpBoard} />
 
       {reviewEvidence.length > 0 ? (
         <section className="grid gap-3">
