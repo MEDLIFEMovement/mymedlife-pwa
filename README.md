@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 29: write activation approval plan with
+The current goal is Goal 30: action-start activation contract with
 production data, enabled browser writes, uploads, and external integrations
 still disabled.
 
@@ -137,6 +137,11 @@ Goal 29 adds a plain-English `/admin` approval plan for the first write
 activation order. It recommends `action_started` as the first candidate and
 lists the approvals required before any browser save control can be enabled.
 
+Goal 30 defines the future action-start browser/server contract on
+`/rush-month/actions/[assignmentId]`. It documents the future
+`startAssignmentAction -> app.start_assignment_action` path, requires server-side
+auth identity, and still returns a disabled attempt instead of saving.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -209,6 +214,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 27 coach decision browser write gate](./docs/architecture/goal-27-coach-decision-browser-write-gate.md)
 - [Goal 28 write activation readiness dashboard](./docs/architecture/goal-28-write-activation-readiness.md)
 - [Goal 29 write activation approval plan](./docs/architecture/goal-29-write-activation-approval-plan.md)
+- [Goal 30 action-start activation contract](./docs/architecture/goal-30-action-start-activation-contract.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)

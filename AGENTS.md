@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 29: write activation approval plan with
+The active goal is Goal 30: action-start activation contract with
 production data, enabled browser writes, uploads, and external integrations
 still disabled.
 
@@ -263,6 +263,9 @@ Allowed:
 - a `/admin` write activation approval plan that recommends the first write
   activation order, names required approvals, and keeps every requirement
   incomplete until Nick/team explicitly approve the next goal
+- an action-start activation contract on `/rush-month/actions/[assignmentId]`
+  that documents the future `startAssignmentAction` server path while still
+  returning a disabled attempt and requiring server-side auth identity later
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
