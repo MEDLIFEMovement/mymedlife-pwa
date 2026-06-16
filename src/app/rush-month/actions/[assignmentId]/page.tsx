@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
@@ -16,6 +17,7 @@ import {
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canReadAssignment } from "@/services/role-visibility";
+import { getActionStartBrowserWriteGate } from "@/services/browser-write-activation";
 import {
   prepareDisabledActionStartWrite,
   prepareDisabledProofSubmissionWrite,
@@ -59,6 +61,7 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
       "Local preview: this testimonial explains what happened and why another student should take action.",
   });
   const disabledActionStartWrite = prepareDisabledActionStartWrite(actor, assignment);
+  const actionStartGate = getActionStartBrowserWriteGate(actor, assignment);
   const disabledProofSubmissionWrite = prepareDisabledProofSubmissionWrite(actor, assignment, {
     evidenceType: "bridge_video",
     summary:
@@ -157,6 +160,8 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
         operationLabel="Action start write remains disabled"
         wouldWriteTables={disabledActionStartWrite.wouldWriteTables}
       />
+
+      <BrowserWriteGateNotice gate={actionStartGate} />
 
       {proofSubmissionPreview.success ? (
         <>

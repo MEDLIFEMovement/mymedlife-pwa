@@ -26,16 +26,28 @@ describe("live data connection plan", () => {
   });
 
   it("starts route migration with low-risk read-only routes", () => {
-    expect(routeMigrationOrder.slice(0, 3).map((item) => item.route)).toEqual([
+    expect(routeMigrationOrder.slice(0, 7).map((item) => item.route)).toEqual([
       "/chapter",
+      "/campaigns",
+      "/campaigns/[campaignSlug]",
+      "/action-committees",
       "/rush-month",
+      "/rush-month/dashboard",
       "/rush-month/actions",
     ]);
     expect(
-      routeMigrationOrder.slice(0, 3).every((item) => {
+      routeMigrationOrder.slice(0, 7).every((item) => {
         return item.firstLiveDataMode === "read_only";
       }),
     ).toBe(true);
+  });
+
+  it("keeps proof library read-only before uploads or publishing", () => {
+    expect(
+      routeMigrationOrder.find((item) => {
+        return item.route === "/proof-library";
+      })?.firstLiveDataMode,
+    ).toBe("read_only");
   });
 
   it("keeps action, evidence, and HQ decisions on function-only write paths", () => {
@@ -58,7 +70,15 @@ describe("live data connection plan", () => {
 
   it("returns the next uncompleted route in order", () => {
     expect(getNextRouteForLiveData([])?.route).toBe("/chapter");
-    expect(getNextRouteForLiveData(["/chapter"])?.route).toBe("/rush-month");
+    expect(getNextRouteForLiveData(["/chapter"])?.route).toBe("/campaigns");
+    expect(
+      getNextRouteForLiveData([
+        "/chapter",
+        "/campaigns",
+        "/campaigns/[campaignSlug]",
+        "/action-committees",
+      ])?.route,
+    ).toBe("/rush-month");
     expect(getNextRouteForLiveData(routeMigrationOrder.map((item) => item.route))).toBe(
       null,
     );

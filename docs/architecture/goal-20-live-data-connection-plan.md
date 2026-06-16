@@ -22,8 +22,13 @@ this goal.
 Start with low-risk read-only routes:
 
 - `/chapter`
+- `/campaigns`
+- `/campaigns/[campaignSlug]`
+- `/action-committees`
 - `/rush-month`
+- `/rush-month/dashboard`
 - `/rush-month/actions`
+- `/proof-library`
 
 Then connect function-only write routes:
 
