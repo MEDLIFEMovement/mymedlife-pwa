@@ -255,6 +255,9 @@ select is(
   'Proof metadata submission creates one internal event'
 );
 
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
+set local "request.jwt.claim.role" = 'authenticated';
+
 select is(
   (
     select count(*)::int
@@ -289,6 +292,9 @@ select is(
   1,
   'Proof metadata submission creates one audit log'
 );
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select throws_ok(
   $$ select * from app.submit_assignment_proof_metadata(
