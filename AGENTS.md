@@ -161,11 +161,11 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 63: local HQ proof/testimonial decision recording after
-proof metadata exists. This remains local-only and requires fake local Supabase
-Auth, a UUID evidence item, explicit local write flags, and public proof sharing
-disabled. Production data, most browser writes, admin mutation controls,
-reminder automation, escalation packets, uploads, public proof sharing, and
+The active goal is Goal 64: local chapter-leader assignment creation after the
+HQ proof/testimonial decision slice. This remains local-only and requires fake
+local Supabase Auth, UUID chapter/campaign rows, explicit local write flags, and
+reminder automation disabled. Production data, most browser writes, admin
+mutation controls, escalation packets, uploads, public proof sharing, and
 external integrations remain disabled.
 
 Allowed:
@@ -244,7 +244,8 @@ Allowed:
   and browser writes
 - a visible assignment-create browser-write activation gate on
   `/rush-month/actions` that references the local `action_assigned` function
-  while keeping enabled controls disabled
+  while keeping enabled controls disabled until local auth and explicit write
+  flags are present
 - a visible proof-submission browser-write activation gate on
   `/rush-month/actions/[assignmentId]` that references the local
   `evidence_submitted` function while keeping proof saves, uploads, public
@@ -373,6 +374,11 @@ Allowed:
   `app.start_assignment_action(assignment_uuid)` only when local Supabase Auth,
   local Supabase data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`, and
   `MYMEDLIFE_ENABLE_ACTION_START_WRITE=true` are present
+- a local-only assignment-create server action that calls
+  `app.create_chapter_assignment(...)` only when local Supabase Auth, local
+  Supabase data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`,
+  `MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE=true`, UUID chapter/campaign rows,
+  and a chapter leader or Super Admin actor are all present
 - a fake local seed assignment and plain-English readback state proving the
   first local action-start write can refresh from `not_started` to `in_progress`
 - a local-only proof/testimonial metadata server action that calls

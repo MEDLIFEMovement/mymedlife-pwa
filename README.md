@@ -10,12 +10,12 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 63: local HQ proof/testimonial decision recording from
-the browser after proof metadata exists. This remains local-only and requires
-fake local Supabase Auth, a UUID evidence item, explicit local write flags, and
-public proof sharing disabled. Production data, most browser writes, admin
-mutation controls, reminder automation, escalation packets, uploads, public
-proof sharing, and external integrations remain disabled.
+The current goal is Goal 64: local chapter-leader assignment creation from the
+browser. This remains local-only and requires fake local Supabase Auth, UUID
+chapter/campaign rows, explicit local write flags, and reminder automation
+disabled. Production data, most browser writes, admin mutation controls,
+escalation packets, uploads, public proof sharing, and external integrations
+remain disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -312,9 +312,15 @@ Super Admin users record HQ proof-sharing decisions through the existing
 audited database function, while still refusing public proof publishing and all
 external automation.
 
+Goal 64 adds the fourth local browser-to-Supabase write path for
+`action_assigned` on `/rush-month/actions`. It lets fake local chapter leaders
+or Super Admin users create a local assignment through the existing audited
+database function, while still keeping reminders and all external automation
+disabled.
+
 Do not connect production Supabase, create real users, enable browser app
-writes beyond the approved local action-start, proof metadata, and HQ proof
-decision slices, or enable external writes until Nick approves a later
+writes beyond the approved local action-start, assignment creation, proof
+metadata, and HQ proof decision slices, or enable external writes until Nick approves a later
 implementation goal.
 
 ## Recommended Stack
@@ -419,6 +425,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 61 action-start readback proof](./docs/architecture/goal-61-action-start-readback.md)
 - [Goal 62 proof submission server action](./docs/architecture/goal-62-proof-submission-server-action.md)
 - [Goal 63 HQ proof decision server action](./docs/architecture/goal-63-hq-proof-decision-server-action.md)
+- [Goal 64 leader assignment server action](./docs/architecture/goal-64-leader-assignment-server-action.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -482,6 +489,7 @@ MYMEDLIFE_DATA_SOURCE=mock
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=false
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false
 MYMEDLIFE_ENABLE_ACTION_START_WRITE=false
+MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE=false
 MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=false
 MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE=false
 MYMEDLIFE_ALLOW_PROOF_UPLOADS=false
@@ -631,6 +639,10 @@ Rules:
   decisions. It requires local Supabase Auth, a fake Admin or Super Admin seed
   user, local write flags, a UUID evidence item, and public sharing disabled.
   It does not publish proof or trigger external sends.
+- Goal 64 adds the fourth local server action for chapter-leader assignment
+  creation. It requires local Supabase Auth, a fake leader or Super Admin seed
+  user, local write flags, UUID chapter/campaign rows, and reminder automation
+  disabled. It creates a disabled outbox row but sends no reminders.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -834,6 +846,15 @@ Goal 63 local HQ proof decision server action lives in:
 - `src/components/hq-proof-decision-server-action-panel.tsx`
 - `src/services/hq-proof-decision-write.ts`
 - `tests/hq-proof-decision-write.test.ts`
+
+Goal 64 local leader assignment server action lives in:
+
+- `docs/architecture/goal-64-leader-assignment-server-action.md`
+- `src/app/rush-month/actions/actions.ts`
+- `src/app/rush-month/actions/page.tsx`
+- `src/components/leader-assignment-server-action-panel.tsx`
+- `src/services/assignment-create-write.ts`
+- `tests/assignment-create-write.test.ts`
 
 Goal 20 live-data connection planning lives in:
 

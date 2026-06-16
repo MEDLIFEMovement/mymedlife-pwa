@@ -4,6 +4,7 @@ import { AssignmentCard } from "@/components/assignment-card";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
+import { LeaderAssignmentServerActionPanel } from "@/components/leader-assignment-server-action-panel";
 import { LeaderFollowUpBoardPanel } from "@/components/leader-follow-up-board-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
@@ -13,7 +14,9 @@ import {
 import {
   getAssignmentCreateResultStates,
   getDisabledAssignmentCreateResultPreview,
+  type AssignmentCreateResultCode,
 } from "@/services/assignment-create-result-states";
+import { getAssignmentCreateWriteReadiness } from "@/services/assignment-create-write";
 import {
   canCreateChapterAssignment,
   createChapterAssignmentMock,
@@ -29,6 +32,14 @@ import { prepareDisabledAssignmentCreateWrite } from "@/services/write-readiness
 export const metadata = getStaticRouteMetadata("rushMonthActions");
 export const dynamic = "force-dynamic";
 
+type ActionsPageProps = {
+  searchParams?: Promise<ActionsSearchParams>;
+};
+
+type ActionsSearchParams = {
+  assignmentCreateResult?: string;
+};
+
 const sampleAssignmentInput = {
   title: "Assign a Rush Month event owner",
   instructions:
@@ -40,10 +51,12 @@ const sampleAssignmentInput = {
   kpi: "Rush Month event owner assigned",
 } satisfies ChapterAssignmentInput;
 
-export default async function ActionsPage() {
-  const [data, actor] = await Promise.all([
+export default async function ActionsPage({ searchParams }: ActionsPageProps) {
+  const emptySearchParams: ActionsSearchParams = {};
+  const [data, actor, search] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
+    searchParams ?? Promise.resolve(emptySearchParams),
   ]);
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
   const followUpBoard = getLeaderFollowUpBoard(actor, data);
@@ -54,6 +67,20 @@ export default async function ActionsPage() {
   const assignmentCreateGate = getAssignmentCreateBrowserWriteGate(
     actor,
     sampleAssignmentInput,
+    {
+      chapterId: data.chapter.id,
+      campaignId: data.campaign.id,
+      existingAssignments: data.assignments,
+    },
+  );
+  const assignmentCreateWriteReadiness = getAssignmentCreateWriteReadiness(
+    actor,
+    sampleAssignmentInput,
+    {
+      chapterId: data.chapter.id,
+      campaignId: data.campaign.id,
+      existingAssignments: data.assignments,
+    },
   );
   const disabledAssignmentCreateWrite = prepareDisabledAssignmentCreateWrite(
     actor,
@@ -63,6 +90,9 @@ export default async function ActionsPage() {
     actor,
     sampleAssignmentInput,
     data.assignments,
+  );
+  const assignmentCreateResultCode = parseAssignmentCreateResultCode(
+    search.assignmentCreateResult,
   );
 
   return (
@@ -133,6 +163,16 @@ export default async function ActionsPage() {
               states={getAssignmentCreateResultStates()}
             />
           </div>
+          <div className="lg:col-span-2">
+            <LeaderAssignmentServerActionPanel
+              chapterId={data.chapter.id}
+              campaignId={data.campaign.id}
+              input={sampleAssignmentInput}
+              existingAssignments={data.assignments}
+              readiness={assignmentCreateWriteReadiness}
+              resultCode={assignmentCreateResultCode}
+            />
+          </div>
         </section>
       ) : null}
 
@@ -156,4 +196,16 @@ export default async function ActionsPage() {
       )}
     </AppShell>
   );
+}
+
+function parseAssignmentCreateResultCode(
+  value: string | undefined,
+): AssignmentCreateResultCode | undefined {
+  const allowedCodes = new Set(
+    getAssignmentCreateResultStates().map((state) => state.code),
+  );
+
+  return value && allowedCodes.has(value as AssignmentCreateResultCode)
+    ? (value as AssignmentCreateResultCode)
+    : undefined;
 }

@@ -11,6 +11,11 @@ import {
   getHqProofDecisionWriteReadiness,
 } from "@/services/hq-proof-decision-write";
 import {
+  getAssignmentCreateWriteConfig,
+  getAssignmentCreateWriteReadiness,
+  type AssignmentCreateContext,
+} from "@/services/assignment-create-write";
+import {
   canCreateChapterAssignment,
   canLogCoachDecision,
   canMakeHqSharingDecision,
@@ -47,8 +52,13 @@ export type ActivationCheckKey =
   | "actor_can_make_hq_sharing_decision"
   | "actor_allowed_by_write_plan"
   | "assignment_ready_for_proof"
+  | "chapter_uuid"
+  | "campaign_uuid"
+  | "duplicate_assignment"
   | "evidence_not_final"
   | "evidence_uuid"
+  | "owner_role_valid"
+  | "reminders_disabled"
   | "local_database_function_exists"
   | "note_long_enough"
   | "proof_uploads_disabled"
@@ -190,12 +200,25 @@ export function getActionStartBrowserWriteGate(
 export function getAssignmentCreateBrowserWriteGate(
   actor: LocalActorContext,
   input: ChapterAssignmentInput,
+  context: AssignmentCreateContext = {
+    chapterId: "mock-chapter",
+    campaignId: "mock-campaign",
+  },
   env: EnvSource = process.env,
 ): BrowserWriteActivationGate {
   const writePlan = getWritePlanOperation("action_assigned");
-  const writeReadiness = getWriteReadinessConfig(env);
+  const writeConfig = getAssignmentCreateWriteConfig(env);
+  const assignmentCreateReadiness = getAssignmentCreateWriteReadiness(
+    actor,
+    input,
+    context,
+    env,
+  );
   const actorCanCreateAssignment = canCreateChapterAssignment(actor);
   const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+  const localAuthApproved =
+    actor.identitySource === "local_auth_session" &&
+    actor.authSessionStatus === "signed_in";
 
   return {
     operation: "action_assigned",
@@ -204,10 +227,14 @@ export function getAssignmentCreateBrowserWriteGate(
     localFunction: "app.create_chapter_assignment",
     functionSignature:
       "app.create_chapter_assignment(chapter_uuid, campaign_uuid, assignment_title, ...)",
-    status: "blocked_until_approval",
-    canRenderEnabledControl: false,
+    status: assignmentCreateReadiness.canSubmit
+      ? "ready_for_local_write"
+      : "blocked_until_approval",
+    canRenderEnabledControl: assignmentCreateReadiness.canSubmit,
     envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
-    nextApprovalNeeded: approvalMessage,
+    nextApprovalNeeded: assignmentCreateReadiness.canSubmit
+      ? "Local assignment creation write is ready for localhost-only testing."
+      : approvalMessage,
     checks: [
       {
         key: "actor_can_create_assignment",
@@ -241,21 +268,68 @@ export function getAssignmentCreateBrowserWriteGate(
       {
         key: "external_writes_disabled",
         label: "External writes stay disabled",
-        passed: true,
+        passed: !writeConfig.externalWritesEnabled,
         detail:
           "Assignment creation records internal events and a disabled outbox row; it does not send reminders or external writes.",
       },
       {
+        key: "chapter_uuid",
+        label: "Chapter ID is a Supabase UUID",
+        passed: assignmentCreateReadiness.checks.find((check) => {
+          return check.key === "chapter_uuid";
+        })?.passed ?? false,
+        detail:
+          "The server action can only write against local Supabase UUID chapter data.",
+      },
+      {
+        key: "campaign_uuid",
+        label: "Campaign ID is a Supabase UUID",
+        passed: assignmentCreateReadiness.checks.find((check) => {
+          return check.key === "campaign_uuid";
+        })?.passed ?? false,
+        detail:
+          "The server action can only write against local Supabase UUID campaign data.",
+      },
+      {
+        key: "owner_role_valid",
+        label: "Owner role maps to a chapter role",
+        passed: assignmentCreateReadiness.checks.find((check) => {
+          return check.key === "owner_role_valid";
+        })?.passed ?? false,
+        detail:
+          "The selected owner role must map to a chapter-scoped assignment role.",
+      },
+      {
+        key: "duplicate_assignment",
+        label: "No duplicate assignment title exists",
+        passed: assignmentCreateReadiness.checks.find((check) => {
+          return check.key === "duplicate_assignment";
+        })?.passed ?? false,
+        detail:
+          "The local UI should not create a duplicate assignment with the same title.",
+      },
+      {
+        key: "reminders_disabled",
+        label: "Reminder automation stays disabled",
+        passed: assignmentCreateReadiness.checks.find((check) => {
+          return check.key === "reminders_disabled";
+        })?.passed ?? false,
+        detail:
+          "Creating the assignment may create a disabled outbox row, but no n8n/email/SMS reminder is sent.",
+      },
+      {
         key: "live_auth_approved",
         label: "Live auth/browser session approved",
-        passed: false,
-        detail: "Live auth is still disabled, so browser identity cannot be trusted for real writes.",
+        passed: localAuthApproved,
+        detail: localAuthApproved
+          ? "A signed-in local Supabase Auth session is driving actor context."
+          : "A signed-in local Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",
         label: "Browser write approval granted",
-        passed: false,
-        detail: writeReadiness.reason,
+        passed: writeConfig.enabled,
+        detail: writeConfig.reason,
       },
     ],
     preview: createChapterAssignmentMock(actor, input),

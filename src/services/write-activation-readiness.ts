@@ -59,6 +59,11 @@ export function getWriteActivationReadinessSummary(
         points: 15,
         kpi: "Rush Month event owner assigned",
       },
+      {
+        chapterId: "mock-chapter",
+        campaignId: "mock-campaign",
+        existingAssignments: input.assignments,
+      },
       env,
     ),
     getProofSubmissionBrowserWriteGate(
