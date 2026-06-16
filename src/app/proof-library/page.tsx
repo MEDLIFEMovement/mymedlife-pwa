@@ -3,8 +3,10 @@ import { AppShell } from "@/components/app-shell";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
+import { ProofSharingReviewPanel } from "@/components/proof-sharing-review-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getProofSharingReviewBoard } from "@/services/proof-sharing-review";
 import {
   getCampaignShellBySlug,
   getProofLibraryItemsForActor,
@@ -15,6 +17,7 @@ export const dynamic = "force-dynamic";
 export default async function ProofLibraryPage() {
   const actor = await getLocalActorContext();
   const proofItems = getProofLibraryItemsForActor(actor);
+  const proofReviewBoard = getProofSharingReviewBoard(actor, proofItems);
   const needsHqReview = proofItems.filter(
     (item) => item.sharingStatus === "needs_hq_review",
   );
@@ -44,6 +47,8 @@ export default async function ProofLibraryPage() {
           not publish anything.
         </p>
       </section>
+
+      <ProofSharingReviewPanel board={proofReviewBoard} />
 
       {proofItems.length > 0 ? (
         <>
