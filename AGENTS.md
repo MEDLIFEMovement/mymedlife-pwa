@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 13: local Supabase write plan and RLS test matrix.
+The active goal is Goal 14: first local action-start write.
 
 Allowed:
 
@@ -188,6 +188,10 @@ Allowed:
 - local write implementation planning for action starts, proof submissions, and
   HQ proof-sharing decisions, as long as the implementation remains disabled
 - a typed write-plan matrix and tests that document future RLS/security cases
+- one local Supabase `action_started` write function that updates assignment
+  status, records an internal event, records an integration-ready event row, and
+  records an audit log together
+- RLS/security tests proving direct assignment-start table updates are blocked
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
@@ -201,7 +205,8 @@ Not allowed without Nick's next approval:
 - live Supabase auth wiring in the student UI
 - real browser sessions, cookies, sign-in flows, or production auth
 - app write paths to Supabase
-- enabling `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES` to perform real writes
+- enabling browser app writes or `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES` to
+  perform real UI writes
 - proof uploads or file storage writes
 - public proof sharing or publishing
 - real users or real role assignments

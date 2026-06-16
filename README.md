@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 13: local Supabase write plan and RLS test matrix.
+The current goal is Goal 14: first local action-start write.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -56,9 +56,13 @@ It defines the first three future write paths, the role boundaries, the tables
 they would touch, and the RLS tests required before any write is enabled. It
 does not turn on writes.
 
+Goal 14 implements the first local Supabase write path for starting an
+assignment. It adds an auditable database function and RLS/security tests for
+`action_started`, but it does not wire browser save controls or production auth.
+
 Do not connect production Supabase, enable live auth in the student UI, create
-real users, implement app writes, or enable external writes until Nick approves
-a later implementation goal.
+real users, enable browser app writes, or enable external writes until Nick
+approves a later implementation goal.
 
 ## Recommended Stack
 
@@ -112,6 +116,7 @@ All external integrations are mock-first until explicitly approved.
 - [Supabase schema, auth, and RLS design plan](./docs/architecture/supabase-schema-auth-rls-plan.md)
 - [Goal 6 Supabase foundation review and Goal 7 plan](./docs/architecture/goal-6-supabase-foundation-review.md)
 - [Goal 13 local write implementation plan](./docs/architecture/goal-13-local-write-implementation-plan.md)
+- [Goal 14 action start write](./docs/architecture/goal-14-action-start-write.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -199,6 +204,8 @@ Rules:
   real local writes with RLS tests.
 - Goal 13 write planning is documentation and tests only. It names the first
   future write paths, but the app still refuses to save data.
+- Goal 14 adds the first local Supabase database write function for
+  `action_started`. The browser UI still does not save data.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -219,9 +226,9 @@ data and fake local actor context. With or without local Supabase running,
 - `/coach`
 - `/admin`
 
-There is no live Supabase auth, enabled app write path, production database connection,
-HubSpot write, Luma write, warehouse export, Power BI export, n8n workflow, or
-AI summary.
+There is no live Supabase auth, browser app write path, production database
+connection, HubSpot write, Luma write, warehouse export, Power BI export, n8n
+workflow, or AI summary.
 
 Goal 2 route shells:
 
@@ -308,6 +315,12 @@ Goal 13 local write planning lives in:
 - `src/services/write-plan-matrix.ts`
 - `tests/write-plan-matrix.test.ts`
 
+Goal 14 local action-start write lives in:
+
+- `docs/architecture/goal-14-action-start-write.md`
+- `supabase/migrations/20260616090000_goal_14_action_start_write.sql`
+- `supabase/tests/database/rls_goal_14.test.sql`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -326,13 +339,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 13
+## Definition of Done for Goal 14
 
-Goal 13 is complete when a human developer can review the first local write
-plan, see the required RLS/security test matrix, and run unit tests proving the
-plan still keeps action starts, proof submissions, and HQ sharing decisions
-disabled.
+Goal 14 is complete when a human developer can run local Supabase migrations
+and RLS tests proving `action_started` can be saved only through the audited
+database function, with internal event, integration event, and audit log rows
+created together.
 
-The app remains mock-first by default. Goal 13 does not wire production
-Supabase, enable live auth, implement app writes, upload files, publish proof,
-or activate real integrations.
+The app remains mock-first by default. Goal 14 does not wire production
+Supabase, enable live auth, add browser save controls, upload files, publish
+proof, or activate real integrations.

@@ -1,11 +1,11 @@
 # Supabase Local Development
 
-Goals 5, 7, 8, 9, 10, 11, 12, and 13 add the local-only Supabase foundation for
-myMEDLIFE.
+Goals 5, 7, 8, 9, 10, 11, 12, 13, and 14 add the local-only Supabase
+foundation for myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
-users, enable live auth in the UI, add app write paths, or trigger HubSpot,
-Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
+users, enable live auth in the UI, add browser write controls, or trigger
+HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 
 ## What Was Added
 
@@ -15,6 +15,8 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `supabase/migrations/20260615130000_goal_7_campaign_operating_model.sql`:
   local campaign operating model refinements for templates, readiness, campaign
   lanes, risk flags, closeouts, and assignment operating fields.
+- `supabase/migrations/20260616090000_goal_14_action_start_write.sql`: first
+  local action-start write function plus direct-start bypass protection.
 - `supabase/seed.sql`: fake local users, chapters, memberships, staff roles,
   Rush Month records, proof/testimonial records, disabled/mock outbox rows, and
   fake Goal 7 operating-model records.
@@ -23,6 +25,8 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `supabase/tests/database/rls_goal_7.test.sql`: pgTAP tests for campaign
   template, readiness, lane ownership, risk, closeout, and assignment-field
   protection boundaries.
+- `supabase/tests/database/rls_goal_14.test.sql`: pgTAP tests for the first
+  local `action_started` database write path.
 - `src/lib/supabase-readonly.ts`: server-only REST reader for local Supabase.
 - `src/services/read-only-app-data.ts`: mock-safe read model used by app pages.
 - `.env.example`: local-only read configuration template.
@@ -52,6 +56,8 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   operations, role boundaries, table targets, and required tests.
 - `tests/write-plan-matrix.test.ts`: unit tests keeping the write plan aligned
   with the disabled write-readiness airlock.
+- `docs/architecture/goal-14-action-start-write.md`: local action-start write
+  architecture note.
 
 ## Requirements
 
@@ -139,7 +145,9 @@ not add browser auth, student sign-in, sessions, cookies, production auth, app
 writes, proof uploads, public sharing, or external automation. Goal 12 adds a
 disabled write-readiness layer so future table targets are visible while code
 still blocks writes. Goal 13 adds the first local write implementation plan and
-test matrix, but it still does not enable saving data.
+test matrix. Goal 14 adds the first local Supabase database write function for
+`action_started`, but it still does not add browser save controls or production
+auth.
 
 ## GitHub CI
 
@@ -186,6 +194,10 @@ development server after changing the env var.
 - Coaches can validate readiness and closeouts only for chapters in their
   active portfolio.
 - Coach-private risk flags stay hidden from members and chapter leaders.
+- Action-start assignment status changes must use
+  `app.start_assignment_action` so the assignment update, event row,
+  integration event row, and audit log are written together.
+- Admin and DS Admin cannot start routine student truth assignments.
 
 ## Known Codex Environment Limitation
 

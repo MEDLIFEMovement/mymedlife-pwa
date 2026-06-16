@@ -49,6 +49,7 @@ Plain English: a permitted actor starts a visible assigned action.
 Future tables:
 
 - `assignments`
+- `events`
 - `integration_events`
 - `audit_logs`
 
@@ -56,8 +57,9 @@ Transaction boundary:
 
 1. Update one assignment status to `in_progress` when allowed.
 2. Record one structured internal event.
-3. Record one audit log entry.
-4. Roll back all three steps if any step fails.
+3. Record one integration-ready event row with no external send.
+4. Record one audit log entry.
+5. Roll back all four steps if any step fails.
 
 Routine allowed actors:
 
@@ -80,6 +82,7 @@ Future tables:
 
 - `assignments`
 - `evidence_items`
+- `events`
 - `integration_events`
 - `automation_outbox`
 - `audit_logs`
@@ -89,9 +92,10 @@ Transaction boundary:
 1. Update the assignment status to `submitted`.
 2. Create one evidence/proof metadata row.
 3. Record one structured internal event.
-4. Create one disabled outbox row for future HQ or automation follow-up.
-5. Record one audit log entry.
-6. Roll back all five steps if any step fails.
+4. Record one integration-ready event row with no external send.
+5. Create one disabled outbox row for future HQ or automation follow-up.
+6. Record one audit log entry.
+7. Roll back all six steps if any step fails.
 
 Allowed actors:
 
@@ -118,6 +122,7 @@ Future tables:
 
 - `evidence_items`
 - `approvals`
+- `events`
 - `integration_events`
 - `automation_outbox`
 - `audit_logs`
@@ -127,9 +132,10 @@ Transaction boundary:
 1. Update the evidence sharing/review status.
 2. Create one HQ approval decision row.
 3. Record one structured internal event.
-4. Create one disabled outbox row for future warehouse or sharing workflow.
-5. Record one audit log entry.
-6. Roll back all five steps if any step fails.
+4. Record one integration-ready event row with no external send.
+5. Create one disabled outbox row for future warehouse or sharing workflow.
+6. Record one audit log entry.
+7. Roll back all six steps if any step fails.
 
 Allowed actors:
 

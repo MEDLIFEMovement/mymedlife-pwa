@@ -64,7 +64,7 @@ export function prepareDisabledActionStartWrite(
     success: false,
     operation: "action_started",
     reason: getWriteReadinessSummary(),
-    wouldWriteTables: ["assignments", "integration_events", "audit_logs"],
+    wouldWriteTables: ["assignments", "events", "integration_events", "audit_logs"],
     preview: createActionStartedMock(actor, assignment),
   };
 }
@@ -81,6 +81,7 @@ export function prepareDisabledProofSubmissionWrite(
     wouldWriteTables: [
       "assignments",
       "evidence_items",
+      "events",
       "integration_events",
       "automation_outbox",
       "audit_logs",
@@ -101,6 +102,7 @@ export function prepareDisabledHqSharingDecisionWrite(
     wouldWriteTables: [
       "evidence_items",
       "approvals",
+      "events",
       "integration_events",
       "automation_outbox",
       "audit_logs",
