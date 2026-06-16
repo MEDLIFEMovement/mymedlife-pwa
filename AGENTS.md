@@ -161,8 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 11: local proof/action contracts and HQ sharing review
-preview.
+The active goal is Goal 12: disabled write-readiness airlock.
 
 Allowed:
 
@@ -182,6 +181,10 @@ Allowed:
 - local-only contract previews for action started, proof submitted, HQ
   proof-sharing decisions, audit intent, integration events, and disabled
   outbox rows
+- disabled write-readiness services that list future write tables while
+  returning blocked write attempts
+- `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false` documentation, as long as code
+  still refuses writes even if the env var is set to true
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
@@ -195,6 +198,7 @@ Not allowed without Nick's next approval:
 - live Supabase auth wiring in the student UI
 - real browser sessions, cookies, sign-in flows, or production auth
 - app write paths to Supabase
+- enabling `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES` to perform real writes
 - proof uploads or file storage writes
 - public proof sharing or publishing
 - real users or real role assignments

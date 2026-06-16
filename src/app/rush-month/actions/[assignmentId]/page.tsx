@@ -6,6 +6,7 @@ import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
+import { WriteReadinessNotice } from "@/components/write-readiness-notice";
 import { getAssignmentById } from "@/lib/rush-month";
 import {
   canSubmitProofForAssignment,
@@ -15,6 +16,10 @@ import {
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canReadAssignment } from "@/services/role-visibility";
+import {
+  prepareDisabledActionStartWrite,
+  prepareDisabledProofSubmissionWrite,
+} from "@/services/write-readiness";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +54,12 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
 
   const actionStartedPreview = createActionStartedMock(actor, assignment);
   const proofSubmissionPreview = createProofSubmissionMock(actor, assignment, {
+    evidenceType: "bridge_video",
+    summary:
+      "Local preview: this testimonial explains what happened and why another student should take action.",
+  });
+  const disabledActionStartWrite = prepareDisabledActionStartWrite(actor, assignment);
+  const disabledProofSubmissionWrite = prepareDisabledProofSubmissionWrite(actor, assignment, {
     evidenceType: "bridge_video",
     summary:
       "Local preview: this testimonial explains what happened and why another student should take action.",
@@ -142,11 +153,22 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
         </section>
       ) : null}
 
+      <WriteReadinessNotice
+        operationLabel="Action start write remains disabled"
+        wouldWriteTables={disabledActionStartWrite.wouldWriteTables}
+      />
+
       {proofSubmissionPreview.success ? (
-        <EventOutboxLog
-          events={[proofSubmissionPreview.data.integrationEvent]}
-          outboxItems={[proofSubmissionPreview.data.automationOutbox]}
-        />
+        <>
+          <EventOutboxLog
+            events={[proofSubmissionPreview.data.integrationEvent]}
+            outboxItems={[proofSubmissionPreview.data.automationOutbox]}
+          />
+          <WriteReadinessNotice
+            operationLabel="Proof submission write remains disabled"
+            wouldWriteTables={disabledProofSubmissionWrite.wouldWriteTables}
+          />
+        </>
       ) : (
         <RestrictedState
           eyebrow="Proof contract"

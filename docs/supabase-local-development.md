@@ -1,6 +1,6 @@
 # Supabase Local Development
 
-Goals 5, 7, 8, 9, 10, and 11 add the local-only Supabase foundation for
+Goals 5, 7, 8, 9, 10, 11, and 12 add the local-only Supabase foundation for
 myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
@@ -40,6 +40,12 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   contract previews for future write implementation.
 - `tests/local-action-contracts.test.ts`: unit tests proving the local contract
   boundaries before any app writes are introduced.
+- `src/services/write-readiness.ts`: disabled write-readiness airlock for future
+  action/proof/HQ decision persistence.
+- `src/components/write-readiness-notice.tsx`: visible no-write notice listing
+  future tables that would be touched after approval.
+- `tests/write-readiness.test.ts`: unit tests proving writes remain disabled,
+  even when the local write env var is set.
 
 ## Requirements
 
@@ -93,6 +99,7 @@ Set these values in `.env.local`:
 ```bash
 MYMEDLIFE_DATA_SOURCE=supabase
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true
+MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_SERVICE_ROLE_KEY=<local service role key from supabase start>
 MYMEDLIFE_LOCAL_ACTOR_EMAIL=member.a@mymedlife.test
@@ -123,7 +130,9 @@ switching by fake seed email. Goal 10 uses that actor to filter read-only
 navigation, assignments, risks, admin panels, and integration/outbox visibility.
 Goal 11 adds local-only action/proof/HQ sharing contract previews. This does
 not add browser auth, student sign-in, sessions, cookies, production auth, app
-writes, proof uploads, public sharing, or external automation.
+writes, proof uploads, public sharing, or external automation. Goal 12 adds a
+disabled write-readiness layer so future table targets are visible while code
+still blocks writes.
 
 ## GitHub CI
 
