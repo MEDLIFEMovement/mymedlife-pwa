@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 34: coach decision result states with production data,
+The current goal is Goal 35: result-state coverage review with production data,
 enabled browser writes, escalation packets, uploads, public proof sharing, and
 external integrations still disabled.
 
@@ -165,6 +165,10 @@ result for the selected mock advance / hold / intervene decision, and the
 possible blocked states without enabling decision saves or n8n escalation
 packets.
 
+Goal 35 adds an admin-facing result-state coverage review. It shows that four
+first-write candidates have result states and that leader assignment creation
+still needs result states before write activation can be considered.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -242,6 +246,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 32 proof submission result states](./docs/architecture/goal-32-proof-submission-result-states.md)
 - [Goal 33 HQ proof decision result states](./docs/architecture/goal-33-hq-proof-decision-result-states.md)
 - [Goal 34 coach decision result states](./docs/architecture/goal-34-coach-decision-result-states.md)
+- [Goal 35 result-state coverage review](./docs/architecture/goal-35-result-state-coverage.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -386,6 +391,9 @@ Rules:
   automation.
 - Goal 34 adds coach decision result states. It does not wire those states to a
   real browser write, n8n escalation packet, or external automation.
+- Goal 35 adds an admin result-state coverage review. It does not treat
+  coverage as approval, and it keeps assignment creation marked as missing
+  result-state review.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -673,6 +681,14 @@ Goal 34 coach decision result states live in:
 - `tests/coach-decision-result-states.test.ts`
 - visible coach decision result-state panel on `/coach`
 
+Goal 35 result-state coverage review lives in:
+
+- `docs/architecture/goal-35-result-state-coverage.md`
+- `src/services/write-result-state-coverage.ts`
+- `src/components/write-result-state-coverage-panel.tsx`
+- `tests/write-result-state-coverage.test.ts`
+- visible coverage review panel on `/admin`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -691,14 +707,14 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 34
+## Definition of Done for Goal 35
 
-Goal 34 is complete when a human developer can open the coach route and see the
-exact disabled coach decision result plus the future plain-English result
-states, while tests prove browser writes remain disabled and no state sends an
-escalation packet.
+Goal 35 is complete when a human developer can open the admin route and see the
+result-state coverage review showing four covered write candidates, one missing
+assignment-create result-state family, and no enabled browser or external
+writes.
 
-The app remains mock-first by default. Goal 34 does not wire production
+The app remains mock-first by default. Goal 35 does not wire production
 Supabase, create a server action, enable browser writes, upload files, publish
 proof, remove mock fallback, send escalation packets, or activate real
 integrations.
