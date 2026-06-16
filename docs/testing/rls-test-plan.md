@@ -238,6 +238,22 @@ subset for `hq_sharing_decision_logged` in
   event, disabled outbox, and audit log rows together
 - HQ decisions trigger no public publishing or live external send
 
+Goal 18 implements the first local chapter-leader assignment creation write
+subset for `action_assigned` in
+`supabase/tests/database/rls_goal_18.test.sql`. The test suite now proves:
+
+- direct assignment inserts cannot bypass the assignment creation function
+- chapter leaders can create own-chapter assignments through the function
+- cross-chapter assignment creation is blocked
+- General Members, Coaches, Admin, and DS Admin cannot create routine chapter
+  assignments
+- Super Admin can create an audited break-glass assignment
+- invalid campaign ownership, unapproved assigned users, and unsafe points are
+  rejected
+- assignment creation creates assignment, internal event, integration event,
+  disabled outbox, and audit log rows together
+- assignment creation triggers no live external send
+
 ## Pass Criteria
 
 The RLS test suite should pass only when:

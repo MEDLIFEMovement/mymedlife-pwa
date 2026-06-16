@@ -2,7 +2,8 @@
 
 Goals 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, and 16 add the local-only Supabase
 foundation for myMEDLIFE. Goal 17 adds proof/video storage planning without
-creating storage buckets or upload paths.
+creating storage buckets or upload paths. Goal 18 adds a local-only audited
+chapter-leader assignment creation function.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable live auth in the UI, add browser write controls, or trigger
@@ -24,6 +25,9 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `supabase/migrations/20260616103000_goal_16_hq_proof_sharing_decision.sql`:
   first local HQ proof-sharing decision write function plus direct approval
   insert bypass protection.
+- `supabase/migrations/20260616110000_goal_18_leader_assignment_create.sql`:
+  first local chapter-leader assignment creation function plus direct
+  assignment insert bypass protection.
 - `supabase/seed.sql`: fake local users, chapters, memberships, staff roles,
   Rush Month records, proof/testimonial records, disabled/mock outbox rows, and
   fake Goal 7 operating-model records.
@@ -38,6 +42,8 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   local `evidence_submitted` proof/testimonial metadata write path.
 - `supabase/tests/database/rls_goal_16.test.sql`: pgTAP tests for the first
   local `hq_sharing_decision_logged` proof/testimonial sharing decision path.
+- `supabase/tests/database/rls_goal_18.test.sql`: pgTAP tests for the first
+  local `action_assigned` assignment creation path.
 - `src/lib/supabase-readonly.ts`: server-only REST reader for local Supabase.
 - `src/services/read-only-app-data.ts`: mock-safe read model used by app pages.
 - `.env.example`: local-only read configuration template.
@@ -75,6 +81,8 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   proof/testimonial sharing decision architecture note.
 - `docs/architecture/goal-17-proof-video-storage-plan.md`: proof/video storage
   architecture plan with uploads still disabled.
+- `docs/architecture/goal-18-leader-assignment-create.md`: local
+  chapter-leader assignment creation architecture note.
 - `src/services/proof-storage-readiness.ts`: disabled upload readiness plan for
   future proof files.
 - `tests/proof-storage-readiness.test.ts`: unit tests proving proof uploads and
@@ -175,7 +183,10 @@ the first local Supabase HQ proof-sharing decision write function for
 `hq_sharing_decision_logged`, but it still does not add browser save controls,
 public publishing, or external sends. Goal 17 documents the future proof/video
 storage layer and adds disabled upload readiness tests, but it still does not
-create buckets, upload files, publish proof, or send external automation.
+create buckets, upload files, publish proof, or send external automation. Goal
+18 adds the first local Supabase assignment creation function for
+`action_assigned`, but it still does not add browser save controls, production
+auth, or external sends.
 
 ## GitHub CI
 
@@ -238,6 +249,11 @@ development server after changing the env var.
   written together.
 - General Members, Chapter Leaders, Coaches, and DS Admin cannot record HQ
   proof-sharing decisions.
+- Chapter-leader assignment creation must use `app.create_chapter_assignment`
+  so the assignment row, event row, integration event row, disabled outbox row,
+  and audit log are written together.
+- General Members, Coaches, Admin, and DS Admin cannot create routine chapter
+  assignments.
 
 ## Known Codex Environment Limitation
 

@@ -10,8 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 17: proof/video storage planning and disabled upload
-readiness.
+The current goal is Goal 18: local chapter-leader assignment creation.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -76,6 +75,11 @@ readiness. It documents future buckets, consent metadata, file constraints, and
 access boundaries, but it does not create buckets, upload files, publish proof,
 or send external automation.
 
+Goal 18 implements the first local Supabase chapter-leader assignment creation
+path. It adds an auditable database function and RLS/security tests for
+`action_assigned`, but it does not wire browser save controls, production auth,
+or external automation.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -136,6 +140,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 15 proof submission write](./docs/architecture/goal-15-proof-submission-write.md)
 - [Goal 16 HQ proof sharing decision](./docs/architecture/goal-16-hq-proof-sharing-decision.md)
 - [Goal 17 proof and video storage plan](./docs/architecture/goal-17-proof-video-storage-plan.md)
+- [Goal 18 leader assignment creation](./docs/architecture/goal-18-leader-assignment-create.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -235,6 +240,9 @@ Rules:
 - Goal 17 adds proof/video storage planning and disabled upload readiness.
   `MYMEDLIFE_ALLOW_PROOF_UPLOADS=true` still does not upload files or publish
   proof.
+- Goal 18 adds the first local Supabase database write function for
+  `action_assigned` chapter-leader assignment creation. The browser UI still
+  does not save assignments or send automation.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -368,6 +376,12 @@ Goal 17 proof/video storage planning lives in:
 - `src/services/proof-storage-readiness.ts`
 - `tests/proof-storage-readiness.test.ts`
 
+Goal 18 local leader assignment creation lives in:
+
+- `docs/architecture/goal-18-leader-assignment-create.md`
+- `supabase/migrations/20260616110000_goal_18_leader_assignment_create.sql`
+- `supabase/tests/database/rls_goal_18.test.sql`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -386,12 +400,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 17
+## Definition of Done for Goal 18
 
-Goal 17 is complete when a human developer can review the future proof/video
-storage plan, understand bucket and consent boundaries, and run tests proving
-uploads remain disabled.
+Goal 18 is complete when a human developer can run local Supabase migrations
+and RLS tests proving chapter leaders can create own-chapter assignments only
+through the audited database function, with event, integration event, disabled
+outbox, and audit log rows created together.
 
-The app remains mock-first by default. Goal 17 does not wire production
-Supabase, enable live auth, create storage buckets, add browser upload controls,
-upload files, publish proof, or activate real integrations.
+The app remains mock-first by default. Goal 18 does not wire production
+Supabase, enable live auth, add browser save controls, create real users, or
+activate real integrations.
