@@ -19,6 +19,7 @@ export type AppRouteKey =
   | "/rush-month/evidence"
   | "/rush-month/review"
   | "/proof-library"
+  | "/proof-library/upload"
   | "/coach"
   | "/admin";
 
@@ -150,6 +151,12 @@ export const routeMigrationOrder = [
     route: "/proof-library",
     firstLiveDataMode: "read_only",
     reason: "Proof library should stay read-only until upload, consent, and sharing rules are approved.",
+  },
+  {
+    route: "/proof-library/upload",
+    firstLiveDataMode: "read_only",
+    reason:
+      "Proof upload requirements should stay read-only until storage buckets, consent, and upload RLS are approved.",
   },
   {
     route: "/coach",

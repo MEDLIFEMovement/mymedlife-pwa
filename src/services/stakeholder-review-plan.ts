@@ -75,6 +75,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary: "No proof upload, public publish, AI summary, or warehouse export should happen.",
   },
   {
+    id: "proof-upload-readiness",
+    title: "Preview proof upload requirements",
+    route: "/proof-library/upload",
+    localActorEmail: "member.a@mymedlife.test",
+    actorLabel: "General Member",
+    expectedReview:
+      "A student can understand consent, file requirements, context requirements, and why uploads are still locked.",
+    safetyBoundary:
+      "No file upload, storage object, public URL, external export, or AI summary should happen.",
+  },
+  {
     id: "coach-readiness",
     title: "Inspect coach readiness",
     route: "/coach",

@@ -43,6 +43,14 @@ export default async function ProofLibraryPage() {
           decides what should be shared broadly. This page is read-only and does
           not publish anything.
         </p>
+        {actor.audience !== "ds_admin" ? (
+          <Link
+            href="/proof-library/upload"
+            className="mt-4 inline-flex rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+          >
+            Preview proof upload requirements
+          </Link>
+        ) : null}
       </section>
 
       <ProofSharingReviewPanel board={proofReviewBoard} />

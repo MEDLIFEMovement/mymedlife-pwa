@@ -135,6 +135,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "No upload, public publish, warehouse export, or AI summary is expected.",
   },
   {
+    path: "/proof-library/upload",
+    label: "Proof upload readiness",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "admin", "super_admin"],
+    expectedResult:
+      "Reviewers see file requirements, consent checklist, disabled upload controls, future events, and disabled outbox posture.",
+    safetyAssertion:
+      "No file upload, storage bucket write, public proof URL, external export, or AI summary is expected.",
+  },
+  {
     path: "/rush-month/review",
     label: "HQ proof-sharing review",
     priority: "important",

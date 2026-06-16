@@ -10,11 +10,12 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 67: chapter membership workspace. This remains
-local-only and adds a read-only `/chapter/members` surface for roster follow-up,
-join-request posture, role coverage, disabled membership controls, audit
-previews, and future outbox posture. Production data, most browser writes,
-admin mutation controls, uploads, public proof sharing, and external
+The current goal is Goal 68: proof upload intake readiness. This remains
+mock-safe and adds `/proof-library/upload` so reviewers can see future bridge
+video/testimonial file requirements, consent/context checks, disabled upload
+controls, structured event posture, and disabled outbox destinations before
+any storage write is approved. Production data, broad browser writes, admin
+mutation controls, real uploads, public proof sharing, and external
 integrations remain disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
@@ -336,6 +337,14 @@ membership controls, audit previews, and outbox previews for leaders, coaches,
 admins, and super admins while keeping members and DS Admin out of membership
 management truth.
 
+Goal 68 adds a mock-safe proof upload intake readiness route at
+`/proof-library/upload`. Students, leaders, coaches, admins, and super admins
+can preview future file constraints, consent/context requirements, disabled
+upload/publish/export controls, future structured events, and disabled outbox
+destinations while DS Admin stays out of student proof content. No files are
+uploaded, no buckets are created, no proof is published, and no external
+automation runs.
+
 Do not connect production Supabase, create real users, enable browser app
 writes beyond the approved local action-start, assignment creation, proof
 metadata, HQ proof decision, and coach decision slices, or enable external writes until Nick approves a later
@@ -447,6 +456,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 65 coach decision server action](./docs/architecture/goal-65-coach-decision-server-action.md)
 - [Goal 66 MVP progress map](./docs/architecture/goal-66-mvp-progress-map.md)
 - [Goal 67 chapter membership workspace](./docs/architecture/goal-67-chapter-membership-workspace.md)
+- [Goal 68 proof upload intake readiness](./docs/architecture/goal-68-proof-upload-intake.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -670,6 +680,11 @@ Rules:
   Super Admin seed user, local write flags, UUID chapter/campaign/phase rows,
   and escalation packets disabled. It creates a disabled outbox row but sends no
   escalation packet.
+- Goal 68 adds the proof upload intake readiness route at
+  `/proof-library/upload`. It validates future file/consent/context posture and
+  names future events/outbox destinations, but it does not create storage
+  buckets, upload files, publish proof, export raw proof, or trigger external
+  sends.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -694,6 +709,7 @@ data and fake local actor context. With or without local Supabase running,
 - `/rush-month/evidence`
 - `/rush-month/review`
 - `/proof-library`
+- `/proof-library/upload`
 - `/coach`
 - `/admin`
 
@@ -717,6 +733,7 @@ Goal 2 route shells:
 - `/rush-month/evidence`: role-aware proof/testimonial list
 - `/rush-month/review`: HQ proof-sharing review preview and disabled HQ decision gate
 - `/proof-library`: role-aware proof/testimonial library posture
+- `/proof-library/upload`: mock-safe proof upload intake readiness, consent/context checks, disabled upload controls, and future event/outbox posture
 - `/coach`: coach dashboard shell
 - `/admin`: admin/super-admin integration placeholder
 

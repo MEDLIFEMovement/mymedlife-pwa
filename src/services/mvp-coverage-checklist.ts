@@ -114,9 +114,10 @@ function buildCoverageItems(data: ReadOnlyAppData): MvpCoverageItem[] {
       label: "Proof/testimonial sharing posture",
       status: "covered_mock",
       plainEnglish:
-        "The proof library distinguishes consent/context needs, HQ review, internal learning, future public candidates, and private proof.",
-      routeEvidence: ["/proof-library", "/rush-month/review"],
-      nextStep: "Keep uploads, public proof publishing, and external exports disabled.",
+        "The proof library distinguishes consent/context needs, HQ review, internal learning, future public candidates, private proof, and upload-readiness requirements.",
+      routeEvidence: ["/proof-library", "/proof-library/upload", "/rush-month/review"],
+      nextStep:
+        "Keep uploads, public proof publishing, and external exports disabled until storage and consent are approved.",
     },
     {
       key: "recognition",
