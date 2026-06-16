@@ -33,6 +33,10 @@ describe("read-only app data service", () => {
       "risk_flags",
       "campaign_closeouts",
       "evidence_items",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
     ]);
   });
 
@@ -60,6 +64,25 @@ describe("read-only app data service", () => {
         id: "evidence-1",
         assignmentId: "assignment-1",
         status: "pending_review",
+      }),
+    ]);
+    expect(data.eventRows).toHaveLength(1);
+    expect(data.integrationEventRows).toHaveLength(1);
+    expect(data.automationOutboxRows).toHaveLength(1);
+    expect(data.auditLogs).toHaveLength(1);
+    expect(data.integrationEvents).toEqual([
+      expect.objectContaining({
+        id: "integration-1",
+        eventType: "action_started",
+        destination: "internal",
+        status: "recorded",
+      }),
+    ]);
+    expect(data.outboxItems).toEqual([
+      expect.objectContaining({
+        id: "outbox-1",
+        destination: "n8n",
+        status: "disabled",
       }),
     ]);
   });
@@ -286,6 +309,81 @@ const fakeRows: Record<string, unknown[]> = {
       submitted_at: "2026-06-15T00:00:00Z",
       created_at: "2026-06-15T00:00:00Z",
       updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  events: [
+    {
+      id: "event-1",
+      event_type: "action_started",
+      actor_user_id: "member-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      assignment_id: "assignment-1",
+      chapter_event_id: null,
+      payload: {
+        source: "app.start_assignment_action",
+      },
+      correlation_id: "action_started:assignment-1:member-1",
+      occurred_at: "2026-06-15T00:00:00Z",
+      created_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  integration_events: [
+    {
+      id: "integration-1",
+      source_event_id: "event-1",
+      chapter_id: "chapter-1",
+      event_type: "action_started",
+      destination: "internal",
+      external_object_type: "assignment",
+      external_object_id: "assignment-1",
+      status: "recorded",
+      payload: {
+        liveExternalWrite: false,
+      },
+      created_by: "member-1",
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  automation_outbox: [
+    {
+      id: "outbox-1",
+      source_event_id: "event-other",
+      integration_event_id: null,
+      chapter_id: "chapter-1",
+      destination: "n8n",
+      event_type: "action_assigned",
+      payload: {
+        sendReminder: false,
+      },
+      idempotency_key: "action_assigned:assignment-1",
+      status: "disabled",
+      attempt_count: 0,
+      available_at: "2026-06-15T00:00:00Z",
+      locked_at: null,
+      sent_at: null,
+      last_error: null,
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  audit_logs: [
+    {
+      id: "audit-1",
+      actor_user_id: "member-1",
+      chapter_id: "chapter-1",
+      action: "action_started",
+      target_table: "assignments",
+      target_id: "assignment-1",
+      before_value: {
+        status: "not_started",
+      },
+      after_value: {
+        status: "in_progress",
+      },
+      reason: "Local action start test.",
+      created_at: "2026-06-15T00:00:00Z",
     },
   ],
 };
