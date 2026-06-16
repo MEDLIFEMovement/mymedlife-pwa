@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app-shell";
 import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
 import { AdminGlossaryPanel } from "@/components/admin-glossary-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
+import { EnvironmentSafetySummaryPanel } from "@/components/environment-safety-summary-panel";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { MetricCard } from "@/components/metric-card";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
@@ -16,6 +17,7 @@ import { WriteResultStateCoveragePanel } from "@/components/write-result-state-c
 import { getAdminControlCenterSummary } from "@/services/admin-control-center";
 import { getAdminGlossary } from "@/services/admin-glossary";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
+import { getEnvironmentSafetySummary } from "@/services/environment-safety-summary";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
@@ -44,6 +46,7 @@ export default async function AdminPage() {
   const campaignSummary = getCampaignReadinessSummary();
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminGlossary = getAdminGlossary(actor);
+  const environmentSafetySummary = getEnvironmentSafetySummary(actor);
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
   const writeResultStateCoverage = getWriteResultStateCoverageSummary();
   const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
@@ -96,6 +99,7 @@ export default async function AdminPage() {
           </section>
 
           <MvpReleaseReadinessPanel summary={releaseReadiness} />
+          <EnvironmentSafetySummaryPanel summary={environmentSafetySummary} />
           <StakeholderReviewPlanPanel plan={stakeholderReviewPlan} />
           <AdminGlossaryPanel glossary={adminGlossary} />
           <section className="grid gap-3 md:grid-cols-2">
