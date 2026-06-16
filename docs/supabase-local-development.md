@@ -11,12 +11,15 @@ Goals 21 and 22 expand read-only campaign/dashboard surfaces. Goals 23 through
 off. Goal 27 also adds the local-only audited coach decision function. Goal 58
 adds localhost-only Supabase Auth sign-in for fake local seed users. Goal 59
 maps that local auth session into role-aware app context. Goal 60 adds the first
-local-only browser-to-Supabase write path for `action_started`.
+local-only browser-to-Supabase write path for `action_started`. Goal 61 adds a
+stable local seed assignment plus readback proof for that first write. Goal 62
+adds the second local-only browser-to-Supabase write path for
+`evidence_submitted` proof/testimonial metadata.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
-action-start slice, or trigger HubSpot, Luma, n8n, warehouse, Power BI, email,
-SMS, or AI writes.
+action-start and proof metadata slices, or trigger HubSpot, Luma, n8n,
+warehouse, Power BI, email, SMS, or AI writes.
 
 ## What Was Added
 
@@ -126,6 +129,10 @@ SMS, or AI writes.
   to app actor context architecture note with writes still disabled.
 - `docs/architecture/goal-60-action-start-server-action.md`: local
   action-start server action architecture note.
+- `docs/architecture/goal-61-action-start-readback.md`: local action-start
+  readback proof note for the stable fake seed assignment.
+- `docs/architecture/goal-62-proof-submission-server-action.md`: local
+  proof/testimonial metadata server action architecture note.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
@@ -134,6 +141,12 @@ SMS, or AI writes.
   the signed-in local auth user and falls back to `MYMEDLIFE_LOCAL_ACTOR_EMAIL`.
 - `src/services/action-start-write.ts`: local action-start write readiness and
   RPC result mapping.
+- `src/services/proof-submission-write.ts`: local proof/testimonial metadata
+  write readiness, RPC result mapping, and readback state.
+- `src/components/proof-submission-server-action-panel.tsx`: local-only proof
+  metadata form and readback panel for action detail pages.
+- `tests/proof-submission-write.test.ts`: unit tests proving proof metadata
+  writes stay gated and map local RPC results safely.
 - `src/services/live-data-connection-plan.ts`: disabled live-data migration
   plan for route order and connection mode.
 - `tests/live-data-connection-plan.test.ts`: unit tests proving production
@@ -303,6 +316,40 @@ Recommended local test path:
 
 This test still does not enable production auth, external sends, proof uploads,
 public proof sharing, or any write path except the local action-start slice.
+
+## Goal 62 Proof/Testimonial Metadata Test
+
+Goal 62 uses the same fake Northview assignment after it has been started. The
+assignment must be `in_progress` or `changes_requested` before proof metadata
+can be saved.
+
+Recommended local test path:
+
+1. Complete the Goal 61 action-start test above for
+   `50000000-0000-4000-8000-000000000003`.
+2. Keep `MYMEDLIFE_DATA_SOURCE=supabase`.
+3. Keep `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true`.
+4. Keep `MYMEDLIFE_AUTH_MODE=local_supabase`.
+5. Keep `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
+6. Set `MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true`.
+7. Keep `MYMEDLIFE_ALLOW_PROOF_UPLOADS=false`.
+8. Stay signed in as `member.a@mymedlife.test`.
+9. Open `/rush-month/actions/50000000-0000-4000-8000-000000000003`.
+10. Submit the local proof/testimonial metadata form.
+11. Confirm the refreshed page shows the assignment status as `submitted` and
+    the local proof readback success message.
+
+Expected database behavior:
+
+- `app.submit_assignment_proof_metadata(...)` writes the evidence metadata row.
+- The assignment status changes to `submitted`.
+- An internal `evidence_submitted` event is recorded.
+- An integration event is recorded for future automation pickup.
+- A disabled automation outbox row is recorded.
+- An audit log row is recorded.
+
+This test still does not upload files, publish proof, enable production auth,
+or send HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 
 `MYMEDLIFE_LOCAL_ACTOR_EMAIL` also works when the app is using mock fallback
 data, so developers can preview all role views without Docker. Restart the local

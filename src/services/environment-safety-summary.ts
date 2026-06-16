@@ -5,6 +5,7 @@ export type EnvironmentSafetyInput = {
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS?: string;
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES?: string;
   MYMEDLIFE_ENABLE_ACTION_START_WRITE?: string;
+  MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE?: string;
   MYMEDLIFE_ALLOW_PROOF_UPLOADS?: string;
   MYMEDLIFE_LOCAL_ACTOR_EMAIL?: string;
 };
@@ -84,6 +85,13 @@ export function getEnvironmentSafetySummary(
         "The first local write slice can start assignments only when local Supabase writes and local auth are also ready.",
     },
     {
+      label: "Proof metadata write",
+      value: env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE || "false",
+      status: getProofSubmissionWriteStatus(env),
+      explanation:
+        "The second local write slice can submit proof/testimonial metadata only when local Supabase writes, local auth, and upload-disabled posture are ready.",
+    },
+    {
       label: "Proof uploads",
       value: env.MYMEDLIFE_ALLOW_PROOF_UPLOADS || "false",
       status: env.MYMEDLIFE_ALLOW_PROOF_UPLOADS === "true" ? "blocked" : "safe",
@@ -118,10 +126,7 @@ export function getEnvironmentSafetySummary(
       blocked: items.filter((item) => item.status === "blocked").length,
       secretsShown: 0,
       browserWritesEnabled:
-        env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" &&
-        env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true"
-          ? 1
-          : 0,
+        getEnabledLocalWriteCount(env),
       externalWritesEnabled: 0,
     },
   };
@@ -136,6 +141,8 @@ function readEnvironmentSafetyInput(): EnvironmentSafetyInput {
       process.env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES,
     MYMEDLIFE_ENABLE_ACTION_START_WRITE:
       process.env.MYMEDLIFE_ENABLE_ACTION_START_WRITE,
+    MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE:
+      process.env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE,
     MYMEDLIFE_ALLOW_PROOF_UPLOADS: process.env.MYMEDLIFE_ALLOW_PROOF_UPLOADS,
     MYMEDLIFE_LOCAL_ACTOR_EMAIL: process.env.MYMEDLIFE_LOCAL_ACTOR_EMAIL,
   };
@@ -149,6 +156,36 @@ function getActionStartWriteStatus(
   }
 
   return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" ? "watch" : "blocked";
+}
+
+function getProofSubmissionWriteStatus(
+  env: EnvironmentSafetyInput,
+): EnvironmentSafetyItem["status"] {
+  if (env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE !== "true") {
+    return "safe";
+  }
+
+  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+    return "blocked";
+  }
+
+  return env.MYMEDLIFE_ALLOW_PROOF_UPLOADS === "true" ? "blocked" : "watch";
+}
+
+function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
+  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+    return 0;
+  }
+
+  const actionStartEnabled =
+    env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" ? 1 : 0;
+  const proofSubmissionEnabled =
+    env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true" &&
+    env.MYMEDLIFE_ALLOW_PROOF_UPLOADS !== "true"
+      ? 1
+      : 0;
+
+  return actionStartEnabled + proofSubmissionEnabled;
 }
 
 function getTitle(actor: LocalActorContext): string {

@@ -85,6 +85,9 @@ describe("browser write activation gate", () => {
       "actor_allowed_by_write_plan",
       "local_database_function_exists",
       "rls_tests_exist",
+      "assignment_ready_for_proof",
+      "summary_long_enough",
+      "proof_uploads_disabled",
       "external_writes_disabled",
     ]);
     expect(getBlockingActivationChecks(gate).map((check) => check.key)).toEqual([
@@ -181,6 +184,38 @@ describe("browser write activation gate", () => {
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
     });
+
+    expect(gate.status).toBe("ready_for_local_write");
+    expect(gate.canRenderEnabledControl).toBe(true);
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
+  it("can mark proof submission ready only for local auth and explicit approval flags", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const assignment = {
+      ...requireAssignment("member-push"),
+      id: "00000000-0000-4000-8000-000000000101",
+      status: "in_progress" as const,
+    };
+    const gate = getProofSubmissionBrowserWriteGate(
+      actor,
+      assignment,
+      {
+        evidenceType: "testimonial_text",
+        summary:
+          "This testimonial explains what happened and why another student should take action.",
+      },
+      {
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
+      },
+    );
 
     expect(gate.status).toBe("ready_for_local_write");
     expect(gate.canRenderEnabledControl).toBe(true);

@@ -6,6 +6,7 @@ import { ActionStartServerActionPanel } from "@/components/action-start-server-a
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
+import { ProofSubmissionServerActionPanel } from "@/components/proof-submission-server-action-panel";
 import { ProofSubmissionResultStatesPanel } from "@/components/proof-submission-result-states-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
@@ -28,9 +29,11 @@ import {
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
+  type ProofSubmissionResultCode,
   getDisabledProofSubmissionResultPreview,
   getProofSubmissionResultStates,
 } from "@/services/proof-submission-result-states";
+import { getProofSubmissionWriteReadiness } from "@/services/proof-submission-write";
 import { canReadAssignment } from "@/services/role-visibility";
 import {
   getActionStartBrowserWriteGate,
@@ -55,6 +58,7 @@ type ActionDetailPageProps = {
 
 type ActionDetailSearchParams = {
   actionStartResult?: string;
+  proofSubmissionResult?: string;
 };
 
 export default async function ActionDetailPage({
@@ -88,7 +92,7 @@ export default async function ActionDetailPage({
   }
 
   const proofSubmissionInput = {
-    evidenceType: "bridge_video",
+    evidenceType: "testimonial_text",
     summary:
       "Local preview: this testimonial explains what happened and why another student should take action.",
   } as const;
@@ -118,7 +122,15 @@ export default async function ActionDetailPage({
   const actionStartResultCode = parseActionStartResultCode(
     search.actionStartResult,
   );
+  const proofSubmissionResultCode = parseProofSubmissionResultCode(
+    search.proofSubmissionResult,
+  );
   const proofSubmissionGate = getProofSubmissionBrowserWriteGate(
+    actor,
+    assignment,
+    proofSubmissionInput,
+  );
+  const proofSubmissionWriteReadiness = getProofSubmissionWriteReadiness(
     actor,
     assignment,
     proofSubmissionInput,
@@ -248,7 +260,15 @@ export default async function ActionDetailPage({
             states={getProofSubmissionResultStates()}
           />
           {canSubmitProof ? (
-            <BrowserWriteGateNotice gate={proofSubmissionGate} />
+            <>
+              <BrowserWriteGateNotice gate={proofSubmissionGate} />
+              <ProofSubmissionServerActionPanel
+                assignment={assignment}
+                readiness={proofSubmissionWriteReadiness}
+                resultCode={proofSubmissionResultCode}
+                defaultInput={proofSubmissionInput}
+              />
+            </>
           ) : null}
         </>
       ) : (
@@ -264,6 +284,18 @@ export default async function ActionDetailPage({
       </Link>
     </AppShell>
   );
+}
+
+function parseProofSubmissionResultCode(
+  value: string | undefined,
+): ProofSubmissionResultCode | undefined {
+  const allowedCodes = new Set(
+    getProofSubmissionResultStates().map((state) => state.code),
+  );
+
+  return value && allowedCodes.has(value as ProofSubmissionResultCode)
+    ? (value as ProofSubmissionResultCode)
+    : undefined;
 }
 
 function parseActionStartResultCode(

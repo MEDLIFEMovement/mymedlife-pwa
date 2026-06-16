@@ -3,6 +3,10 @@ import {
   getActionStartWriteReadiness,
 } from "@/services/action-start-write";
 import {
+  getProofSubmissionWriteConfig,
+  getProofSubmissionWriteReadiness,
+} from "@/services/proof-submission-write";
+import {
   canCreateChapterAssignment,
   canLogCoachDecision,
   canMakeHqSharingDecision,
@@ -38,8 +42,11 @@ export type ActivationCheckKey =
   | "actor_can_submit_proof"
   | "actor_can_make_hq_sharing_decision"
   | "actor_allowed_by_write_plan"
+  | "assignment_ready_for_proof"
   | "local_database_function_exists"
+  | "proof_uploads_disabled"
   | "rls_tests_exist"
+  | "summary_long_enough"
   | "external_writes_disabled"
   | "live_auth_approved"
   | "browser_write_approved";
@@ -254,9 +261,23 @@ export function getProofSubmissionBrowserWriteGate(
   env: EnvSource = process.env,
 ): BrowserWriteActivationGate {
   const writePlan = getWritePlanOperation("evidence_submitted");
-  const writeReadiness = getWriteReadinessConfig(env);
+  const writeConfig = getProofSubmissionWriteConfig(env);
+  const proofSubmissionReadiness = getProofSubmissionWriteReadiness(
+    actor,
+    assignment,
+    input,
+    env,
+  );
   const actorCanSubmitProof = canSubmitProofForAssignment(actor, assignment);
   const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+  const assignmentReadyForProof =
+    assignment.status === "in_progress" ||
+    assignment.status === "changes_requested";
+  const summaryLongEnough = input.summary.trim().length >= 12;
+  const uploadsDisabled = env.MYMEDLIFE_ALLOW_PROOF_UPLOADS !== "true";
+  const localAuthApproved =
+    actor.identitySource === "local_auth_session" &&
+    actor.authSessionStatus === "signed_in";
 
   return {
     operation: "evidence_submitted",
@@ -265,10 +286,14 @@ export function getProofSubmissionBrowserWriteGate(
     localFunction: "app.submit_assignment_proof_metadata",
     functionSignature:
       "app.submit_assignment_proof_metadata(assignment_uuid, evidence_kind, proof_summary, ...)",
-    status: "blocked_until_approval",
-    canRenderEnabledControl: false,
+    status: proofSubmissionReadiness.canSubmit
+      ? "ready_for_local_write"
+      : "blocked_until_approval",
+    canRenderEnabledControl: proofSubmissionReadiness.canSubmit,
     envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
-    nextApprovalNeeded: approvalMessage,
+    nextApprovalNeeded: proofSubmissionReadiness.canSubmit
+      ? "Local proof/testimonial metadata write is ready for localhost-only testing."
+      : approvalMessage,
     checks: [
       {
         key: "actor_can_submit_proof",
@@ -300,6 +325,30 @@ export function getProofSubmissionBrowserWriteGate(
           "supabase/tests/database/rls_goal_15.test.sql proves direct evidence inserts are blocked and proof submission is function-gated.",
       },
       {
+        key: "assignment_ready_for_proof",
+        label: "Assignment is ready for proof",
+        passed: assignmentReadyForProof,
+        detail: assignmentReadyForProof
+          ? "The assignment is in progress or changes requested."
+          : "Proof should wait until the assignment has been started.",
+      },
+      {
+        key: "summary_long_enough",
+        label: "Proof summary has enough context",
+        passed: summaryLongEnough,
+        detail: summaryLongEnough
+          ? "The proof summary has enough context for HQ review."
+          : "The proof summary must describe what happened before saving.",
+      },
+      {
+        key: "proof_uploads_disabled",
+        label: "Proof uploads stay disabled",
+        passed: uploadsDisabled,
+        detail: uploadsDisabled
+          ? "This path saves metadata only and does not upload files."
+          : "Proof upload/storage is not approved for this MVP slice.",
+      },
+      {
         key: "external_writes_disabled",
         label: "External writes stay disabled",
         passed: true,
@@ -309,14 +358,16 @@ export function getProofSubmissionBrowserWriteGate(
       {
         key: "live_auth_approved",
         label: "Live auth/browser session approved",
-        passed: false,
-        detail: "Live auth is still disabled, so browser identity cannot be trusted for real writes.",
+        passed: localAuthApproved,
+        detail: localAuthApproved
+          ? "A signed-in local Supabase Auth session is driving actor context."
+          : "A signed-in local Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",
         label: "Browser write approval granted",
-        passed: false,
-        detail: writeReadiness.reason,
+        passed: writeConfig.enabled,
+        detail: writeConfig.reason,
       },
     ],
     preview: createProofSubmissionMock(actor, assignment, input),
