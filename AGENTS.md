@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 44: campaign closeout readiness with production data,
+The active goal is Goal 45: MVP coverage checklist with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -317,6 +317,9 @@ Allowed:
 - a read-only campaign closeout/readiness panel on `/rush-month` that reviews
   assignment completion, proof posture, event feedback/NPS posture, and coach
   decision state while keeping closeout writes and exports disabled
+- an admin-facing MVP coverage checklist on `/admin` that summarizes local
+  coverage, read-only/mock-only surfaces, and blocked live-auth/write/upload/
+  public-proof/integration items without approving launch
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
