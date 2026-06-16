@@ -17,6 +17,8 @@ insert into auth.users (
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'admin@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Ari Admin"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'ds.admin@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Dee Systems"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000006', 'authenticated', 'authenticated', 'super.admin@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Sam Super"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000009', 'authenticated', 'authenticated', 'committee.member@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Nia Committee"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000010', 'authenticated', 'authenticated', 'committee.chair@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Casey Chair"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000007', 'authenticated', 'authenticated', 'member.b@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Bea Member"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000008', 'authenticated', 'authenticated', 'unrelated@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Una Unrelated"}', now(), now())
 on conflict (id) do nothing;
@@ -28,6 +30,8 @@ insert into app.profiles (id, display_name, email) values
   ('00000000-0000-4000-8000-000000000004', 'Ari Admin', 'admin@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000005', 'Dee Systems', 'ds.admin@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000006', 'Sam Super', 'super.admin@mymedlife.test'),
+  ('00000000-0000-4000-8000-000000000009', 'Nia Committee', 'committee.member@mymedlife.test'),
+  ('00000000-0000-4000-8000-000000000010', 'Casey Chair', 'committee.chair@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000007', 'Bea Member', 'member.b@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000008', 'Una Unrelated', 'unrelated@mymedlife.test')
 on conflict (id) do nothing;
@@ -41,6 +45,8 @@ insert into app.memberships (id, user_id, chapter_id, role_key, status, approved
   ('20000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'general_member', 'approved', now(), '00000000-0000-4000-8000-000000000002'),
   ('20000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', 'president_vp', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
   ('20000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', 'e_board_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
+  ('20000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000009', '10000000-0000-4000-8000-000000000001', 'action_committee_member', 'approved', now(), '00000000-0000-4000-8000-000000000002'),
+  ('20000000-0000-4000-8000-000000000007', '00000000-0000-4000-8000-000000000010', '10000000-0000-4000-8000-000000000001', 'action_committee_chair', 'approved', now(), '00000000-0000-4000-8000-000000000002'),
   ('20000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000002', 'general_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
   ('20000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000008', '10000000-0000-4000-8000-000000000001', 'general_member', 'requested', null, null)
 on conflict (id) do nothing;
@@ -67,7 +73,7 @@ insert into app.phases (id, chapter_id, campaign_id, title, objective, status) v
 on conflict (id) do nothing;
 
 insert into app.action_committees (id, chapter_id, name, committee_type, chair_user_id) values
-  ('42000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'Recruitment Action Committee', 'recruitment', '00000000-0000-4000-8000-000000000002'),
+  ('42000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'Recruitment Action Committee', 'recruitment', '00000000-0000-4000-8000-000000000010'),
   ('42000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 'Social Action Committee', 'social', null)
 on conflict (id) do nothing;
 

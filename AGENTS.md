@@ -161,12 +161,12 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 69: Rush Month event readiness. This remains mock-safe
-and gives members, leaders, coaches, admins, and super admins a read-only
-preview of event plans, expected student action, NPS prompts, proof prompts,
-disabled Luma posture, structured event posture, and disabled outbox
-destinations. Production data, broad browser writes, admin mutation controls,
-real uploads, public proof sharing, and external integrations remain disabled.
+The active goal is Goal 84: action committee role personas. This remains
+mock-safe and gives reviewers separate local personas for General Member,
+Action Committee Member, Action Committee Chair, E-Board / President-VP, Coach,
+Admin, DS Admin, and Super Admin. Production data, broad browser writes, admin
+mutation controls, real uploads, public proof sharing, role writes, and
+external integrations remain disabled.
 
 Allowed:
 
@@ -177,8 +177,9 @@ Allowed:
 - connecting `/chapter`, `/rush-month`, or `/coach` to read-only local data
 - adding local-only fake actor context from seed profiles, memberships, staff
   roles, and coach assignments
-- showing role-aware read-only context for fake member, leader, coach, admin,
-  DS admin, and super admin users
+- showing role-aware read-only context for fake member, action committee
+  member, action committee chair, leader, coach, admin, DS admin, and super
+  admin users
 - using `MYMEDLIFE_LOCAL_ACTOR_EMAIL` as a local-only role switch in mock
   fallback and local Supabase modes
 - role-aware navigation labels, restricted-state messaging, read filters, and

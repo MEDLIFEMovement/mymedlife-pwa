@@ -21,6 +21,16 @@ describe("role visibility service", () => {
     expect(visibleAssignments.every((assignment) => assignment.lane === "Member")).toBe(true);
   });
 
+  it("keeps action committee members in member-lane visibility", () => {
+    const actor = getMockLocalActorContext("committee.member@mymedlife.test");
+    const visibleAssignments = getVisibleAssignmentsForActor(actor, assignments);
+
+    expect(actor.chapterRoles).toEqual(["Action Committee Member"]);
+    expect(visibleAssignments).toHaveLength(1);
+    expect(visibleAssignments.every((assignment) => assignment.lane === "Member")).toBe(true);
+    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("My Actions");
+  });
+
   it("lets chapter leaders read member and leader work but not coach-only work", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const visibleAssignments = getVisibleAssignmentsForActor(actor, assignments);
@@ -28,6 +38,17 @@ describe("role visibility service", () => {
     expect(visibleAssignments.map((assignment) => assignment.lane)).toContain("Member");
     expect(visibleAssignments.map((assignment) => assignment.lane)).toContain("Leader");
     expect(visibleAssignments.some((assignment) => assignment.lane === "Coach")).toBe(false);
+  });
+
+  it("lets action committee chairs use chapter-leader visibility", () => {
+    const actor = getMockLocalActorContext("committee.chair@mymedlife.test");
+    const visibleAssignments = getVisibleAssignmentsForActor(actor, assignments);
+
+    expect(actor.chapterRoles).toEqual(["Action Committee Chair"]);
+    expect(visibleAssignments.map((assignment) => assignment.lane)).toContain("Member");
+    expect(visibleAssignments.map((assignment) => assignment.lane)).toContain("Leader");
+    expect(visibleAssignments.some((assignment) => assignment.lane === "Coach")).toBe(false);
+    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Members");
   });
 
   it("keeps DS Admin out of student and chapter truth while allowing outbox read", () => {

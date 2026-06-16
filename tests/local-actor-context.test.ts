@@ -19,6 +19,16 @@ describe("local actor context service", () => {
     expect(actor.isLocalOnly).toBe(true);
   });
 
+  it("keeps separate mock personas for action committee roles", () => {
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
+
+    expect(committeeMember.audience).toBe("chapter_member");
+    expect(committeeMember.chapterRoles).toEqual(["Action Committee Member"]);
+    expect(committeeChair.audience).toBe("chapter_leader");
+    expect(committeeChair.chapterRoles).toEqual(["Action Committee Chair"]);
+  });
+
   it("reads every Goal 9 actor context table", async () => {
     const requestedTables: string[] = [];
     const client = createFakeClient({}, requestedTables);
@@ -49,6 +59,12 @@ describe("local actor context service", () => {
   });
 
   it("derives leader, coach, and staff contexts from fake local rows", async () => {
+    await expectAudience("committee.member@mymedlife.test", "chapter_member", [
+      "Action Committee Member",
+    ]);
+    await expectAudience("committee.chair@mymedlife.test", "chapter_leader", [
+      "Action Committee Chair",
+    ]);
     await expectAudience("leader.a@mymedlife.test", "chapter_leader", [
       "President / VP",
       "E-Board Member",
@@ -163,11 +179,15 @@ const fakeActorRows: Record<string, unknown[]> = {
     profile("user-4", "Ari Admin", "admin@mymedlife.test"),
     profile("user-5", "Dee Systems", "ds.admin@mymedlife.test"),
     profile("user-6", "Sam Super", "super.admin@mymedlife.test"),
+    profile("user-9", "Nia Committee", "committee.member@mymedlife.test"),
+    profile("user-10", "Casey Chair", "committee.chair@mymedlife.test"),
   ],
   memberships: [
     membership("membership-1", "user-1", "chapter-1", "general_member"),
     membership("membership-2", "user-2", "chapter-1", "president_vp"),
     membership("membership-3", "user-2", "chapter-1", "e_board_member"),
+    membership("membership-6", "user-9", "chapter-1", "action_committee_member"),
+    membership("membership-7", "user-10", "chapter-1", "action_committee_chair"),
   ],
   staff_role_assignments: [
     staffRole("staff-1", "user-3", "coach"),
