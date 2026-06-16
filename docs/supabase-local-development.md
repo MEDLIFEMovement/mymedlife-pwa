@@ -10,11 +10,13 @@ Goals 21 and 22 expand read-only campaign/dashboard surfaces. Goals 23 through
 27 add visible browser-write activation gates while keeping enabled controls
 off. Goal 27 also adds the local-only audited coach decision function. Goal 58
 adds localhost-only Supabase Auth sign-in for fake local seed users. Goal 59
-maps that local auth session into role-aware app context.
+maps that local auth session into role-aware app context. Goal 60 adds the first
+local-only browser-to-Supabase write path for `action_started`.
 
 This does not connect the app to production Supabase. It does not create real
-users, enable production auth in the UI, add browser write controls, or trigger
-HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
+users, enable production auth in the UI, enable browser writes beyond the local
+action-start slice, or trigger HubSpot, Luma, n8n, warehouse, Power BI, email,
+SMS, or AI writes.
 
 ## What Was Added
 
@@ -122,12 +124,16 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   sign-in architecture note with production auth still disabled.
 - `docs/architecture/goal-59-auth-derived-actor-context.md`: local Auth session
   to app actor context architecture note with writes still disabled.
+- `docs/architecture/goal-60-action-start-server-action.md`: local
+  action-start server action architecture note.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
   production users remain disabled.
 - `src/services/local-actor-context.ts`: actor context service that now prefers
   the signed-in local auth user and falls back to `MYMEDLIFE_LOCAL_ACTOR_EMAIL`.
+- `src/services/action-start-write.ts`: local action-start write readiness and
+  RPC result mapping.
 - `src/services/live-data-connection-plan.ts`: disabled live-data migration
   plan for route order and connection mode.
 - `tests/live-data-connection-plan.test.ts`: unit tests proving production

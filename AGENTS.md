@@ -161,10 +161,10 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 59: auth-derived actor context with production data,
-browser writes, admin mutation controls, reminder automation, escalation
-packets, uploads, public proof sharing, and external integrations still
-disabled.
+The active goal is Goal 60: local action-start server action with production
+data, most browser writes, admin mutation controls, reminder automation,
+escalation packets, uploads, public proof sharing, and external integrations
+still disabled.
 
 Allowed:
 
@@ -367,6 +367,10 @@ Allowed:
   production users, browser writes, uploads, public proof sharing, external
   sends, reminders, escalation packets, service workers, and production data
   stay disabled
+- a local-only action-start server action that calls
+  `app.start_assignment_action(assignment_uuid)` only when local Supabase Auth,
+  local Supabase data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`, and
+  `MYMEDLIFE_ENABLE_ACTION_START_WRITE=true` are present
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
@@ -380,7 +384,7 @@ Not allowed without Nick's next approval:
 - production Supabase auth wiring in the student UI
 - production browser sessions, production cookies, production sign-in flows, or
   production auth
-- app write paths to Supabase
+- app write paths to Supabase beyond the approved local action-start slice
 - enabling browser app writes or `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES` to
   perform real UI writes
 - proof uploads or file storage writes

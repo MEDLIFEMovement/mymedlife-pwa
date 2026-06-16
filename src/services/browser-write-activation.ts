@@ -1,4 +1,8 @@
 import {
+  getActionStartWriteConfig,
+  getActionStartWriteReadiness,
+} from "@/services/action-start-write";
+import {
   canCreateChapterAssignment,
   canLogCoachDecision,
   canMakeHqSharingDecision,
@@ -67,8 +71,8 @@ export type BrowserWriteActivationGate = {
     | "app.submit_assignment_proof_metadata"
     | "app.record_hq_proof_sharing_decision";
   functionSignature: string;
-  status: "blocked_until_approval";
-  canRenderEnabledControl: false;
+  status: "blocked_until_approval" | "ready_for_local_write";
+  canRenderEnabledControl: boolean;
   envRequestedLocalWrites: boolean;
   nextApprovalNeeded: string;
   checks: ActivationCheck[];
@@ -90,9 +94,13 @@ export function getActionStartBrowserWriteGate(
   env: EnvSource = process.env,
 ): BrowserWriteActivationGate {
   const writePlan = getWritePlanOperation("action_started");
-  const writeReadiness = getWriteReadinessConfig(env);
+  const writeConfig = getActionStartWriteConfig(env);
+  const actionStartReadiness = getActionStartWriteReadiness(actor, assignment, env);
   const actorCanReadAssignment = canReadAssignment(actor, assignment);
   const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+  const localAuthApproved =
+    actor.identitySource === "local_auth_session" &&
+    actor.authSessionStatus === "signed_in";
 
   return {
     operation: "action_started",
@@ -100,10 +108,14 @@ export function getActionStartBrowserWriteGate(
     label: "Start assignment browser write",
     localFunction: "app.start_assignment_action",
     functionSignature: "app.start_assignment_action(assignment_uuid)",
-    status: "blocked_until_approval",
-    canRenderEnabledControl: false,
+    status: actionStartReadiness.canSubmit
+      ? "ready_for_local_write"
+      : "blocked_until_approval",
+    canRenderEnabledControl: actionStartReadiness.canSubmit,
     envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
-    nextApprovalNeeded: approvalMessage,
+    nextApprovalNeeded: actionStartReadiness.canSubmit
+      ? "Local action-start write is ready for localhost-only testing."
+      : approvalMessage,
     checks: [
       {
         key: "actor_can_read_assignment",
@@ -144,14 +156,16 @@ export function getActionStartBrowserWriteGate(
       {
         key: "live_auth_approved",
         label: "Live auth/browser session approved",
-        passed: false,
-        detail: "Live auth is still disabled, so browser identity cannot be trusted for real writes.",
+        passed: localAuthApproved,
+        detail: localAuthApproved
+          ? "A signed-in local Supabase Auth session is driving actor context."
+          : "A signed-in local Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",
         label: "Browser write approval granted",
-        passed: false,
-        detail: writeReadiness.reason,
+        passed: writeConfig.enabled,
+        detail: writeConfig.reason,
       },
     ],
     preview: createActionStartedMock(actor, assignment),
