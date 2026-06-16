@@ -161,8 +161,8 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 22: Rush Month role-aware dashboard with production
-data, browser writes, uploads, and external integrations still disabled.
+The active goal is Goal 23: action-start browser write gate with production
+data, enabled browser writes, uploads, and external integrations still disabled.
 
 Allowed:
 
@@ -234,6 +234,9 @@ Allowed:
 - exact starter campaign shells for Planning / Goal Setting, Chapter
   Engagement, SLT Promotion, Moving Mountains, Leadership Transition, Grow the
   Movement, and Start a Chapter
+- visible browser-write activation gates that make first-write prerequisites
+  clear while keeping enabled controls disabled until Nick approves live auth
+  and browser writes
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

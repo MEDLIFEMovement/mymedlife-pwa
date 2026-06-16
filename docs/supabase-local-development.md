@@ -6,6 +6,8 @@ creating storage buckets or upload paths. Goal 18 adds a local-only audited
 chapter-leader assignment creation function. Goal 19 adds auth/onboarding
 planning without enabling live auth or production users. Goal 20 adds the
 route-by-route live-data connection plan without enabling production data.
+Goals 21 and 22 expand read-only campaign/dashboard surfaces. Goal 23 adds the
+first visible browser-write activation gate while keeping enabled controls off.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable live auth in the UI, add browser write controls, or trigger
@@ -89,6 +91,13 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   architecture note with live auth still disabled.
 - `docs/architecture/goal-20-live-data-connection-plan.md`: future
   route-by-route live-data connection plan with production data still disabled.
+- `docs/architecture/goal-21-campaign-operating-shells.md`: read-only campaign
+  shells and action committee/proof-library posture.
+- `docs/architecture/goal-22-rush-month-dashboard.md`: role-aware Rush Month
+  dashboard with browser writes still disabled.
+- `docs/architecture/goal-23-action-start-browser-write-gate.md`: visible
+  action-start browser write activation gate with enabled controls still
+  disabled.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
@@ -97,6 +106,12 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   plan for route order and connection mode.
 - `tests/live-data-connection-plan.test.ts`: unit tests proving production
   Supabase, browser writes, and external writes remain disabled.
+- `src/services/browser-write-activation.ts`: first action-start browser write
+  gate that references the existing local function without enabling it.
+- `src/components/browser-write-gate-notice.tsx`: visible reviewer-facing gate
+  notice on action detail pages.
+- `tests/browser-write-activation.test.ts`: unit tests proving the gate keeps
+  enabled browser controls disabled until explicit approval.
 - `src/services/proof-storage-readiness.ts`: disabled upload readiness plan for
   future proof files.
 - `tests/proof-storage-readiness.test.ts`: unit tests proving proof uploads and

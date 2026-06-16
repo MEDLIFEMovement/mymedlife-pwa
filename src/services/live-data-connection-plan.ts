@@ -8,11 +8,16 @@ export type DataConnectionPhaseKey =
 
 export type AppRouteKey =
   | "/chapter"
+  | "/campaigns"
+  | "/campaigns/[campaignSlug]"
+  | "/action-committees"
   | "/rush-month"
+  | "/rush-month/dashboard"
   | "/rush-month/actions"
   | "/rush-month/actions/[assignmentId]"
   | "/rush-month/evidence"
   | "/rush-month/review"
+  | "/proof-library"
   | "/coach"
   | "/admin";
 
@@ -90,9 +95,29 @@ export const routeMigrationOrder = [
     reason: "Chapter overview is low-risk and helps validate membership/chapter joins.",
   },
   {
+    route: "/campaigns",
+    firstLiveDataMode: "read_only",
+    reason: "Campaign catalog shells should stay read-only while templates mature.",
+  },
+  {
+    route: "/campaigns/[campaignSlug]",
+    firstLiveDataMode: "read_only",
+    reason: "Campaign detail pages can validate template shape before campaign writes exist.",
+  },
+  {
+    route: "/action-committees",
+    firstLiveDataMode: "read_only",
+    reason: "Committee/event operating examples should validate event shape before Luma syncs.",
+  },
+  {
     route: "/rush-month",
     firstLiveDataMode: "read_only",
     reason: "Campaign status can be validated before student writes are enabled.",
+  },
+  {
+    route: "/rush-month/dashboard",
+    firstLiveDataMode: "read_only",
+    reason: "Role-aware dashboard should read from trusted local data before any controls save.",
   },
   {
     route: "/rush-month/actions",
@@ -113,6 +138,11 @@ export const routeMigrationOrder = [
     route: "/rush-month/review",
     firstLiveDataMode: "local_function_write",
     reason: "HQ decisions should use audited functions and disabled outbox rows.",
+  },
+  {
+    route: "/proof-library",
+    firstLiveDataMode: "read_only",
+    reason: "Proof library should stay read-only until upload, consent, and sharing rules are approved.",
   },
   {
     route: "/coach",
