@@ -175,6 +175,26 @@ Goal 7 implemented the first set of those follow-up tests in
 campaign officer lanes, readiness validation, coach-private risk flags,
 campaign closeouts, and assignment operating-field protection.
 
+Goal 13 adds the next write-safety planning layer without enabling writes:
+
+- `docs/architecture/goal-13-local-write-implementation-plan.md`
+- `src/services/write-plan-matrix.ts`
+- `tests/write-plan-matrix.test.ts`
+
+Before a later goal enables local Supabase writes, add RLS tests proving:
+
+- members can start only their own visible assignments
+- chapter leaders can start only chapter-scoped visible assignments
+- coaches can start only coach-owned portfolio work
+- admins and DS admins cannot start routine student truth assignments
+- members and chapter leaders can submit proof only for visible permitted work
+- coaches, admins, DS admins, and super admins cannot use the normal proof
+  submission path
+- only Admin and Super Admin can record HQ proof-sharing decisions
+- chapter leaders, coaches, and DS admins cannot record HQ sharing decisions
+- proof submissions and HQ decisions create disabled outbox rows only
+- no browser role can mark an outbox row as sent or approved for live send
+
 ## Pass Criteria
 
 The RLS test suite should pass only when:

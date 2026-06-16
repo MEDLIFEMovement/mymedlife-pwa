@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 12: disabled write-readiness airlock.
+The current goal is Goal 13: local Supabase write plan and RLS test matrix.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -50,6 +50,11 @@ Goal 12 adds an explicit disabled write-readiness layer. It documents which
 tables future action/proof/HQ decisions would touch, shows those future write
 targets in the UI, and keeps every app write blocked until Nick approves a
 later security-reviewed implementation goal.
+
+Goal 13 turns that airlock into a reviewable local write implementation plan.
+It defines the first three future write paths, the role boundaries, the tables
+they would touch, and the RLS tests required before any write is enabled. It
+does not turn on writes.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, implement app writes, or enable external writes until Nick approves
@@ -106,6 +111,7 @@ All external integrations are mock-first until explicitly approved.
 - [Foundation and Rush Month MVP architecture](./docs/architecture/foundation-and-rush-month-mvp.md)
 - [Supabase schema, auth, and RLS design plan](./docs/architecture/supabase-schema-auth-rls-plan.md)
 - [Goal 6 Supabase foundation review and Goal 7 plan](./docs/architecture/goal-6-supabase-foundation-review.md)
+- [Goal 13 local write implementation plan](./docs/architecture/goal-13-local-write-implementation-plan.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -191,6 +197,8 @@ Rules:
 - Goal 12 write-readiness is an airlock. `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES`
   is documented but still blocked by code until a later approved goal adds
   real local writes with RLS tests.
+- Goal 13 write planning is documentation and tests only. It names the first
+  future write paths, but the app still refuses to save data.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -294,6 +302,12 @@ Goal 12 disabled write-readiness lives in:
 - `tests/write-readiness.test.ts`
 - visible write-readiness notices on action detail and HQ review screens
 
+Goal 13 local write planning lives in:
+
+- `docs/architecture/goal-13-local-write-implementation-plan.md`
+- `src/services/write-plan-matrix.ts`
+- `tests/write-plan-matrix.test.ts`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -312,13 +326,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 12
+## Definition of Done for Goal 13
 
-Goal 12 is complete when a human developer can run the app locally, switch fake
-roles with `MYMEDLIFE_LOCAL_ACTOR_EMAIL`, and see exactly which future tables an
-action start, proof submission, or HQ sharing decision would touch while the app
-still refuses to write.
+Goal 13 is complete when a human developer can review the first local write
+plan, see the required RLS/security test matrix, and run unit tests proving the
+plan still keeps action starts, proof submissions, and HQ sharing decisions
+disabled.
 
-The app remains mock-first by default. Goal 12 does not wire production
+The app remains mock-first by default. Goal 13 does not wire production
 Supabase, enable live auth, implement app writes, upload files, publish proof,
 or activate real integrations.
