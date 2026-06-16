@@ -10,13 +10,19 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 82: write sequence packet status. This remains
-mock-safe by default and upgrades `/admin/write-sequence` so HQ reviewers can
-see the live packet status for all five local Rush Month writes without running
-the drill, enabling production auth, or sending external automation.
-Production data, broad browser writes, admin mutation controls, real uploads,
-public proof sharing, warehouse exports, AI summaries, and external
-integrations remain disabled.
+The current goal is Goal 83: five-write staff dry-run rehearsal. This remains
+mock-safe by default and upgrades `/admin/staff-dry-run` so HQ reviewers can
+rehearse the five local Rush Month write packets in one place: action-start,
+proof metadata, HQ proof decision, leader assignment, and coach decision.
+The page mirrors packet status from `/admin/write-sequence` but does not run
+the drill, enable production auth, trigger browser writes, or send external
+automation. Production data, broad browser writes, admin mutation controls,
+real uploads, public proof sharing, warehouse exports, AI summaries, and
+external integrations remain disabled.
+
+Goal 82 upgraded `/admin/write-sequence` so HQ reviewers can see the live
+packet status for all five local Rush Month writes without running the drill,
+enabling production auth, or sending external automation.
 
 Goal 81 added `/admin/coach-write` so HQ reviewers can prepare the fifth local
 Rush Month write: one fake coach recording advance / hold / intervene without
@@ -533,6 +539,9 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 78 proof metadata packet](./docs/architecture/goal-78-proof-metadata-packet.md)
 - [Goal 79 HQ proof decision packet](./docs/architecture/goal-79-hq-proof-decision-packet.md)
 - [Goal 80 leader assignment packet](./docs/architecture/goal-80-leader-assignment-packet.md)
+- [Goal 81 coach decision packet](./docs/architecture/goal-81-coach-decision-packet.md)
+- [Goal 82 write sequence packet status](./docs/architecture/goal-82-write-sequence-status.md)
+- [Goal 83 five-write staff dry-run rehearsal](./docs/architecture/goal-83-five-write-staff-dry-run.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)

@@ -1,4 +1,11 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  getWriteSequencePlanner,
+  type WriteSequenceOperation,
+} from "@/services/write-sequence-planner";
+
+type EnvSource = Record<string, string | undefined>;
 
 export type StaffDryRunStep = {
   id: string;
@@ -12,12 +19,43 @@ export type StaffDryRunStep = {
   structuredEventsToNotice: string[];
 };
 
+export type StaffDryRunWriteRehearsalStep = {
+  operation: WriteSequenceOperation["key"];
+  label: string;
+  packetRoute: string;
+  operatingRoute: string;
+  localActorEmail: string;
+  actorLabel: string;
+  packetStatus: string;
+  packetDecision: string;
+  observedReadbackItems: number;
+  canPromoteToStagingReview: boolean;
+  packetBrowserWritesExpected: 0 | 1;
+  externalWritesExpected: 0;
+  rehearsalAction: string;
+  stopCondition: string;
+};
+
+export type StaffDryRunWriteRehearsal = {
+  title: string;
+  summary: string;
+  steps: StaffDryRunWriteRehearsalStep[];
+  counts: {
+    steps: number;
+    readyOrObserved: number;
+    blocked: number;
+    localBrowserWriteCandidates: number;
+    externalWritesExpected: 0;
+  };
+};
+
 export type StaffDryRunGuide = {
   canReadGuide: boolean;
   title: string;
   verdict: "ready_for_staff_dry_run";
   summary: string;
   staffInstructions: string[];
+  writeRehearsal: StaffDryRunWriteRehearsal;
   steps: StaffDryRunStep[];
   counts: {
     steps: number;
@@ -27,7 +65,11 @@ export type StaffDryRunGuide = {
   };
 };
 
-export function getStaffDryRunGuide(actor: LocalActorContext): StaffDryRunGuide {
+export function getStaffDryRunGuide(
+  actor: LocalActorContext,
+  data: ReadOnlyAppData,
+  env: EnvSource = process.env,
+): StaffDryRunGuide {
   if (
     actor.audience !== "admin" &&
     actor.audience !== "ds_admin" &&
@@ -40,12 +82,14 @@ export function getStaffDryRunGuide(actor: LocalActorContext): StaffDryRunGuide 
       summary:
         "Staff dry-run instructions are for HQ review contexts, not student or chapter operating routes.",
       staffInstructions: [],
+      writeRehearsal: emptyWriteRehearsal(),
       steps: [],
       counts: emptyCounts(),
     };
   }
 
   const steps = getDryRunSteps();
+  const writeRehearsal = buildWriteRehearsal(actor, data, env);
 
   return {
     canReadGuide: true,
@@ -59,6 +103,7 @@ export function getStaffDryRunGuide(actor: LocalActorContext): StaffDryRunGuide 
       "Stop the dry run if any route implies real students, real uploads, production data, public proof, or external automation is active.",
       "Treat this as rehearsal evidence only. It does not approve a student pilot.",
     ],
+    writeRehearsal,
     steps,
     counts: {
       steps: steps.length,
@@ -231,6 +276,92 @@ function getDryRunSteps(): StaffDryRunStep[] {
   ];
 }
 
+function buildWriteRehearsal(
+  actor: LocalActorContext,
+  data: ReadOnlyAppData,
+  env: EnvSource,
+): StaffDryRunWriteRehearsal {
+  const planner = getWriteSequencePlanner(actor, data, env);
+  const steps = planner.operations.map(toWriteRehearsalStep);
+
+  return {
+    title: "Five local write rehearsal",
+    summary:
+      "Use these packets to rehearse the five guarded Rush Month local writes in order. This section is a checklist and status mirror, not a write console.",
+    steps,
+    counts: {
+      steps: steps.length,
+      readyOrObserved: steps.filter((step) => isReadyOrObserved(step)).length,
+      blocked: steps.filter((step) => !isReadyOrObserved(step)).length,
+      localBrowserWriteCandidates: steps.length,
+      externalWritesExpected: 0,
+    },
+  };
+}
+
+function toWriteRehearsalStep(
+  operation: WriteSequenceOperation,
+): StaffDryRunWriteRehearsalStep {
+  return {
+    operation: operation.key,
+    label: operation.packetStatus.label,
+    packetRoute: operation.packetStatus.route,
+    operatingRoute: getOperatingRoute(operation),
+    localActorEmail: operation.localActorEmail,
+    actorLabel: operation.actorLabel,
+    packetStatus: operation.packetStatus.status,
+    packetDecision: operation.packetStatus.plainEnglish,
+    observedReadbackItems: operation.packetStatus.observedReadbackItems,
+    canPromoteToStagingReview:
+      operation.packetStatus.canPromoteToStagingReview,
+    packetBrowserWritesExpected: operation.packetStatus.browserWritesExpected,
+    externalWritesExpected: operation.packetStatus.externalWritesExpected,
+    rehearsalAction: getRehearsalAction(operation),
+    stopCondition: getStopCondition(operation),
+  };
+}
+
+function getOperatingRoute(operation: WriteSequenceOperation): string {
+  switch (operation.key) {
+    case "action_started":
+    case "evidence_submitted":
+      return operation.route;
+    case "hq_sharing_decision_logged":
+      return "/rush-month/review";
+    case "action_assigned":
+      return "/rush-month/actions";
+    case "coach_decision_logged":
+      return "/coach";
+  }
+}
+
+function getRehearsalAction(operation: WriteSequenceOperation): string {
+  switch (operation.key) {
+    case "action_started":
+      return "Open the action-start packet, sign in as the fake member, and start one assignment only if the packet says the local write is ready.";
+    case "evidence_submitted":
+      return "Open the proof metadata packet and rehearse testimonial metadata only; do not upload files or publish proof.";
+    case "hq_sharing_decision_logged":
+      return "Open the HQ proof decision packet and rehearse the sharing posture decision without publishing proof publicly.";
+    case "action_assigned":
+      return "Open the leader assignment packet and rehearse one chapter-scoped assignment without reminders or external handoffs.";
+    case "coach_decision_logged":
+      return "Open the coach decision packet and rehearse advance / hold / intervene without escalation sends.";
+  }
+}
+
+function getStopCondition(operation: WriteSequenceOperation): string {
+  return `${operation.safetyBoundary} Stop if the route implies production data, public proof, reminders, escalation packets, or external automation are active.`;
+}
+
+function isReadyOrObserved(step: StaffDryRunWriteRehearsalStep): boolean {
+  return (
+    step.canPromoteToStagingReview ||
+    step.observedReadbackItems > 0 ||
+    step.packetStatus.includes("ready")
+  );
+}
+
 function getTitle(actor: LocalActorContext): string {
   switch (actor.audience) {
     case "admin":
@@ -244,6 +375,22 @@ function getTitle(actor: LocalActorContext): string {
     case "coach":
       return "Staff dry run hidden for this role";
   }
+}
+
+function emptyWriteRehearsal(): StaffDryRunWriteRehearsal {
+  return {
+    title: "Five local write rehearsal hidden for this role",
+    summary:
+      "Write rehearsal packets are HQ safety surfaces, not student or chapter operating views.",
+    steps: [],
+    counts: {
+      steps: 0,
+      readyOrObserved: 0,
+      blocked: 0,
+      localBrowserWriteCandidates: 0,
+      externalWritesExpected: 0,
+    },
+  };
 }
 
 function emptyCounts(): StaffDryRunGuide["counts"] {
