@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AssignmentCreateResultStatesPanel } from "@/components/assignment-create-result-states-panel";
 import { AssignmentCard } from "@/components/assignment-card";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { DataSourceNotice } from "@/components/data-source-notice";
@@ -10,6 +11,10 @@ import { WriteReadinessNotice } from "@/components/write-readiness-notice";
 import {
   getAssignmentCreateBrowserWriteGate,
 } from "@/services/browser-write-activation";
+import {
+  getAssignmentCreateResultStates,
+  getDisabledAssignmentCreateResultPreview,
+} from "@/services/assignment-create-result-states";
 import {
   canCreateChapterAssignment,
   createChapterAssignmentMock,
@@ -50,6 +55,11 @@ export default async function ActionsPage() {
   const disabledAssignmentCreateWrite = prepareDisabledAssignmentCreateWrite(
     actor,
     sampleAssignmentInput,
+  );
+  const assignmentCreateResultPreview = getDisabledAssignmentCreateResultPreview(
+    actor,
+    sampleAssignmentInput,
+    data.assignments,
   );
 
   return (
@@ -113,6 +123,12 @@ export default async function ActionsPage() {
                 outboxItems={[assignmentCreatePreview.data.automationOutbox]}
               />
             ) : null}
+          </div>
+          <div className="lg:col-span-2">
+            <AssignmentCreateResultStatesPanel
+              preview={assignmentCreateResultPreview}
+              states={getAssignmentCreateResultStates()}
+            />
           </div>
         </section>
       ) : null}
