@@ -286,6 +286,24 @@ function getSubprojects(): MvpSubprojectProgress[] {
       liveMvpWeight: 0,
     },
     {
+      key: "design_qa_readiness",
+      label: "Figma and mobile design QA readiness",
+      ownerLane: "Product Design and Launch",
+      status: "partially_ready",
+      risk: "medium",
+      routeEvidence: ["/admin", "/rush-month", "/proof-library/upload"],
+      plainEnglish:
+        "The app now has an admin-visible checklist for Figma comparison, mobile next-action clarity, accessibility, role complexity, and pilot-safe messaging.",
+      technicalEvidence:
+        "Design QA readiness service and admin panel track review prompts, evidence routes, zero expected writes, and launch blockers.",
+      remainingWork:
+        "Complete side-by-side Figma review, real phone QA, keyboard/screen-reader checks, and staging visual smoke tests.",
+      nextReviewStep: "Open `/admin` as admin and review the Figma and mobile QA panel.",
+      totalWeight: 6,
+      localReviewWeight: 3,
+      liveMvpWeight: 1,
+    },
+    {
       key: "external_automation",
       label: "External integrations and automation",
       ownerLane: "Data Solutions",

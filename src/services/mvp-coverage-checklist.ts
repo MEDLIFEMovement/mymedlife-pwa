@@ -157,6 +157,16 @@ function buildCoverageItems(data: ReadOnlyAppData): MvpCoverageItem[] {
       nextStep: "Keep admin mutation controls disabled until auth, RLS, audit, and rollback are approved.",
     },
     {
+      key: "design_qa",
+      label: "Figma and mobile design QA",
+      status: "covered_readonly",
+      plainEnglish:
+        "Admins can inspect the Figma/mobile QA expectations for next-action clarity, role complexity, accessibility, mission tone, and pilot safety.",
+      routeEvidence: ["/admin"],
+      nextStep:
+        "Run side-by-side Figma, phone viewport, accessibility, and staging checks before launch.",
+    },
+    {
       key: "integration_outbox",
       label: "Integration events and disabled outbox",
       status: "covered_readonly",

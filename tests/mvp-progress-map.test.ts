@@ -10,9 +10,9 @@ describe("mvp progress map", () => {
     expect(progressMap.canReadProgressMap).toBe(true);
     expect(progressMap.title).toBe("Admin MVP progress map");
     expect(progressMap.counts).toEqual({
-      total: 11,
+      total: 12,
       localReviewReady: 4,
-      partiallyReady: 4,
+      partiallyReady: 5,
       needsApproval: 2,
       futureBuild: 1,
     });
@@ -36,6 +36,10 @@ describe("mvp progress map", () => {
     expect(automation?.status).toBe("needs_approval");
     expect(automation?.plainEnglish).toContain("no real external systems");
     expect(automation?.liveMvpWeight).toBe(0);
+    expect(
+      progressMap.subprojects.find((item) => item.key === "design_qa_readiness")
+        ?.remainingWork,
+    ).toContain("real phone QA");
   });
 
   it("gives DS Admin the automation-aware progress map without granting ownership", () => {

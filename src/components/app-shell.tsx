@@ -27,13 +27,24 @@ export function AppShell({ actor, children }: AppShellProps) {
         Skip to main content
       </a>
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <header className="rounded-[2rem] border border-white/12 bg-white/[0.06] p-4 backdrop-blur-xl">
+        <header className="rounded-[2rem] border border-white/12 bg-white/[0.06] p-4 shadow-[0_18px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <Link href="/" className="space-y-1">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
                 myMEDLIFE
               </p>
-              <p className="text-xl font-semibold text-white">Chapter operating system</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xl font-semibold text-white">
+                  Chapter operating system
+                </p>
+                <span className="rounded-full border border-lime-200/20 bg-lime-200/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-lime-100">
+                  Pilot-safe
+                </span>
+              </div>
+              <p className="max-w-xl text-xs leading-5 text-white/52">
+                Built to show each role what to do next while keeping live writes
+                and external automations disabled until approved.
+              </p>
             </Link>
             <AppNavigation navItems={navItems} quickItems={quickItems} />
           </div>
