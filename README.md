@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 40: leader follow-up board with production data,
+The current goal is Goal 41: coach portfolio readiness with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -198,6 +198,11 @@ Leaders, coaches, admins, and super admins can see prioritized assignment
 follow-up rows, while members stay focused on their own actions and DS admins
 remain restricted to integration posture. Reminder sends and external
 automation remain disabled.
+
+Goal 41 adds a mock-safe coach portfolio readiness panel to `/coach`. Coaches,
+admins, and super admins can compare fake portfolio chapters, handoff posture,
+risk, proof pending, and advance / hold / intervene state. Coach assignment
+changes remain read-only and disabled.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick

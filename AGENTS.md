@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 40: leader follow-up board with production data,
+The active goal is Goal 41: coach portfolio readiness with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -304,6 +304,9 @@ Allowed:
 - a read-only leader follow-up board on `/rush-month/actions` that prioritizes
   proof review, owner nudges, revision needs, and completed work while keeping
   reminders and external automation disabled
+- a mock-safe coach portfolio readiness panel on `/coach` that shows fake
+  portfolio chapters, expansion/portfolio/handoff posture, risks, proof
+  pending, and coach decisions while keeping coach assignment changes disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

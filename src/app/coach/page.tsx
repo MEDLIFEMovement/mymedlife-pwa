@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
+import { CoachPortfolioReadinessPanel } from "@/components/coach-portfolio-readiness-panel";
 import { CoachDecisionResultStatesPanel } from "@/components/coach-decision-result-states-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
@@ -13,6 +14,7 @@ import {
   getCoachDecisionResultStates,
   getDisabledCoachDecisionResultPreview,
 } from "@/services/coach-decision-result-states";
+import { getCoachPortfolioReadiness } from "@/services/coach-portfolio-readiness";
 import {
   canLogCoachDecision,
   createCoachDecisionMock,
@@ -48,6 +50,7 @@ export default async function CoachPage() {
         : undefined,
   } satisfies CoachDecisionInput;
   const canLogDecision = canLogCoachDecision(actor);
+  const portfolio = getCoachPortfolioReadiness(actor, data);
   const coachDecisionPreview = createCoachDecisionMock(actor, sampleCoachDecisionInput);
   const coachDecisionResultPreview = getDisabledCoachDecisionResultPreview(
     actor,
@@ -124,6 +127,8 @@ export default async function CoachPage() {
               note="Campaign learning and handoff records"
             />
           </section>
+
+          <CoachPortfolioReadinessPanel portfolio={portfolio} />
 
           {coachDecisionPreview.success ? (
             <section className="grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
