@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
+import { CoachDecisionResultStatesPanel } from "@/components/coach-decision-result-states-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
@@ -8,6 +9,10 @@ import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
 import { getCoachDecisionBrowserWriteGate } from "@/services/browser-write-activation";
+import {
+  getCoachDecisionResultStates,
+  getDisabledCoachDecisionResultPreview,
+} from "@/services/coach-decision-result-states";
 import {
   canLogCoachDecision,
   createCoachDecisionMock,
@@ -44,6 +49,10 @@ export default async function CoachPage() {
   } satisfies CoachDecisionInput;
   const canLogDecision = canLogCoachDecision(actor);
   const coachDecisionPreview = createCoachDecisionMock(actor, sampleCoachDecisionInput);
+  const coachDecisionResultPreview = getDisabledCoachDecisionResultPreview(
+    actor,
+    sampleCoachDecisionInput,
+  );
   const disabledCoachDecisionWrite = prepareDisabledCoachDecisionWrite(
     actor,
     sampleCoachDecisionInput,
@@ -150,6 +159,12 @@ export default async function CoachPage() {
                 <EventOutboxLog
                   events={[coachDecisionPreview.data.integrationEvent]}
                   outboxItems={[coachDecisionPreview.data.automationOutbox]}
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <CoachDecisionResultStatesPanel
+                  preview={coachDecisionResultPreview}
+                  states={getCoachDecisionResultStates()}
                 />
               </div>
             </section>
