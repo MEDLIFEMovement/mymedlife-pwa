@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 60: local action-start server action with production
+The active goal is Goal 61: local action-start readback proof with production
 data, most browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -371,6 +371,8 @@ Allowed:
   `app.start_assignment_action(assignment_uuid)` only when local Supabase Auth,
   local Supabase data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`, and
   `MYMEDLIFE_ENABLE_ACTION_START_WRITE=true` are present
+- a fake local seed assignment and plain-English readback state proving the
+  first local action-start write can refresh from `not_started` to `in_progress`
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

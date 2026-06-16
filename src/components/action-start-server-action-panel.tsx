@@ -3,7 +3,10 @@ import {
   getActionStartResultState,
   type ActionStartResultCode,
 } from "@/services/action-start-result-states";
-import type { ActionStartWriteReadiness } from "@/services/action-start-write";
+import {
+  getActionStartReadbackState,
+  type ActionStartWriteReadiness,
+} from "@/services/action-start-write";
 import type { Assignment } from "@/shared/types/domain";
 
 type ActionStartServerActionPanelProps = {
@@ -18,6 +21,7 @@ export function ActionStartServerActionPanel({
   resultCode,
 }: ActionStartServerActionPanelProps) {
   const resultState = resultCode ? getActionStartResultState(resultCode) : null;
+  const readbackState = getActionStartReadbackState(assignment, resultCode);
 
   return (
     <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
@@ -47,6 +51,25 @@ export function ActionStartServerActionPanel({
         >
           <p className="font-semibold">{resultState.title}</p>
           <p className="mt-1">{resultState.plainEnglishMessage}</p>
+        </div>
+      ) : null}
+
+      {readbackState ? (
+        <div
+          className={[
+            "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
+            readbackState.tone === "success"
+              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+              : readbackState.tone === "warning"
+                ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
+                : "border-white/10 bg-black/18 text-white/68",
+          ].join(" ")}
+        >
+          <p className="font-semibold">Local readback</p>
+          <p className="mt-1">{readbackState.message}</p>
+          <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
+            Current assignment status: {readbackState.assignmentStatus}
+          </p>
         </div>
       ) : null}
 

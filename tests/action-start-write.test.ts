@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  getActionStartReadbackState,
   getActionStartWriteConfig,
   getActionStartWriteReadiness,
   isUuid,
@@ -137,6 +138,48 @@ describe("action-start write readiness", () => {
   it("validates UUID shape", () => {
     expect(isUuid("00000000-0000-4000-8000-000000000101")).toBe(true);
     expect(isUuid("member-push")).toBe(false);
+  });
+
+  it("confirms local readback when the refreshed assignment is in progress", () => {
+    expect(
+      getActionStartReadbackState(
+        {
+          status: "in_progress",
+        },
+        "started",
+      ),
+    ).toMatchObject({
+      confirmsStarted: true,
+      tone: "success",
+    });
+  });
+
+  it("warns when a successful start result has not refreshed to in progress", () => {
+    expect(
+      getActionStartReadbackState(
+        {
+          status: "not_started",
+        },
+        "started",
+      ),
+    ).toMatchObject({
+      confirmsStarted: false,
+      tone: "warning",
+    });
+  });
+
+  it("does not expect readback changes for blocked results", () => {
+    expect(
+      getActionStartReadbackState(
+        {
+          status: "not_started",
+        },
+        "write_disabled",
+      ),
+    ).toMatchObject({
+      confirmsStarted: false,
+      tone: "info",
+    });
   });
 });
 
