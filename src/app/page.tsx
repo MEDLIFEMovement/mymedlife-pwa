@@ -1,20 +1,37 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { DataSourceNotice } from "@/components/data-source-notice";
+import { LocalActorNotice } from "@/components/local-actor-notice";
+import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
-import { mockCampaign, mockChapter, roleContexts } from "@/data/mock-rush-month";
-import { getNextMemberAction, getProgressCounts } from "@/lib/rush-month";
+import { RoleNextActionPanel } from "@/components/role-next-action-panel";
+import { roleContexts } from "@/data/mock-rush-month";
+import { getProgressCounts } from "@/lib/rush-month";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
+import { getLocalActorContext } from "@/services/local-actor-context";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getRoleNextActionBrief } from "@/services/role-next-actions";
 
-export default function Home() {
-  const nextAction = getNextMemberAction();
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const [data, actor] = await Promise.all([
+    getReadOnlyAppData(),
+    getLocalActorContext(),
+  ]);
+  const nextActionBrief = getRoleNextActionBrief(actor, data);
   const progress = getProgressCounts();
   const campaignSummary = getCampaignReadinessSummary();
 
   return (
-    <AppShell>
+    <AppShell actor={actor}>
+      <DataSourceNotice source={data.source} />
+      <LocalActorNotice actor={actor} />
+      <LocalRoleSwitcher actor={actor} />
+
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.24)]">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-          {mockChapter.name}
+          {data.chapter.name}
         </p>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div>
@@ -22,26 +39,26 @@ export default function Home() {
               myMEDLIFE turns chapter SOPs into student action.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
-              {mockCampaign.name} is the first operating loop, but the app is
+              {data.campaign.name} is the first operating loop, but the app is
               becoming a reusable campaign system for action committees, events,
               proof/testimonials, points, KPIs, and coach decisions.
             </p>
           </div>
           <div className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-4">
-            <p className="text-sm font-semibold text-emerald-100">My next action</p>
-            <h2 className="mt-2 text-xl font-semibold text-white">{nextAction.title}</h2>
-            <p className="mt-2 text-sm leading-6 text-white/68">
-              Evidence needed: {nextAction.evidenceRequired}
-            </p>
+            <p className="text-sm font-semibold text-emerald-100">Current role</p>
+            <h2 className="mt-2 text-xl font-semibold text-white">{actor.audienceLabel}</h2>
+            <p className="mt-2 text-sm leading-6 text-white/68">{actor.accessSummary}</p>
             <Link
-              href={`/rush-month/actions/${nextAction.id}`}
+              href={nextActionBrief.primaryHref}
               className="mt-4 inline-flex rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
             >
-              Open my action
+              {nextActionBrief.primaryLabel}
             </Link>
           </div>
         </div>
       </section>
+
+      <RoleNextActionPanel brief={nextActionBrief} />
 
       <section className="grid gap-3 sm:grid-cols-3">
         <MetricCard

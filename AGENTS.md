@@ -161,10 +161,10 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 38: admin control center with production data, enabled
-browser writes, admin mutation controls, reminder automation, escalation
-packets, uploads, public proof sharing, and external integrations still
-disabled.
+The active goal is Goal 39: role next-action guidance with production data,
+enabled browser writes, admin mutation controls, reminder automation,
+escalation packets, uploads, public proof sharing, and external integrations
+still disabled.
 
 Allowed:
 
@@ -297,6 +297,10 @@ Allowed:
 - a read-only admin control center on `/admin` that names user, role, chapter,
   campaign template, integration/outbox, audit log, and system health surfaces
   without enabling admin mutation controls
+- reusable role-aware next-action guidance on `/`, `/chapter`, and
+  `/rush-month` that tells each local actor the next safe operating priority
+  without enabling auth, browser writes, uploads, public proof sharing, or
+  external integrations
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
