@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 56: environment safety summary with
+The active goal is Goal 57: local MVP review guide with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -354,6 +354,10 @@ Allowed:
   secrets, as long as they do not enable auth, writes, uploads, public proof
   sharing, external sends, reminders, escalation packets, service workers, or
   production data
+- plain-English local review documentation for non-coder reviewers, as long as
+  it does not enable auth, writes, uploads, public proof sharing, external
+  integrations, service workers, reminders, escalation packets, or production
+  data
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
