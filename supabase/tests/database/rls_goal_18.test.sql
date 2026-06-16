@@ -92,6 +92,9 @@ select is(
   'Assignment creation records one internal action_assigned event'
 );
 
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
+set local "request.jwt.claim.role" = 'authenticated';
+
 select is(
   (
     select count(*)::int
@@ -126,6 +129,9 @@ select is(
   1,
   'Assignment creation records one audit log'
 );
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select throws_ok(
   $$ select * from app.create_chapter_assignment(
