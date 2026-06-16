@@ -161,7 +161,8 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 9: local actor context and role-aware read-only foundation.
+The active goal is Goal 10: role-aware read-only app experience and permission
+proof.
 
 Allowed:
 
@@ -174,6 +175,10 @@ Allowed:
   roles, and coach assignments
 - showing role-aware read-only context for fake member, leader, coach, admin,
   DS admin, and super admin users
+- using `MYMEDLIFE_LOCAL_ACTOR_EMAIL` as a local-only role switch in mock
+  fallback and local Supabase modes
+- role-aware navigation labels, restricted-state messaging, read filters, and
+  tests for the main permission boundaries
 - loading, empty, fallback, and error states
 - tests for read-only services and fallback behavior
 - README and documentation updates

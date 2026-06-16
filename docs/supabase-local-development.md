@@ -1,6 +1,7 @@
 # Supabase Local Development
 
-Goals 5, 7, 8, and 9 add the local-only Supabase foundation for myMEDLIFE.
+Goals 5, 7, 8, 9, and 10 add the local-only Supabase foundation for
+myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable live auth in the UI, add app write paths, or trigger HubSpot,
@@ -29,6 +30,12 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   fake seed users, memberships, staff roles, and coach assignments.
 - `src/components/local-actor-notice.tsx`: visible local actor context display
   used by read-only pages.
+- `src/services/role-visibility.ts`: read-only role visibility helpers for the
+  local app shell.
+- `src/components/local-role-switcher.tsx`: local debug panel listing fake
+  actor emails for `MYMEDLIFE_LOCAL_ACTOR_EMAIL`.
+- `src/components/restricted-state.tsx`: plain-English restricted-state UI for
+  roles that should not read a page or panel.
 
 ## Requirements
 
@@ -99,6 +106,7 @@ Open these routes:
 
 - `http://localhost:3000/chapter`
 - `http://localhost:3000/rush-month`
+- `http://localhost:3000/rush-month/actions`
 - `http://localhost:3000/coach`
 - `http://localhost:3000/admin`
 
@@ -107,8 +115,10 @@ the local Supabase URL or key is missing, unsafe, or unavailable, the app falls
 back to mock data.
 
 Goal 8 intentionally uses a server-only read path. Goal 9 adds local-only actor
-switching by fake seed email. It does not add browser auth, student sign-in,
-sessions, cookies, production auth, or app writes.
+switching by fake seed email. Goal 10 uses that actor to filter read-only
+navigation, assignments, risks, admin panels, and integration/outbox visibility.
+This does not add browser auth, student sign-in, sessions, cookies, production
+auth, or app writes.
 
 ## GitHub CI
 
@@ -132,6 +142,10 @@ The seed file creates fake local-only users:
 - `unrelated@mymedlife.test`: Requested but unapproved member.
 
 All seed data is fake and local-only.
+
+`MYMEDLIFE_LOCAL_ACTOR_EMAIL` also works when the app is using mock fallback
+data, so developers can preview all role views without Docker. Restart the local
+development server after changing the env var.
 
 ## RLS Model In Plain English
 
