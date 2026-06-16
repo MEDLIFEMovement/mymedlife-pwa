@@ -164,6 +164,29 @@ describe("browser write activation gate", () => {
     ).toContain("browser-facing writes remain disabled");
   });
 
+  it("can mark action-start ready only for local auth and explicit approval flags", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const assignment = {
+      ...requireAssignment("member-push"),
+      id: "00000000-0000-4000-8000-000000000101",
+      status: "not_started" as const,
+    };
+    const gate = getActionStartBrowserWriteGate(actor, assignment, {
+      MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+      MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+    });
+
+    expect(gate.status).toBe("ready_for_local_write");
+    expect(gate.canRenderEnabledControl).toBe(true);
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
   it("blocks Admin from the assignment-create write plan", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const gate = getAssignmentCreateBrowserWriteGate(actor, {

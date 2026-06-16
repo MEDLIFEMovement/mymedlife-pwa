@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ActionStartActivationContractPanel } from "@/components/action-start-activation-contract-panel";
 import { ActionStartResultStatesPanel } from "@/components/action-start-result-states-panel";
+import { ActionStartServerActionPanel } from "@/components/action-start-server-action-panel";
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
@@ -9,15 +10,16 @@ import { ProofSubmissionResultStatesPanel } from "@/components/proof-submission-
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
-import { getAssignmentById } from "@/lib/rush-month";
 import {
   getActionStartActivationContract,
   prepareDisabledActionStartActivationAttempt,
 } from "@/services/action-start-activation-contract";
 import {
+  type ActionStartResultCode,
   getActionStartResultStates,
   getDisabledActionStartResultPreview,
 } from "@/services/action-start-result-states";
+import { getActionStartWriteReadiness } from "@/services/action-start-write";
 import {
   canSubmitProofForAssignment,
   createActionStartedMock,
@@ -38,6 +40,7 @@ import {
   prepareDisabledActionStartWrite,
   prepareDisabledProofSubmissionWrite,
 } from "@/services/write-readiness";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("rushMonthActionDetail");
@@ -47,12 +50,25 @@ type ActionDetailPageProps = {
   params: Promise<{
     assignmentId: string;
   }>;
+  searchParams?: Promise<ActionDetailSearchParams>;
 };
 
-export default async function ActionDetailPage({ params }: ActionDetailPageProps) {
+type ActionDetailSearchParams = {
+  actionStartResult?: string;
+};
+
+export default async function ActionDetailPage({
+  params,
+  searchParams,
+}: ActionDetailPageProps) {
   const { assignmentId } = await params;
-  const actor = await getLocalActorContext();
-  const assignment = getAssignmentById(assignmentId);
+  const emptySearchParams: ActionDetailSearchParams = {};
+  const [actor, data, search] = await Promise.all([
+    getLocalActorContext(),
+    getReadOnlyAppData(),
+    searchParams ?? Promise.resolve(emptySearchParams),
+  ]);
+  const assignment = data.assignments.find((item) => item.id === assignmentId);
 
   if (!assignment) {
     notFound();
@@ -98,6 +114,10 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
     assignment,
   );
   const actionStartGate = getActionStartBrowserWriteGate(actor, assignment);
+  const actionStartWriteReadiness = getActionStartWriteReadiness(actor, assignment);
+  const actionStartResultCode = parseActionStartResultCode(
+    search.actionStartResult,
+  );
   const proofSubmissionGate = getProofSubmissionBrowserWriteGate(
     actor,
     assignment,
@@ -199,6 +219,11 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
       />
 
       <BrowserWriteGateNotice gate={actionStartGate} />
+      <ActionStartServerActionPanel
+        assignment={assignment}
+        readiness={actionStartWriteReadiness}
+        resultCode={actionStartResultCode}
+      />
       <ActionStartActivationContractPanel
         contract={actionStartContract}
         attempt={disabledActionStartActivation}
@@ -239,4 +264,16 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
       </Link>
     </AppShell>
   );
+}
+
+function parseActionStartResultCode(
+  value: string | undefined,
+): ActionStartResultCode | undefined {
+  const allowedCodes = new Set(
+    getActionStartResultStates().map((state) => state.code),
+  );
+
+  return value && allowedCodes.has(value as ActionStartResultCode)
+    ? (value as ActionStartResultCode)
+    : undefined;
 }

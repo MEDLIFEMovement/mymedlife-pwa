@@ -10,10 +10,10 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 59: auth-derived actor context with production data,
-browser writes, admin mutation controls, reminder automation, escalation
-packets, uploads, public proof sharing, and external integrations still
-disabled.
+The current goal is Goal 60: local action-start server action with production
+data, most browser writes, admin mutation controls, reminder automation,
+escalation packets, uploads, public proof sharing, and external integrations
+still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -283,9 +283,16 @@ debug actor email when a matching fake local profile is signed in. Browser
 writes, production auth, production users, uploads, public proof sharing, and
 external sends remain disabled.
 
+Goal 60 adds the first local browser-to-Supabase write path for
+`action_started` on `/rush-month/actions/[assignmentId]`. It requires localhost
+Supabase Auth, a signed-in fake seed user, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`,
+and `MYMEDLIFE_ENABLE_ACTION_START_WRITE=true`. All other browser writes,
+production data, uploads, public proof sharing, and external sends remain
+disabled.
+
 Do not connect production Supabase, create real users, enable browser app
-writes, or enable external writes until Nick approves a later implementation
-goal.
+writes beyond the local action-start slice, or enable external writes until Nick
+approves a later implementation goal.
 
 ## Recommended Stack
 
@@ -385,6 +392,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 57 local MVP review guide](./docs/architecture/goal-57-local-review-guide.md)
 - [Goal 58 local Supabase Auth sign-in](./docs/architecture/goal-58-local-auth-sign-in.md)
 - [Goal 59 auth-derived actor context](./docs/architecture/goal-59-auth-derived-actor-context.md)
+- [Goal 60 action-start server action](./docs/architecture/goal-60-action-start-server-action.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -580,6 +588,10 @@ Rules:
   context. It keeps the debug actor fallback and still does not enable
   production auth, production users, browser writes, uploads, public proof
   sharing, or external sends.
+- Goal 60 adds the first local action-start server action. It requires local
+  Supabase Auth, a fake seed user, and both local write flags. It does not
+  enable production Supabase, production users, assignment creation writes,
+  proof writes, coach writes, uploads, public proof sharing, or external sends.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -758,6 +770,14 @@ Goal 59 auth-derived actor context lives in:
 - `src/components/local-actor-notice.tsx`
 - `src/components/local-role-switcher.tsx`
 - `tests/local-actor-context.test.ts`
+
+Goal 60 local action-start server action lives in:
+
+- `docs/architecture/goal-60-action-start-server-action.md`
+- `src/app/rush-month/actions/[assignmentId]/actions.ts`
+- `src/components/action-start-server-action-panel.tsx`
+- `src/services/action-start-write.ts`
+- `tests/action-start-write.test.ts`
 
 Goal 20 live-data connection planning lives in:
 
