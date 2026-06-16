@@ -115,9 +115,13 @@ describe("browser write activation gate", () => {
       "actor_allowed_by_write_plan",
       "local_database_function_exists",
       "rls_tests_exist",
+      "evidence_not_final",
+      "note_long_enough",
+      "public_sharing_disabled",
       "external_writes_disabled",
     ]);
     expect(getBlockingActivationChecks(gate).map((check) => check.key)).toEqual([
+      "evidence_uuid",
       "live_auth_approved",
       "browser_write_approved",
     ]);
@@ -222,6 +226,37 @@ describe("browser write activation gate", () => {
     expect(getBlockingActivationChecks(gate)).toEqual([]);
   });
 
+  it("can mark HQ proof decision ready only for local auth and explicit approval flags", () => {
+    const actor = getMockLocalActorContext(
+      "admin@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const evidence = {
+      ...evidenceItems[0],
+      id: "00000000-0000-4000-8000-000000000201",
+      status: "pending_review" as const,
+    };
+    const gate = getHqSharingDecisionBrowserWriteGate(
+      actor,
+      evidence,
+      {
+        decision: "approved",
+        note: "Useful testimonial to share after HQ review.",
+      },
+      {
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+      },
+    );
+
+    expect(gate.status).toBe("ready_for_local_write");
+    expect(gate.canRenderEnabledControl).toBe(true);
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
   it("blocks Admin from the assignment-create write plan", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const gate = getAssignmentCreateBrowserWriteGate(actor, {
@@ -284,6 +319,7 @@ describe("browser write activation gate", () => {
     ).toEqual([
       "actor_can_make_hq_sharing_decision",
       "actor_allowed_by_write_plan",
+      "evidence_uuid",
       "live_auth_approved",
       "browser_write_approved",
     ]);

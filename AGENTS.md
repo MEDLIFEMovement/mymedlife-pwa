@@ -161,10 +161,10 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 62: local proof/testimonial metadata submission after a
-member starts an assigned action. This remains local-only and requires fake
-local Supabase Auth, a UUID assignment, explicit local write flags, and proof
-uploads disabled. Production data, most browser writes, admin mutation controls,
+The active goal is Goal 63: local HQ proof/testimonial decision recording after
+proof metadata exists. This remains local-only and requires fake local Supabase
+Auth, a UUID evidence item, explicit local write flags, and public proof sharing
+disabled. Production data, most browser writes, admin mutation controls,
 reminder automation, escalation packets, uploads, public proof sharing, and
 external integrations remain disabled.
 
@@ -380,6 +380,11 @@ Allowed:
   local Supabase data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`,
   `MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true`, an in-progress or
   changes-requested UUID assignment, and proof uploads disabled are all present
+- a local-only HQ proof/testimonial decision server action that calls
+  `app.record_hq_proof_sharing_decision(...)` only when local Supabase Auth,
+  local Supabase data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`,
+  `MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE=true`, a UUID evidence item, and an
+  Admin or Super Admin actor are all present
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
@@ -393,8 +398,8 @@ Not allowed without Nick's next approval:
 - production Supabase auth wiring in the student UI
 - production browser sessions, production cookies, production sign-in flows, or
   production auth
-- app write paths to Supabase beyond the approved local action-start and proof
-  metadata slices
+- app write paths to Supabase beyond the approved local action-start, proof
+  metadata, and HQ proof decision slices
 - enabling browser app writes or `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES` to
   perform broad UI writes beyond the approved local slices
 - proof uploads or file storage writes

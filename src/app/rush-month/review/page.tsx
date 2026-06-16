@@ -1,30 +1,47 @@
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
+import { HqProofDecisionServerActionPanel } from "@/components/hq-proof-decision-server-action-panel";
 import { HqProofDecisionResultStatesPanel } from "@/components/hq-proof-decision-result-states-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
-import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import { getHqSharingDecisionBrowserWriteGate } from "@/services/browser-write-activation";
 import {
+  type HqProofDecisionResultCode,
   getDisabledHqProofDecisionResultPreview,
   getHqProofDecisionResultStates,
 } from "@/services/hq-proof-decision-result-states";
+import { getHqProofDecisionWriteReadiness } from "@/services/hq-proof-decision-write";
 import {
   canMakeHqSharingDecision,
   createHqSharingDecisionMock,
   getReviewQueueForActor,
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { prepareDisabledHqSharingDecisionWrite } from "@/services/write-readiness";
 
 export const metadata = getStaticRouteMetadata("rushMonthReview");
 export const dynamic = "force-dynamic";
 
-export default async function ReviewPage() {
-  const actor = await getLocalActorContext();
-  const reviewEvidence = getReviewQueueForActor(actor, evidenceItems);
+type ReviewPageProps = {
+  searchParams?: Promise<ReviewSearchParams>;
+};
+
+type ReviewSearchParams = {
+  evidenceItemId?: string;
+  hqDecisionResult?: string;
+};
+
+export default async function ReviewPage({ searchParams }: ReviewPageProps) {
+  const emptySearchParams: ReviewSearchParams = {};
+  const [actor, data, search] = await Promise.all([
+    getLocalActorContext(),
+    getReadOnlyAppData(),
+    searchParams ?? Promise.resolve(emptySearchParams),
+  ]);
+  const reviewEvidence = getReviewQueueForActor(actor, data.evidenceItems);
   const canDecideSharing = canMakeHqSharingDecision(actor);
   const sampleDecisionInput = {
     decision: "approved",
@@ -46,6 +63,13 @@ export default async function ReviewPage() {
   const decisionGate = reviewEvidence[0]
     ? getHqSharingDecisionBrowserWriteGate(actor, reviewEvidence[0], sampleDecisionInput)
     : undefined;
+  const hqDecisionWriteReadiness = reviewEvidence[0]
+    ? getHqProofDecisionWriteReadiness(actor, reviewEvidence[0], sampleDecisionInput)
+    : undefined;
+  const hqDecisionResultCode = parseHqDecisionResultCode(search.hqDecisionResult);
+  const selectedEvidenceId = search.evidenceItemId;
+  const scopedDecisionResultCode =
+    reviewEvidence[0]?.id === selectedEvidenceId ? hqDecisionResultCode : undefined;
 
   return (
     <AppShell actor={actor}>
@@ -65,7 +89,9 @@ export default async function ReviewPage() {
       {reviewEvidence.length > 0 ? (
         <section className="grid gap-3">
           {reviewEvidence.map((evidence) => {
-            const assignment = assignments.find((item) => item.id === evidence.assignmentId);
+            const assignment = data.assignments.find((item) => {
+              return item.id === evidence.assignmentId;
+            });
 
             return (
               <article key={evidence.id} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
@@ -142,10 +168,32 @@ export default async function ReviewPage() {
             />
           ) : null}
           {canDecideSharing && decisionGate ? (
-            <BrowserWriteGateNotice gate={decisionGate} />
+            <>
+              <BrowserWriteGateNotice gate={decisionGate} />
+              {hqDecisionWriteReadiness && reviewEvidence[0] ? (
+                <HqProofDecisionServerActionPanel
+                  evidenceItem={reviewEvidence[0]}
+                  readiness={hqDecisionWriteReadiness}
+                  resultCode={scopedDecisionResultCode}
+                  defaultInput={sampleDecisionInput}
+                />
+              ) : null}
+            </>
           ) : null}
         </>
       ) : null}
     </AppShell>
   );
+}
+
+function parseHqDecisionResultCode(
+  value: string | undefined,
+): HqProofDecisionResultCode | undefined {
+  const allowedCodes = new Set(
+    getHqProofDecisionResultStates().map((state) => state.code),
+  );
+
+  return value && allowedCodes.has(value as HqProofDecisionResultCode)
+    ? (value as HqProofDecisionResultCode)
+    : undefined;
 }

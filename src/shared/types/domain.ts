@@ -105,6 +105,11 @@ export type EvidenceItem = {
     | "testimonial_text"
     | "bridge_video"
     | "event_photo"
+    | "attendance_log"
+    | "feedback_form"
+    | "tracker_screenshot"
+    | "planning_doc"
+    | "recap_note"
     | "external_link";
   summary: string;
   status: "pending_review" | "approved" | "changes_requested";

@@ -229,7 +229,7 @@ export function getFutureHqProofDecisionResultIfEnabled(
     return getHqProofDecisionResultState("permission_denied");
   }
 
-  if (input.note.trim().length < 8) {
+  if (input.note.trim().length < 12) {
     return getHqProofDecisionResultState("note_too_short");
   }
 

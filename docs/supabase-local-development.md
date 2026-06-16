@@ -14,12 +14,13 @@ maps that local auth session into role-aware app context. Goal 60 adds the first
 local-only browser-to-Supabase write path for `action_started`. Goal 61 adds a
 stable local seed assignment plus readback proof for that first write. Goal 62
 adds the second local-only browser-to-Supabase write path for
-`evidence_submitted` proof/testimonial metadata.
+`evidence_submitted` proof/testimonial metadata. Goal 63 adds the third
+local-only browser-to-Supabase write path for `hq_sharing_decision`.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
-action-start and proof metadata slices, or trigger HubSpot, Luma, n8n,
-warehouse, Power BI, email, SMS, or AI writes.
+action-start, proof metadata, and HQ proof decision slices, or trigger HubSpot,
+Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 
 ## What Was Added
 
@@ -133,6 +134,8 @@ warehouse, Power BI, email, SMS, or AI writes.
   readback proof note for the stable fake seed assignment.
 - `docs/architecture/goal-62-proof-submission-server-action.md`: local
   proof/testimonial metadata server action architecture note.
+- `docs/architecture/goal-63-hq-proof-decision-server-action.md`: local HQ
+  proof/testimonial decision server action architecture note.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
@@ -147,6 +150,12 @@ warehouse, Power BI, email, SMS, or AI writes.
   metadata form and readback panel for action detail pages.
 - `tests/proof-submission-write.test.ts`: unit tests proving proof metadata
   writes stay gated and map local RPC results safely.
+- `src/services/hq-proof-decision-write.ts`: local HQ proof decision write
+  readiness, RPC result mapping, and readback state.
+- `src/components/hq-proof-decision-server-action-panel.tsx`: local-only HQ
+  decision form and readback panel for the review route.
+- `tests/hq-proof-decision-write.test.ts`: unit tests proving HQ decisions stay
+  gated and map local RPC results safely.
 - `src/services/live-data-connection-plan.ts`: disabled live-data migration
   plan for route order and connection mode.
 - `tests/live-data-connection-plan.test.ts`: unit tests proving production
@@ -344,6 +353,43 @@ Expected database behavior:
 - `app.submit_assignment_proof_metadata(...)` writes the evidence metadata row.
 - The assignment status changes to `submitted`.
 - An internal `evidence_submitted` event is recorded.
+- An integration event is recorded for future automation pickup.
+- A disabled automation outbox row is recorded.
+- An audit log row is recorded.
+
+This test still does not upload files, publish proof, enable production auth,
+or send HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
+
+## Goal 63 HQ Proof/Testimonial Decision Test
+
+After running the local Supabase reset, use this fake Northview proof item to
+test the first localhost-only HQ proof decision browser write:
+
+```text
+60000000-0000-4000-8000-000000000001
+```
+
+Recommended local test path:
+
+1. Set `MYMEDLIFE_DATA_SOURCE=supabase`.
+2. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true`.
+3. Set `MYMEDLIFE_AUTH_MODE=local_supabase`.
+4. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
+5. Set `MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE=true`.
+6. Sign in at `/login` as `admin@mymedlife.test` with password `password`.
+7. Open `/rush-month/review`.
+8. Confirm the proof queue reads the local evidence item.
+9. Submit the local HQ proof decision form.
+10. Confirm the refreshed page shows the proof status as `approved` or
+    `changes_requested`, depending on the selected decision, and shows the local
+    HQ decision readback message.
+
+Expected database behavior:
+
+- `app.record_hq_proof_sharing_decision(...)` updates the evidence review and
+  sharing posture.
+- An `approvals` row is recorded.
+- An internal `hq_sharing_decision_logged` event is recorded.
 - An integration event is recorded for future automation pickup.
 - A disabled automation outbox row is recorded.
 - An audit log row is recorded.

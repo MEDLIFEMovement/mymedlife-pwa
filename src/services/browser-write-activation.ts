@@ -7,6 +7,10 @@ import {
   getProofSubmissionWriteReadiness,
 } from "@/services/proof-submission-write";
 import {
+  getHqProofDecisionWriteConfig,
+  getHqProofDecisionWriteReadiness,
+} from "@/services/hq-proof-decision-write";
+import {
   canCreateChapterAssignment,
   canLogCoachDecision,
   canMakeHqSharingDecision,
@@ -43,8 +47,12 @@ export type ActivationCheckKey =
   | "actor_can_make_hq_sharing_decision"
   | "actor_allowed_by_write_plan"
   | "assignment_ready_for_proof"
+  | "evidence_not_final"
+  | "evidence_uuid"
   | "local_database_function_exists"
+  | "note_long_enough"
   | "proof_uploads_disabled"
+  | "public_sharing_disabled"
   | "rls_tests_exist"
   | "summary_long_enough"
   | "external_writes_disabled"
@@ -381,9 +389,23 @@ export function getHqSharingDecisionBrowserWriteGate(
   env: EnvSource = process.env,
 ): BrowserWriteActivationGate {
   const writePlan = getWritePlanOperation("hq_sharing_decision");
-  const writeReadiness = getWriteReadinessConfig(env);
+  const writeConfig = getHqProofDecisionWriteConfig(env);
+  const hqDecisionReadiness = getHqProofDecisionWriteReadiness(
+    actor,
+    evidenceItem,
+    input,
+    env,
+  );
   const actorCanMakeDecision = canMakeHqSharingDecision(actor);
   const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+  const evidenceUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    evidenceItem.id,
+  );
+  const evidenceNotFinal = evidenceItem.status !== "approved";
+  const noteLongEnough = input.note.trim().length >= 12;
+  const localAuthApproved =
+    actor.identitySource === "local_auth_session" &&
+    actor.authSessionStatus === "signed_in";
 
   return {
     operation: "hq_sharing_decision",
@@ -392,10 +414,14 @@ export function getHqSharingDecisionBrowserWriteGate(
     localFunction: "app.record_hq_proof_sharing_decision",
     functionSignature:
       "app.record_hq_proof_sharing_decision(evidence_uuid, decision_input, review_note)",
-    status: "blocked_until_approval",
-    canRenderEnabledControl: false,
+    status: hqDecisionReadiness.canSubmit
+      ? "ready_for_local_write"
+      : "blocked_until_approval",
+    canRenderEnabledControl: hqDecisionReadiness.canSubmit,
     envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
-    nextApprovalNeeded: approvalMessage,
+    nextApprovalNeeded: hqDecisionReadiness.canSubmit
+      ? "Local HQ proof decision write is ready for localhost-only testing."
+      : approvalMessage,
     checks: [
       {
         key: "actor_can_make_hq_sharing_decision",
@@ -427,6 +453,37 @@ export function getHqSharingDecisionBrowserWriteGate(
           "supabase/tests/database/rls_goal_16.test.sql proves direct approval inserts are blocked and HQ sharing decisions are function-gated.",
       },
       {
+        key: "evidence_uuid",
+        label: "Evidence item ID is a Supabase UUID",
+        passed: evidenceUuid,
+        detail: evidenceUuid
+          ? "This proof item can be sent to the local database function."
+          : "Mock proof IDs cannot be saved through the local Supabase function.",
+      },
+      {
+        key: "evidence_not_final",
+        label: "Proof does not already have a final decision",
+        passed: evidenceNotFinal,
+        detail: evidenceNotFinal
+          ? "HQ can still record a local decision for this proof item."
+          : "Already-approved proof needs a future override workflow, not a duplicate decision.",
+      },
+      {
+        key: "note_long_enough",
+        label: "Decision note has enough context",
+        passed: noteLongEnough,
+        detail: noteLongEnough
+          ? "The HQ decision note is long enough for audit context."
+          : "HQ decisions need a short plain-English note before saving.",
+      },
+      {
+        key: "public_sharing_disabled",
+        label: "Public proof sharing stays disabled",
+        passed: true,
+        detail:
+          "This write records HQ intent only; it does not publish proof or expose files publicly.",
+      },
+      {
         key: "external_writes_disabled",
         label: "External writes stay disabled",
         passed: true,
@@ -436,14 +493,16 @@ export function getHqSharingDecisionBrowserWriteGate(
       {
         key: "live_auth_approved",
         label: "Live auth/browser session approved",
-        passed: false,
-        detail: "Live auth is still disabled, so browser identity cannot be trusted for real writes.",
+        passed: localAuthApproved,
+        detail: localAuthApproved
+          ? "A signed-in local Supabase Auth session is driving actor context."
+          : "A signed-in local Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",
         label: "Browser write approval granted",
-        passed: false,
-        detail: writeReadiness.reason,
+        passed: writeConfig.enabled,
+        detail: writeConfig.reason,
       },
     ],
     preview: createHqSharingDecisionMock(actor, evidenceItem, input),
