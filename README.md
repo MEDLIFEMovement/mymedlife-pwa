@@ -10,8 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 11: local proof/action contracts and HQ sharing review
-preview.
+The current goal is Goal 12: disabled write-readiness airlock.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -46,6 +45,11 @@ Goal 11 adds local-only contracts for starting an action, submitting proof,
 previewing HQ proof-sharing decisions, recording audit intent, and shaping
 disabled outbox rows. It updates the action detail, proof, and review screens
 without adding real persistence, uploads, auth sessions, or integrations.
+
+Goal 12 adds an explicit disabled write-readiness layer. It documents which
+tables future action/proof/HQ decisions would touch, shows those future write
+targets in the UI, and keeps every app write blocked until Nick approves a
+later security-reviewed implementation goal.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, implement app writes, or enable external writes until Nick approves
@@ -162,6 +166,7 @@ explicitly enabled.
 ```bash
 MYMEDLIFE_DATA_SOURCE=mock
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=false
+MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 MYMEDLIFE_LOCAL_ACTOR_EMAIL=member.a@mymedlife.test
@@ -183,6 +188,9 @@ Rules:
 - Goal 11 local action/proof contracts are preview-only. They shape future
   events, audit logs, and disabled outbox rows but do not save data, upload
   files, publish proof, or trigger automation.
+- Goal 12 write-readiness is an airlock. `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES`
+  is documented but still blocked by code until a later approved goal adds
+  real local writes with RLS tests.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -203,7 +211,7 @@ data and fake local actor context. With or without local Supabase running,
 - `/coach`
 - `/admin`
 
-There is no live Supabase auth, app write path, production database connection,
+There is no live Supabase auth, enabled app write path, production database connection,
 HubSpot write, Luma write, warehouse export, Power BI export, n8n workflow, or
 AI summary.
 
@@ -223,8 +231,9 @@ Mock data lives in `src/data/mock-rush-month.ts`. Shared domain types live in
 `src/shared/types/domain.ts`. Validation schemas live in
 `src/shared/schemas/domain.ts`. Pure mock workflow logic lives in
 `src/services/rush-month-service.ts`. Local action/proof contract previews live
-in `src/services/local-action-contracts.ts`. Small reusable UI components live
-in `src/components`.
+in `src/services/local-action-contracts.ts`. Disabled future write boundaries
+live in `src/services/write-readiness.ts`. Small reusable UI components live in
+`src/components`.
 
 Goal 4 Supabase planning lives in
 `docs/architecture/supabase-schema-auth-rls-plan.md`. The draft SQL sketch lives
@@ -278,6 +287,13 @@ Goal 11 local proof/action contracts live in:
 - role-aware updates to `/rush-month/actions/[assignmentId]`,
   `/rush-month/evidence`, and `/rush-month/review`
 
+Goal 12 disabled write-readiness lives in:
+
+- `src/services/write-readiness.ts`
+- `src/components/write-readiness-notice.tsx`
+- `tests/write-readiness.test.ts`
+- visible write-readiness notices on action detail and HQ review screens
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -296,13 +312,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 11
+## Definition of Done for Goal 12
 
-Goal 11 is complete when a human developer can run the app locally, switch fake
-roles with `MYMEDLIFE_LOCAL_ACTOR_EMAIL`, and see action/proof/HQ sharing
-contract previews that explain what would be recorded later without writing to a
-database or triggering automation.
+Goal 12 is complete when a human developer can run the app locally, switch fake
+roles with `MYMEDLIFE_LOCAL_ACTOR_EMAIL`, and see exactly which future tables an
+action start, proof submission, or HQ sharing decision would touch while the app
+still refuses to write.
 
-The app remains mock-first by default. Goal 11 does not wire production
+The app remains mock-first by default. Goal 12 does not wire production
 Supabase, enable live auth, implement app writes, upload files, publish proof,
 or activate real integrations.

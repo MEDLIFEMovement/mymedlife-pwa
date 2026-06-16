@@ -3,6 +3,7 @@ import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
+import { WriteReadinessNotice } from "@/components/write-readiness-notice";
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import {
   canMakeHqSharingDecision,
@@ -10,6 +11,7 @@ import {
   getReviewQueueForActor,
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { prepareDisabledHqSharingDecisionWrite } from "@/services/write-readiness";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,12 @@ export default async function ReviewPage() {
   const canDecideSharing = canMakeHqSharingDecision(actor);
   const firstDecisionPreview = reviewEvidence[0]
     ? createHqSharingDecisionMock(actor, reviewEvidence[0], {
+        decision: "approved",
+        note: "Local preview only: useful proof to share with other chapters later.",
+      })
+    : undefined;
+  const disabledDecisionWrite = reviewEvidence[0]
+    ? prepareDisabledHqSharingDecisionWrite(actor, reviewEvidence[0], {
         decision: "approved",
         note: "Local preview only: useful proof to share with other chapters later.",
       })
@@ -95,19 +103,27 @@ export default async function ReviewPage() {
       )}
 
       {firstDecisionPreview?.success ? (
-        <section className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
-            Local decision contract
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            HQ decision would create a recorded event and disabled outbox row.
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-white/66">
-            Preview decision: {firstDecisionPreview.data.approval.decision}.
-            Outbox status: {firstDecisionPreview.data.automationOutbox.status}.
-            No sharing, warehouse export, or automation happens in Goal 11.
-          </p>
-        </section>
+        <>
+          <section className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+              Local decision contract
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              HQ decision would create a recorded event and disabled outbox row.
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-white/66">
+              Preview decision: {firstDecisionPreview.data.approval.decision}.
+              Outbox status: {firstDecisionPreview.data.automationOutbox.status}.
+              No sharing, warehouse export, or automation happens in Goal 12.
+            </p>
+          </section>
+          {disabledDecisionWrite ? (
+            <WriteReadinessNotice
+              operationLabel="HQ proof-sharing write remains disabled"
+              wouldWriteTables={disabledDecisionWrite.wouldWriteTables}
+            />
+          ) : null}
+        </>
       ) : null}
     </AppShell>
   );
