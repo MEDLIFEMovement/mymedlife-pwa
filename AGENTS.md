@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 43: member recognition with production data,
+The active goal is Goal 44: campaign closeout readiness with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -314,6 +314,9 @@ Allowed:
 - a member recognition panel on `/rush-month/dashboard` that shows mock
   read-only rank, points, recognition, friendly leaderboard context, and
   chapter-level impact while keeping DS Admin out of student points truth
+- a read-only campaign closeout/readiness panel on `/rush-month` that reviews
+  assignment completion, proof posture, event feedback/NPS posture, and coach
+  decision state while keeping closeout writes and exports disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
