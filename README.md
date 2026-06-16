@@ -10,12 +10,16 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 73: pilot scope planner. This remains mock-safe and
-adds `/admin/pilot-scope` so HQ reviewers can choose the smallest safe first
-Rush Month pilot, compare staff-only / one-chapter / later expansion options,
-and see which approvals still block real student invitations.
+The current goal is Goal 74: first-write activation drill. This remains
+mock-safe by default and adds `/admin/first-write` so HQ reviewers can see the
+exact local Supabase/auth/flag checks required before the first action-start
+browser write is tested on localhost.
 Production data, broad browser writes, admin mutation controls, real uploads,
 public proof sharing, and external integrations remain disabled.
+
+Goal 73 added `/admin/pilot-scope` so HQ reviewers can choose the smallest safe
+first Rush Month pilot, compare staff-only / one-chapter / later expansion
+options, and see which approvals still block real student invitations.
 
 Goal 72 added `/admin/staff-dry-run` so HQ reviewers can rehearse the Rush
 Month MVP with fake local actor emails, pass criteria, structured events to

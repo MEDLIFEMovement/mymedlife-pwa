@@ -86,6 +86,7 @@ describe("role visibility service", () => {
     expect(getNavigationForActor(leader).map((item) => item.label)).toContain("Members");
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Integration Outbox" },
+      { href: "/admin/first-write", label: "First Write Safety" },
       { href: "/admin/pilot-scope", label: "Pilot Safety" },
       { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
     ]);
@@ -118,8 +119,8 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
       { href: "/admin", label: "Outbox", helper: "Safety" },
+      { href: "/admin/first-write", label: "Write", helper: "No sends" },
       { href: "/admin/pilot-scope", label: "Pilot", helper: "No sends" },
-      { href: "/admin/staff-dry-run", label: "Dry Run", helper: "No sends" },
     ]);
   });
 
@@ -128,8 +129,8 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Admin",
+      "Write",
       "Pilot",
-      "Rush",
       "Dry Run",
     ]);
   });

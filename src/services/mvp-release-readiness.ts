@@ -95,6 +95,12 @@ export function getMvpReleaseReadinessSummary(
         plainEnglish:
           "HQ staff can compare safe pilot sizes and see which approvals are still required before inviting real students.",
       },
+      {
+        label: "First-write activation drill",
+        status: "ready_for_local_review",
+        plainEnglish:
+          "HQ staff can inspect the local action-start write drill before the first localhost-only save is tested.",
+      },
     ],
     blockers: [
       {
@@ -130,7 +136,7 @@ export function getMvpReleaseReadinessSummary(
     ],
     nextApprovals: [
       "Approve live auth/onboarding plan.",
-      "Approve the first browser write path and rollback plan.",
+      "Run `/admin/first-write` and approve the first browser write path and rollback plan.",
       "Approve proof upload/storage and consent requirements.",
       "Approve production Supabase/Vercel environment setup.",
       "Approve first pilot chapter or internal test group from `/admin/pilot-scope`.",

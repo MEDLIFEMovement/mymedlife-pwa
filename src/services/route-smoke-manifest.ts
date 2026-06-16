@@ -182,6 +182,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "Admin mutations, production auth, and external writes remain disabled.",
   },
   {
+    path: "/admin/first-write",
+    label: "First-write activation drill",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ staff can see whether the first local action-start write is blocked by mock data, missing flags, missing auth, or ready for localhost-only testing.",
+    safetyAssertion:
+      "The drill must not enable production auth, broad browser writes, uploads, public proof sharing, or external automation.",
+  },
+  {
     path: "/admin/pilot-scope",
     label: "First pilot scope planner",
     priority: "critical",
