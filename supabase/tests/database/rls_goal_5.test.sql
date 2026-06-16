@@ -101,34 +101,18 @@ select is(
 );
 
 select lives_ok(
-  $$
-    insert into app.assignments (
-      id,
-      chapter_id,
-      campaign_id,
-      title,
-      instructions,
-      assigned_to_user_id,
-      assigned_to_role_key,
-      assigned_by_user_id,
-      evidence_required,
-      points,
-      kpi_key
-    ) values (
-      '50000000-0000-4000-8000-000000000101',
-      '10000000-0000-4000-8000-000000000001',
-      '40000000-0000-4000-8000-000000000001',
-      'Leader-created fake assignment',
-      'RLS test assignment.',
-      '00000000-0000-4000-8000-000000000001',
-      'general_member',
-      '00000000-0000-4000-8000-000000000002',
-      'Submit a fake note.',
-      5,
-      'fake_metric'
-    )
-  $$,
-  'Chapter leader can create assignments for their chapter'
+  $$ select * from app.create_chapter_assignment(
+    '10000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    'Leader-created fake assignment',
+    'RLS test assignment created through the audited function.',
+    'Submit a fake note.',
+    'fake_metric',
+    5,
+    '00000000-0000-4000-8000-000000000001',
+    'general_member'
+  ) $$,
+  'Chapter leader can create assignments for their chapter through the audited function'
 );
 
 select throws_ok(
@@ -235,8 +219,8 @@ select lives_ok(
 
 select is(
   (select count(*)::int from app.automation_outbox),
-  4,
-  'Admin can read seed, proof-submission, and HQ-decision outbox rows for support'
+  5,
+  'Admin can read seed, assignment, proof-submission, and HQ-decision outbox rows for support'
 );
 
 update app.automation_outbox
