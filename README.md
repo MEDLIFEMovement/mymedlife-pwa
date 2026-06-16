@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 45: MVP coverage checklist with production data,
+The current goal is Goal 46: route smoke manifest with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -222,6 +222,10 @@ Goal 45 adds an admin-facing MVP coverage checklist to `/admin`. It summarizes
 what the Rush Month MVP can demonstrate locally, what is read-only/mock-only,
 and what remains blocked until live auth, browser writes, uploads, public proof
 sharing, or integrations are approved.
+
+Goal 46 adds a route-level smoke-test manifest to `/admin`. Admin, DS admin,
+and super admin reviewers can see which core MVP routes to open, which local
+roles to test, what should appear, and which safety boundary must remain true.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
