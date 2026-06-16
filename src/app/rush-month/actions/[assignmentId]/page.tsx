@@ -17,7 +17,10 @@ import {
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canReadAssignment } from "@/services/role-visibility";
-import { getActionStartBrowserWriteGate } from "@/services/browser-write-activation";
+import {
+  getActionStartBrowserWriteGate,
+  getProofSubmissionBrowserWriteGate,
+} from "@/services/browser-write-activation";
 import {
   prepareDisabledActionStartWrite,
   prepareDisabledProofSubmissionWrite,
@@ -54,18 +57,26 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
     );
   }
 
-  const actionStartedPreview = createActionStartedMock(actor, assignment);
-  const proofSubmissionPreview = createProofSubmissionMock(actor, assignment, {
+  const proofSubmissionInput = {
     evidenceType: "bridge_video",
     summary:
       "Local preview: this testimonial explains what happened and why another student should take action.",
-  });
+  } as const;
+  const actionStartedPreview = createActionStartedMock(actor, assignment);
+  const proofSubmissionPreview = createProofSubmissionMock(
+    actor,
+    assignment,
+    proofSubmissionInput,
+  );
   const disabledActionStartWrite = prepareDisabledActionStartWrite(actor, assignment);
   const actionStartGate = getActionStartBrowserWriteGate(actor, assignment);
+  const proofSubmissionGate = getProofSubmissionBrowserWriteGate(
+    actor,
+    assignment,
+    proofSubmissionInput,
+  );
   const disabledProofSubmissionWrite = prepareDisabledProofSubmissionWrite(actor, assignment, {
-    evidenceType: "bridge_video",
-    summary:
-      "Local preview: this testimonial explains what happened and why another student should take action.",
+    ...proofSubmissionInput,
   });
   const canSubmitProof = canSubmitProofForAssignment(actor, assignment);
 
@@ -173,6 +184,9 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
             operationLabel="Proof submission write remains disabled"
             wouldWriteTables={disabledProofSubmissionWrite.wouldWriteTables}
           />
+          {canSubmitProof ? (
+            <BrowserWriteGateNotice gate={proofSubmissionGate} />
+          ) : null}
         </>
       ) : (
         <RestrictedState

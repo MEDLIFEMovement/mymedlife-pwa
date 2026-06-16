@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 24: leader assignment browser write gate with
+The current goal is Goal 25: proof submission browser write gate with
 production data, enabled browser writes, uploads, and external integrations
 still disabled.
 
@@ -111,6 +111,12 @@ It aligns the TypeScript write plan with the existing local Supabase assignment
 creation function and still keeps the browser control disabled until live auth
 and explicit write approval.
 
+Goal 25 adds the same visible, testable browser-write activation gate for
+proof/testimonial submission: `evidence_submitted` on
+`/rush-month/actions/[assignmentId]`. It references the existing local Supabase
+proof metadata function and keeps proof saves, uploads, public sharing, browser
+writes, and external automation disabled.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -178,6 +184,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 22 Rush Month role-aware dashboard](./docs/architecture/goal-22-rush-month-dashboard.md)
 - [Goal 23 action-start browser write gate](./docs/architecture/goal-23-action-start-browser-write-gate.md)
 - [Goal 24 leader assignment browser write gate](./docs/architecture/goal-24-leader-assignment-write-gate.md)
+- [Goal 25 proof submission browser write gate](./docs/architecture/goal-25-proof-submission-browser-write-gate.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -297,6 +304,9 @@ Rules:
 - Goal 24 adds a browser-write activation gate for leader assignment creation.
   It also keeps the enabled browser control off, even if the local write env var
   is set.
+- Goal 25 adds a browser-write activation gate for proof/testimonial submission.
+  It still keeps proof saves, uploads, public sharing, and enabled browser
+  controls off, even if the local write env var is set.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -336,7 +346,7 @@ Goal 2 route shells:
 - `/rush-month`: Rush Month campaign shell
 - `/rush-month/dashboard`: role-aware Rush Month operating dashboard
 - `/rush-month/actions`: role-aware visible assignments plus disabled leader assignment gate
-- `/rush-month/actions/[assignmentId]`: role-aware action detail and local proof contract preview
+- `/rush-month/actions/[assignmentId]`: role-aware action detail, local proof contract preview, and disabled proof submission gate
 - `/rush-month/evidence`: role-aware proof/testimonial list
 - `/rush-month/review`: HQ proof-sharing review preview
 - `/proof-library`: role-aware proof/testimonial library posture
@@ -503,6 +513,15 @@ Goal 24 leader assignment browser write gate lives in:
 - `tests/browser-write-activation.test.ts`
 - visible gate notice on `/rush-month/actions`
 
+Goal 25 proof submission browser write gate lives in:
+
+- `docs/architecture/goal-25-proof-submission-browser-write-gate.md`
+- `src/services/browser-write-activation.ts`
+- `src/app/rush-month/actions/[assignmentId]/page.tsx`
+- `tests/browser-write-activation.test.ts`
+- visible gate notice on `/rush-month/actions/[assignmentId]` for roles that
+  can submit proof
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -521,13 +540,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 24
+## Definition of Done for Goal 25
 
-Goal 24 is complete when a human developer can open the role-aware actions page
-and see the exact readiness checks for enabling the first local leader
-assignment-create browser write, while tests prove the browser control remains
-disabled until approval.
+Goal 25 is complete when a human developer can open an action detail page as a
+proof-submitting role and see the exact readiness checks for enabling the first
+local proof/testimonial submission browser write, while tests prove the browser
+control remains disabled until approval.
 
-The app remains mock-first by default. Goal 24 does not wire production
-Supabase, enable browser writes, build every campaign deeply, publish proof,
-remove mock fallback, or activate real integrations.
+The app remains mock-first by default. Goal 25 does not wire production
+Supabase, enable browser writes, upload files, publish proof, remove mock
+fallback, or activate real integrations.
