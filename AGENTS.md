@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 42: proof-sharing review states with production data,
+The active goal is Goal 43: member recognition with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -311,6 +311,9 @@ Allowed:
   consent/context needs, HQ review, internal learning, future public candidates,
   and private proof while keeping public publishing and external exports
   disabled
+- a member recognition panel on `/rush-month/dashboard` that shows mock
+  read-only rank, points, recognition, friendly leaderboard context, and
+  chapter-level impact while keeping DS Admin out of student points truth
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

@@ -5,9 +5,11 @@ import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
+import { MemberRecognitionPanel } from "@/components/member-recognition-panel";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRushMonthDashboardForActor } from "@/services/rush-month-dashboard-service";
 
@@ -19,6 +21,7 @@ export default async function RushMonthDashboardPage() {
     getLocalActorContext(),
   ]);
   const dashboard = getRushMonthDashboardForActor(actor, data);
+  const recognition = getMemberRecognitionSummary(actor, data, dashboard.leaderboard);
 
   return (
     <AppShell actor={actor}>
@@ -92,7 +95,9 @@ export default async function RushMonthDashboardPage() {
             ))}
           </section>
 
-          <section className="grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
+          <MemberRecognitionPanel recognition={recognition} />
+
+          <section className="grid gap-3">
             <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
               <h2 className="text-2xl font-semibold text-white">Visible assignments</h2>
               <p className="mt-2 text-sm leading-6 text-white/66">
@@ -102,35 +107,6 @@ export default async function RushMonthDashboardPage() {
               <div className="mt-4 grid gap-3">
                 {dashboard.visibleAssignments.slice(0, 3).map((assignment) => (
                   <AssignmentCard key={assignment.id} assignment={assignment} />
-                ))}
-              </div>
-            </article>
-
-            <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-              <h2 className="text-2xl font-semibold text-white">Friendly leaderboard</h2>
-              <p className="mt-2 text-sm leading-6 text-white/66">
-                Members can see points and recognition for friendly competition.
-                This is local mock data, not a final points ledger.
-              </p>
-              <div className="mt-4 grid gap-2">
-                {dashboard.leaderboard.map((row, index) => (
-                  <div key={row.id} className="rounded-2xl bg-black/20 p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold text-white">
-                          {index + 1}. {row.displayName}
-                        </p>
-                        <p className="mt-1 text-xs text-white/52">{row.roleLabel}</p>
-                      </div>
-                      <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-sm font-semibold text-emerald-100">
-                        {row.points} pts
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-white/62">
-                      {row.recognition} / {row.completedActions} completed action
-                      {row.completedActions === 1 ? "" : "s"}
-                    </p>
-                  </div>
                 ))}
               </div>
             </article>
