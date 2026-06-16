@@ -11,6 +11,11 @@ import {
   getHqProofDecisionWriteReadiness,
 } from "@/services/hq-proof-decision-write";
 import {
+  getCoachDecisionWriteConfig,
+  getCoachDecisionWriteReadiness,
+  type CoachDecisionContext,
+} from "@/services/coach-decision-write";
+import {
   getAssignmentCreateWriteConfig,
   getAssignmentCreateWriteReadiness,
   type AssignmentCreateContext,
@@ -39,7 +44,6 @@ import {
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { canReadAssignment } from "@/services/role-visibility";
 import { getWritePlanOperation } from "@/services/write-plan-matrix";
-import { getWriteReadinessConfig } from "@/services/write-readiness";
 import type { Assignment, EvidenceItem } from "@/shared/types/domain";
 
 type EnvSource = Record<string, string | undefined>;
@@ -65,6 +69,10 @@ export type ActivationCheckKey =
   | "public_sharing_disabled"
   | "rls_tests_exist"
   | "summary_long_enough"
+  | "blocker_summary_present"
+  | "coach_portfolio_or_staff"
+  | "escalation_packets_disabled"
+  | "phase_uuid"
   | "external_writes_disabled"
   | "live_auth_approved"
   | "browser_write_approved";
@@ -586,12 +594,41 @@ export function getHqSharingDecisionBrowserWriteGate(
 export function getCoachDecisionBrowserWriteGate(
   actor: LocalActorContext,
   input: CoachDecisionInput,
+  context: CoachDecisionContext = {
+    chapterId: "mock-chapter",
+    campaignId: "mock-campaign",
+    phaseId: "mock-phase",
+  },
   env: EnvSource = process.env,
 ): BrowserWriteActivationGate {
   const writePlan = getWritePlanOperation("coach_decision_logged");
-  const writeReadiness = getWriteReadinessConfig(env);
+  const writeConfig = getCoachDecisionWriteConfig(env);
+  const coachDecisionReadiness = getCoachDecisionWriteReadiness(
+    actor,
+    input,
+    context,
+    env,
+  );
   const actorCanLogDecision = canLogCoachDecision(actor);
   const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+  const localAuthApproved =
+    actor.identitySource === "local_auth_session" &&
+    actor.authSessionStatus === "signed_in";
+  const phaseUuid = coachDecisionReadiness.checks.find((check) => {
+    return check.key === "phase_uuid";
+  })?.passed ?? false;
+  const coachPortfolioOrStaff = coachDecisionReadiness.checks.find((check) => {
+    return check.key === "coach_portfolio_or_staff";
+  })?.passed ?? false;
+  const noteLongEnough = coachDecisionReadiness.checks.find((check) => {
+    return check.key === "note_long_enough";
+  })?.passed ?? false;
+  const blockerSummaryPresent = coachDecisionReadiness.checks.find((check) => {
+    return check.key === "blocker_summary_present";
+  })?.passed ?? false;
+  const escalationPacketsDisabled = coachDecisionReadiness.checks.find((check) => {
+    return check.key === "escalation_packets_disabled";
+  })?.passed ?? false;
 
   return {
     operation: "coach_decision_logged",
@@ -600,10 +637,14 @@ export function getCoachDecisionBrowserWriteGate(
     localFunction: "app.log_coach_decision",
     functionSignature:
       "app.log_coach_decision(chapter_uuid, campaign_uuid, phase_uuid, decision_input, decision_note, ...)",
-    status: "blocked_until_approval",
-    canRenderEnabledControl: false,
+    status: coachDecisionReadiness.canSubmit
+      ? "ready_for_local_write"
+      : "blocked_until_approval",
+    canRenderEnabledControl: coachDecisionReadiness.canSubmit,
     envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
-    nextApprovalNeeded: approvalMessage,
+    nextApprovalNeeded: coachDecisionReadiness.canSubmit
+      ? "Local coach decision write is ready for localhost-only testing."
+      : approvalMessage,
     checks: [
       {
         key: "actor_can_log_coach_decision",
@@ -637,21 +678,58 @@ export function getCoachDecisionBrowserWriteGate(
       {
         key: "external_writes_disabled",
         label: "External writes stay disabled",
-        passed: true,
+        passed: !writeConfig.externalWritesEnabled,
         detail:
           "Coach decisions record internal events and a disabled outbox row; they do not send escalation packets or automation.",
       },
       {
+        key: "phase_uuid",
+        label: "Phase ID is a Supabase UUID",
+        passed: phaseUuid,
+        detail:
+          "The server action can only write against a local Supabase UUID phase.",
+      },
+      {
+        key: "coach_portfolio_or_staff",
+        label: "Coach has portfolio access or staff role",
+        passed: coachPortfolioOrStaff,
+        detail:
+          "Coaches need portfolio access; Admin and Super Admin may use the staff path.",
+      },
+      {
+        key: "note_long_enough",
+        label: "Coach decision note has enough context",
+        passed: noteLongEnough,
+        detail:
+          "Coach decisions need a short plain-English note for audit history.",
+      },
+      {
+        key: "blocker_summary_present",
+        label: "Intervention blocker summary is present",
+        passed: blockerSummaryPresent,
+        detail:
+          "Only intervene decisions require a blocker summary before saving.",
+      },
+      {
+        key: "escalation_packets_disabled",
+        label: "Escalation packets stay disabled",
+        passed: escalationPacketsDisabled,
+        detail:
+          "This path records a disabled outbox row only; it does not send n8n escalation packets.",
+      },
+      {
         key: "live_auth_approved",
         label: "Live auth/browser session approved",
-        passed: false,
-        detail: "Live auth is still disabled, so browser identity cannot be trusted for real writes.",
+        passed: localAuthApproved,
+        detail: localAuthApproved
+          ? "A signed-in local Supabase Auth session is driving actor context."
+          : "A signed-in local Supabase Auth session is required before this write can run.",
       },
       {
         key: "browser_write_approved",
         label: "Browser write approval granted",
-        passed: false,
-        detail: writeReadiness.reason,
+        passed: writeConfig.enabled,
+        detail: writeConfig.reason,
       },
     ],
     preview: createCoachDecisionMock(actor, input),

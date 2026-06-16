@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
+import { CoachDecisionServerActionPanel } from "@/components/coach-decision-server-action-panel";
 import { CoachPortfolioReadinessPanel } from "@/components/coach-portfolio-readiness-panel";
 import { CoachDecisionResultStatesPanel } from "@/components/coach-decision-result-states-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
@@ -9,9 +10,11 @@ import { RestrictedState } from "@/components/restricted-state";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
 import { getCoachDecisionBrowserWriteGate } from "@/services/browser-write-activation";
 import {
+  type CoachDecisionResultCode,
   getCoachDecisionResultStates,
   getDisabledCoachDecisionResultPreview,
 } from "@/services/coach-decision-result-states";
+import { getCoachDecisionWriteReadiness } from "@/services/coach-decision-write";
 import { getCoachPortfolioReadiness } from "@/services/coach-portfolio-readiness";
 import {
   canLogCoachDecision,
@@ -31,11 +34,22 @@ import { prepareDisabledCoachDecisionWrite } from "@/services/write-readiness";
 export const metadata = getStaticRouteMetadata("coach");
 export const dynamic = "force-dynamic";
 
-export default async function CoachPage() {
-  const [data, actor] = await Promise.all([
+type CoachPageProps = {
+  searchParams?: Promise<CoachSearchParams>;
+};
+
+type CoachSearchParams = {
+  coachDecisionResult?: string;
+};
+
+export default async function CoachPage({ searchParams }: CoachPageProps) {
+  const emptySearchParams: CoachSearchParams = {};
+  const [data, actor, search] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
+    searchParams ?? Promise.resolve(emptySearchParams),
   ]);
+  const activePhase = data.phases[0];
   const visibleRisks = getVisibleRiskFlagsForActor(actor, data.riskFlags);
   const coachPrivateRisks = visibleRisks.filter(
     (risk) => risk.visibility === "coach_private",
@@ -63,6 +77,23 @@ export default async function CoachPage() {
   const coachDecisionGate = getCoachDecisionBrowserWriteGate(
     actor,
     sampleCoachDecisionInput,
+    {
+      chapterId: data.chapter.id,
+      campaignId: data.campaign.id,
+      phaseId: activePhase?.id ?? "mock-phase",
+    },
+  );
+  const coachDecisionWriteReadiness = getCoachDecisionWriteReadiness(
+    actor,
+    sampleCoachDecisionInput,
+    {
+      chapterId: data.chapter.id,
+      campaignId: data.campaign.id,
+      phaseId: activePhase?.id ?? "mock-phase",
+    },
+  );
+  const coachDecisionResultCode = parseCoachDecisionResultCode(
+    search.coachDecisionResult,
   );
 
   return (
@@ -170,6 +201,16 @@ export default async function CoachPage() {
                   states={getCoachDecisionResultStates()}
                 />
               </div>
+              <div className="lg:col-span-2">
+                <CoachDecisionServerActionPanel
+                  chapterId={data.chapter.id}
+                  campaignId={data.campaign.id}
+                  phase={activePhase}
+                  readiness={coachDecisionWriteReadiness}
+                  resultCode={coachDecisionResultCode}
+                  defaultInput={sampleCoachDecisionInput}
+                />
+              </div>
             </section>
           ) : null}
 
@@ -211,4 +252,16 @@ export default async function CoachPage() {
       ) : null}
     </AppShell>
   );
+}
+
+function parseCoachDecisionResultCode(
+  value: string | undefined,
+): CoachDecisionResultCode | undefined {
+  const allowedCodes = new Set(
+    getCoachDecisionResultStates().map((state) => state.code),
+  );
+
+  return value && allowedCodes.has(value as CoachDecisionResultCode)
+    ? (value as CoachDecisionResultCode)
+    : undefined;
 }

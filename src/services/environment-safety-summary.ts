@@ -8,6 +8,7 @@ export type EnvironmentSafetyInput = {
   MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE?: string;
   MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE?: string;
   MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE?: string;
+  MYMEDLIFE_ENABLE_COACH_DECISION_WRITE?: string;
   MYMEDLIFE_ALLOW_PROOF_UPLOADS?: string;
   MYMEDLIFE_LOCAL_ACTOR_EMAIL?: string;
 };
@@ -108,6 +109,13 @@ export function getEnvironmentSafetySummary(
         "The third local write slice can record HQ proof-sharing decisions only when local Supabase writes and local auth are ready. It still does not publish proof.",
     },
     {
+      label: "Coach decision write",
+      value: env.MYMEDLIFE_ENABLE_COACH_DECISION_WRITE || "false",
+      status: getCoachDecisionWriteStatus(env),
+      explanation:
+        "The coach-side local write slice can record advance/hold/intervene decisions only when local Supabase writes and local auth are ready. Escalation packets still stay disabled.",
+    },
+    {
       label: "Proof uploads",
       value: env.MYMEDLIFE_ALLOW_PROOF_UPLOADS || "false",
       status: env.MYMEDLIFE_ALLOW_PROOF_UPLOADS === "true" ? "blocked" : "safe",
@@ -163,6 +171,8 @@ function readEnvironmentSafetyInput(): EnvironmentSafetyInput {
       process.env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE,
     MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE:
       process.env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE,
+    MYMEDLIFE_ENABLE_COACH_DECISION_WRITE:
+      process.env.MYMEDLIFE_ENABLE_COACH_DECISION_WRITE,
     MYMEDLIFE_ALLOW_PROOF_UPLOADS: process.env.MYMEDLIFE_ALLOW_PROOF_UPLOADS,
     MYMEDLIFE_LOCAL_ACTOR_EMAIL: process.env.MYMEDLIFE_LOCAL_ACTOR_EMAIL,
   };
@@ -212,6 +222,16 @@ function getHqProofDecisionWriteStatus(
   return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" ? "watch" : "blocked";
 }
 
+function getCoachDecisionWriteStatus(
+  env: EnvironmentSafetyInput,
+): EnvironmentSafetyItem["status"] {
+  if (env.MYMEDLIFE_ENABLE_COACH_DECISION_WRITE !== "true") {
+    return "safe";
+  }
+
+  return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" ? "watch" : "blocked";
+}
+
 function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
     return 0;
@@ -228,12 +248,15 @@ function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
       : 0;
   const hqProofDecisionEnabled =
     env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE === "true" ? 1 : 0;
+  const coachDecisionEnabled =
+    env.MYMEDLIFE_ENABLE_COACH_DECISION_WRITE === "true" ? 1 : 0;
 
   return (
     actionStartEnabled +
     assignmentCreateEnabled +
     proofSubmissionEnabled +
-    hqProofDecisionEnabled
+    hqProofDecisionEnabled +
+    coachDecisionEnabled
   );
 }
 
