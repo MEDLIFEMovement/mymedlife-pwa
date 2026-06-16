@@ -16,6 +16,9 @@ describe("mvp release readiness", () => {
     expect(
       summary.achievements.map((achievement) => achievement.label),
     ).toContain("Controlled pilot decision packet");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Staff dry-run guide");
   });
 
   it("lists the key live-launch blockers", () => {

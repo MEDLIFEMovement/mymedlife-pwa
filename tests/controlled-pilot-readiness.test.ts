@@ -16,6 +16,10 @@ describe("controlled pilot readiness", () => {
       readiness.stages.find((stage) => stage.key === "staff_dry_run")?.status,
     ).toBe("ready_now");
     expect(
+      readiness.stages.find((stage) => stage.key === "staff_dry_run")
+        ?.requiredProof,
+    ).toContain("Open `/admin/staff-dry-run`.");
+    expect(
       readiness.stages.find((stage) => stage.key === "first_student_pilot")
         ?.status,
     ).toBe("blocked_before_pilot");

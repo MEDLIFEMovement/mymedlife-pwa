@@ -10,12 +10,16 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 71: controlled pilot readiness. This remains mock-safe
-and adds an admin-visible pilot gate so reviewers can distinguish local
+The current goal is Goal 72: staff dry-run guide. This remains mock-safe and
+adds `/admin/staff-dry-run` so HQ reviewers can rehearse the Rush Month MVP with
+fake local actor emails, pass criteria, structured events to notice, and
+zero-write safety assertions before staging or student pilot approval.
+Production data, broad browser writes, admin mutation controls, real uploads,
+public proof sharing, and external integrations remain disabled.
+
+Goal 71 added an admin-visible pilot gate so reviewers can distinguish local
 stakeholder review, staff dry run, staging review, first student pilot, and later
-pilot expansion before any production launch is approved. Production data, broad
-browser writes, admin mutation controls, real uploads, public proof sharing, and
-external integrations remain disabled.
+pilot expansion before any production launch is approved.
 
 Goal 70 added an admin-visible Figma/mobile QA layer so reviewers can evaluate
 next-action clarity, phone usability, role complexity, accessibility, mission

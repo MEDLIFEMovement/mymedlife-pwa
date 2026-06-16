@@ -125,10 +125,9 @@ function getPilotStages(): PilotReadinessStage[] {
       plainEnglish:
         "HQ can rehearse the Rush Month loop with fake seed users before staging or real student data enters the app.",
       requiredProof: [
-        "Member starts action locally.",
-        "Leader reviews follow-up posture.",
-        "Coach reads advance/hold/intervene posture.",
-        "Admin confirms no external writes.",
+        "Open `/admin/staff-dry-run`.",
+        "Member week, leader follow-up, event/NPS, proof, coach, and DS safety steps are rehearsed.",
+        "Admin confirms browser writes and external sends stay at zero.",
       ],
     },
     {

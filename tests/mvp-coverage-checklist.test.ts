@@ -41,6 +41,9 @@ describe("mvp coverage checklist", () => {
     expect(checklist.items.map((item) => item.key)).toContain("member_management");
     expect(checklist.items.map((item) => item.key)).toContain("design_qa");
     expect(checklist.items.map((item) => item.key)).toContain("controlled_pilot");
+    expect(
+      checklist.items.find((item) => item.key === "controlled_pilot")?.routeEvidence,
+    ).toContain("/admin/staff-dry-run");
   });
 
   it("hides the admin coverage checklist from chapter roles", () => {
