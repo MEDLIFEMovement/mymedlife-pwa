@@ -4,7 +4,8 @@ Goals 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, and 16 add the local-only Supabase
 foundation for myMEDLIFE. Goal 17 adds proof/video storage planning without
 creating storage buckets or upload paths. Goal 18 adds a local-only audited
 chapter-leader assignment creation function. Goal 19 adds auth/onboarding
-planning without enabling live auth or production users.
+planning without enabling live auth or production users. Goal 20 adds the
+route-by-route live-data connection plan without enabling production data.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable live auth in the UI, add browser write controls, or trigger
@@ -86,10 +87,16 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   chapter-leader assignment creation architecture note.
 - `docs/architecture/goal-19-auth-onboarding-plan.md`: future auth/onboarding
   architecture note with live auth still disabled.
+- `docs/architecture/goal-20-live-data-connection-plan.md`: future
+  route-by-route live-data connection plan with production data still disabled.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
   production users remain disabled.
+- `src/services/live-data-connection-plan.ts`: disabled live-data migration
+  plan for route order and connection mode.
+- `tests/live-data-connection-plan.test.ts`: unit tests proving production
+  Supabase, browser writes, and external writes remain disabled.
 - `src/services/proof-storage-readiness.ts`: disabled upload readiness plan for
   future proof files.
 - `tests/proof-storage-readiness.test.ts`: unit tests proving proof uploads and
@@ -195,7 +202,9 @@ create buckets, upload files, publish proof, or send external automation. Goal
 `action_assigned`, but it still does not add browser save controls, production
 auth, or external sends. Goal 19 defines the future auth/onboarding path, but
 it still does not enable live auth, browser sessions, production users,
-membership approvals, role assignments, or external sends.
+membership approvals, role assignments, or external sends. Goal 20 defines the
+future route-by-route live-data migration order, but it still does not enable
+production Supabase, browser writes, or external sends.
 
 ## GitHub CI
 

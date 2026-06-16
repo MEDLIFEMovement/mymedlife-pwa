@@ -161,8 +161,8 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 19: auth and onboarding planning with live auth still
-disabled.
+The active goal is Goal 20: live-data connection planning with production data
+still disabled.
 
 Allowed:
 
@@ -216,6 +216,10 @@ Allowed:
   chapter join request, membership approval, role assignment, coach assignment,
   and staff role assignment boundaries while keeping live auth disabled
 - tests proving live auth and production users remain disabled
+- live-data connection planning that defines the route-by-route migration order
+  from mock data to local Supabase and controlled pilot readiness
+- tests proving production Supabase, browser writes, and external writes remain
+  disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

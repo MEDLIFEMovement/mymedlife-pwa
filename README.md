@@ -10,8 +10,8 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 19: auth and onboarding planning with live auth still
-disabled.
+The current goal is Goal 20: live-data connection planning with production data
+still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -86,6 +86,10 @@ chapter join requests, membership approval, role assignment, coach assignment,
 and staff role assignment. It does not enable live auth, browser sessions,
 production users, or onboarding writes.
 
+Goal 20 defines the future route-by-route migration from mock data to local
+Supabase and then controlled pilot readiness. It does not enable production
+Supabase, browser writes, or external writes.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -148,6 +152,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 17 proof and video storage plan](./docs/architecture/goal-17-proof-video-storage-plan.md)
 - [Goal 18 leader assignment creation](./docs/architecture/goal-18-leader-assignment-create.md)
 - [Goal 19 auth and onboarding plan](./docs/architecture/goal-19-auth-onboarding-plan.md)
+- [Goal 20 live data connection plan](./docs/architecture/goal-20-live-data-connection-plan.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -253,6 +258,8 @@ Rules:
 - Goal 19 adds auth/onboarding planning and tests. Live auth, browser sessions,
   production users, join requests, membership approvals, and role assignments
   remain disabled.
+- Goal 20 adds the route-by-route live-data connection plan. Production
+  Supabase, browser writes, and external writes remain disabled.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -398,6 +405,12 @@ Goal 19 auth/onboarding planning lives in:
 - `src/services/auth-onboarding-plan.ts`
 - `tests/auth-onboarding-plan.test.ts`
 
+Goal 20 live-data connection planning lives in:
+
+- `docs/architecture/goal-20-live-data-connection-plan.md`
+- `src/services/live-data-connection-plan.ts`
+- `tests/live-data-connection-plan.test.ts`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -416,12 +429,12 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 19
+## Definition of Done for Goal 20
 
-Goal 19 is complete when a human developer can review the future auth/onboarding
-path, understand who owns each step, and run tests proving live auth remains
-disabled.
+Goal 20 is complete when a human developer can review the route-by-route
+live-data migration order and run tests proving production Supabase, browser
+writes, and external writes remain disabled.
 
-The app remains mock-first by default. Goal 19 does not wire production
-Supabase, enable live auth, add browser sessions, create real users, approve
-memberships, assign roles, or activate real integrations.
+The app remains mock-first by default. Goal 20 does not wire production
+Supabase, enable browser writes, remove mock fallback, or activate real
+integrations.
