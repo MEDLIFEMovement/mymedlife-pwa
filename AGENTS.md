@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 45: MVP coverage checklist with production data,
+The active goal is Goal 46: route smoke manifest with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -320,6 +320,9 @@ Allowed:
 - an admin-facing MVP coverage checklist on `/admin` that summarizes local
   coverage, read-only/mock-only surfaces, and blocked live-auth/write/upload/
   public-proof/integration items without approving launch
+- a route-level smoke-test manifest on `/admin` that lists core MVP routes,
+  local actor variants, expected results, and safety assertions while keeping
+  browser writes and external sends at zero
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
