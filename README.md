@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 28: write activation readiness dashboard with
+The current goal is Goal 29: write activation approval plan with
 production data, enabled browser writes, uploads, and external integrations
 still disabled.
 
@@ -133,6 +133,10 @@ collects the first five browser-write gates into one reviewable staff/debug
 surface and keeps every enabled control at zero until live auth and browser
 write approval are explicitly granted.
 
+Goal 29 adds a plain-English `/admin` approval plan for the first write
+activation order. It recommends `action_started` as the first candidate and
+lists the approvals required before any browser save control can be enabled.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -204,6 +208,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 26 HQ proof-sharing browser write gate](./docs/architecture/goal-26-hq-proof-sharing-browser-write-gate.md)
 - [Goal 27 coach decision browser write gate](./docs/architecture/goal-27-coach-decision-browser-write-gate.md)
 - [Goal 28 write activation readiness dashboard](./docs/architecture/goal-28-write-activation-readiness.md)
+- [Goal 29 write activation approval plan](./docs/architecture/goal-29-write-activation-approval-plan.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
