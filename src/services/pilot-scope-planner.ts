@@ -170,7 +170,7 @@ function getPilotCandidates(): PilotScopeCandidate[] {
       requiredApprovals: [
         "staging environment",
         "auth/onboarding",
-        "first write path",
+        "first write path via /admin/first-write",
         "proof consent/storage posture",
         "named coach/support owner",
       ],

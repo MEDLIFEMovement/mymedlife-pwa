@@ -42,6 +42,12 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
             >
               Open Rush Month loop
             </Link>
+            <Link
+              href="/admin/first-write"
+              className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
+            >
+              Open first-write drill
+            </Link>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">

@@ -110,6 +110,16 @@ function buildCoverageItems(data: ReadOnlyAppData): MvpCoverageItem[] {
       nextStep: "Do not enable assignment saves until live auth and write activation are approved.",
     },
     {
+      key: "first_write_drill",
+      label: "First action-start write drill",
+      status: "covered_readonly",
+      plainEnglish:
+        "Admins can inspect the local checks, fake member route, expected readback, and proof required before action-start becomes the first localhost-only write.",
+      routeEvidence: ["/admin/first-write", "/rush-month/actions/[assignmentId]"],
+      nextStep:
+        "Run this only with local Supabase, local auth, explicit local write flags, and zero external sends.",
+    },
+    {
       key: "member_management",
       label: "Member and role management visibility",
       status: "covered_readonly",

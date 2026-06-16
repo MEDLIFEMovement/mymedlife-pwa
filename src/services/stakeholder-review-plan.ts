@@ -160,6 +160,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "The pilot planner is a decision surface only and must not invite students, enable writes, upload proof, or send external automation.",
   },
+  {
+    id: "first-write-drill",
+    title: "Review the first-write activation drill",
+    route: "/admin/first-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the exact local checks, fake member route, and proof needed before action-start becomes the first localhost-only write.",
+    safetyBoundary:
+      "The drill does not approve production writes and must keep proof uploads, other browser writes, and external sends disabled.",
+  },
 ];
 
 export function getStakeholderReviewPlan(

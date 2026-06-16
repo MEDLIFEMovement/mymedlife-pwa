@@ -179,18 +179,20 @@ function getSubprojects(): MvpSubprojectProgress[] {
       status: "partially_ready",
       risk: "high",
       routeEvidence: [
+        "/admin/first-write",
         "/rush-month/actions",
         "/rush-month/actions/[assignmentId]",
         "/rush-month/review",
         "/coach",
       ],
       plainEnglish:
-        "The first local-only write paths now exist, but they are intentionally locked unless local flags, local auth, and UUID-backed data are ready.",
+        "The first local-only write paths now exist, and action-start has a staff drill that explains exactly when the first localhost-only save can be tested.",
       technicalEvidence:
-        "Server actions and result states exist for action start, proof submission, HQ proof decision, leader assignment creation, and coach decision logging.",
+        "Server actions, result states, browser gates, and first-write drill coverage exist for action start, proof submission, HQ proof decision, leader assignment creation, and coach decision logging.",
       remainingWork:
-        "Choose the first production write path, run final security review, add rollback/monitoring, and enable it gradually.",
-      nextReviewStep: "Use the admin write-readiness panel to choose the safest first production write.",
+        "Run the localhost action-start drill, review readback/audit proof, then decide whether to promote the pattern to staging.",
+      nextReviewStep:
+        "Open `/admin/first-write` and confirm every required local check before clicking the candidate action start.",
       totalWeight: 14,
       localReviewWeight: 10,
       liveMvpWeight: 7,
@@ -311,6 +313,7 @@ function getSubprojects(): MvpSubprojectProgress[] {
       risk: "high",
       routeEvidence: [
         "/admin",
+        "/admin/first-write",
         "/admin/staff-dry-run",
         "/admin/pilot-scope",
         "/rush-month/loop",
