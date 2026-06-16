@@ -161,8 +161,8 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 21: campaign operating shells with production data,
-browser writes, uploads, and external integrations still disabled.
+The active goal is Goal 22: Rush Month role-aware dashboard with production
+data, browser writes, uploads, and external integrations still disabled.
 
 Allowed:
 
@@ -228,6 +228,12 @@ Allowed:
   chapter recaps as belief-building assets requiring HQ sharing decisions
 - tests proving DS Admin cannot read campaign, event, proof, student, points,
   or KPI truth
+- a role-aware Rush Month dashboard that shows the right next action, metrics,
+  assignments, events, proof prompts, leaderboard, watchouts, and integration
+  posture for the selected local actor
+- exact starter campaign shells for Planning / Goal Setting, Chapter
+  Engagement, SLT Promotion, Moving Mountains, Leadership Transition, Grow the
+  Movement, and Start a Chapter
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

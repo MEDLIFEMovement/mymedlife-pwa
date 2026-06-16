@@ -4,11 +4,17 @@ export type CampaignShellStatus = "active" | "planned" | "template";
 
 export type CampaignFamily =
   | "rush_month"
+  | "planning_goal_setting"
+  | "chapter_engagement"
   | "fundraising"
   | "local_volunteering"
   | "med_talk"
   | "social"
-  | "slt_recruitment"
+  | "slt_promotion"
+  | "moving_mountains"
+  | "leadership_transition"
+  | "grow_the_movement"
+  | "start_a_chapter"
   | "mobile_clinic"
   | "proof_storytelling";
 

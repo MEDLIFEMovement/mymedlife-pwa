@@ -27,6 +27,46 @@ export const campaignShells: CampaignShell[] = [
       "Luma links and future reminder workflows are mocked. No live external send is enabled.",
   },
   {
+    slug: "planning-goal-setting",
+    name: "Planning / Goal Setting",
+    family: "planning_goal_setting",
+    status: "template",
+    summary:
+      "Help chapter leaders set annual goals, define owners, and turn broad ambition into a visible action calendar.",
+    studentPromise:
+      "Students should understand what the chapter is trying to accomplish and how they can help this month.",
+    operatingRhythm:
+      "Set chapter goals, assign officer lanes, publish first actions, identify risks, and schedule coach check-ins.",
+    actionCommitteeLanes: ["Executive Board", "Action Committee Chairs", "Coach"],
+    proofUse:
+      "Capture before/after leadership stories that show how clearer planning changed chapter behavior.",
+    coachFocus:
+      "Check whether goals are specific, owned, time-bound, and connected to student action rather than wish lists.",
+    primaryKpis: ["goals_set", "owners_assigned", "calendar_published", "risks_identified", "coach_checkins"],
+    integrationPosture:
+      "Goal planning exports and reminders are disabled until the first campaign loop is stable.",
+  },
+  {
+    slug: "chapter-engagement",
+    name: "Chapter Engagement",
+    family: "chapter_engagement",
+    status: "template",
+    summary:
+      "Build recurring chapter energy through events, recognition, leaderboards, and member follow-up.",
+    studentPromise:
+      "Members should see real ways to participate, earn recognition, and feel part of an active chapter.",
+    operatingRhythm:
+      "Run engagement events, assign follow-up, update leaderboards, collect proof, and coach stalled committees.",
+    actionCommitteeLanes: ["Social", "Local Volunteering", "Recognition", "Proof"],
+    proofUse:
+      "Use member stories to show why active chapters feel more meaningful than passive meetings.",
+    coachFocus:
+      "Watch whether the chapter is creating weekly student participation, not just tracking attendance.",
+    primaryKpis: ["active_members", "event_attendance", "actions_completed", "points_awarded", "retention_signals"],
+    integrationPosture:
+      "Engagement reminders and reports are shaped as future outbox events only.",
+  },
+  {
     slug: "fundraising-sprint",
     name: "Fundraising Sprint",
     family: "fundraising",
@@ -107,9 +147,9 @@ export const campaignShells: CampaignShell[] = [
       "Luma and reminder automation are not live. Events stay mock-linked until approved.",
   },
   {
-    slug: "slt-recruitment-push",
-    name: "SLT Recruitment Push",
-    family: "slt_recruitment",
+    slug: "slt-promotion",
+    name: "SLT Promotion",
+    family: "slt_promotion",
     status: "template",
     summary:
       "Help chapters move students from interest to Service Learning Trip conversations and commitments.",
@@ -125,6 +165,86 @@ export const campaignShells: CampaignShell[] = [
     primaryKpis: ["info_sessions", "interested_students", "followups_completed", "deposits", "proof_items"],
     integrationPosture:
       "HubSpot handoff and reminder automations are shaped only as disabled future outbox rows.",
+  },
+  {
+    slug: "moving-mountains",
+    name: "Moving Mountains",
+    family: "moving_mountains",
+    status: "template",
+    summary:
+      "Help chapters run mission-centered advocacy, fundraising, and storytelling work around MEDLIFE's bigger movement.",
+    studentPromise:
+      "Students understand how their campus actions connect to a larger movement against poverty.",
+    operatingRhythm:
+      "Assign campaign owners, run movement-building actions, collect proof, share progress, and close out lessons.",
+    actionCommitteeLanes: ["Advocacy", "Fundraising", "Storytelling", "Recruitment"],
+    proofUse:
+      "Collect stories that connect individual campus action to the broader MEDLIFE mission.",
+    coachFocus:
+      "Make sure the campaign creates action and belief, not just inspirational messaging.",
+    primaryKpis: ["actions_completed", "funds_raised", "new_supporters", "proof_items", "chapter_participation"],
+    integrationPosture:
+      "Movement-wide reporting and external syncs remain disabled until approved.",
+  },
+  {
+    slug: "leadership-transition",
+    name: "Leadership Transition",
+    family: "leadership_transition",
+    status: "template",
+    summary:
+      "Help outgoing leaders hand off knowledge, roles, playbooks, and relationships to the next chapter team.",
+    studentPromise:
+      "New leaders should know what to do next without rebuilding the chapter from scratch.",
+    operatingRhythm:
+      "Name successors, transfer role notes, confirm committee chairs, schedule coach handoff, and capture lessons.",
+    actionCommitteeLanes: ["Executive Board", "Coach", "Action Committee Chairs"],
+    proofUse:
+      "Capture leadership handoff stories that help other chapters see what good transition looks like.",
+    coachFocus:
+      "Watch for missing successors, undocumented owner lanes, and chapters at risk of losing momentum.",
+    primaryKpis: ["roles_handed_off", "successors_confirmed", "handoff_notes", "coach_validations", "open_risks"],
+    integrationPosture:
+      "Role and coach handoff notifications stay disabled until live auth and membership writes are approved.",
+  },
+  {
+    slug: "grow-the-movement",
+    name: "Grow the Movement",
+    family: "grow_the_movement",
+    status: "template",
+    summary:
+      "Help chapters expand reach through member referrals, campus partnerships, alumni proof, and visible impact stories.",
+    studentPromise:
+      "Students can invite others into a movement that feels active, credible, and worth joining.",
+    operatingRhythm:
+      "Assign referral owners, run partnership outreach, publish proof, track conversion, and coach follow-up.",
+    actionCommitteeLanes: ["Recruitment", "Partnerships", "Proof", "Alumni"],
+    proofUse:
+      "Use alumni and peer proof to show why joining MEDLIFE changes students and campuses.",
+    coachFocus:
+      "Identify bottlenecks in outreach confidence, follow-up discipline, and chapter belief.",
+    primaryKpis: ["referrals", "partnerships_opened", "new_members", "proof_items", "followups_completed"],
+    integrationPosture:
+      "Future HubSpot/n8n referral and alumni workflows stay disabled.",
+  },
+  {
+    slug: "start-a-chapter",
+    name: "Start a Chapter",
+    family: "start_a_chapter",
+    status: "template",
+    summary:
+      "Give expansion chapters a clear phase path from interest to active chapter operations.",
+    studentPromise:
+      "A founding student should know the next concrete step to launch MEDLIFE on campus.",
+    operatingRhythm:
+      "Confirm sponsor interest, recruit founding team, run first events, collect proof, and pass coach gates.",
+    actionCommitteeLanes: ["Expansion", "Recruitment", "Coach", "Proof"],
+    proofUse:
+      "Share proof from successful founding teams to break the belief that starting a chapter is too hard.",
+    coachFocus:
+      "Move chapters from expansion coaching to portfolio coaching only after readiness gates are met.",
+    primaryKpis: ["founding_team", "first_events", "members_joined", "readiness_gates", "coach_handoff"],
+    integrationPosture:
+      "Expansion handoffs and CRM syncs are future disabled outbox events only.",
   },
 ];
 
@@ -264,7 +384,7 @@ export const chapterEventPlans: ChapterEventPlan[] = [
   {
     id: "event-slt-info-001",
     title: "SLT peer proof night",
-    campaignSlug: "slt-recruitment-push",
+    campaignSlug: "slt-promotion",
     committeeId: "committee-proof",
     eventType: "slt_info",
     ownerRole: "E-Board Member",
@@ -315,7 +435,7 @@ export const proofLibraryItems: ProofLibraryItem[] = [
   },
   {
     id: "proof-slt-belief",
-    campaignSlug: "slt-recruitment-push",
+    campaignSlug: "slt-promotion",
     sourceLabel: "SLT peer proof night",
     proofType: "alumni_ugc",
     hesitationAddressed: "I am unsure an SLT is worth the time or cost.",
