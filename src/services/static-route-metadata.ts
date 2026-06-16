@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 export type StaticRouteMetadataKey =
   | "home"
+  | "login"
   | "chapter"
   | "campaigns"
   | "campaignDetail"
@@ -21,6 +22,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   home: {
     title: "Home",
     description: "myMEDLIFE local review home for the Rush Month operating app.",
+  },
+  login: {
+    title: "Local Sign In",
+    description:
+      "Local Supabase Auth sign-in for fake myMEDLIFE seed users and session readiness.",
   },
   chapter: {
     title: "Chapter",

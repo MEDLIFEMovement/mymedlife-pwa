@@ -10,10 +10,10 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 57: local MVP review guide with
-production data, enabled browser writes, admin mutation controls, reminder
-automation, escalation packets, uploads, public proof sharing, and external
-integrations still disabled.
+The current goal is Goal 58: local Supabase Auth sign-in with production data,
+browser writes, admin mutation controls, reminder automation, escalation
+packets, uploads, public proof sharing, and external integrations still
+disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -272,9 +272,14 @@ without showing secrets, keys, tokens, passwords, or private connection strings.
 Goal 57 adds a plain-English local MVP review guide for non-coder reviewers,
 including pass/fail signals and the next approval boundary.
 
-Do not connect production Supabase, enable live auth in the student UI, create
-real users, enable browser app writes, or enable external writes until Nick
-approves a later implementation goal.
+Goal 58 adds a localhost-only Supabase Auth sign-in route for fake local seed
+users. It begins the real session foundation needed for the MVP, but does not
+connect production Supabase, create real users, enable browser app writes, or
+enable external writes.
+
+Do not connect production Supabase, create real users, enable browser app
+writes, or enable external writes until Nick approves a later implementation
+goal.
 
 ## Recommended Stack
 
@@ -372,6 +377,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 55 admin glossary](./docs/architecture/goal-55-admin-glossary.md)
 - [Goal 56 environment safety summary](./docs/architecture/goal-56-environment-safety-summary.md)
 - [Goal 57 local MVP review guide](./docs/architecture/goal-57-local-review-guide.md)
+- [Goal 58 local Supabase Auth sign-in](./docs/architecture/goal-58-local-auth-sign-in.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -560,6 +566,9 @@ Rules:
   and does not enable auth, writes, uploads, public proof sharing, external
   integrations, service workers, reminders, escalation packets, or production
   data.
+- Goal 58 adds localhost-only Supabase Auth sign-in at `/login` for fake local
+  seed users. It does not enable production Supabase Auth, production users,
+  browser app writes, uploads, public proof sharing, or external sends.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -719,6 +728,17 @@ Goal 19 auth/onboarding planning lives in:
 - `docs/architecture/goal-19-auth-onboarding-plan.md`
 - `src/services/auth-onboarding-plan.ts`
 - `tests/auth-onboarding-plan.test.ts`
+
+Goal 58 local Supabase Auth sign-in lives in:
+
+- `docs/architecture/goal-58-local-auth-sign-in.md`
+- `src/app/login/page.tsx`
+- `src/app/login/actions.ts`
+- `src/lib/supabase-server.ts`
+- `src/services/supabase-auth-config.ts`
+- `src/services/auth-session.ts`
+- `tests/supabase-auth-config.test.ts`
+- `tests/auth-session.test.ts`
 
 Goal 20 live-data connection planning lives in:
 

@@ -113,6 +113,7 @@ export function getVisibleAdminPanelsForActor(actor: LocalActorContext): AdminPa
 export function getNavigationForActor(actor?: LocalActorContext): NavigationItem[] {
   if (!actor) {
     return [
+      { href: "/login", label: "Sign In" },
       ...baseNavigation,
       { href: "/rush-month/evidence", label: "Proof" },
       { href: "/rush-month/review", label: "Review" },
@@ -186,7 +187,7 @@ export function getMobileQuickNavigationForActor(
 ): MobileNavigationItem[] {
   if (!actor) {
     return [
-      { href: "/", label: "Home", helper: "Start" },
+      { href: "/login", label: "Sign In", helper: "Auth" },
       { href: "/rush-month", label: "Rush", helper: "Campaign" },
       { href: "/rush-month/actions", label: "Actions", helper: "Work" },
       { href: "/admin", label: "Admin", helper: "Review" },
