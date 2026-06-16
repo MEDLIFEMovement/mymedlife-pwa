@@ -1,7 +1,8 @@
 # Supabase Local Development
 
 Goals 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, and 16 add the local-only Supabase
-foundation for myMEDLIFE.
+foundation for myMEDLIFE. Goal 17 adds proof/video storage planning without
+creating storage buckets or upload paths.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable live auth in the UI, add browser write controls, or trigger
@@ -72,6 +73,12 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   proof/testimonial metadata write architecture note.
 - `docs/architecture/goal-16-hq-proof-sharing-decision.md`: local HQ
   proof/testimonial sharing decision architecture note.
+- `docs/architecture/goal-17-proof-video-storage-plan.md`: proof/video storage
+  architecture plan with uploads still disabled.
+- `src/services/proof-storage-readiness.ts`: disabled upload readiness plan for
+  future proof files.
+- `tests/proof-storage-readiness.test.ts`: unit tests proving proof uploads and
+  public publishing remain disabled.
 
 ## Requirements
 
@@ -166,7 +173,9 @@ function for `evidence_submitted`, but it still does not add browser save
 controls, file uploads, public proof sharing, or external sends. Goal 16 adds
 the first local Supabase HQ proof-sharing decision write function for
 `hq_sharing_decision_logged`, but it still does not add browser save controls,
-public publishing, or external sends.
+public publishing, or external sends. Goal 17 documents the future proof/video
+storage layer and adds disabled upload readiness tests, but it still does not
+create buckets, upload files, publish proof, or send external automation.
 
 ## GitHub CI
 

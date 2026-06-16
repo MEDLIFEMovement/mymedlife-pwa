@@ -10,7 +10,8 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 16: local HQ proof/testimonial sharing decisions.
+The current goal is Goal 17: proof/video storage planning and disabled upload
+readiness.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -69,6 +70,11 @@ Goal 16 implements the first local Supabase HQ proof-sharing decision write
 path. It adds an auditable database function and RLS/security tests for
 `hq_sharing_decision_logged`, but it does not publish proof, wire browser save
 controls, or send external automation.
+
+Goal 17 prepares proof/video storage architecture and disabled upload
+readiness. It documents future buckets, consent metadata, file constraints, and
+access boundaries, but it does not create buckets, upload files, publish proof,
+or send external automation.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
@@ -129,6 +135,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 14 action start write](./docs/architecture/goal-14-action-start-write.md)
 - [Goal 15 proof submission write](./docs/architecture/goal-15-proof-submission-write.md)
 - [Goal 16 HQ proof sharing decision](./docs/architecture/goal-16-hq-proof-sharing-decision.md)
+- [Goal 17 proof and video storage plan](./docs/architecture/goal-17-proof-video-storage-plan.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -190,6 +197,7 @@ explicitly enabled.
 MYMEDLIFE_DATA_SOURCE=mock
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=false
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false
+MYMEDLIFE_ALLOW_PROOF_UPLOADS=false
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 MYMEDLIFE_LOCAL_ACTOR_EMAIL=member.a@mymedlife.test
@@ -224,6 +232,9 @@ Rules:
 - Goal 16 adds the first local Supabase database write function for
   `hq_sharing_decision_logged` proof/testimonial sharing decisions. The browser
   UI still does not save decisions, publish proof, or send automation.
+- Goal 17 adds proof/video storage planning and disabled upload readiness.
+  `MYMEDLIFE_ALLOW_PROOF_UPLOADS=true` still does not upload files or publish
+  proof.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -345,6 +356,18 @@ Goal 15 local proof/testimonial metadata write lives in:
 - `supabase/migrations/20260616093000_goal_15_proof_submission_write.sql`
 - `supabase/tests/database/rls_goal_15.test.sql`
 
+Goal 16 local HQ proof/testimonial sharing decision write lives in:
+
+- `docs/architecture/goal-16-hq-proof-sharing-decision.md`
+- `supabase/migrations/20260616103000_goal_16_hq_proof_sharing_decision.sql`
+- `supabase/tests/database/rls_goal_16.test.sql`
+
+Goal 17 proof/video storage planning lives in:
+
+- `docs/architecture/goal-17-proof-video-storage-plan.md`
+- `src/services/proof-storage-readiness.ts`
+- `tests/proof-storage-readiness.test.ts`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -363,14 +386,12 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 15
+## Definition of Done for Goal 17
 
-Goal 15 is complete when a human developer can run local Supabase migrations
-and RLS tests proving `evidence_submitted` proof/testimonial metadata can be
-saved only through the audited database function, with assignment status,
-evidence metadata, internal event, integration event, disabled outbox, and audit
-log rows created together.
+Goal 17 is complete when a human developer can review the future proof/video
+storage plan, understand bucket and consent boundaries, and run tests proving
+uploads remain disabled.
 
-The app remains mock-first by default. Goal 15 does not wire production
-Supabase, enable live auth, add browser save controls, upload files, publish
-proof, or activate real integrations.
+The app remains mock-first by default. Goal 17 does not wire production
+Supabase, enable live auth, create storage buckets, add browser upload controls,
+upload files, publish proof, or activate real integrations.

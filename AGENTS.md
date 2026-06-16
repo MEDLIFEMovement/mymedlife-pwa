@@ -161,7 +161,8 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 16: local HQ proof/testimonial sharing decisions.
+The active goal is Goal 17: proof/video storage planning and disabled upload
+readiness.
 
 Allowed:
 
@@ -202,6 +203,11 @@ Allowed:
   records an integration-ready event row, creates a disabled outbox row, and
   records an audit log together
 - RLS/security tests proving direct approval inserts are blocked
+- proof/video storage planning that documents future private and public buckets,
+  consent metadata, upload constraints, and access boundaries while keeping
+  uploads disabled
+- disabled proof-storage readiness services and tests that prove
+  `MYMEDLIFE_ALLOW_PROOF_UPLOADS=true` does not upload files
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
