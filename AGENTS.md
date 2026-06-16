@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 12: disabled write-readiness airlock.
+The active goal is Goal 13: local Supabase write plan and RLS test matrix.
 
 Allowed:
 
@@ -185,6 +185,9 @@ Allowed:
   returning blocked write attempts
 - `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false` documentation, as long as code
   still refuses writes even if the env var is set to true
+- local write implementation planning for action starts, proof submissions, and
+  HQ proof-sharing decisions, as long as the implementation remains disabled
+- a typed write-plan matrix and tests that document future RLS/security cases
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

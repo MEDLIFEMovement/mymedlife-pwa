@@ -1,6 +1,6 @@
 # Supabase Local Development
 
-Goals 5, 7, 8, 9, 10, 11, and 12 add the local-only Supabase foundation for
+Goals 5, 7, 8, 9, 10, 11, 12, and 13 add the local-only Supabase foundation for
 myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
@@ -46,6 +46,12 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   future tables that would be touched after approval.
 - `tests/write-readiness.test.ts`: unit tests proving writes remain disabled,
   even when the local write env var is set.
+- `docs/architecture/goal-13-local-write-implementation-plan.md`: reviewable
+  local write plan for the first future write operations.
+- `src/services/write-plan-matrix.ts`: typed plan matrix for future write
+  operations, role boundaries, table targets, and required tests.
+- `tests/write-plan-matrix.test.ts`: unit tests keeping the write plan aligned
+  with the disabled write-readiness airlock.
 
 ## Requirements
 
@@ -132,7 +138,8 @@ Goal 11 adds local-only action/proof/HQ sharing contract previews. This does
 not add browser auth, student sign-in, sessions, cookies, production auth, app
 writes, proof uploads, public sharing, or external automation. Goal 12 adds a
 disabled write-readiness layer so future table targets are visible while code
-still blocks writes.
+still blocks writes. Goal 13 adds the first local write implementation plan and
+test matrix, but it still does not enable saving data.
 
 ## GitHub CI
 
