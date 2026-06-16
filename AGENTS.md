@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 54: stakeholder review path with
+The active goal is Goal 55: admin glossary with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -347,6 +347,9 @@ Allowed:
 - no-code stakeholder review paths on admin surfaces, as long as they do not
   enable auth, browser writes, uploads, public proof sharing, reminders,
   escalation packets, or external integrations
+- plain-English admin glossary panels for non-coder reviewers, as long as they
+  do not enable auth, writes, uploads, public proof sharing, external sends,
+  reminders, escalation packets, service workers, or production data
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
