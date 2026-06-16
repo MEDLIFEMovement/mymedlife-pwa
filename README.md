@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 56: environment safety summary with
+The current goal is Goal 57: local MVP review guide with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -269,6 +269,9 @@ stakeholder review.
 Goal 56 adds an admin environment safety summary that explains safe local flags
 without showing secrets, keys, tokens, passwords, or private connection strings.
 
+Goal 57 adds a plain-English local MVP review guide for non-coder reviewers,
+including pass/fail signals and the next approval boundary.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -368,6 +371,8 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 54 stakeholder review path](./docs/architecture/goal-54-stakeholder-review-path.md)
 - [Goal 55 admin glossary](./docs/architecture/goal-55-admin-glossary.md)
 - [Goal 56 environment safety summary](./docs/architecture/goal-56-environment-safety-summary.md)
+- [Goal 57 local MVP review guide](./docs/architecture/goal-57-local-review-guide.md)
+- [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -551,6 +556,10 @@ Rules:
 - Goal 56 adds an environment safety summary without showing secrets. It does
   not enable auth, writes, uploads, public proof sharing, external sends,
   reminders, escalation packets, service workers, or production data.
+- Goal 57 adds a plain-English local MVP review guide. It is documentation only
+  and does not enable auth, writes, uploads, public proof sharing, external
+  integrations, service workers, reminders, escalation packets, or production
+  data.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
