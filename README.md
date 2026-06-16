@@ -10,9 +10,9 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 33: HQ proof decision result states with production
-data, enabled browser writes, public proof sharing, uploads, and external
-integrations still disabled.
+The current goal is Goal 34: coach decision result states with production data,
+enabled browser writes, escalation packets, uploads, public proof sharing, and
+external integrations still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -159,6 +159,12 @@ the future result for the selected mock decision, and the possible approval /
 change-request / do-not-share states without enabling decision saves, public
 proof publishing, or external automation.
 
+Goal 34 defines the plain-English result states for future coach decisions. The
+coach route now shows the current disabled coach decision result, the future
+result for the selected mock advance / hold / intervene decision, and the
+possible blocked states without enabling decision saves or n8n escalation
+packets.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -235,6 +241,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 31 action-start result states](./docs/architecture/goal-31-action-start-result-states.md)
 - [Goal 32 proof submission result states](./docs/architecture/goal-32-proof-submission-result-states.md)
 - [Goal 33 HQ proof decision result states](./docs/architecture/goal-33-hq-proof-decision-result-states.md)
+- [Goal 34 coach decision result states](./docs/architecture/goal-34-coach-decision-result-states.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -377,6 +384,8 @@ Rules:
 - Goal 33 adds HQ proof decision result states. It does not wire those states
   to a real browser write, public proof publishing workflow, or external
   automation.
+- Goal 34 adds coach decision result states. It does not wire those states to a
+  real browser write, n8n escalation packet, or external automation.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -656,6 +665,14 @@ Goal 33 HQ proof decision result states live in:
 - `tests/hq-proof-decision-result-states.test.ts`
 - visible HQ decision result-state panel on `/rush-month/review`
 
+Goal 34 coach decision result states live in:
+
+- `docs/architecture/goal-34-coach-decision-result-states.md`
+- `src/services/coach-decision-result-states.ts`
+- `src/components/coach-decision-result-states-panel.tsx`
+- `tests/coach-decision-result-states.test.ts`
+- visible coach decision result-state panel on `/coach`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -674,13 +691,14 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 33
+## Definition of Done for Goal 34
 
-Goal 33 is complete when a human developer can open the HQ review route and see
-the exact disabled HQ proof decision result plus the future plain-English
-result states, while tests prove browser writes remain disabled and no state
-publishes proof directly.
+Goal 34 is complete when a human developer can open the coach route and see the
+exact disabled coach decision result plus the future plain-English result
+states, while tests prove browser writes remain disabled and no state sends an
+escalation packet.
 
-The app remains mock-first by default. Goal 33 does not wire production
+The app remains mock-first by default. Goal 34 does not wire production
 Supabase, create a server action, enable browser writes, upload files, publish
-proof, remove mock fallback, or activate real integrations.
+proof, remove mock fallback, send escalation packets, or activate real
+integrations.

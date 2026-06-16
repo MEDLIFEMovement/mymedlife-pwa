@@ -161,9 +161,9 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 33: HQ proof decision result states with production
-data, enabled browser writes, uploads, public proof sharing, and external
-integrations still disabled.
+The active goal is Goal 34: coach decision result states with production data,
+enabled browser writes, escalation packets, uploads, public proof sharing, and
+external integrations still disabled.
 
 Allowed:
 
@@ -277,6 +277,10 @@ Allowed:
   approved, changes-requested, do-not-share, disabled, auth, permission,
   not-found, already-decided, public-sharing-disabled, and error messages
   without saving decisions, publishing proof, or enabling browser writes
+- coach decision result states on `/coach` that show future advance, hold,
+  intervene, disabled, escalation-disabled, auth, permission, portfolio,
+  note, blocker-summary, and error messages without saving decisions, sending
+  escalation packets, or enabling browser writes
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
