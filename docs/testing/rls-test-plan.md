@@ -207,6 +207,20 @@ Goal 14 implements the first local write subset for `action_started` in
   audit log
 - action start creates no outbox row and no external send attempt
 
+Goal 15 implements the first local proof/testimonial metadata write subset for
+`evidence_submitted` in `supabase/tests/database/rls_goal_15.test.sql`. The
+test suite now proves:
+
+- direct evidence inserts cannot bypass the proof metadata function
+- assigned members can submit proof metadata for their own in-progress work
+- chapter leaders can submit proof metadata for visible chapter work
+- cross-chapter proof submission is blocked
+- coaches, admins, DS admins, and super admins cannot use the normal proof
+  submission path
+- proof metadata creates assignment status, evidence, internal event,
+  integration event, disabled outbox, and audit log rows together
+- proof metadata stores no file path and triggers no live external send
+
 ## Pass Criteria
 
 The RLS test suite should pass only when:

@@ -1,6 +1,6 @@
 # Supabase Local Development
 
-Goals 5, 7, 8, 9, 10, 11, 12, 13, and 14 add the local-only Supabase
+Goals 5, 7, 8, 9, 10, 11, 12, 13, 14, and 15 add the local-only Supabase
 foundation for myMEDLIFE.
 
 This does not connect the app to production Supabase. It does not create real
@@ -17,6 +17,9 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   lanes, risk flags, closeouts, and assignment operating fields.
 - `supabase/migrations/20260616090000_goal_14_action_start_write.sql`: first
   local action-start write function plus direct-start bypass protection.
+- `supabase/migrations/20260616093000_goal_15_proof_submission_write.sql`:
+  first local proof/testimonial metadata write function plus direct evidence
+  insert bypass protection.
 - `supabase/seed.sql`: fake local users, chapters, memberships, staff roles,
   Rush Month records, proof/testimonial records, disabled/mock outbox rows, and
   fake Goal 7 operating-model records.
@@ -27,6 +30,8 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   protection boundaries.
 - `supabase/tests/database/rls_goal_14.test.sql`: pgTAP tests for the first
   local `action_started` database write path.
+- `supabase/tests/database/rls_goal_15.test.sql`: pgTAP tests for the first
+  local `evidence_submitted` proof/testimonial metadata write path.
 - `src/lib/supabase-readonly.ts`: server-only REST reader for local Supabase.
 - `src/services/read-only-app-data.ts`: mock-safe read model used by app pages.
 - `.env.example`: local-only read configuration template.
@@ -58,6 +63,8 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   with the disabled write-readiness airlock.
 - `docs/architecture/goal-14-action-start-write.md`: local action-start write
   architecture note.
+- `docs/architecture/goal-15-proof-submission-write.md`: local
+  proof/testimonial metadata write architecture note.
 
 ## Requirements
 
@@ -147,7 +154,9 @@ disabled write-readiness layer so future table targets are visible while code
 still blocks writes. Goal 13 adds the first local write implementation plan and
 test matrix. Goal 14 adds the first local Supabase database write function for
 `action_started`, but it still does not add browser save controls or production
-auth.
+auth. Goal 15 adds the first local Supabase proof/testimonial metadata write
+function for `evidence_submitted`, but it still does not add browser save
+controls, file uploads, public proof sharing, or external sends.
 
 ## GitHub CI
 
@@ -198,6 +207,12 @@ development server after changing the env var.
   `app.start_assignment_action` so the assignment update, event row,
   integration event row, and audit log are written together.
 - Admin and DS Admin cannot start routine student truth assignments.
+- Proof/testimonial metadata submissions must use
+  `app.submit_assignment_proof_metadata` so the assignment update, evidence
+  metadata row, event row, integration event row, disabled outbox row, and audit
+  log are written together.
+- Coach, Admin, DS Admin, and Super Admin cannot use the normal proof
+  submission path.
 
 ## Known Codex Environment Limitation
 
