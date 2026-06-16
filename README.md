@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 52: route registry guard with
+The current goal is Goal 53: route coverage summary with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -254,6 +254,10 @@ Goal 52 adds a small route registry and tests to prove role-aware primary
 navigation, mobile quick navigation, and the admin route smoke manifest point at
 known app routes.
 
+Goal 53 adds a plain-English admin route coverage summary showing known routes,
+primary/mobile navigation coverage, smoke routes, and zero expected writes or
+external sends.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -349,6 +353,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 50 PWA install readiness](./docs/architecture/goal-50-pwa-install-readiness.md)
 - [Goal 51 page metadata](./docs/architecture/goal-51-page-metadata.md)
 - [Goal 52 route registry guard](./docs/architecture/goal-52-route-registry-guard.md)
+- [Goal 53 route coverage summary](./docs/architecture/goal-53-route-coverage-summary.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -520,6 +525,9 @@ Rules:
   navigation, and admin smoke-manifest links. It does not change route
   permissions, visibility, data loading, writes, auth, uploads, public proof
   sharing, or integrations.
+- Goal 53 adds an admin route coverage summary. It does not add routes, change
+  navigation behavior, or enable auth, writes, uploads, public proof sharing,
+  or integrations.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.

@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 52: route registry guard with
+The active goal is Goal 53: route coverage summary with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -341,6 +341,9 @@ Allowed:
 - route registry tests that prove role-aware navigation and smoke-test links
   point at known routes, as long as route permissions, visibility, data loading,
   writes, auth, uploads, public proof sharing, and integrations stay unchanged
+- admin-facing route coverage summaries that report known routes, navigation
+  coverage, smoke routes, and zero expected writes/sends without changing route
+  behavior, permissions, auth, uploads, public proof sharing, or integrations
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

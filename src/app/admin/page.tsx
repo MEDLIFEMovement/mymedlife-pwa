@@ -6,6 +6,7 @@ import { MetricCard } from "@/components/metric-card";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
 import { RestrictedState } from "@/components/restricted-state";
+import { RouteCoverageSummaryPanel } from "@/components/route-coverage-summary-panel";
 import { RouteSmokeManifestPanel } from "@/components/route-smoke-manifest-panel";
 import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-approval-plan-panel";
 import { WriteActivationReadinessPanel } from "@/components/write-activation-readiness-panel";
@@ -17,6 +18,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getRouteCoverageSummary } from "@/services/route-coverage-summary";
 import { getRouteSmokeManifest } from "@/services/route-smoke-manifest";
 import {
   canReadIntegrationOutbox,
@@ -42,6 +44,7 @@ export default async function AdminPage() {
   const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
   const releaseReadiness = getMvpReleaseReadinessSummary(actor);
   const routeSmokeManifest = getRouteSmokeManifest(actor);
+  const routeCoverageSummary = getRouteCoverageSummary(actor);
   const writeActivationSummary = getWriteActivationReadinessSummary(actor, {
     assignments: data.assignments,
     coachDecision: data.kpiSummary.coachDecision,
@@ -101,6 +104,7 @@ export default async function AdminPage() {
 
           <MvpCoverageChecklistPanel checklist={mvpCoverageChecklist} />
           <RouteSmokeManifestPanel manifest={routeSmokeManifest} />
+          <RouteCoverageSummaryPanel summary={routeCoverageSummary} />
           <AdminControlCenterPanel summary={adminControlCenter} />
           <WriteActivationReadinessPanel summary={writeActivationSummary} />
           <WriteActivationApprovalPlanPanel plan={writeActivationApprovalPlan} />
