@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ActionCommitteeWorkspacePanel } from "@/components/action-committee-workspace-panel";
 import { AppShell } from "@/components/app-shell";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
@@ -6,6 +7,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import {
   getActionCommittees,
   getChapterEventPlans,
+  getCommitteeWorkspaceForActor,
   getCommitteeOperatingSummary,
   getEventPlansForCommittee,
 } from "@/services/campaign-ops-service";
@@ -22,6 +24,7 @@ export default async function ActionCommitteesPage() {
   const mockLinkedEvents = eventPlans.filter(
     (eventPlan) => eventPlan.lumaStatus === "mock_linked",
   );
+  const workspace = getCommitteeWorkspaceForActor(actor, committees, eventPlans);
 
   return (
     <AppShell actor={actor}>
@@ -66,6 +69,8 @@ export default async function ActionCommitteesPage() {
               note="No Luma API write"
             />
           </section>
+
+          <ActionCommitteeWorkspacePanel summary={workspace} />
 
           <section className="grid gap-3 lg:grid-cols-2">
             {committees.map((committee) => {

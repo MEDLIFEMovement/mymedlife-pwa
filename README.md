@@ -10,7 +10,15 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 84: action committee role personas. This remains
+The current goal is Goal 85: action committee workspace. This remains
+mock-safe by default and makes `/action-committees` more role-aware for general
+members, action committee members, action committee chairs, leaders, coaches,
+admins, DS admins, and super admins. The page now answers "What should I do
+next?", highlights priority event focus, shows future structured events to
+watch, and keeps Luma, reminders, proof sharing, warehouse, Power BI, HubSpot,
+n8n, SMS, email, and AI writes disabled.
+
+Goal 84 added action committee role personas. This remains
 mock-safe by default and adds separate local review personas for Action
 Committee Member and Action Committee Chair, then proves the admin view can
 show each named MVP role separately. It updates mock fallback data, local
@@ -551,6 +559,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 82 write sequence packet status](./docs/architecture/goal-82-write-sequence-status.md)
 - [Goal 83 five-write staff dry-run rehearsal](./docs/architecture/goal-83-five-write-staff-dry-run.md)
 - [Goal 84 action committee role personas](./docs/architecture/goal-84-action-committee-role-personas.md)
+- [Goal 85 action committee workspace](./docs/architecture/goal-85-action-committee-workspace.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)

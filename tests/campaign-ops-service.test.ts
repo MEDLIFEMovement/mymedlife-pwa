@@ -4,6 +4,7 @@ import {
   getCampaignIntegrationPosture,
   getCampaignReadinessSummary,
   getCampaignShellBySlug,
+  getCommitteeWorkspaceForActor,
   getEventPlansForCampaign,
   getNextEventPlanForCommittee,
   getProofLibraryItemsForActor,
@@ -56,6 +57,51 @@ describe("campaign ops service", () => {
         title: "Freshman welcome social",
       }),
     );
+  });
+
+  it("gives action committee members a simple event-support workspace", () => {
+    const actor = getMockLocalActorContext("committee.member@mymedlife.test");
+    const workspace = getCommitteeWorkspaceForActor(actor);
+
+    expect(workspace.mode).toBe("committee_member");
+    expect(workspace.title).toContain("one event");
+    expect(workspace.priorityEvents.map((item) => item.campaignSlug)).toEqual([
+      "rush-month",
+      "rush-month",
+    ]);
+    expect(workspace.safetyReminders).toContain("Luma writes stay disabled.");
+  });
+
+  it("gives action committee chairs owner-focused event plans", () => {
+    const actor = getMockLocalActorContext("committee.chair@mymedlife.test");
+    const workspace = getCommitteeWorkspaceForActor(actor);
+
+    expect(workspace.mode).toBe("committee_chair");
+    expect(workspace.nextAction).toContain("event owner");
+    expect(workspace.priorityEvents.every((item) => item.ownerRole === "Action Committee Chair")).toBe(
+      true,
+    );
+  });
+
+  it("helps coaches find event plans that still need support", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const workspace = getCommitteeWorkspaceForActor(actor);
+
+    expect(workspace.mode).toBe("coach");
+    expect(workspace.nextAction).toContain("advance, hold, or intervene");
+    expect(workspace.priorityEvents.some((item) => item.lumaStatus === "future_sync_disabled")).toBe(
+      true,
+    );
+  });
+
+  it("keeps DS Admin out of committee event truth", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const workspace = getCommitteeWorkspaceForActor(actor);
+
+    expect(workspace.mode).toBe("ds_admin");
+    expect(workspace.visibleCommittees).toEqual([]);
+    expect(workspace.priorityEvents).toEqual([]);
+    expect(workspace.nextAction).toContain("admin outbox");
   });
 
   it("keeps proof library hidden from DS Admin", () => {
