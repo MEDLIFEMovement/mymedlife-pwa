@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 51: page metadata with
+The current goal is Goal 52: route registry guard with
 production data, enabled browser writes, admin mutation controls, reminder
 automation, escalation packets, uploads, public proof sharing, and external
 integrations still disabled.
@@ -250,6 +250,10 @@ Goal 51 adds plain-English browser/page titles and descriptions for the main
 routes through a small static metadata registry. It does not change permissions,
 data loading, writes, auth, uploads, public proof sharing, or integrations.
 
+Goal 52 adds a small route registry and tests to prove role-aware primary
+navigation, mobile quick navigation, and the admin route smoke manifest point at
+known app routes.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -344,6 +348,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 49 centralized local actor panels](./docs/architecture/goal-49-centralized-local-actor-panels.md)
 - [Goal 50 PWA install readiness](./docs/architecture/goal-50-pwa-install-readiness.md)
 - [Goal 51 page metadata](./docs/architecture/goal-51-page-metadata.md)
+- [Goal 52 route registry guard](./docs/architecture/goal-52-route-registry-guard.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -510,6 +515,10 @@ Rules:
   writes, uploads, public proof sharing, or external integrations.
 - Goal 51 adds static page titles and descriptions for core routes. It does
   not change permissions, data loading, writes, auth, uploads, public proof
+  sharing, or integrations.
+- Goal 52 adds a route registry guard for primary navigation, mobile
+  navigation, and admin smoke-manifest links. It does not change route
+  permissions, visibility, data loading, writes, auth, uploads, public proof
   sharing, or integrations.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
