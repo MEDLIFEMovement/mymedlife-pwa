@@ -8,14 +8,16 @@ import {
   writePlanOperations,
 } from "@/services/write-plan-matrix";
 import {
+  prepareDisabledAssignmentCreateWrite,
   prepareDisabledActionStartWrite,
   prepareDisabledHqSharingDecisionWrite,
   prepareDisabledProofSubmissionWrite,
 } from "@/services/write-readiness";
 
 describe("write plan matrix", () => {
-  it("tracks the three local write operations without enabling them", () => {
+  it("tracks the local write operations without enabling them", () => {
     expect(writePlanOperations.map((operation) => operation.key)).toEqual([
+      "action_assigned",
       "action_started",
       "evidence_submitted",
       "hq_sharing_decision",
@@ -24,7 +26,7 @@ describe("write plan matrix", () => {
     expect(writePlanOperations.every((operation) => operation.stillDisabled)).toBe(true);
     expect(getWritePlanSummary()).toEqual(
       expect.objectContaining({
-        operationCount: 3,
+        operationCount: 4,
         allOperationsStillDisabled: true,
         externalWritesAllowed: false,
       }),
@@ -34,9 +36,21 @@ describe("write plan matrix", () => {
   it("keeps future table targets aligned with the disabled write-readiness service", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const admin = getMockLocalActorContext("admin@mymedlife.test");
+    const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const actionAssignment = requireAssignment("member-push");
     const evidenceItem = evidenceItems[0];
 
+    expect(Array.from(getWritePlanOperation("action_assigned").futureTables)).toEqual(
+      prepareDisabledAssignmentCreateWrite(leader, {
+        title: "Assign tabling event owner",
+        instructions: "Ask one student to own and promote the next Rush Month event.",
+        ownerRole: "General Member",
+        dueLabel: "Friday",
+        evidenceRequired: "Owner name and proof plan.",
+        points: 10,
+        kpi: "Owner assigned",
+      }).wouldWriteTables,
+    );
     expect(Array.from(getWritePlanOperation("action_started").futureTables)).toEqual(
       prepareDisabledActionStartWrite(member, actionAssignment).wouldWriteTables,
     );
@@ -60,11 +74,30 @@ describe("write plan matrix", () => {
         return operation.blockedActors.includes("ds_admin");
       }),
     ).toBe(true);
+    expect(isActorAllowedForPlannedWrite("ds_admin", "action_assigned")).toBe(false);
     expect(isActorAllowedForPlannedWrite("ds_admin", "action_started")).toBe(false);
     expect(isActorAllowedForPlannedWrite("ds_admin", "evidence_submitted")).toBe(false);
     expect(isActorAllowedForPlannedWrite("ds_admin", "hq_sharing_decision")).toBe(
       false,
     );
+  });
+
+  it("limits assignment creation to chapter leaders and super admins", () => {
+    const assignmentCreate = getWritePlanOperation("action_assigned");
+
+    expect(Array.from(assignmentCreate.allowedActors)).toEqual([
+      "chapter_leader",
+      "super_admin",
+    ]);
+    expect(assignmentCreate.blockedActors).toEqual([
+      "chapter_member",
+      "coach",
+      "admin",
+      "ds_admin",
+    ]);
+    expect(isActorAllowedForPlannedWrite("chapter_leader", "action_assigned")).toBe(true);
+    expect(isActorAllowedForPlannedWrite("super_admin", "action_assigned")).toBe(true);
+    expect(isActorAllowedForPlannedWrite("admin", "action_assigned")).toBe(false);
   });
 
   it("limits proof submission to student or chapter operators", () => {
@@ -101,8 +134,9 @@ describe("write plan matrix", () => {
     );
   });
 
-  it("marks only proof and HQ decisions as future outbox-producing writes", () => {
+  it("marks assignment, proof, and HQ decisions as future outbox-producing writes", () => {
     expect(getWritePlanSummary().operationsTouchingOutbox).toEqual([
+      "action_assigned",
       "evidence_submitted",
       "hq_sharing_decision",
     ]);

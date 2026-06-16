@@ -31,6 +31,33 @@ export type WritePlanSummary = {
 
 export const writePlanOperations = [
   {
+    key: "action_assigned",
+    label: "Action assigned",
+    plainEnglishOutcome:
+      "A chapter leader creates a Rush Month assignment for a member, action committee role, or leader lane.",
+    transactionBoundary:
+      "Create one assignment, record one internal event, record one integration event, create one disabled outbox row, and record one audit log entry together.",
+    futureTables: [
+      "assignments",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ],
+    allowedActors: ["chapter_leader", "super_admin"],
+    blockedActors: ["chapter_member", "coach", "admin", "ds_admin"],
+    requiredTests: [
+      "chapter_leader_can_create_chapter_assignment",
+      "super_admin_can_create_chapter_assignment",
+      "member_cannot_create_assignment",
+      "coach_cannot_create_assignment",
+      "admin_cannot_create_student_truth_assignment",
+      "ds_admin_cannot_create_assignment",
+      "created_assignment_records_disabled_outbox_row",
+    ],
+    stillDisabled: true,
+  },
+  {
     key: "action_started",
     label: "Action started",
     plainEnglishOutcome:

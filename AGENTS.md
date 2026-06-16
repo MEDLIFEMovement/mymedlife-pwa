@@ -161,8 +161,9 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 23: action-start browser write gate with production
-data, enabled browser writes, uploads, and external integrations still disabled.
+The active goal is Goal 24: leader assignment browser write gate with
+production data, enabled browser writes, uploads, and external integrations
+still disabled.
 
 Allowed:
 
@@ -186,8 +187,9 @@ Allowed:
   returning blocked write attempts
 - `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false` documentation, as long as code
   still refuses writes even if the env var is set to true
-- local write implementation planning for action starts, proof submissions, and
-  HQ proof-sharing decisions, as long as the implementation remains disabled
+- local write implementation planning for assignment creation, action starts,
+  proof submissions, and HQ proof-sharing decisions, as long as the
+  implementation remains disabled
 - a typed write-plan matrix and tests that document future RLS/security cases
 - one local Supabase `action_started` write function that updates assignment
   status, records an internal event, records an integration-ready event row, and
@@ -237,6 +239,9 @@ Allowed:
 - visible browser-write activation gates that make first-write prerequisites
   clear while keeping enabled controls disabled until Nick approves live auth
   and browser writes
+- a visible assignment-create browser-write activation gate on
+  `/rush-month/actions` that references the local `action_assigned` function
+  while keeping enabled controls disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

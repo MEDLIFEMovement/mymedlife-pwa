@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
+  canCreateChapterAssignment,
   canMakeHqSharingDecision,
   canSubmitProofForAssignment,
   createActionStartedMock,
+  createChapterAssignmentMock,
   createHqSharingDecisionMock,
   createProofSubmissionMock,
   getProofSubmissionGuidance,
@@ -12,6 +14,58 @@ import {
 } from "@/services/local-action-contracts";
 
 describe("local action contracts", () => {
+  it("allows leaders and super admins to create assignment previews", () => {
+    const leader = getMockLocalActorContext("leader.a@mymedlife.test");
+    const superAdmin = getMockLocalActorContext("super.admin@mymedlife.test");
+
+    expect(canCreateChapterAssignment(leader)).toBe(true);
+    expect(canCreateChapterAssignment(superAdmin)).toBe(true);
+
+    const result = createChapterAssignmentMock(leader, {
+      title: "Assign tabling event owner",
+      instructions:
+        "Ask one action committee member to plan the tabling event and collect a testimonial after it happens.",
+      ownerRole: "Action Committee Member",
+      dueLabel: "Next Friday",
+      evidenceRequired: "Owner name, event link, and proof collection plan.",
+      points: 15,
+      kpi: "Event owner assigned",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.assignment.status).toBe("not_started");
+      expect(result.data.assignment.lane).toBe("Member");
+      expect(result.data.integrationEvent.eventType).toBe("action_assigned");
+      expect(result.data.automationOutbox.status).toBe("disabled");
+      expect(result.data.auditLog.action).toBe("action_assigned");
+    }
+  });
+
+  it("blocks members, coaches, admin, and DS Admin from creating assignment previews", () => {
+    const blockedActors = [
+      getMockLocalActorContext("member.a@mymedlife.test"),
+      getMockLocalActorContext("coach@mymedlife.test"),
+      getMockLocalActorContext("admin@mymedlife.test"),
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
+    ];
+
+    for (const actor of blockedActors) {
+      expect(canCreateChapterAssignment(actor)).toBe(false);
+      expect(
+        createChapterAssignmentMock(actor, {
+          title: "Assign event owner",
+          instructions: "Ask one student to own the next Rush Month event.",
+          ownerRole: "General Member",
+          dueLabel: "Friday",
+          evidenceRequired: "Owner name and event plan.",
+          points: 10,
+          kpi: "Owner assigned",
+        }),
+      ).toEqual(expect.objectContaining({ success: false }));
+    }
+  });
+
   it("starts a visible not-started assignment without mutating the original", () => {
     const coach = getMockLocalActorContext("coach@mymedlife.test");
     const assignment = assignments.find((item) => item.id === "coach-summary");

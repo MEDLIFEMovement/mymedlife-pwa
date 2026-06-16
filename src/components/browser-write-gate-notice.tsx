@@ -54,7 +54,7 @@ export function BrowserWriteGateNotice({ gate }: BrowserWriteGateNoticeProps) {
           Future local function
         </p>
         <p className="mt-1 font-mono text-xs text-cyan-100/80">
-          {gate.localFunction}(assignment_uuid)
+          {gate.functionSignature}
         </p>
         <p className="mt-2 text-sm leading-6 text-white/62">
           Enabled control now? {gate.canRenderEnabledControl ? "yes" : "no"}.

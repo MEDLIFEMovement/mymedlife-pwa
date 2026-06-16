@@ -3,6 +3,7 @@ import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
   getWriteReadinessConfig,
+  prepareDisabledAssignmentCreateWrite,
   prepareDisabledActionStartWrite,
   prepareDisabledHqSharingDecisionWrite,
   prepareDisabledProofSubmissionWrite,
@@ -26,9 +27,33 @@ describe("write readiness service", () => {
     ).toEqual(
       expect.objectContaining({
         enabled: false,
-        reason: expect.stringContaining("Goal 12 keeps every app write disabled"),
+        reason: expect.stringContaining("browser-facing writes remain disabled"),
       }),
     );
+  });
+
+  it("prepares a disabled assignment-create write attempt with future table names", () => {
+    const leader = getMockLocalActorContext("leader.a@mymedlife.test");
+    const attempt = prepareDisabledAssignmentCreateWrite(leader, {
+      title: "Assign tabling event owner",
+      instructions: "Ask one student to own and promote the next Rush Month event.",
+      ownerRole: "General Member",
+      dueLabel: "Friday",
+      evidenceRequired: "Owner name and proof plan.",
+      points: 10,
+      kpi: "Owner assigned",
+    });
+
+    expect(attempt.success).toBe(false);
+    expect(attempt.operation).toBe("action_assigned");
+    expect(attempt.wouldWriteTables).toEqual([
+      "assignments",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ]);
+    expect(attempt.preview.success).toBe(true);
   });
 
   it("prepares a disabled action-start write attempt with future table names", () => {
