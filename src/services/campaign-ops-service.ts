@@ -50,6 +50,57 @@ export function getChapterEventPlans(): ChapterEventPlan[] {
   return chapterEventPlans;
 }
 
+export type CommitteeWorkspaceMode =
+  | "member"
+  | "committee_member"
+  | "committee_chair"
+  | "chapter_leader"
+  | "coach"
+  | "admin"
+  | "ds_admin"
+  | "super_admin";
+
+export type CommitteeWorkspaceSummary = {
+  mode: CommitteeWorkspaceMode;
+  title: string;
+  nextAction: string;
+  detail: string;
+  visibleCommittees: ActionCommittee[];
+  priorityEvents: ChapterEventPlan[];
+  structuredEventsToWatch: string[];
+  safetyReminders: string[];
+};
+
+export function getCommitteeWorkspaceForActor(
+  actor: LocalActorContext,
+  committees: ActionCommittee[] = actionCommittees,
+  events: ChapterEventPlan[] = chapterEventPlans,
+): CommitteeWorkspaceSummary {
+  const mode = getCommitteeWorkspaceMode(actor);
+  const visibleCommittees = mode === "ds_admin" ? [] : committees;
+
+  return {
+    mode,
+    ...getCommitteeWorkspaceCopy(mode),
+    visibleCommittees,
+    priorityEvents: getPriorityCommitteeEvents(mode, events),
+    structuredEventsToWatch: [
+      "chapter_event_planned",
+      "luma_event_linked",
+      "luma_attendance_import_mocked",
+      "kpi_event_recorded",
+      "evidence_submitted",
+      "automation_outbox_disabled",
+    ],
+    safetyReminders: [
+      "Luma writes stay disabled.",
+      "Reminder emails/texts stay disabled.",
+      "Proof sharing stays HQ-reviewed.",
+      "Warehouse, Power BI, HubSpot, n8n, SMS, email, and AI writes stay off.",
+    ],
+  };
+}
+
 export function getEventPlansForCampaign(slug: string): ChapterEventPlan[] {
   return chapterEventPlans.filter((eventPlan) => eventPlan.campaignSlug === slug);
 }
@@ -156,4 +207,123 @@ export function getCommitteeOperatingSummary(committee: ActionCommittee): string
   }
 
   return `${committee.name} owns ${eventCount} event${eventCount === 1 ? "" : "s"}; next visible event is ${nextEvent.title}.`;
+}
+
+function getCommitteeWorkspaceMode(actor: LocalActorContext): CommitteeWorkspaceMode {
+  if (actor.chapterRoles.includes("Action Committee Chair")) {
+    return "committee_chair";
+  }
+
+  if (actor.chapterRoles.includes("Action Committee Member")) {
+    return "committee_member";
+  }
+
+  switch (actor.audience) {
+    case "chapter_leader":
+      return "chapter_leader";
+    case "coach":
+      return "coach";
+    case "admin":
+      return "admin";
+    case "ds_admin":
+      return "ds_admin";
+    case "super_admin":
+      return "super_admin";
+    case "chapter_member":
+    default:
+      return "member";
+  }
+}
+
+function getCommitteeWorkspaceCopy(mode: CommitteeWorkspaceMode) {
+  switch (mode) {
+    case "committee_member":
+      return {
+        title: "Help one event become real this week.",
+        nextAction:
+          "Pick the event you are supporting, take one promotion or hosting task, and know what proof/testimonial should be collected afterward.",
+        detail:
+          "Committee members should not need the whole operating system at once. They need the next event, the expected student action, and the proof prompt.",
+      };
+    case "committee_chair":
+      return {
+        title: "Turn committee plans into assigned event work.",
+        nextAction:
+          "Confirm the event owner, promotion task, feedback plan, and proof prompt before the chapter meeting.",
+        detail:
+          "Committee chairs are treated like local chapter leaders for read-only review because they coordinate people and event execution.",
+      };
+    case "chapter_leader":
+      return {
+        title: "Keep committees from becoming passive meeting groups.",
+        nextAction:
+          "Check which committee has a real event, owner, student action, feedback plan, and proof prompt.",
+        detail:
+          "Leaders should use this page to spot thin ownership and assign the next concrete Rush Month action.",
+      };
+    case "coach":
+      return {
+        title: "Look for action committees that need coaching.",
+        nextAction:
+          "Watch for committees with no visible event, no owner, or no feedback/proof loop before deciding advance, hold, or intervene.",
+        detail:
+          "Coach review focuses on whether the chapter is creating real student action rather than only running meetings.",
+      };
+    case "admin":
+      return {
+        title: "Review committee operations without owning chapter truth.",
+        nextAction:
+          "Inspect event, proof, and integration posture before approving any broader staff workflow.",
+        detail:
+          "Admins can support the operating model, but student/chapter truth stays owned by the app and approved role boundaries.",
+      };
+    case "super_admin":
+      return {
+        title: "Review the full committee operating model.",
+        nextAction:
+          "Confirm every committee event can create structured app events while external automation stays disabled.",
+        detail:
+          "Super admins can see the complete local review surface, including permission and integration safety posture.",
+      };
+    case "ds_admin":
+      return {
+        title: "Integration posture only.",
+        nextAction:
+          "Use the admin outbox screens instead of student committee truth.",
+        detail:
+          "DS Admin should not own committee, event, proof, point, KPI, or chapter execution truth.",
+      };
+    case "member":
+    default:
+      return {
+        title: "Find one real thing to join.",
+        nextAction:
+          "Choose a Rush Month event or committee action, show up, and submit a short proof/testimonial afterward if asked.",
+        detail:
+          "General members should see action opportunities without needing leadership-level SOP or KPI complexity.",
+      };
+  }
+}
+
+function getPriorityCommitteeEvents(
+  mode: CommitteeWorkspaceMode,
+  events: ChapterEventPlan[],
+): ChapterEventPlan[] {
+  if (mode === "ds_admin") {
+    return [];
+  }
+
+  if (mode === "committee_chair") {
+    return events.filter((eventPlan) => eventPlan.ownerRole === "Action Committee Chair");
+  }
+
+  if (mode === "committee_member" || mode === "member") {
+    return events.filter((eventPlan) => eventPlan.campaignSlug === "rush-month");
+  }
+
+  if (mode === "coach") {
+    return events.filter((eventPlan) => eventPlan.lumaStatus !== "mock_linked");
+  }
+
+  return events;
 }

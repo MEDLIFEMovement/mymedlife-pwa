@@ -161,12 +161,12 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 84: action committee role personas. This remains
-mock-safe and gives reviewers separate local personas for General Member,
-Action Committee Member, Action Committee Chair, E-Board / President-VP, Coach,
-Admin, DS Admin, and Super Admin. Production data, broad browser writes, admin
-mutation controls, real uploads, public proof sharing, role writes, and
-external integrations remain disabled.
+The active goal is Goal 85: action committee workspace. This remains mock-safe
+and gives each role a clearer `/action-committees` next step, priority event
+focus, future structured events to watch, and safety reminders. Production
+data, broad browser writes, admin mutation controls, real uploads, public proof
+sharing, role writes, Luma writes, reminders, and external integrations remain
+disabled.
 
 Allowed:
 
@@ -230,6 +230,9 @@ Allowed:
   next major campaign families
 - action committee event-planning shells that show owners, student action,
   feedback/NPS posture, proof prompts, and mock/disabled Luma state
+- role-aware action committee workspace guidance that tells members, committee
+  members, committee chairs, leaders, coaches, admins, DS admins, and super
+  admins what to inspect next while keeping Luma/reminders disabled
 - proof-library posture that treats bridge videos, testimonials, UGC, and
   chapter recaps as belief-building assets requiring HQ sharing decisions
 - tests proving DS Admin cannot read campaign, event, proof, student, points,
