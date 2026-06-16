@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 36: assignment creation result states with production
+The current goal is Goal 37: Rush Month local operating loop with production
 data, enabled browser writes, reminder automation, escalation packets, uploads,
 public proof sharing, and external integrations still disabled.
 
@@ -175,6 +175,12 @@ result, the future result for the selected mock assignment, and the possible
 success/validation/permission/reminder-disabled states. The admin coverage panel
 now shows all five first-write candidates covered while writes remain disabled.
 
+Goal 37 adds a browser-local Rush Month operating loop on `/rush-month/loop`.
+It lets a reviewer click through leader assignment, member action start, proof
+submission, local completion review, points/KPI movement, HQ sharing posture,
+coach decision, structured events, disabled outbox rows, and audit logs without
+writing to Supabase or sending external automation.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -254,6 +260,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 34 coach decision result states](./docs/architecture/goal-34-coach-decision-result-states.md)
 - [Goal 35 result-state coverage review](./docs/architecture/goal-35-result-state-coverage.md)
 - [Goal 36 assignment creation result states](./docs/architecture/goal-36-assignment-create-result-states.md)
+- [Goal 37 Rush Month local operating loop](./docs/architecture/goal-37-rush-month-local-loop.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -404,6 +411,9 @@ Rules:
 - Goal 36 adds assignment creation result states and marks all five first write
   candidates covered in the admin coverage panel. It still does not enable
   browser writes or reminder automation.
+- Goal 37 adds a browser-local Rush Month operating loop. It is interactive
+  review evidence only; it still does not save to Supabase or send external
+  automation.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -421,6 +431,7 @@ data and fake local actor context. With or without local Supabase running,
 - `/action-committees`
 - `/rush-month`
 - `/rush-month/dashboard`
+- `/rush-month/loop`
 - `/rush-month/actions`
 - `/rush-month/actions/[assignmentId]`
 - `/rush-month/evidence`
@@ -442,6 +453,7 @@ Goal 2 route shells:
 - `/action-committees`: action committee and chapter event operating examples
 - `/rush-month`: Rush Month campaign shell
 - `/rush-month/dashboard`: role-aware Rush Month operating dashboard
+- `/rush-month/loop`: browser-local end-to-end Rush Month operating-loop demo
 - `/rush-month/actions`: role-aware visible assignments plus disabled leader assignment gate
 - `/rush-month/actions/[assignmentId]`: role-aware action detail, local proof contract preview, and disabled proof submission gate
 - `/rush-month/evidence`: role-aware proof/testimonial list
@@ -708,6 +720,15 @@ Goal 36 assignment creation result states live in:
 - visible assignment-create result-state panel on `/rush-month/actions`
 - updated coverage review on `/admin`
 
+Goal 37 Rush Month local operating loop lives in:
+
+- `docs/architecture/goal-37-rush-month-local-loop.md`
+- `src/services/rush-month-local-loop.ts`
+- `src/components/rush-month-local-loop-demo.tsx`
+- `src/app/rush-month/loop/page.tsx`
+- `tests/rush-month-local-loop.test.ts`
+- navigation entry in `src/services/role-visibility.ts`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -726,14 +747,14 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 36
+## Definition of Done for Goal 37
 
-Goal 36 is complete when a human developer can open the actions route and see
-the exact disabled assignment-create result plus future plain-English result
-states, and open the admin route to see all five first write candidates covered
-with no enabled browser or external writes.
+Goal 37 is complete when a human developer can open `/rush-month/loop`, click
+through the local Rush Month path, and see assignment state, proof state,
+points, KPIs, coach decision, events, disabled outbox rows, and audit logs
+update without Supabase writes or external sends.
 
-The app remains mock-first by default. Goal 36 does not wire production
+The app remains mock-first by default. Goal 37 does not wire production
 Supabase, create a server action, enable browser writes, upload files, publish
 proof, remove mock fallback, send reminders or escalation packets, or activate
 real integrations.

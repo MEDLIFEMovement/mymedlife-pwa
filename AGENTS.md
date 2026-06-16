@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 36: assignment creation result states with production
+The active goal is Goal 37: Rush Month local operating loop with production
 data, enabled browser writes, reminder automation, escalation packets, uploads,
 public proof sharing, and external integrations still disabled.
 
@@ -288,6 +288,11 @@ Allowed:
   created, disabled, reminder-disabled, duplicate, auth, permission,
   validation, and error messages without saving assignments, sending reminders,
   or enabling browser writes
+- a browser-local Rush Month operating loop on `/rush-month/loop` that lets a
+  reviewer click through assignment, action start, proof submission, completion
+  review, points, KPIs, HQ sharing posture, coach decision, structured events,
+  disabled outbox rows, and audit logs without Supabase writes or external
+  sends
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
