@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ActionStartActivationContractPanel } from "@/components/action-start-activation-contract-panel";
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
@@ -9,6 +10,10 @@ import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
 import { getAssignmentById } from "@/lib/rush-month";
+import {
+  getActionStartActivationContract,
+  prepareDisabledActionStartActivationAttempt,
+} from "@/services/action-start-activation-contract";
 import {
   canSubmitProofForAssignment,
   createActionStartedMock,
@@ -68,7 +73,12 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
     assignment,
     proofSubmissionInput,
   );
+  const actionStartContract = getActionStartActivationContract();
   const disabledActionStartWrite = prepareDisabledActionStartWrite(actor, assignment);
+  const disabledActionStartActivation = prepareDisabledActionStartActivationAttempt(
+    actor,
+    assignment,
+  );
   const actionStartGate = getActionStartBrowserWriteGate(actor, assignment);
   const proofSubmissionGate = getProofSubmissionBrowserWriteGate(
     actor,
@@ -173,6 +183,10 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
       />
 
       <BrowserWriteGateNotice gate={actionStartGate} />
+      <ActionStartActivationContractPanel
+        contract={actionStartContract}
+        attempt={disabledActionStartActivation}
+      />
 
       {proofSubmissionPreview.success ? (
         <>
