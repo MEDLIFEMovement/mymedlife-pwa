@@ -6,6 +6,7 @@ import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
+import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { RouteSmokeManifestPanel } from "@/components/route-smoke-manifest-panel";
 import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-approval-plan-panel";
@@ -16,6 +17,7 @@ import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
+import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRouteSmokeManifest } from "@/services/route-smoke-manifest";
 import {
@@ -38,6 +40,7 @@ export default async function AdminPage() {
   const writeActivationApprovalPlan = getWriteActivationApprovalPlan();
   const writeResultStateCoverage = getWriteResultStateCoverageSummary();
   const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
+  const releaseReadiness = getMvpReleaseReadinessSummary(actor);
   const routeSmokeManifest = getRouteSmokeManifest(actor);
   const writeActivationSummary = getWriteActivationReadinessSummary(actor, {
     assignments: data.assignments,
@@ -85,6 +88,7 @@ export default async function AdminPage() {
             />
           </section>
 
+          <MvpReleaseReadinessPanel summary={releaseReadiness} />
           <section className="grid gap-3 md:grid-cols-2">
             {visiblePanels.map((panel) => (
               <article key={panel.key} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">

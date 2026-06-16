@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 46: route smoke manifest with production data,
+The current goal is Goal 47: MVP release readiness with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -226,6 +226,11 @@ sharing, or integrations are approved.
 Goal 46 adds a route-level smoke-test manifest to `/admin`. Admin, DS admin,
 and super admin reviewers can see which core MVP routes to open, which local
 roles to test, what should appear, and which safety boundary must remain true.
+
+Goal 47 adds a plain-English release-readiness summary to `/admin`. It marks
+the local Rush Month MVP as ready for stakeholder review but not ready for live
+student launch until auth, writes, uploads, production setup, and integrations
+are approved.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
