@@ -4,6 +4,13 @@ import {
   getSupabaseReadConfig,
   type SupabaseReadonlyClient,
 } from "@/lib/supabase-readonly";
+import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
+import {
+  getAuthSessionState,
+  getDisabledAuthSessionState,
+  type AuthSessionState,
+  type AuthSessionStatus,
+} from "@/services/auth-session";
 import type { DataSourceMeta, DataSourceStatus } from "@/services/read-only-app-data";
 import type { User } from "@/shared/types/domain";
 import type {
@@ -25,10 +32,14 @@ export type ActorAudience =
   | "ds_admin"
   | "super_admin";
 
+export type ActorIdentitySource = "local_actor_email" | "local_auth_session";
+
 export type LocalActorContext = {
   source: DataSourceMeta;
   user: User;
   selectedEmail: string;
+  identitySource: ActorIdentitySource;
+  authSessionStatus: AuthSessionStatus;
   audience: ActorAudience;
   audienceLabel: string;
   accessSummary: string;
@@ -55,6 +66,14 @@ type LocalActorSnapshot = {
   staffRoles: StaffRoleAssignmentRow[];
   coachAssignments: CoachChapterAssignmentRow[];
   chapters: ChapterRow[];
+};
+
+export type ActorEmailResolution = {
+  email: string;
+  identitySource: ActorIdentitySource;
+  authSessionStatus: AuthSessionStatus;
+  authSessionEmail: string | null;
+  message: string;
 };
 
 export const localActorOptions: LocalActorOption[] = [
@@ -117,25 +136,40 @@ export const localActorOptions: LocalActorOption[] = [
 export async function getLocalActorContext(): Promise<LocalActorContext> {
   const selectedEmail =
     process.env.MYMEDLIFE_LOCAL_ACTOR_EMAIL?.trim() || defaultLocalActorEmail;
+  const authSession = await getLocalAuthSessionState();
+  const resolvedActor = resolveActorEmailFromSession(authSession, selectedEmail);
   const config = getSupabaseReadConfig();
 
   if (!config.enabled) {
-    return getMockLocalActorContext(selectedEmail, config.reason);
+    return getMockLocalActorContext(
+      resolvedActor.email,
+      actorContextMessage(resolvedActor, config.reason),
+      "mock_fallback",
+      resolvedActor.identitySource,
+      resolvedActor.authSessionStatus,
+    );
   }
 
   try {
     return await getSupabaseLocalActorContext(
       createSupabaseReadonlyClient(config),
-      selectedEmail,
-      config.reason,
+      resolvedActor.email,
+      actorContextMessage(resolvedActor, config.reason),
+      resolvedActor.identitySource,
+      resolvedActor.authSessionStatus,
     );
   } catch (error) {
     return getMockLocalActorContext(
-      selectedEmail,
+      resolvedActor.email,
       error instanceof Error
-        ? `Local actor read failed, so mock fallback is active: ${error.message}`
+        ? actorContextMessage(
+            resolvedActor,
+            `Local actor read failed, so mock fallback is active: ${error.message}`,
+          )
         : "Local actor read failed, so mock fallback is active.",
       "supabase_error",
+      resolvedActor.identitySource,
+      resolvedActor.authSessionStatus,
     );
   }
 }
@@ -144,6 +178,8 @@ export async function getSupabaseLocalActorContext(
   client: SupabaseReadonlyClient,
   selectedEmail = defaultLocalActorEmail,
   message = "Reading local Supabase actor context in read-only mode.",
+  identitySource: ActorIdentitySource = "local_actor_email",
+  authSessionStatus: AuthSessionStatus = "disabled",
 ): Promise<LocalActorContext> {
   const snapshot = await readLocalActorSnapshot(client);
   const normalizedEmail = selectedEmail.toLowerCase();
@@ -190,6 +226,8 @@ export async function getSupabaseLocalActorContext(
       email: profile.email,
     },
     selectedEmail,
+    identitySource,
+    authSessionStatus,
     audience,
     audienceLabel: audienceToLabel(audience),
     accessSummary: audienceToAccessSummary(audience),
@@ -205,6 +243,8 @@ export function getMockLocalActorContext(
   selectedEmail = defaultLocalActorEmail,
   message = "Using mock actor context because local Supabase reads are disabled.",
   status: DataSourceStatus = "mock_fallback",
+  identitySource: ActorIdentitySource = "local_actor_email",
+  authSessionStatus: AuthSessionStatus = "disabled",
 ): LocalActorContext {
   const option = findLocalActorOption(selectedEmail);
 
@@ -220,6 +260,8 @@ export function getMockLocalActorContext(
       email: selectedEmail,
     },
     selectedEmail,
+    identitySource,
+    authSessionStatus,
     audience: option.audience,
     audienceLabel: audienceToLabel(option.audience),
     accessSummary: audienceToAccessSummary(option.audience),
@@ -229,6 +271,45 @@ export function getMockLocalActorContext(
     coachPortfolioChapterNames: option.coachPortfolioChapterNames,
     isLocalOnly: true,
   };
+}
+
+export function resolveActorEmailFromSession(
+  authSession: AuthSessionState,
+  fallbackEmail = defaultLocalActorEmail,
+): ActorEmailResolution {
+  if (authSession.status === "signed_in" && authSession.user?.email) {
+    return {
+      email: authSession.user.email,
+      identitySource: "local_auth_session",
+      authSessionStatus: authSession.status,
+      authSessionEmail: authSession.user.email,
+      message:
+        "Using the signed-in local Supabase Auth user for role-aware app context.",
+    };
+  }
+
+  return {
+    email: fallbackEmail,
+    identitySource: "local_actor_email",
+    authSessionStatus: authSession.status,
+    authSessionEmail: authSession.user?.email ?? null,
+    message:
+      "Using MYMEDLIFE_LOCAL_ACTOR_EMAIL because no signed-in local auth user is active.",
+  };
+}
+
+async function getLocalAuthSessionState(): Promise<AuthSessionState> {
+  const { client, config } = await createLocalSupabaseServerClient();
+
+  if (!client) {
+    return getDisabledAuthSessionState(config);
+  }
+
+  return getAuthSessionState(client);
+}
+
+function actorContextMessage(resolution: ActorEmailResolution, dataSourceReason: string) {
+  return `${resolution.message} ${dataSourceReason}`;
 }
 
 export async function readLocalActorSnapshot(

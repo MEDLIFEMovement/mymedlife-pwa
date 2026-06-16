@@ -31,9 +31,9 @@ export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/68">{session.user.email}</p>
       <p className="mt-3 text-sm leading-6 text-white/64">
-        This confirms the local Supabase Auth cookie flow works. The rest of the
-        app still uses the local actor switch until the next approved slice maps
-        real sessions to role-aware app context.
+        This confirms the local Supabase Auth cookie flow works. Role-aware app
+        routes now prefer this local session over the debug actor email when the
+        matching fake profile exists.
       </p>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Link

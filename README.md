@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 58: local Supabase Auth sign-in with production data,
+The current goal is Goal 59: auth-derived actor context with production data,
 browser writes, admin mutation controls, reminder automation, escalation
 packets, uploads, public proof sharing, and external integrations still
 disabled.
@@ -277,6 +277,12 @@ users. It begins the real session foundation needed for the MVP, but does not
 connect production Supabase, create real users, enable browser app writes, or
 enable external writes.
 
+Goal 59 maps signed-in local Supabase Auth users into the role-aware actor
+context used across the app. Routes now prefer the local auth session over the
+debug actor email when a matching fake local profile is signed in. Browser
+writes, production auth, production users, uploads, public proof sharing, and
+external sends remain disabled.
+
 Do not connect production Supabase, create real users, enable browser app
 writes, or enable external writes until Nick approves a later implementation
 goal.
@@ -378,6 +384,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 56 environment safety summary](./docs/architecture/goal-56-environment-safety-summary.md)
 - [Goal 57 local MVP review guide](./docs/architecture/goal-57-local-review-guide.md)
 - [Goal 58 local Supabase Auth sign-in](./docs/architecture/goal-58-local-auth-sign-in.md)
+- [Goal 59 auth-derived actor context](./docs/architecture/goal-59-auth-derived-actor-context.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -569,6 +576,10 @@ Rules:
 - Goal 58 adds localhost-only Supabase Auth sign-in at `/login` for fake local
   seed users. It does not enable production Supabase Auth, production users,
   browser app writes, uploads, public proof sharing, or external sends.
+- Goal 59 maps signed-in local Supabase Auth users into role-aware actor
+  context. It keeps the debug actor fallback and still does not enable
+  production auth, production users, browser writes, uploads, public proof
+  sharing, or external sends.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -739,6 +750,14 @@ Goal 58 local Supabase Auth sign-in lives in:
 - `src/services/auth-session.ts`
 - `tests/supabase-auth-config.test.ts`
 - `tests/auth-session.test.ts`
+
+Goal 59 auth-derived actor context lives in:
+
+- `docs/architecture/goal-59-auth-derived-actor-context.md`
+- `src/services/local-actor-context.ts`
+- `src/components/local-actor-notice.tsx`
+- `src/components/local-role-switcher.tsx`
+- `tests/local-actor-context.test.ts`
 
 Goal 20 live-data connection planning lives in:
 

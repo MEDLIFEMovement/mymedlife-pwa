@@ -8,6 +8,8 @@ type LocalRoleSwitcherProps = {
 };
 
 export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
+  const isUsingAuthSession = actor.identitySource === "local_auth_session";
+
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
       <div>
@@ -15,11 +17,14 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
           Local role switcher
         </p>
         <h2 className="mt-2 text-xl font-semibold text-white">
-          Set `MYMEDLIFE_LOCAL_ACTOR_EMAIL` to preview another fake role.
+          {isUsingAuthSession
+            ? "Signed-in local auth user controls the current role."
+            : "Set `MYMEDLIFE_LOCAL_ACTOR_EMAIL` to preview another fake role."}
         </h2>
         <p className="mt-2 text-sm leading-6 text-white/62">
-          This is a local-only debug panel. It does not create browser sessions,
-          sign-ins, cookies, production users, or app writes.
+          {isUsingAuthSession
+            ? "Sign out or sign in as another fake local seed user to preview a different role. Browser writes and production auth remain disabled."
+            : "This is a local-only debug panel. It does not create browser sessions, sign-ins, cookies, production users, or app writes."}
         </p>
       </div>
 
