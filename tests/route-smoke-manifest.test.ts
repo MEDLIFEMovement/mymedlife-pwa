@@ -9,7 +9,7 @@ describe("route smoke manifest", () => {
 
     expect(manifest.canReadManifest).toBe(true);
     expect(manifest.title).toBe("Admin route smoke manifest");
-    expect(manifest.counts.totalRoutes).toBe(12);
+    expect(manifest.counts.totalRoutes).toBe(13);
     expect(manifest.counts.criticalRoutes).toBeGreaterThan(0);
     expect(manifest.counts.browserWritesExpected).toBe(0);
     expect(manifest.counts.externalWritesExpected).toBe(0);
@@ -27,6 +27,7 @@ describe("route smoke manifest", () => {
         "/proof-library/upload",
         "/rush-month",
         "/rush-month/dashboard",
+        "/rush-month/events",
         "/rush-month/actions",
         "/rush-month/loop",
         "/coach",

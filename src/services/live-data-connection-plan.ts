@@ -14,6 +14,7 @@ export type AppRouteKey =
   | "/action-committees"
   | "/rush-month"
   | "/rush-month/dashboard"
+  | "/rush-month/events"
   | "/rush-month/actions"
   | "/rush-month/actions/[assignmentId]"
   | "/rush-month/evidence"
@@ -126,6 +127,12 @@ export const routeMigrationOrder = [
     route: "/rush-month/dashboard",
     firstLiveDataMode: "read_only",
     reason: "Role-aware dashboard should read from trusted local data before any controls save.",
+  },
+  {
+    route: "/rush-month/events",
+    firstLiveDataMode: "read_only",
+    reason:
+      "Rush Month event, NPS, proof, and Luma posture should be reviewed before Luma syncs or attendance imports exist.",
   },
   {
     route: "/rush-month/actions",

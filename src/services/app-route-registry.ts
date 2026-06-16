@@ -15,6 +15,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/rush-month", label: "Rush Month", routeType: "exact" },
   { href: "/rush-month/dashboard", label: "Rush Month dashboard", routeType: "exact" },
   { href: "/rush-month/loop", label: "Rush Month loop", routeType: "exact" },
+  { href: "/rush-month/events", label: "Rush Month events", routeType: "exact" },
   { href: "/rush-month/actions", label: "Rush Month actions", routeType: "exact" },
   { href: "/rush-month/actions/", label: "Rush Month action detail", routeType: "prefix" },
   { href: "/rush-month/evidence", label: "Rush Month proof", routeType: "exact" },

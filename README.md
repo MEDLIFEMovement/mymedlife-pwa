@@ -10,13 +10,13 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 68: proof upload intake readiness. This remains
-mock-safe and adds `/proof-library/upload` so reviewers can see future bridge
-video/testimonial file requirements, consent/context checks, disabled upload
-controls, structured event posture, and disabled outbox destinations before
-any storage write is approved. Production data, broad browser writes, admin
-mutation controls, real uploads, public proof sharing, and external
-integrations remain disabled.
+The current goal is Goal 69: Rush Month event readiness. This remains
+mock-safe and adds `/rush-month/events` so reviewers can see event plans,
+expected student action, NPS prompts, proof prompts, disabled Luma posture,
+future structured events, and disabled outbox rows before any Luma sync,
+attendance import, reminder, warehouse export, or automation is approved.
+Production data, broad browser writes, admin mutation controls, real uploads,
+public proof sharing, and external integrations remain disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -345,6 +345,14 @@ destinations while DS Admin stays out of student proof content. No files are
 uploaded, no buckets are created, no proof is published, and no external
 automation runs.
 
+Goal 69 adds a mock-safe Rush Month event readiness route at
+`/rush-month/events`. Members, leaders, coaches, admins, and super admins can
+review event plans, student actions, NPS questions, proof prompts, disabled
+Luma posture, future structured event records, and disabled outbox rows while
+DS Admin remains restricted from chapter event truth. No Luma event writes,
+attendance imports, reminders, warehouse exports, n8n workflows, or AI summaries
+run.
+
 Do not connect production Supabase, create real users, enable browser app
 writes beyond the approved local action-start, assignment creation, proof
 metadata, HQ proof decision, and coach decision slices, or enable external writes until Nick approves a later
@@ -457,6 +465,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 66 MVP progress map](./docs/architecture/goal-66-mvp-progress-map.md)
 - [Goal 67 chapter membership workspace](./docs/architecture/goal-67-chapter-membership-workspace.md)
 - [Goal 68 proof upload intake readiness](./docs/architecture/goal-68-proof-upload-intake.md)
+- [Goal 69 Rush Month event readiness](./docs/architecture/goal-69-rush-month-event-readiness.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -685,6 +694,11 @@ Rules:
   names future events/outbox destinations, but it does not create storage
   buckets, upload files, publish proof, export raw proof, or trigger external
   sends.
+- Goal 69 adds the Rush Month event readiness route at `/rush-month/events`.
+  It previews event plans, NPS questions, proof prompts, disabled Luma posture,
+  future structured events, and disabled outbox destinations, but it does not
+  create/update Luma events, import attendance, send NPS reminders, export
+  warehouse rows, or trigger external sends.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -704,6 +718,7 @@ data and fake local actor context. With or without local Supabase running,
 - `/rush-month`
 - `/rush-month/dashboard`
 - `/rush-month/loop`
+- `/rush-month/events`
 - `/rush-month/actions`
 - `/rush-month/actions/[assignmentId]`
 - `/rush-month/evidence`
@@ -728,6 +743,7 @@ Goal 2 route shells:
 - `/rush-month`: Rush Month campaign shell
 - `/rush-month/dashboard`: role-aware Rush Month operating dashboard
 - `/rush-month/loop`: browser-local end-to-end Rush Month operating-loop demo
+- `/rush-month/events`: mock-safe event, NPS, proof prompt, disabled Luma, and future outbox readiness
 - `/rush-month/actions`: role-aware visible assignments plus disabled leader assignment gate
 - `/rush-month/actions/[assignmentId]`: role-aware action detail, local proof contract preview, and disabled proof submission gate
 - `/rush-month/evidence`: role-aware proof/testimonial list

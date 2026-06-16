@@ -11,6 +11,7 @@ export type StaticRouteMetadataKey =
   | "rushMonth"
   | "rushMonthDashboard"
   | "rushMonthLoop"
+  | "rushMonthEvents"
   | "rushMonthActions"
   | "rushMonthActionDetail"
   | "rushMonthEvidence"
@@ -62,6 +63,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   rushMonthLoop: {
     title: "Rush Month MVP Loop",
     description: "Mock-safe end-to-end Rush Month operating loop for reviewers.",
+  },
+  rushMonthEvents: {
+    title: "Rush Month Events",
+    description:
+      "Mock-safe Rush Month event, Luma, NPS, proof, and outbox readiness.",
   },
   rushMonthActions: {
     title: "Rush Month Actions",

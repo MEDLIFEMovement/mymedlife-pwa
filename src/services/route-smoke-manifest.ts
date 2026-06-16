@@ -108,6 +108,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "No points write, KPI write, or leaderboard mutation is expected.",
   },
   {
+    path: "/rush-month/events",
+    label: "Event and NPS readiness",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "super_admin"],
+    expectedResult:
+      "Reviewers see Rush Month event plans, student actions, NPS prompts, proof prompts, disabled Luma syncs, and disabled outbox rows.",
+    safetyAssertion:
+      "No Luma event create/update, attendance import, NPS reminder, warehouse export, or n8n workflow is expected.",
+  },
+  {
     path: "/rush-month/actions",
     label: "Assignments and follow-up",
     priority: "critical",
