@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 24: leader assignment browser write gate with
+The active goal is Goal 25: proof submission browser write gate with
 production data, enabled browser writes, uploads, and external integrations
 still disabled.
 
@@ -242,6 +242,10 @@ Allowed:
 - a visible assignment-create browser-write activation gate on
   `/rush-month/actions` that references the local `action_assigned` function
   while keeping enabled controls disabled
+- a visible proof-submission browser-write activation gate on
+  `/rush-month/actions/[assignmentId]` that references the local
+  `evidence_submitted` function while keeping proof saves, uploads, public
+  sharing, and enabled controls disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

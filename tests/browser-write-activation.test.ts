@@ -5,6 +5,7 @@ import {
   getActionStartBrowserWriteGate,
   getBlockingActivationChecks,
   getPassedActivationChecks,
+  getProofSubmissionBrowserWriteGate,
 } from "@/services/browser-write-activation";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
@@ -63,6 +64,33 @@ describe("browser write activation gate", () => {
     ]);
   });
 
+  it("keeps proof-submission browser control disabled for an allowed member", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const assignment = requireAssignment("member-push");
+    const gate = getProofSubmissionBrowserWriteGate(actor, assignment, {
+      evidenceType: "bridge_video",
+      summary: "This bridge video explains why the Rush Month invite push worked.",
+    });
+
+    expect(gate.operation).toBe("evidence_submitted");
+    expect(gate.localFunction).toBe("app.submit_assignment_proof_metadata");
+    expect(gate.functionSignature).toContain("app.submit_assignment_proof_metadata");
+    expect(gate.canRenderEnabledControl).toBe(false);
+    expect(gate.status).toBe("blocked_until_approval");
+    expect(gate.preview.success).toBe(true);
+    expect(getPassedActivationChecks(gate).map((check) => check.key)).toEqual([
+      "actor_can_submit_proof",
+      "actor_allowed_by_write_plan",
+      "local_database_function_exists",
+      "rls_tests_exist",
+      "external_writes_disabled",
+    ]);
+    expect(getBlockingActivationChecks(gate).map((check) => check.key)).toEqual([
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
   it("does not enable browser writes when the local write env var is requested", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const assignment = requireAssignment("assign-eboard");
@@ -98,6 +126,27 @@ describe("browser write activation gate", () => {
       }),
     ).toEqual([
       "actor_can_create_assignment",
+      "actor_allowed_by_write_plan",
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
+  it("blocks Coach from the proof-submission write plan", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const assignment = requireAssignment("member-push");
+    const gate = getProofSubmissionBrowserWriteGate(actor, assignment, {
+      evidenceType: "bridge_video",
+      summary: "Coach should not submit student proof from this local contract.",
+    });
+
+    expect(gate.preview.success).toBe(false);
+    expect(
+      getBlockingActivationChecks(gate).map((check) => {
+        return check.key;
+      }),
+    ).toEqual([
+      "actor_can_submit_proof",
       "actor_allowed_by_write_plan",
       "live_auth_approved",
       "browser_write_approved",

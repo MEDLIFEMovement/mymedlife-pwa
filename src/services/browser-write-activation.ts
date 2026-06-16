@@ -1,11 +1,15 @@
 import {
   canCreateChapterAssignment,
+  canSubmitProofForAssignment,
   createActionStartedMock,
   createChapterAssignmentMock,
+  createProofSubmissionMock,
   type ChapterAssignmentInput,
   type LocalContractResult,
   type LocalActionStarted,
   type LocalAssignmentCreated,
+  type LocalProofSubmission,
+  type ProofSubmissionInput,
 } from "@/services/local-action-contracts";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { canReadAssignment } from "@/services/role-visibility";
@@ -18,6 +22,7 @@ type EnvSource = Record<string, string | undefined>;
 export type ActivationCheckKey =
   | "actor_can_read_assignment"
   | "actor_can_create_assignment"
+  | "actor_can_submit_proof"
   | "actor_allowed_by_write_plan"
   | "local_database_function_exists"
   | "rls_tests_exist"
@@ -33,17 +38,22 @@ export type ActivationCheck = {
 };
 
 export type BrowserWriteActivationGate = {
-  operation: "action_started" | "action_assigned";
+  operation: "action_started" | "action_assigned" | "evidence_submitted";
   route: "/rush-month/actions/[assignmentId]" | "/rush-month/actions";
   label: string;
-  localFunction: "app.start_assignment_action" | "app.create_chapter_assignment";
+  localFunction:
+    | "app.start_assignment_action"
+    | "app.create_chapter_assignment"
+    | "app.submit_assignment_proof_metadata";
   functionSignature: string;
   status: "blocked_until_approval";
   canRenderEnabledControl: false;
   envRequestedLocalWrites: boolean;
   nextApprovalNeeded: string;
   checks: ActivationCheck[];
-  preview: LocalContractResult<LocalActionStarted | LocalAssignmentCreated>;
+  preview: LocalContractResult<
+    LocalActionStarted | LocalAssignmentCreated | LocalProofSubmission
+  >;
 };
 
 const approvalMessage =
@@ -195,6 +205,82 @@ export function getAssignmentCreateBrowserWriteGate(
       },
     ],
     preview: createChapterAssignmentMock(actor, input),
+  };
+}
+
+export function getProofSubmissionBrowserWriteGate(
+  actor: LocalActorContext,
+  assignment: Assignment,
+  input: ProofSubmissionInput,
+  env: EnvSource = process.env,
+): BrowserWriteActivationGate {
+  const writePlan = getWritePlanOperation("evidence_submitted");
+  const writeReadiness = getWriteReadinessConfig(env);
+  const actorCanSubmitProof = canSubmitProofForAssignment(actor, assignment);
+  const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+
+  return {
+    operation: "evidence_submitted",
+    route: "/rush-month/actions/[assignmentId]",
+    label: "Submit proof browser write",
+    localFunction: "app.submit_assignment_proof_metadata",
+    functionSignature:
+      "app.submit_assignment_proof_metadata(assignment_uuid, evidence_kind, proof_summary, ...)",
+    status: "blocked_until_approval",
+    canRenderEnabledControl: false,
+    envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
+    nextApprovalNeeded: approvalMessage,
+    checks: [
+      {
+        key: "actor_can_submit_proof",
+        label: "Current local actor can submit proof for this assignment",
+        passed: actorCanSubmitProof,
+        detail: actorCanSubmitProof
+          ? `${actor.audienceLabel} can shape proof/testimonial submissions for this assignment.`
+          : `${actor.audienceLabel} cannot submit proof/testimonials for this assignment.`,
+      },
+      {
+        key: "actor_allowed_by_write_plan",
+        label: "Actor is allowed by the planned write matrix",
+        passed: actorAllowedByPlan,
+        detail: actorAllowedByPlan
+          ? `${actor.audienceLabel} is allowed for proof submission in the write plan.`
+          : `${actor.audienceLabel} is blocked from proof submission in the write plan.`,
+      },
+      {
+        key: "local_database_function_exists",
+        label: "Local database function exists",
+        passed: true,
+        detail: "Goal 15 implemented app.submit_assignment_proof_metadata(...).",
+      },
+      {
+        key: "rls_tests_exist",
+        label: "RLS/security tests exist",
+        passed: true,
+        detail:
+          "supabase/tests/database/rls_goal_15.test.sql proves direct evidence inserts are blocked and proof submission is function-gated.",
+      },
+      {
+        key: "external_writes_disabled",
+        label: "External writes stay disabled",
+        passed: true,
+        detail:
+          "Proof submission records internal events and a disabled outbox row; it does not upload files, publish proof, or send automation.",
+      },
+      {
+        key: "live_auth_approved",
+        label: "Live auth/browser session approved",
+        passed: false,
+        detail: "Live auth is still disabled, so browser identity cannot be trusted for real writes.",
+      },
+      {
+        key: "browser_write_approved",
+        label: "Browser write approval granted",
+        passed: false,
+        detail: writeReadiness.reason,
+      },
+    ],
+    preview: createProofSubmissionMock(actor, assignment, input),
   };
 }
 
