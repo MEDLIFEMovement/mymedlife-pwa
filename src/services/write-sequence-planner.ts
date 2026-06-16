@@ -1,5 +1,9 @@
+import { getCoachDecisionPacket } from "@/services/coach-decision-verification-packet";
 import { getFirstWriteActivationDrill } from "@/services/first-write-activation-drill";
+import { getHqProofDecisionPacket } from "@/services/hq-proof-decision-verification-packet";
+import { getLeaderAssignmentPacket } from "@/services/leader-assignment-verification-packet";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getProofMetadataPacket } from "@/services/proof-metadata-verification-packet";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 
 type EnvSource = Record<string, string | undefined>;
@@ -32,6 +36,18 @@ export type WriteSequenceOperation = {
   outboxPosture: string;
   safetyBoundary: string;
   nextGate: string;
+  packetStatus: WriteSequencePacketStatus;
+};
+
+export type WriteSequencePacketStatus = {
+  route: string;
+  status: string;
+  label: string;
+  plainEnglish: string;
+  canPromoteToStagingReview: boolean;
+  observedReadbackItems: number;
+  browserWritesExpected: 0 | 1;
+  externalWritesExpected: 0;
 };
 
 export type WriteSequencePlanner = {
@@ -81,7 +97,8 @@ export function getWriteSequencePlanner(
   const firstWriteDrill = getFirstWriteActivationDrill(actor, data, env);
   const candidateRoute =
     firstWriteDrill.candidateAssignment?.route ?? "/rush-month/actions";
-  const operations = buildOperations(candidateRoute);
+  const packetStatuses = buildPacketStatuses(actor, data, firstWriteDrill, env);
+  const operations = buildOperations(candidateRoute, packetStatuses);
 
   return {
     canReadPlanner: true,
@@ -117,7 +134,10 @@ export function getWriteSequencePlanner(
   };
 }
 
-function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
+function buildOperations(
+  candidateRoute: string,
+  packetStatuses: Record<WriteSequenceOperation["key"], WriteSequencePacketStatus>,
+): WriteSequenceOperation[] {
   return [
     {
       key: "action_started",
@@ -144,6 +164,7 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
         "Local Supabase Auth, fake seed user, localhost-only write flags, and `/admin/first-write` proof are required.",
       nextGate:
         "Run the first-write packet and collect readback evidence before promoting the next write.",
+      packetStatus: packetStatuses.action_started,
     },
     {
       key: "evidence_submitted",
@@ -170,6 +191,7 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
         "Requires proven action-start readback, local auth, assignment eligibility, and proof upload controls staying disabled.",
       nextGate:
         "Open `/admin/proof-write` before allowing staff to test proof metadata in a browser.",
+      packetStatus: packetStatuses.evidence_submitted,
     },
     {
       key: "hq_sharing_decision_logged",
@@ -196,6 +218,7 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
         "Requires Admin or Super Admin identity, proof consent rules, and public sharing controls staying disabled.",
       nextGate:
         "Open `/admin/hq-proof-write` before allowing staff to test HQ proof decisions in a browser.",
+      packetStatus: packetStatuses.hq_sharing_decision_logged,
     },
     {
       key: "action_assigned",
@@ -222,6 +245,7 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
         "Requires leader chapter scope, duplicate checks, rollback, and reminder automation staying disabled.",
       nextGate:
         "Open `/admin/assignment-write` before allowing staff to test leader assignment creation in a browser.",
+      packetStatus: packetStatuses.action_assigned,
     },
     {
       key: "coach_decision_logged",
@@ -248,8 +272,79 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
         "Requires coach portfolio scope, decision notes, intervention blocker summary, and escalation packets staying disabled.",
       nextGate:
         "Open `/admin/coach-write` before allowing staff to test coach decisions in a browser.",
+      packetStatus: packetStatuses.coach_decision_logged,
     },
   ];
+}
+
+function buildPacketStatuses(
+  actor: LocalActorContext,
+  data: ReadOnlyAppData,
+  firstWriteDrill: ReturnType<typeof getFirstWriteActivationDrill>,
+  env: EnvSource,
+): Record<WriteSequenceOperation["key"], WriteSequencePacketStatus> {
+  const proofPacket = getProofMetadataPacket(actor, data, env);
+  const hqPacket = getHqProofDecisionPacket(actor, data, env);
+  const assignmentPacket = getLeaderAssignmentPacket(actor, data, env);
+  const coachPacket = getCoachDecisionPacket(actor, data, env);
+
+  return {
+    action_started: {
+      route: "/admin/first-write",
+      status: firstWriteDrill.verificationPacket.status,
+      label: "Action-start packet",
+      plainEnglish: firstWriteDrill.verificationPacket.plainEnglishDecision,
+      canPromoteToStagingReview:
+        firstWriteDrill.verificationPacket.canPromoteToStagingReview,
+      observedReadbackItems: firstWriteDrill.counts.observedReadbackItems,
+      browserWritesExpected: firstWriteDrill.counts.browserWritesExpected,
+      externalWritesExpected: firstWriteDrill.counts.externalWritesExpected,
+    },
+    evidence_submitted: {
+      route: "/admin/proof-write",
+      status: proofPacket.status,
+      label: "Proof metadata packet",
+      plainEnglish: proofPacket.verificationPacket.plainEnglishDecision,
+      canPromoteToStagingReview:
+        proofPacket.verificationPacket.canPromoteToStagingReview,
+      observedReadbackItems: proofPacket.counts.observedReadbackItems,
+      browserWritesExpected: proofPacket.counts.browserWritesExpected,
+      externalWritesExpected: proofPacket.counts.externalWritesExpected,
+    },
+    hq_sharing_decision_logged: {
+      route: "/admin/hq-proof-write",
+      status: hqPacket.status,
+      label: "HQ proof decision packet",
+      plainEnglish: hqPacket.verificationPacket.plainEnglishDecision,
+      canPromoteToStagingReview:
+        hqPacket.verificationPacket.canPromoteToStagingReview,
+      observedReadbackItems: hqPacket.counts.observedReadbackItems,
+      browserWritesExpected: hqPacket.counts.browserWritesExpected,
+      externalWritesExpected: hqPacket.counts.externalWritesExpected,
+    },
+    action_assigned: {
+      route: "/admin/assignment-write",
+      status: assignmentPacket.status,
+      label: "Leader assignment packet",
+      plainEnglish: assignmentPacket.verificationPacket.plainEnglishDecision,
+      canPromoteToStagingReview:
+        assignmentPacket.verificationPacket.canPromoteToStagingReview,
+      observedReadbackItems: assignmentPacket.counts.observedReadbackItems,
+      browserWritesExpected: assignmentPacket.counts.browserWritesExpected,
+      externalWritesExpected: assignmentPacket.counts.externalWritesExpected,
+    },
+    coach_decision_logged: {
+      route: "/admin/coach-write",
+      status: coachPacket.status,
+      label: "Coach decision packet",
+      plainEnglish: coachPacket.verificationPacket.plainEnglishDecision,
+      canPromoteToStagingReview:
+        coachPacket.verificationPacket.canPromoteToStagingReview,
+      observedReadbackItems: coachPacket.counts.observedReadbackItems,
+      browserWritesExpected: coachPacket.counts.browserWritesExpected,
+      externalWritesExpected: coachPacket.counts.externalWritesExpected,
+    },
+  };
 }
 
 function getTitle(actor: LocalActorContext): string {

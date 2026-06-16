@@ -117,18 +117,54 @@ function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-          <p className="text-sm font-semibold text-white">Expected tables</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {operation.expectedTables.map((table) => (
-              <span
-                key={`${operation.key}-${table}`}
-                className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 font-mono text-[0.68rem] text-white/68"
-              >
-                {table}
-              </span>
-            ))}
+        <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-white">
+                {operation.packetStatus.label}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/58">
+                {operation.packetStatus.plainEnglish}
+              </p>
+            </div>
+            <span className="rounded-full bg-black/20 px-3 py-1 text-xs font-semibold text-cyan-100">
+              {operation.packetStatus.status.replaceAll("_", " ")}
+            </span>
           </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <MiniStat
+              label="Readback"
+              value={`${operation.packetStatus.observedReadbackItems}`}
+            />
+            <MiniStat
+              label="Browser writes"
+              value={`${operation.packetStatus.browserWritesExpected}`}
+            />
+            <MiniStat
+              label="Staging"
+              value={operation.packetStatus.canPromoteToStagingReview ? "Review" : "Blocked"}
+            />
+          </div>
+          <Link
+            href={operation.packetStatus.route}
+            className="mt-3 inline-flex rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+          >
+            Open packet
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
+        <p className="text-sm font-semibold text-white">Expected tables</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {operation.expectedTables.map((table) => (
+            <span
+              key={`${operation.key}-${table}`}
+              className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 font-mono text-[0.68rem] text-white/68"
+            >
+              {table}
+            </span>
+          ))}
         </div>
       </div>
 
