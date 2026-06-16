@@ -10,8 +10,9 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 32: proof submission result states with production
-data, enabled browser writes, uploads, and external integrations still disabled.
+The current goal is Goal 33: HQ proof decision result states with production
+data, enabled browser writes, public proof sharing, uploads, and external
+integrations still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -152,6 +153,12 @@ future result for the selected mock proof input, and the possible proof
 success/error states without enabling proof saves, uploads, public sharing, or
 external automation.
 
+Goal 33 defines the plain-English result states for future HQ proof-sharing
+decisions. The review route now shows the current disabled HQ decision result,
+the future result for the selected mock decision, and the possible approval /
+change-request / do-not-share states without enabling decision saves, public
+proof publishing, or external automation.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -227,6 +234,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 30 action-start activation contract](./docs/architecture/goal-30-action-start-activation-contract.md)
 - [Goal 31 action-start result states](./docs/architecture/goal-31-action-start-result-states.md)
 - [Goal 32 proof submission result states](./docs/architecture/goal-32-proof-submission-result-states.md)
+- [Goal 33 HQ proof decision result states](./docs/architecture/goal-33-hq-proof-decision-result-states.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -366,6 +374,9 @@ Rules:
   real browser write.
 - Goal 32 adds proof submission result states. It does not wire those states to
   a real browser write, upload, public sharing workflow, or external automation.
+- Goal 33 adds HQ proof decision result states. It does not wire those states
+  to a real browser write, public proof publishing workflow, or external
+  automation.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -637,6 +648,14 @@ Goal 32 proof submission result states live in:
 - `tests/proof-submission-result-states.test.ts`
 - visible proof result-state panel on `/rush-month/actions/[assignmentId]`
 
+Goal 33 HQ proof decision result states live in:
+
+- `docs/architecture/goal-33-hq-proof-decision-result-states.md`
+- `src/services/hq-proof-decision-result-states.ts`
+- `src/components/hq-proof-decision-result-states-panel.tsx`
+- `tests/hq-proof-decision-result-states.test.ts`
+- visible HQ decision result-state panel on `/rush-month/review`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -655,13 +674,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 32
+## Definition of Done for Goal 33
 
-Goal 32 is complete when a human developer can open an action detail route and
-see the exact disabled proof submission result plus the future plain-English
-result states, while tests prove browser writes remain disabled and
-blocked/duplicate states do not create evidence or outbox records.
+Goal 33 is complete when a human developer can open the HQ review route and see
+the exact disabled HQ proof decision result plus the future plain-English
+result states, while tests prove browser writes remain disabled and no state
+publishes proof directly.
 
-The app remains mock-first by default. Goal 32 does not wire production
+The app remains mock-first by default. Goal 33 does not wire production
 Supabase, create a server action, enable browser writes, upload files, publish
 proof, remove mock fallback, or activate real integrations.

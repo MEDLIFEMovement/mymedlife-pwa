@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
+import { HqProofDecisionResultStatesPanel } from "@/components/hq-proof-decision-result-states-panel";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { RestrictedState } from "@/components/restricted-state";
@@ -7,6 +8,10 @@ import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import { getHqSharingDecisionBrowserWriteGate } from "@/services/browser-write-activation";
+import {
+  getDisabledHqProofDecisionResultPreview,
+  getHqProofDecisionResultStates,
+} from "@/services/hq-proof-decision-result-states";
 import {
   canMakeHqSharingDecision,
   createHqSharingDecisionMock,
@@ -30,6 +35,13 @@ export default async function ReviewPage() {
     : undefined;
   const disabledDecisionWrite = reviewEvidence[0]
     ? prepareDisabledHqSharingDecisionWrite(actor, reviewEvidence[0], sampleDecisionInput)
+    : undefined;
+  const hqDecisionResultPreview = reviewEvidence[0]
+    ? getDisabledHqProofDecisionResultPreview(
+        actor,
+        reviewEvidence[0],
+        sampleDecisionInput,
+      )
     : undefined;
   const decisionGate = reviewEvidence[0]
     ? getHqSharingDecisionBrowserWriteGate(actor, reviewEvidence[0], sampleDecisionInput)
@@ -124,6 +136,12 @@ export default async function ReviewPage() {
             <WriteReadinessNotice
               operationLabel="HQ proof-sharing write remains disabled"
               wouldWriteTables={disabledDecisionWrite.wouldWriteTables}
+            />
+          ) : null}
+          {hqDecisionResultPreview ? (
+            <HqProofDecisionResultStatesPanel
+              preview={hqDecisionResultPreview}
+              states={getHqProofDecisionResultStates()}
             />
           ) : null}
           {canDecideSharing && decisionGate ? (
