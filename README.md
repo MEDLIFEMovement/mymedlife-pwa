@@ -10,12 +10,16 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 74: first-write activation drill. This remains
-mock-safe by default and adds `/admin/first-write` so HQ reviewers can see the
-exact local Supabase/auth/flag checks required before the first action-start
-browser write is tested on localhost.
+The current goal is Goal 75: first-write readback evidence. This remains
+mock-safe by default and extends `/admin/first-write` so HQ reviewers can see
+the expected post-drill readback evidence for assignment status, internal event,
+integration event, audit log, and zero automation outbox sends.
 Production data, broad browser writes, admin mutation controls, real uploads,
 public proof sharing, and external integrations remain disabled.
+
+Goal 74 added `/admin/first-write` so HQ reviewers can see the exact local
+Supabase/auth/flag checks required before the first action-start browser write
+is tested on localhost.
 
 Goal 73 added `/admin/pilot-scope` so HQ reviewers can choose the smallest safe
 first Rush Month pilot, compare staff-only / one-chapter / later expansion

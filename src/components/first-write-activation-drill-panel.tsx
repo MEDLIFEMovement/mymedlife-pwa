@@ -44,9 +44,10 @@ export function FirstWriteActivationDrillPanel({
             </Link>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
           <MiniStat label="Checks" value={`${drill.counts.checks}`} />
           <MiniStat label="Ready" value={`${drill.counts.passedChecks}`} />
+          <MiniStat label="Readback" value={`${drill.counts.observedReadbackItems}`} />
           <MiniStat label="Writes" value={`${drill.counts.browserWritesExpected}`} />
           <MiniStat label="Sends" value={`${drill.counts.externalWritesExpected}`} />
         </div>
@@ -100,6 +101,35 @@ export function FirstWriteActivationDrillPanel({
           </article>
         ))}
       </div>
+
+      <section className="mt-5 rounded-[2rem] border border-lime-300/20 bg-lime-300/10 p-4">
+        <h2 className="text-2xl font-semibold text-white">
+          Post-drill readback evidence
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-white/62">
+          After the local action-start drill runs, this section should move from
+          planned proof to observed proof. It is read-only and does not trigger
+          the write.
+        </p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {drill.readbackEvidence.map((item) => (
+            <article
+              key={item.key}
+              className="rounded-3xl border border-white/10 bg-[#071d1a]/80 p-4"
+            >
+              <p className={readbackStatusClassName(item.status)}>
+                {item.status.replaceAll("_", " ")}
+              </p>
+              <h3 className="mt-2 text-lg font-semibold text-white">
+                {item.label}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-white/62">
+                {item.detail}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section className="mt-5 rounded-[2rem] border border-white/10 bg-black/20 p-4">
         <h2 className="text-2xl font-semibold text-white">
@@ -202,4 +232,21 @@ function StatusPill({ status }: { status: FirstWriteDrillStatus }) {
       {status.replaceAll("_", " ")}
     </span>
   );
+}
+
+function readbackStatusClassName(status: string): string {
+  const base = "text-xs font-semibold uppercase tracking-[0.18em]";
+
+  switch (status) {
+    case "observed":
+    case "safe_zero":
+      return `${base} text-emerald-100`;
+    case "manual_check_needed":
+      return `${base} text-sky-100`;
+    case "missing":
+      return `${base} text-amber-100`;
+    case "blocked":
+    default:
+      return `${base} text-orange-100`;
+  }
 }

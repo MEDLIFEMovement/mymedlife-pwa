@@ -35,6 +35,9 @@ describe("first-write activation drill", () => {
     expect(drill.counts.browserWritesExpected).toBe(1);
     expect(drill.counts.externalWritesExpected).toBe(0);
     expect(drill.checks.every((check) => check.passed)).toBe(true);
+    expect(
+      drill.readbackEvidence.find((item) => item.key === "internal_event")?.status,
+    ).toBe("missing");
     expect(drill.candidateAssignment?.route).toBe(
       "/rush-month/actions/00000000-0000-4000-8000-000000000101",
     );
@@ -78,6 +81,33 @@ describe("first-write activation drill", () => {
     expect(drill.proofToCollect.join(" ")).toContain("external writes stayed at zero");
   });
 
+  it("shows observed readback evidence after the local action-start records exist", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const drill = getFirstWriteActivationDrill(
+      actor,
+      withFirstWriteReadback(withSupabaseUuidAssignment(mockData)),
+      {
+        MYMEDLIFE_AUTH_MODE: "local_supabase",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      },
+    );
+
+    expect(drill.candidateAssignment?.status).toBe("in_progress");
+    expect(drill.status).toBe("blocked_until_auth");
+    expect(Object.fromEntries(
+      drill.readbackEvidence.map((item) => [item.key, item.status]),
+    )).toEqual({
+      assignment_status: "observed",
+      internal_event: "observed",
+      integration_event: "observed",
+      audit_log: "observed",
+      automation_outbox: "safe_zero",
+    });
+    expect(drill.counts.observedReadbackItems).toBe(5);
+    expect(drill.counts.externalWritesExpected).toBe(0);
+  });
+
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
@@ -110,6 +140,82 @@ function withSupabaseUuidAssignment(data: ReadOnlyAppData): ReadOnlyAppData {
         lane: "Member",
       },
       ...data.assignments.slice(1),
+    ],
+  };
+}
+
+function withFirstWriteReadback(data: ReadOnlyAppData): ReadOnlyAppData {
+  const assignmentId = "00000000-0000-4000-8000-000000000101";
+  const eventId = "00000000-0000-4000-8000-000000000201";
+  const integrationEventId = "00000000-0000-4000-8000-000000000301";
+
+  return {
+    ...data,
+    assignments: data.assignments.map((assignment) => {
+      if (assignment.id !== assignmentId) {
+        return assignment;
+      }
+
+      return {
+        ...assignment,
+        status: "in_progress",
+      };
+    }),
+    eventRows: [
+      {
+        id: eventId,
+        event_type: "action_started",
+        actor_user_id: "00000000-0000-4000-8000-000000000001",
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        campaign_id: "40000000-0000-4000-8000-000000000001",
+        assignment_id: assignmentId,
+        chapter_event_id: null,
+        payload: {
+          source: "app.start_assignment_action",
+        },
+        correlation_id: "action_started:test",
+        occurred_at: "2026-06-16T19:00:00Z",
+        created_at: "2026-06-16T19:00:00Z",
+      },
+    ],
+    integrationEventRows: [
+      {
+        id: integrationEventId,
+        source_event_id: eventId,
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        event_type: "action_started",
+        destination: "internal",
+        external_object_type: "assignment",
+        external_object_id: assignmentId,
+        status: "recorded",
+        payload: {
+          liveExternalWrite: false,
+        },
+        created_by: "00000000-0000-4000-8000-000000000001",
+        created_at: "2026-06-16T19:00:00Z",
+        updated_at: "2026-06-16T19:00:00Z",
+      },
+    ],
+    automationOutboxRows: [],
+    auditLogs: [
+      {
+        id: "00000000-0000-4000-8000-000000000401",
+        actor_user_id: "00000000-0000-4000-8000-000000000001",
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        action: "action_started",
+        target_table: "assignments",
+        target_id: assignmentId,
+        before_value: {
+          status: "not_started",
+        },
+        after_value: {
+          status: "in_progress",
+          eventId,
+          integrationEventId,
+        },
+        reason: "Local action start test.",
+        created_at: "2026-06-16T19:00:00Z",
+      },
     ],
   };
 }

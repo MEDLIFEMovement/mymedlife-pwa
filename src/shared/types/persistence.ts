@@ -383,6 +383,20 @@ export type IntegrationEventRow = {
   updated_at: Timestamp;
 };
 
+export type EventRow = {
+  id: Uuid;
+  event_type: string;
+  actor_user_id: Uuid | null;
+  chapter_id: Uuid | null;
+  campaign_id: Uuid | null;
+  assignment_id: Uuid | null;
+  chapter_event_id: Uuid | null;
+  payload: JsonValue;
+  correlation_id: string | null;
+  occurred_at: Timestamp;
+  created_at: Timestamp;
+};
+
 export type AutomationOutboxRow = {
   id: Uuid;
   source_event_id: Uuid | null;
@@ -400,4 +414,17 @@ export type AutomationOutboxRow = {
   last_error: string | null;
   created_at: Timestamp;
   updated_at: Timestamp;
+};
+
+export type AuditLogRow = {
+  id: Uuid;
+  actor_user_id: Uuid | null;
+  chapter_id: Uuid | null;
+  action: string;
+  target_table: string;
+  target_id: Uuid | null;
+  before_value: JsonValue;
+  after_value: JsonValue;
+  reason: string | null;
+  created_at: Timestamp;
 };

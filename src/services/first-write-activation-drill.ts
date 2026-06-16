@@ -34,6 +34,20 @@ export type FirstWriteDrillStep = {
   safetyBoundary: string;
 };
 
+export type FirstWriteReadbackEvidenceStatus =
+  | "observed"
+  | "missing"
+  | "safe_zero"
+  | "manual_check_needed"
+  | "blocked";
+
+export type FirstWriteReadbackEvidenceItem = {
+  key: string;
+  label: string;
+  status: FirstWriteReadbackEvidenceStatus;
+  detail: string;
+};
+
 export type FirstWriteActivationDrill = {
   canReadDrill: boolean;
   title: string;
@@ -50,10 +64,12 @@ export type FirstWriteActivationDrill = {
     | null;
   checks: FirstWriteDrillCheck[];
   steps: FirstWriteDrillStep[];
+  readbackEvidence: FirstWriteReadbackEvidenceItem[];
   proofToCollect: string[];
   counts: {
     checks: number;
     passedChecks: number;
+    observedReadbackItems: number;
     browserWritesExpected: 0 | 1;
     externalWritesExpected: 0;
   };
@@ -78,6 +94,7 @@ export function getFirstWriteActivationDrill(
       candidateAssignment: null,
       checks: [],
       steps: [],
+      readbackEvidence: [],
       proofToCollect: [],
       counts: emptyCounts(),
     };
@@ -100,6 +117,7 @@ export function getFirstWriteActivationDrill(
   const status = getStatus(checks, writeConfig.enabled);
   const browserWritesExpected: 0 | 1 =
     status === "ready_for_local_action_start" ? 1 : 0;
+  const readbackEvidence = buildReadbackEvidence(data, candidate);
 
   return {
     canReadDrill: true,
@@ -110,6 +128,7 @@ export function getFirstWriteActivationDrill(
     candidateAssignment: candidate,
     checks,
     steps: buildSteps(candidate),
+    readbackEvidence,
     proofToCollect: [
       "Screenshot of `/admin/first-write` before the test showing every required check green.",
       "Screenshot of the selected action detail route before clicking Start this action.",
@@ -121,6 +140,9 @@ export function getFirstWriteActivationDrill(
     counts: {
       checks: checks.length,
       passedChecks: checks.filter((check) => check.passed).length,
+      observedReadbackItems: readbackEvidence.filter((item) => {
+        return item.status === "observed" || item.status === "safe_zero";
+      }).length,
       browserWritesExpected,
       externalWritesExpected: 0,
     },
@@ -132,16 +154,22 @@ function findCandidateAssignment(assignments: Assignment[]): Assignment | null {
     assignments.find((assignment) => {
       return (
         assignment.lane === "Member" &&
-        (assignment.status === "not_started" ||
-          assignment.status === "changes_requested")
+        isStartableAssignment(assignment)
       );
     }) ??
+    assignments.find((assignment) => assignment.lane === "Member") ??
     assignments.find((assignment) => {
-      return assignment.status === "not_started" ||
-        assignment.status === "changes_requested";
+      return isStartableAssignment(assignment);
     }) ??
     assignments[0] ??
     null
+  );
+}
+
+function isStartableAssignment(assignment: Assignment): boolean {
+  return (
+    assignment.status === "not_started" ||
+    assignment.status === "changes_requested"
   );
 }
 
@@ -351,6 +379,91 @@ function buildSteps(
   ];
 }
 
+function buildReadbackEvidence(
+  data: ReadOnlyAppData,
+  candidate: FirstWriteActivationDrill["candidateAssignment"],
+): FirstWriteReadbackEvidenceItem[] {
+  if (!candidate) {
+    return [
+      {
+        key: "candidate_missing",
+        label: "Candidate action",
+        status: "blocked",
+        detail: "No assignment is available, so readback evidence cannot be checked.",
+      },
+    ];
+  }
+
+  const internalEvent = data.eventRows.find((event) => {
+    return event.event_type === "action_started" &&
+      event.assignment_id === candidate.id;
+  });
+  const integrationEvent = data.integrationEventRows.find((event) => {
+    return (
+      event.event_type === "action_started" &&
+      (event.external_object_id === candidate.id ||
+        (internalEvent?.id && event.source_event_id === internalEvent.id))
+    );
+  });
+  const auditLog = data.auditLogs.find((log) => {
+    return log.action === "action_started" &&
+      log.target_table === "assignments" &&
+      log.target_id === candidate.id;
+  });
+  const outboxRows = data.automationOutboxRows.filter((item) => {
+    return (
+      item.event_type === "action_started" ||
+      (internalEvent?.id && item.source_event_id === internalEvent.id) ||
+      (integrationEvent?.id && item.integration_event_id === integrationEvent.id)
+    );
+  });
+
+  return [
+    {
+      key: "assignment_status",
+      label: "Assignment status readback",
+      status: candidate.status === "in_progress" ? "observed" : "missing",
+      detail:
+        candidate.status === "in_progress"
+          ? "The candidate assignment is already reading back as in progress."
+          : `The candidate assignment is currently ${candidate.status}; after the drill it should read back as in_progress.`,
+    },
+    {
+      key: "internal_event",
+      label: "Internal event row",
+      status: internalEvent ? "observed" : "missing",
+      detail: internalEvent
+        ? `Found event ${internalEvent.id} for action_started.`
+        : "After the drill, local Supabase should contain one action_started event row for this assignment.",
+    },
+    {
+      key: "integration_event",
+      label: "Integration event row",
+      status: integrationEvent ? "observed" : "missing",
+      detail: integrationEvent
+        ? `Found integration event ${integrationEvent.id} with status ${integrationEvent.status}.`
+        : "After the drill, local Supabase should contain one recorded internal integration event row.",
+    },
+    {
+      key: "audit_log",
+      label: "Audit log row",
+      status: auditLog ? "observed" : "manual_check_needed",
+      detail: auditLog
+        ? `Found audit log ${auditLog.id} for assignments/${candidate.id}.`
+        : "If audit logs are not visible in the app, staff must verify app.audit_logs directly after the drill.",
+    },
+    {
+      key: "automation_outbox",
+      label: "Automation outbox sends",
+      status: outboxRows.length === 0 ? "safe_zero" : "blocked",
+      detail:
+        outboxRows.length === 0
+          ? "No action_started automation outbox row is visible, which is expected for this first write."
+          : `${outboxRows.length} action_started outbox row(s) exist; staff must confirm no external send was approved.`,
+    },
+  ];
+}
+
 function getTitle(actor: LocalActorContext): string {
   switch (actor.audience) {
     case "admin":
@@ -370,6 +483,7 @@ function emptyCounts(): FirstWriteActivationDrill["counts"] {
   return {
     checks: 0,
     passedChecks: 0,
+    observedReadbackItems: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
   };

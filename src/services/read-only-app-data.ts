@@ -27,6 +27,8 @@ import type {
   PointsSummary,
 } from "@/shared/types/domain";
 import type {
+  AuditLogRow,
+  AutomationOutboxRow,
   AssignmentRow,
   CampaignCloseoutRow,
   CampaignPhaseTemplateRow,
@@ -35,6 +37,11 @@ import type {
   CampaignTemplateRow,
   ChapterRow,
   EvidenceItemRow,
+  EventRow,
+  IntegrationDestination,
+  IntegrationEventRow,
+  IntegrationStatus,
+  OutboxStatus,
   PhaseReadinessReviewRow,
   PhaseRow,
   RiskFlagRow,
@@ -66,6 +73,10 @@ export type ReadOnlyAppData = {
   kpiSummary: KpiSummary;
   integrationEvents: IntegrationEvent[];
   outboxItems: OutboxItem[];
+  eventRows: EventRow[];
+  integrationEventRows: IntegrationEventRow[];
+  automationOutboxRows: AutomationOutboxRow[];
+  auditLogs: AuditLogRow[];
 };
 
 export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
@@ -135,6 +146,29 @@ export async function getSupabaseReadOnlyAppData(
         (item.assignment_id === null || assignmentIds.has(item.assignment_id));
     })
     .map(toDomainEvidenceItem);
+  const eventRows = snapshot.eventRows.filter((item) => {
+    return item.chapter_id === chapter.id ||
+      (item.assignment_id !== null && assignmentIds.has(item.assignment_id));
+  });
+  const eventIds = new Set(eventRows.map((item) => item.id));
+  const integrationEventRows = snapshot.integrationEventRows.filter((item) => {
+    return item.chapter_id === chapter.id ||
+      (item.source_event_id !== null && eventIds.has(item.source_event_id));
+  });
+  const integrationEventIds = new Set(integrationEventRows.map((item) => item.id));
+  const automationOutboxRows = snapshot.automationOutboxRows.filter((item) => {
+    return item.chapter_id === chapter.id ||
+      (item.source_event_id !== null && eventIds.has(item.source_event_id)) ||
+      (item.integration_event_id !== null && integrationEventIds.has(item.integration_event_id));
+  });
+  const auditLogs = snapshot.auditLogs.filter((item) => {
+    return item.chapter_id === chapter.id ||
+      (item.target_table === "assignments" &&
+        item.target_id !== null &&
+        assignmentIds.has(item.target_id));
+  });
+  const mappedIntegrationEvents = integrationEventRows.map(toDomainIntegrationEvent);
+  const mappedOutboxItems = automationOutboxRows.map(toDomainOutboxItem);
 
   return {
     source: {
@@ -154,9 +188,13 @@ export async function getSupabaseReadOnlyAppData(
     closeouts,
     evidenceItems,
     pointsSummary: calculatePointsSummary(assignments),
-    kpiSummary: calculateKpiSummary(assignments, integrationEvents),
-    integrationEvents,
-    outboxItems,
+    kpiSummary: calculateKpiSummary(assignments, mappedIntegrationEvents),
+    integrationEvents: mappedIntegrationEvents,
+    outboxItems: mappedOutboxItems,
+    eventRows,
+    integrationEventRows,
+    automationOutboxRows,
+    auditLogs,
   };
 }
 
@@ -173,6 +211,10 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     riskFlags,
     closeouts,
     evidenceItems,
+    eventRows,
+    integrationEventRows,
+    automationOutboxRows,
+    auditLogs,
   ] = await Promise.all([
     readChapters(client),
     readCampaigns(client),
@@ -185,6 +227,10 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     readRiskFlags(client),
     readCloseouts(client),
     readEvidenceItems(client),
+    readEvents(client),
+    readIntegrationEvents(client),
+    readAutomationOutbox(client),
+    readAuditLogs(client),
   ]);
 
   return {
@@ -199,6 +245,10 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     riskFlags,
     closeouts,
     evidenceItems,
+    eventRows,
+    integrationEventRows,
+    automationOutboxRows,
+    auditLogs,
   };
 }
 
@@ -264,6 +314,30 @@ export function readEvidenceItems(client: SupabaseReadonlyClient) {
   });
 }
 
+export function readEvents(client: SupabaseReadonlyClient) {
+  return client.selectRows<EventRow>("events", {
+    query: { order: "occurred_at.desc" },
+  });
+}
+
+export function readIntegrationEvents(client: SupabaseReadonlyClient) {
+  return client.selectRows<IntegrationEventRow>("integration_events", {
+    query: { order: "created_at.desc" },
+  });
+}
+
+export function readAutomationOutbox(client: SupabaseReadonlyClient) {
+  return client.selectRows<AutomationOutboxRow>("automation_outbox", {
+    query: { order: "created_at.desc" },
+  });
+}
+
+export function readAuditLogs(client: SupabaseReadonlyClient) {
+  return client.selectRows<AuditLogRow>("audit_logs", {
+    query: { order: "created_at.desc" },
+  });
+}
+
 export function getMockReadOnlyAppData(
   message: string,
   status: DataSourceStatus = "mock_fallback",
@@ -289,6 +363,10 @@ export function getMockReadOnlyAppData(
     kpiSummary: calculateKpiSummary(mockAssignments, integrationEvents),
     integrationEvents,
     outboxItems,
+    eventRows: [],
+    integrationEventRows: [],
+    automationOutboxRows: [],
+    auditLogs: [],
   };
 }
 
@@ -336,6 +414,106 @@ function toDomainEvidenceItem(row: EvidenceItemRow): EvidenceItem {
     summary: row.summary,
     status: row.status === "rejected" ? "changes_requested" : row.status,
   };
+}
+
+function toDomainIntegrationEvent(row: IntegrationEventRow): IntegrationEvent {
+  const destination = toDomainIntegrationDestination(row.destination);
+
+  return {
+    id: row.id,
+    eventType: row.event_type,
+    title: toReadableEventTitle(row.event_type),
+    destination,
+    status: toDomainIntegrationStatus(row.status),
+    detail: `${destination} ${row.status}; external writes stay controlled by approval flags.`,
+    occurredAt: toReadableTime(row.created_at),
+  };
+}
+
+function toDomainOutboxItem(row: AutomationOutboxRow): OutboxItem {
+  return {
+    id: row.id,
+    sourceEventId: row.source_event_id ?? row.integration_event_id ?? row.id,
+    destination: toDomainOutboxDestination(row.destination),
+    status: toDomainOutboxStatus(row.status),
+    payloadSummary: `${toReadableEventTitle(row.event_type)} outbox row is ${row.status}. Attempts: ${row.attempt_count}.`,
+  };
+}
+
+function toDomainIntegrationDestination(
+  destination: IntegrationDestination,
+): IntegrationEvent["destination"] {
+  switch (destination) {
+    case "hubspot":
+      return "HubSpot";
+    case "luma":
+      return "Luma";
+    case "warehouse":
+    case "power_bi":
+      return "warehouse";
+    case "n8n":
+      return "n8n";
+    case "internal":
+      return "internal";
+  }
+}
+
+function toDomainOutboxDestination(
+  destination: IntegrationDestination,
+): OutboxItem["destination"] {
+  switch (destination) {
+    case "hubspot":
+      return "HubSpot";
+    case "luma":
+      return "Luma";
+    case "warehouse":
+    case "power_bi":
+      return "warehouse";
+    case "n8n":
+    case "internal":
+      return "n8n";
+  }
+}
+
+function toDomainIntegrationStatus(
+  status: IntegrationStatus,
+): IntegrationEvent["status"] {
+  if (status === "disabled") {
+    return "disabled";
+  }
+
+  if (status === "approved_for_mock" || status === "mocked") {
+    return "mocked";
+  }
+
+  return "recorded";
+}
+
+function toDomainOutboxStatus(status: OutboxStatus): OutboxItem["status"] {
+  if (status === "disabled") {
+    return "disabled";
+  }
+
+  if (status === "approved_for_mock" || status === "mocked") {
+    return "mocked";
+  }
+
+  return "recorded";
+}
+
+function toReadableEventTitle(eventType: string): string {
+  return eventType
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function toReadableTime(timestamp: string): string {
+  return new Date(timestamp).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function roleKeyToChapterRole(roleKey: AssignmentRow["assigned_to_role_key"]): ChapterRole {
