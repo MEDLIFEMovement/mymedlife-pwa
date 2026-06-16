@@ -149,6 +149,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "The dry run is rehearsal evidence only and must not enable real auth, writes, uploads, student invitations, or external sends.",
   },
+  {
+    id: "pilot-scope",
+    title: "Choose the smallest safe pilot scope",
+    route: "/admin/pilot-scope",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can compare staff-only, one-chapter, two-chapter, and broad-launch options and see which approvals block real student use.",
+    safetyBoundary:
+      "The pilot planner is a decision surface only and must not invite students, enable writes, upload proof, or send external automation.",
+  },
 ];
 
 export function getStakeholderReviewPlan(

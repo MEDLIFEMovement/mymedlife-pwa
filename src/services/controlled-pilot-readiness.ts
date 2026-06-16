@@ -150,6 +150,7 @@ function getPilotStages(): PilotReadinessStage[] {
         "A real pilot should wait until pilot scope, auth, write gates, proof consent/storage, and support ownership are approved.",
       requiredProof: [
         "Pilot chapter or internal group is named.",
+        "Open `/admin/pilot-scope` and confirm the selected scope is the smallest safe pilot.",
         "Auth/onboarding is approved.",
         "First write path and rollback plan are approved.",
         "Proof consent language is approved.",
@@ -180,7 +181,8 @@ function getPilotGates(): PilotReadinessGate[] {
       status: "needs_decision",
       plainEnglish:
         "The first real pilot still needs a named chapter, internal cohort, or staff-only test group.",
-      nextStep: "Choose the smallest safe pilot group and document who is allowed in.",
+      nextStep:
+        "Open `/admin/pilot-scope`, choose the smallest safe pilot group, and document who is allowed in.",
     },
     {
       key: "staging_environment",

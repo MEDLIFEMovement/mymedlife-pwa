@@ -312,16 +312,18 @@ function getSubprojects(): MvpSubprojectProgress[] {
       routeEvidence: [
         "/admin",
         "/admin/staff-dry-run",
+        "/admin/pilot-scope",
         "/rush-month/loop",
         "/rush-month/events",
       ],
       plainEnglish:
-        "The app can support a staff dry run now with an executable fake-user guide, but a real student pilot still needs scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership decisions.",
+        "The app can support a staff dry run now and now has a first-pilot scope planner, but a real student pilot still needs a named group, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership decisions.",
       technicalEvidence:
-        "Controlled pilot readiness service, staff dry-run guide, and admin panels separate local review, staff dry run, staging, first student pilot, and later expansion gates.",
+        "Controlled pilot readiness service, staff dry-run guide, pilot scope planner, and admin panels separate local review, staff dry run, staging, first student pilot, and later expansion gates.",
       remainingWork:
         "Pick the first pilot group, set up staging, approve production auth/onboarding, choose first write path, approve proof consent/storage, and name coach/support ownership.",
-      nextReviewStep: "Open `/admin` and use the controlled pilot gate before inviting any students.",
+      nextReviewStep:
+        "Open `/admin/pilot-scope` and choose the smallest safe pilot before inviting any students.",
       totalWeight: 8,
       localReviewWeight: 4,
       liveMvpWeight: 2,

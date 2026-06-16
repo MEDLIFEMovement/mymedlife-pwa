@@ -44,6 +44,9 @@ describe("mvp coverage checklist", () => {
     expect(
       checklist.items.find((item) => item.key === "controlled_pilot")?.routeEvidence,
     ).toContain("/admin/staff-dry-run");
+    expect(
+      checklist.items.find((item) => item.key === "controlled_pilot")?.routeEvidence,
+    ).toContain("/admin/pilot-scope");
   });
 
   it("hides the admin coverage checklist from chapter roles", () => {

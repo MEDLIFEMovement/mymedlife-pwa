@@ -11,7 +11,7 @@ describe("route coverage summary", () => {
     expect(summary.counts.knownRoutes).toBeGreaterThan(10);
     expect(summary.counts.primaryNavigationHrefs).toBeGreaterThan(0);
     expect(summary.counts.mobileNavigationHrefs).toBeGreaterThan(0);
-    expect(summary.counts.smokeRoutes).toBe(14);
+    expect(summary.counts.smokeRoutes).toBe(15);
     expect(summary.counts.unknownNavigationHrefs).toBe(0);
     expect(summary.counts.unknownSmokeRoutes).toBe(0);
     expect(summary.counts.browserWritesExpected).toBe(0);
