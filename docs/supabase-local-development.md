@@ -29,6 +29,9 @@ leader assignment creation, and coach decision logging.
 Goal 78 adds `/admin/proof-write` so staff can prepare the second local write,
 `evidence_submitted` proof/testimonial metadata, only after first-write
 readback is proven.
+Goal 79 adds `/admin/hq-proof-write` so staff can prepare the third local
+write, `hq_sharing_decision_logged`, only after proof metadata readback is
+proven.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
@@ -220,6 +223,14 @@ or AI writes.
 - `tests/proof-metadata-verification-packet.test.ts`: unit tests proving proof
   metadata packet blocking, ready state, readback, upload safety, and role
   visibility.
+- `src/services/hq-proof-decision-verification-packet.ts`: staff-only packet
+  for local HQ proof-sharing decisions after proof metadata readback is proven.
+- `src/components/hq-proof-decision-verification-panel.tsx`:
+  `/admin/hq-proof-write` panel with local env settings, fake Admin sign-in,
+  stop conditions, and readback evidence for event/outbox/audit rows.
+- `tests/hq-proof-decision-verification-packet.test.ts`: unit tests proving HQ
+  decision packet blocking, ready state, readback, public-sharing safety, and
+  role visibility.
 
 ## Requirements
 
@@ -427,10 +438,16 @@ Recommended local test path:
 4. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
 5. Set `MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE=true`.
 6. Sign in at `/login` as `admin@mymedlife.test` with password `password`.
-7. Open `/rush-month/review`.
-8. Confirm the proof queue reads the local evidence item.
-9. Submit the local HQ proof decision form.
-10. Confirm the refreshed page shows the proof status as `approved` or
+7. Open `/admin/hq-proof-write`.
+8. Confirm the packet says proof metadata readback is proven and public proof
+   sharing remains disabled.
+9. Open `/rush-month/review`.
+10. Confirm the proof queue reads the local evidence item.
+11. Submit the local HQ proof decision form.
+12. Return to `/admin/hq-proof-write`.
+13. Confirm the packet shows proof status, event, integration event, disabled
+    outbox, and audit readback evidence.
+14. Confirm the refreshed review page shows the proof status as `approved` or
     `changes_requested`, depending on the selected decision, and shows the local
     HQ decision readback message.
 
