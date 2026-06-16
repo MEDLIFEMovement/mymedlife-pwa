@@ -1,4 +1,5 @@
 import { getActionStartResultStates } from "@/services/action-start-result-states";
+import { getAssignmentCreateResultStates } from "@/services/assignment-create-result-states";
 import { getCoachDecisionResultStates } from "@/services/coach-decision-result-states";
 import { getHqProofDecisionResultStates } from "@/services/hq-proof-decision-result-states";
 import { getProofSubmissionResultStates } from "@/services/proof-submission-result-states";
@@ -39,13 +40,16 @@ export function getWriteResultStateCoverageSummary(): WriteResultStateCoverageSu
       nextAction:
         "Keep disabled until live auth, server action identity, RLS, and rollback review are approved.",
     }),
-    buildMissingItem({
+    buildCoveredItem({
       operation: "action_assigned",
       route: "/rush-month/actions",
+      stateCount: getAssignmentCreateResultStates().length,
+      successCount: getAssignmentCreateResultStates().filter((state) => state.success)
+        .length,
       notes:
-        "Leader assignment creation has a browser write gate, but no reviewed result-state copy yet.",
+        "Leader assignment creation success, disabled, reminder-disabled, duplicate, permission, auth, validation, and error states are defined.",
       nextAction:
-        "Define assignment-create success, duplicate/validation, permission, disabled, and external-reminder-disabled states before activation.",
+        "Keep disabled until leader assignment writes and reminder-disabled behavior are approved.",
     }),
     buildCoveredItem({
       operation: "evidence_submitted",
@@ -107,25 +111,6 @@ function buildCoveredItem(input: {
     resultStateCount: input.stateCount,
     successStateCount: input.successCount,
     blockedStateCount: input.stateCount - input.successCount,
-    externalWritesStayDisabled: true,
-    notes: input.notes,
-    nextAction: input.nextAction,
-  };
-}
-
-function buildMissingItem(input: {
-  operation: WriteOperation;
-  route: string;
-  notes: string;
-  nextAction: string;
-}): WriteResultStateCoverageItem {
-  return {
-    operation: input.operation,
-    route: input.route,
-    status: "missing",
-    resultStateCount: 0,
-    successStateCount: 0,
-    blockedStateCount: 0,
     externalWritesStayDisabled: true,
     notes: input.notes,
     nextAction: input.nextAction,

@@ -10,9 +10,9 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 35: result-state coverage review with production data,
-enabled browser writes, escalation packets, uploads, public proof sharing, and
-external integrations still disabled.
+The current goal is Goal 36: assignment creation result states with production
+data, enabled browser writes, reminder automation, escalation packets, uploads,
+public proof sharing, and external integrations still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -169,6 +169,12 @@ Goal 35 adds an admin-facing result-state coverage review. It shows that four
 first-write candidates have result states and that leader assignment creation
 still needs result states before write activation can be considered.
 
+Goal 36 defines the plain-English result states for future leader assignment
+creation. The actions route now shows the current disabled assignment-create
+result, the future result for the selected mock assignment, and the possible
+success/validation/permission/reminder-disabled states. The admin coverage panel
+now shows all five first-write candidates covered while writes remain disabled.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -247,6 +253,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 33 HQ proof decision result states](./docs/architecture/goal-33-hq-proof-decision-result-states.md)
 - [Goal 34 coach decision result states](./docs/architecture/goal-34-coach-decision-result-states.md)
 - [Goal 35 result-state coverage review](./docs/architecture/goal-35-result-state-coverage.md)
+- [Goal 36 assignment creation result states](./docs/architecture/goal-36-assignment-create-result-states.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -394,6 +401,9 @@ Rules:
 - Goal 35 adds an admin result-state coverage review. It does not treat
   coverage as approval, and it keeps assignment creation marked as missing
   result-state review.
+- Goal 36 adds assignment creation result states and marks all five first write
+  candidates covered in the admin coverage panel. It still does not enable
+  browser writes or reminder automation.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -689,6 +699,15 @@ Goal 35 result-state coverage review lives in:
 - `tests/write-result-state-coverage.test.ts`
 - visible coverage review panel on `/admin`
 
+Goal 36 assignment creation result states live in:
+
+- `docs/architecture/goal-36-assignment-create-result-states.md`
+- `src/services/assignment-create-result-states.ts`
+- `src/components/assignment-create-result-states-panel.tsx`
+- `tests/assignment-create-result-states.test.ts`
+- visible assignment-create result-state panel on `/rush-month/actions`
+- updated coverage review on `/admin`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -707,14 +726,14 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 35
+## Definition of Done for Goal 36
 
-Goal 35 is complete when a human developer can open the admin route and see the
-result-state coverage review showing four covered write candidates, one missing
-assignment-create result-state family, and no enabled browser or external
-writes.
+Goal 36 is complete when a human developer can open the actions route and see
+the exact disabled assignment-create result plus future plain-English result
+states, and open the admin route to see all five first write candidates covered
+with no enabled browser or external writes.
 
-The app remains mock-first by default. Goal 35 does not wire production
+The app remains mock-first by default. Goal 36 does not wire production
 Supabase, create a server action, enable browser writes, upload files, publish
-proof, remove mock fallback, send escalation packets, or activate real
-integrations.
+proof, remove mock fallback, send reminders or escalation packets, or activate
+real integrations.

@@ -13,12 +13,12 @@ export function WriteResultStateCoveragePanel({
         Result-state coverage
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
-        Write activation still has one result-state gap.
+        All first-write candidates now have result-state coverage.
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/66">
-        Four future write paths now have reviewed plain-English result states.
-        Assignment creation still needs the same treatment before any browser
-        write can be considered ready.
+        Each future write path now has reviewed plain-English result states.
+        This improves activation readiness, but it still does not approve or
+        enable any browser write.
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">

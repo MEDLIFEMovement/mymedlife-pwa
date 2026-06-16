@@ -161,9 +161,9 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 35: result-state coverage review with production data,
-enabled browser writes, escalation packets, uploads, public proof sharing, and
-external integrations still disabled.
+The active goal is Goal 36: assignment creation result states with production
+data, enabled browser writes, reminder automation, escalation packets, uploads,
+public proof sharing, and external integrations still disabled.
 
 Allowed:
 
@@ -282,8 +282,12 @@ Allowed:
   note, blocker-summary, and error messages without saving decisions, sending
   escalation packets, or enabling browser writes
 - an admin result-state coverage review that shows which first write candidates
-  have reviewed result states, keeps assignment creation marked missing until
-  covered, and does not treat coverage as activation approval
+  have reviewed result states, marks all five first candidates covered, and
+  does not treat coverage as activation approval
+- assignment creation result states on `/rush-month/actions` that show future
+  created, disabled, reminder-disabled, duplicate, auth, permission,
+  validation, and error messages without saving assignments, sending reminders,
+  or enabling browser writes
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
