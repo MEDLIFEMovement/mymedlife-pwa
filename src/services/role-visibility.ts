@@ -174,6 +174,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin/proof-write", label: "Proof Packet" },
         { href: "/admin/hq-proof-write", label: "HQ Decision" },
         { href: "/admin/assignment-write", label: "Assignment Packet" },
+        { href: "/admin/coach-write", label: "Coach Packet" },
         { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
@@ -185,6 +186,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin/proof-write", label: "Proof Packet Safety" },
         { href: "/admin/hq-proof-write", label: "HQ Decision Safety" },
         { href: "/admin/assignment-write", label: "Assignment Safety" },
+        { href: "/admin/coach-write", label: "Coach Safety" },
         { href: "/admin/pilot-scope", label: "Pilot Safety" },
         { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
       ];
@@ -208,6 +210,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin/proof-write", label: "Proof Packet" },
         { href: "/admin/hq-proof-write", label: "HQ Decision" },
         { href: "/admin/assignment-write", label: "Assignment Packet" },
+        { href: "/admin/coach-write", label: "Coach Packet" },
         { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
@@ -256,6 +259,7 @@ export function getMobileQuickNavigationForActor(
         { href: "/admin/proof-write", label: "Proof", helper: "Packet" },
         { href: "/admin/hq-proof-write", label: "HQ", helper: "Review" },
         { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
+        { href: "/admin/coach-write", label: "Coach", helper: "No sends" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
       ];
     case "ds_admin":
@@ -266,6 +270,7 @@ export function getMobileQuickNavigationForActor(
         { href: "/admin/proof-write", label: "Proof", helper: "No uploads" },
         { href: "/admin/hq-proof-write", label: "HQ", helper: "No publish" },
         { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
+        { href: "/admin/coach-write", label: "Coach", helper: "No sends" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "No sends" },
       ];
     case "super_admin":
@@ -276,6 +281,7 @@ export function getMobileQuickNavigationForActor(
         { href: "/admin/proof-write", label: "Proof", helper: "Packet" },
         { href: "/admin/hq-proof-write", label: "HQ", helper: "Review" },
         { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
+        { href: "/admin/coach-write", label: "Coach", helper: "No sends" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
       ];
   }

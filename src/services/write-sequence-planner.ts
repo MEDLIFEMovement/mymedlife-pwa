@@ -228,10 +228,10 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
       label: "Coach logs advance / hold / intervene decision",
       promotionOrder: 5,
       studentJourneyOrder: 5,
-      route: "/coach",
+      route: "/admin/coach-write",
       localActorEmail: "coach@mymedlife.test",
       actorLabel: "Coach",
-      status: "needs_operator_packet",
+      status: "packet_ready",
       plainEnglish:
         "A coach records whether the chapter should advance, hold, or receive intervention after the Rush Month closeout signals are reviewed.",
       expectedTables: ["kpi_events", "events", "integration_events", "audit_logs"],
@@ -247,7 +247,7 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
       safetyBoundary:
         "Requires coach portfolio scope, decision notes, intervention blocker summary, and escalation packets staying disabled.",
       nextGate:
-        "Create a coach-decision operator packet after assignment, proof, and HQ decision readback are proven.",
+        "Open `/admin/coach-write` before allowing staff to test coach decisions in a browser.",
     },
   ];
 }
