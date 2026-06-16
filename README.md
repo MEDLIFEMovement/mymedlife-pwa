@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 7: local campaign operating model refinement.
+The current goal is Goal 8: local data connection and read-only app foundation.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -31,9 +31,12 @@ Goal 7 implements that plan locally by adding campaign templates, phase
 templates, campaign officer lanes, readiness reviews, risk flags, closeouts,
 expanded proof/evidence types, fake seed data, and RLS/security tests.
 
-The app UI still uses mock data. Do not connect production Supabase, enable live
-auth in the student UI, create real users, or enable external writes until Nick
-approves a later implementation goal.
+Goal 8 adds the first safe read-only bridge from the app to local Supabase data
+while keeping mock data as the default fallback.
+
+Do not connect production Supabase, enable live auth in the student UI, create
+real users, implement app writes, or enable external writes until Nick approves
+a later implementation goal.
 
 ## Recommended Stack
 
@@ -123,32 +126,56 @@ pnpm supabase:reset
 pnpm supabase:test
 ```
 
+To test the read-only local Supabase path:
+
+```bash
+cp .env.example .env.local
+# Set MYMEDLIFE_DATA_SOURCE=supabase
+# Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true
+# Set SUPABASE_SERVICE_ROLE_KEY to the local service role key printed by Supabase
+pnpm supabase:start
+pnpm supabase:reset
+pnpm dev
+```
+
 ## Environment Variables
 
 No live external services are required for the current mock app or local
-database foundation.
-
-Future Supabase implementation should document required variables here before
-use:
+database foundation. The app uses mock data unless local Supabase reads are
+explicitly enabled.
 
 ```bash
+MYMEDLIFE_DATA_SOURCE=mock
+MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=false
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
 Rules:
 
 - Never commit real secrets.
+- Keep `MYMEDLIFE_DATA_SOURCE=mock` unless you are intentionally testing local
+  Supabase.
+- Goal 8 only permits localhost Supabase reads. Non-local Supabase URLs fall
+  back to mock data.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
 
 ## Current App State
 
-The app currently uses mock data only. There is no live Supabase auth, RLS,
-database persistence, HubSpot write, Luma write, warehouse export, Power BI
-export, n8n workflow, or AI summary.
+The app currently uses mock data by default. When local Supabase env vars are
+explicitly enabled, these server-rendered routes can read fake local Supabase
+data:
+
+- `/chapter`
+- `/rush-month`
+- `/coach`
+
+There is no live Supabase auth, app write path, production database connection,
+HubSpot write, Luma write, warehouse export, Power BI export, n8n workflow, or
+AI summary.
 
 Goal 2 route shells:
 
@@ -193,6 +220,15 @@ Goal 7 local schema refinement lives in:
 - `supabase/tests/database/rls_goal_7.test.sql`
 - additional fake Goal 7 records in `supabase/seed.sql`
 
+Goal 8 read-only app foundation lives in:
+
+- `.env.example`
+- `src/lib/supabase-readonly.ts`
+- `src/services/read-only-app-data.ts`
+- `src/components/data-source-notice.tsx`
+- `tests/supabase-readonly.test.ts`
+- `tests/read-only-app-data.test.ts`
+
 ## Linear Lane
 
 Primary live issues:
@@ -205,11 +241,11 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 7
+## Definition of Done for Goal 8
 
-Goal 7 is complete when local migrations, fake seed data, RLS policies, and
-tests prove the refined campaign operating model works locally and remains safe
-for later app wiring.
+Goal 8 is complete when a human developer can run local Supabase, start the app,
+and see at least one existing screen reading fake local Supabase data, with mock
+fallback still working.
 
-The app remains mock-first. Goal 7 does not wire the app to production
-Supabase, enable live auth, or activate real integrations.
+The app remains mock-first by default. Goal 8 does not wire production
+Supabase, enable live auth, implement app writes, or activate real integrations.
