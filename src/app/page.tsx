@@ -3,10 +3,12 @@ import { AppShell } from "@/components/app-shell";
 import { MetricCard } from "@/components/metric-card";
 import { mockCampaign, mockChapter, roleContexts } from "@/data/mock-rush-month";
 import { getNextMemberAction, getProgressCounts } from "@/lib/rush-month";
+import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 
 export default function Home() {
   const nextAction = getNextMemberAction();
   const progress = getProgressCounts();
+  const campaignSummary = getCampaignReadinessSummary();
 
   return (
     <AppShell>
@@ -17,12 +19,12 @@ export default function Home() {
         <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
           <div>
             <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-              {mockCampaign.name} is the first myMEDLIFE operating loop.
+              myMEDLIFE turns chapter SOPs into student action.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
-              This mock shell shows what campaign we are in, what students do next,
-              who owns each action, what evidence is needed, and how progress rolls
-              up for leaders and coaches.
+              {mockCampaign.name} is the first operating loop, but the app is
+              becoming a reusable campaign system for action committees, events,
+              proof/testimonials, points, KPIs, and coach decisions.
             </p>
           </div>
           <div className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-4">
@@ -57,6 +59,53 @@ export default function Home() {
           value={`${progress.needsWork}`}
           note="Actions not yet ready to count"
         />
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        <MetricCard
+          label="Campaign shells"
+          value={`${campaignSummary.activeCampaigns + campaignSummary.plannedCampaigns + campaignSummary.templateCampaigns}`}
+          note="Rush plus future campaign models"
+        />
+        <MetricCard
+          label="Action events"
+          value={`${campaignSummary.linkedMockEvents}`}
+          note="Mock-linked only, no Luma write"
+        />
+        <MetricCard
+          label="Proof to review"
+          value={`${campaignSummary.hqProofItems}`}
+          note="HQ sharing posture"
+        />
+      </section>
+
+      <section className="grid gap-3 lg:grid-cols-3">
+        {[
+          {
+            href: "/campaigns",
+            label: "Campaign Library",
+            copy: "See the reusable campaign shells behind Rush Month, fundraising, volunteering, socials, Med Talks, and SLT recruitment.",
+          },
+          {
+            href: "/action-committees",
+            label: "Action Committees",
+            copy: "Preview how committees organize events with owners, feedback, proof, and coach-readable outcomes.",
+          },
+          {
+            href: "/proof-library",
+            label: "Proof Library",
+            copy: "Understand how bridge videos and testimonials become belief-building assets after HQ review.",
+          },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="rounded-3xl border border-white/10 bg-white/[0.05] p-4 transition hover:border-emerald-300/30 hover:bg-emerald-300/10"
+          >
+            <h2 className="text-lg font-semibold text-white">{item.label}</h2>
+            <p className="mt-2 text-sm leading-6 text-white/64">{item.copy}</p>
+          </Link>
+        ))}
       </section>
 
       <section className="grid gap-3 lg:grid-cols-4">

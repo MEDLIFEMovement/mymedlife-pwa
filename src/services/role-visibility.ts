@@ -21,6 +21,7 @@ export type NavigationItem = {
 
 const baseNavigation: NavigationItem[] = [
   { href: "/chapter", label: "My Chapter" },
+  { href: "/campaigns", label: "Campaigns" },
   { href: "/rush-month", label: "Rush Month" },
   { href: "/rush-month/actions", label: "My Actions" },
 ];
@@ -119,10 +120,13 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
       return [
         ...baseNavigation,
         { href: "/rush-month/evidence", label: "My Proof" },
+        { href: "/proof-library", label: "Proof Library" },
       ];
     case "chapter_leader":
       return [
         { href: "/chapter", label: "Chapter" },
+        { href: "/campaigns", label: "Campaigns" },
+        { href: "/action-committees", label: "Committees" },
         { href: "/rush-month", label: "Rush Month" },
         { href: "/rush-month/actions", label: "Team Actions" },
         { href: "/rush-month/evidence", label: "Proof" },
@@ -131,13 +135,18 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
     case "coach":
       return [
         { href: "/chapter", label: "Portfolio Chapter" },
+        { href: "/campaigns", label: "Campaigns" },
+        { href: "/action-committees", label: "Events" },
         { href: "/rush-month", label: "Rush Month" },
         { href: "/rush-month/actions", label: "Open Work" },
+        { href: "/proof-library", label: "Proof Library" },
         { href: "/coach", label: "Coach" },
       ];
     case "admin":
       return [
         { href: "/chapter", label: "Chapter Support" },
+        { href: "/campaigns", label: "Campaign Support" },
+        { href: "/proof-library", label: "Proof Library" },
         { href: "/rush-month", label: "Campaign Support" },
         { href: "/coach", label: "Coach Read" },
         { href: "/admin", label: "HQ Admin" },
@@ -148,7 +157,10 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
       return [
         { href: "/chapter", label: "All Chapters" },
         { href: "/rush-month", label: "Campaigns" },
+        { href: "/campaigns", label: "Campaign Library" },
+        { href: "/action-committees", label: "Committees" },
         { href: "/rush-month/actions", label: "Assignments" },
+        { href: "/proof-library", label: "Proof Library" },
         { href: "/rush-month/review", label: "Reviews" },
         { href: "/coach", label: "Coach" },
         { href: "/admin", label: "Super Admin" },

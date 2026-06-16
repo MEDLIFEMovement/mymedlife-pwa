@@ -10,8 +10,8 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 20: live-data connection planning with production data
-still disabled.
+The current goal is Goal 21: campaign operating shells with production data,
+browser writes, uploads, and external integrations still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -90,6 +90,11 @@ Goal 20 defines the future route-by-route migration from mock data to local
 Supabase and then controlled pilot readiness. It does not enable production
 Supabase, browser writes, or external writes.
 
+Goal 21 expands the mock-safe app from a Rush Month-only shell into the first
+reusable campaign operating system surface. It adds campaign catalog pages,
+campaign detail pages, action committee event planning, proof-library posture,
+role-aware visibility, and tests while keeping the app read-only/mock-safe.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -153,6 +158,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 18 leader assignment creation](./docs/architecture/goal-18-leader-assignment-create.md)
 - [Goal 19 auth and onboarding plan](./docs/architecture/goal-19-auth-onboarding-plan.md)
 - [Goal 20 live data connection plan](./docs/architecture/goal-20-live-data-connection-plan.md)
+- [Goal 21 campaign operating shells](./docs/architecture/goal-21-campaign-operating-shells.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -260,6 +266,9 @@ Rules:
   remain disabled.
 - Goal 20 adds the route-by-route live-data connection plan. Production
   Supabase, browser writes, and external writes remain disabled.
+- Goal 21 adds read-only campaign shells, action committee event examples, and
+  proof-library posture. It still does not build all campaigns, publish proof,
+  enable browser writes, or send anything externally.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -272,11 +281,15 @@ data and fake local actor context. With or without local Supabase running,
 `MYMEDLIFE_LOCAL_ACTOR_EMAIL` can preview the Goal 10 local role views:
 
 - `/chapter`
+- `/campaigns`
+- `/campaigns/[campaignSlug]`
+- `/action-committees`
 - `/rush-month`
 - `/rush-month/actions`
 - `/rush-month/actions/[assignmentId]`
 - `/rush-month/evidence`
 - `/rush-month/review`
+- `/proof-library`
 - `/coach`
 - `/admin`
 
@@ -288,21 +301,28 @@ Goal 2 route shells:
 
 - `/`: mobile-first app front door
 - `/chapter`: chapter home shell
+- `/campaigns`: role-aware campaign catalog
+- `/campaigns/[campaignSlug]`: campaign detail, action lanes, events, proof, KPIs, and disabled integration posture
+- `/action-committees`: action committee and chapter event operating examples
 - `/rush-month`: Rush Month campaign shell
 - `/rush-month/actions`: role-aware visible assignments
 - `/rush-month/actions/[assignmentId]`: role-aware action detail and local proof contract preview
 - `/rush-month/evidence`: role-aware proof/testimonial list
 - `/rush-month/review`: HQ proof-sharing review preview
+- `/proof-library`: role-aware proof/testimonial library posture
 - `/coach`: coach dashboard shell
 - `/admin`: admin/super-admin integration placeholder
 
-Mock data lives in `src/data/mock-rush-month.ts`. Shared domain types live in
-`src/shared/types/domain.ts`. Validation schemas live in
-`src/shared/schemas/domain.ts`. Pure mock workflow logic lives in
-`src/services/rush-month-service.ts`. Local action/proof contract previews live
-in `src/services/local-action-contracts.ts`. Disabled future write boundaries
-live in `src/services/write-readiness.ts`. Small reusable UI components live in
-`src/components`.
+Mock Rush Month data lives in `src/data/mock-rush-month.ts`. Mock campaign,
+action committee, event, and proof library data lives in
+`src/data/mock-campaigns.ts`. Shared domain types live in
+`src/shared/types/domain.ts` and `src/shared/types/campaigns.ts`. Validation
+schemas live in `src/shared/schemas/domain.ts`. Pure mock workflow logic lives
+in `src/services/rush-month-service.ts`. Campaign operating logic lives in
+`src/services/campaign-ops-service.ts`. Local action/proof contract previews
+live in `src/services/local-action-contracts.ts`. Disabled future write
+boundaries live in `src/services/write-readiness.ts`. Small reusable UI
+components live in `src/components`.
 
 Goal 4 Supabase planning lives in
 `docs/architecture/supabase-schema-auth-rls-plan.md`. The draft SQL sketch lives
@@ -411,6 +431,19 @@ Goal 20 live-data connection planning lives in:
 - `src/services/live-data-connection-plan.ts`
 - `tests/live-data-connection-plan.test.ts`
 
+Goal 21 campaign operating shells live in:
+
+- `docs/architecture/goal-21-campaign-operating-shells.md`
+- `src/shared/types/campaigns.ts`
+- `src/data/mock-campaigns.ts`
+- `src/services/campaign-ops-service.ts`
+- `src/components/campaign-card.tsx`
+- `src/app/campaigns/page.tsx`
+- `src/app/campaigns/[campaignSlug]/page.tsx`
+- `src/app/action-committees/page.tsx`
+- `src/app/proof-library/page.tsx`
+- `tests/campaign-ops-service.test.ts`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -429,12 +462,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 20
+## Definition of Done for Goal 21
 
-Goal 20 is complete when a human developer can review the route-by-route
-live-data migration order and run tests proving production Supabase, browser
-writes, and external writes remain disabled.
+Goal 21 is complete when a human developer can run the app and review the
+campaign catalog, campaign details, action committee event examples, and proof
+library posture without any production data, browser writes, proof uploads, or
+external integrations enabled.
 
-The app remains mock-first by default. Goal 20 does not wire production
-Supabase, enable browser writes, remove mock fallback, or activate real
-integrations.
+The app remains mock-first by default. Goal 21 does not wire production
+Supabase, enable browser writes, build every campaign deeply, publish proof,
+remove mock fallback, or activate real integrations.

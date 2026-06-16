@@ -161,8 +161,8 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 20: live-data connection planning with production data
-still disabled.
+The active goal is Goal 21: campaign operating shells with production data,
+browser writes, uploads, and external integrations still disabled.
 
 Allowed:
 
@@ -220,6 +220,14 @@ Allowed:
   from mock data to local Supabase and controlled pilot readiness
 - tests proving production Supabase, browser writes, and external writes remain
   disabled
+- read-only campaign catalog and campaign detail shells for Rush Month and the
+  next major campaign families
+- action committee event-planning shells that show owners, student action,
+  feedback/NPS posture, proof prompts, and mock/disabled Luma state
+- proof-library posture that treats bridge videos, testimonials, UGC, and
+  chapter recaps as belief-building assets requiring HQ sharing decisions
+- tests proving DS Admin cannot read campaign, event, proof, student, points,
+  or KPI truth
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

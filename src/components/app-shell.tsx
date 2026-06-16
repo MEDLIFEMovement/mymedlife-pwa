@@ -20,7 +20,7 @@ export function AppShell({ actor, children }: AppShellProps) {
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
                 myMEDLIFE
               </p>
-              <p className="text-xl font-semibold text-white">Rush Month operating shell</p>
+              <p className="text-xl font-semibold text-white">Chapter operating system</p>
             </Link>
             <nav className="flex gap-2 overflow-x-auto pb-1">
               {navItems.map((item) => (

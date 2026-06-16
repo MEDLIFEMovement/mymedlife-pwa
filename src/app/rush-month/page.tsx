@@ -9,6 +9,10 @@ import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
+  getEventPlansForCampaign,
+  getProofLibraryItemsForCampaign,
+} from "@/services/campaign-ops-service";
+import {
   canReadChapterData,
   canReadIntegrationOutbox,
   getVisibleAssignmentsForActor,
@@ -24,6 +28,8 @@ export default async function RushMonthPage() {
   ]);
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
   const visibleRisks = getVisibleRiskFlagsForActor(actor, data.riskFlags);
+  const rushEventPlans = getEventPlansForCampaign("rush-month");
+  const rushProofItems = getProofLibraryItemsForCampaign("rush-month");
 
   return (
     <AppShell actor={actor}>
@@ -98,6 +104,44 @@ export default async function RushMonthPage() {
               value={`${visibleRisks.length}`}
               note="Filtered by role boundary"
             />
+          </section>
+
+          <section className="grid gap-3 sm:grid-cols-2">
+            <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
+              <h2 className="text-2xl font-semibold text-white">Rush Month events</h2>
+              <p className="mt-2 text-sm leading-6 text-white/66">
+                Action committees should create real student moments during
+                Rush Month: socials, Med Talks, invite pushes, and follow-up.
+              </p>
+              <div className="mt-4 grid gap-3">
+                {rushEventPlans.map((eventPlan) => (
+                  <div key={eventPlan.id} className="rounded-2xl bg-black/20 p-3">
+                    <p className="text-sm font-semibold text-white">{eventPlan.title}</p>
+                    <p className="mt-1 text-xs text-white/54">
+                      {eventPlan.timing} / {eventPlan.lumaStatus.replaceAll("_", " ")}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
+              <h2 className="text-2xl font-semibold text-white">Rush Month proof</h2>
+              <p className="mt-2 text-sm leading-6 text-white/66">
+                Proof should answer the fear underneath the action: Will I fit
+                in? Is this worth my time? Can my chapter really do this?
+              </p>
+              <div className="mt-4 grid gap-3">
+                {rushProofItems.map((proofItem) => (
+                  <div key={proofItem.id} className="rounded-2xl bg-black/20 p-3">
+                    <p className="text-sm font-semibold text-white">{proofItem.sourceLabel}</p>
+                    <p className="mt-1 text-xs text-white/54">
+                      Addresses: {proofItem.hesitationAddressed}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </article>
           </section>
 
           <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">

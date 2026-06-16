@@ -78,6 +78,35 @@ export default async function ChapterPage() {
               Open Rush Month
             </Link>
           </section>
+
+          <section className="grid gap-3 lg:grid-cols-3">
+            {[
+              {
+                href: "/campaigns",
+                title: "Campaigns",
+                copy: "Review the operating shells that turn chapter SOPs into student action.",
+              },
+              {
+                href: "/action-committees",
+                title: "Action committees",
+                copy: "See how committees organize events, assign owners, and collect feedback/proof.",
+              },
+              {
+                href: "/proof-library",
+                title: "Proof library",
+                copy: "Preview how testimonials and bridge videos become belief-building assets after HQ review.",
+              },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-3xl border border-white/10 bg-white/[0.05] p-4 transition hover:border-emerald-300/30 hover:bg-emerald-300/10"
+              >
+                <h2 className="text-lg font-semibold text-white">{item.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-white/64">{item.copy}</p>
+              </Link>
+            ))}
+          </section>
         </>
       )}
     </AppShell>
