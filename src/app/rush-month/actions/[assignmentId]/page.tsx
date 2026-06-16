@@ -7,6 +7,7 @@ import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
+import { ProofSubmissionResultStatesPanel } from "@/components/proof-submission-result-states-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
@@ -26,6 +27,10 @@ import {
   getProofSubmissionGuidance,
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import {
+  getDisabledProofSubmissionResultPreview,
+  getProofSubmissionResultStates,
+} from "@/services/proof-submission-result-states";
 import { canReadAssignment } from "@/services/role-visibility";
 import {
   getActionStartBrowserWriteGate,
@@ -74,6 +79,11 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
   } as const;
   const actionStartedPreview = createActionStartedMock(actor, assignment);
   const proofSubmissionPreview = createProofSubmissionMock(
+    actor,
+    assignment,
+    proofSubmissionInput,
+  );
+  const proofSubmissionResultPreview = getDisabledProofSubmissionResultPreview(
     actor,
     assignment,
     proofSubmissionInput,
@@ -210,6 +220,10 @@ export default async function ActionDetailPage({ params }: ActionDetailPageProps
           <WriteReadinessNotice
             operationLabel="Proof submission write remains disabled"
             wouldWriteTables={disabledProofSubmissionWrite.wouldWriteTables}
+          />
+          <ProofSubmissionResultStatesPanel
+            preview={proofSubmissionResultPreview}
+            states={getProofSubmissionResultStates()}
           />
           {canSubmitProof ? (
             <BrowserWriteGateNotice gate={proofSubmissionGate} />
