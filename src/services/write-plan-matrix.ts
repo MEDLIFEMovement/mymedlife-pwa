@@ -5,6 +5,7 @@ type FutureTable =
   | "assignments"
   | "evidence_items"
   | "approvals"
+  | "events"
   | "integration_events"
   | "automation_outbox"
   | "audit_logs";
@@ -35,8 +36,8 @@ export const writePlanOperations = [
     plainEnglishOutcome:
       "A permitted actor marks an assigned Rush Month action as in progress and records the internal event.",
     transactionBoundary:
-      "Update one assignment status, record one integration event, and record one audit log entry together.",
-    futureTables: ["assignments", "integration_events", "audit_logs"],
+      "Update one assignment status, record one internal event, record one integration event, and record one audit log entry together.",
+    futureTables: ["assignments", "events", "integration_events", "audit_logs"],
     allowedActors: ["chapter_member", "chapter_leader", "coach", "super_admin"],
     blockedActors: ["admin", "ds_admin"],
     requiredTests: [
@@ -46,6 +47,7 @@ export const writePlanOperations = [
       "admin_cannot_start_student_truth_assignment",
       "ds_admin_cannot_start_assignment",
       "started_assignment_records_audit_log",
+      "started_assignment_records_internal_event",
     ],
     stillDisabled: true,
   },
@@ -55,10 +57,11 @@ export const writePlanOperations = [
     plainEnglishOutcome:
       "A student or chapter leader submits a testimonial, bridge video, photo, link, or recap for HQ review.",
     transactionBoundary:
-      "Update the assignment submission state, create the evidence item, record the internal event, create a disabled outbox row, and record an audit log entry together.",
+      "Update the assignment submission state, create the evidence item, record the internal event, record the integration event, create a disabled outbox row, and record an audit log entry together.",
     futureTables: [
       "assignments",
       "evidence_items",
+      "events",
       "integration_events",
       "automation_outbox",
       "audit_logs",
@@ -81,10 +84,11 @@ export const writePlanOperations = [
     plainEnglishOutcome:
       "MEDLIFE HQ decides whether submitted proof should be shared more broadly with other chapters or universities.",
     transactionBoundary:
-      "Update evidence sharing status, create the approval decision, record the internal event, create a disabled outbox row, and record an audit log entry together.",
+      "Update evidence sharing status, create the approval decision, record the internal event, record the integration event, create a disabled outbox row, and record an audit log entry together.",
     futureTables: [
       "evidence_items",
       "approvals",
+      "events",
       "integration_events",
       "automation_outbox",
       "audit_logs",

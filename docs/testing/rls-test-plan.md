@@ -195,6 +195,18 @@ Before a later goal enables local Supabase writes, add RLS tests proving:
 - proof submissions and HQ decisions create disabled outbox rows only
 - no browser role can mark an outbox row as sent or approved for live send
 
+Goal 14 implements the first local write subset for `action_started` in
+`supabase/tests/database/rls_goal_14.test.sql`. The test suite now proves:
+
+- direct table updates cannot bypass the action-start function
+- assigned members, chapter role holders, coaches on coach-owned portfolio work,
+  and super admin break-glass can use the audited function
+- coaches cannot start member-owned student work
+- Admin and DS Admin cannot start routine student truth assignments
+- each allowed action start creates an internal event, integration event, and
+  audit log
+- action start creates no outbox row and no external send attempt
+
 ## Pass Criteria
 
 The RLS test suite should pass only when:

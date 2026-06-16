@@ -40,6 +40,7 @@ describe("write readiness service", () => {
     expect(attempt.operation).toBe("action_started");
     expect(attempt.wouldWriteTables).toEqual([
       "assignments",
+      "events",
       "integration_events",
       "audit_logs",
     ]);
@@ -59,6 +60,7 @@ describe("write readiness service", () => {
     expect(attempt.wouldWriteTables).toEqual([
       "assignments",
       "evidence_items",
+      "events",
       "integration_events",
       "automation_outbox",
       "audit_logs",
@@ -79,6 +81,7 @@ describe("write readiness service", () => {
     expect(attempt.wouldWriteTables).toEqual([
       "evidence_items",
       "approvals",
+      "events",
       "integration_events",
       "automation_outbox",
       "audit_logs",
