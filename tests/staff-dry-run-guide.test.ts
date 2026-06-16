@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
+import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaffDryRunGuide } from "@/services/staff-dry-run-guide";
+
+const mockData = getMockReadOnlyAppData("Testing staff dry-run guide.");
 
 describe("staff dry-run guide", () => {
   it("gives admin an executable fake-user rehearsal guide with zero writes and sends", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
-    const guide = getStaffDryRunGuide(actor);
+    const guide = getStaffDryRunGuide(actor, mockData);
 
     expect(guide.canReadGuide).toBe(true);
     expect(guide.title).toBe("Admin staff dry-run guide");
@@ -14,11 +17,12 @@ describe("staff dry-run guide", () => {
     expect(guide.counts.passCriteria).toBeGreaterThan(20);
     expect(guide.counts.browserWritesExpected).toBe(0);
     expect(guide.counts.externalWritesExpected).toBe(0);
+    expect(guide.writeRehearsal.counts.externalWritesExpected).toBe(0);
   });
 
   it("covers the member, leader, event, proof, coach, and DS safety rehearsal path", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
-    const guide = getStaffDryRunGuide(actor);
+    const guide = getStaffDryRunGuide(actor, mockData);
     const stepIds = guide.steps.map((step) => step.id);
 
     expect(stepIds).toEqual([
@@ -46,7 +50,7 @@ describe("staff dry-run guide", () => {
 
   it("names structured events and safety assertions for every rehearsal step", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
-    const guide = getStaffDryRunGuide(actor);
+    const guide = getStaffDryRunGuide(actor, mockData);
 
     expect(
       guide.steps.every((step) => step.structuredEventsToNotice.length > 0),
@@ -59,18 +63,71 @@ describe("staff dry-run guide", () => {
     ).toEqual(expect.arrayContaining(["action_started", "evidence_submitted"]));
   });
 
+  it("mirrors the five local write packets for staff rehearsal", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const guide = getStaffDryRunGuide(actor, mockData);
+
+    expect(guide.writeRehearsal.title).toBe("Five local write rehearsal");
+    expect(guide.writeRehearsal.counts.steps).toBe(5);
+    expect(guide.writeRehearsal.counts.localBrowserWriteCandidates).toBe(5);
+    expect(guide.writeRehearsal.counts.externalWritesExpected).toBe(0);
+    expect(guide.writeRehearsal.steps.map((step) => step.operation)).toEqual([
+      "action_started",
+      "evidence_submitted",
+      "hq_sharing_decision_logged",
+      "action_assigned",
+      "coach_decision_logged",
+    ]);
+    expect(guide.writeRehearsal.steps.map((step) => step.packetRoute)).toEqual([
+      "/admin/first-write",
+      "/admin/proof-write",
+      "/admin/hq-proof-write",
+      "/admin/assignment-write",
+      "/admin/coach-write",
+    ]);
+    expect(guide.writeRehearsal.steps.map((step) => step.operatingRoute)).toEqual(
+      expect.arrayContaining([
+        "/rush-month/actions",
+        "/rush-month/review",
+        "/coach",
+      ]),
+    );
+  });
+
+  it("keeps rehearsal steps as guidance rather than enabled writes", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const guide = getStaffDryRunGuide(actor, mockData);
+
+    expect(
+      guide.writeRehearsal.steps.every(
+        (step) => step.externalWritesExpected === 0,
+      ),
+    ).toBe(true);
+    expect(
+      guide.writeRehearsal.steps.every((step) =>
+        step.stopCondition.toLowerCase().includes("stop"),
+      ),
+    ).toBe(true);
+    expect(
+      guide.writeRehearsal.steps.find(
+        (step) => step.operation === "evidence_submitted",
+      )?.rehearsalAction,
+    ).toContain("do not upload files");
+  });
+
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
-    expect(getStaffDryRunGuide(dsAdmin).canReadGuide).toBe(true);
-    expect(getStaffDryRunGuide(dsAdmin).title).toBe(
+    expect(getStaffDryRunGuide(dsAdmin, mockData).canReadGuide).toBe(true);
+    expect(getStaffDryRunGuide(dsAdmin, mockData).title).toBe(
       "DS Admin staff dry-run safety guide",
     );
-    expect(getStaffDryRunGuide(member).canReadGuide).toBe(false);
-    expect(getStaffDryRunGuide(leader).canReadGuide).toBe(false);
-    expect(getStaffDryRunGuide(coach).canReadGuide).toBe(false);
+    expect(getStaffDryRunGuide(member, mockData).canReadGuide).toBe(false);
+    expect(getStaffDryRunGuide(leader, mockData).canReadGuide).toBe(false);
+    expect(getStaffDryRunGuide(coach, mockData).canReadGuide).toBe(false);
+    expect(getStaffDryRunGuide(member, mockData).writeRehearsal.steps).toEqual([]);
   });
 });

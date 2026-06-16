@@ -15,7 +15,7 @@ export default async function StaffDryRunPage() {
     getReadOnlyAppData(),
     getLocalActorContext(),
   ]);
-  const guide = getStaffDryRunGuide(actor);
+  const guide = getStaffDryRunGuide(actor, data);
 
   return (
     <AppShell actor={actor}>
