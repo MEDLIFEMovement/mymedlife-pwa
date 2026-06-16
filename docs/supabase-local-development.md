@@ -26,6 +26,9 @@ expectations, stop conditions, and staging-review posture.
 Goal 77 adds `/admin/write-sequence` so staff can see the safe write promotion
 order after that first action-start proof: proof metadata, HQ proof decision,
 leader assignment creation, and coach decision logging.
+Goal 78 adds `/admin/proof-write` so staff can prepare the second local write,
+`evidence_submitted` proof/testimonial metadata, only after first-write
+readback is proven.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
@@ -208,6 +211,15 @@ or AI writes.
   panel for reviewing the next safe write after the first action-start drill.
 - `tests/write-sequence-planner.test.ts`: unit tests proving write-sequence
   visibility, DS Admin safety review, route order, and zero external sends.
+- `src/services/proof-metadata-verification-packet.ts`: staff-only packet for
+  metadata-only proof/testimonial submission after action-start readback is
+  proven.
+- `src/components/proof-metadata-verification-panel.tsx`: `/admin/proof-write`
+  panel with local env settings, fake member sign-in, stop conditions, and
+  readback evidence for evidence item/event/outbox/audit rows.
+- `tests/proof-metadata-verification-packet.test.ts`: unit tests proving proof
+  metadata packet blocking, ready state, readback, upload safety, and role
+  visibility.
 
 ## Requirements
 

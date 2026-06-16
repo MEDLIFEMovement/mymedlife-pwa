@@ -171,6 +171,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin", label: "HQ Admin" },
         { href: "/admin/first-write", label: "First Write" },
         { href: "/admin/write-sequence", label: "Write Sequence" },
+        { href: "/admin/proof-write", label: "Proof Packet" },
         { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
@@ -179,6 +180,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin", label: "Integration Outbox" },
         { href: "/admin/first-write", label: "First Write Safety" },
         { href: "/admin/write-sequence", label: "Write Sequence Safety" },
+        { href: "/admin/proof-write", label: "Proof Packet Safety" },
         { href: "/admin/pilot-scope", label: "Pilot Safety" },
         { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
       ];
@@ -199,6 +201,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin", label: "Super Admin" },
         { href: "/admin/first-write", label: "First Write" },
         { href: "/admin/write-sequence", label: "Write Sequence" },
+        { href: "/admin/proof-write", label: "Proof Packet" },
         { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
@@ -244,6 +247,7 @@ export function getMobileQuickNavigationForActor(
         { href: "/admin", label: "Admin", helper: "Review" },
         { href: "/admin/first-write", label: "Write", helper: "Drill" },
         { href: "/admin/write-sequence", label: "Sequence", helper: "Order" },
+        { href: "/admin/proof-write", label: "Proof", helper: "Packet" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
       ];
     case "ds_admin":
@@ -251,6 +255,7 @@ export function getMobileQuickNavigationForActor(
         { href: "/admin", label: "Outbox", helper: "Safety" },
         { href: "/admin/first-write", label: "Write", helper: "No sends" },
         { href: "/admin/write-sequence", label: "Sequence", helper: "No sends" },
+        { href: "/admin/proof-write", label: "Proof", helper: "No uploads" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "No sends" },
       ];
     case "super_admin":
@@ -258,6 +263,7 @@ export function getMobileQuickNavigationForActor(
         { href: "/admin", label: "Admin", helper: "Full" },
         { href: "/admin/first-write", label: "Write", helper: "Drill" },
         { href: "/admin/write-sequence", label: "Sequence", helper: "Order" },
+        { href: "/admin/proof-write", label: "Proof", helper: "Packet" },
         { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
       ];
   }

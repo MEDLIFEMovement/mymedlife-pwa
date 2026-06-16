@@ -181,6 +181,7 @@ function getSubprojects(): MvpSubprojectProgress[] {
       routeEvidence: [
         "/admin/first-write",
         "/admin/write-sequence",
+        "/admin/proof-write",
         "/rush-month/actions",
         "/rush-month/actions/[assignmentId]",
         "/rush-month/review",
@@ -189,11 +190,11 @@ function getSubprojects(): MvpSubprojectProgress[] {
       plainEnglish:
         "The first local-only write paths now exist, and action-start has a staff drill that explains exactly when the first localhost-only save can be tested.",
       technicalEvidence:
-        "Server actions, result states, browser gates, and first-write drill coverage exist for action start, proof submission, HQ proof decision, leader assignment creation, and coach decision logging.",
+        "Server actions, result states, browser gates, first-write drill coverage, write-sequence planning, and proof metadata packet coverage exist for the first local write sequence.",
       remainingWork:
-        "Run the localhost action-start drill, review readback/audit proof, then use the write sequence planner to promote the next write safely.",
+        "Run the localhost action-start drill, review readback/audit proof, then use the proof metadata packet to test the next write safely.",
       nextReviewStep:
-        "Open `/admin/first-write` first, then `/admin/write-sequence` to review the next write promotion order.",
+        "Open `/admin/first-write`, `/admin/write-sequence`, and `/admin/proof-write` in that order.",
       totalWeight: 14,
       localReviewWeight: 10,
       liveMvpWeight: 7,

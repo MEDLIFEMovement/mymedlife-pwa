@@ -182,6 +182,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "The sequence planner is a promotion map only and must not enable auth, uploads, browser writes, public proof sharing, or external automation.",
   },
+  {
+    id: "proof-metadata-packet",
+    title: "Review the proof metadata packet",
+    route: "/admin/proof-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the second local write packet for member proof/testimonial metadata, including first-write prerequisites, disabled upload posture, and readback evidence.",
+    safetyBoundary:
+      "The proof packet must not enable file uploads, public proof sharing, warehouse export, AI summary, or external automation.",
+  },
 ];
 
 export function getStakeholderReviewPlan(

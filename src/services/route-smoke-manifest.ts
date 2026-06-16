@@ -202,6 +202,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "The planner must not enable production auth, browser writes, proof uploads, public proof sharing, or external automation.",
   },
   {
+    path: "/admin/proof-write",
+    label: "Proof metadata operator packet",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ staff can see whether proof/testimonial metadata submission is blocked, ready for localhost-only testing, or has readback evidence.",
+    safetyAssertion:
+      "The packet must not enable production auth, file uploads, public proof sharing, warehouse export, AI summary, or external automation.",
+  },
+  {
     path: "/admin/pilot-scope",
     label: "First pilot scope planner",
     priority: "critical",
