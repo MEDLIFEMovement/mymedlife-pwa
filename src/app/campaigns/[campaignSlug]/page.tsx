@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -41,9 +39,6 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
 
   return (
     <AppShell actor={actor}>
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
-
       {!canReadCampaign ? (
         <RestrictedState
           title="This campaign shell is hidden for the selected local role."

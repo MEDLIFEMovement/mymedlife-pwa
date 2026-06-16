@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -25,9 +23,6 @@ export default async function ActionCommitteesPage() {
 
   return (
     <AppShell actor={actor}>
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
-
       {!canReadChapterData(actor) ? (
         <RestrictedState
           title="Action committee truth is hidden for DS Admin."

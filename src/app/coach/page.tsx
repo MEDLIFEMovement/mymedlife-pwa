@@ -4,8 +4,6 @@ import { CoachPortfolioReadinessPanel } from "@/components/coach-portfolio-readi
 import { CoachDecisionResultStatesPanel } from "@/components/coach-decision-result-states-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
@@ -68,8 +66,6 @@ export default async function CoachPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
 
       {!canReadChapterData(actor) ? (
         <RestrictedState

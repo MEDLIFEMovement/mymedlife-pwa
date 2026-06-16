@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AppNavigation } from "@/components/app-navigation";
+import { LocalActorNotice } from "@/components/local-actor-notice";
+import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   getMobileQuickNavigationForActor,
@@ -36,6 +38,12 @@ export function AppShell({ actor, children }: AppShellProps) {
             <AppNavigation navItems={navItems} quickItems={quickItems} />
           </div>
         </header>
+        {actor ? (
+          <>
+            <LocalActorNotice actor={actor} />
+            <LocalRoleSwitcher actor={actor} />
+          </>
+        ) : null}
         <div id="main-content" tabIndex={-1} className="flex flex-col gap-5">
           {children}
         </div>

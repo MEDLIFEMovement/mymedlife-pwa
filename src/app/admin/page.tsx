@@ -2,8 +2,6 @@ import { AppShell } from "@/components/app-shell";
 import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
-import { LocalActorNotice } from "@/components/local-actor-notice";
-import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
@@ -50,8 +48,6 @@ export default async function AdminPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
 
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
