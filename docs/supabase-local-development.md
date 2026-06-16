@@ -512,6 +512,27 @@ This test still does not send reminders, enable production auth, upload files,
 publish proof, or send HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or
 AI writes.
 
+## Goal 81 Coach Decision Packet
+
+`/admin/coach-write` is the staff-only operator packet for the local
+`coach_decision_logged` test. Use it after `/admin/assignment-write` shows
+leader assignment readback evidence.
+
+The packet checks:
+
+- local Supabase reads are active
+- chapter, campaign, and phase IDs are real UUIDs
+- leader assignment readback has already been proven
+- local Supabase Auth mode is selected
+- `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`
+- `MYMEDLIFE_ENABLE_COACH_DECISION_WRITE=true`
+- fake coach auth is signed in
+- escalation packets and external sends remain disabled
+
+The page is read-only. It should not send n8n escalation packets, create HubSpot
+notes, send email/SMS, write to Luma, export to a warehouse, update Power BI, or
+generate AI summaries.
+
 ## Goal 65 Coach Decision Test
 
 After running the local Supabase reset, use the fake Northview Rush Month coach
@@ -524,11 +545,12 @@ Recommended local test path:
 3. Set `MYMEDLIFE_AUTH_MODE=local_supabase`.
 4. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
 5. Set `MYMEDLIFE_ENABLE_COACH_DECISION_WRITE=true`.
-6. Sign in at `/login` as `coach@mymedlife.test` with password `password`.
-7. Open `/coach`.
-8. Confirm the local coach decision panel is enabled.
-9. Submit the local coach decision form.
-10. Confirm the refreshed page shows the recorded decision result and local
+6. Open `/admin/coach-write` and confirm prerequisite checks.
+7. Sign in at `/login` as `coach@mymedlife.test` with password `password`.
+8. Open `/coach`.
+9. Confirm the local coach decision panel is enabled.
+10. Submit the local coach decision form.
+11. Confirm the refreshed page shows the recorded decision result and local
     readiness readback.
 
 Expected database behavior:

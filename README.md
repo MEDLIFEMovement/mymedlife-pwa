@@ -10,13 +10,17 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 80: leader assignment packet. This remains mock-safe by
-default and adds `/admin/assignment-write` so HQ reviewers can prepare the
-fourth local Rush Month write: one fake chapter leader creating one assignment
-without reminders or external automation.
+The current goal is Goal 81: coach decision packet. This remains mock-safe by
+default and adds `/admin/coach-write` so HQ reviewers can prepare the fifth
+local Rush Month write: one fake coach recording advance / hold / intervene
+without n8n escalation packets or external automation.
 Production data, broad browser writes, admin mutation controls, real uploads,
 public proof sharing, warehouse exports, AI summaries, and external
 integrations remain disabled.
+
+Goal 80 added `/admin/assignment-write` so HQ reviewers can prepare the fourth
+local Rush Month write: one fake chapter leader creating one assignment without
+reminders or external automation.
 
 Goal 79 added `/admin/hq-proof-write` so HQ reviewers can prepare the third
 local Rush Month write: deciding whether submitted proof/testimonial metadata

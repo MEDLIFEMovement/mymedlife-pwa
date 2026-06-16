@@ -25,6 +25,9 @@ describe("mvp release readiness", () => {
     expect(
       summary.achievements.map((achievement) => achievement.label),
     ).toContain("First-write activation drill");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Coach decision packet");
   });
 
   it("lists the key live-launch blockers", () => {

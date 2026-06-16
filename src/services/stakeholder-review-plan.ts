@@ -215,6 +215,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "The leader assignment packet must not send reminders, HubSpot handoffs, n8n workflows, Luma writes, or external automation.",
   },
+  {
+    id: "coach-decision-packet",
+    title: "Review the coach decision packet",
+    route: "/admin/coach-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the fifth local write packet for coach advance / hold / intervene logging, including leader assignment prerequisites, disabled escalation posture, and readback evidence.",
+    safetyBoundary:
+      "The coach decision packet must not send n8n escalation packets, HubSpot notes, email, SMS, warehouse exports, Power BI updates, AI summaries, or external automation.",
+  },
 ];
 
 export function getStakeholderReviewPlan(

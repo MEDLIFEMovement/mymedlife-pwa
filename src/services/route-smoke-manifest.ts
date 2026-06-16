@@ -232,6 +232,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "The packet must not enable production auth, reminders, HubSpot handoffs, n8n workflows, Luma writes, or external automation.",
   },
   {
+    path: "/admin/coach-write",
+    label: "Coach decision operator packet",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ staff can see whether leader assignment readback is proven, whether local coach decision logging is blocked or ready, and what readback evidence must appear.",
+    safetyAssertion:
+      "The packet must not enable production auth, coach reassignment, n8n escalation packets, HubSpot notes, warehouse exports, AI summaries, or external automation.",
+  },
+  {
     path: "/admin/pilot-scope",
     label: "First pilot scope planner",
     priority: "critical",

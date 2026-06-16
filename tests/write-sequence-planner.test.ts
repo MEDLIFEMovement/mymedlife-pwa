@@ -23,6 +23,12 @@ describe("write sequence planner", () => {
       "action_assigned",
       "coach_decision_logged",
     ]);
+    expect(
+      planner.operations.find((operation) => operation.key === "coach_decision_logged"),
+    ).toMatchObject({
+      route: "/admin/coach-write",
+      status: "packet_ready",
+    });
   });
 
   it("separates student journey order from technical promotion order", () => {
