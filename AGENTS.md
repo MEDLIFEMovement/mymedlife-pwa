@@ -161,10 +161,12 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 61: local action-start readback proof with production
-data, most browser writes, admin mutation controls, reminder automation,
-escalation packets, uploads, public proof sharing, and external integrations
-still disabled.
+The active goal is Goal 62: local proof/testimonial metadata submission after a
+member starts an assigned action. This remains local-only and requires fake
+local Supabase Auth, a UUID assignment, explicit local write flags, and proof
+uploads disabled. Production data, most browser writes, admin mutation controls,
+reminder automation, escalation packets, uploads, public proof sharing, and
+external integrations remain disabled.
 
 Allowed:
 
@@ -373,6 +375,11 @@ Allowed:
   `MYMEDLIFE_ENABLE_ACTION_START_WRITE=true` are present
 - a fake local seed assignment and plain-English readback state proving the
   first local action-start write can refresh from `not_started` to `in_progress`
+- a local-only proof/testimonial metadata server action that calls
+  `app.submit_assignment_proof_metadata(...)` only when local Supabase Auth,
+  local Supabase data, `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`,
+  `MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true`, an in-progress or
+  changes-requested UUID assignment, and proof uploads disabled are all present
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
@@ -386,9 +393,10 @@ Not allowed without Nick's next approval:
 - production Supabase auth wiring in the student UI
 - production browser sessions, production cookies, production sign-in flows, or
   production auth
-- app write paths to Supabase beyond the approved local action-start slice
+- app write paths to Supabase beyond the approved local action-start and proof
+  metadata slices
 - enabling browser app writes or `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES` to
-  perform real UI writes
+  perform broad UI writes beyond the approved local slices
 - proof uploads or file storage writes
 - public proof sharing or publishing
 - real users or real role assignments

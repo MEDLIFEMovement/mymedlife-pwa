@@ -10,10 +10,12 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 61: local action-start readback proof with production
-data, most browser writes, admin mutation controls, reminder automation,
-escalation packets, uploads, public proof sharing, and external integrations
-still disabled.
+The current goal is Goal 62: local proof/testimonial metadata submission from
+the browser after a member starts an assigned action. This remains local-only
+and requires fake local Supabase Auth, a UUID assignment, explicit local write
+flags, and proof uploads disabled. Production data, most browser writes, admin
+mutation controls, reminder automation, escalation packets, uploads, public
+proof sharing, and external integrations remain disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -295,9 +297,18 @@ plain-English readback after a start result. Local reviewers can use
 `50000000-0000-4000-8000-000000000003` to confirm the page refreshes from
 `not_started` to `in_progress` after the localhost-only action-start write.
 
+Goal 62 adds the second local browser-to-Supabase write path for
+`evidence_submitted` proof/testimonial metadata on
+`/rush-month/actions/[assignmentId]`. It requires the same localhost-only auth
+and local write posture as Goal 60, plus
+`MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true`, an assignment already in
+`in_progress` or `changes_requested`, and proof uploads remaining disabled. It
+records metadata only through the existing audited database function and does
+not upload files, publish proof, or send automation.
+
 Do not connect production Supabase, create real users, enable browser app
-writes beyond the local action-start slice, or enable external writes until Nick
-approves a later implementation goal.
+writes beyond the approved local action-start and proof metadata slices, or
+enable external writes until Nick approves a later implementation goal.
 
 ## Recommended Stack
 
@@ -399,6 +410,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 59 auth-derived actor context](./docs/architecture/goal-59-auth-derived-actor-context.md)
 - [Goal 60 action-start server action](./docs/architecture/goal-60-action-start-server-action.md)
 - [Goal 61 action-start readback proof](./docs/architecture/goal-61-action-start-readback.md)
+- [Goal 62 proof submission server action](./docs/architecture/goal-62-proof-submission-server-action.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -461,6 +473,8 @@ explicitly enabled.
 MYMEDLIFE_DATA_SOURCE=mock
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=false
 MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=false
+MYMEDLIFE_ENABLE_ACTION_START_WRITE=false
+MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=false
 MYMEDLIFE_ALLOW_PROOF_UPLOADS=false
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
@@ -490,10 +504,12 @@ Rules:
   future write paths, including assignment creation, but the app still refuses
   to save data.
 - Goal 14 adds the first local Supabase database write function for
-  `action_started`. The browser UI still does not save data.
+  `action_started`. Browser saves require the later Goal 60 local-only server
+  action flags.
 - Goal 15 adds the first local Supabase database write function for
-  `evidence_submitted` proof/testimonial metadata. The browser UI still does
-  not save proof, upload files, publish proof, or send automation.
+  `evidence_submitted` proof/testimonial metadata. Browser saves require the
+  later Goal 62 local-only server action flags. Uploads, public proof sharing,
+  and external automation remain disabled.
 - Goal 16 adds the first local Supabase database write function for
   `hq_sharing_decision_logged` proof/testimonial sharing decisions. The browser
   UI still does not save decisions, publish proof, or send automation.
@@ -598,6 +614,10 @@ Rules:
   Supabase Auth, a fake seed user, and both local write flags. It does not
   enable production Supabase, production users, assignment creation writes,
   proof writes, coach writes, uploads, public proof sharing, or external sends.
+- Goal 62 adds the second local server action for proof/testimonial metadata.
+  It requires local Supabase Auth, a fake seed user, local write flags, an
+  in-progress or changes-requested assignment, and uploads disabled. It does
+  not upload files, publish proof, or trigger external sends.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -784,6 +804,14 @@ Goal 60 local action-start server action lives in:
 - `src/components/action-start-server-action-panel.tsx`
 - `src/services/action-start-write.ts`
 - `tests/action-start-write.test.ts`
+
+Goal 62 local proof/testimonial metadata server action lives in:
+
+- `docs/architecture/goal-62-proof-submission-server-action.md`
+- `src/app/rush-month/actions/[assignmentId]/actions.ts`
+- `src/components/proof-submission-server-action-panel.tsx`
+- `src/services/proof-submission-write.ts`
+- `tests/proof-submission-write.test.ts`
 
 Goal 20 live-data connection planning lives in:
 
