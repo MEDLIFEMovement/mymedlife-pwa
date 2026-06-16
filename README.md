@@ -10,12 +10,11 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 65: local coach advance / hold / intervene decision
-recording from the browser. This remains local-only and requires fake local
-Supabase Auth, UUID chapter/campaign/phase rows, explicit local write flags, and
-escalation packets disabled. Production data, most browser writes, admin
-mutation controls, uploads, public proof sharing, and external integrations
-remain disabled.
+The current goal is Goal 66: MVP progress map and remaining-work visibility.
+This remains local-only and adds a plain-English admin view of what is locally
+reviewable, what is partially ready, what needs approval, and what is still a
+future build. Production data, most browser writes, admin mutation controls,
+uploads, public proof sharing, and external integrations remain disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -324,6 +323,12 @@ Admin users record advance / hold / intervene decisions through the existing
 audited database function, while still keeping n8n escalation packets and all
 external automation disabled.
 
+Goal 66 adds an admin-facing MVP progress map. It groups the remaining product
+into understandable subprojects, shows directional local-review and live-MVP
+percentages, names risks and route evidence, and keeps the app honest about
+auth, uploads, production deploy, admin operations, and external integrations
+still needing approval or future build work.
+
 Do not connect production Supabase, create real users, enable browser app
 writes beyond the approved local action-start, assignment creation, proof
 metadata, HQ proof decision, and coach decision slices, or enable external writes until Nick approves a later
@@ -433,6 +438,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 63 HQ proof decision server action](./docs/architecture/goal-63-hq-proof-decision-server-action.md)
 - [Goal 64 leader assignment server action](./docs/architecture/goal-64-leader-assignment-server-action.md)
 - [Goal 65 coach decision server action](./docs/architecture/goal-65-coach-decision-server-action.md)
+- [Goal 66 MVP progress map](./docs/architecture/goal-66-mvp-progress-map.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -877,6 +883,13 @@ Goal 65 local coach decision server action lives in:
 - `src/components/coach-decision-server-action-panel.tsx`
 - `src/services/coach-decision-write.ts`
 - `tests/coach-decision-write.test.ts`
+
+Goal 66 MVP progress map lives in:
+
+- `docs/architecture/goal-66-mvp-progress-map.md`
+- `src/components/mvp-progress-map-panel.tsx`
+- `src/services/mvp-progress-map.ts`
+- `tests/mvp-progress-map.test.ts`
 
 Goal 20 live-data connection planning lives in:
 
