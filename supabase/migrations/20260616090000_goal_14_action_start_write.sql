@@ -33,7 +33,7 @@ as $$
 declare
   is_action_start_function boolean :=
     current_user = 'postgres'
-    and current_setting('app.assignment_write_context', true) = 'start_assignment_action';
+    and coalesce(current_setting('app.assignment_write_context', true), '') = 'start_assignment_action';
 begin
   if new.status = 'in_progress'
     and old.status in ('not_started', 'changes_requested')
@@ -61,6 +61,11 @@ begin
     or new.evidence_required <> old.evidence_required
     or new.points <> old.points
     or new.kpi_key <> old.kpi_key
+    or new.priority <> old.priority
+    or new.expected_output is distinct from old.expected_output
+    or new.support_role_labels is distinct from old.support_role_labels
+    or new.late_next_step is distinct from old.late_next_step
+    or new.risk_flagged <> old.risk_flagged
     or new.created_at <> old.created_at then
     raise exception 'assigned users can only update assignment status';
   end if;
@@ -112,6 +117,8 @@ begin
   update app.assignments
   set status = 'in_progress'
   where id = target_assignment.id;
+
+  perform set_config('app.assignment_write_context', '', true);
 
   insert into app.events (
     id,
