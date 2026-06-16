@@ -20,6 +20,13 @@ export type LocalActionStarted = {
   auditLog: AuditLog;
 };
 
+export type LocalAssignmentCreated = {
+  assignment: Assignment;
+  integrationEvent: IntegrationEvent;
+  automationOutbox: AutomationOutbox;
+  auditLog: AuditLog;
+};
+
 export type LocalProofSubmission = {
   assignment: Assignment;
   evidenceItem: EvidenceItem;
@@ -41,6 +48,16 @@ export type ProofSubmissionInput = {
   summary: string;
 };
 
+export type ChapterAssignmentInput = {
+  title: string;
+  instructions: string;
+  ownerRole: ChapterRole;
+  dueLabel: string;
+  evidenceRequired: string;
+  points: number;
+  kpi: string;
+};
+
 export type HqSharingDecisionInput = {
   decision: Approval["decision"];
   note: string;
@@ -59,8 +76,102 @@ export function canSubmitProofForAssignment(
   return actor.audience === "chapter_member" || actor.audience === "chapter_leader";
 }
 
+export function canCreateChapterAssignment(actor: LocalActorContext): boolean {
+  return actor.audience === "chapter_leader" || actor.audience === "super_admin";
+}
+
 export function canMakeHqSharingDecision(actor: LocalActorContext): boolean {
   return actor.audience === "admin" || actor.audience === "super_admin";
+}
+
+export function createChapterAssignmentMock(
+  actor: LocalActorContext,
+  input: ChapterAssignmentInput,
+): LocalContractResult<LocalAssignmentCreated> {
+  if (!canCreateChapterAssignment(actor)) {
+    return {
+      success: false,
+      error:
+        "Only chapter leaders or Super Admin can create chapter assignments in the local contract.",
+    };
+  }
+
+  const normalizedTitle = input.title.trim();
+  const normalizedInstructions = input.instructions.trim();
+  const normalizedEvidence = input.evidenceRequired.trim();
+  const normalizedKpi = input.kpi.trim();
+
+  if (normalizedTitle.length < 5) {
+    return {
+      success: false,
+      error: "Assignment title must be at least 5 characters.",
+    };
+  }
+
+  if (normalizedInstructions.length < 12) {
+    return {
+      success: false,
+      error: "Assignment instructions must explain the action.",
+    };
+  }
+
+  if (normalizedEvidence.length < 5) {
+    return {
+      success: false,
+      error: "Assignment evidence requirement is too short.",
+    };
+  }
+
+  if (normalizedKpi.length < 2) {
+    return {
+      success: false,
+      error: "Assignment KPI is required.",
+    };
+  }
+
+  if (input.points < 0 || input.points > 1000) {
+    return {
+      success: false,
+      error: "Assignment points must be between 0 and 1000.",
+    };
+  }
+
+  const assignment: Assignment = {
+    id: `assignment-${slugify(normalizedTitle)}-${slugify(actor.user.id)}`,
+    title: normalizedTitle,
+    ownerRole: input.ownerRole,
+    lane: roleToAssignmentLane(input.ownerRole),
+    dueLabel: input.dueLabel.trim() || "No due date",
+    status: "not_started",
+    evidenceRequired: normalizedEvidence,
+    instructions: normalizedInstructions,
+    points: input.points,
+    kpi: normalizedKpi,
+  };
+  const event = createLocalIntegrationEvent({
+    targetId: assignment.id,
+    eventType: "action_assigned",
+    title: "Assignment created locally",
+    destination: "internal",
+    detail:
+      "A local mock assignment-create contract was shaped for future Supabase persistence. No database write happened.",
+  });
+
+  return {
+    success: true,
+    data: {
+      assignment,
+      integrationEvent: event,
+      automationOutbox: createDisabledOutbox({
+        sourceEventId: event.id,
+        destination: "n8n",
+        eventType: "action_assigned",
+        payloadSummary:
+          "Future n8n workflow could remind the assigned owner after a leader creates an action.",
+      }),
+      auditLog: createLocalAuditLog(actor, "action_assigned", "assignment", assignment.id),
+    },
+  };
 }
 
 export function createActionStartedMock(
@@ -305,6 +416,18 @@ function createLocalAuditLog(
 
 function actorToReviewerRole(actor: LocalActorContext): ChapterRole {
   return actor.audience === "super_admin" ? "Super Admin" : "Admin";
+}
+
+function roleToAssignmentLane(role: ChapterRole): Assignment["lane"] {
+  if (role === "General Member" || role === "Action Committee Member") {
+    return "Member";
+  }
+
+  if (role === "Coach") {
+    return "Coach";
+  }
+
+  return "Leader";
 }
 
 function slugify(value: string): string {

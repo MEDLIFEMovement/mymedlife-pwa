@@ -1,8 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   createActionStartedMock,
+  createChapterAssignmentMock,
   createHqSharingDecisionMock,
   createProofSubmissionMock,
+  type ChapterAssignmentInput,
   type HqSharingDecisionInput,
   type ProofSubmissionInput,
 } from "@/services/local-action-contracts";
@@ -11,6 +13,7 @@ import type { Assignment, EvidenceItem } from "@/shared/types/domain";
 type EnvSource = Record<string, string | undefined>;
 
 export type WriteOperation =
+  | "action_assigned"
   | "action_started"
   | "evidence_submitted"
   | "hq_sharing_decision";
@@ -30,7 +33,7 @@ export type DisabledWriteAttempt<TPreview> = {
 };
 
 const approvalRequired =
-  "Nick must approve a later goal for local Supabase writes, RLS write tests, and live auth readiness.";
+  "Nick must approve local auth/session readiness and browser-facing write activation before the UI can save.";
 
 export function getWriteReadinessConfig(
   env: EnvSource = process.env,
@@ -39,7 +42,7 @@ export function getWriteReadinessConfig(
     return {
       enabled: false,
       reason:
-        "Local Supabase writes were requested, but Goal 12 keeps every app write disabled.",
+        "Local Supabase writes were requested, but browser-facing writes remain disabled until auth and write activation are approved.",
       approvalRequired,
     };
   }
@@ -47,7 +50,7 @@ export function getWriteReadinessConfig(
   return {
     enabled: false,
     reason:
-      "App writes are disabled. Goal 12 only documents and previews future write payloads.",
+      "App writes are disabled. The app only documents and previews future write payloads.",
     approvalRequired,
   };
 }
@@ -66,6 +69,25 @@ export function prepareDisabledActionStartWrite(
     reason: getWriteReadinessSummary(),
     wouldWriteTables: ["assignments", "events", "integration_events", "audit_logs"],
     preview: createActionStartedMock(actor, assignment),
+  };
+}
+
+export function prepareDisabledAssignmentCreateWrite(
+  actor: LocalActorContext,
+  input: ChapterAssignmentInput,
+): DisabledWriteAttempt<ReturnType<typeof createChapterAssignmentMock>> {
+  return {
+    success: false,
+    operation: "action_assigned",
+    reason: getWriteReadinessSummary(),
+    wouldWriteTables: [
+      "assignments",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ],
+    preview: createChapterAssignmentMock(actor, input),
   };
 }
 

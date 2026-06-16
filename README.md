@@ -10,8 +10,9 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 23: action-start browser write gate with production
-data, enabled browser writes, uploads, and external integrations still disabled.
+The current goal is Goal 24: leader assignment browser write gate with
+production data, enabled browser writes, uploads, and external integrations
+still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -53,7 +54,7 @@ targets in the UI, and keeps every app write blocked until Nick approves a
 later security-reviewed implementation goal.
 
 Goal 13 turns that airlock into a reviewable local write implementation plan.
-It defines the first three future write paths, the role boundaries, the tables
+It defines the first local write paths, the role boundaries, the tables
 they would touch, and the RLS tests required before any write is enabled. It
 does not turn on writes.
 
@@ -103,6 +104,12 @@ Goal 23 adds a visible, testable browser-write activation gate for the first
 candidate write route: `action_started` on `/rush-month/actions/[assignmentId]`.
 It references the existing local Supabase function and RLS tests but still keeps
 the browser control disabled until live auth and explicit write approval.
+
+Goal 24 adds the same visible, testable browser-write activation gate for
+chapter-leader assignment creation: `action_assigned` on `/rush-month/actions`.
+It aligns the TypeScript write plan with the existing local Supabase assignment
+creation function and still keeps the browser control disabled until live auth
+and explicit write approval.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
@@ -170,6 +177,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 21 campaign operating shells](./docs/architecture/goal-21-campaign-operating-shells.md)
 - [Goal 22 Rush Month role-aware dashboard](./docs/architecture/goal-22-rush-month-dashboard.md)
 - [Goal 23 action-start browser write gate](./docs/architecture/goal-23-action-start-browser-write-gate.md)
+- [Goal 24 leader assignment browser write gate](./docs/architecture/goal-24-leader-assignment-write-gate.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -257,7 +265,8 @@ Rules:
   is documented but still blocked by code until a later approved goal adds
   real local writes with RLS tests.
 - Goal 13 write planning is documentation and tests only. It names the first
-  future write paths, but the app still refuses to save data.
+  future write paths, including assignment creation, but the app still refuses
+  to save data.
 - Goal 14 adds the first local Supabase database write function for
   `action_started`. The browser UI still does not save data.
 - Goal 15 adds the first local Supabase database write function for
@@ -285,6 +294,9 @@ Rules:
   external sends.
 - Goal 23 adds a browser-write activation gate for action start. It still keeps
   the enabled browser control off, even if the local write env var is set.
+- Goal 24 adds a browser-write activation gate for leader assignment creation.
+  It also keeps the enabled browser control off, even if the local write env var
+  is set.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -323,7 +335,7 @@ Goal 2 route shells:
 - `/action-committees`: action committee and chapter event operating examples
 - `/rush-month`: Rush Month campaign shell
 - `/rush-month/dashboard`: role-aware Rush Month operating dashboard
-- `/rush-month/actions`: role-aware visible assignments
+- `/rush-month/actions`: role-aware visible assignments plus disabled leader assignment gate
 - `/rush-month/actions/[assignmentId]`: role-aware action detail and local proof contract preview
 - `/rush-month/evidence`: role-aware proof/testimonial list
 - `/rush-month/review`: HQ proof-sharing review preview
@@ -479,6 +491,18 @@ Goal 23 action-start browser write gate lives in:
 - `tests/browser-write-activation.test.ts`
 - visible gate notice on `/rush-month/actions/[assignmentId]`
 
+Goal 24 leader assignment browser write gate lives in:
+
+- `docs/architecture/goal-24-leader-assignment-write-gate.md`
+- `src/services/local-action-contracts.ts`
+- `src/services/write-plan-matrix.ts`
+- `src/services/write-readiness.ts`
+- `src/services/browser-write-activation.ts`
+- `tests/local-action-contracts.test.ts`
+- `tests/write-plan-matrix.test.ts`
+- `tests/browser-write-activation.test.ts`
+- visible gate notice on `/rush-month/actions`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -497,12 +521,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 23
+## Definition of Done for Goal 24
 
-Goal 23 is complete when a human developer can open an action detail page and
-see the exact readiness checks for enabling the first local action-start browser
-write, while tests prove the browser control remains disabled until approval.
+Goal 24 is complete when a human developer can open the role-aware actions page
+and see the exact readiness checks for enabling the first local leader
+assignment-create browser write, while tests prove the browser control remains
+disabled until approval.
 
-The app remains mock-first by default. Goal 23 does not wire production
+The app remains mock-first by default. Goal 24 does not wire production
 Supabase, enable browser writes, build every campaign deeply, publish proof,
 remove mock fallback, or activate real integrations.
