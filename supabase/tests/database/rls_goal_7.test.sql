@@ -15,7 +15,7 @@ select is(
   'General member can read active HQ campaign templates'
 );
 
-select lives_ok(
+select throws_ok(
   $$
     insert into app.campaign_templates (
       id,

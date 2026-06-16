@@ -132,6 +132,9 @@ select is(
   'Coach decision creates one internal event without external writes'
 );
 
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
+set local "request.jwt.claim.role" = 'authenticated';
+
 select is(
   (
     select count(*)::int
@@ -169,9 +172,6 @@ select is(
   1,
   'Coach decision creates one audit log row'
 );
-
-set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
-set local "request.jwt.claim.role" = 'authenticated';
 
 select lives_ok(
   $$
