@@ -10,8 +10,8 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 31: action-start result states with production data,
-enabled browser writes, uploads, and external integrations still disabled.
+The current goal is Goal 32: proof submission result states with production
+data, enabled browser writes, uploads, and external integrations still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -146,6 +146,12 @@ save. The action detail route now shows the current disabled result, the future
 result for the selected mock action, and the possible success/error states
 without creating a server action or enabling browser writes.
 
+Goal 32 defines the plain-English result states for the future proof/testimonial
+save. The action detail route now shows the current disabled proof result, the
+future result for the selected mock proof input, and the possible proof
+success/error states without enabling proof saves, uploads, public sharing, or
+external automation.
+
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
 approves a later implementation goal.
@@ -220,6 +226,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 29 write activation approval plan](./docs/architecture/goal-29-write-activation-approval-plan.md)
 - [Goal 30 action-start activation contract](./docs/architecture/goal-30-action-start-activation-contract.md)
 - [Goal 31 action-start result states](./docs/architecture/goal-31-action-start-result-states.md)
+- [Goal 32 proof submission result states](./docs/architecture/goal-32-proof-submission-result-states.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
 - [Codex operating brief](./docs/operating-brief.md)
@@ -357,6 +364,8 @@ Rules:
   save from the browser.
 - Goal 31 adds action-start result states. It does not wire those states to a
   real browser write.
+- Goal 32 adds proof submission result states. It does not wire those states to
+  a real browser write, upload, public sharing workflow, or external automation.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -620,6 +629,14 @@ Goal 31 action-start result states live in:
 - `tests/action-start-result-states.test.ts`
 - visible result-state panel on `/rush-month/actions/[assignmentId]`
 
+Goal 32 proof submission result states live in:
+
+- `docs/architecture/goal-32-proof-submission-result-states.md`
+- `src/services/proof-submission-result-states.ts`
+- `src/components/proof-submission-result-states-panel.tsx`
+- `tests/proof-submission-result-states.test.ts`
+- visible proof result-state panel on `/rush-month/actions/[assignmentId]`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -638,13 +655,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 31
+## Definition of Done for Goal 32
 
-Goal 31 is complete when a human developer can open an action detail route and
-see the exact disabled action-start result plus the future plain-English result
-states, while tests prove browser writes remain disabled and duplicate/blocked
-states do not create events.
+Goal 32 is complete when a human developer can open an action detail route and
+see the exact disabled proof submission result plus the future plain-English
+result states, while tests prove browser writes remain disabled and
+blocked/duplicate states do not create evidence or outbox records.
 
-The app remains mock-first by default. Goal 31 does not wire production
+The app remains mock-first by default. Goal 32 does not wire production
 Supabase, create a server action, enable browser writes, upload files, publish
 proof, remove mock fallback, or activate real integrations.

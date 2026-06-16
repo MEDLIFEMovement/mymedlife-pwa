@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 31: action-start result states with production data,
+The active goal is Goal 32: proof submission result states with production data,
 enabled browser writes, uploads, and external integrations still disabled.
 
 Allowed:
@@ -268,6 +268,10 @@ Allowed:
 - action-start result states on `/rush-month/actions/[assignmentId]` that show
   future success, disabled, duplicate, auth, permission, not-found, and error
   messages without creating a server action or enabling browser writes
+- proof submission result states on `/rush-month/actions/[assignmentId]` that
+  show future submitted, disabled, upload-disabled, duplicate, auth,
+  permission, not-ready, not-found, and error messages without saving proof,
+  uploading files, publishing proof, or enabling browser writes
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
