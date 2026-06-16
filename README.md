@@ -10,13 +10,17 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 77: write sequence planner. This remains mock-safe by
-default and adds `/admin/write-sequence` so HQ reviewers can see the safe Rush
+The current goal is Goal 78: proof metadata packet. This remains mock-safe by
+default and adds `/admin/proof-write` so HQ reviewers can prepare the second
+local Rush Month write: metadata-only proof/testimonial submission after the
+first action-start readback is proven.
+Production data, broad browser writes, admin mutation controls, real uploads,
+public proof sharing, and external integrations remain disabled.
+
+Goal 77 added `/admin/write-sequence` so HQ reviewers can see the safe Rush
 Month write promotion order after the first-write packet: action-start, proof
 metadata, HQ proof decision, leader assignment creation, and coach decision
 logging.
-Production data, broad browser writes, admin mutation controls, real uploads,
-public proof sharing, and external integrations remain disabled.
 
 Goal 76 extended `/admin/first-write` so HQ reviewers have one operator-ready
 packet for local env settings, fake sign-in, the action-start route sequence,
@@ -509,6 +513,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 75 first-write readback evidence](./docs/architecture/goal-75-first-write-readback-evidence.md)
 - [Goal 76 first-write verification packet](./docs/architecture/goal-76-first-write-verification-packet.md)
 - [Goal 77 write sequence planner](./docs/architecture/goal-77-write-sequence-planner.md)
+- [Goal 78 proof metadata packet](./docs/architecture/goal-78-proof-metadata-packet.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -772,6 +777,7 @@ data and fake local actor context. With or without local Supabase running,
 - `/admin`
 - `/admin/first-write`
 - `/admin/write-sequence`
+- `/admin/proof-write`
 - `/admin/pilot-scope`
 - `/admin/staff-dry-run`
 
@@ -802,6 +808,7 @@ Goal 2 route shells:
 - `/admin`: admin/super-admin integration placeholder
 - `/admin/first-write`: staff-only first local action-start write drill
 - `/admin/write-sequence`: staff-only Rush Month write promotion planner
+- `/admin/proof-write`: staff-only metadata proof/testimonial packet
 - `/admin/pilot-scope`: first-pilot scope decision planner
 - `/admin/staff-dry-run`: fake-user staff rehearsal guide
 

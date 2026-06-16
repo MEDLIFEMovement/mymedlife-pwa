@@ -169,7 +169,7 @@ function buildOperations(candidateRoute: string): WriteSequenceOperation[] {
       safetyBoundary:
         "Requires proven action-start readback, local auth, assignment eligibility, and proof upload controls staying disabled.",
       nextGate:
-        "Create an operator packet like `/admin/first-write` before allowing staff to test proof metadata in a browser.",
+        "Open `/admin/proof-write` before allowing staff to test proof metadata in a browser.",
     },
     {
       key: "hq_sharing_decision_logged",
