@@ -138,6 +138,17 @@ const reviewSteps: StakeholderReviewStep[] = [
     safetyBoundary:
       "The pilot readiness panel is a decision packet, not approval to invite students or enable production writes.",
   },
+  {
+    id: "staff-dry-run",
+    title: "Run the staff dry-run guide",
+    route: "/admin/staff-dry-run",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ staff can rehearse the member, leader, event/NPS, proof, coach, and DS Admin safety path with fake local actors.",
+    safetyBoundary:
+      "The dry run is rehearsal evidence only and must not enable real auth, writes, uploads, student invitations, or external sends.",
+  },
 ];
 
 export function getStakeholderReviewPlan(

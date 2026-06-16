@@ -181,6 +181,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "Admin roles see coverage/readiness panels according to role; outbox remains restricted.",
     safetyAssertion: "Admin mutations, production auth, and external writes remain disabled.",
   },
+  {
+    path: "/admin/staff-dry-run",
+    label: "Staff dry-run guide",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ staff can rehearse the Rush Month MVP with fake actor emails, pass criteria, structured events to notice, and zero-write safety assertions.",
+    safetyAssertion:
+      "The dry run must not invite students, enable production auth, upload proof, save browser writes, or send external automation.",
+  },
 ];
 
 function getTitle(actor: LocalActorContext): string {

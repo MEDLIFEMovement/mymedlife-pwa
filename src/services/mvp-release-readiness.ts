@@ -83,6 +83,12 @@ export function getMvpReleaseReadinessSummary(
         plainEnglish:
           "Admin can see that staff dry run is ready while staging, real student pilot, and scale gates remain blocked until approval.",
       },
+      {
+        label: "Staff dry-run guide",
+        status: "ready_for_local_review",
+        plainEnglish:
+          "HQ staff can rehearse member, leader, event/NPS, proof, coach, and DS Admin safety paths with fake local actor emails.",
+      },
     ],
     blockers: [
       {

@@ -172,7 +172,7 @@ function buildCoverageItems(data: ReadOnlyAppData): MvpCoverageItem[] {
       status: "covered_readonly",
       plainEnglish:
         "Admins can see the difference between local review, staff dry run, staging review, first student pilot, and later expansion.",
-      routeEvidence: ["/admin"],
+      routeEvidence: ["/admin", "/admin/staff-dry-run"],
       nextStep:
         "Run a staff dry run, choose one pilot group, then approve staging, auth, write, proof, and support gates before student invitations.",
     },

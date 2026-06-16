@@ -86,6 +86,7 @@ describe("role visibility service", () => {
     expect(getNavigationForActor(leader).map((item) => item.label)).toContain("Members");
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Integration Outbox" },
+      { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
     ]);
   });
 
@@ -116,7 +117,7 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
       { href: "/admin", label: "Outbox", helper: "Safety" },
-      { href: "/admin", label: "Checks", helper: "No sends" },
+      { href: "/admin/staff-dry-run", label: "Dry Run", helper: "No sends" },
     ]);
   });
 
@@ -125,9 +126,9 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Admin",
+      "Dry Run",
       "Rush",
       "Loop",
-      "Coach",
     ]);
   });
 });

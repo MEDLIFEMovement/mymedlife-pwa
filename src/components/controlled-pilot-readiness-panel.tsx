@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type {
   ControlledPilotReadiness,
   PilotReadinessStatus,
@@ -30,6 +31,12 @@ export function ControlledPilotReadinessPanel({
           <p className="mt-3 max-w-3xl rounded-2xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-orange-50/78">
             Recommended next move: {readiness.recommendedNextMove}
           </p>
+          <Link
+            href="/admin/staff-dry-run"
+            className="mt-4 inline-flex rounded-full bg-orange-200 px-4 py-2 text-sm font-semibold text-[#211704]"
+          >
+            Open staff dry-run guide
+          </Link>
         </div>
         <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
           <MiniStat label="Ready" value={`${readiness.counts.readyNow}`} />

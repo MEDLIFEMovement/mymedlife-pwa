@@ -19,7 +19,8 @@ export type StaticRouteMetadataKey =
   | "proofLibrary"
   | "proofUpload"
   | "coach"
-  | "admin";
+  | "admin"
+  | "adminStaffDryRun";
 
 const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   home: {
@@ -101,6 +102,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   admin: {
     title: "Admin",
     description: "Admin review, smoke checks, write readiness, outbox, and launch posture.",
+  },
+  adminStaffDryRun: {
+    title: "Staff Dry Run",
+    description:
+      "Staff-only fake-user rehearsal path for the Rush Month MVP before staging or student pilot approval.",
   },
 };
 

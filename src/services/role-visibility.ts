@@ -169,9 +169,13 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/rush-month/loop", label: "Rush Loop" },
         { href: "/coach", label: "Coach Read" },
         { href: "/admin", label: "HQ Admin" },
+        { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
     case "ds_admin":
-      return [{ href: "/admin", label: "Integration Outbox" }];
+      return [
+        { href: "/admin", label: "Integration Outbox" },
+        { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
+      ];
     case "super_admin":
       return [
         { href: "/chapter", label: "All Chapters" },
@@ -187,6 +191,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/rush-month/review", label: "Reviews" },
         { href: "/coach", label: "Coach" },
         { href: "/admin", label: "Super Admin" },
+        { href: "/admin/staff-dry-run", label: "Dry Run" },
       ];
   }
 }
@@ -228,21 +233,21 @@ export function getMobileQuickNavigationForActor(
     case "admin":
       return [
         { href: "/admin", label: "Admin", helper: "Review" },
+        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "Staff" },
         { href: "/chapter/members", label: "People", helper: "Roles" },
         { href: "/rush-month/dashboard", label: "Rush", helper: "Health" },
-        { href: "/coach", label: "Coach", helper: "Read" },
       ];
     case "ds_admin":
       return [
         { href: "/admin", label: "Outbox", helper: "Safety" },
-        { href: "/admin", label: "Checks", helper: "No sends" },
+        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "No sends" },
       ];
     case "super_admin":
       return [
         { href: "/admin", label: "Admin", helper: "Full" },
+        { href: "/admin/staff-dry-run", label: "Dry Run", helper: "Staff" },
         { href: "/rush-month", label: "Rush", helper: "Campaign" },
         { href: "/rush-month/loop", label: "Loop", helper: "Demo" },
-        { href: "/coach", label: "Coach", helper: "Read" },
       ];
   }
 }
