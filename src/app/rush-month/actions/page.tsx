@@ -4,6 +4,7 @@ import { AssignmentCard } from "@/components/assignment-card";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
+import { LeaderFollowUpBoardPanel } from "@/components/leader-follow-up-board-panel";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { RestrictedState } from "@/components/restricted-state";
@@ -20,6 +21,7 @@ import {
   createChapterAssignmentMock,
   type ChapterAssignmentInput,
 } from "@/services/local-action-contracts";
+import { getLeaderFollowUpBoard } from "@/services/leader-follow-up-board";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getVisibleAssignmentsForActor } from "@/services/role-visibility";
@@ -44,6 +46,7 @@ export default async function ActionsPage() {
     getLocalActorContext(),
   ]);
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
+  const followUpBoard = getLeaderFollowUpBoard(actor, data);
   const canCreateAssignment = canCreateChapterAssignment(actor);
   const shouldShowAssignmentCreateGate =
     canCreateAssignment || actor.audience === "admin" || actor.audience === "ds_admin";
@@ -80,6 +83,8 @@ export default async function ActionsPage() {
           what this local role should act on next.
         </p>
       </section>
+
+      <LeaderFollowUpBoardPanel board={followUpBoard} />
 
       {canCreateAssignment ? (
         <section className="grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">

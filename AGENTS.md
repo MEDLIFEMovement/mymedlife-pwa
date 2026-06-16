@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 39: role next-action guidance with production data,
+The active goal is Goal 40: leader follow-up board with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -301,6 +301,9 @@ Allowed:
   `/rush-month` that tells each local actor the next safe operating priority
   without enabling auth, browser writes, uploads, public proof sharing, or
   external integrations
+- a read-only leader follow-up board on `/rush-month/actions` that prioritizes
+  proof review, owner nudges, revision needs, and completed work while keeping
+  reminders and external automation disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states

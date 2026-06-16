@@ -10,7 +10,7 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 39: role next-action guidance with production data,
+The current goal is Goal 40: leader follow-up board with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -192,6 +192,12 @@ Goal 39 adds reusable role-aware next-action guidance. `/`, `/chapter`, and
 member, chapter leader, coach, admin, DS admin, or super admin. The guidance is
 read-only and does not enable auth, browser writes, uploads, proof publishing,
 or external integrations.
+
+Goal 40 adds a read-only leader follow-up board to `/rush-month/actions`.
+Leaders, coaches, admins, and super admins can see prioritized assignment
+follow-up rows, while members stay focused on their own actions and DS admins
+remain restricted to integration posture. Reminder sends and external
+automation remain disabled.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
