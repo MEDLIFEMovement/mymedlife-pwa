@@ -98,7 +98,14 @@ export type EvidenceItem = {
   id: string;
   assignmentId: string;
   submittedBy: string;
-  evidenceType: "text" | "link" | "mock_file";
+  evidenceType:
+    | "text"
+    | "link"
+    | "mock_file"
+    | "testimonial_text"
+    | "bridge_video"
+    | "event_photo"
+    | "external_link";
   summary: string;
   status: "pending_review" | "approved" | "changes_requested";
 };

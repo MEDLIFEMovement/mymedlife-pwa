@@ -10,7 +10,8 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 10: role-aware read-only app experience and permission proof.
+The current goal is Goal 11: local proof/action contracts and HQ sharing review
+preview.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -40,6 +41,11 @@ production auth or app writes.
 
 Goal 10 turns that local actor context into role-aware navigation, restricted
 state messaging, read filters, and permission tests for the Rush Month shell.
+
+Goal 11 adds local-only contracts for starting an action, submitting proof,
+previewing HQ proof-sharing decisions, recording audit intent, and shaping
+disabled outbox rows. It updates the action detail, proof, and review screens
+without adding real persistence, uploads, auth sessions, or integrations.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, implement app writes, or enable external writes until Nick approves
@@ -174,6 +180,9 @@ Rules:
 - Goal 10 role filtering is read-only and local-only. It uses
   `MYMEDLIFE_LOCAL_ACTOR_EMAIL` to preview member, leader, coach, admin, DS
   admin, and super admin views.
+- Goal 11 local action/proof contracts are preview-only. They shape future
+  events, audit logs, and disabled outbox rows but do not save data, upload
+  files, publish proof, or trigger automation.
 - Keep real HubSpot, Luma, warehouse, Power BI, and n8n writes disabled until
   explicitly approved.
 - Use mock-safe integration events and outbox rows before adding real syncs.
@@ -188,6 +197,9 @@ data and fake local actor context. With or without local Supabase running,
 - `/chapter`
 - `/rush-month`
 - `/rush-month/actions`
+- `/rush-month/actions/[assignmentId]`
+- `/rush-month/evidence`
+- `/rush-month/review`
 - `/coach`
 - `/admin`
 
@@ -200,18 +212,19 @@ Goal 2 route shells:
 - `/`: mobile-first app front door
 - `/chapter`: chapter home shell
 - `/rush-month`: Rush Month campaign shell
-- `/rush-month/actions`: this week's actions and role-grouped assignments
-- `/rush-month/actions/[assignmentId]`: member action detail and mock proof UI
-- `/rush-month/evidence`: mock evidence list
-- `/rush-month/review`: leader/coach review queue
+- `/rush-month/actions`: role-aware visible assignments
+- `/rush-month/actions/[assignmentId]`: role-aware action detail and local proof contract preview
+- `/rush-month/evidence`: role-aware proof/testimonial list
+- `/rush-month/review`: HQ proof-sharing review preview
 - `/coach`: coach dashboard shell
 - `/admin`: admin/super-admin integration placeholder
 
 Mock data lives in `src/data/mock-rush-month.ts`. Shared domain types live in
 `src/shared/types/domain.ts`. Validation schemas live in
 `src/shared/schemas/domain.ts`. Pure mock workflow logic lives in
-`src/services/rush-month-service.ts`. Small reusable UI components live in
-`src/components`.
+`src/services/rush-month-service.ts`. Local action/proof contract previews live
+in `src/services/local-action-contracts.ts`. Small reusable UI components live
+in `src/components`.
 
 Goal 4 Supabase planning lives in
 `docs/architecture/supabase-schema-auth-rls-plan.md`. The draft SQL sketch lives
@@ -256,6 +269,15 @@ Goal 10 role-aware read-only proof lives in:
   `/coach`, and `/admin`
 - `tests/role-visibility.test.ts`
 
+Goal 11 local proof/action contracts live in:
+
+- `src/services/local-action-contracts.ts`
+- `tests/local-action-contracts.test.ts`
+- expanded proof evidence types in `src/shared/types/domain.ts` and
+  `src/shared/schemas/domain.ts`
+- role-aware updates to `/rush-month/actions/[assignmentId]`,
+  `/rush-month/evidence`, and `/rush-month/review`
+
 Goal 9 local actor context lives in:
 
 - `src/services/local-actor-context.ts`
@@ -274,11 +296,13 @@ Primary live issues:
 - MED-417: Build Luma, HubSpot, warehouse, and AI mock integration layer
 - MED-418: Run bake-off evaluation against Discourse prototype
 
-## Definition of Done for Goal 8
+## Definition of Done for Goal 11
 
-Goal 8 is complete when a human developer can run local Supabase, start the app,
-and see at least one existing screen reading fake local Supabase data, with mock
-fallback still working.
+Goal 11 is complete when a human developer can run the app locally, switch fake
+roles with `MYMEDLIFE_LOCAL_ACTOR_EMAIL`, and see action/proof/HQ sharing
+contract previews that explain what would be recorded later without writing to a
+database or triggering automation.
 
-The app remains mock-first by default. Goal 8 does not wire production
-Supabase, enable live auth, implement app writes, or activate real integrations.
+The app remains mock-first by default. Goal 11 does not wire production
+Supabase, enable live auth, implement app writes, upload files, publish proof,
+or activate real integrations.

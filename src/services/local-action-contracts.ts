@@ -1,0 +1,312 @@
+import type { LocalActorContext } from "@/services/local-actor-context";
+import { canReadAssignment } from "@/services/role-visibility";
+import type {
+  Approval,
+  Assignment,
+  AuditLog,
+  AutomationOutbox,
+  ChapterRole,
+  EvidenceItem,
+  IntegrationEvent,
+} from "@/shared/types/domain";
+
+export type LocalContractResult<TData> =
+  | { success: true; data: TData }
+  | { success: false; error: string };
+
+export type LocalActionStarted = {
+  assignment: Assignment;
+  integrationEvent: IntegrationEvent;
+  auditLog: AuditLog;
+};
+
+export type LocalProofSubmission = {
+  assignment: Assignment;
+  evidenceItem: EvidenceItem;
+  integrationEvent: IntegrationEvent;
+  automationOutbox: AutomationOutbox;
+  auditLog: AuditLog;
+};
+
+export type LocalHqSharingDecision = {
+  evidenceItem: EvidenceItem;
+  approval: Approval;
+  integrationEvent: IntegrationEvent;
+  automationOutbox: AutomationOutbox;
+  auditLog: AuditLog;
+};
+
+export type ProofSubmissionInput = {
+  evidenceType: EvidenceItem["evidenceType"];
+  summary: string;
+};
+
+export type HqSharingDecisionInput = {
+  decision: Approval["decision"];
+  note: string;
+};
+
+const localOccurredAt = "local-mock-time";
+
+export function canSubmitProofForAssignment(
+  actor: LocalActorContext,
+  assignment: Assignment,
+): boolean {
+  if (!canReadAssignment(actor, assignment)) {
+    return false;
+  }
+
+  return actor.audience === "chapter_member" || actor.audience === "chapter_leader";
+}
+
+export function canMakeHqSharingDecision(actor: LocalActorContext): boolean {
+  return actor.audience === "admin" || actor.audience === "super_admin";
+}
+
+export function createActionStartedMock(
+  actor: LocalActorContext,
+  assignment: Assignment,
+): LocalContractResult<LocalActionStarted> {
+  if (!canReadAssignment(actor, assignment)) {
+    return {
+      success: false,
+      error: "This local actor cannot read or start this assignment.",
+    };
+  }
+
+  if (assignment.status === "approved") {
+    return {
+      success: false,
+      error: "Approved assignments cannot be restarted in the local mock contract.",
+    };
+  }
+
+  const nextAssignment: Assignment = {
+    ...assignment,
+    status: assignment.status === "not_started" ? "in_progress" : assignment.status,
+  };
+
+  return {
+    success: true,
+    data: {
+      assignment: nextAssignment,
+      integrationEvent: createLocalIntegrationEvent({
+        targetId: assignment.id,
+        eventType: "action_started",
+        title: "Action started locally",
+        destination: "internal",
+        detail: `${actor.user.displayName} previewed starting ${assignment.title}.`,
+      }),
+      auditLog: createLocalAuditLog(actor, "action_started", "assignment", assignment.id),
+    },
+  };
+}
+
+export function createProofSubmissionMock(
+  actor: LocalActorContext,
+  assignment: Assignment,
+  input: ProofSubmissionInput,
+): LocalContractResult<LocalProofSubmission> {
+  if (!canSubmitProofForAssignment(actor, assignment)) {
+    return {
+      success: false,
+      error:
+        "This role cannot submit proof for this assignment. Proof submission is for student/chapter operators in the local contract.",
+    };
+  }
+
+  const normalizedSummary = input.summary.trim();
+
+  if (normalizedSummary.length < 12) {
+    return {
+      success: false,
+      error: "Proof summary must describe what happened in at least 12 characters.",
+    };
+  }
+
+  const evidenceItem: EvidenceItem = {
+    id: `evidence-${assignment.id}-${slugify(actor.user.id)}`,
+    assignmentId: assignment.id,
+    submittedBy: actor.user.displayName,
+    evidenceType: input.evidenceType,
+    summary: normalizedSummary,
+    status: "pending_review",
+  };
+  const event = createLocalIntegrationEvent({
+    targetId: evidenceItem.id,
+    eventType: "evidence_submitted",
+    title: "Proof/testimonial submitted locally",
+    destination: "internal",
+    detail:
+      "A local mock proof submission was shaped for future Supabase persistence. No upload or database write happened.",
+  });
+
+  return {
+    success: true,
+    data: {
+      assignment: {
+        ...assignment,
+        status: "submitted",
+      },
+      evidenceItem,
+      integrationEvent: event,
+      automationOutbox: createDisabledOutbox({
+        sourceEventId: event.id,
+        destination: "n8n",
+        eventType: "evidence_submitted",
+        payloadSummary:
+          "Future n8n workflow could notify HQ that a testimonial/proof item needs sharing review.",
+      }),
+      auditLog: createLocalAuditLog(actor, "evidence_submitted", "evidence_item", evidenceItem.id),
+    },
+  };
+}
+
+export function createHqSharingDecisionMock(
+  actor: LocalActorContext,
+  evidenceItem: EvidenceItem,
+  input: HqSharingDecisionInput,
+): LocalContractResult<LocalHqSharingDecision> {
+  if (!canMakeHqSharingDecision(actor)) {
+    return {
+      success: false,
+      error:
+        "Only HQ Admin or Super Admin can make proof-sharing decisions in the local contract.",
+    };
+  }
+
+  const normalizedNote = input.note.trim();
+
+  if (normalizedNote.length < 8) {
+    return {
+      success: false,
+      error: "HQ sharing decisions need a short plain-English note.",
+    };
+  }
+
+  const nextStatus: EvidenceItem["status"] =
+    input.decision === "approved" ? "approved" : "changes_requested";
+  const approval: Approval = {
+    id: `approval-${evidenceItem.id}-${slugify(actor.user.id)}`,
+    evidenceItemId: evidenceItem.id,
+    reviewerRole: actorToReviewerRole(actor),
+    decision: input.decision,
+    note: normalizedNote,
+  };
+  const event = createLocalIntegrationEvent({
+    targetId: approval.id,
+    eventType:
+      input.decision === "approved" ? "evidence_approved" : "evidence_rejected",
+    title: "HQ proof-sharing decision previewed locally",
+    destination: "internal",
+    detail:
+      "HQ sharing decision was shaped for future persistence. No public sharing or external workflow happened.",
+  });
+
+  return {
+    success: true,
+    data: {
+      evidenceItem: {
+        ...evidenceItem,
+        status: nextStatus,
+      },
+      approval,
+      integrationEvent: event,
+      automationOutbox: createDisabledOutbox({
+        sourceEventId: event.id,
+        destination: "warehouse",
+        eventType: "proof_sharing_decision_recorded",
+        payloadSummary:
+          "Future warehouse export could include HQ proof-sharing outcome after approval.",
+      }),
+      auditLog: createLocalAuditLog(actor, "hq_sharing_decision_mocked", "approval", approval.id),
+    },
+  };
+}
+
+export function getReviewQueueForActor(
+  actor: LocalActorContext,
+  evidenceItems: EvidenceItem[],
+): EvidenceItem[] {
+  if (canMakeHqSharingDecision(actor)) {
+    return evidenceItems;
+  }
+
+  if (actor.audience === "chapter_leader" || actor.audience === "coach") {
+    return evidenceItems.filter((item) => item.status === "pending_review");
+  }
+
+  return [];
+}
+
+export function getProofSubmissionGuidance(actor: LocalActorContext): string {
+  if (actor.audience === "chapter_member") {
+    return "Submit a short testimonial, bridge video link, event photo, or proof note showing what happened.";
+  }
+
+  if (actor.audience === "chapter_leader") {
+    return "Leaders can help collect proof, but HQ decides whether a testimonial should be shared broadly.";
+  }
+
+  if (canMakeHqSharingDecision(actor)) {
+    return "HQ can preview proof-sharing decisions here. This local contract does not publish or send anything.";
+  }
+
+  return "This role can read permitted context only; proof submission and HQ sharing decisions are restricted.";
+}
+
+function createLocalIntegrationEvent(input: {
+  targetId: string;
+  eventType: string;
+  title: string;
+  destination: IntegrationEvent["destination"];
+  detail: string;
+}): IntegrationEvent {
+  return {
+    id: `evt-${input.eventType}-${slugify(input.targetId)}`,
+    eventType: input.eventType,
+    title: input.title,
+    destination: input.destination,
+    status: input.destination === "internal" ? "recorded" : "disabled",
+    detail: input.detail,
+    occurredAt: localOccurredAt,
+  };
+}
+
+function createDisabledOutbox(input: {
+  sourceEventId: string;
+  destination: AutomationOutbox["destination"];
+  eventType: string;
+  payloadSummary: string;
+}): AutomationOutbox {
+  return {
+    id: `outbox-${slugify(input.eventType)}-${slugify(input.sourceEventId)}`,
+    sourceEventId: input.sourceEventId,
+    destination: input.destination,
+    status: "disabled",
+    payloadSummary: input.payloadSummary,
+  };
+}
+
+function createLocalAuditLog(
+  actor: LocalActorContext,
+  action: string,
+  targetType: string,
+  targetId: string,
+): AuditLog {
+  return {
+    id: `audit-${slugify(action)}-${slugify(targetId)}`,
+    actorUserId: actor.user.id,
+    action,
+    targetType,
+    targetId,
+  };
+}
+
+function actorToReviewerRole(actor: LocalActorContext): ChapterRole {
+  return actor.audience === "super_admin" ? "Super Admin" : "Admin";
+}
+
+function slugify(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
