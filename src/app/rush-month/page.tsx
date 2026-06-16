@@ -6,12 +6,14 @@ import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
+import { RoleNextActionPanel } from "@/components/role-next-action-panel";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   getEventPlansForCampaign,
   getProofLibraryItemsForCampaign,
 } from "@/services/campaign-ops-service";
+import { getRoleNextActionBrief } from "@/services/role-next-actions";
 import {
   canReadChapterData,
   canReadIntegrationOutbox,
@@ -30,12 +32,14 @@ export default async function RushMonthPage() {
   const visibleRisks = getVisibleRiskFlagsForActor(actor, data.riskFlags);
   const rushEventPlans = getEventPlansForCampaign("rush-month");
   const rushProofItems = getProofLibraryItemsForCampaign("rush-month");
+  const nextActionBrief = getRoleNextActionBrief(actor, data);
 
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
       <LocalActorNotice actor={actor} />
       <LocalRoleSwitcher actor={actor} />
+      <RoleNextActionPanel brief={nextActionBrief} />
 
       {!canReadChapterData(actor) ? (
         <RestrictedState

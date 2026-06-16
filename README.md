@@ -10,10 +10,10 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 38: admin control center with production data, enabled
-browser writes, admin mutation controls, reminder automation, escalation
-packets, uploads, public proof sharing, and external integrations still
-disabled.
+The current goal is Goal 39: role next-action guidance with production data,
+enabled browser writes, admin mutation controls, reminder automation,
+escalation packets, uploads, public proof sharing, and external integrations
+still disabled.
 
 Goal 5 turned the approved Goal 4 database plan into a local-only Supabase
 foundation:
@@ -186,6 +186,12 @@ Goal 38 adds a read-only admin control center to `/admin`. It names the MVP
 admin surfaces for users, roles, chapters, campaign templates, integration
 events, automation outbox, audit logs, and system health placeholders while
 keeping admin mutation controls disabled.
+
+Goal 39 adds reusable role-aware next-action guidance. `/`, `/chapter`, and
+`/rush-month` now show a plain-English priority for the selected local actor:
+member, chapter leader, coach, admin, DS admin, or super admin. The guidance is
+read-only and does not enable auth, browser writes, uploads, proof publishing,
+or external integrations.
 
 Do not connect production Supabase, enable live auth in the student UI, create
 real users, enable browser app writes, or enable external writes until Nick
