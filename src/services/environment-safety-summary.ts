@@ -5,6 +5,7 @@ export type EnvironmentSafetyInput = {
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS?: string;
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES?: string;
   MYMEDLIFE_ENABLE_ACTION_START_WRITE?: string;
+  MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE?: string;
   MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE?: string;
   MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE?: string;
   MYMEDLIFE_ALLOW_PROOF_UPLOADS?: string;
@@ -86,6 +87,13 @@ export function getEnvironmentSafetySummary(
         "The first local write slice can start assignments only when local Supabase writes and local auth are also ready.",
     },
     {
+      label: "Assignment-create write",
+      value: env.MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE || "false",
+      status: getAssignmentCreateWriteStatus(env),
+      explanation:
+        "The leader-side local write slice can create assignments only when local Supabase writes and local auth are ready. Reminder automation still stays disabled.",
+    },
+    {
       label: "Proof metadata write",
       value: env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE || "false",
       status: getProofSubmissionWriteStatus(env),
@@ -149,6 +157,8 @@ function readEnvironmentSafetyInput(): EnvironmentSafetyInput {
       process.env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES,
     MYMEDLIFE_ENABLE_ACTION_START_WRITE:
       process.env.MYMEDLIFE_ENABLE_ACTION_START_WRITE,
+    MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE:
+      process.env.MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE,
     MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE:
       process.env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE,
     MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE:
@@ -182,6 +192,16 @@ function getProofSubmissionWriteStatus(
   return env.MYMEDLIFE_ALLOW_PROOF_UPLOADS === "true" ? "blocked" : "watch";
 }
 
+function getAssignmentCreateWriteStatus(
+  env: EnvironmentSafetyInput,
+): EnvironmentSafetyItem["status"] {
+  if (env.MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE !== "true") {
+    return "safe";
+  }
+
+  return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" ? "watch" : "blocked";
+}
+
 function getHqProofDecisionWriteStatus(
   env: EnvironmentSafetyInput,
 ): EnvironmentSafetyItem["status"] {
@@ -199,6 +219,8 @@ function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
 
   const actionStartEnabled =
     env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" ? 1 : 0;
+  const assignmentCreateEnabled =
+    env.MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE === "true" ? 1 : 0;
   const proofSubmissionEnabled =
     env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true" &&
     env.MYMEDLIFE_ALLOW_PROOF_UPLOADS !== "true"
@@ -207,7 +229,12 @@ function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
   const hqProofDecisionEnabled =
     env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE === "true" ? 1 : 0;
 
-  return actionStartEnabled + proofSubmissionEnabled + hqProofDecisionEnabled;
+  return (
+    actionStartEnabled +
+    assignmentCreateEnabled +
+    proofSubmissionEnabled +
+    hqProofDecisionEnabled
+  );
 }
 
 function getTitle(actor: LocalActorContext): string {

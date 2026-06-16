@@ -10,6 +10,7 @@ describe("environment safety summary", () => {
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS: "false",
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "false",
       MYMEDLIFE_ENABLE_ACTION_START_WRITE: "false",
+      MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "false",
       MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "false",
       MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "false",
       MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
@@ -17,7 +18,7 @@ describe("environment safety summary", () => {
     });
 
     expect(summary.canReadSummary).toBe(true);
-    expect(summary.items).toHaveLength(9);
+    expect(summary.items).toHaveLength(10);
     expect(summary.counts.secretsShown).toBe(0);
     expect(summary.counts.browserWritesEnabled).toBe(0);
     expect(summary.counts.externalWritesEnabled).toBe(0);
@@ -28,16 +29,18 @@ describe("environment safety summary", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const summary = getEnvironmentSafetySummary(actor, {
       MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
       MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
       MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
       MYMEDLIFE_ALLOW_PROOF_UPLOADS: "true",
     });
 
-    expect(summary.counts.blocked).toBe(4);
+    expect(summary.counts.blocked).toBe(5);
     expect(
       summary.items.filter((item) => item.status === "blocked").map((item) => item.label),
     ).toEqual([
       "Action-start write",
+      "Assignment-create write",
       "Proof metadata write",
       "HQ proof decision write",
       "Proof uploads",
@@ -83,18 +86,20 @@ describe("environment safety summary", () => {
     const summary = getEnvironmentSafetySummary(actor, {
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
       MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE: "true",
       MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
       MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
     });
 
-    expect(summary.counts.browserWritesEnabled).toBe(3);
+    expect(summary.counts.browserWritesEnabled).toBe(4);
     expect(summary.counts.externalWritesEnabled).toBe(0);
     expect(
       summary.items.filter((item) => item.status === "watch").map((item) => item.label),
     ).toEqual([
       "Local Supabase writes",
       "Action-start write",
+      "Assignment-create write",
       "Proof metadata write",
       "HQ proof decision write",
     ]);

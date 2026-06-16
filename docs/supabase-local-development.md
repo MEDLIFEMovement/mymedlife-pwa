@@ -15,12 +15,14 @@ local-only browser-to-Supabase write path for `action_started`. Goal 61 adds a
 stable local seed assignment plus readback proof for that first write. Goal 62
 adds the second local-only browser-to-Supabase write path for
 `evidence_submitted` proof/testimonial metadata. Goal 63 adds the third
-local-only browser-to-Supabase write path for `hq_sharing_decision`.
+local-only browser-to-Supabase write path for `hq_sharing_decision`. Goal 64
+adds the fourth local-only browser-to-Supabase write path for `action_assigned`
+assignment creation.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
-action-start, proof metadata, and HQ proof decision slices, or trigger HubSpot,
-Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
+action-start, assignment creation, proof metadata, and HQ proof decision slices,
+or trigger HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 
 ## What Was Added
 
@@ -136,6 +138,12 @@ Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
   proof/testimonial metadata server action architecture note.
 - `docs/architecture/goal-63-hq-proof-decision-server-action.md`: local HQ
   proof/testimonial decision server action architecture note.
+- `docs/architecture/goal-64-leader-assignment-server-action.md`: local
+  chapter-leader assignment creation server action architecture note.
+- `src/services/assignment-create-write.ts`: local assignment creation write
+  readiness, RPC result mapping, and readback state.
+- `src/components/leader-assignment-server-action-panel.tsx`: local-only
+  assignment creation form and readback panel for the actions page.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
@@ -396,6 +404,37 @@ Expected database behavior:
 
 This test still does not upload files, publish proof, enable production auth,
 or send HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
+
+## Goal 64 Leader Assignment Creation Test
+
+After running the local Supabase reset, use the fake Northview Rush Month
+campaign through `/rush-month/actions`.
+
+Recommended local test path:
+
+1. Set `MYMEDLIFE_DATA_SOURCE=supabase`.
+2. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true`.
+3. Set `MYMEDLIFE_AUTH_MODE=local_supabase`.
+4. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
+5. Set `MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE=true`.
+6. Sign in at `/login` as `leader.a@mymedlife.test` with password `password`.
+7. Open `/rush-month/actions`.
+8. Confirm the local leader assignment creation panel is enabled.
+9. Submit the local assignment form.
+10. Confirm the refreshed page shows the assignment-created result and local
+    readback when the new assignment is visible.
+
+Expected database behavior:
+
+- `app.create_chapter_assignment(...)` creates the assignment row.
+- An internal `action_assigned` event is recorded.
+- An integration event is recorded for future automation pickup.
+- A disabled automation outbox row is recorded.
+- An audit log row is recorded.
+
+This test still does not send reminders, enable production auth, upload files,
+publish proof, or send HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or
+AI writes.
 
 `MYMEDLIFE_LOCAL_ACTOR_EMAIL` also works when the app is using mock fallback
 data, so developers can preview all role views without Docker. Restart the local
