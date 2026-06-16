@@ -3,7 +3,9 @@ import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
+import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
+import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
@@ -19,6 +21,7 @@ export default async function AdminPage() {
     getLocalActorContext(),
   ]);
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
+  const campaignSummary = getCampaignReadinessSummary();
 
   return (
     <AppShell actor={actor}>
@@ -42,17 +45,37 @@ export default async function AdminPage() {
       </section>
 
       {visiblePanels.length > 0 ? (
-        <section className="grid gap-3 md:grid-cols-2">
-          {visiblePanels.map((panel) => (
-            <article key={panel.key} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100/70">
-                {panel.key.replace("_", " ")}
-              </p>
-              <h2 className="mt-2 text-xl font-semibold text-white">{panel.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-white/64">{panel.summary}</p>
-            </article>
-          ))}
-        </section>
+        <>
+          <section className="grid gap-3 sm:grid-cols-3">
+            <MetricCard
+              label="Campaign shells"
+              value={`${campaignSummary.activeCampaigns + campaignSummary.plannedCampaigns + campaignSummary.templateCampaigns}`}
+              note="Read-only operating catalog"
+            />
+            <MetricCard
+              label="Proof items"
+              value={`${campaignSummary.hqProofItems}`}
+              note="Need HQ sharing review"
+            />
+            <MetricCard
+              label="Disabled events"
+              value={`${campaignSummary.disabledIntegrationEvents}`}
+              note="No external sends"
+            />
+          </section>
+
+          <section className="grid gap-3 md:grid-cols-2">
+            {visiblePanels.map((panel) => (
+              <article key={panel.key} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100/70">
+                  {panel.key.replace("_", " ")}
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-white">{panel.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-white/64">{panel.summary}</p>
+              </article>
+            ))}
+          </section>
+        </>
       ) : (
         <RestrictedState
           title="This local actor has no admin panels."
