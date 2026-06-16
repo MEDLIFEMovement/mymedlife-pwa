@@ -161,7 +161,7 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 41: coach portfolio readiness with production data,
+The active goal is Goal 42: proof-sharing review states with production data,
 enabled browser writes, admin mutation controls, reminder automation,
 escalation packets, uploads, public proof sharing, and external integrations
 still disabled.
@@ -307,6 +307,10 @@ Allowed:
 - a mock-safe coach portfolio readiness panel on `/coach` that shows fake
   portfolio chapters, expansion/portfolio/handoff posture, risks, proof
   pending, and coach decisions while keeping coach assignment changes disabled
+- structured proof-sharing review states on `/proof-library` that distinguish
+  consent/context needs, HQ review, internal learning, future public candidates,
+  and private proof while keeping public publishing and external exports
+  disabled
 - role-aware proof/evidence and review screens that explain HQ owns broad
   proof-sharing decisions
 - loading, empty, fallback, and error states
