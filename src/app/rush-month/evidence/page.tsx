@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { MemberProofStatusPanel } from "@/components/member-proof-status-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import { getReviewQueueForActor } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getMemberProofStatusWorkspace } from "@/services/member-proof-status";
 import { canReadAssignment } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
@@ -22,6 +24,7 @@ export default async function EvidencePage() {
     hqQueue.length > 0
       ? hqQueue
       : evidenceItems.filter((item) => visibleAssignmentIds.has(item.assignmentId));
+  const proofStatusWorkspace = getMemberProofStatusWorkspace(actor);
 
   return (
     <AppShell actor={actor}>
@@ -36,6 +39,8 @@ export default async function EvidencePage() {
           track follow-up but do not own broad proof-sharing decisions.
         </p>
       </section>
+
+      <MemberProofStatusPanel workspace={proofStatusWorkspace} />
 
       {visibleEvidence.length > 0 ? (
         <section className="grid gap-3">
