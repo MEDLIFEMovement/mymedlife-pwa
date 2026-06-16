@@ -33,9 +33,47 @@ describe("admin control center", () => {
 
     expect(summary.userCount).toBe(localActorOptions.length);
     expect(summary.roleAudienceCount).toBe(6);
+    expect(summary.namedRoleCount).toBe(9);
     expect(summary.campaignTemplateCount).toBe(campaignShells.length);
     expect(summary.disabledOutboxCount).toBe(
       data.outboxItems.filter((item) => item.status === "disabled").length,
+    );
+  });
+
+  it("proves each named MVP role has a local review persona", () => {
+    const summary = getAdminControlCenterSummary(
+      getMockReadOnlyAppData("Testing role coverage."),
+    );
+
+    expect(summary.roleCoverage.map((item) => item.role)).toEqual([
+      "General Member",
+      "Action Committee Member",
+      "Action Committee Chair",
+      "E-Board Member",
+      "President / VP",
+      "Coach",
+      "Admin",
+      "DS Admin",
+      "Super Admin",
+    ]);
+    expect(summary.roleCoverage.every((item) => item.status === "ready_readonly")).toBe(
+      true,
+    );
+    expect(
+      summary.roleCoverage.find((item) => item.role === "Action Committee Member"),
+    ).toEqual(
+      expect.objectContaining({
+        audience: "chapter_member",
+        localActorEmail: "committee.member@mymedlife.test",
+      }),
+    );
+    expect(
+      summary.roleCoverage.find((item) => item.role === "Action Committee Chair"),
+    ).toEqual(
+      expect.objectContaining({
+        audience: "chapter_leader",
+        localActorEmail: "committee.chair@mymedlife.test",
+      }),
     );
   });
 

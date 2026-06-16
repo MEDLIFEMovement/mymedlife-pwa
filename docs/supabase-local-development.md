@@ -363,6 +363,8 @@ The PR workflow at `.github/workflows/goal-5-ci.yml` runs two jobs:
 The seed file creates fake local-only users:
 
 - `member.a@mymedlife.test`: General Member in Northview MEDLIFE.
+- `committee.member@mymedlife.test`: Action Committee Member in Northview.
+- `committee.chair@mymedlife.test`: Action Committee Chair in Northview.
 - `leader.a@mymedlife.test`: President/VP and E-Board Member in Northview.
 - `coach@mymedlife.test`: Coach assigned to Northview only.
 - `admin@mymedlife.test`: MEDLIFE Admin.

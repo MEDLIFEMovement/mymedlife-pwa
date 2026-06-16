@@ -22,9 +22,13 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         read-only and mock-safe until auth, RLS, audit, and rollback are approved.
       </p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <Metric label="Fake users" value={`${summary.userCount}`} />
         <Metric label="Role audiences" value={`${summary.roleAudienceCount}`} />
+        <Metric
+          label="Named roles"
+          value={`${summary.namedRoleCount}/${summary.roleCoverage.length}`}
+        />
         <Metric label="Campaign shells" value={`${summary.campaignTemplateCount}`} />
         <Metric label="Disabled outbox" value={`${summary.disabledOutboxCount}`} />
       </div>
@@ -36,6 +40,42 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
           Production auth enabled: {summary.productionAuthEnabled ? "yes" : "no"}.
           External writes enabled: {summary.externalWritesEnabled ? "yes" : "no"}.
         </p>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-white">
+              Named MVP role coverage
+            </p>
+            <p className="mt-1 text-xs leading-5 text-white/52">
+              These are local review personas, not production users or role writes.
+            </p>
+          </div>
+          <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-100">
+            {summary.namedRoleCount}/{summary.roleCoverage.length} ready
+          </span>
+        </div>
+        <div className="mt-3 grid gap-2 md:grid-cols-3">
+          {summary.roleCoverage.map((item) => (
+            <article key={item.role} className="rounded-2xl bg-white/[0.05] p-3">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-semibold text-white">{item.role}</p>
+                <span
+                  className={`rounded-full px-2 py-1 text-[0.65rem] font-semibold ${statusClass(item.status)}`}
+                >
+                  {item.status.replaceAll("_", " ")}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-white/46">
+                {item.audience.replace("_", " ")}
+              </p>
+              <p className="mt-2 break-words font-mono text-xs text-emerald-100/70">
+                {item.localActorEmail ?? "missing local actor"}
+              </p>
+            </article>
+          ))}
+        </div>
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">

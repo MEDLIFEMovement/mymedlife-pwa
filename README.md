@@ -10,7 +10,15 @@ the production-style custom PWA path.
 
 ## Current Goal
 
-The current goal is Goal 83: five-write staff dry-run rehearsal. This remains
+The current goal is Goal 84: action committee role personas. This remains
+mock-safe by default and adds separate local review personas for Action
+Committee Member and Action Committee Chair, then proves the admin view can
+show each named MVP role separately. It updates mock fallback data, local
+Supabase seed users, the local sign-in suggestions, admin role coverage, and
+permission tests without enabling production auth, browser writes, role writes,
+uploads, public proof sharing, or external automation.
+
+Goal 83 added the five-write staff dry-run rehearsal. This remains
 mock-safe by default and upgrades `/admin/staff-dry-run` so HQ reviewers can
 rehearse the five local Rush Month write packets in one place: action-start,
 proof metadata, HQ proof decision, leader assignment, and coach decision.
@@ -542,6 +550,7 @@ All external integrations are mock-first until explicitly approved.
 - [Goal 81 coach decision packet](./docs/architecture/goal-81-coach-decision-packet.md)
 - [Goal 82 write sequence packet status](./docs/architecture/goal-82-write-sequence-status.md)
 - [Goal 83 five-write staff dry-run rehearsal](./docs/architecture/goal-83-five-write-staff-dry-run.md)
+- [Goal 84 action committee role personas](./docs/architecture/goal-84-action-committee-role-personas.md)
 - [Local MVP review guide](./docs/review/local-mvp-review-guide.md)
 - [Future RLS test plan](./docs/testing/rls-test-plan.md)
 - [Supabase local development](./docs/supabase-local-development.md)
@@ -626,8 +635,8 @@ Rules:
 - Goal 9 actor switching is local-only and reads fake seed users by email. It
   does not add browser sign-in, sessions, cookies, or production auth.
 - Goal 10 role filtering is read-only and local-only. It uses
-  `MYMEDLIFE_LOCAL_ACTOR_EMAIL` to preview member, leader, coach, admin, DS
-  admin, and super admin views.
+  `MYMEDLIFE_LOCAL_ACTOR_EMAIL` to preview member, action committee, leader,
+  coach, admin, DS admin, and super admin views.
 - Goal 11 local action/proof contracts are preview-only. They shape future
   events, audit logs, and disabled outbox rows but do not save data, upload
   files, publish proof, or trigger automation.

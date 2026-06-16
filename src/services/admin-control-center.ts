@@ -34,6 +34,14 @@ export type AdminSystemHealthItem = {
   detail: string;
 };
 
+export type AdminRoleCoverageItem = {
+  role: string;
+  audience: ActorAudience;
+  localActorEmail: string | null;
+  status: AdminControlStatus;
+  detail: string;
+};
+
 export type AdminControlCenterSummary = {
   canWriteAdminChanges: false;
   productionAuthEnabled: false;
@@ -42,7 +50,9 @@ export type AdminControlCenterSummary = {
   chapterCount: number;
   campaignTemplateCount: number;
   roleAudienceCount: number;
+  namedRoleCount: number;
   disabledOutboxCount: number;
+  roleCoverage: readonly AdminRoleCoverageItem[];
   areas: readonly AdminControlArea[];
   healthItems: readonly AdminSystemHealthItem[];
 };
@@ -52,6 +62,8 @@ export function getAdminControlCenterSummary(
   actors: readonly LocalActorOption[] = localActorOptions,
 ): AdminControlCenterSummary {
   const roleAudienceCount = new Set(actors.map((actor) => actor.audience)).size;
+  const roleCoverage = getRequiredRoleCoverage(actors);
+  const namedRoleCount = roleCoverage.filter((item) => item.status !== "blocked").length;
   const disabledOutboxCount = data.outboxItems.filter((item) => {
     return item.status === "disabled";
   }).length;
@@ -62,7 +74,7 @@ export function getAdminControlCenterSummary(
       status: "mock_only",
       primaryMetric: `${actors.length} fake users`,
       detail:
-        "Local actor switching covers member, leader, coach, admin, DS admin, and super admin personas.",
+        "Local actor switching covers member, action committee, leader, coach, admin, DS admin, and super admin personas.",
       nextAction:
         "Replace fake users with Supabase Auth profiles only after live auth approval.",
     },
@@ -70,9 +82,9 @@ export function getAdminControlCenterSummary(
       key: "roles",
       title: "Roles and permissions",
       status: "ready_readonly",
-      primaryMetric: `${roleAudienceCount} audiences`,
+      primaryMetric: `${namedRoleCount}/${roleCoverage.length} named roles`,
       detail:
-        "Role-aware read filters and local actor context cover the required MVP role families.",
+        "Role-aware read filters and local actor context now show each named MVP role separately.",
       nextAction:
         "Keep role writes disabled until membership and staff-role approval flows are implemented.",
     },
@@ -135,9 +147,11 @@ export function getAdminControlCenterSummary(
     chapterCount: 1,
     campaignTemplateCount: campaignShells.length,
     roleAudienceCount,
+    namedRoleCount,
     disabledOutboxCount,
+    roleCoverage,
     areas,
-    healthItems: getAdminSystemHealthItems(data, actors),
+    healthItems: getAdminSystemHealthItems(data, actors, roleCoverage),
   };
 }
 
@@ -150,7 +164,10 @@ export function getAudienceLabels(
 function getAdminSystemHealthItems(
   data: ReadOnlyAppData,
   actors: readonly LocalActorOption[],
+  roleCoverage: readonly AdminRoleCoverageItem[],
 ): AdminSystemHealthItem[] {
+  const hasRequiredRoleCoverage = roleCoverage.every((item) => item.status !== "blocked");
+
   return [
     {
       key: "app_data_source",
@@ -161,10 +178,10 @@ function getAdminSystemHealthItems(
     {
       key: "local_actor_context",
       label: "Local actor context",
-      status: actors.length >= 6 ? "ready_readonly" : "blocked",
+      status: hasRequiredRoleCoverage ? "ready_readonly" : "blocked",
       detail:
-        actors.length >= 6
-          ? "All required fake role families are available for local review."
+        hasRequiredRoleCoverage
+          ? "All named MVP roles have fake local review personas."
           : "Missing fake actor coverage for one or more required role families.",
     },
     {
@@ -183,3 +200,65 @@ function getAdminSystemHealthItems(
     },
   ];
 }
+
+function getRequiredRoleCoverage(
+  actors: readonly LocalActorOption[],
+): AdminRoleCoverageItem[] {
+  return requiredRoleDefinitions.map((definition) => {
+    const actor = actors.find((item) => {
+      return (
+        item.audience === definition.audience &&
+        [...item.chapterRoles, ...item.staffRoles].includes(definition.role)
+      );
+    });
+
+    return {
+      role: definition.role,
+      audience: definition.audience,
+      localActorEmail: actor?.email ?? null,
+      status: actor ? "ready_readonly" : "blocked",
+      detail: actor
+        ? `${actor.displayName} previews ${definition.role} permissions locally.`
+        : `No local actor previews ${definition.role} yet.`,
+    };
+  });
+}
+
+const requiredRoleDefinitions = [
+  {
+    role: "General Member",
+    audience: "chapter_member",
+  },
+  {
+    role: "Action Committee Member",
+    audience: "chapter_member",
+  },
+  {
+    role: "Action Committee Chair",
+    audience: "chapter_leader",
+  },
+  {
+    role: "E-Board Member",
+    audience: "chapter_leader",
+  },
+  {
+    role: "President / VP",
+    audience: "chapter_leader",
+  },
+  {
+    role: "Coach",
+    audience: "coach",
+  },
+  {
+    role: "Admin",
+    audience: "admin",
+  },
+  {
+    role: "DS Admin",
+    audience: "ds_admin",
+  },
+  {
+    role: "Super Admin",
+    audience: "super_admin",
+  },
+] as const satisfies readonly { role: string; audience: ActorAudience }[];
