@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getIntegrationContractReview,
+  type IntegrationContractReview,
+} from "@/services/integration-contract-review";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
 import type { IntegrationDestination, JsonValue } from "@/shared/types/persistence";
@@ -105,6 +109,7 @@ export type AdminIntegrationOutboxWorkspace = {
     secretsShown: 0;
   };
   destinationSummaries: AdminIntegrationDestinationSummary[];
+  contractReview: IntegrationContractReview;
   integrationEvents: AdminIntegrationEventItem[];
   outboxItems: AdminOutboxItem[];
   readbackRows: AdminIntegrationReadbackItem[];
@@ -174,6 +179,7 @@ export function getAdminIntegrationOutboxWorkspace(
       secretsShown: 0,
     },
     destinationSummaries: getDestinationSummaries(data),
+    contractReview: getIntegrationContractReview(data),
     integrationEvents: data.integrationEvents.map(toEventItem),
     outboxItems: data.outboxItems.map(toOutboxItem),
     readbackRows,
@@ -274,6 +280,21 @@ function hiddenWorkspace(data: ReadOnlyAppData): AdminIntegrationOutboxWorkspace
       secretsShown: 0,
     },
     destinationSummaries: [],
+    contractReview: {
+      title: "Integration contract review hidden for this role",
+      summary:
+        "Use an Admin, DS Admin, or Super Admin role to inspect integration contract posture.",
+      items: [],
+      counts: {
+        total: 0,
+        ready: 0,
+        watch: 0,
+        blocked: 0,
+        browserWritesEnabled: 0,
+        externalWritesEnabled: 0,
+      },
+      blockedControls: [],
+    },
     integrationEvents: [],
     outboxItems: [],
     readbackRows: [],

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
+import { DiscourseBakeoffPanel } from "@/components/discourse-bakeoff-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
 import { RestrictedState } from "@/components/restricted-state";
+import { getDiscourseBakeoffEvaluation } from "@/services/discourse-bakeoff-evaluation";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
@@ -18,6 +20,7 @@ export default async function AdminReleaseReadinessPage() {
     getReadOnlyAppData(),
   ]);
   const summary = getMvpReleaseReadinessSummary(actor);
+  const bakeoff = getDiscourseBakeoffEvaluation();
   const nextStep = getNextStep(actor);
 
   return (
@@ -73,6 +76,7 @@ export default async function AdminReleaseReadinessPage() {
           </section>
 
           <MvpReleaseReadinessPanel summary={summary} />
+          <DiscourseBakeoffPanel evaluation={bakeoff} />
         </>
       )}
     </AppShell>

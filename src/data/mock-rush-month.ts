@@ -9,6 +9,7 @@ import type {
   PointsSummary,
   RoleContext,
 } from "@/shared/types/domain";
+import type { KpiEventRow, PointsEventRow } from "@/shared/types/persistence";
 
 export const mockChapter: Chapter = {
   id: "chapter-northview",
@@ -195,6 +196,25 @@ export const integrationEvents: IntegrationEvent[] = [
     detail: "Future CRM handoff payload was shaped but not sent.",
     occurredAt: "08:31",
   },
+  {
+    id: "evt-005",
+    eventType: "warehouse_export_mocked",
+    title: "Warehouse export mocked",
+    destination: "warehouse",
+    status: "mocked",
+    detail: "Governed warehouse and Power BI export payload was shaped but not sent.",
+    occurredAt: "08:39",
+  },
+  {
+    id: "evt-006",
+    eventType: "ai_recommendation_contract_logged",
+    title: "AI recommendation contract logged",
+    destination: "internal",
+    status: "recorded",
+    detail:
+      "Prompt, reviewer, and output-shape contract were recorded locally. No model call or outbound send happened.",
+    occurredAt: "08:46",
+  },
 ];
 
 export const outboxItems: OutboxItem[] = [
@@ -218,5 +238,47 @@ export const outboxItems: OutboxItem[] = [
     destination: "HubSpot",
     status: "mocked",
     payloadSummary: "Mock chapter outreach handoff for future CRM sync.",
+  },
+  {
+    id: "outbox-004",
+    sourceEventId: "evt-005",
+    destination: "warehouse",
+    status: "mocked",
+    payloadSummary: "Mock governed export payload for warehouse and Power BI freshness checks.",
+  },
+];
+
+export const pointsEventRows: PointsEventRow[] = [
+  {
+    id: "points-001",
+    chapter_id: mockChapter.id,
+    campaign_id: mockCampaign.id,
+    assignment_id: "open-home",
+    chapter_event_id: null,
+    evidence_item_id: null,
+    approval_id: null,
+    awarded_to_user_id: "leader.a@mymedlife.test",
+    points_delta: 10,
+    reason: "Approved leader alignment check.",
+    created_by: "admin@mymedlife.test",
+    created_at: "2026-06-18T08:18:00.000Z",
+  },
+];
+
+export const kpiEventRows: KpiEventRow[] = [
+  {
+    id: "kpi-001",
+    chapter_id: mockChapter.id,
+    campaign_id: mockCampaign.id,
+    phase_id: null,
+    assignment_id: "member-push",
+    chapter_event_id: null,
+    evidence_item_id: null,
+    metric_key: "students_invited",
+    metric_value: 2,
+    unit: "students",
+    source: "mock_assignment_review",
+    created_by: "leader.a@mymedlife.test",
+    created_at: "2026-06-18T08:22:00.000Z",
   },
 ];

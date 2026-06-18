@@ -21,6 +21,8 @@ describe("member recognition", () => {
       "Invite pushes",
       "Events linked",
     ]);
+    expect(recognition.impacts[0]?.note).toContain("points event rows");
+    expect(recognition.impacts[1]?.note).toContain("KPI event rows");
     expect(recognition.pointsLedgerPosture).toBe("mock_read_only");
   });
 
@@ -65,5 +67,35 @@ describe("member recognition", () => {
     expect(recognition.leaderboard).toEqual([]);
     expect(recognition.impacts).toEqual([]);
     expect(recognition.summary).toContain("student points and recognition");
+  });
+
+  it("shows unknown instead of weak-performance-looking numbers when no ledger signal exists", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const recognition = getMemberRecognitionSummary(actor, {
+      ...data,
+      pointsSummary: {
+        earned: 0,
+        available: 0,
+        approvedActions: 0,
+      },
+      kpiSummary: {
+        invitePushes: 0,
+        proofPending: 0,
+        eventsLinked: 0,
+        coachDecision: "hold",
+      },
+      integrationEvents: [],
+      metricsPosture: {
+        points: "unknown",
+        kpis: "unknown",
+        leaderboard: "unknown",
+      },
+    });
+
+    expect(recognition.impacts).toEqual([
+      expect.objectContaining({ label: "Chapter points", value: "Unknown" }),
+      expect.objectContaining({ label: "Invite pushes", value: "Unknown" }),
+      expect.objectContaining({ label: "Events linked", value: "Unknown" }),
+    ]);
   });
 });

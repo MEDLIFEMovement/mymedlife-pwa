@@ -155,6 +155,14 @@ describe("mvp release readiness", () => {
     ).toContain("Admin release readiness route");
     expect(
       summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Discourse bake-off recommendation");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Discourse bake-off recommendation",
+      )?.plainEnglish,
+    ).toContain("Discourse prototype");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
     ).toContain("Production launch gate");
     expect(
       summary.achievements.map((achievement) => achievement.label),

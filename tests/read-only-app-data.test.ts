@@ -34,6 +34,8 @@ describe("read-only app data service", () => {
       "campaign_closeouts",
       "evidence_items",
       "events",
+      "points_events",
+      "kpi_events",
       "integration_events",
       "automation_outbox",
       "audit_logs",
@@ -67,9 +69,42 @@ describe("read-only app data service", () => {
       }),
     ]);
     expect(data.eventRows).toHaveLength(1);
+    expect(data.pointsEventRows).toHaveLength(1);
+    expect(data.kpiEventRows).toHaveLength(1);
     expect(data.integrationEventRows).toHaveLength(1);
     expect(data.automationOutboxRows).toHaveLength(1);
     expect(data.auditLogs).toHaveLength(1);
+    expect(data.pointsEvents).toEqual([
+      expect.objectContaining({
+        id: "points-1",
+        assignmentId: "assignment-1",
+        points: 15,
+      }),
+    ]);
+    expect(data.kpiEvents).toEqual([
+      expect.objectContaining({
+        id: "kpi-1",
+        assignmentId: "assignment-1",
+        metric: "students_invited",
+        value: 4,
+      }),
+    ]);
+    expect(data.pointsSummary).toEqual({
+      earned: 15,
+      available: 15,
+      approvedActions: 1,
+    });
+    expect(data.kpiSummary).toEqual({
+      invitePushes: 4,
+      proofPending: 0,
+      eventsLinked: 0,
+      coachDecision: "hold",
+    });
+    expect(data.metricsPosture).toEqual({
+      points: "points_events",
+      kpis: "kpi_events",
+      leaderboard: "mock_safe",
+    });
     expect(data.integrationEvents).toEqual([
       expect.objectContaining({
         id: "integration-1",
@@ -325,6 +360,39 @@ const fakeRows: Record<string, unknown[]> = {
       },
       correlation_id: "action_started:assignment-1:member-1",
       occurred_at: "2026-06-15T00:00:00Z",
+      created_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  points_events: [
+    {
+      id: "points-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      assignment_id: "assignment-1",
+      chapter_event_id: null,
+      evidence_item_id: null,
+      approval_id: null,
+      awarded_to_user_id: "member-1",
+      points_delta: 15,
+      reason: "Approved assignment.",
+      created_by: "leader-1",
+      created_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  kpi_events: [
+    {
+      id: "kpi-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      phase_id: "phase-1",
+      assignment_id: "assignment-1",
+      chapter_event_id: null,
+      evidence_item_id: null,
+      metric_key: "students_invited",
+      metric_value: 4,
+      unit: "students",
+      source: "test_seed",
+      created_by: "leader-1",
       created_at: "2026-06-15T00:00:00Z",
     },
   ],

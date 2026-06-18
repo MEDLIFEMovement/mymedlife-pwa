@@ -8,6 +8,7 @@ import {
   type AdminLiveSendPreflightItem,
   type AdminLiveSendPreflightStatus,
 } from "@/services/admin-integration-outbox-workspace";
+import type { IntegrationContractStatus } from "@/services/integration-contract-review";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -101,6 +102,111 @@ export default async function AdminIntegrationOutboxPage() {
                 </p>
               </article>
             ))}
+          </section>
+
+          <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+                  Contract review
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">
+                  {workspace.contractReview.title}
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
+                  {workspace.contractReview.summary}
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center sm:grid-cols-6">
+                <MiniStat
+                  label="Items"
+                  value={`${workspace.contractReview.counts.total}`}
+                />
+                <MiniStat
+                  label="Ready"
+                  value={`${workspace.contractReview.counts.ready}`}
+                />
+                <MiniStat
+                  label="Watch"
+                  value={`${workspace.contractReview.counts.watch}`}
+                />
+                <MiniStat
+                  label="Blocked"
+                  value={`${workspace.contractReview.counts.blocked}`}
+                />
+                <MiniStat
+                  label="Writes"
+                  value={`${workspace.contractReview.counts.browserWritesEnabled}`}
+                />
+                <MiniStat
+                  label="Sends"
+                  value={`${workspace.contractReview.counts.externalWritesEnabled}`}
+                />
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+              {workspace.contractReview.items.map((item) => (
+                <article
+                  key={item.key}
+                  className="rounded-2xl border border-white/10 bg-black/20 p-4"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <ReviewStatusPill status={item.status} />
+                      <h3 className="mt-3 text-base font-semibold text-white">
+                        {item.label}
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <SmallToken label="Writes" value={`${item.browserWritesExpected}`} />
+                      <SmallToken label="Sends" value={`${item.externalWritesExpected}`} />
+                    </div>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-white/72">
+                    {item.currentPosture}
+                  </p>
+                  <p className="mt-3 text-xs leading-5 text-cyan-100/72">
+                    Source of truth: {item.sourceOfTruth}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-white/56">
+                    Required: {item.requiredEvidence}
+                  </p>
+                  <p className="mt-3 rounded-2xl bg-white/[0.05] p-3 text-xs leading-5 text-white/54">
+                    Live gate: {item.liveGate}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.requiredFields.map((field) => (
+                      <span
+                        key={`${item.key}-${field}`}
+                        className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-semibold text-white/58"
+                      >
+                        {field}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.routeEvidence.map((route) => (
+                      <span
+                        key={`${item.key}-${route}`}
+                        className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58"
+                      >
+                        {route}
+                      </span>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {workspace.contractReview.blockedControls.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/64"
+                >
+                  Locked {item}
+                </span>
+              ))}
+            </div>
           </section>
 
           <InventorySection
@@ -402,6 +508,25 @@ function PreflightStatusPill({
   status,
 }: {
   status: AdminLiveSendPreflightStatus;
+}) {
+  const className =
+    status === "ready"
+      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      : status === "watch"
+        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
+        : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+
+  return (
+    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
+      {status}
+    </span>
+  );
+}
+
+function ReviewStatusPill({
+  status,
+}: {
+  status: IntegrationContractStatus;
 }) {
   const className =
     status === "ready"

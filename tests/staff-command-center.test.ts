@@ -77,13 +77,13 @@ describe("staff command center", () => {
       true,
     );
     expect(commandCenter.outboxSummary).toMatchObject({
-      total: 3,
+      total: 4,
       disabled: 1,
-      mocked: 2,
+      mocked: 3,
       hubspot: 1,
       luma: 1,
       n8n: 1,
-      warehouse: 0,
+      warehouse: 1,
     });
   });
 

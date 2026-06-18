@@ -276,6 +276,12 @@ export function getMvpReleaseReadinessSummary(
           "Admin, DS Admin, and Super Admin can open `/admin/release-readiness` for the focused local-review-ready versus live-launch-blocked summary while production auth, browser writes, proof uploads, external sends, and student invitations remain blocked.",
       },
       {
+        label: "Discourse bake-off recommendation",
+        status: "ready_for_local_review",
+        plainEnglish:
+          "Admin, DS Admin, and Super Admin can now use `/admin/release-readiness` to compare myMEDLIFE against the Discourse prototype in plain language and keep Discourse reference-only while myMEDLIFE advances as the MVP and pilot operating system.",
+      },
+      {
         label: "Admin master data inventory",
         status: "ready_for_local_review",
         plainEnglish:

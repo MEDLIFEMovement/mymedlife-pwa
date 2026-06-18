@@ -37,7 +37,23 @@ describe("admin integration outbox workspace", () => {
       "action_assigned",
     );
     expect(workspace.outboxItems.map((item) => item.destination)).toEqual(
-      expect.arrayContaining(["n8n", "Luma", "HubSpot"]),
+      expect.arrayContaining(["n8n", "Luma", "HubSpot", "warehouse"]),
+    );
+    expect(workspace.contractReview.counts).toEqual({
+      total: 4,
+      ready: 4,
+      watch: 0,
+      blocked: 0,
+      browserWritesEnabled: 0,
+      externalWritesEnabled: 0,
+    });
+    expect(workspace.contractReview.items.map((item) => item.label)).toEqual(
+      expect.arrayContaining([
+        "Luma event sync contract",
+        "HubSpot follow-up handoff contract",
+        "Warehouse and Power BI export contract",
+        "AI recommendation contract",
+      ]),
     );
     expect(workspace.blockedControls).toEqual(
       expect.arrayContaining(["approve live sends", "run AI summaries"]),
@@ -114,6 +130,7 @@ describe("admin integration outbox workspace", () => {
     expect(workspace.safetyNotes.join(" ")).toContain(
       "without row-level audit details",
     );
+    expect(workspace.contractReview.items).toHaveLength(4);
     expect(
       workspace.liveSendPreflight.items.find(
         (item) => item.key === "audit_readback",
@@ -158,6 +175,10 @@ describe("admin integration outbox workspace", () => {
         ?.posture,
     ).toBe("mock_safe");
     expect(
+      workspace.contractReview.items.find((item) => item.key === "warehouse_power_bi")
+        ?.status,
+    ).toBe("ready");
+    expect(
       workspace.liveSendPreflight.items.find(
         (item) => item.key === "payload_and_idempotency",
       )?.status,
@@ -171,6 +192,7 @@ describe("admin integration outbox workspace", () => {
       integrationEventRows: [
         {
           ...integrationEventRow(),
+          destination: "hubspot",
           status: "approved_for_live_send",
         },
       ],
@@ -181,6 +203,10 @@ describe("admin integration outbox workspace", () => {
       workspace.liveSendPreflight.items.find(
         (item) => item.key === "destination_policy",
       )?.status,
+    ).toBe("blocked");
+    expect(
+      workspace.contractReview.items.find((item) => item.key === "hubspot")
+        ?.status,
     ).toBe("blocked");
     expect(workspace.liveSendPreflight.counts.blocked).toBe(1);
   });
