@@ -45,8 +45,30 @@ describe("app route registry", () => {
   });
 
   it("treats known dynamic route families as prefixes", () => {
+    expect(isKnownAppRouteHref("/login")).toBe(true);
+    expect(isKnownAppRouteHref("/offline")).toBe(true);
+    expect(isKnownAppRouteHref("/profile")).toBe(true);
+    expect(isKnownAppRouteHref("/onboarding")).toBe(true);
+    expect(isKnownAppRouteHref("/slt-prep")).toBe(true);
+    expect(isKnownAppRouteHref("/slt-prep/staff")).toBe(true);
+    expect(isKnownAppRouteHref("/slt-prep/checklist/medical-clearance")).toBe(true);
+    expect(isKnownAppRouteHref("/rush-month/leaderboard")).toBe(true);
     expect(isKnownAppRouteHref("/campaigns/rush-month")).toBe(true);
+    expect(isKnownAppRouteHref("/rush-month/events/event-rush-social-001")).toBe(
+      true,
+    );
     expect(isKnownAppRouteHref("/rush-month/actions/member-push")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/review-path")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/nick-review")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/release-readiness")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/launch-gate")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/audit-log")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/integration-outbox")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/master-data")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/database-security")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/system-health")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/design-qa")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/operations")).toBe(true);
     expect(isKnownAppRouteHref("/unknown")).toBe(false);
   });
 });

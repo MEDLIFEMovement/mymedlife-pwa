@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(42);
+    expect(entries).toHaveLength(53);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -89,6 +89,15 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("rushMonthReview")).toMatchObject({
       title: "HQ Proof Review",
+    });
+    expect(getStaticRouteMetadata("sltPrep")).toMatchObject({
+      title: "SLT Trip Prep",
+    });
+    expect(getStaticRouteMetadata("sltPrepChecklist")).toMatchObject({
+      title: "SLT Checklist",
+    });
+    expect(getStaticRouteMetadata("sltPrepStaff")).toMatchObject({
+      title: "SLT Staff Dashboard",
     });
     expect(getStaticRouteMetadata("rushMonthLeaderboard")).toMatchObject({
       title: "Rush Month Leaderboard",

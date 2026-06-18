@@ -10,6 +10,17 @@ export type StaticRouteMetadataKey =
   | "campaigns"
   | "campaignDetail"
   | "actionCommittees"
+  | "sltPrep"
+  | "sltPrepChecklist"
+  | "sltPrepChecklistDetail"
+  | "sltPrepForms"
+  | "sltPrepPayments"
+  | "sltPrepMeetings"
+  | "sltPrepExtensions"
+  | "sltPrepTimeline"
+  | "sltPrepNotifications"
+  | "sltPrepProfile"
+  | "sltPrepStaff"
   | "rushMonth"
   | "rushMonthDashboard"
   | "rushMonthLeaderboard"
@@ -85,6 +96,61 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   actionCommittees: {
     title: "Action Committees",
     description: "Action committee event planning, owners, feedback, and proof prompts.",
+  },
+  sltPrep: {
+    title: "SLT Trip Prep",
+    description:
+      "Mobile-first Peru SLT traveler readiness, countdown, alerts, checklist, payments, flights, and notifications.",
+  },
+  sltPrepChecklist: {
+    title: "SLT Checklist",
+    description:
+      "Traveler readiness checklist with owner, evidence, due date, and mock-safe completion posture.",
+  },
+  sltPrepChecklistDetail: {
+    title: "SLT Checklist Detail",
+    description:
+      "One traveler-readiness checkpoint with context, evidence, owner, and preview-only completion posture.",
+  },
+  sltPrepForms: {
+    title: "SLT Forms",
+    description:
+      "Required traveler forms, review states, and signature blockers without enabling live form writes.",
+  },
+  sltPrepPayments: {
+    title: "SLT Payments",
+    description:
+      "Mock-safe payment milestones shaped for future Shopify-backed travel finance states.",
+  },
+  sltPrepMeetings: {
+    title: "SLT Meetings",
+    description:
+      "Pre-trip meetings and traveler attendance posture shaped for future Luma-backed readiness tracking.",
+  },
+  sltPrepExtensions: {
+    title: "SLT Extensions",
+    description:
+      "Optional extensions and tours with readable status, price, and mock-safe decision posture.",
+  },
+  sltPrepTimeline: {
+    title: "SLT Timeline",
+    description:
+      "Trip prep timeline from current readiness through departure for Peru SLT July 2026.",
+  },
+  sltPrepNotifications: {
+    title: "SLT Notifications",
+    description:
+      "Traveler notifications, reminders, and update posture with live sends still disabled.",
+  },
+  sltPrepProfile: {
+    title: "SLT Traveler Profile",
+    description:
+      "Traveler profile, emergency contacts, flights, and support notes in one mock-safe view.",
+  },
+  sltPrepStaff: {
+    title: "SLT Staff Dashboard",
+    description:
+      "Coach and staff traveler-readiness dashboard with risk filters, bulk-action previews, and no live writes.",
   },
   rushMonth: {
     title: "Rush Month",
