@@ -26,152 +26,160 @@ export function StaffCommandCenterPanel({
   }
 
   return (
-    <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-              Staff command center
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <h1 className="text-3xl font-semibold text-white">
-                {commandCenter.title}
-              </h1>
-              {commandCenter.sampleLabel ? (
-                <span className="rounded-full border border-[#f7d05e]/30 bg-[#f7d05e]/12 px-3 py-1 text-xs font-semibold text-[#f7d05e]">
-                  {commandCenter.sampleLabel}
-                </span>
-              ) : null}
-            </div>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
-              {commandCenter.summary}
-            </p>
+    <section className="grid gap-4 xl:grid-cols-[18rem_minmax(0,1fr)] xl:items-start">
+      <aside className="grid gap-4 xl:sticky xl:top-24">
+        <section className="rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(160deg,#0b2a5d_0%,#0a3b88_52%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+            Staff command center
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <h1 className="text-3xl font-semibold text-white">{commandCenter.title}</h1>
+            {commandCenter.sampleLabel ? (
+              <span className="rounded-full border border-[#f7d05e]/30 bg-[#f7d05e]/12 px-3 py-1 text-xs font-semibold text-[#f7d05e]">
+                {commandCenter.sampleLabel}
+              </span>
+            ) : null}
           </div>
+          <p className="mt-3 text-sm leading-6 text-white/78">{commandCenter.summary}</p>
 
-          <article className="min-w-full rounded-[1.75rem] border border-emerald-300/20 bg-emerald-300/10 p-4 xl:min-w-80">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100/80">
+          <article className="mt-5 rounded-[1.6rem] border border-white/12 bg-[#071836]/55 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f7d05e]/88">
               Safety posture
             </p>
-            <p className="mt-3 text-sm leading-6 text-white/66">
+            <p className="mt-3 text-sm leading-6 text-white/70">
               {commandCenter.safetyNote}
             </p>
           </article>
-        </div>
-      </section>
+        </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {commandCenter.metrics.map((metric) => (
-          <MetricCard
-            key={metric.label}
-            label={metric.label}
-            value={metric.value}
-            note={metric.note}
-          />
-        ))}
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {commandCenter.quickActions.map((action) => (
-          <Link
-            key={action.label}
-            href={action.href}
-            className={[
-              "rounded-[1.6rem] border px-4 py-4 transition",
-              action.tone === "primary"
-                ? "border-emerald-300/25 bg-emerald-300/12 hover:border-emerald-200/40 hover:bg-emerald-300/18"
-                : "border-white/10 bg-white/[0.05] hover:border-white/20 hover:bg-white/[0.08]",
-            ].join(" ")}
-          >
-            <p className="text-sm font-semibold text-white">{action.label}</p>
-            <p className="mt-2 text-sm leading-6 text-white/62">{action.helper}</p>
-          </Link>
-        ))}
-      </section>
-
-      <nav
-        aria-label="Staff command center views"
-        className="flex flex-wrap gap-2 rounded-[1.6rem] border border-white/10 bg-white/[0.04] p-2"
-      >
-        {commandCenter.viewOptions.map((option) => (
-          <Link
-            key={option.key}
-            href={option.href}
-            aria-current={
-              commandCenter.selectedView === option.key ? "page" : undefined
-            }
-            className={[
-              "rounded-full px-4 py-2 text-sm font-semibold transition",
-              commandCenter.selectedView === option.key
-                ? "bg-[#f7d05e] text-[#06211d]"
-                : "text-white/70 hover:bg-white/[0.08] hover:text-white",
-            ].join(" ")}
-          >
-            {option.label}
-          </Link>
-        ))}
-      </nav>
-
-      {commandCenter.selectedView === "chapters" ? (
-        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-4">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/46">
-                Portfolio filters
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">
-                Chapter portfolio table
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-white/64">
-                Filter the portfolio by chapter risk or search by campus, coach,
-                or next step.
-              </p>
-            </div>
-
-            <form action="/staff" method="get" className="grid gap-3 sm:grid-cols-[1fr_auto]">
-              <input type="hidden" name="view" value="chapters" />
-              {commandCenter.riskFilter !== "all" ? (
-                <input type="hidden" name="risk" value={commandCenter.riskFilter} />
-              ) : null}
-              <label className="sr-only" htmlFor="staff-search">
-                Search chapters
-              </label>
-              <input
-                id="staff-search"
-                name="q"
-                type="search"
-                defaultValue={commandCenter.searchQuery}
-                placeholder="Search chapters or next steps"
-                className="min-w-72 rounded-full border border-white/12 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-white/32 focus:border-emerald-300/40"
-              />
-              <button
-                type="submit"
-                className="rounded-full bg-emerald-300 px-5 py-3 text-sm font-semibold text-[#06211d]"
-              >
-                Apply
-              </button>
-            </form>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            {commandCenter.riskFilters.map((filter) => (
+        <SidebarCard eyebrow="Navigation" title="Portfolio views">
+          <nav aria-label="Staff command center views" className="grid gap-2">
+            {commandCenter.viewOptions.map((option) => (
               <Link
-                key={filter.key}
-                href={filter.href}
+                key={option.key}
+                href={option.href}
+                aria-current={
+                  commandCenter.selectedView === option.key ? "page" : undefined
+                }
                 className={[
-                  "rounded-full px-4 py-2 text-sm font-semibold transition",
-                  commandCenter.riskFilter === filter.key
-                    ? "bg-sky-300/20 text-sky-100"
-                    : "border border-white/10 bg-black/20 text-white/72 hover:text-white",
+                  "rounded-[1.15rem] px-4 py-3 text-sm font-semibold transition",
+                  commandCenter.selectedView === option.key
+                    ? "bg-[#f7d05e] text-[#08224c]"
+                    : "border border-white/10 bg-white/[0.05] text-white/74 hover:border-[#5d8ff6]/28 hover:bg-white/[0.08] hover:text-white",
                 ].join(" ")}
               >
-                {filter.label}
+                {option.label}
+              </Link>
+            ))}
+          </nav>
+        </SidebarCard>
+
+        <SidebarCard eyebrow="Quick actions" title="Staff tools">
+          <div className="grid gap-2">
+            {commandCenter.quickActions.map((action) => (
+              <Link
+                key={action.label}
+                href={action.href}
+                className={[
+                  "rounded-[1.25rem] border px-4 py-4 transition",
+                  action.tone === "primary"
+                    ? "border-[#f7d05e]/30 bg-[#f7d05e]/12 hover:border-[#f7d05e]/46 hover:bg-[#f7d05e]/18"
+                    : "border-white/10 bg-white/[0.05] hover:border-[#5d8ff6]/28 hover:bg-white/[0.08]",
+                ].join(" ")}
+              >
+                <p
+                  className={[
+                    "text-sm font-semibold",
+                    action.tone === "primary" ? "text-[#f7d05e]" : "text-white",
+                  ].join(" ")}
+                >
+                  {action.label}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/62">{action.helper}</p>
               </Link>
             ))}
           </div>
-        </section>
-      ) : null}
+        </SidebarCard>
+      </aside>
 
-      {renderView(commandCenter)}
+      <div className="grid gap-4">
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {commandCenter.metrics.map((metric) => (
+            <MetricCard
+              key={metric.label}
+              label={metric.label}
+              value={metric.value}
+              note={metric.note}
+            />
+          ))}
+        </section>
+
+        {commandCenter.selectedView === "chapters" ? (
+          <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-4">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/46">
+                  Portfolio filters
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">
+                  Chapter portfolio table
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-white/64">
+                  Filter the portfolio by chapter risk or search by campus, coach,
+                  or next step.
+                </p>
+              </div>
+
+              <form
+                action="/staff"
+                method="get"
+                className="grid gap-3 sm:grid-cols-[1fr_auto]"
+              >
+                <input type="hidden" name="view" value="chapters" />
+                {commandCenter.riskFilter !== "all" ? (
+                  <input type="hidden" name="risk" value={commandCenter.riskFilter} />
+                ) : null}
+                <label className="sr-only" htmlFor="staff-search">
+                  Search chapters
+                </label>
+                <input
+                  id="staff-search"
+                  name="q"
+                  type="search"
+                  defaultValue={commandCenter.searchQuery}
+                  placeholder="Search chapters or next steps"
+                  className="min-w-72 rounded-full border border-white/12 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-white/32 focus:border-[#5d8ff6]/40"
+                />
+                <button
+                  type="submit"
+                  className="rounded-full bg-[#f7d05e] px-5 py-3 text-sm font-semibold text-[#08224c]"
+                >
+                  Apply
+                </button>
+              </form>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {commandCenter.riskFilters.map((filter) => (
+                <Link
+                  key={filter.key}
+                  href={filter.href}
+                  className={[
+                    "rounded-full px-4 py-2 text-sm font-semibold transition",
+                    commandCenter.riskFilter === filter.key
+                      ? "bg-[#5d8ff6]/18 text-[#c9dcff]"
+                      : "border border-white/10 bg-black/20 text-white/72 hover:text-white",
+                  ].join(" ")}
+                >
+                  {filter.label}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {renderView(commandCenter)}
+      </div>
     </section>
   );
 }
@@ -393,11 +401,14 @@ function ChapterPortfolioTable({
                 key={row.chapterId}
                 className={[
                   "border-t border-white/10",
-                  selectedChapterId === row.chapterId ? "bg-sky-300/10" : "",
+                  selectedChapterId === row.chapterId ? "bg-[#5d8ff6]/10" : "",
                 ].join(" ")}
               >
                 <td className="px-4 py-3 align-top">
-                  <Link href={row.detailHref} className="font-semibold text-white hover:text-emerald-100">
+                  <Link
+                    href={row.detailHref}
+                    className="font-semibold text-white hover:text-[#f7d05e]"
+                  >
                     {row.chapterName}
                   </Link>
                   <p className="mt-1 text-xs text-white/48">{row.campus}</p>
@@ -432,8 +443,8 @@ function ChapterPortfolioTable({
 function ChapterDrawer({ drawer }: { drawer: StaffChapterDrawer }) {
   return (
     <div className="grid gap-4">
-      <div className="rounded-[1.4rem] border border-emerald-300/16 bg-emerald-300/10 p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100/78">
+      <div className="rounded-[1.4rem] border border-[#5d8ff6]/22 bg-[#5d8ff6]/10 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c9dcff]">
           Recommended staff read
         </p>
         <h3 className="mt-2 text-xl font-semibold text-white">
@@ -515,7 +526,7 @@ function CampaignCard({ campaign }: { campaign: StaffCampaignOperationCard }) {
       </p>
       <Link
         href={campaign.href}
-        className="mt-4 inline-flex rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+        className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
       >
         Open campaign
       </Link>
@@ -599,7 +610,7 @@ function BestPracticeCard({ card }: { card: StaffBestPracticeCard }) {
       <p className="mt-4 text-sm leading-6 text-white/62">{card.nextMove}</p>
       <Link
         href={card.href}
-        className="mt-4 inline-flex rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+        className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
       >
         Open playbook
       </Link>
@@ -629,6 +640,26 @@ function AuditCard({ item }: { item: StaffAuditItem }) {
       <h3 className="mt-3 text-lg font-semibold text-white">{item.title}</h3>
       <p className="mt-2 text-sm leading-6 text-white/64">{item.detail}</p>
     </article>
+  );
+}
+
+function SidebarCard({
+  eyebrow,
+  title,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.05] p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/46">
+        {eyebrow}
+      </p>
+      <h2 className="mt-2 text-lg font-semibold text-white">{title}</h2>
+      <div className="mt-4">{children}</div>
+    </section>
   );
 }
 
