@@ -21,6 +21,8 @@ describe("rush month event readiness", () => {
       "Freshman welcome social",
       "Health equity intro Med Talk",
     ]);
+    expect(workspace.rows[0]?.rsvpStatusLabel).toBe("Registered locally");
+    expect(workspace.rows[1]?.rsvpStatusLabel).toBe("RSVP not open");
     expect(workspace.rows[0]?.npsQuestion).toContain("recommend this MEDLIFE event");
     expect(workspace.rows[0]?.proofPrompt).toContain("bridge video");
   });

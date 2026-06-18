@@ -3,6 +3,7 @@ import {
   getEventPlansForCampaign,
 } from "@/services/campaign-ops-service";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getRushMonthEventRsvpPosture } from "@/services/rush-month-event-rsvp";
 import type { ChapterEventPlan } from "@/shared/types/campaigns";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
 
@@ -12,6 +13,9 @@ export type RushMonthEventReadinessRow = {
   committeeName: string;
   timing: string;
   eventTypeLabel: string;
+  rsvpStatusLabel: string;
+  rsvpDetail: string;
+  rsvpStatusTone: "ready" | "mocked" | "disabled";
   lumaStatusLabel: string;
   lumaStatusTone: ChapterEventPlan["lumaStatus"];
   ownerRole: string;
@@ -47,7 +51,7 @@ export function getRushMonthEventReadinessWorkspace(
   }
 
   const eventPlans = getEventPlansForCampaign("rush-month");
-  const rows = eventPlans.map(toEventReadinessRow);
+  const rows = eventPlans.map((eventPlan) => toEventReadinessRow(eventPlan, actor));
 
   return {
     canReadWorkspace: true,
@@ -83,13 +87,19 @@ export function getRushMonthEventReadinessWorkspace(
 
 function toEventReadinessRow(
   eventPlan: ChapterEventPlan,
+  actor: LocalActorContext,
 ): RushMonthEventReadinessRow {
+  const rsvpPosture = getRushMonthEventRsvpPosture(actor, eventPlan);
+
   return {
     id: eventPlan.id,
     title: eventPlan.title,
     committeeName: getCommitteeName(eventPlan.committeeId),
     timing: eventPlan.timing,
     eventTypeLabel: eventPlan.eventType.replaceAll("_", " "),
+    rsvpStatusLabel: rsvpPosture.label,
+    rsvpDetail: rsvpPosture.detail,
+    rsvpStatusTone: rsvpPosture.tone,
     lumaStatusLabel: eventPlan.lumaStatus.replaceAll("_", " "),
     lumaStatusTone: eventPlan.lumaStatus,
     ownerRole: eventPlan.ownerRole,

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type {
   RushMonthEventReadinessRow,
   RushMonthEventReadinessWorkspace,
@@ -135,6 +136,7 @@ function EventReadinessCard({ row }: { row: RushMonthEventReadinessRow }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
+            <RsvpStatusPill status={row.rsvpStatusTone} label={row.rsvpStatusLabel} />
             <LumaStatusPill status={row.lumaStatusTone} label={row.lumaStatusLabel} />
             <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/62">
               {row.timing}
@@ -148,9 +150,16 @@ function EventReadinessCard({ row }: { row: RushMonthEventReadinessRow }) {
             {row.committeeName} / Owner: {row.ownerRole}
           </p>
         </div>
+        <Link
+          href={`/rush-month/events/${row.id}`}
+          className="w-fit rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+        >
+          Open event
+        </Link>
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <DetailBlock label="RSVP posture" value={row.rsvpDetail} />
         <DetailBlock label="Student action" value={row.expectedStudentAction} />
         <DetailBlock label="Feedback plan" value={row.feedbackPlan} />
         <DetailBlock label="NPS question" value={row.npsQuestion} />
@@ -184,6 +193,27 @@ function LumaStatusPill({
       : status === "future_sync_disabled"
         ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
         : "border-white/10 bg-black/20 text-white/62";
+
+  return (
+    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
+      {label}
+    </span>
+  );
+}
+
+function RsvpStatusPill({
+  label,
+  status,
+}: {
+  label: string;
+  status: RushMonthEventReadinessRow["rsvpStatusTone"];
+}) {
+  const className =
+    status === "ready"
+      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      : status === "mocked"
+        ? "border-cyan-300/30 bg-cyan-300/15 text-cyan-100"
+        : "border-amber-300/30 bg-amber-300/15 text-amber-100";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
