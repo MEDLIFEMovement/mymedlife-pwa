@@ -39,6 +39,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/proof-library", label: "Proof library", routeType: "exact" },
   { href: "/proof-library/upload", label: "Proof upload readiness", routeType: "exact" },
   { href: "/coach", label: "Coach", routeType: "exact" },
+  { href: "/staff", label: "Staff command center", routeType: "exact" },
   { href: "/admin", label: "Admin", routeType: "exact" },
   { href: "/admin/review-path", label: "Admin review path", routeType: "exact" },
   { href: "/admin/nick-review", label: "Nick final review", routeType: "exact" },

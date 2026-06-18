@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(53);
+    expect(entries).toHaveLength(54);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -111,6 +111,9 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("coach")).toMatchObject({
       title: "Coach Dashboard",
+    });
+    expect(getStaticRouteMetadata("staff")).toMatchObject({
+      title: "Staff Command Center",
     });
   });
 });

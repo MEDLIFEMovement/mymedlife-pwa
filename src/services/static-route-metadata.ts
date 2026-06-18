@@ -34,6 +34,7 @@ export type StaticRouteMetadataKey =
   | "proofLibrary"
   | "proofUpload"
   | "coach"
+  | "staff"
   | "admin"
   | "adminReviewPath"
   | "adminNickReview"
@@ -208,6 +209,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   coach: {
     title: "Coach Dashboard",
     description: "Coach portfolio readiness, risks, KPI movement, and disabled decisions.",
+  },
+  staff: {
+    title: "Staff Command Center",
+    description:
+      "Desktop-first chapter portfolio, proof review, feed curation, HubSpot posture, and admin health with live writes still disabled.",
   },
   admin: {
     title: "Admin",

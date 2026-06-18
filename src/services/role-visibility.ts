@@ -168,6 +168,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/rush-month/loop", label: "MVP Loop" },
         { href: "/rush-month/actions", label: "Open Work" },
         { href: "/proof-library", label: "Proof Library" },
+        { href: "/staff", label: "Staff Center" },
         { href: "/coach", label: "Coach" },
         { href: "/profile", label: "Profile" },
       ];
@@ -183,6 +184,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/rush-month/events", label: "Events" },
         { href: "/rush-month/loop", label: "Rush Loop" },
         { href: "/coach", label: "Coach Read" },
+        { href: "/staff", label: "Staff Center" },
         { href: "/admin", label: "HQ Admin" },
         { href: "/admin/first-write", label: "First Write" },
         { href: "/admin/write-sequence", label: "Write Sequence" },
@@ -223,6 +225,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/proof-library", label: "Proof Library" },
         { href: "/rush-month/review", label: "Reviews" },
         { href: "/coach", label: "Coach" },
+        { href: "/staff", label: "Staff Center" },
         { href: "/admin", label: "Super Admin" },
         { href: "/admin/first-write", label: "First Write" },
         { href: "/admin/write-sequence", label: "Write Sequence" },

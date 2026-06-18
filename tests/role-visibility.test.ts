@@ -105,9 +105,17 @@ describe("role visibility service", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
+    const coach = getMockLocalActorContext("coach@mymedlife.test");
+    const admin = getMockLocalActorContext("admin@mymedlife.test");
+    const superAdmin = getMockLocalActorContext("super.admin@mymedlife.test");
 
     expect(getNavigationForActor(member).map((item) => item.label)).toContain("My Actions");
     expect(getNavigationForActor(leader).map((item) => item.label)).toContain("Members");
+    expect(getNavigationForActor(coach).map((item) => item.label)).toContain("Staff Center");
+    expect(getNavigationForActor(admin).map((item) => item.label)).toContain("Staff Center");
+    expect(getNavigationForActor(superAdmin).map((item) => item.label)).toContain(
+      "Staff Center",
+    );
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Integration Outbox" },
       { href: "/admin/first-write", label: "First Write Safety" },
