@@ -1,7 +1,9 @@
 import { AppShell } from "@/components/app-shell";
 import { CampaignCard } from "@/components/campaign-card";
+import { CampaignStarterShellReadinessPanel } from "@/components/campaign-starter-shell-readiness-panel";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
+import { getCampaignStarterShellReadiness } from "@/services/campaign-starter-shell-readiness";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
   getCampaignReadinessSummary,
@@ -16,6 +18,7 @@ export default async function CampaignsPage() {
   const actor = await getLocalActorContext();
   const visibleCampaigns = getVisibleCampaignShellsForActor(actor);
   const summary = getCampaignReadinessSummary();
+  const starterShellReadiness = getCampaignStarterShellReadiness(actor);
 
   return (
     <AppShell actor={actor}>
@@ -69,6 +72,8 @@ export default async function CampaignsPage() {
           note="No live sends"
         />
       </section>
+
+      <CampaignStarterShellReadinessPanel readiness={starterShellReadiness} />
 
       {visibleCampaigns.length > 0 ? (
         <section className="grid gap-3 lg:grid-cols-2">

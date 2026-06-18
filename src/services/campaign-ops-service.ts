@@ -15,6 +15,16 @@ import type {
 } from "@/shared/types/campaigns";
 import type { IntegrationEvent } from "@/shared/types/domain";
 
+const leaderVisibleStarterShellSlugs = new Set([
+  "planning-goal-setting",
+  "chapter-engagement",
+  "slt-promotion",
+  "moving-mountains",
+  "leadership-transition",
+  "grow-the-movement",
+  "start-a-chapter",
+]);
+
 export function getCampaignShells(): CampaignShell[] {
   return campaignShells;
 }
@@ -36,7 +46,10 @@ export function getVisibleCampaignShellsForActor(
   }
 
   if (actor.audience === "chapter_leader") {
-    return shells.filter((campaign) => campaign.status !== "template");
+    return shells.filter(
+      (campaign) =>
+        campaign.status !== "template" || leaderVisibleStarterShellSlugs.has(campaign.slug),
+    );
   }
 
   return shells;
