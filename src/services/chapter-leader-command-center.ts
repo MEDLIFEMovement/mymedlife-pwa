@@ -11,9 +11,11 @@ import {
   type ChapterJoinRequest,
   type ChapterMemberRow,
 } from "@/services/chapter-membership-workspace";
+import { getLeaderActionsFocus } from "@/services/leader-actions-focus";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import { getVisibleAssignmentsForActor } from "@/services/role-visibility";
 import type { ProofLibraryItem } from "@/shared/types/campaigns";
 import type { LeaderboardRow } from "@/shared/types/rush-month-dashboard";
 
@@ -214,8 +216,9 @@ export function getChapterLeaderCommandCenter(
   }
 
   const selectedView = parseChapterLeaderCommandCenterView(options.view);
+  const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
+  const leaderActionsFocus = getLeaderActionsFocus(actor, data, visibleAssignments);
   const memberRoleFocus = getChapterMemberRoleFocus(actor, workspace);
-  const weeklyPriority = getWeeklyPriority(actor, workspace);
   const recognition = getMemberRecognitionSummary(actor, data);
   const leadershipRoles = getLeadershipRoles(workspace.members);
   const selectedMemberId = getSelectedMemberId(workspace.members, options.memberId);
@@ -282,10 +285,16 @@ export function getChapterLeaderCommandCenter(
       workspace,
     }),
     quickActions,
-    weeklyPriority: {
-      ...weeklyPriority,
-      summary: `${weeklyPriority.summary} ${memberRoleFocus.summary}`,
-    },
+    weeklyPriority: leaderActionsFocus.canReadFocus
+      ? {
+          title: getWeeklyPriorityTitle(actor),
+          summary: `${leaderActionsFocus.summary} ${memberRoleFocus.summary}`,
+          primaryHref: leaderActionsFocus.primaryHref,
+          primaryLabel: leaderActionsFocus.primaryLabel,
+          secondaryHref: memberRoleFocus.primaryHref,
+          secondaryLabel: memberRoleFocus.primaryLabel,
+        }
+      : null,
     leadershipRoles,
     riskAlerts,
     pipelineItems: getPipelineItems(workspace.joinRequests, workspace.members),
@@ -297,7 +306,7 @@ export function getChapterLeaderCommandCenter(
     feedInsights,
     successionCandidates,
     leaderboard: recognition.leaderboard,
-    safetyNote: [getLeaderSafetyNote(actor), memberRoleFocus.safetyNote]
+    safetyNote: [leaderActionsFocus.safetyNote, memberRoleFocus.safetyNote]
       .filter(Boolean)
       .join(" "),
   };
@@ -382,49 +391,16 @@ function getViewOptions(memberId: string | null): ChapterLeaderCommandCenterView
   }));
 }
 
-function getWeeklyPriority(actor: LocalActorContext, workspace: ReturnType<typeof getChapterMembershipWorkspace>) {
+function getWeeklyPriorityTitle(actor: LocalActorContext) {
   if (actor.chapterRoles.includes("President / VP")) {
-    return {
-      title: "Close proof and role gaps before the next campus push.",
-      summary: `The chapter has ${workspace.counts.proofFollowUps} proof follow-up item${workspace.counts.proofFollowUps === 1 ? "" : "s"} and ${workspace.counts.pendingRequests} join request${workspace.counts.pendingRequests === 1 ? "" : "s"} visible right now, so the President / VP view should clear role and review ambiguity before more work is added.`,
-      primaryHref: "/rush-month/review",
-      primaryLabel: "Review proof decisions",
-      secondaryHref: "/chapter/members",
-      secondaryLabel: "Check role coverage",
-    };
+    return "Close proof and role gaps before the next campus push.";
   }
 
   if (actor.chapterRoles.includes("E-Board Member")) {
-    return {
-      title: "Move owners and event prep before students feel the stall.",
-      summary: `This week has ${workspace.counts.openAssignments} open assignment${workspace.counts.openAssignments === 1 ? "" : "s"} and ${workspace.counts.proofFollowUps} proof follow-up item${workspace.counts.proofFollowUps === 1 ? "" : "s"} visible, so E-Board should move owners and event handoffs before momentum softens.`,
-      primaryHref: "/rush-month/actions",
-      primaryLabel: "Open owner follow-up",
-      secondaryHref: "/rush-month/events",
-      secondaryLabel: "Check events",
-    };
+    return "Move owners and event prep before students feel the stall.";
   }
 
-  return {
-    title: "Keep every owner, lane, and proof follow-up legible this week.",
-    summary: `Visible leaders are balancing ${workspace.counts.openAssignments} open assignment${workspace.counts.openAssignments === 1 ? "" : "s"}, ${workspace.counts.pendingRequests} join request${workspace.counts.pendingRequests === 1 ? "" : "s"}, and the next event/proof loop.`,
-    primaryHref: "/rush-month/review",
-    primaryLabel: "Open follow-up",
-    secondaryHref: "/chapter/members",
-    secondaryLabel: "Review roster",
-  };
-}
-
-function getLeaderSafetyNote(actor: LocalActorContext) {
-  if (actor.chapterRoles.includes("President / VP")) {
-    return "President / VP review remains read-only. Membership approvals, proof decisions, assignment saves, reminders, and role changes remain disabled.";
-  }
-
-  if (actor.chapterRoles.includes("E-Board Member")) {
-    return "E-Board execution remains read-only. Assignment saves, reminders, Luma writes, proof uploads, and external automation remain disabled.";
-  }
-
-  return "Leader routing is still mock-safe. Membership writes, event writes, proof uploads, reminders, and external automation remain disabled.";
+  return "Keep every owner, lane, and proof follow-up legible this week.";
 }
 
 function getMetrics(input: {

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { AppShell } from "@/components/app-shell";
 import { AssignmentCreateResultStatesPanel } from "@/components/assignment-create-result-states-panel";
 import { AssignmentCard } from "@/components/assignment-card";
@@ -22,6 +24,7 @@ import {
   createChapterAssignmentMock,
   type ChapterAssignmentInput,
 } from "@/services/local-action-contracts";
+import { getLeaderActionsFocus } from "@/services/leader-actions-focus";
 import { getLeaderFollowUpBoard } from "@/services/leader-follow-up-board";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -59,6 +62,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
     searchParams ?? Promise.resolve(emptySearchParams),
   ]);
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
+  const leaderActionsFocus = getLeaderActionsFocus(actor, data, visibleAssignments);
   const followUpBoard = getLeaderFollowUpBoard(actor, data);
   const canCreateAssignment = canCreateChapterAssignment(actor);
   const shouldShowAssignmentCreateGate =
@@ -112,6 +116,52 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
         </p>
       </section>
 
+      {leaderActionsFocus.canReadFocus ? (
+        <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+            {leaderActionsFocus.roleLabel}
+          </p>
+          <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div>
+              <h2 className="text-2xl font-semibold text-white">
+                {leaderActionsFocus.title}
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/68">
+                {leaderActionsFocus.summary}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={leaderActionsFocus.primaryHref}
+                className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#06211d]"
+              >
+                {leaderActionsFocus.primaryLabel}
+              </Link>
+              <Link
+                href={leaderActionsFocus.secondaryHref}
+                className="rounded-full border border-white/14 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+              >
+                {leaderActionsFocus.secondaryLabel}
+              </Link>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {leaderActionsFocus.items.map((item) => (
+              <div key={item.label} className="rounded-2xl bg-black/20 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
+                  {item.label}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-white">{item.value}</p>
+                <p className="mt-2 text-sm leading-6 text-white/58">{item.note}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 rounded-2xl border border-white/10 bg-black/18 p-3 text-sm leading-6 text-white/62">
+            {leaderActionsFocus.safetyNote}
+          </p>
+        </section>
+      ) : null}
+
       <LeaderFollowUpBoardPanel board={followUpBoard} />
 
       {canCreateAssignment ? (
@@ -121,12 +171,14 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
               Leader assignment path
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
-              Create the next student action, but keep saving locked.
+              {leaderActionsFocus.canReadFocus
+                ? leaderActionsFocus.assignmentCreateTitle
+                : "Create the next student action, but keep saving locked."}
             </h2>
             <p className="mt-2 text-sm leading-6 text-white/66">
-              This is the first leader-side write path the MVP needs:
-              create one clear assignment, tell the owner what proof to collect,
-              and record the event/outbox/audit trail when writes are approved.
+              {leaderActionsFocus.canReadFocus
+                ? leaderActionsFocus.assignmentCreateSummary
+                : "This is the first leader-side write path the MVP needs: create one clear assignment, tell the owner what proof to collect, and record the event/outbox/audit trail when writes are approved."}
             </p>
 
             {assignmentCreatePreview.success ? (

@@ -38,6 +38,24 @@ export type DashboardNextStep = {
   ctaLabel: string;
 };
 
+export type DashboardRoleFocusItem = {
+  label: string;
+  value: string;
+  note: string;
+};
+
+export type DashboardRoleFocus = {
+  roleLabel: string;
+  title: string;
+  summary: string;
+  primaryHref: string;
+  primaryLabel: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+  safetyNote: string;
+  items: DashboardRoleFocusItem[];
+};
+
 export type RushMonthDashboard = {
   audience: DashboardAudience;
   eyebrow: string;
@@ -45,6 +63,7 @@ export type RushMonthDashboard = {
   summary: string;
   canReadChapterTruth: boolean;
   nextStep: DashboardNextStep;
+  roleFocus: DashboardRoleFocus | null;
   metrics: DashboardMetric[];
   visibleAssignments: Assignment[];
   eventPlans: ChapterEventPlan[];

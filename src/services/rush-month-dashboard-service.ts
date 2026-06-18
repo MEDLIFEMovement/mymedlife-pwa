@@ -15,6 +15,7 @@ import type { Assignment } from "@/shared/types/domain";
 import type {
   DashboardMetric,
   DashboardNextStep,
+  DashboardRoleFocus,
   LeaderboardRow,
   RushMonthDashboard,
 } from "@/shared/types/rush-month-dashboard";
@@ -41,6 +42,7 @@ export function getRushMonthDashboardForActor(
     summary: getDashboardSummary(actor),
     canReadChapterTruth: canReadTruth,
     nextStep: getDashboardNextStep(actor, visibleAssignments),
+    roleFocus: getDashboardRoleFocus(actor, visibleAssignments, data),
     metrics: getDashboardMetrics(actor, visibleAssignments, data, leaderboard, eventPlans.length),
     visibleAssignments,
     eventPlans,
@@ -102,7 +104,11 @@ function getDashboardTitle(actor: LocalActorContext): string {
     case "chapter_member":
       return "Know what to do next and how you are being recognized.";
     case "chapter_leader":
-      return "Track the week, unblock owners, and keep Rush Month moving.";
+      return hasChapterRole(actor, "President / VP")
+        ? "Approve the right decisions and keep the chapter accountable."
+        : hasChapterRole(actor, "E-Board Member")
+          ? "Move owners, events, and proof follow-up without waiting for staff."
+          : "Track the week, unblock owners, and keep Rush Month moving.";
     case "coach":
       return "See whether this chapter should advance, hold, or get help.";
     case "admin":
@@ -119,7 +125,11 @@ function getDashboardSummary(actor: LocalActorContext): string {
     case "chapter_member":
       return "This student view keeps the week simple: your next action, events to attend, points, leaderboard, and proof prompts.";
     case "chapter_leader":
-      return "This leader view combines assignments, event plans, proof follow-up, member recognition, and KPI signals.";
+      return hasChapterRole(actor, "President / VP")
+        ? "This President / VP view emphasizes approval queues, member-role readiness, chapter KPIs, and the decisions that keep Rush Month safe."
+        : hasChapterRole(actor, "E-Board Member")
+          ? "This E-Board view emphasizes owner follow-up, event execution, proof reminders, and the next action committee moves."
+          : "This leader view combines assignments, event plans, proof follow-up, member recognition, and KPI signals.";
     case "coach":
       return "This coach view focuses on readiness, overdue or stuck work, proof flow, risk signals, and the decision state.";
     case "admin":
@@ -153,6 +163,26 @@ function getDashboardNextStep(
       };
     }
     case "chapter_leader":
+      if (hasChapterRole(actor, "President / VP")) {
+        return {
+          label: "Review proof and role decisions before the week scales",
+          href: "/rush-month/review",
+          summary:
+            "Check submitted or changes-requested proof, confirm owners are accountable, and use the member workspace before approving wider chapter movement.",
+          ctaLabel: "Open approval queue",
+        };
+      }
+
+      if (hasChapterRole(actor, "E-Board Member")) {
+        return {
+          label: "Move event owners and stuck assignments",
+          href: "/rush-month/actions",
+          summary:
+            "Check which owners are not started or in progress, then use the events and action committee surfaces to keep work moving.",
+          ctaLabel: "Open team actions",
+        };
+      }
+
       return {
         label: "Unblock pending proof and owner follow-up",
         href: "/rush-month/review",
@@ -193,6 +223,114 @@ function getDashboardNextStep(
         ctaLabel: "Open super admin",
       };
   }
+}
+
+function getDashboardRoleFocus(
+  actor: LocalActorContext,
+  assignments: Assignment[],
+  data: ReadOnlyAppData,
+): DashboardRoleFocus | null {
+  if (actor.audience !== "chapter_leader") {
+    return null;
+  }
+
+  const counts = getAssignmentStatusCounts(assignments);
+  const pendingFollowUp = counts.submitted + counts.changesRequested;
+  const activeOwners = counts.inProgress + counts.notStarted;
+
+  if (hasChapterRole(actor, "President / VP")) {
+    return {
+      roleLabel: "President / VP",
+      title: "Approval and chapter-accountability focus",
+      summary:
+        "Use this view to decide what needs approval, which role gaps block progress, and whether the chapter is ready for the next Rush Month push.",
+      primaryHref: "/rush-month/review",
+      primaryLabel: "Review proof decisions",
+      secondaryHref: "/chapter/members",
+      secondaryLabel: "Check role coverage",
+      safetyNote:
+        "This is a read-only approval posture. Membership approvals, proof decisions, assignment saves, and role changes remain disabled.",
+      items: [
+        {
+          label: "Approval queue",
+          value: `${pendingFollowUp}`,
+          note: "Submitted or changes-requested items need a clear decision posture.",
+        },
+        {
+          label: "Chapter KPI",
+          value: data.kpiSummary.coachDecision,
+          note: "Use KPI posture before expanding the next chapter push.",
+        },
+        {
+          label: "Role coverage",
+          value: actor.chapterRoles.join(", "),
+          note: "This fake persona previews President / VP accountability only.",
+        },
+      ],
+    };
+  }
+
+  if (hasChapterRole(actor, "E-Board Member")) {
+    return {
+      roleLabel: "E-Board Member",
+      title: "Execution and owner-follow-up focus",
+      summary:
+        "Use this view to keep owners moving, check event follow-through, and make sure proof reminders are concrete enough for members.",
+      primaryHref: "/rush-month/actions",
+      primaryLabel: "Open owner follow-up",
+      secondaryHref: "/rush-month/events",
+      secondaryLabel: "Check events",
+      safetyNote:
+        "This is a read-only execution posture. Assignment saves, reminders, Luma writes, and proof uploads remain disabled.",
+      items: [
+        {
+          label: "Active owners",
+          value: `${activeOwners}`,
+          note: "Not-started or in-progress actions that need E-Board follow-up.",
+        },
+        {
+          label: "Events linked",
+          value: `${data.kpiSummary.eventsLinked}`,
+          note: "Mock event posture only; no Luma write is triggered.",
+        },
+        {
+          label: "Proof follow-up",
+          value: `${pendingFollowUp}`,
+          note: "Items that need clearer proof, testimonial context, or HQ review.",
+        },
+      ],
+    };
+  }
+
+  return {
+    roleLabel: "Chapter Leader",
+    title: "Leader operating focus",
+    summary:
+      "Use this view to balance owner follow-up, proof posture, and chapter KPI movement.",
+    primaryHref: "/rush-month/review",
+    primaryLabel: "Open follow-up",
+    secondaryHref: "/rush-month/actions",
+    secondaryLabel: "Open actions",
+    safetyNote:
+      "This is read-only leader guidance. Browser writes and external sends remain disabled.",
+    items: [
+      {
+        label: "Needs follow-up",
+        value: `${pendingFollowUp}`,
+        note: "Visible proof/action items waiting for a clearer decision.",
+      },
+      {
+        label: "Active owners",
+        value: `${activeOwners}`,
+        note: "Visible owners still moving work forward.",
+      },
+      {
+        label: "Events linked",
+        value: `${data.kpiSummary.eventsLinked}`,
+        note: "Mock Luma posture only.",
+      },
+    ],
+  };
 }
 
 function getDashboardMetrics(
@@ -280,6 +418,22 @@ function getDashboardAlerts(
         "Submit a testimonial or bridge video only when you can explain what happened and why it mattered.",
       ];
     case "chapter_leader":
+      if (hasChapterRole(actor, "President / VP")) {
+        return [
+          `${counts.submitted + counts.changesRequested} proof/action item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} need a decision posture before the chapter scales.`,
+          "Use the member workspace to inspect role coverage before approving new work.",
+        ];
+      }
+
+      if (hasChapterRole(actor, "E-Board Member")) {
+        const activeOwnerCount = counts.inProgress + counts.notStarted;
+
+        return [
+          `${activeOwnerCount} owner${activeOwnerCount === 1 ? "" : "s"} ${activeOwnerCount === 1 ? "needs" : "need"} execution follow-up.`,
+          "Keep action committees focused on events and student action, not passive meetings.",
+        ];
+      }
+
       return [
         `${counts.submitted + counts.changesRequested} visible proof/action item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} need follow-up.`,
         "Keep action committees focused on events and student action, not passive meetings.",
@@ -300,4 +454,8 @@ function getDashboardAlerts(
         "External automations remain disabled until explicitly approved.",
       ];
   }
+}
+
+function hasChapterRole(actor: LocalActorContext, role: string): boolean {
+  return actor.chapterRoles.includes(role);
 }
