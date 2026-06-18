@@ -5,6 +5,7 @@ import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
+import { RushMonthOperatingPathPanel } from "@/components/rush-month-operating-path-panel";
 import { RoleNextActionPanel } from "@/components/role-next-action-panel";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -13,6 +14,7 @@ import {
   getProofLibraryItemsForCampaign,
 } from "@/services/campaign-ops-service";
 import { getCampaignCloseoutReadiness } from "@/services/campaign-closeout-readiness";
+import { getRushMonthOperatingPathView } from "@/services/rush-month-operating-path";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
@@ -35,6 +37,7 @@ export default async function RushMonthPage() {
   const rushEventPlans = getEventPlansForCampaign("rush-month");
   const rushProofItems = getProofLibraryItemsForCampaign("rush-month");
   const nextActionBrief = getRoleNextActionBrief(actor, data);
+  const operatingPath = getRushMonthOperatingPathView(actor, data);
   const closeout = getCampaignCloseoutReadiness(actor, data);
 
   return (
@@ -59,6 +62,9 @@ export default async function RushMonthPage() {
             <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
               {data.campaign.objective}
             </p>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.22em] text-white/42">
+              {data.campaign.weekLabel}
+            </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link
                 href="/rush-month/dashboard"
@@ -79,13 +85,29 @@ export default async function RushMonthPage() {
                 Review event/NPS readiness
               </Link>
               <Link
-                href="/rush-month/review"
+                href="/rush-month/loop"
                 className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white"
               >
-                Open role-aware follow-up
+                Run local MVP loop
               </Link>
             </div>
           </section>
+
+          <RushMonthOperatingPathPanel
+            view={operatingPath}
+            primaryAction={{
+              href: nextActionBrief.primaryHref,
+              label: nextActionBrief.primaryLabel,
+            }}
+            secondaryAction={
+              nextActionBrief.secondaryHref && nextActionBrief.secondaryLabel
+                ? {
+                    href: nextActionBrief.secondaryHref,
+                    label: nextActionBrief.secondaryLabel,
+                  }
+                : undefined
+            }
+          />
 
           <section className="grid gap-3 sm:grid-cols-3">
             <MetricCard
@@ -169,25 +191,6 @@ export default async function RushMonthPage() {
             </article>
           </section>
 
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-            <h2 className="text-2xl font-semibold text-white">This week operating path</h2>
-            <ol className="mt-4 grid gap-3">
-              {[
-                "Leader opens Rush Month and assigns the first outreach owners.",
-                "Members run the invite push and submit action updates or testimonial/proof notes.",
-                "Leaders track completion while HQ decides what testimonial/proof should be shared later.",
-                "Points and KPI summaries update from approved action events.",
-                "Coach reads advance / hold / intervene before the next push.",
-              ].map((step, index) => (
-                <li key={step} className="flex gap-3 rounded-2xl bg-black/20 p-3 text-sm text-white/72">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-300/15 font-semibold text-emerald-100">
-                    {index + 1}
-                  </span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </section>
         </>
       )}
 
