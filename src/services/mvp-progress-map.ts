@@ -89,6 +89,14 @@ export function getMvpProgressMap(actor: LocalActorContext): MvpProgressMap {
     counts: countStatuses(subprojects),
     subprojects,
     nextBestSteps: [
+      "Use `/login` to review fake local seed-user sign-in and confirm production auth remains blocked.",
+      "Use `/onboarding` as Admin, DS Admin, or Super Admin to review the Goal 157 production auth preflight before inviting real users.",
+      "Use `/admin/review-path` to run the no-code stakeholder walkthrough with the right fake local actors.",
+      "Use `/admin/nick-review` for the Goal 151 final local MVP review packet before any pilot, live launch, write, upload, external send, or invitation decision.",
+      "Use `/admin/release-readiness` to confirm local review readiness, live-launch blockers, and next approvals before deeper launch review.",
+      "Use the `/admin/launch-gate` production launch gate to assign owners for the missing live evidence before approving a pilot.",
+      "Use the `/admin/database-security` database security decision route to resolve the DS Supabase versus PlanetScale/MySQL concern before production setup.",
+      "Use the `/admin` production operations runbook to confirm incident, rollback, backup, integration recovery, and day-one support owners.",
       "Run a stakeholder review of the local Rush Month loop and role-specific routes.",
       "Approve the production auth and onboarding boundary before real users are invited.",
       "Use `/admin/write-sequence` to choose and prove each production write path in order.",
@@ -106,13 +114,13 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Product",
       status: "local_review_ready",
       risk: "low",
-      routeEvidence: ["/", "/chapter", "/rush-month", "/campaigns"],
+      routeEvidence: ["/", "/offline", "/chapter", "/rush-month", "/campaigns"],
       plainEnglish:
-        "The custom PWA exists, runs locally, and has the core mobile-first routes a reviewer can click through.",
+        "The custom PWA exists, runs locally, has the core mobile-first routes a reviewer can click through, includes the member chapter home and Rush Month overview, and now has a conservative offline recovery shell.",
       technicalEvidence:
-        "Next.js app routes, shared layout, route metadata, PWA manifest, and route registry are in place.",
+        "Next.js app routes, shared layout, chapter home route, Rush Month overview route coverage, route metadata, PWA manifest, offline route, service-worker registration, and route registry are in place.",
       remainingWork:
-        "Final Figma polish, production deploy settings, and accessibility QA are still needed before launch.",
+        "Final Figma polish, production deploy settings, real-device PWA install/offline QA, and accessibility QA are still needed before launch.",
       nextReviewStep: "Review the main routes on a phone-sized viewport.",
       totalWeight: 8,
       localReviewWeight: 8,
@@ -124,11 +132,24 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Product and Permissions",
       status: "local_review_ready",
       risk: "medium",
-      routeEvidence: ["/chapter", "/chapter/members", "/rush-month/actions", "/coach", "/admin"],
+      routeEvidence: [
+        "/login",
+        "/profile",
+        "/onboarding",
+        "/chapter",
+        "/chapter/members",
+        "/rush-month",
+        "/rush-month/actions",
+        "/rush-month/actions/[assignmentId]",
+        "/rush-month/events",
+        "/rush-month/leaderboard",
+        "/coach",
+        "/admin",
+      ],
       plainEnglish:
-        "Fake member, leader, coach, admin, DS admin, and super admin users see different local information.",
+        "Fake member, leader, coach, admin, DS admin, and super admin users see different local information, local sign-in can be reviewed without production auth, each role has a read-only chapter home, Rush Month overview, and profile/scope route, auth/onboarding can be reviewed without writes, staff can inspect the Goal 157 production auth preflight, and members now have assigned-actions, action-detail, event-list, points, and leaderboard routes.",
       technicalEvidence:
-        "Local actor context, role visibility services, route restrictions, and role-aware panels are tested.",
+        "Local actor context, local sign-in route coverage, chapter home route coverage, Rush Month overview review coverage, profile workspace, auth onboarding workspace, Goal 157 production auth preflight, role visibility services, route restrictions, member assigned-actions review coverage, member action detail review coverage, member event-list review coverage, member leaderboard workspace, and role-aware panels are tested.",
       remainingWork:
         "Replace local actor switching with production Supabase Auth sessions and database-backed membership truth.",
       nextReviewStep: "Switch fake local actors and verify each role sees only the right surfaces.",
@@ -142,14 +163,15 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Data and Security",
       status: "local_review_ready",
       risk: "high",
-      routeEvidence: ["/admin"],
+      routeEvidence: ["/admin", "/admin/database-security"],
       plainEnglish:
-        "The local database model and security tests exist for the first chapter, role, event, proof, and outbox boundaries.",
+        "The local database model, security tests, and focused database security decision route exist for the first chapter, role, event, proof, and outbox boundaries.",
       technicalEvidence:
-        "Local Supabase migrations, seed data, RPC functions, and RLS/security tests run in GitHub CI.",
+        "Local Supabase migrations, seed data, RPC functions, RLS/security tests, and the focused Supabase versus PlanetScale decision route are ready for DS/security review.",
       remainingWork:
-        "Production project setup, environment secrets, migration rollout, backup posture, and final RLS review remain.",
-      nextReviewStep: "Have Kiomi review schema/RLS expectations before live Supabase setup.",
+        "Production project setup, environment secrets, migration rollout, backup posture, DS database decision sign-off, and final RLS review remain.",
+      nextReviewStep:
+        "Have Kiomi and DS/security review `/admin/database-security` and the schema/RLS expectations before live Supabase setup.",
       totalWeight: 12,
       localReviewWeight: 12,
       liveMvpWeight: 8,
@@ -160,11 +182,20 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Chapter Operations",
       status: "local_review_ready",
       risk: "medium",
-      routeEvidence: ["/rush-month/loop", "/rush-month/events", "/rush-month/dashboard"],
+      routeEvidence: [
+        "/rush-month",
+        "/rush-month/loop",
+        "/rush-month/actions",
+        "/rush-month/events",
+        "/rush-month/events/[eventId]",
+        "/rush-month/actions/[assignmentId]",
+        "/rush-month/dashboard",
+        "/rush-month/leaderboard",
+      ],
       plainEnglish:
-        "A reviewer can see the Rush Month path from leader assignment through member action, events/NPS, proof, points/KPIs, HQ sharing posture, and coach decision.",
+        "A reviewer can see the Rush Month path from the campaign front door through assigned actions, leader assignment, one member action detail, member events/NPS, event detail, proof, points/KPIs, HQ sharing posture, and coach decision.",
       technicalEvidence:
-        "Browser-local loop state, event/NPS readiness, event/outbox/audit display, dashboard summaries, and service tests cover the operating sequence.",
+        "Browser-local loop state, Rush Month overview review coverage, member assigned-actions review coverage, member event-list review coverage, event/NPS readiness, direct event detail, action-detail review coverage, event/outbox/audit display, dashboard summaries, member leaderboard route, and service tests cover the operating sequence.",
       remainingWork:
         "Connect the loop to live Supabase reads/writes, real users, and production-safe review states.",
       nextReviewStep: "Click through `/rush-month/loop` and compare it to the intended chapter operating process.",
@@ -185,19 +216,20 @@ function getSubprojects(): MvpSubprojectProgress[] {
         "/admin/hq-proof-write",
         "/admin/assignment-write",
         "/admin/coach-write",
+        "/chapter/members",
         "/rush-month/actions",
         "/rush-month/actions/[assignmentId]",
         "/rush-month/review",
         "/coach",
       ],
       plainEnglish:
-        "The first local-only write paths now exist, and staff packets explain exactly when action-start, proof metadata, HQ proof decisions, leader assignment creation, and coach decisions can be tested on localhost.",
+        "The first local-only write paths now exist, and staff packets explain exactly when action-start, proof metadata, the leader proof decision server action, HQ proof decisions, leader assignment creation, Goal 154 coach intervention checklists, coach support notes, coach decisions, and Goal 162 membership approval readiness can be tested or reviewed on localhost.",
       technicalEvidence:
-        "Server actions, result states, browser gates, first-write drill coverage, write-sequence planning, proof metadata packet coverage, HQ decision packet coverage, leader assignment packet coverage, and coach decision packet coverage exist for the first local write sequence.",
+        "Server actions, result states, browser gates, first-write drill coverage, write-sequence planning, proof metadata packet coverage, leader proof decision workspace coverage, leader proof decision result-state coverage, Goal 115 leader proof SQL/RLS coverage, Goal 116 leader proof server-action coverage, HQ decision packet coverage, leader assignment packet coverage, Goal 154 coach intervention checklist coverage, coach support notes coverage, coach decision packet coverage, and Goal 162 membership approval write readiness coverage exist for the first local write sequence.",
       remainingWork:
-        "Run the localhost action-start drill, review readback/audit proof, then use the proof metadata, HQ decision, assignment, and coach packets to test the next writes safely.",
+        "Run the localhost action-start drill, review readback/audit proof, then use the proof metadata, Goal 115 SQL/RLS packet, Goal 116 leader proof server-action packet, HQ decision, assignment, coach notes, coach packets, and Goal 162 membership approval readiness packet to test or scope the next writes safely.",
       nextReviewStep:
-        "Open `/admin/first-write`, `/admin/write-sequence`, `/admin/proof-write`, `/admin/hq-proof-write`, `/admin/assignment-write`, and `/admin/coach-write` in that order.",
+        "Open `/admin/first-write`, `/admin/write-sequence`, `/admin/proof-write`, `/rush-month/review`, `/admin/hq-proof-write`, `/admin/assignment-write`, `/admin/coach-write`, and `/chapter/members` in that order.",
       totalWeight: 14,
       localReviewWeight: 10,
       liveMvpWeight: 7,
@@ -208,14 +240,25 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Campaign Operations",
       status: "partially_ready",
       risk: "medium",
-      routeEvidence: ["/campaigns", "/campaigns/[campaignSlug]"],
+      routeEvidence: [
+        "/campaigns",
+        "/campaigns/[campaignSlug]",
+        "/campaigns/planning-goal-setting",
+        "/campaigns/chapter-engagement",
+        "/campaigns/slt-promotion",
+        "/campaigns/moving-mountains",
+        "/campaigns/leadership-transition",
+        "/campaigns/grow-the-movement",
+        "/campaigns/start-a-chapter",
+      ],
       plainEnglish:
-        "The app has starter campaign shells beyond Rush Month, but those campaigns are not implemented end to end yet.",
+        "The app has the exact required starter campaign shells beyond Rush Month, a review checkpoint for them, and deeper local plans for all seven required non-Rush campaigns, but those campaigns are still not implemented as production write-enabled workflows.",
       technicalEvidence:
-        "Campaign catalog, route shells, phase language, proof prompts, and coach focus fields are present.",
+        "Campaign catalog, route shells, starter-shell readiness service, and all seven non-Rush phase plans, proof prompts, structured events, KPI signals, and coach focus fields are present.",
       remainingWork:
-        "Add detailed SOP steps, role tasks, KPIs, proof prompts, and closeout rules for each non-Rush campaign.",
-      nextReviewStep: "Review campaign shells against the SOP library and decide which campaign comes after Rush Month.",
+        "Turn the read-only campaign plans into production campaign-template workflows only after auth, RLS, audit, rollback, and integration approval are complete.",
+      nextReviewStep:
+        "Open `/campaigns`, then review all seven non-Rush campaign detail routes as a leader, coach, admin, or super admin.",
       totalWeight: 8,
       localReviewWeight: 5,
       liveMvpWeight: 4,
@@ -226,14 +269,15 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Security and Student Access",
       status: "needs_approval",
       risk: "high",
-      routeEvidence: ["/login", "/admin"],
+      routeEvidence: ["/login", "/profile", "/onboarding", "/admin"],
       plainEnglish:
-        "Local sign-in groundwork exists, but real student login, join requests, membership approvals, and role approvals are not live.",
+        "Local sign-in is now part of the formal review path alongside read-only profile/scope, auth/onboarding readiness, the Goal 157 production auth preflight, the Goal 160 membership approval packet, Goal 161 membership approval result states, and Goal 162 membership approval write readiness, but real student login, join requests, membership approvals, and role approvals are not live.",
       technicalEvidence:
-        "Auth planning, local sign-in helpers, and auth-derived actor context exist without production sessions enabled.",
+        "Auth planning, local sign-in helpers, route smoke coverage, stakeholder review coverage, profile workspace, auth onboarding workspace, production auth preflight coverage, Goal 160 membership approval packet coverage, Goal 161 membership approval result-state coverage, Goal 162 membership approval write readiness coverage, and auth-derived actor context exist without production sessions enabled.",
       remainingWork:
-        "Approve onboarding rules, invite/join flows, staff role assignment boundaries, and production Supabase Auth configuration.",
-      nextReviewStep: "Approve the auth/onboarding plan before inviting real students.",
+        "Approve onboarding rules, invite/join flows, staff role assignment boundaries, production Supabase Auth configuration, and the preflight evidence before real users are invited.",
+      nextReviewStep:
+        "Open `/login`, `/profile`, and `/onboarding` as staff, then approve the auth/onboarding plan before inviting real students.",
       totalWeight: 12,
       localReviewWeight: 4,
       liveMvpWeight: 2,
@@ -244,14 +288,20 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Proof Library and HQ Review",
       status: "partially_ready",
       risk: "high",
-      routeEvidence: ["/proof-library", "/proof-library/upload", "/rush-month/evidence"],
+      routeEvidence: [
+        "/proof-library",
+        "/proof-library/upload",
+        "/rush-month/evidence",
+        "/rush-month/review",
+      ],
       plainEnglish:
-        "The app models testimonial/proof metadata, HQ sharing decisions, and proof upload requirements, but real uploads, storage, and publication are not built yet.",
+        "The app models testimonial/proof metadata, member evidence submission queues, Goal 152 proof prep packets, Goal 158 proof submission packets, Goal 159 proof storage intake packets, Goal 153 leader proof review rubrics, HQ sharing decisions, and proof upload requirements, but real uploads, storage, and publication are not built yet.",
       technicalEvidence:
-        "Proof metadata, storage-readiness planning, upload-readiness UI, HQ decision states, and local proof routes exist.",
+        "Proof metadata, member evidence submission workspace, Goal 152 proof prep checklist, Goal 158 proof submission packet, Goal 159 proof storage intake packet, Goal 153 leader proof review rubric, storage-readiness planning, upload-readiness UI, HQ decision states, and local proof routes exist.",
       remainingWork:
         "Build storage buckets, upload UI, file validation, consent fields, moderation states, and public/private proof rules.",
-      nextReviewStep: "Approve bridge video consent and storage requirements.",
+      nextReviewStep:
+        "Open `/rush-month/evidence`, review the Goal 152 proof prep checklist and Goal 158 proof submission packet, open `/proof-library/upload` for the Goal 159 proof storage intake packet, open `/rush-month/review` for the Goal 153 leader proof review rubric, then approve bridge video consent and storage requirements.",
       totalWeight: 8,
       localReviewWeight: 3,
       liveMvpWeight: 0,
@@ -262,14 +312,20 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "HQ Operations",
       status: "partially_ready",
       risk: "high",
-      routeEvidence: ["/admin", "/chapter/members"],
+      routeEvidence: [
+        "/admin",
+        "/admin/audit-log",
+        "/admin/master-data",
+        "/chapter/members",
+      ],
       plainEnglish:
-        "Admin and leaders can inspect roster, join request, role coverage, and disabled membership controls, but cannot yet safely create or change real users, memberships, roles, chapters, or campaign templates.",
+        "Admin and leaders can inspect roster, join request, Goal 160 membership approval packets, Goal 161 membership result states, Goal 162 membership approval write readiness, focused master data inventory, focused audit log readback, Goal 156 write-audit preflight, role coverage, disabled membership controls, and audit-readback posture, but cannot yet safely create or change real users, memberships, roles, chapters, or campaign templates.",
       technicalEvidence:
-        "Read-only admin control center, glossary, and chapter membership workspace exist; mutation controls are intentionally absent.",
+        "Read-only admin control center, admin master data workspace, focused audit log route, audit log review, Goal 156 write-audit preflight checklist, glossary, chapter membership workspace, Goal 160 membership approval packet, Goal 161 membership approval result states, and Goal 162 membership approval write readiness exist; mutation controls are intentionally absent.",
       remainingWork:
         "Build guarded admin mutations after auth/RLS review, audit logging, and approval workflows are finalized.",
-      nextReviewStep: "Decide which admin operation is needed first for the pilot.",
+      nextReviewStep:
+        "Review `/chapter/members` for the Goal 160 membership approval packet, Goal 161 result states, and Goal 162 write readiness, then decide which admin operation is needed first for the pilot.",
       totalWeight: 4,
       localReviewWeight: 2,
       liveMvpWeight: 1,
@@ -280,14 +336,25 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Launch",
       status: "future_build",
       risk: "medium",
-      routeEvidence: ["/admin"],
+      routeEvidence: [
+        "/admin",
+        "/admin/review-path",
+        "/admin/nick-review",
+        "/admin/release-readiness",
+        "/admin/launch-gate",
+        "/admin/database-security",
+        "/admin/design-qa",
+        "/admin/system-health",
+        "/admin/operations",
+      ],
       plainEnglish:
-        "The app builds locally and in CI, but production deployment, final mobile QA, and close Figma matching still need a launch pass.",
+        "The app builds locally and in CI, and admins can inspect focused stakeholder review path, Goal 151 Nick final review, release readiness, launch gate with Goal 150 launch evidence checklist, system health, design QA, route smoke with mobile-review metadata, and operations routes plus the PWA offline shell, but production deployment, final mobile QA, monitoring, backup, and close Figma matching still need a launch pass.",
       technicalEvidence:
-        "Lint, typecheck, tests, build, and CI are active; production environment wiring is not complete.",
+        "Lint, typecheck, tests, build, CI, route smoke coverage with Goal 147 mobile-review metadata, PWA offline support, design QA readiness, focused stakeholder review path, focused Goal 151 Nick final review route, focused release readiness route, focused launch gate route, Goal 150 launch evidence checklist, focused design QA route, focused system health route, focused operations route, system health review, and production operations runbook are active; production environment wiring is not complete.",
       remainingWork:
-        "Set up Vercel/hosting, production environment variables, visual QA, accessibility QA, and smoke-test scripts.",
-      nextReviewStep: "Run a Figma-to-app visual review after the data/auth boundary is approved.",
+        "Set up Vercel/hosting, production environment variables, monitoring, backups, alert channels, visual QA, accessibility QA, real-device PWA QA, smoke-test scripts, and collect the Goal 150 staging/pilot evidence packet.",
+      nextReviewStep:
+        "Review `/admin/review-path`, `/admin/nick-review`, `/admin/release-readiness`, `/admin/launch-gate`, `/admin/design-qa`, `/admin/system-health`, and `/admin/operations`, then collect the Goal 150 launch evidence packet before pilot approval.",
       totalWeight: 6,
       localReviewWeight: 0,
       liveMvpWeight: 0,
@@ -298,14 +365,26 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Product Design and Launch",
       status: "partially_ready",
       risk: "medium",
-      routeEvidence: ["/admin", "/rush-month", "/proof-library/upload"],
+      routeEvidence: [
+        "/admin",
+        "/admin/design-qa",
+        "/admin/nick-review",
+        "/rush-month",
+        "/rush-month/actions",
+        "/rush-month/evidence",
+        "/rush-month/dashboard",
+        "/coach",
+        "/offline",
+        "/proof-library/upload",
+      ],
       plainEnglish:
-        "The app now has an admin-visible checklist for Figma comparison, mobile next-action clarity, accessibility, role complexity, and pilot-safe messaging.",
+        "The app now has an admin-visible focused route for Figma comparison, mobile next-action clarity, phone-sized route smoke checks, accessibility smoke checks, device/PWA smoke checks, role complexity, and pilot-safe messaging, and the admin smoke manifest now carries the same mobile-review metadata.",
       technicalEvidence:
-        "Design QA readiness service and admin panel track review prompts, evidence routes, zero expected writes, and launch blockers.",
+        "Design QA readiness service, admin panel, focused design QA route, and route smoke manifest track review prompts, evidence routes, eight mobile visual smoke checks, seven accessibility smoke checks, seven device/PWA smoke checks, reviewer actor emails, zero expected writes, and launch blockers.",
       remainingWork:
-        "Complete side-by-side Figma review, real phone QA, keyboard/screen-reader checks, and staging visual smoke tests.",
-      nextReviewStep: "Open `/admin` as admin and review the Figma and mobile QA panel.",
+        "Complete side-by-side Figma review, the Goal 147 mobile route smoke bridge, the Goal 148 accessibility smoke plan, the Goal 149 device/PWA smoke matrix, real phone QA, keyboard/screen-reader checks, and staging visual smoke tests.",
+      nextReviewStep:
+        "Open `/admin/design-qa` as admin and review the Goal 149 device/PWA smoke matrix before Nick signs off on pilot scope.",
       totalWeight: 6,
       localReviewWeight: 3,
       liveMvpWeight: 1,
@@ -318,20 +397,22 @@ function getSubprojects(): MvpSubprojectProgress[] {
       risk: "high",
       routeEvidence: [
         "/admin",
+        "/admin/operations",
         "/admin/first-write",
         "/admin/staff-dry-run",
         "/admin/pilot-scope",
         "/rush-month/loop",
         "/rush-month/events",
+        "/rush-month/events/[eventId]",
       ],
       plainEnglish:
-        "The app can support a staff dry run now and now has a first-pilot scope planner, but a real student pilot still needs a named group, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership decisions.",
+        "The app can support a staff dry run now and now has a first-pilot scope planner, production operations runbook, direct event detail, leader proof decision workspace, local leader proof server action, leader proof decision result states, Goal 154 coach intervention checklists, coach support notes, and launch evidence checklist, but a real student pilot still needs a named group, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership decisions.",
       technicalEvidence:
-        "Controlled pilot readiness service, staff dry-run guide, pilot scope planner, and admin panels separate local review, staff dry run, staging, first student pilot, and later expansion gates.",
+        "Controlled pilot readiness service, staff dry-run guide, pilot scope planner, focused operations route, production operations runbook, Rush Month event detail workspace, leader proof decision workspace, Goal 116 local leader proof server action, leader proof decision result states, Goal 154 coach intervention checklists, coach support notes, Goal 150 launch evidence checklist, and admin panels separate local review, staff dry run, staging, first student pilot, and later expansion gates.",
       remainingWork:
-        "Pick the first pilot group, set up staging, approve production auth/onboarding, choose first write path, approve proof consent/storage, and name coach/support ownership.",
+        "Pick the first pilot group, set up staging, collect the Goal 150 launch evidence checklist, approve production auth/onboarding, choose first write path, approve proof consent/storage, and name incident, coach, and support ownership.",
       nextReviewStep:
-        "Open `/admin/pilot-scope` and choose the smallest safe pilot before inviting any students.",
+        "Open `/admin/launch-gate`, then `/admin/operations` and `/admin/pilot-scope`, and collect launch evidence before inviting any students.",
       totalWeight: 8,
       localReviewWeight: 4,
       liveMvpWeight: 2,
@@ -342,11 +423,11 @@ function getSubprojects(): MvpSubprojectProgress[] {
       ownerLane: "Data Solutions",
       status: "needs_approval",
       risk: "high",
-      routeEvidence: ["/admin"],
+      routeEvidence: ["/admin", "/admin/integration-outbox"],
       plainEnglish:
-        "Integration events, outbox rows, and audit logs are ready for later automation, but no real external systems are being written to.",
+        "Integration events, outbox rows, audit posture, Goal 155 live-send preflight, and a focused integration outbox route are ready for later automation review, but no real external systems are being written to.",
       technicalEvidence:
-        "IntegrationEvent, AutomationOutbox, AuditLog, environment safety summaries, and disabled outbox displays are in place.",
+        "IntegrationEvent, AutomationOutbox, AuditLog, admin integration outbox workspace, Goal 155 live-send preflight checklist, environment safety summaries, and disabled outbox displays are in place.",
       remainingWork:
         "Approve contracts and workflows for n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, and AI after the app loop is stable.",
       nextReviewStep: "Keep external writes disabled until the first production app loop is approved.",

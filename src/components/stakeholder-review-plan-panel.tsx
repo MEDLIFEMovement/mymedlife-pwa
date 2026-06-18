@@ -31,6 +31,18 @@ export function StakeholderReviewPlanPanel({
         </div>
       </div>
 
+      <div className="mt-5 grid gap-3 lg:grid-cols-3">
+        {plan.phases.map((phase) => (
+          <article key={phase.id} className="rounded-2xl bg-black/20 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-100/70">
+              Steps {phase.stepRange} · {phase.stepCount} checks
+            </p>
+            <h3 className="mt-2 text-base font-semibold text-white">{phase.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-white/62">{phase.summary}</p>
+          </article>
+        ))}
+      </div>
+
       <div className="mt-5 grid gap-3">
         {plan.steps.map((step, index) => (
           <article key={step.id} className="rounded-2xl bg-black/20 p-4">

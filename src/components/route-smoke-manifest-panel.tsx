@@ -24,9 +24,13 @@ export function RouteSmokeManifestPanel({ manifest }: RouteSmokeManifestPanelPro
             {manifest.summary}
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-2 text-center sm:grid-cols-5">
+        <div className="grid grid-cols-3 gap-2 text-center sm:grid-cols-6">
           <MiniStat label="Routes" value={`${manifest.counts.totalRoutes}`} />
           <MiniStat label="Critical" value={`${manifest.counts.criticalRoutes}`} />
+          <MiniStat
+            label="Mobile"
+            value={`${manifest.counts.mobileVisualChecks}`}
+          />
           <MiniStat label="Roles" value={`${manifest.counts.roleVariants}`} />
           <MiniStat label="Writes" value={`${manifest.counts.browserWritesExpected}`} />
           <MiniStat label="Sends" value={`${manifest.counts.externalWritesExpected}`} />
@@ -51,6 +55,30 @@ export function RouteSmokeManifestPanel({ manifest }: RouteSmokeManifestPanelPro
                 <p className="mt-2 text-xs leading-5 text-white/48">
                   Safety: {route.safetyAssertion}
                 </p>
+                {route.mobileReview ? (
+                  <div className="mt-3 rounded-2xl border border-lime-300/20 bg-lime-300/10 p-3">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full border border-lime-300/20 bg-lime-300/10 px-3 py-1 text-xs font-semibold text-lime-100">
+                        Mobile check
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                        {route.mobileReview.viewport}
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                        {route.mobileReview.reviewerActorEmail}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-white/64">
+                      Target: {route.mobileReview.targetSignal}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-white/58">
+                      Pass signal: {route.mobileReview.passSignal}
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-white/48">
+                      Still blocked: {route.mobileReview.blockedUntil}
+                    </p>
+                  </div>
+                ) : null}
               </div>
               <div className="flex max-w-md flex-wrap gap-2">
                 {route.audiences.map((audience) => (

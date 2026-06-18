@@ -1,6 +1,19 @@
 import type { ActorAudience, LocalActorContext } from "@/services/local-actor-context";
+import {
+  getMobileVisualSmokeChecks,
+  type MobileVisualSmokeCheck,
+} from "@/services/design-qa-readiness";
 
 export type RouteSmokePriority = "critical" | "important" | "support";
+
+export type RouteSmokeMobileReview = {
+  designQaKey: string;
+  reviewerActorEmail: string;
+  viewport: string;
+  targetSignal: string;
+  passSignal: string;
+  blockedUntil: string;
+};
 
 export type RouteSmokeItem = {
   path: string;
@@ -9,6 +22,7 @@ export type RouteSmokeItem = {
   audiences: ActorAudience[];
   expectedResult: string;
   safetyAssertion: string;
+  mobileReview?: RouteSmokeMobileReview;
 };
 
 export type RouteSmokeManifest = {
@@ -19,6 +33,7 @@ export type RouteSmokeManifest = {
   counts: {
     totalRoutes: number;
     criticalRoutes: number;
+    mobileVisualChecks: number;
     roleVariants: number;
     browserWritesExpected: 0;
     externalWritesExpected: 0;
@@ -43,21 +58,54 @@ export function getRouteSmokeManifest(
     };
   }
 
-  const routes = routeSmokeItems;
+  const routes = withMobileReviewMetadata(routeSmokeItems);
 
   return {
     canReadManifest: true,
     title: getTitle(actor),
     summary:
-      "Use this manifest for manual browser smoke checks across the core Rush Month MVP routes and local actor roles.",
+      "Use this manifest for manual browser smoke checks across the core Rush Month and SLT Prep MVP routes, local actor roles, and Goal 147 mobile-review metadata.",
     routes,
     counts: {
       totalRoutes: routes.length,
       criticalRoutes: routes.filter((route) => route.priority === "critical").length,
+      mobileVisualChecks: routes.filter((route) => route.mobileReview).length,
       roleVariants: routes.reduce((total, route) => total + route.audiences.length, 0),
       browserWritesExpected: 0,
       externalWritesExpected: 0,
     },
+  };
+}
+
+function withMobileReviewMetadata(routes: RouteSmokeItem[]): RouteSmokeItem[] {
+  const mobileChecksByRoute = new Map(
+    getMobileVisualSmokeChecks().map((check) => [check.route, check]),
+  );
+
+  return routes.map((route) => {
+    const mobileCheck = mobileChecksByRoute.get(route.path);
+
+    if (!mobileCheck) {
+      return route;
+    }
+
+    return {
+      ...route,
+      mobileReview: toRouteSmokeMobileReview(mobileCheck),
+    };
+  });
+}
+
+function toRouteSmokeMobileReview(
+  check: MobileVisualSmokeCheck,
+): RouteSmokeMobileReview {
+  return {
+    designQaKey: check.key,
+    reviewerActorEmail: check.reviewerActorEmail,
+    viewport: check.viewport,
+    targetSignal: check.targetSignal,
+    passSignal: check.passSignal,
+    blockedUntil: check.blockedUntil,
   };
 }
 
@@ -71,13 +119,75 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "No login, browser write, or external send is expected.",
   },
   {
+    path: "/offline",
+    label: "PWA offline recovery",
+    priority: "support",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "ds_admin"],
+    expectedResult:
+      "Shows a mobile recovery shell without private chapter data when the app cannot reach the network.",
+    safetyAssertion:
+      "Offline mode must not submit work, upload proof, update points, nudge members, cache private data, or send external automation.",
+  },
+  {
+    path: "/login",
+    label: "Local sign-in",
+    priority: "critical",
+    audiences: [
+      "chapter_member",
+      "chapter_leader",
+      "coach",
+      "admin",
+      "ds_admin",
+      "super_admin",
+    ],
+    expectedResult:
+      "Shows the fake local seed-user sign-in form, local Supabase Auth session readiness, fake account suggestions, and the disabled production-auth boundary.",
+    safetyAssertion:
+      "Production auth, production users, profile writes, membership writes, browser writes, and external sends remain disabled.",
+  },
+  {
+    path: "/profile",
+    label: "Role profile and scope",
+    priority: "critical",
+    audiences: [
+      "chapter_member",
+      "chapter_leader",
+      "coach",
+      "admin",
+      "ds_admin",
+      "super_admin",
+    ],
+    expectedResult:
+      "Shows the selected local actor, role/chapter or staff scope, next safe action, future profile events, and zero profile, membership, role, or external writes.",
+    safetyAssertion:
+      "Profile saves, join requests, role approvals, membership changes, coach assignments, and external sends remain disabled.",
+  },
+  {
+    path: "/onboarding",
+    label: "Auth onboarding readiness",
+    priority: "critical",
+    audiences: [
+      "chapter_member",
+      "chapter_leader",
+      "coach",
+      "admin",
+      "ds_admin",
+      "super_admin",
+    ],
+    expectedResult:
+      "Shows the future sign-in, profile, join request, membership approval, role assignment, coach assignment, and staff role assignment sequence with owner roles, disabled events, plus the Goal 157 staff production auth preflight for Admin, DS Admin, and Super Admin.",
+    safetyAssertion:
+      "Live auth, production users, profile saves, join requests, membership approvals, role assignments, coach assignments, staff role assignments, browser writes, and external sends remain disabled.",
+  },
+  {
     path: "/chapter",
     label: "Chapter home",
     priority: "critical",
     audiences: ["chapter_member", "chapter_leader", "coach", "ds_admin"],
     expectedResult:
-      "Chapter roles see chapter context; DS Admin sees restricted integration-only messaging.",
-    safetyAssertion: "No chapter membership write or role approval is expected.",
+      "Chapter roles see chapter context, current campaign, visible progress, read-only points, and next links into Rush Month, members and roles, campaigns, committees, and proof library; DS Admin sees restricted integration-only messaging.",
+    safetyAssertion:
+      "Chapter membership writes, role approvals, points writes, campaign writes, proof uploads, and external sends remain disabled.",
   },
   {
     path: "/chapter/members",
@@ -85,9 +195,29 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["chapter_leader", "coach", "admin", "super_admin"],
     expectedResult:
-      "Leaders and staff see roster health, join requests, role coverage, and disabled membership controls.",
+      "Leaders and staff see roster health, join requests, the Goal 160 membership approval packet, Goal 161 membership result states, role coverage, and disabled membership controls.",
     safetyAssertion:
       "Join approvals, role changes, committee moves, and member deactivation remain disabled.",
+  },
+  {
+    path: "/slt-prep",
+    label: "Traveler trip prep home",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "super_admin"],
+    expectedResult:
+      "Reviewers see the Peru SLT countdown, readiness score, alerts, flights, checklist, forms, payments, meetings, extensions, notifications, and profile links for one traveler packet.",
+    safetyAssertion:
+      "Traveler readiness writes, payment updates, flight edits, meeting RSVPs, reminders, CRM writes, and external sends remain disabled.",
+  },
+  {
+    path: "/slt-prep/staff",
+    label: "Staff traveler readiness dashboard",
+    priority: "critical",
+    audiences: ["coach", "admin", "super_admin"],
+    expectedResult:
+      "Coach and staff can filter travelers by risk, change focus views, preview bulk support actions, inspect one traveler summary, and keep all writes blocked.",
+    safetyAssertion:
+      "Bulk traveler follow-up, Luma changes, HubSpot writes, Shopify edits, audit writes, and external sends remain disabled.",
   },
   {
     path: "/rush-month",
@@ -95,8 +225,9 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["chapter_member", "chapter_leader", "coach", "ds_admin"],
     expectedResult:
-      "Allowed roles see campaign posture; leaders/coaches see closeout readiness; DS Admin is restricted.",
-    safetyAssertion: "No phase advance, Luma write, or n8n workflow is expected.",
+      "Allowed roles see the active Rush Month objective, role next action, visible actions, proof pending, coach-read posture, closeout readiness, event/proof sections, operating path, and links to dashboard, actions, and events; DS Admin is restricted.",
+    safetyAssertion:
+      "No campaign phase advance, assignment save, proof save, points/KPI write, Luma write, n8n workflow, or external send is expected.",
   },
   {
     path: "/rush-month/dashboard",
@@ -108,14 +239,34 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "No points write, KPI write, or leaderboard mutation is expected.",
   },
   {
+    path: "/rush-month/leaderboard",
+    label: "Member points and leaderboard",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "super_admin"],
+    expectedResult:
+      "Members see points, rank, recognition, and chapter impact; leaders/coaches/HQ can inspect recognition context.",
+    safetyAssertion:
+      "No points ledger write, KPI write, leaderboard mutation, member nudge, or external send is expected.",
+  },
+  {
     path: "/rush-month/events",
     label: "Event and NPS readiness",
     priority: "critical",
     audiences: ["chapter_member", "chapter_leader", "coach", "admin", "super_admin"],
     expectedResult:
-      "Reviewers see Rush Month event plans, student actions, NPS prompts, proof prompts, disabled Luma syncs, and disabled outbox rows.",
+      "Members see Rush Month event plans, expected student actions, feedback/NPS prompts, proof prompts, proof-intake link, disabled Luma syncs, disabled outbox rows, and the attend-reflect-share bridge; leaders and staff can inspect readiness.",
     safetyAssertion:
-      "No Luma event create/update, attendance import, NPS reminder, warehouse export, or n8n workflow is expected.",
+      "No Luma event create/update, attendance import, NPS reminder, proof upload, public proof share, warehouse export, AI summary, external send, or n8n workflow is expected.",
+  },
+  {
+    path: "/rush-month/events/event-rush-social-001",
+    label: "Event detail readiness",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "super_admin"],
+    expectedResult:
+      "Reviewers can open one Rush Month event and see owner, student action, NPS prompt, proof prompt, readiness checks, and disabled outbox rows.",
+    safetyAssertion:
+      "No Luma write, attendance import, NPS reminder, proof upload, event recap write, warehouse export, or n8n workflow is expected.",
   },
   {
     path: "/rush-month/actions",
@@ -123,8 +274,29 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["chapter_member", "chapter_leader", "ds_admin"],
     expectedResult:
-      "Members see own actions; leaders see follow-up board; DS Admin sees restricted assignment state.",
-    safetyAssertion: "Assignment creation and reminders remain disabled.",
+      "Members see their assigned-action list, due dates, status, proof requirements, points, KPI signals, and links into action detail; leaders see follow-up board; DS Admin sees restricted assignment state.",
+    safetyAssertion:
+      "Assignment creation, action-start saves, proof saves, reminder sends, points/KPI writes, browser writes, and external sends remain disabled unless explicitly approved.",
+  },
+  {
+    path: "/rush-month/actions/member-push",
+    label: "Member action detail",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "super_admin"],
+    expectedResult:
+      "Reviewers can open one assigned action and see owner, status, points, proof handoff, local action-start posture, disabled proof/upload controls, outbox preview, and next action.",
+    safetyAssertion:
+      "Action-start saves, proof metadata saves, file uploads, direct points/KPI writes, reminders, and external sends remain disabled unless localhost-only write flags are explicitly approved.",
+  },
+  {
+    path: "/rush-month/evidence",
+    label: "Evidence submission readiness",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "super_admin"],
+    expectedResult:
+      "Reviewers see the next proof item, submission queue, proof prep checklist, Goal 158 proof submission packet, proof status, future structured records, blocked writes, and disabled upload/public-sharing posture.",
+    safetyAssertion:
+      "Proof metadata saves, file uploads, public publishing, direct points/KPI writes, member reminders, warehouse exports, AI summaries, and external sends remain disabled unless explicitly approved for localhost-only testing.",
   },
   {
     path: "/rush-month/loop",
@@ -150,7 +322,7 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["chapter_member", "chapter_leader", "admin", "super_admin"],
     expectedResult:
-      "Reviewers see file requirements, consent checklist, disabled upload controls, future events, and disabled outbox posture.",
+      "Reviewers see file requirements, consent checklist, the Goal 159 proof storage intake packet, disabled upload controls, future events, and disabled outbox posture.",
     safetyAssertion:
       "No file upload, storage bucket write, public proof URL, external export, or AI summary is expected.",
   },
@@ -160,8 +332,9 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "important",
     audiences: ["chapter_leader", "admin", "super_admin"],
     expectedResult:
-      "Leaders can track proof posture; admin/super admin see disabled HQ decision controls.",
-    safetyAssertion: "HQ decision saves and public sharing remain disabled.",
+      "Leaders can track proof posture, the Goal 153 review rubric, gated local approve/request/reject controls, and leader proof decision result states; admin/super admin see disabled HQ decision controls.",
+    safetyAssertion:
+      "Production leader proof decision saves, result-state saves, HQ decision saves, nudges, direct points writes, and public sharing remain disabled; local leader proof decisions require explicit localhost flags.",
   },
   {
     path: "/coach",
@@ -169,8 +342,9 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["coach", "chapter_leader", "ds_admin"],
     expectedResult:
-      "Coach sees readiness and portfolio; leader does not see portfolio rows; DS Admin is restricted.",
-    safetyAssertion: "Coach decisions, reassignment, and escalation packets remain disabled.",
+      "Coach sees readiness, portfolio, the Goal 154 intervention checklist, support notes, and decision posture; leader does not see portfolio rows; DS Admin is restricted.",
+    safetyAssertion:
+      "Coach note saves, decisions, reassignment, nudges, escalation packets, and external automation remain disabled.",
   },
   {
     path: "/admin",
@@ -180,6 +354,116 @@ const routeSmokeItems: RouteSmokeItem[] = [
     expectedResult:
       "Admin roles see coverage/readiness panels according to role; outbox remains restricted.",
     safetyAssertion: "Admin mutations, production auth, and external writes remain disabled.",
+  },
+  {
+    path: "/admin/review-path",
+    label: "Admin stakeholder review path",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the no-code stakeholder review path, fake local actor emails, route-by-route steps, safety boundaries, zero writes, and zero sends.",
+    safetyAssertion:
+      "Review path must not enable production auth, browser writes, proof uploads, public proof sharing, external sends, or student invitations.",
+  },
+  {
+    path: "/admin/nick-review",
+    label: "Nick final local review",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the final local MVP review packet with owner lanes, pass signals, Goal 150 launch evidence, pilot scope, launch boundaries, local review yes, live launch no, zero writes, zero sends, and zero student invitations.",
+    safetyAssertion:
+      "Nick review must not approve live launch, production auth, browser writes, proof uploads, external sends, or student invitations.",
+  },
+  {
+    path: "/admin/release-readiness",
+    label: "Admin release readiness",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see local review yes, live launch no, ready items, blockers, next approvals, zero writes, and zero sends.",
+    safetyAssertion:
+      "Release readiness review must not approve live launch, production auth, browser writes, proof uploads, external sends, or student invitations.",
+  },
+  {
+    path: "/admin/launch-gate",
+    label: "Admin launch gate",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the eight production launch gates, Goal 150 launch evidence checklist, missing live evidence, review routes, launch no, zero writes, and zero sends.",
+    safetyAssertion:
+      "Launch gate review must not approve live launch, production auth, browser writes, proof uploads, vendor switching, external sends, or student invitations.",
+  },
+  {
+    path: "/admin/audit-log",
+    label: "Admin audit log",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin and Super Admin can inspect audit readback posture and the Goal 156 write-audit preflight checklist; DS Admin sees audit safety without row-level chapter/member audit details.",
+    safetyAssertion:
+      "Audit row edits, audit deletion, audit exports, retention changes, production writes, external sends, and secrets remain disabled.",
+  },
+  {
+    path: "/admin/integration-outbox",
+    label: "Admin integration outbox",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "DS and HQ reviewers see structured integration events, automation outbox rows, the Goal 155 live-send preflight checklist, destination safety, audit posture, and blocked live controls.",
+    safetyAssertion:
+      "Queue mutations, live-send approvals, retries, payload edits, integration secrets, external workers, exports, AI summaries, and external sends remain disabled.",
+  },
+  {
+    path: "/admin/master-data",
+    label: "Admin master data inventory",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "HQ reviewers see fake users, named role coverage, chapter scope, campaign templates, blocked admin writes, and zero mutation controls.",
+    safetyAssertion:
+      "Production user creation, profile edits, role writes, membership approvals, chapter edits, campaign template edits, coach assignment changes, and external sends remain disabled.",
+  },
+  {
+    path: "/admin/database-security",
+    label: "Admin database security",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see Supabase Postgres/Auth/Storage recommended for the MVP, PlanetScale MySQL/Vitess reviewed as a tradeoff, chapter-scoped RLS approvals, service-key handling, proof storage, compliance contracts, launch no, zero writes, and zero sends.",
+    safetyAssertion:
+      "Database security review must not approve live launch, production Supabase, vendor switching, browser writes, proof uploads, service-key exposure, external sends, or PHI/ePHI processing.",
+  },
+  {
+    path: "/admin/system-health",
+    label: "Admin system health",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see route registry, data-source, environment, audit, outbox, auth, proof storage, integration, monitoring, backup, and incident-owner health checks.",
+    safetyAssertion:
+      "Live launch, production auth, production writes, proof uploads, external sends, secrets, monitoring claims, and backup claims remain blocked until proven.",
+  },
+  {
+    path: "/admin/design-qa",
+    label: "Admin design QA",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the Figma target, 390px phone viewport, mobile next-action, role complexity, accessibility, mission tone, offline recovery, eight-route mobile visual smoke plan, and production visual QA checks.",
+    safetyAssertion:
+      "Design review must not enable launch approval, production auth, browser writes, proof uploads, public proof sharing, external sends, or staging claims.",
+  },
+  {
+    path: "/admin/operations",
+    label: "Admin operations runbook",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see incident triage, auth/access recovery, database/RLS recovery, write rollback, proof moderation, integration recovery, mobile PWA support, pilot communications, launch no, zero writes, zero sends, and zero secrets.",
+    safetyAssertion:
+      "Operations review must not approve live launch, production auth, browser writes, proof uploads, outbox sends, monitoring claims, backup claims, support owner claims, or student invitations.",
   },
   {
     path: "/admin/first-write",
@@ -282,6 +566,7 @@ function emptyCounts(): RouteSmokeManifest["counts"] {
   return {
     totalRoutes: 0,
     criticalRoutes: 0,
+    mobileVisualChecks: 0,
     roleVariants: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,

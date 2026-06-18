@@ -24,6 +24,214 @@ describe("mvp release readiness", () => {
     ).toContain("First pilot scope planner");
     expect(
       summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Goal 90-97 role model checkpoint");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Member leaderboard route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Rush Month event detail route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Member Rush Month events review coverage");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Evidence submission readiness route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Proof submission packet");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Proof storage intake packet");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Evidence submission readiness route",
+      )?.plainEnglish,
+    ).toContain("Goal 152 proof prep checklist");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Proof submission packet",
+      )?.plainEnglish,
+    ).toContain("Goal 158");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Proof storage intake packet",
+      )?.plainEnglish,
+    ).toContain("Goal 159");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Read-only profile route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Auth onboarding readiness route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Production auth preflight checklist");
+    expect(
+      summary.achievements.find(
+        (achievement) =>
+          achievement.label === "Production auth preflight checklist",
+      )?.plainEnglish,
+    ).toContain("Goal 157");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Membership approval packet");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Membership approval packet",
+      )?.plainEnglish,
+    ).toContain("Goal 160");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Membership approval result states");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Membership approval result states",
+      )?.plainEnglish,
+    ).toContain("Goal 161");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Membership approval write readiness");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Membership approval write readiness",
+      )?.plainEnglish,
+    ).toContain("Goal 162");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Local sign-in review coverage");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Member chapter home review coverage");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Member Rush Month overview review coverage");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Member assigned-actions review coverage");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Member action detail review coverage");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Member walkthrough sequence");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Leader walkthrough sequence");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Coach walkthrough sequence");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin walkthrough sequence");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Stakeholder review phase map");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Nick final review packet");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Nick final review packet",
+      )?.plainEnglish,
+    ).toContain("pilot scope");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Mobile visual smoke plan");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Mobile route smoke manifest bridge");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Accessibility smoke plan");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Device and PWA smoke matrix");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin review path route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin release readiness route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Production launch gate");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin launch gate route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Launch evidence checklist");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Database security decision packet");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin database security route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin audit log review");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin audit log route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin write-audit preflight");
+    expect(
+      summary.achievements.find(
+        (achievement) => achievement.label === "Admin audit log route",
+      )?.plainEnglish,
+    ).toContain("Goal 156 write-audit preflight");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin master data inventory");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin master data route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin integration outbox route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Integration live-send preflight");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("System health review");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin system health route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin design QA route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Production operations runbook");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Admin operations route");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("PWA offline recovery shell");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Coach support notes");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Coach intervention checklist");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Leader proof decision workspace");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Leader proof review rubric");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Leader proof decision result states");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Leader proof decision local write packet");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
     ).toContain("First-write activation drill");
     expect(
       summary.achievements.map((achievement) => achievement.label),
@@ -44,6 +252,10 @@ describe("mvp release readiness", () => {
         "Production environment and visual QA",
       ]),
     );
+    expect(
+      summary.blockers.find((blocker) => blocker.label === "Browser writes")
+        ?.plainEnglish,
+    ).toContain("membership approval");
   });
 
   it("keeps DS Admin on the same conservative release-readiness summary", () => {
@@ -52,8 +264,121 @@ describe("mvp release readiness", () => {
 
     expect(summary.canReadSummary).toBe(true);
     expect(summary.title).toBe("DS Admin release-readiness summary");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 149");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 148");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 147");
+    expect(summary.nextApprovals.join(" ")).toContain("/admin");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 146");
+    expect(summary.nextApprovals.join(" ")).toContain("/admin/design-qa");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 151");
+    expect(summary.nextApprovals.join(" ")).toContain("/admin/nick-review");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 144");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 143");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 142");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 154");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 141");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 140");
+    expect(summary.nextApprovals.join(" ")).toContain("/rush-month");
+    expect(summary.nextApprovals.join(" ")).toContain("/rush-month/actions");
+    expect(summary.nextApprovals.join(" ")).toContain("/rush-month/events");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 139");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 138");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 137");
+    expect(summary.nextApprovals.join(" ")).toContain("/chapter");
+    expect(summary.nextApprovals.join(" ")).toContain("/rush-month/actions/member-push");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 136");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 135");
+    expect(summary.nextApprovals.join(" ")).toContain("/login");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 134");
+    expect(summary.nextApprovals.join(" ")).toContain("/admin/review-path");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 133");
+    expect(summary.nextApprovals.join(" ")).toContain("/admin/release-readiness");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 132");
+    expect(summary.nextApprovals.join(" ")).toContain("production launch gate");
+    expect(summary.nextApprovals.join(" ")).toContain("/admin/launch-gate");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 150");
+    expect(summary.nextApprovals.join(" ")).toContain("launch evidence checklist");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 131");
+    expect(summary.nextApprovals.join(" ")).toContain("database security decision");
+    expect(summary.nextApprovals.join(" ")).toContain("/admin/database-security");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 130");
+    expect(summary.nextApprovals.join(" ")).toContain("audit log readback");
+    expect(summary.nextApprovals.join(" ")).toContain("system health");
+    expect(summary.nextApprovals.join(" ")).toContain("production operations runbook");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 117 PWA offline shell");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 118");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 119");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 120");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 121");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 122");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 157");
+    expect(summary.nextApprovals.join(" ")).toContain("production auth preflight");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 160");
+    expect(summary.nextApprovals.join(" ")).toContain("membership approval packet");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 161");
+    expect(summary.nextApprovals.join(" ")).toContain(
+      "membership approval result states",
+    );
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 162");
+    expect(summary.nextApprovals.join(" ")).toContain(
+      "membership approval write readiness",
+    );
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 152");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 158");
+    expect(summary.nextApprovals.join(" ")).toContain("proof submission packet");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 159");
+    expect(summary.nextApprovals.join(" ")).toContain("proof storage intake packet");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 153");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 124");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 125");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 155");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 126");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 156");
+    expect(summary.nextApprovals.join(" ")).toContain("write-audit preflight");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 127");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 128");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 129");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 115 leader proof decision");
+    expect(summary.nextApprovals.join(" ")).toContain("Goal 116 local leader proof decision");
     expect(summary.nextApprovals.join(" ")).toContain("n8n");
     expect(summary.nextApprovals.join(" ")).toContain("first pilot");
+  });
+
+  it("summarizes the Goal 90-97 role model checkpoint for Nick review", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const summary = getMvpReleaseReadinessSummary(actor);
+    const checkpoint = summary.roleModelReviewCheckpoint;
+
+    expect(checkpoint?.title).toBe("Goal 90-97 role model checkpoint");
+    expect(checkpoint?.items).toHaveLength(8);
+    expect(
+      checkpoint?.items.every(
+        (item) =>
+          item.browserWritesExpected === 0 &&
+          item.externalWritesExpected === 0 &&
+          item.passSignal.length > 30,
+      ),
+    ).toBe(true);
+    expect(checkpoint?.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          route: "/rush-month/dashboard",
+          reviewerActorEmail: "leader.a@mymedlife.test",
+          label: "President / VP dashboard accountability",
+        }),
+        expect.objectContaining({
+          route: "/rush-month/dashboard",
+          reviewerActorEmail: "eboard.a@mymedlife.test",
+          label: "E-Board dashboard execution follow-up",
+        }),
+        expect.objectContaining({
+          route: "/admin",
+          reviewerActorEmail: "admin@mymedlife.test",
+          label: "Admin responsibility summary",
+        }),
+      ]),
+    );
+    expect(checkpoint?.finalDecisionPrompt).toContain("auth/onboarding approval");
   });
 
   it("hides release readiness from chapter and coach roles", () => {
@@ -64,5 +389,6 @@ describe("mvp release readiness", () => {
     expect(getMvpReleaseReadinessSummary(member).canReadSummary).toBe(false);
     expect(getMvpReleaseReadinessSummary(leader).canReadSummary).toBe(false);
     expect(getMvpReleaseReadinessSummary(coach).canReadSummary).toBe(false);
+    expect(getMvpReleaseReadinessSummary(member).roleModelReviewCheckpoint).toBeNull();
   });
 });
