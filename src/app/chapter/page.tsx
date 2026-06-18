@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
+import { ChapterLeaderCommandCenterPanel } from "@/components/chapter-leader-command-center-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { RoleNextActionPanel } from "@/components/role-next-action-panel";
+import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
@@ -16,21 +18,38 @@ import {
 export const metadata = getStaticRouteMetadata("chapter");
 export const dynamic = "force-dynamic";
 
-export default async function ChapterPage() {
-  const [data, actor] = await Promise.all([
+type ChapterPageProps = {
+  searchParams?: Promise<{
+    view?: string;
+    member?: string;
+  }>;
+};
+
+export default async function ChapterPage({ searchParams }: ChapterPageProps) {
+  const emptySearchParams: {
+    view?: string;
+    member?: string;
+  } = {};
+  const [data, actor, search] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
+    searchParams ?? Promise.resolve(emptySearchParams),
   ]);
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
   const progress = getProgressCounts(visibleAssignments);
   const nextActionBrief = getRoleNextActionBrief(actor, data);
+  const leaderCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+    view: search.view,
+    memberId: search.member,
+  });
 
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <RoleNextActionPanel brief={nextActionBrief} />
 
-      {!canReadChapterData(actor) ? (
+      {leaderCommandCenter.canReadCommandCenter ? (
+        <ChapterLeaderCommandCenterPanel commandCenter={leaderCommandCenter} />
+      ) : !canReadChapterData(actor) ? (
         <RestrictedState
           title="DS Admin does not own chapter truth."
           message="This local role can inspect integration and outbox posture, but it should not read member assignments, points, or chapter operating KPIs."
@@ -39,6 +58,8 @@ export default async function ChapterPage() {
         />
       ) : (
         <>
+          <RoleNextActionPanel brief={nextActionBrief} />
+
           <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
               Chapter home
