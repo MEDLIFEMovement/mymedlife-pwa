@@ -4,6 +4,7 @@ import {
   calculateReadinessScore,
   getSltTripPrepChecklistDetailWorkspace,
   getSltTripPrepChecklistWorkspace,
+  sltTripPrepMobileQuickNavItems,
   getSltTripPrepWorkspace,
 } from "@/services/slt-trip-prep-workspace";
 
@@ -69,5 +70,14 @@ describe("slt trip prep workspace", () => {
     expect(score).toBe(workspace.readiness.score);
     expect(score).toBeGreaterThan(60);
     expect(score).toBeLessThan(80);
+  });
+
+  it("exposes a trip-prep-specific mobile quick nav for traveler routes", () => {
+    expect(sltTripPrepMobileQuickNavItems).toEqual([
+      { href: "/", label: "Home", helper: "Today" },
+      { href: "/slt-prep", label: "Trip Prep", helper: "Ready" },
+      { href: "/rush-month/events", label: "Events", helper: "Meet" },
+      { href: "/profile", label: "Profile", helper: "Me" },
+    ]);
   });
 });

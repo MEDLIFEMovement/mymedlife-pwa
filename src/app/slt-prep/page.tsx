@@ -12,6 +12,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   getSltTripPrepWorkspace,
+  sltTripPrepMobileQuickNavItems,
   sltTripPrepSubnavItems,
 } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -27,7 +28,7 @@ export default async function SltPrepPage() {
   const workspace = getSltTripPrepWorkspace(actor);
 
   return (
-    <AppShell actor={actor}>
+    <AppShell actor={actor} mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}>
       <DataSourceNotice source={data.source} />
       <SltPrepSubnav items={[...sltTripPrepSubnavItems]} />
 

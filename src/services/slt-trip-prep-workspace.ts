@@ -3,6 +3,7 @@ import {
   mockSltTripTravelers,
 } from "@/data/mock-slt-trip-prep";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { MobileNavigationItem } from "@/services/role-visibility";
 import type {
   TripPrepAlertTone,
   TripPrepChecklistItem,
@@ -34,6 +35,13 @@ export const sltTripPrepSubnavItems: ReadonlyArray<{
   { href: "/slt-prep/notifications", label: "Alerts" },
   { href: "/slt-prep/profile", label: "Profile" },
   { href: "/slt-prep/staff", label: "Staff" },
+];
+
+export const sltTripPrepMobileQuickNavItems: ReadonlyArray<MobileNavigationItem> = [
+  { href: "/", label: "Home", helper: "Today" },
+  { href: "/slt-prep", label: "Trip Prep", helper: "Ready" },
+  { href: "/rush-month/events", label: "Events", helper: "Meet" },
+  { href: "/profile", label: "Profile", helper: "Me" },
 ];
 
 export type SltTripPrepWorkspace = {
