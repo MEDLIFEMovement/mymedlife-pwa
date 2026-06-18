@@ -47,7 +47,8 @@ export type StaticRouteMetadataKey =
 const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   home: {
     title: "Home",
-    description: "myMEDLIFE local review home for the Rush Month operating app.",
+    description:
+      "Member-first myMEDLIFE home with the current campaign, next action, events, points, and profile routing.",
   },
   profile: {
     title: "Profile",

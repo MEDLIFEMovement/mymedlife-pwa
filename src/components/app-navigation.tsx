@@ -16,6 +16,7 @@ export function AppNavigation({ navItems, quickItems }: AppNavigationProps) {
   const pathname = usePathname();
   const activeNavIndex = getActiveIndex(pathname, navItems);
   const activeQuickIndex = getActiveIndex(pathname, quickItems);
+  const quickGridClassName = getQuickGridClassName(quickItems.length);
 
   return (
     <>
@@ -46,7 +47,7 @@ export function AppNavigation({ navItems, quickItems }: AppNavigationProps) {
 
       <nav
         aria-label="Mobile quick navigation"
-        className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 gap-1 rounded-[1.5rem] border border-white/12 bg-[#071d1a]/95 p-2 shadow-[0_18px_60px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:hidden"
+        className={`fixed inset-x-3 bottom-3 z-40 grid gap-1 rounded-[1.5rem] border border-white/12 bg-[#071d1a]/95 p-2 shadow-[0_18px_60px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:hidden ${quickGridClassName}`}
       >
         {quickItems.map((item, index) => {
           const isActive = index === activeQuickIndex;
@@ -73,6 +74,18 @@ export function AppNavigation({ navItems, quickItems }: AppNavigationProps) {
       </nav>
     </>
   );
+}
+
+function getQuickGridClassName(count: number) {
+  if (count <= 3) {
+    return "grid-cols-3";
+  }
+
+  if (count === 5) {
+    return "grid-cols-5";
+  }
+
+  return "grid-cols-4";
 }
 
 function getActiveIndex(pathname: string, items: NavigationItem[]): number {

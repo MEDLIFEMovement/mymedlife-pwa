@@ -12,11 +12,22 @@ import {
 type AppShellProps = {
   children: ReactNode;
   actor?: LocalActorContext;
+  debugToolsPlacement?: "before-content" | "after-content";
 };
 
-export function AppShell({ actor, children }: AppShellProps) {
+export function AppShell({
+  actor,
+  children,
+  debugToolsPlacement = "before-content",
+}: AppShellProps) {
   const navItems = getNavigationForActor(actor);
   const quickItems = getMobileQuickNavigationForActor(actor);
+  const debugTools = actor ? (
+    <>
+      <LocalActorNotice actor={actor} />
+      <LocalRoleSwitcher actor={actor} />
+    </>
+  ) : null;
 
   return (
     <main className="min-h-screen px-4 pb-28 pt-4 sm:px-6 sm:pb-10 lg:px-8">
@@ -49,15 +60,11 @@ export function AppShell({ actor, children }: AppShellProps) {
             <AppNavigation navItems={navItems} quickItems={quickItems} />
           </div>
         </header>
-        {actor ? (
-          <>
-            <LocalActorNotice actor={actor} />
-            <LocalRoleSwitcher actor={actor} />
-          </>
-        ) : null}
+        {debugToolsPlacement === "before-content" ? debugTools : null}
         <div id="main-content" tabIndex={-1} className="flex flex-col gap-5">
           {children}
         </div>
+        {debugToolsPlacement === "after-content" ? debugTools : null}
       </div>
     </main>
   );

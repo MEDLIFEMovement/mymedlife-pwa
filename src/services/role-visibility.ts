@@ -24,13 +24,15 @@ export type MobileNavigationItem = NavigationItem & {
 };
 
 const baseNavigation: NavigationItem[] = [
-  { href: "/chapter", label: "My Chapter" },
+  { href: "/", label: "Home" },
   { href: "/campaigns", label: "Campaigns" },
   { href: "/rush-month", label: "Rush Month" },
   { href: "/rush-month/dashboard", label: "My Week" },
+  { href: "/rush-month/leaderboard", label: "Leaderboard" },
   { href: "/rush-month/events", label: "Events" },
   { href: "/rush-month/loop", label: "Loop" },
   { href: "/rush-month/actions", label: "My Actions" },
+  { href: "/profile", label: "Profile" },
 ];
 
 export function canReadChapterData(actor: LocalActorContext): boolean {
@@ -126,9 +128,14 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
   switch (actor.audience) {
     case "chapter_member":
       return [
-        ...baseNavigation,
-        { href: "/rush-month/evidence", label: "My Proof" },
-        { href: "/proof-library", label: "Proof Library" },
+        { href: "/", label: "Home" },
+        { href: "/campaigns", label: "Campaigns" },
+        { href: "/rush-month", label: "Rush Month" },
+        { href: "/rush-month/actions", label: "My Actions" },
+        { href: "/rush-month/events", label: "Events" },
+        { href: "/rush-month/leaderboard", label: "Points" },
+        { href: "/rush-month/evidence", label: "Proof" },
+        { href: "/profile", label: "Profile" },
       ];
     case "chapter_leader":
       return [
@@ -138,11 +145,13 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/action-committees", label: "Committees" },
         { href: "/rush-month", label: "Rush Month" },
         { href: "/rush-month/dashboard", label: "Dashboard" },
+        { href: "/rush-month/leaderboard", label: "Leaderboard" },
         { href: "/rush-month/events", label: "Events" },
         { href: "/rush-month/loop", label: "MVP Loop" },
         { href: "/rush-month/actions", label: "Team Actions" },
         { href: "/rush-month/evidence", label: "Proof" },
         { href: "/rush-month/review", label: "Follow-Up" },
+        { href: "/profile", label: "Profile" },
       ];
     case "coach":
       return [
@@ -152,11 +161,13 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/action-committees", label: "Events" },
         { href: "/rush-month", label: "Rush Month" },
         { href: "/rush-month/dashboard", label: "Campaign Health" },
+        { href: "/rush-month/leaderboard", label: "Recognition" },
         { href: "/rush-month/events", label: "Events" },
         { href: "/rush-month/loop", label: "MVP Loop" },
         { href: "/rush-month/actions", label: "Open Work" },
         { href: "/proof-library", label: "Proof Library" },
         { href: "/coach", label: "Coach" },
+        { href: "/profile", label: "Profile" },
       ];
     case "admin":
       return [
@@ -165,6 +176,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/campaigns", label: "Campaign Support" },
         { href: "/proof-library", label: "Proof Library" },
         { href: "/rush-month/dashboard", label: "Rush Dashboard" },
+        { href: "/rush-month/leaderboard", label: "Leaderboard" },
         { href: "/rush-month/events", label: "Events" },
         { href: "/rush-month/loop", label: "Rush Loop" },
         { href: "/coach", label: "Coach Read" },
@@ -177,6 +189,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin/coach-write", label: "Coach Packet" },
         { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
+        { href: "/profile", label: "Profile" },
       ];
     case "ds_admin":
       return [
@@ -189,6 +202,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin/coach-write", label: "Coach Safety" },
         { href: "/admin/pilot-scope", label: "Pilot Safety" },
         { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
+        { href: "/profile", label: "Profile" },
       ];
     case "super_admin":
       return [
@@ -197,6 +211,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/rush-month", label: "Campaigns" },
         { href: "/campaigns", label: "Campaign Library" },
         { href: "/rush-month/dashboard", label: "Rush Dashboard" },
+        { href: "/rush-month/leaderboard", label: "Leaderboard" },
         { href: "/rush-month/events", label: "Events" },
         { href: "/rush-month/loop", label: "MVP Loop" },
         { href: "/action-committees", label: "Committees" },
@@ -213,6 +228,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
         { href: "/admin/coach-write", label: "Coach Packet" },
         { href: "/admin/pilot-scope", label: "Pilot Scope" },
         { href: "/admin/staff-dry-run", label: "Dry Run" },
+        { href: "/profile", label: "Profile" },
       ];
   }
 }
@@ -232,10 +248,11 @@ export function getMobileQuickNavigationForActor(
   switch (actor.audience) {
     case "chapter_member":
       return [
-        { href: "/rush-month/dashboard", label: "My Week", helper: "Next" },
-        { href: "/rush-month/actions", label: "Actions", helper: "Do" },
-        { href: "/proof-library", label: "Proof", helper: "Learn" },
-        { href: "/chapter", label: "Chapter", helper: "Home" },
+        { href: "/", label: "Home", helper: "Today" },
+        { href: "/campaigns", label: "Campaigns", helper: "Goals" },
+        { href: "/rush-month/events", label: "Events", helper: "Meet" },
+        { href: "/rush-month/leaderboard", label: "Points", helper: "Rank" },
+        { href: "/profile", label: "Profile", helper: "Me" },
       ];
     case "chapter_leader":
       return [
