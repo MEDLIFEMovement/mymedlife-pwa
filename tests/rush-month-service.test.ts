@@ -79,7 +79,7 @@ describe("rush month service", () => {
   it("calculates points from approved assignments", () => {
     expect(calculatePointsSummary(assignments)).toEqual({
       earned: 10,
-      available: 80,
+      available: 95,
       approvedActions: 1,
     });
   });

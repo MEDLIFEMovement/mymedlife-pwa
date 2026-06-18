@@ -95,7 +95,7 @@ export const assignments: Assignment[] = [
     evidenceRequired: "Message screenshot, invite list, or event RSVP link.",
     instructions:
       "Invite students to the Rush Month event using the approved chapter message. Submit proof after the invite push.",
-    points: 15,
+    points: 30,
     kpi: "Student invites sent",
   },
   {
@@ -147,7 +147,7 @@ export const evidenceItems: EvidenceItem[] = [
 
 export const pointsSummary: PointsSummary = {
   earned: 10,
-  available: 80,
+  available: 95,
   approvedActions: 1,
 };
 

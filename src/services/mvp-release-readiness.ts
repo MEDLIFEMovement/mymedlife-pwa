@@ -189,7 +189,7 @@ export function getMvpReleaseReadinessSummary(
         label: "Member action detail review coverage",
         status: "ready_for_local_review",
         plainEnglish:
-          "Members can open `/rush-month/actions/member-push` to inspect one assigned action, owner, status, points, evidence requirements, proof handoff, disabled action-start/proof controls, and outbox posture without saving proof, writing points, uploading files, or sending automation.",
+          "Members can open `/rush-month/actions/member-push` to inspect one assigned action, due date, assignee, status, points, why-it-matters copy, steps, evidence requirements, a local confirmation checkbox, preview submit feedback, proof handoff, and outbox posture without saving proof, writing points, uploading files, or sending automation.",
       },
       {
         label: "Member walkthrough sequence",

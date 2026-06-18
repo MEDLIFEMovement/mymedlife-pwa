@@ -15,6 +15,14 @@ describe("rush month dashboard service", () => {
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
     expect(dashboard.canReadChapterTruth).toBe(true);
+    expect(dashboard.phaseSummary.label).toBe("Week 1: Invite and prove the first push");
+    expect(dashboard.phaseSummary.status).toBe("Invite and prove the first push");
+    expect(dashboard.whyItMatters).toContain("Why it matters:");
+    expect(dashboard.actionGroups.map((group) => group.label)).toEqual([
+      "Invite push",
+      "Rush event",
+      "Proof and points",
+    ]);
     expect(dashboard.nextStep.href).toBe("/rush-month/actions/member-push");
     expect(dashboard.visibleAssignments).toHaveLength(1);
     expect(dashboard.eventPlans).toHaveLength(2);
@@ -29,6 +37,11 @@ describe("rush month dashboard service", () => {
 
     expect(dashboard.nextStep.href).toBe("/rush-month/review");
     expect(dashboard.nextStep.ctaLabel).toBe("Open approval queue");
+    expect(dashboard.actionGroups.map((group) => group.href)).toEqual([
+      "/rush-month/actions",
+      "/rush-month/review",
+      "/rush-month/events",
+    ]);
     expect(dashboard.roleFocus?.roleLabel).toBe("President / VP");
     expect(dashboard.roleFocus?.primaryHref).toBe("/rush-month/review");
     expect(dashboard.roleFocus?.secondaryHref).toBe("/chapter/members");

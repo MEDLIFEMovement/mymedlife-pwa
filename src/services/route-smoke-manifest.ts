@@ -235,7 +235,7 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["chapter_member", "chapter_leader", "coach", "ds_admin"],
     expectedResult:
-      "Members see recognition; leaders/coaches see operating health; DS Admin sees integration posture only.",
+      "Members see phase, KPIs, why-it-matters context, role action groups, recognition, and next action; leaders/coaches see operating health; DS Admin sees integration posture only.",
     safetyAssertion: "No points write, KPI write, or leaderboard mutation is expected.",
   },
   {
@@ -284,7 +284,7 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["chapter_member", "chapter_leader", "coach", "admin", "super_admin"],
     expectedResult:
-      "Reviewers can open one assigned action and see owner, status, points, proof handoff, local action-start posture, disabled proof/upload controls, outbox preview, and next action.",
+      "Reviewers can open one assigned action and see due date, assignee, status, 30-point posture, why it matters, steps, evidence requirements, local confirmation checkbox, preview submit state, proof handoff, outbox preview, and next action.",
     safetyAssertion:
       "Action-start saves, proof metadata saves, file uploads, direct points/KPI writes, reminders, and external sends remain disabled unless localhost-only write flags are explicitly approved.",
   },
