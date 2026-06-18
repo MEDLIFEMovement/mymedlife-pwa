@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 export type StaticRouteMetadataKey =
   | "home"
+  | "profile"
+  | "onboarding"
   | "login"
   | "chapter"
   | "chapterMembers"
@@ -10,8 +12,10 @@ export type StaticRouteMetadataKey =
   | "actionCommittees"
   | "rushMonth"
   | "rushMonthDashboard"
+  | "rushMonthLeaderboard"
   | "rushMonthLoop"
   | "rushMonthEvents"
+  | "rushMonthEventDetail"
   | "rushMonthActions"
   | "rushMonthActionDetail"
   | "rushMonthEvidence"
@@ -20,6 +24,17 @@ export type StaticRouteMetadataKey =
   | "proofUpload"
   | "coach"
   | "admin"
+  | "adminReviewPath"
+  | "adminNickReview"
+  | "adminReleaseReadiness"
+  | "adminLaunchGate"
+  | "adminAuditLog"
+  | "adminIntegrationOutbox"
+  | "adminMasterData"
+  | "adminDatabaseSecurity"
+  | "adminSystemHealth"
+  | "adminDesignQa"
+  | "adminOperations"
   | "adminFirstWrite"
   | "adminWriteSequence"
   | "adminProofWrite"
@@ -33,6 +48,16 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   home: {
     title: "Home",
     description: "myMEDLIFE local review home for the Rush Month operating app.",
+  },
+  profile: {
+    title: "Profile",
+    description:
+      "Read-only local profile, role scope, next action, and future onboarding posture.",
+  },
+  onboarding: {
+    title: "Onboarding",
+    description:
+      "Read-only auth, profile, chapter join, membership approval, and role assignment readiness.",
   },
   login: {
     title: "Local Sign In",
@@ -68,6 +93,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Rush Month Dashboard",
     description: "Role-aware Rush Month dashboard, actions, metrics, proof, and recognition.",
   },
+  rushMonthLeaderboard: {
+    title: "Rush Month Leaderboard",
+    description:
+      "Mock-safe member points, recognition, leaderboard, and chapter impact readout.",
+  },
   rushMonthLoop: {
     title: "Rush Month MVP Loop",
     description: "Mock-safe end-to-end Rush Month operating loop for reviewers.",
@@ -76,6 +106,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Rush Month Events",
     description:
       "Mock-safe Rush Month event, Luma, NPS, proof, and outbox readiness.",
+  },
+  rushMonthEventDetail: {
+    title: "Rush Month Event Detail",
+    description:
+      "Role-aware Rush Month event detail with owner, NPS, proof, and disabled automation posture.",
   },
   rushMonthActions: {
     title: "Rush Month Actions",
@@ -87,7 +122,8 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   },
   rushMonthEvidence: {
     title: "Proof And Evidence",
-    description: "Mock proof and testimonials for Rush Month action follow-up.",
+    description:
+      "Member evidence submission queue, proof prep checklist, proof status, and disabled upload posture.",
   },
   rushMonthReview: {
     title: "HQ Proof Review",
@@ -109,6 +145,61 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   admin: {
     title: "Admin",
     description: "Admin review, smoke checks, write readiness, outbox, and launch posture.",
+  },
+  adminReviewPath: {
+    title: "Admin Review Path",
+    description:
+      "Read-only no-code stakeholder review path with fake actor emails, routes, and safety boundaries.",
+  },
+  adminNickReview: {
+    title: "Nick Final Review",
+    description:
+      "Read-only final local MVP review packet with owner lanes, pass signals, and launch boundaries.",
+  },
+  adminReleaseReadiness: {
+    title: "Admin Release Readiness",
+    description:
+      "Read-only MVP release-readiness summary, local review posture, launch blockers, and next approvals.",
+  },
+  adminLaunchGate: {
+    title: "Admin Launch Gate",
+    description:
+      "Read-only production launch gate, missing evidence, owner sign-off, rollback, and pilot-readiness review.",
+  },
+  adminAuditLog: {
+    title: "Admin Audit Log",
+    description:
+      "Read-only audit-log posture with admin readback, DS safety review, and writes disabled.",
+  },
+  adminIntegrationOutbox: {
+    title: "Admin Integration Outbox",
+    description:
+      "Read-only integration events, automation outbox, audit posture, and blocked live-send controls.",
+  },
+  adminMasterData: {
+    title: "Admin Master Data",
+    description:
+      "Read-only users, roles, chapters, and campaign template inventory with admin writes disabled.",
+  },
+  adminDatabaseSecurity: {
+    title: "Admin Database Security",
+    description:
+      "Read-only Supabase versus PlanetScale security decision, RLS approval, and vendor-risk review.",
+  },
+  adminSystemHealth: {
+    title: "Admin System Health",
+    description:
+      "Read-only system health, launch blocker, environment, audit, outbox, and production readiness review.",
+  },
+  adminDesignQa: {
+    title: "Admin Design QA",
+    description:
+      "Read-only Figma, mobile viewport, accessibility, role complexity, and pilot-safety QA review.",
+  },
+  adminOperations: {
+    title: "Admin Operations",
+    description:
+      "Read-only production operations runbook, incident response, rollback, backup, and support review.",
   },
   adminFirstWrite: {
     title: "First Write Drill",

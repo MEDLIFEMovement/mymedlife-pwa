@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(27);
+    expect(entries).toHaveLength(42);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -20,6 +20,39 @@ describe("static route metadata", () => {
   it("keeps safety-sensitive reviewer routes named clearly", () => {
     expect(getStaticRouteMetadata("admin")).toMatchObject({
       title: "Admin",
+    });
+    expect(getStaticRouteMetadata("adminReviewPath")).toMatchObject({
+      title: "Admin Review Path",
+    });
+    expect(getStaticRouteMetadata("adminNickReview")).toMatchObject({
+      title: "Nick Final Review",
+    });
+    expect(getStaticRouteMetadata("adminReleaseReadiness")).toMatchObject({
+      title: "Admin Release Readiness",
+    });
+    expect(getStaticRouteMetadata("adminLaunchGate")).toMatchObject({
+      title: "Admin Launch Gate",
+    });
+    expect(getStaticRouteMetadata("adminAuditLog")).toMatchObject({
+      title: "Admin Audit Log",
+    });
+    expect(getStaticRouteMetadata("adminIntegrationOutbox")).toMatchObject({
+      title: "Admin Integration Outbox",
+    });
+    expect(getStaticRouteMetadata("adminMasterData")).toMatchObject({
+      title: "Admin Master Data",
+    });
+    expect(getStaticRouteMetadata("adminDatabaseSecurity")).toMatchObject({
+      title: "Admin Database Security",
+    });
+    expect(getStaticRouteMetadata("adminSystemHealth")).toMatchObject({
+      title: "Admin System Health",
+    });
+    expect(getStaticRouteMetadata("adminDesignQa")).toMatchObject({
+      title: "Admin Design QA",
+    });
+    expect(getStaticRouteMetadata("adminOperations")).toMatchObject({
+      title: "Admin Operations",
     });
     expect(getStaticRouteMetadata("adminFirstWrite")).toMatchObject({
       title: "First Write Drill",
@@ -45,11 +78,27 @@ describe("static route metadata", () => {
     expect(getStaticRouteMetadata("adminPilotScope")).toMatchObject({
       title: "Pilot Scope",
     });
+    expect(getStaticRouteMetadata("profile")).toMatchObject({
+      title: "Profile",
+    });
+    expect(getStaticRouteMetadata("onboarding")).toMatchObject({
+      title: "Onboarding",
+    });
     expect(getStaticRouteMetadata("login")).toMatchObject({
       title: "Local Sign In",
     });
     expect(getStaticRouteMetadata("rushMonthReview")).toMatchObject({
       title: "HQ Proof Review",
+    });
+    expect(getStaticRouteMetadata("rushMonthLeaderboard")).toMatchObject({
+      title: "Rush Month Leaderboard",
+    });
+    expect(getStaticRouteMetadata("rushMonthEventDetail")).toMatchObject({
+      title: "Rush Month Event Detail",
+    });
+    expect(getStaticRouteMetadata("rushMonthEvidence")).toMatchObject({
+      title: "Proof And Evidence",
+      description: expect.stringContaining("proof prep checklist"),
     });
     expect(getStaticRouteMetadata("coach")).toMatchObject({
       title: "Coach Dashboard",

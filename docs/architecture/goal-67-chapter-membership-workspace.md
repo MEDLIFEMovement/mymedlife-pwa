@@ -26,6 +26,14 @@ without enabling sensitive membership or role writes.
   - deactivating members
 - audit and outbox previews for future automation readiness
 
+Goal 160 extends this same route with a membership approval packet. The packet
+previews `app.approve_chapter_membership`, the join-request payload, readiness
+checks, future membership row, structured event, disabled outbox, audit action,
+review prompts, and locked controls before any join approval is enabled.
+Goal 161 adds the matching membership approval result states so the same route
+can show the current disabled result and future enabled result before any write
+control exists.
+
 ## Role Rules
 
 - Chapter leaders can read roster health, join requests, role coverage, and
@@ -52,3 +60,7 @@ This closes a visible MVP gap without weakening the security model. Leaders can
 now understand who needs follow-up and where role coverage is thin, while the
 actual permission-changing actions remain blocked until the auth/RLS/admin
 mutation path is explicitly approved.
+
+Goal 160 narrows the next review step: reviewers can now inspect the first
+future approval packet directly on `/chapter/members` without creating a
+membership row, assigning a role, sending a welcome message, or syncing CRM.

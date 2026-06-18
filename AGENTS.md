@@ -161,12 +161,12 @@ Material PRs should include:
 
 ## Current Goal Guardrail
 
-The active goal is Goal 89: leader evidence follow-up. This remains mock-safe
-and makes `/rush-month/review` separate chapter follow-up on missing or weak
-proof/testimonials from HQ-owned broad sharing decisions. Production data,
-broad browser writes, admin mutation controls, real uploads, public proof
-sharing, role writes, Luma writes, reminders, nudges, and external integrations
-remain disabled.
+The repo has moved beyond the earlier Goal 89 checkpoint. The current local
+review lane is the guarded MVP review and write-readiness packet sequence
+through Goal 162, with membership approval write readiness as the newest active
+packet. Keep the app mock-safe, keep production auth disabled, keep
+browser-facing writes blocked by default, and keep all external sends off until
+Nick explicitly approves them.
 
 Allowed:
 
@@ -221,6 +221,10 @@ Allowed:
 - auth/onboarding planning that defines future sign-in, profile creation,
   chapter join request, membership approval, role assignment, coach assignment,
   and staff role assignment boundaries while keeping live auth disabled
+- read-only membership approval packets on `/chapter/members` that preview
+  join-request approval, result states, SQL/RLS requirements, disabled welcome
+  and CRM behavior, and audit/outbox posture while keeping membership writes
+  blocked
 - tests proving live auth and production users remain disabled
 - live-data connection planning that defines the route-by-route migration order
   from mock data to local Supabase and controlled pilot readiness
@@ -270,6 +274,10 @@ Allowed:
 - a visible HQ proof-sharing browser-write activation gate on
   `/rush-month/review` that references the local `hq_sharing_decision` function
   while keeping decision saves, public sharing, and enabled controls disabled
+- a visible leader proof-decision browser-write activation gate on
+  `/rush-month/review` that references the local
+  `app.record_leader_proof_decision` function while keeping review saves,
+  points/KPI writes, nudges, and enabled controls disabled
 - one local Supabase `coach_decision_logged` function that updates phase
   readiness, records a coach review, records an internal event, records an
   integration-ready event row, creates a disabled outbox row, and records an
@@ -278,6 +286,10 @@ Allowed:
   references the local `coach_decision_logged` function while keeping decision
   saves, n8n escalation packets, and external automation disabled until local
   auth and explicit write flags are present
+- a visible membership-approval browser-write activation gate on
+  `/chapter/members` that references the future
+  `app.approve_chapter_membership` function while keeping membership rows,
+  welcome sends, CRM syncs, and enabled controls disabled
 - a consolidated `/admin` write activation readiness panel that summarizes the
   first browser-write gates, their routes, local functions, role posture, and
   remaining blockers while keeping enabled controls at zero

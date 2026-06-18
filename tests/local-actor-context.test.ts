@@ -29,6 +29,16 @@ describe("local actor context service", () => {
     expect(committeeChair.chapterRoles).toEqual(["Action Committee Chair"]);
   });
 
+  it("keeps separate mock personas for President/VP and E-Board roles", () => {
+    const president = getMockLocalActorContext("leader.a@mymedlife.test");
+    const eBoard = getMockLocalActorContext("eboard.a@mymedlife.test");
+
+    expect(president.audience).toBe("chapter_leader");
+    expect(president.chapterRoles).toEqual(["President / VP"]);
+    expect(eBoard.audience).toBe("chapter_leader");
+    expect(eBoard.chapterRoles).toEqual(["E-Board Member"]);
+  });
+
   it("reads every Goal 9 actor context table", async () => {
     const requestedTables: string[] = [];
     const client = createFakeClient({}, requestedTables);
@@ -67,6 +77,8 @@ describe("local actor context service", () => {
     ]);
     await expectAudience("leader.a@mymedlife.test", "chapter_leader", [
       "President / VP",
+    ]);
+    await expectAudience("eboard.a@mymedlife.test", "chapter_leader", [
       "E-Board Member",
     ]);
     await expectAudience("coach@mymedlife.test", "coach", ["Coach"]);
@@ -174,18 +186,19 @@ function createFakeClient(
 const fakeActorRows: Record<string, unknown[]> = {
   profiles: [
     profile("user-1", "Maya Member", "member.a@mymedlife.test"),
-    profile("user-2", "Leo Leader", "leader.a@mymedlife.test"),
+    profile("user-2", "Priya President", "leader.a@mymedlife.test"),
     profile("user-3", "Cam Coach", "coach@mymedlife.test"),
     profile("user-4", "Ari Admin", "admin@mymedlife.test"),
     profile("user-5", "Dee Systems", "ds.admin@mymedlife.test"),
     profile("user-6", "Sam Super", "super.admin@mymedlife.test"),
     profile("user-9", "Nia Committee", "committee.member@mymedlife.test"),
     profile("user-10", "Casey Chair", "committee.chair@mymedlife.test"),
+    profile("user-11", "Eli E-Board", "eboard.a@mymedlife.test"),
   ],
   memberships: [
     membership("membership-1", "user-1", "chapter-1", "general_member"),
     membership("membership-2", "user-2", "chapter-1", "president_vp"),
-    membership("membership-3", "user-2", "chapter-1", "e_board_member"),
+    membership("membership-3", "user-11", "chapter-1", "e_board_member"),
     membership("membership-6", "user-9", "chapter-1", "action_committee_member"),
     membership("membership-7", "user-10", "chapter-1", "action_committee_chair"),
   ],

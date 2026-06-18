@@ -1,6 +1,7 @@
 import type {
   ChapterMembershipStatus,
   ChapterMembershipWorkspace,
+  MembershipApprovalPacket,
   RoleCoverageItem,
 } from "@/services/chapter-membership-workspace";
 
@@ -38,6 +39,10 @@ export function ChapterMembershipWorkspacePanel({
         <MiniStat label="Leaders" value={`${workspace.counts.leaders}`} />
         <MiniStat label="Enabled controls" value={`${workspace.counts.enabledControls}`} />
       </section>
+
+      {workspace.membershipApprovalPacket ? (
+        <MembershipApprovalPacketPanel packet={workspace.membershipApprovalPacket} />
+      ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
@@ -187,6 +192,116 @@ export function ChapterMembershipWorkspacePanel({
   );
 }
 
+function MembershipApprovalPacketPanel({
+  packet,
+}: {
+  packet: MembershipApprovalPacket;
+}) {
+  return (
+    <section className="rounded-[2rem] border border-sky-300/20 bg-[#061f2a] p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/78">
+            Membership packet
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">
+            {packet.title}
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+            {packet.readinessReason}
+          </p>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:min-w-80">
+          <PacketToken label="Now" value={packet.currentResultCode} />
+          <PacketToken label="Future" value={packet.futureResultCode} />
+          <PacketToken
+            label="Readiness"
+            value={packet.writeReadiness.resultCodeIfSubmitted}
+          />
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-sm font-semibold text-white">Approval payload</p>
+          <div className="mt-3 grid gap-3">
+            <PacketRow label="Function" value={packet.futureFunction} />
+            <PacketRow label="Request" value={packet.joinRequestId} />
+            <PacketRow label="Applicant" value={packet.applicantName} />
+            <PacketRow label="Email" value={packet.applicantEmail} />
+            <PacketRow label="Role" value={packet.requestedRoleLabel} />
+            <PacketRow
+              label="Committee"
+              value={packet.payload.requestedCommitteeLane}
+            />
+            <PacketRow
+              label="Reviewer"
+              value={packet.payload.approvedByActorEmail}
+            />
+            <PacketRow
+              label="Result states"
+              value="Goal 161 membership approval result states"
+            />
+            <PacketRow
+              label="Write readiness"
+              value={packet.writeReadiness.title}
+            />
+            <PacketRow
+              label="Can submit"
+              value={packet.writeReadiness.canSubmit ? "yes" : "no"}
+            />
+            <PacketRow label="Current result" value={packet.currentResultTitle} />
+            <PacketRow label="Future result" value={packet.futureResultTitle} />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-sm font-semibold text-white">Future records</p>
+          <div className="mt-3 grid gap-2">
+            {packet.futureRecords.map((record) => (
+              <div key={record.label} className="rounded-2xl bg-white/[0.04] p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/38">
+                  {record.label}
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {record.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-4">
+        <PacketList
+          title="Readiness checks"
+          items={packet.readinessChecks.map((check) =>
+            `${check.passed ? "ready" : "blocked"} ${check.label}`,
+          )}
+        />
+        <PacketList
+          title="Goal 162 write checks"
+          items={packet.writeReadiness.checks.map((check) =>
+            `${check.passed ? "ready" : "blocked"} ${check.label}`,
+          )}
+        />
+        <PacketList title="Review prompts" items={packet.reviewPrompts} />
+        <PacketList
+          title="Required RLS tests"
+          items={Array.from(packet.writeReadiness.requiredRlsTests)}
+        />
+      </div>
+
+      <div className="mt-4">
+        <PacketList
+          title="Locked controls"
+          items={packet.blockedControls.map((control) => `Locked ${control}`)}
+        />
+      </div>
+    </section>
+  );
+}
+
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
@@ -194,6 +309,43 @@ function MiniStat({ label, value }: { label: string; value: string }) {
         {label}
       </p>
       <p className="mt-1 text-lg font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function PacketList({ items, title }: { items: string[]; title: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <ul className="mt-3 grid gap-2">
+        {items.map((item) => (
+          <li key={item} className="text-sm leading-6 text-white/62">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function PacketRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/38">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-sm font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function PacketToken({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/24 px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-sm font-semibold text-sky-50">{value}</p>
     </div>
   );
 }

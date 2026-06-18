@@ -2,12 +2,16 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   createActionStartedMock,
   createChapterAssignmentMock,
+  createChapterMembershipApprovalMock,
   createCoachDecisionMock,
   createHqSharingDecisionMock,
+  createLeaderProofDecisionMock,
   createProofSubmissionMock,
   type ChapterAssignmentInput,
+  type ChapterMembershipApprovalInput,
   type CoachDecisionInput,
   type HqSharingDecisionInput,
+  type LeaderProofDecisionInput,
   type ProofSubmissionInput,
 } from "@/services/local-action-contracts";
 import type { Assignment, EvidenceItem } from "@/shared/types/domain";
@@ -19,7 +23,9 @@ export type WriteOperation =
   | "action_started"
   | "coach_decision_logged"
   | "evidence_submitted"
-  | "hq_sharing_decision";
+  | "hq_sharing_decision"
+  | "leader_proof_decision"
+  | "membership_approved";
 
 export type WriteReadinessConfig = {
   enabled: false;
@@ -136,6 +142,31 @@ export function prepareDisabledHqSharingDecisionWrite(
   };
 }
 
+export function prepareDisabledLeaderProofDecisionWrite(
+  actor: LocalActorContext,
+  assignment: Assignment,
+  evidenceItem: EvidenceItem,
+  input: LeaderProofDecisionInput,
+): DisabledWriteAttempt<ReturnType<typeof createLeaderProofDecisionMock>> {
+  return {
+    success: false,
+    operation: "leader_proof_decision",
+    reason: getWriteReadinessSummary(),
+    wouldWriteTables: [
+      "assignments",
+      "evidence_items",
+      "approvals",
+      "points_events",
+      "kpi_events",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ],
+    preview: createLeaderProofDecisionMock(actor, assignment, evidenceItem, input),
+  };
+}
+
 export function prepareDisabledCoachDecisionWrite(
   actor: LocalActorContext,
   input: CoachDecisionInput,
@@ -153,5 +184,25 @@ export function prepareDisabledCoachDecisionWrite(
       "audit_logs",
     ],
     preview: createCoachDecisionMock(actor, input),
+  };
+}
+
+export function prepareDisabledMembershipApprovalWrite(
+  actor: LocalActorContext,
+  input: ChapterMembershipApprovalInput,
+  existingMemberEmails: readonly string[] = [],
+): DisabledWriteAttempt<ReturnType<typeof createChapterMembershipApprovalMock>> {
+  return {
+    success: false,
+    operation: "membership_approved",
+    reason: getWriteReadinessSummary(),
+    wouldWriteTables: [
+      "memberships",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ],
+    preview: createChapterMembershipApprovalMock(actor, input, existingMemberEmails),
   };
 }
