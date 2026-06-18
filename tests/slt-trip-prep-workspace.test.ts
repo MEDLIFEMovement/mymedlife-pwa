@@ -40,6 +40,29 @@ describe("slt trip prep workspace", () => {
     expect(needsAttention.counts.needsAttention).toBeGreaterThan(0);
   });
 
+  it("tracks SLT checklist completion counts for traveler readiness", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const workspace = getSltTripPrepChecklistWorkspace(actor, "all");
+
+    expect(workspace.counts).toEqual({
+      total: 7,
+      complete: 2,
+      needsAttention: 3,
+      upcoming: 2,
+      browserWritesExpected: 0,
+      externalWritesExpected: 0,
+    });
+    expect(workspace.items.map((item) => item.id)).toEqual([
+      "passport-proof",
+      "medical-clearance",
+      "trip-agreement",
+      "second-installment",
+      "flight-itinerary",
+      "orientation-rsvp",
+      "extension-choice",
+    ]);
+  });
+
   it("returns checklist detail with preview-safe related links", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const workspace = getSltTripPrepChecklistDetailWorkspace(actor, "flight-itinerary");
