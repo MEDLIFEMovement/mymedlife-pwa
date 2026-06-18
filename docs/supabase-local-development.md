@@ -618,16 +618,18 @@ Goal 8 intentionally uses a server-only read path. Goal 9 adds local-only actor
 switching by fake seed email. Goal 10 uses that actor to filter read-only
 navigation, assignments, risks, admin panels, and integration/outbox visibility.
 Goal 11 adds local-only action/proof/HQ sharing contract previews. This does
-not add browser auth, student sign-in, sessions, cookies, production auth, app
-writes, proof uploads, public sharing, or external automation. Goal 12 adds a
-disabled write-readiness layer so future table targets are visible while code
-still blocks writes. Goal 13 adds the first local write implementation plan and
-test matrix. Goal 14 adds the first local Supabase database write function for
-`action_started`, but it still does not add browser save controls or production
-auth. Goal 15 adds the first local Supabase proof/testimonial metadata write
-function for `evidence_submitted`, but it still does not add browser save
-controls, file uploads, public proof sharing, or external sends. Goal 16 adds
-the first local Supabase HQ proof-sharing decision write function for
+not add browser auth, student sign-in, production auth, app writes, proof
+uploads, public sharing, or external automation. The local role switcher can
+set a browser-local preview cookie so reviewers can move through fake roles
+without changing env vars. Goal 12 adds a disabled write-readiness layer so
+future table targets are visible while code still blocks writes. Goal 13 adds
+the first local write implementation plan and test matrix. Goal 14 adds the
+first local Supabase database write function for `action_started`, but it still
+does not add browser save controls or production auth. Goal 15 adds the first
+local Supabase proof/testimonial metadata write function for
+`evidence_submitted`, but it still does not add browser save controls, file
+uploads, public proof sharing, or external sends. Goal 16 adds the first local
+Supabase HQ proof-sharing decision write function for
 `hq_sharing_decision_logged`, but it still does not add browser save controls,
 public publishing, or external sends. Goal 17 documents the future proof/video
 storage layer and adds disabled upload readiness tests, but it still does not

@@ -14,7 +14,9 @@ export function LocalActorNotice({ actor }: LocalActorNoticeProps) {
   const identityLabel =
     actor.identitySource === "local_auth_session"
       ? "Local auth session"
-      : "Local actor email";
+      : actor.identitySource === "local_preview_cookie"
+        ? "Local preview role"
+        : "Local actor email";
 
   return (
     <section className="rounded-3xl border border-cyan-300/20 bg-cyan-300/10 p-4">
@@ -48,8 +50,8 @@ export function LocalActorNotice({ actor }: LocalActorNoticeProps) {
       </div>
       <p className="mt-3 text-sm leading-6 text-white/68">{actor.accessSummary}</p>
       <p className="mt-2 text-xs leading-5 text-white/46">
-        Local-only role context. This does not add production auth, production
-        users, or app write permissions.
+        Local-only role context. Preview switching does not add production auth,
+        production users, or app write permissions.
       </p>
     </section>
   );

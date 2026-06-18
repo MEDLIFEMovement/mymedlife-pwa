@@ -1317,7 +1317,8 @@ Rules:
 - Goal 8 only permits localhost Supabase reads. Non-local Supabase URLs fall
   back to mock data.
 - Goal 9 actor switching is local-only and reads fake seed users by email. It
-  does not add browser sign-in, sessions, cookies, or production auth.
+  can use `MYMEDLIFE_LOCAL_ACTOR_EMAIL` or the in-app preview-role cookie, but
+  it does not add browser sign-in, production auth, or app writes.
 - Goal 10 role filtering is read-only and local-only. It uses
   `MYMEDLIFE_LOCAL_ACTOR_EMAIL` to preview member, action committee, leader,
   coach, admin, DS admin, and super admin views.

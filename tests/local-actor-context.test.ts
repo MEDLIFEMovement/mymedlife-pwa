@@ -5,6 +5,7 @@ import {
   getSupabaseLocalActorContext,
   readLocalActorSnapshot,
   resolveActorEmailFromSession,
+  resolveLocalActorPreviewSelection,
 } from "@/services/local-actor-context";
 
 describe("local actor context service", () => {
@@ -154,6 +155,30 @@ describe("local actor context service", () => {
       email: "admin@mymedlife.test",
       identitySource: "local_actor_email",
       authSessionStatus: "signed_out",
+    });
+  });
+
+  it("prefers the local preview cookie over the configured env actor", () => {
+    expect(
+      resolveLocalActorPreviewSelection(
+        "coach@mymedlife.test",
+        "member.a@mymedlife.test",
+      ),
+    ).toEqual({
+      email: "coach@mymedlife.test",
+      identitySource: "local_preview_cookie",
+    });
+  });
+
+  it("ignores unknown preview cookies and falls back to the configured actor", () => {
+    expect(
+      resolveLocalActorPreviewSelection(
+        "unknown@mymedlife.test",
+        "leader.a@mymedlife.test",
+      ),
+    ).toEqual({
+      email: "leader.a@mymedlife.test",
+      identitySource: "local_actor_email",
     });
   });
 });
