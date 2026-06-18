@@ -5,6 +5,38 @@ plan into a local-only Supabase migration and test foundation. Do not wire the
 app to production Supabase, create real users, or enable external writes from
 this repo until Nick approves a later goal.
 
+## Current Local Foundation Snapshot
+
+As of 2026-06-18, this plan is partly implemented in local-only migrations:
+
+- `supabase/migrations/20260615110000_initial_supabase_foundation.sql`
+- `supabase/migrations/20260615130000_goal_7_campaign_operating_model.sql`
+
+Those migrations already establish the `app` schema, the first role and
+membership model, the Rush Month operating tables, helper functions for chapter
+and staff scope, and default-deny RLS policies across the app tables.
+
+Current implementation checkpoints:
+
+- business tables live in the `app` schema rather than `public`
+- RLS is enabled on every current `app.*` table
+- role checks are centralized in small helper functions such as
+  `app.has_chapter_role`, `app.is_chapter_leader`, `app.is_coach_for_chapter`,
+  `app.is_admin`, `app.is_ds_admin`, and `app.is_super_admin`
+- assignment self-service is bounded by `app.enforce_assignment_update_bounds()`
+  so assignees can move status without rewriting assignment truth
+- campaign templates, risk flags, readiness reviews, and closeouts already have
+  chapter-scoped RLS extensions in Goal 7
+- integration events and automation outbox rows still represent recorded,
+  mocked, or disabled intent only; this repo still does not authorize live
+  external sends
+
+Practical security note: even if a future Supabase project uses the newer Data
+API exposure controls for `public`, this app should still treat schema exposure
+settings as a guardrail, not the permission model. The durable safety boundary
+is: business tables stay in `app`, RLS stays on, and policies remain the source
+of truth for who can read or write each row.
+
 Recommended model for this plan: GPT-5.5 Thinking or the strongest available
 reasoning model.
 
@@ -636,6 +668,28 @@ Recommended helper functions:
 - `app.is_super_admin()`
 
 ## Permission Plan By Role
+
+### Current Role Boundary Summary
+
+This is the short version the product team should use when sanity-checking who
+owns what today in the local foundation.
+
+| Role | Source of scope | Current readable truth | Current mutation boundary | Explicit no-go |
+| --- | --- | --- | --- | --- |
+| General Member | approved `memberships` row | own chapter basics, visible assignments, own proof, own points posture | future assignment/proof writes only for visible work; UI remains mock-safe today | no coach queue, no HQ sharing decision, no outbox detail |
+| Chapter leader (`action_committee_chair`, `e_board_member`, `president_vp`) | approved `memberships` row | chapter assignments, proof follow-up, campaign state for that chapter | can become the chapter-scoped write authority for assignments/campaign operations; UI still keeps live writes off | no cross-chapter access, no DS-only integration control, no platform-wide override |
+| Coach | active `staff_role_assignments` row plus active `coach_chapter_assignments` row | assigned portfolio chapter health, proof posture, risks, readiness, KPI movement | coach decision and review posture only; not student membership truth | no chapters outside portfolio, no platform admin, no HQ publishing control |
+| Admin | active `staff_role_assignments` row | HQ support context, proof review posture, chapter operations context | support-safe staff actions and future HQ proof decisions; app still mock-safe | no DS-only connection control, no emergency override by default |
+| DS Admin | active `staff_role_assignments` row | integration events, outbox posture, system health context | integration safety controls only after a later approval goal | no ownership of student truth, assignments, proof decisions, points, or KPIs |
+| Super Admin | active `staff_role_assignments` row | full local oversight | platform-level administrative changes, all audited, after explicit approval | no service-role secret exposure through app tables |
+
+The line we should preserve in product and schema decisions is simple:
+
+- chapter truth belongs to chapter roles and the app
+- coach truth belongs to coach portfolio scope
+- HQ proof-sharing truth belongs to approved staff roles
+- integration truth belongs to DS Admin or Super Admin
+- real external writes stay off until a later approval checkpoint
 
 ### General Member
 
