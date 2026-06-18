@@ -1,5 +1,6 @@
 import type {
   ProofUploadIntakeCheck,
+  ProofUploadStoragePacket,
   ProofUploadIntakeWorkspace,
 } from "@/services/proof-upload-intake";
 
@@ -39,6 +40,10 @@ export function ProofUploadIntakePanel({
           value={workspace.externalExportsEnabled ? "on" : "off"}
         />
       </section>
+
+      {workspace.storagePacket ? (
+        <ProofUploadStoragePacketPanel packet={workspace.storagePacket} />
+      ) : null}
 
       <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
@@ -143,6 +148,93 @@ export function ProofUploadIntakePanel({
   );
 }
 
+function ProofUploadStoragePacketPanel({
+  packet,
+}: {
+  packet: ProofUploadStoragePacket;
+}) {
+  return (
+    <section className="rounded-[2rem] border border-emerald-300/20 bg-[#06251f] p-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/78">
+            Storage packet
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">
+            {packet.title}
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+            {packet.readinessReason}
+          </p>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2 lg:min-w-80">
+          <PacketToken label="Now" value={packet.currentResultCode} />
+          <PacketToken label="Future" value={packet.futureResultCode} />
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-sm font-semibold text-white">Storage target</p>
+          <div className="mt-3 grid gap-3">
+            <PacketRow label="Function" value={packet.futureFunction} />
+            <PacketRow label="Private bucket" value={packet.privateBucket} />
+            <PacketRow label="Public bucket" value={packet.publicBucket} />
+            <PacketRow label="Path" value={packet.storagePathPreview} />
+            <PacketRow label="File" value={packet.normalizedFileName} />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-sm font-semibold text-white">Access boundary</p>
+          <div className="mt-3 grid gap-3">
+            <PacketRow
+              label="Raw readers"
+              value={packet.rawUploadReaders.join(", ")}
+            />
+            <PacketRow
+              label="Public readers"
+              value={packet.publicAssetReaders.join(", ")}
+            />
+            <PacketRow
+              label="Required metadata"
+              value={packet.requiredMetadata.join(", ")}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <PacketList
+          title="Readiness checks"
+          items={packet.readinessChecks.map((check) =>
+            `${check.passed ? "ready" : "blocked"} ${check.label}`,
+          )}
+        />
+        <PacketList
+          title="Future records"
+          items={packet.futureRecords.map((record) => `${record.label}: ${record.value}`)}
+        />
+        <PacketList title="Moderation queue" items={packet.moderationQueue} />
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
+        <p className="text-sm font-semibold text-white">Locked controls</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {packet.blockedControls.map((control) => (
+            <span
+              key={control}
+              className="rounded-full border border-amber-200/20 bg-black/24 px-3 py-1 text-xs font-semibold text-amber-50/82"
+            >
+              Locked {control}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ReadinessCheck({ check }: { check: ProofUploadIntakeCheck }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
@@ -160,6 +252,45 @@ function ReadinessCheck({ check }: { check: ProofUploadIntakeCheck }) {
         </span>
       </div>
       <p className="mt-2 text-sm leading-6 text-white/62">{check.helpText}</p>
+    </div>
+  );
+}
+
+function PacketList({ items, title }: { items: string[]; title: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <ul className="mt-3 grid gap-2">
+        {items.map((item) => (
+          <li key={item} className="text-sm leading-6 text-white/62">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function PacketRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/38">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-sm font-semibold text-white">{value}</p>
+    </div>
+  );
+}
+
+function PacketToken({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-black/24 px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-sm font-semibold text-emerald-50">
+        {value}
+      </p>
     </div>
   );
 }

@@ -254,6 +254,22 @@ subset for `action_assigned` in
   disabled outbox, and audit log rows together
 - assignment creation triggers no live external send
 
+Goal 115 implements the first local chapter leader proof decision write subset
+for `leader_proof_decision` in
+`supabase/tests/database/rls_goal_115.test.sql`. The test suite now proves:
+
+- direct approval, points, KPI, and evidence-status bypasses are blocked
+- Chapter Leader can approve, request changes, and reject submitted proof
+  through the audited function
+- approve creates assignment/evidence status, approval, points, KPI, internal
+  event, integration event, disabled outbox, and audit log rows together
+- request changes and reject do not award points or KPI movement
+- General Member, Coach, Admin, and DS Admin cannot record routine leader proof
+  decisions
+- Super Admin can record an audited break-glass leader proof decision
+- final decisions, short notes, missing proof, and not-ready proof are rejected
+- leader proof decisions trigger no public publishing or live external send
+
 ## Pass Criteria
 
 The RLS test suite should pass only when:

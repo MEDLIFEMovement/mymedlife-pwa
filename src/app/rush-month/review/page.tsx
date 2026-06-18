@@ -1,8 +1,13 @@
+import Link from "next/link";
+
 import { AppShell } from "@/components/app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { HqProofDecisionServerActionPanel } from "@/components/hq-proof-decision-server-action-panel";
 import { HqProofDecisionResultStatesPanel } from "@/components/hq-proof-decision-result-states-panel";
 import { LeaderEvidenceFollowUpBoardPanel } from "@/components/leader-evidence-follow-up-board-panel";
+import { LeaderProofDecisionResultStatesPanel } from "@/components/leader-proof-decision-result-states-panel";
+import { LeaderProofDecisionServerActionPanel } from "@/components/leader-proof-decision-server-action-panel";
+import { LeaderProofDecisionWorkspacePanel } from "@/components/leader-proof-decision-workspace-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { StatusBadge } from "@/components/status-badge";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
@@ -20,6 +25,14 @@ import {
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getLeaderEvidenceFollowUpBoard } from "@/services/leader-evidence-follow-up";
+import {
+  type LeaderProofDecisionResultCode,
+  getDisabledLeaderProofDecisionResultPreview,
+  getLeaderProofDecisionResultStates,
+} from "@/services/leader-proof-decision-result-states";
+import { getLeaderProofDecisionWriteReadiness } from "@/services/leader-proof-decision-write";
+import { getLeaderProofDecisionWorkspace } from "@/services/leader-proof-decision-workspace";
+import { getLeaderReviewFocus } from "@/services/leader-review-focus";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { prepareDisabledHqSharingDecisionWrite } from "@/services/write-readiness";
@@ -32,8 +45,10 @@ type ReviewPageProps = {
 };
 
 type ReviewSearchParams = {
+  assignmentId?: string;
   evidenceItemId?: string;
   hqDecisionResult?: string;
+  leaderProofDecisionResult?: string;
 };
 
 export default async function ReviewPage({ searchParams }: ReviewPageProps) {
@@ -49,6 +64,55 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     data.assignments,
     data.evidenceItems,
   );
+  const leaderProofDecisionWorkspace = getLeaderProofDecisionWorkspace(
+    actor,
+    data.assignments,
+    data.evidenceItems,
+  );
+  const leaderProofDecisionPreviewRow =
+    leaderProofDecisionWorkspace.rows.find((row) => {
+      return row.status === "ready_for_approval";
+    }) ?? leaderProofDecisionWorkspace.rows[0];
+  const leaderProofDecisionPreviewAssignment = leaderProofDecisionPreviewRow
+    ? data.assignments.find((item) => {
+        return item.id === leaderProofDecisionPreviewRow.assignmentId;
+      })
+    : undefined;
+  const leaderProofDecisionPreviewEvidence = leaderProofDecisionPreviewRow?.evidenceId
+    ? data.evidenceItems.find((item) => {
+        return item.id === leaderProofDecisionPreviewRow.evidenceId;
+      })
+    : undefined;
+  const leaderProofDecisionResultPreview =
+    leaderProofDecisionPreviewRow && leaderProofDecisionPreviewAssignment
+    ? getDisabledLeaderProofDecisionResultPreview(
+        actor,
+        leaderProofDecisionPreviewAssignment,
+        leaderProofDecisionPreviewEvidence ?? null,
+        {
+          decision: leaderProofDecisionPreviewRow.recommendedDecision,
+          note: `Local preview only: ${leaderProofDecisionPreviewRow.leaderNextStep}`,
+        },
+      )
+    : undefined;
+  const leaderProofDecisionWriteInput = leaderProofDecisionPreviewRow
+    ? {
+        decision: leaderProofDecisionPreviewRow.recommendedDecision,
+        note: `Local leader review: ${leaderProofDecisionPreviewRow.leaderNextStep}`,
+      }
+    : undefined;
+  const leaderProofDecisionWriteReadiness =
+    leaderProofDecisionPreviewAssignment &&
+    leaderProofDecisionPreviewEvidence &&
+    leaderProofDecisionWriteInput
+      ? getLeaderProofDecisionWriteReadiness(
+          actor,
+          leaderProofDecisionPreviewAssignment,
+          leaderProofDecisionPreviewEvidence,
+          leaderProofDecisionWriteInput,
+        )
+      : undefined;
+  const leaderReviewFocus = getLeaderReviewFocus(actor, leaderEvidenceFollowUpBoard);
   const canDecideSharing = canMakeHqSharingDecision(actor);
   const sampleDecisionInput = {
     decision: "approved",
@@ -74,9 +138,18 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     ? getHqProofDecisionWriteReadiness(actor, reviewEvidence[0], sampleDecisionInput)
     : undefined;
   const hqDecisionResultCode = parseHqDecisionResultCode(search.hqDecisionResult);
+  const leaderProofDecisionResultCode = parseLeaderProofDecisionResultCode(
+    search.leaderProofDecisionResult,
+  );
   const selectedEvidenceId = search.evidenceItemId;
+  const selectedAssignmentId = search.assignmentId;
   const scopedDecisionResultCode =
     reviewEvidence[0]?.id === selectedEvidenceId ? hqDecisionResultCode : undefined;
+  const scopedLeaderProofDecisionResultCode =
+    leaderProofDecisionPreviewEvidence?.id === selectedEvidenceId &&
+    leaderProofDecisionPreviewAssignment?.id === selectedAssignmentId
+      ? leaderProofDecisionResultCode
+      : undefined;
 
   return (
     <AppShell actor={actor}>
@@ -93,7 +166,73 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         </p>
       </section>
 
+      {leaderReviewFocus.canReadFocus ? (
+        <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+            {leaderReviewFocus.roleLabel}
+          </p>
+          <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div>
+              <h2 className="text-2xl font-semibold text-white">
+                {leaderReviewFocus.title}
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/68">
+                {leaderReviewFocus.summary}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={leaderReviewFocus.primaryHref}
+                className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#06211d]"
+              >
+                {leaderReviewFocus.primaryLabel}
+              </Link>
+              <Link
+                href={leaderReviewFocus.secondaryHref}
+                className="rounded-full border border-white/14 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+              >
+                {leaderReviewFocus.secondaryLabel}
+              </Link>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {leaderReviewFocus.items.map((item) => (
+              <div key={item.label} className="rounded-2xl bg-black/20 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
+                  {item.label}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-white">{item.value}</p>
+                <p className="mt-2 text-sm leading-6 text-white/58">{item.note}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 rounded-2xl border border-white/10 bg-black/18 p-3 text-sm leading-6 text-white/62">
+            {leaderReviewFocus.safetyNote}
+          </p>
+        </section>
+      ) : null}
+
       <LeaderEvidenceFollowUpBoardPanel board={leaderEvidenceFollowUpBoard} />
+      <LeaderProofDecisionWorkspacePanel workspace={leaderProofDecisionWorkspace} />
+      {leaderProofDecisionWorkspace.canReadWorkspace && leaderProofDecisionResultPreview ? (
+        <LeaderProofDecisionResultStatesPanel
+          preview={leaderProofDecisionResultPreview}
+          states={getLeaderProofDecisionResultStates()}
+        />
+      ) : null}
+      {leaderProofDecisionWorkspace.canReadWorkspace &&
+      leaderProofDecisionPreviewAssignment &&
+      leaderProofDecisionPreviewEvidence &&
+      leaderProofDecisionWriteReadiness &&
+      leaderProofDecisionWriteInput ? (
+        <LeaderProofDecisionServerActionPanel
+          assignment={leaderProofDecisionPreviewAssignment}
+          evidenceItem={leaderProofDecisionPreviewEvidence}
+          readiness={leaderProofDecisionWriteReadiness}
+          resultCode={scopedLeaderProofDecisionResultCode}
+          defaultInput={leaderProofDecisionWriteInput}
+        />
+      ) : null}
 
       {reviewEvidence.length > 0 ? (
         <section className="grid gap-3">
@@ -204,5 +343,17 @@ function parseHqDecisionResultCode(
 
   return value && allowedCodes.has(value as HqProofDecisionResultCode)
     ? (value as HqProofDecisionResultCode)
+    : undefined;
+}
+
+function parseLeaderProofDecisionResultCode(
+  value: string | undefined,
+): LeaderProofDecisionResultCode | undefined {
+  const allowedCodes = new Set(
+    getLeaderProofDecisionResultStates().map((state) => state.code),
+  );
+
+  return value && allowedCodes.has(value as LeaderProofDecisionResultCode)
+    ? (value as LeaderProofDecisionResultCode)
     : undefined;
 }

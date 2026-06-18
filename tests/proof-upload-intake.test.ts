@@ -20,6 +20,46 @@ describe("proof upload intake", () => {
       "Publish proof",
       "Export raw proof",
     ]);
+    expect(workspace.storagePacket).toEqual(
+      expect.objectContaining({
+        title: "Goal 159 proof storage intake packet",
+        targetRoute: "/proof-library/upload",
+        futureFunction: "app.prepare_proof_upload_intake",
+        privateBucket: "proof-submissions-private",
+        publicBucket: "proof-library-public",
+        currentResultCode: "upload_disabled",
+        futureResultCode: "proof_upload_intake_recorded",
+      }),
+    );
+    expect(workspace.storagePacket?.storagePathPreview).toBe(
+      "chapters/chapter-a/campaigns/rush-month/evidence/local-proof-upload-preview/rush-social-bridge-video.mov",
+    );
+    expect(workspace.storagePacket?.rawUploadReaders).toEqual([
+      "submitter",
+      "admin",
+      "super_admin",
+    ]);
+    expect(workspace.storagePacket?.requiredMetadata).toContain("storagePath");
+    expect(workspace.storagePacket?.futureRecords).toEqual(
+      expect.arrayContaining([
+        {
+          label: "Structured event",
+          value: "proof_upload_requested",
+        },
+        {
+          label: "Audit action",
+          value: "proof_upload_intake_prepared",
+        },
+      ]),
+    );
+    expect(workspace.storagePacket?.blockedControls).toEqual(
+      expect.arrayContaining([
+        "Create signed upload URL",
+        "Write storage object",
+        "Publish public proof URL",
+        "Export raw proof to automation",
+      ]),
+    );
   });
 
   it("keeps DS Admin out of student proof content", () => {
@@ -29,6 +69,7 @@ describe("proof upload intake", () => {
     expect(workspace.canReadWorkspace).toBe(false);
     expect(workspace.summary).toContain("should not read or own student proof content");
     expect(workspace.checks).toEqual([]);
+    expect(workspace.storagePacket).toBeNull();
     expect(workspace.uploadsEnabled).toBe(false);
   });
 
@@ -94,5 +135,49 @@ describe("proof upload intake", () => {
         destination.includes("disabled"),
       ),
     ).toBe(true);
+  });
+
+  it("builds the storage packet from the same checks without enabling upload", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const workspace = getProofUploadIntakeWorkspace(actor, {
+      evidenceItemId: "evidence-bridge-video",
+      fileName: "Leader Recap.MP4",
+      mimeType: "video/mp4",
+      byteSize: 20_000_000,
+      consentToMedlifeReview: true,
+      consentToFutureSharing: true,
+      purpose: "bridge_video",
+      hesitationAddressed: "I am worried joining a chapter will feel awkward.",
+      contextSummary:
+        "The action committee chair explains how a small social moment made the chapter feel approachable.",
+    });
+
+    expect(workspace.storagePacket?.storagePathPreview).toBe(
+      "chapters/chapter-a/campaigns/rush-month/evidence/evidence-bridge-video/leader-recap.mp4",
+    );
+    expect(
+      workspace.storagePacket?.readinessChecks.find(
+        (check) => check.key === "private_bucket_previewed",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        passed: true,
+      }),
+    );
+    expect(
+      workspace.storagePacket?.readinessChecks.find(
+        (check) => check.key === "raw_readers_restricted",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        passed: true,
+      }),
+    );
+    expect(
+      workspace.storagePacket?.futureRecords.find(
+        (record) => record.label === "Disabled outbox",
+      )?.value,
+    ).toContain("AI summary");
+    expect(workspace.uploadsEnabled).toBe(false);
   });
 });
