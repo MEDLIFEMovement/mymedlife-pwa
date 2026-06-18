@@ -18,7 +18,7 @@ type AppShellProps = {
 export function AppShell({
   actor,
   children,
-  debugToolsPlacement = "before-content",
+  debugToolsPlacement = "after-content",
 }: AppShellProps) {
   const navItems = getNavigationForActor(actor);
   const quickItems = getMobileQuickNavigationForActor(actor);

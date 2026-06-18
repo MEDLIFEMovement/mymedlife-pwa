@@ -40,6 +40,10 @@ Offline behavior and notification behavior should be separate production
 decisions because they affect reliability, privacy, cache invalidation, and
 student-facing expectations.
 
+Goal 117 later adds the first conservative offline recovery shell and service
+worker. It keeps push, background sync, private app-data caching, browser writes,
+uploads, public proof sharing, and external automation disabled.
+
 ## Safety Boundary
 
 The app remains local/mock-safe. The manifest and icon are static app-shell

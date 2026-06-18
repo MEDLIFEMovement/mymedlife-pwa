@@ -45,7 +45,7 @@ The actions page now shows:
 - the disabled server result shape
 - every possible assignment creation result state
 
-The admin result-state coverage panel now marks all five first write candidates
+The admin result-state coverage panel now marks all seven first write candidates
 as covered, while browser writes and external writes remain disabled.
 
 ## What Stays Disabled

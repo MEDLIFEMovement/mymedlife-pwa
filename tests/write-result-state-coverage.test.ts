@@ -7,8 +7,8 @@ describe("write result-state coverage", () => {
 
     expect(summary).toEqual(
       expect.objectContaining({
-        totalCandidateCount: 5,
-        coveredCount: 5,
+        totalCandidateCount: 7,
+        coveredCount: 7,
         missingCount: 0,
         allCandidatesCovered: true,
         browserWritesEnabled: false,
@@ -45,8 +45,10 @@ describe("write result-state coverage", () => {
       "action_started",
       "action_assigned",
       "evidence_submitted",
+      "leader_proof_decision",
       "hq_sharing_decision",
       "coach_decision_logged",
+      "membership_approved",
     ]);
     expect(
       summary.items
@@ -61,5 +63,23 @@ describe("write result-state coverage", () => {
     expect(summary.browserWritesEnabled).toBe(false);
     expect(summary.externalWritesEnabled).toBe(false);
     expect(summary.items.every((item) => item.externalWritesStayDisabled)).toBe(true);
+  });
+
+  it("marks membership approval covered without enabling membership writes", () => {
+    const summary = getWriteResultStateCoverageSummary();
+    const membershipApproval = summary.items.find(
+      (item) => item.operation === "membership_approved",
+    );
+
+    expect(membershipApproval).toEqual(
+      expect.objectContaining({
+        route: "/chapter/members",
+        status: "covered",
+        externalWritesStayDisabled: true,
+      }),
+    );
+    expect(membershipApproval?.notes).toContain("welcome-disabled");
+    expect(membershipApproval?.notes).toContain("CRM-disabled");
+    expect(membershipApproval?.nextAction).toContain("Keep disabled");
   });
 });

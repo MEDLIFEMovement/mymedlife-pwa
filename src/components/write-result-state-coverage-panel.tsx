@@ -13,7 +13,7 @@ export function WriteResultStateCoveragePanel({
         Result-state coverage
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
-        All first-write candidates now have result-state coverage.
+        All reviewed write candidates now have result-state coverage.
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/66">
         Each future write path now has reviewed plain-English result states.

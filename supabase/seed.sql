@@ -11,40 +11,42 @@ insert into auth.users (
   created_at,
   updated_at
 ) values
-  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'member.a@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Maya Member"}', now(), now()),
-  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'leader.a@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Leo Leader"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'member.a@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Sofia Alvarez"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'leader.a@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Priya President"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'coach@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Cam Coach"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'admin@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Ari Admin"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'ds.admin@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Dee Systems"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000006', 'authenticated', 'authenticated', 'super.admin@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Sam Super"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000009', 'authenticated', 'authenticated', 'committee.member@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Nia Committee"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000010', 'authenticated', 'authenticated', 'committee.chair@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Casey Chair"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000011', 'authenticated', 'authenticated', 'eboard.a@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Eli E-Board"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000007', 'authenticated', 'authenticated', 'member.b@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Bea Member"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000008', 'authenticated', 'authenticated', 'unrelated@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Una Unrelated"}', now(), now())
 on conflict (id) do nothing;
 
 insert into app.profiles (id, display_name, email) values
-  ('00000000-0000-4000-8000-000000000001', 'Maya Member', 'member.a@mymedlife.test'),
-  ('00000000-0000-4000-8000-000000000002', 'Leo Leader', 'leader.a@mymedlife.test'),
+  ('00000000-0000-4000-8000-000000000001', 'Sofia Alvarez', 'member.a@mymedlife.test'),
+  ('00000000-0000-4000-8000-000000000002', 'Priya President', 'leader.a@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000003', 'Cam Coach', 'coach@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000004', 'Ari Admin', 'admin@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000005', 'Dee Systems', 'ds.admin@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000006', 'Sam Super', 'super.admin@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000009', 'Nia Committee', 'committee.member@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000010', 'Casey Chair', 'committee.chair@mymedlife.test'),
+  ('00000000-0000-4000-8000-000000000011', 'Eli E-Board', 'eboard.a@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000007', 'Bea Member', 'member.b@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000008', 'Una Unrelated', 'unrelated@mymedlife.test')
 on conflict (id) do nothing;
 
 insert into app.chapters (id, name, campus, region, created_by) values
-  ('10000000-0000-4000-8000-000000000001', 'Northview MEDLIFE', 'Northview University', 'Midwest', '00000000-0000-4000-8000-000000000004'),
+  ('10000000-0000-4000-8000-000000000001', 'UCLA MEDLIFE', 'UCLA', 'West Coast', '00000000-0000-4000-8000-000000000004'),
   ('10000000-0000-4000-8000-000000000002', 'Lakeside MEDLIFE', 'Lakeside College', 'Northeast', '00000000-0000-4000-8000-000000000004')
 on conflict (id) do nothing;
 
 insert into app.memberships (id, user_id, chapter_id, role_key, status, approved_at, approved_by) values
   ('20000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 'general_member', 'approved', now(), '00000000-0000-4000-8000-000000000002'),
   ('20000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', 'president_vp', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
-  ('20000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000001', 'e_board_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
+  ('20000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000001', 'e_board_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
   ('20000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000009', '10000000-0000-4000-8000-000000000001', 'action_committee_member', 'approved', now(), '00000000-0000-4000-8000-000000000002'),
   ('20000000-0000-4000-8000-000000000007', '00000000-0000-4000-8000-000000000010', '10000000-0000-4000-8000-000000000001', 'action_committee_chair', 'approved', now(), '00000000-0000-4000-8000-000000000002'),
   ('20000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000002', 'general_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
@@ -169,6 +171,28 @@ insert into app.assignments (
     array['Recruitment Director', 'Follow-Up Chair'],
     'Leader checks whether Maya needs a template or partner.',
     false
+  ),
+  (
+    '50000000-0000-4000-8000-000000000004',
+    '10000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    '41000000-0000-4000-8000-000000000001',
+    '43000000-0000-4000-8000-000000000001',
+    '42000000-0000-4000-8000-000000000001',
+    'Review-ready proof decision fixture',
+    'Fake submitted assignment used only for local leader proof decision rehearsal.',
+    '00000000-0000-4000-8000-000000000001',
+    'general_member',
+    '00000000-0000-4000-8000-000000000002',
+    'submitted',
+    'Local-only bridge-video reflection ready for leader review.',
+    15,
+    'students_invited',
+    'high',
+    'Leader can approve, request changes, or reject this fake submitted proof locally.',
+    array['President / VP', 'Recruitment Director'],
+    'Leader reviews the proof before points or KPI movement can count.',
+    false
   )
 on conflict (id) do nothing;
 
@@ -187,6 +211,7 @@ where id = '51000000-0000-4000-8000-000000000001';
 
 insert into app.evidence_items (id, assignment_id, chapter_id, chapter_event_id, submitted_by_user_id, evidence_type, summary, url, target_audiences, proof_categories, messenger_type, lifecycle_stage, hesitation_addressed, status, sharing_status, nps_score, activity_label) values
   ('60000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', '51000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000001', 'link', 'I met two freshmen who said the kickoff made MEDLIFE feel welcoming instead of intimidating.', 'https://drive.google.com/mock/bridge-video', array['student', 'chapter_leader'], array['belonging', 'identity'], 'student', 'rush_month', 'Will I find friends here?', 'pending_review', 'submitted', 72, 'Rush Month kickoff social'),
+  ('60000000-0000-4000-8000-000000000004', '50000000-0000-4000-8000-000000000004', '10000000-0000-4000-8000-000000000001', null, '00000000-0000-4000-8000-000000000001', 'link', 'Fake submitted proof for local leader approve/request/reject rehearsal.', 'https://drive.google.com/mock/leader-proof-decision-fixture', array['student', 'chapter_leader'], array['belonging', 'follow_up'], 'student', 'rush_month', 'Will my work count?', 'pending_review', 'submitted', null, 'Leader proof decision fixture'),
   ('60000000-0000-4000-8000-000000000002', '50000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', '51000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000007', 'text', 'Fake Lakeside testimonial for RLS isolation.', null, array['student'], array['belonging'], 'student', 'rush_month', 'Will I belong?', 'pending_review', 'submitted', null, 'Lakeside fake event')
 on conflict (id) do nothing;
 

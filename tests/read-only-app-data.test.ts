@@ -11,7 +11,7 @@ describe("read-only app data service", () => {
     const data = getMockReadOnlyAppData("Testing fallback.");
 
     expect(data.source.status).toBe("mock_fallback");
-    expect(data.chapter.name).toContain("Northview");
+    expect(data.chapter.name).toContain("UCLA");
     expect(data.assignments.length).toBeGreaterThan(0);
   });
 
@@ -44,7 +44,7 @@ describe("read-only app data service", () => {
     const data = await getSupabaseReadOnlyAppData(createFakeClient(fakeRows));
 
     expect(data.source.status).toBe("supabase_ready");
-    expect(data.chapter.name).toBe("Northview MEDLIFE");
+    expect(data.chapter.name).toBe("UCLA MEDLIFE");
     expect(data.campaign.name).toBe("Rush Month");
     expect(data.campaign.weekLabel).toBe("Invite week");
     expect(data.assignments).toEqual([
@@ -104,8 +104,8 @@ const fakeRows: Record<string, unknown[]> = {
   chapters: [
     {
       id: "chapter-1",
-      name: "Northview MEDLIFE",
-      campus: "Northview University",
+      name: "UCLA MEDLIFE",
+      campus: "UCLA",
       region: "Midwest",
       status: "active",
       created_by: "admin-1",

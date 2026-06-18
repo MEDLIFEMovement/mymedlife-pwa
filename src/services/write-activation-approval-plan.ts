@@ -46,22 +46,22 @@ export const writeActivationCandidates = [
     mustStayDisabled: ["external sends", "proof uploads", "production Supabase"],
   },
   {
-    operation: "action_assigned",
-    route: "/rush-month/actions",
-    recommendedOrder: 2,
-    riskLevel: "medium",
-    reason:
-      "Leader assignment creation changes chapter operating truth and creates a disabled n8n outbox row, so it should follow the lower-risk action-start path.",
-    mustStayDisabled: ["reminder sends", "production Supabase", "live external writes"],
-  },
-  {
     operation: "evidence_submitted",
     route: "/rush-month/actions/[assignmentId]",
-    recommendedOrder: 3,
+    recommendedOrder: 2,
     riskLevel: "medium",
     reason:
       "Proof/testimonial metadata should wait until auth identity and upload-disabled behavior are clearly reviewed.",
     mustStayDisabled: ["file uploads", "public proof sharing", "external automation"],
+  },
+  {
+    operation: "leader_proof_decision",
+    route: "/rush-month/review",
+    recommendedOrder: 3,
+    riskLevel: "high",
+    reason:
+      "Leader proof decisions change assignment truth, points, and KPI movement, so they should wait until proof metadata, local auth, and Goal 115 RLS coverage are current.",
+    mustStayDisabled: ["member nudges", "public proof sharing", "external automation"],
   },
   {
     operation: "hq_sharing_decision",
@@ -73,13 +73,31 @@ export const writeActivationCandidates = [
     mustStayDisabled: ["public publishing", "warehouse exports", "external automation"],
   },
   {
+    operation: "action_assigned",
+    route: "/rush-month/actions",
+    recommendedOrder: 5,
+    riskLevel: "medium",
+    reason:
+      "Leader assignment creation changes chapter operating truth and creates a disabled n8n outbox row, so it should follow proof decision and HQ review paths.",
+    mustStayDisabled: ["reminder sends", "production Supabase", "live external writes"],
+  },
+  {
     operation: "coach_decision_logged",
     route: "/coach",
-    recommendedOrder: 5,
+    recommendedOrder: 6,
     riskLevel: "high",
     reason:
-      "Coach advance, hold, or intervene decisions change chapter readiness truth and may later trigger escalation packets, so they should be activated last among the first five writes.",
+      "Coach advance, hold, or intervene decisions change chapter readiness truth and may later trigger escalation packets, so they should be activated only after the member, proof, HQ, and assignment writes are proven.",
     mustStayDisabled: ["n8n escalation packets", "email/SMS", "AI summaries"],
+  },
+  {
+    operation: "membership_approved",
+    route: "/chapter/members",
+    recommendedOrder: 7,
+    riskLevel: "high",
+    reason:
+      "Membership approval changes chapter access and role scope, so it should wait until production auth identity, duplicate prevention, RLS, rollback, audit readback, and disabled welcome/CRM behavior are proven.",
+    mustStayDisabled: ["welcome sends", "CRM sync", "role escalation"],
   },
 ] as const satisfies readonly WriteActivationCandidate[];
 

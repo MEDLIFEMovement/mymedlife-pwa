@@ -3,23 +3,25 @@
 ## Purpose
 
 Goal 83 makes `/admin/staff-dry-run` a more useful rehearsal surface for HQ
-reviewers. The page now shows the five guarded local Rush Month write packets
-in one place so staff can rehearse the end-to-end operating loop without
-turning on production auth, browser writes, uploads, or external automation.
+reviewers. The current page now shows seven guarded write packets in one place
+so staff can rehearse the Rush Month operating loop plus membership approval
+readiness without turning on production auth, uploads, or external automation.
 
 ## What It Adds
 
-- A five-write rehearsal section on `/admin/staff-dry-run`
+- A seven-write rehearsal section on `/admin/staff-dry-run`
 - Runtime packet status mirrored from the existing write-sequence planner
 - Packet links for:
   - action-start packet
   - proof metadata packet
+  - leader proof decision packet
   - HQ proof decision packet
   - leader assignment packet
   - coach decision packet
+  - membership approval readiness packet
 - Operating-route links, fake local actor emails, packet decisions, readback
   counts, staging posture, rehearsal actions, and stop conditions
-- Tests proving the staff dry run includes all five packets and keeps external
+- Tests proving the staff dry run includes all seven packets and keeps external
   sends at zero
 
 ## Safety Boundary
@@ -28,7 +30,7 @@ This goal does not:
 
 - enable production auth
 - enable browser write controls
-- run the five-write drill
+- run the local write drill
 - upload proof files
 - publish proof publicly
 - invite pilot students

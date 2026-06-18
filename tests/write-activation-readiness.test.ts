@@ -11,7 +11,7 @@ describe("write activation readiness", () => {
       coachDecision: kpiSummary.coachDecision,
     });
 
-    expect(summary.operationCount).toBe(5);
+    expect(summary.operationCount).toBe(7);
     expect(summary.enabledControlCount).toBe(0);
     expect(summary.allControlsDisabled).toBe(true);
     expect(summary.items.map((item) => item.operation)).toEqual([
@@ -19,7 +19,9 @@ describe("write activation readiness", () => {
       "action_assigned",
       "evidence_submitted",
       "hq_sharing_decision",
+      "leader_proof_decision",
       "coach_decision_logged",
+      "membership_approved",
     ]);
     expect(summary.items.every((item) => item.blockingLabels.length > 0)).toBe(true);
   });
@@ -51,6 +53,7 @@ describe("write activation readiness", () => {
     expect(roleAllowedOperations).toEqual([
       "hq_sharing_decision",
       "coach_decision_logged",
+      "membership_approved",
     ]);
     expect(summary.enabledControlCount).toBe(0);
   });

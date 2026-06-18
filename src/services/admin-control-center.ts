@@ -1,11 +1,14 @@
 import { campaignShells } from "@/data/mock-campaigns";
 import { mockChapter } from "@/data/mock-rush-month";
 import {
+  getMockLocalActorContext,
   localActorOptions,
   type LocalActorOption,
 } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import type { ActorAudience } from "@/services/local-actor-context";
+import { getWriteSequencePlanner } from "@/services/write-sequence-planner";
+import type { CampaignShellStatus } from "@/shared/types/campaigns";
 
 export type AdminControlAreaKey =
   | "audit_logs"
@@ -42,6 +45,58 @@ export type AdminRoleCoverageItem = {
   detail: string;
 };
 
+export type AdminOperatingResponsibilityItem = {
+  operationKey: string;
+  label: string;
+  route: string;
+  responsibleRole: string;
+  responsibility: string;
+  reviewPrompt: string;
+  safetyBoundary: string;
+};
+
+export type AdminUserInventoryItem = {
+  email: string;
+  displayName: string;
+  audience: ActorAudience;
+  chapterRoles: readonly string[];
+  staffRoles: readonly string[];
+  chapterNames: readonly string[];
+  coachPortfolioChapterNames: readonly string[];
+  status: AdminControlStatus;
+  detail: string;
+};
+
+export type AdminChapterInventoryItem = {
+  id: string;
+  name: string;
+  campus: string;
+  region: string;
+  coachName: string;
+  status: AdminControlStatus;
+  detail: string;
+};
+
+export type AdminCampaignTemplateInventoryItem = {
+  slug: string;
+  name: string;
+  status: CampaignShellStatus;
+  primaryKpis: readonly string[];
+  actionCommitteeLanes: readonly string[];
+  integrationPosture: string;
+  adminStatus: AdminControlStatus;
+  detail: string;
+};
+
+export type AdminMasterDataInventory = {
+  users: readonly AdminUserInventoryItem[];
+  roles: readonly AdminRoleCoverageItem[];
+  chapters: readonly AdminChapterInventoryItem[];
+  campaignTemplates: readonly AdminCampaignTemplateInventoryItem[];
+  mutationControlsEnabled: 0;
+  externalWritesExpected: 0;
+};
+
 export type AdminControlCenterSummary = {
   canWriteAdminChanges: false;
   productionAuthEnabled: false;
@@ -52,7 +107,10 @@ export type AdminControlCenterSummary = {
   roleAudienceCount: number;
   namedRoleCount: number;
   disabledOutboxCount: number;
+  auditLogCount: number;
   roleCoverage: readonly AdminRoleCoverageItem[];
+  operatingResponsibilities: readonly AdminOperatingResponsibilityItem[];
+  masterDataInventory: AdminMasterDataInventory;
   areas: readonly AdminControlArea[];
   healthItems: readonly AdminSystemHealthItem[];
 };
@@ -67,6 +125,9 @@ export function getAdminControlCenterSummary(
   const disabledOutboxCount = data.outboxItems.filter((item) => {
     return item.status === "disabled";
   }).length;
+  const auditLogCount = data.auditLogs.length;
+  const operatingResponsibilities = getAdminOperatingResponsibilities(data);
+  const masterDataInventory = getAdminMasterDataInventory(data, actors, roleCoverage);
   const areas = [
     {
       key: "users",
@@ -120,12 +181,17 @@ export function getAdminControlCenterSummary(
     {
       key: "audit_logs",
       title: "Audit logs",
-      status: "mock_only",
-      primaryMetric: "local previews",
+      status: auditLogCount > 0 ? "ready_readonly" : "mock_only",
+      primaryMetric:
+        auditLogCount > 0 ? `${auditLogCount} visible rows` : "0 visible rows",
       detail:
-        "Local contracts and the Rush Month loop create audit intent, but admin audit browsing is not table-backed yet.",
+        auditLogCount > 0
+          ? "Read-only admin audit browsing can show persisted local audit rows without enabling writes."
+          : "Mock fallback can show audit intent, but persisted audit rows are not visible until local Supabase write/readback drills run.",
       nextAction:
-        "Add read-only audit-log browsing after the first approved write path creates persisted audit rows.",
+        auditLogCount > 0
+          ? "Confirm each approved write path creates actor, target, before/after, reason, and readback evidence."
+          : "Run localhost Supabase write/readback drills before treating audit coverage as production-ready.",
     },
     {
       key: "system_health",
@@ -149,10 +215,82 @@ export function getAdminControlCenterSummary(
     roleAudienceCount,
     namedRoleCount,
     disabledOutboxCount,
+    auditLogCount,
     roleCoverage,
+    operatingResponsibilities,
+    masterDataInventory,
     areas,
     healthItems: getAdminSystemHealthItems(data, actors, roleCoverage),
   };
+}
+
+function getAdminMasterDataInventory(
+  data: ReadOnlyAppData,
+  actors: readonly LocalActorOption[],
+  roleCoverage: readonly AdminRoleCoverageItem[],
+): AdminMasterDataInventory {
+  return {
+    users: actors.map((actor) => ({
+      email: actor.email,
+      displayName: actor.displayName,
+      audience: actor.audience,
+      chapterRoles: actor.chapterRoles,
+      staffRoles: actor.staffRoles,
+      chapterNames: actor.chapterNames,
+      coachPortfolioChapterNames: actor.coachPortfolioChapterNames,
+      status: "mock_only",
+      detail:
+        "Fake local review persona. Replace with Supabase Auth profile data only after production auth approval.",
+    })),
+    roles: roleCoverage,
+    chapters: [
+      {
+        id: data.chapter.id,
+        name: data.chapter.name,
+        campus: data.chapter.campus,
+        region: data.chapter.region,
+        coachName: data.chapter.coachName,
+        status: data.source.mode === "supabase" ? "ready_readonly" : "mock_only",
+        detail:
+          data.source.mode === "supabase"
+            ? "Read from the local Supabase read-only data source."
+            : "Mock chapter scope used for local MVP review.",
+      },
+    ],
+    campaignTemplates: campaignShells.map((shell) => ({
+      slug: shell.slug,
+      name: shell.name,
+      status: shell.status,
+      primaryKpis: shell.primaryKpis,
+      actionCommitteeLanes: shell.actionCommitteeLanes,
+      integrationPosture: shell.integrationPosture,
+      adminStatus: "ready_readonly",
+      detail:
+        "Read-only campaign shell. Template editing stays disabled until campaign admin writes are approved.",
+    })),
+    mutationControlsEnabled: 0,
+    externalWritesExpected: 0,
+  };
+}
+
+function getAdminOperatingResponsibilities(
+  data: ReadOnlyAppData,
+): AdminOperatingResponsibilityItem[] {
+  const adminActor = getMockLocalActorContext(
+    "admin@mymedlife.test",
+    "Admin control center responsibility summary.",
+  );
+  const planner = getWriteSequencePlanner(adminActor, data);
+
+  return planner.operations.map((operation) => ({
+    operationKey: operation.key,
+    label: operation.label,
+    route: operation.packetStatus.route,
+    responsibleRole: operation.roleResponsibility.roleLabel,
+    responsibility: operation.roleResponsibility.responsibility,
+    reviewPrompt: operation.roleResponsibility.reviewPrompt,
+    safetyBoundary: operation.roleResponsibility.safetyBoundary,
+  }));
 }
 
 export function getAudienceLabels(

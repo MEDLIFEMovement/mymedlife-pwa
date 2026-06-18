@@ -10,8 +10,8 @@ describe("student home workspace", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const workspace = getStudentHomeWorkspace(actor, data);
 
-    expect(workspace.greeting).toBe("Hi, Maya");
-    expect(workspace.chapterName).toBe("Northview University MEDLIFE");
+    expect(workspace.greeting).toBe("Hi, Sofia");
+    expect(workspace.chapterName).toBe("UCLA MEDLIFE");
     expect(workspace.startNextAction.href).toBe("/rush-month/actions/member-push");
     expect(workspace.startNextAction.label).toBe("Start next action");
     expect(workspace.campaign.href).toBe("/rush-month");

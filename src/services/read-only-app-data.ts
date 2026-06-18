@@ -107,7 +107,7 @@ export async function getSupabaseReadOnlyAppData(
 ): Promise<ReadOnlyAppData> {
   const snapshot = await readLocalDataSnapshot(client);
   const chapter =
-    snapshot.chapters.find((item) => item.name.includes("Northview")) ??
+    snapshot.chapters.find((item) => item.status === "active") ??
     snapshot.chapters[0];
 
   if (!chapter) {
@@ -412,7 +412,7 @@ function toDomainEvidenceItem(row: EvidenceItemRow): EvidenceItem {
     submittedBy: "Local Supabase member",
     evidenceType: row.evidence_type,
     summary: row.summary,
-    status: row.status === "rejected" ? "changes_requested" : row.status,
+    status: row.status,
   };
 }
 

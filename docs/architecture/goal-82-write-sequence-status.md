@@ -3,7 +3,9 @@
 ## Purpose
 
 Goal 82 upgrades `/admin/write-sequence` from a static promotion map into a
-live staff-review summary of the five local Rush Month write packets.
+live staff-review summary of the local Rush Month write packets. Goal 116
+extends the sequence with leader proof decision server-action status, and Goal
+162 extends the current sequence to seven guarded local candidates.
 
 The page still does not enable writes. It helps HQ see which packet is blocked,
 ready, or already proven by local readback before any staging discussion.
@@ -13,9 +15,11 @@ ready, or already proven by local readback before any staging discussion.
 - Runtime packet status on every write-sequence operation:
   - action-start packet
   - proof metadata packet
+  - leader proof decision packet
   - HQ proof decision packet
   - leader assignment packet
   - coach decision packet
+  - membership approval readiness packet
 - Per-operation packet route, plain-English decision, readback count,
   browser-write expectation, and staging-review posture
 - UI cards on `/admin/write-sequence`
@@ -27,7 +31,7 @@ ready, or already proven by local readback before any staging discussion.
 This goal does not:
 
 - enable production auth
-- run the five-write drill
+- run the local write drill
 - enable browser writes
 - upload proof
 - publish proof publicly

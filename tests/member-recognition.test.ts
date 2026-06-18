@@ -13,7 +13,7 @@ describe("member recognition", () => {
 
     expect(recognition.canReadRecognition).toBe(true);
     expect(recognition.title).toBe("Your recognition");
-    expect(recognition.selectedMember?.displayName).toBe("Maya Member");
+    expect(recognition.selectedMember?.displayName).toBe("Sofia Alvarez");
     expect(recognition.selectedMember?.rank).toBe(1);
     expect(recognition.selectedMember?.points).toBe(42);
     expect(recognition.impacts.map((impact) => impact.label)).toEqual([

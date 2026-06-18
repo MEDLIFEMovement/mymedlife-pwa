@@ -11,20 +11,24 @@ export function DataSourceNotice({ source }: DataSourceNoticeProps) {
     <section
       className={
         isSupabase
-          ? "rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-4"
-          : "rounded-3xl border border-amber-300/20 bg-amber-300/10 p-4"
+          ? "rounded-2xl border border-emerald-300/20 bg-emerald-300/10 px-4 py-3"
+          : "rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-3"
       }
     >
-      <p
-        className={
-          isSupabase
-            ? "text-xs font-semibold uppercase tracking-[0.22em] text-emerald-100"
-            : "text-xs font-semibold uppercase tracking-[0.22em] text-amber-100"
-        }
-      >
-        {isSupabase ? "Local Supabase read path" : "Mock fallback"}
-      </p>
-      <p className="mt-2 text-sm leading-6 text-white/68">{source.message}</p>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={
+              isSupabase
+                ? "rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-emerald-100"
+                : "rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-amber-100"
+            }
+          >
+            {isSupabase ? "Local Supabase review data" : "Mock-seeded review data"}
+          </span>
+          <p className="text-sm leading-6 text-white/68">{source.message}</p>
+        </div>
+      </div>
     </section>
   );
 }

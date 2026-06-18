@@ -1,6 +1,7 @@
 import {
   getActionStartWriteConfig,
   getActionStartWriteReadiness,
+  isUuid,
 } from "@/services/action-start-write";
 import {
   getProofSubmissionWriteConfig,
@@ -10,6 +11,10 @@ import {
   getHqProofDecisionWriteConfig,
   getHqProofDecisionWriteReadiness,
 } from "@/services/hq-proof-decision-write";
+import {
+  getLeaderProofDecisionWriteConfig,
+  getLeaderProofDecisionWriteReadiness,
+} from "@/services/leader-proof-decision-write";
 import {
   getCoachDecisionWriteConfig,
   getCoachDecisionWriteReadiness,
@@ -22,26 +27,38 @@ import {
 } from "@/services/assignment-create-write";
 import {
   canCreateChapterAssignment,
+  canApproveChapterMembership,
   canLogCoachDecision,
   canMakeHqSharingDecision,
+  canRecordLeaderProofDecision,
   canSubmitProofForAssignment,
   createActionStartedMock,
   createChapterAssignmentMock,
+  createChapterMembershipApprovalMock,
   createCoachDecisionMock,
   createHqSharingDecisionMock,
+  createLeaderProofDecisionMock,
   createProofSubmissionMock,
   type ChapterAssignmentInput,
+  type ChapterMembershipApprovalInput,
   type CoachDecisionInput,
   type HqSharingDecisionInput,
   type LocalContractResult,
   type LocalActionStarted,
   type LocalAssignmentCreated,
+  type LocalMembershipApproval,
   type LocalCoachDecision,
   type LocalHqSharingDecision,
+  type LocalLeaderProofDecision,
   type LocalProofSubmission,
+  type LeaderProofDecisionInput,
   type ProofSubmissionInput,
 } from "@/services/local-action-contracts";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getMembershipApprovalWriteConfig,
+  getMembershipApprovalWriteReadiness,
+} from "@/services/membership-approval-write-readiness";
 import { canReadAssignment } from "@/services/role-visibility";
 import { getWritePlanOperation } from "@/services/write-plan-matrix";
 import type { Assignment, EvidenceItem } from "@/shared/types/domain";
@@ -52,6 +69,8 @@ export type ActivationCheckKey =
   | "actor_can_read_assignment"
   | "actor_can_create_assignment"
   | "actor_can_log_coach_decision"
+  | "actor_can_approve_membership"
+  | "actor_can_record_leader_proof_decision"
   | "actor_can_submit_proof"
   | "actor_can_make_hq_sharing_decision"
   | "actor_allowed_by_write_plan"
@@ -61,12 +80,21 @@ export type ActivationCheckKey =
   | "duplicate_assignment"
   | "evidence_not_final"
   | "evidence_uuid"
+  | "applicant_profile_ready"
   | "owner_role_valid"
+  | "join_request_visible"
+  | "requested_role_valid"
+  | "no_duplicate_membership"
+  | "audit_reason_present"
   | "reminders_disabled"
   | "local_database_function_exists"
   | "note_long_enough"
   | "proof_uploads_disabled"
+  | "member_nudges_disabled"
+  | "proof_ready_for_leader_decision"
   | "public_sharing_disabled"
+  | "welcome_sends_disabled"
+  | "crm_sync_disabled"
   | "rls_tests_exist"
   | "summary_long_enough"
   | "blocker_summary_present"
@@ -90,9 +118,12 @@ export type BrowserWriteActivationGate = {
     | "action_assigned"
     | "coach_decision_logged"
     | "evidence_submitted"
-    | "hq_sharing_decision";
+    | "hq_sharing_decision"
+    | "leader_proof_decision"
+    | "membership_approved";
   route:
     | "/coach"
+    | "/chapter/members"
     | "/rush-month/actions/[assignmentId]"
     | "/rush-month/actions"
     | "/rush-month/review";
@@ -101,8 +132,10 @@ export type BrowserWriteActivationGate = {
     | "app.start_assignment_action"
     | "app.create_chapter_assignment"
     | "app.log_coach_decision"
+    | "app.approve_chapter_membership"
     | "app.submit_assignment_proof_metadata"
-    | "app.record_hq_proof_sharing_decision";
+    | "app.record_hq_proof_sharing_decision"
+    | "app.record_leader_proof_decision";
   functionSignature: string;
   status: "blocked_until_approval" | "ready_for_local_write";
   canRenderEnabledControl: boolean;
@@ -112,9 +145,11 @@ export type BrowserWriteActivationGate = {
   preview: LocalContractResult<
     | LocalActionStarted
     | LocalAssignmentCreated
+    | LocalMembershipApproval
     | LocalCoachDecision
     | LocalProofSubmission
     | LocalHqSharingDecision
+    | LocalLeaderProofDecision
   >;
 };
 
@@ -202,6 +237,161 @@ export function getActionStartBrowserWriteGate(
       },
     ],
     preview: createActionStartedMock(actor, assignment),
+  };
+}
+
+export function getMembershipApprovalBrowserWriteGate(
+  actor: LocalActorContext,
+  input: ChapterMembershipApprovalInput,
+  existingMemberEmails: readonly string[] = [],
+  env: EnvSource = process.env,
+): BrowserWriteActivationGate {
+  const writePlan = getWritePlanOperation("membership_approved");
+  const writeConfig = getMembershipApprovalWriteConfig(env);
+  const membershipReadiness = getMembershipApprovalWriteReadiness(
+    actor,
+    input,
+    existingMemberEmails,
+    env,
+  );
+  const actorCanApproveMembership = canApproveChapterMembership(actor);
+  const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+  const localAuthApproved =
+    actor.identitySource === "local_auth_session" &&
+    actor.authSessionStatus === "signed_in";
+
+  return {
+    operation: "membership_approved",
+    route: "/chapter/members",
+    label: "Approve membership browser write",
+    localFunction: "app.approve_chapter_membership",
+    functionSignature:
+      "app.approve_chapter_membership(chapter_uuid, join_request_uuid, requested_role_key, audit_reason)",
+    status: membershipReadiness.canSubmit
+      ? "ready_for_local_write"
+      : "blocked_until_approval",
+    canRenderEnabledControl: membershipReadiness.canSubmit,
+    envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
+    nextApprovalNeeded: membershipReadiness.canSubmit
+      ? "Local membership approval write is ready for localhost-only testing."
+      : approvalMessage,
+    checks: [
+      {
+        key: "actor_can_approve_membership",
+        label: "Current local actor can approve chapter membership",
+        passed: actorCanApproveMembership,
+        detail: actorCanApproveMembership
+          ? `${actor.audienceLabel} can shape membership approval writes in the local contract.`
+          : `${actor.audienceLabel} cannot approve chapter membership truth.`,
+      },
+      {
+        key: "actor_allowed_by_write_plan",
+        label: "Actor is allowed by the planned write matrix",
+        passed: actorAllowedByPlan,
+        detail: actorAllowedByPlan
+          ? `${actor.audienceLabel} is allowed for membership approval in the write plan.`
+          : `${actor.audienceLabel} is blocked from membership approval in the write plan.`,
+      },
+      {
+        key: "local_database_function_exists",
+        label: "Local database function exists",
+        passed: false,
+        detail:
+          "Goal 162 is a readiness packet only. app.approve_chapter_membership still needs a SQL/RLS implementation before local writes can open.",
+      },
+      {
+        key: "rls_tests_exist",
+        label: "RLS/security tests exist",
+        passed: false,
+        detail:
+          "Membership approval needs SQL/RLS tests for leader/admin approval, duplicate protection, DS Admin denial, disabled outbox, and audit rows.",
+      },
+      {
+        key: "join_request_visible",
+        label: "Join request is visible and specific",
+        passed:
+          membershipReadiness.checks.find((check) => {
+            return check.key === "join_request_visible";
+          })?.passed ?? false,
+        detail: "The approval must target one chapter-scoped join request.",
+      },
+      {
+        key: "applicant_profile_ready",
+        label: "Applicant profile email is valid",
+        passed:
+          membershipReadiness.checks.find((check) => {
+            return check.key === "applicant_profile_ready";
+          })?.passed ?? false,
+        detail: "The applicant email must map to one production profile before approval.",
+      },
+      {
+        key: "requested_role_valid",
+        label: "Requested role is chapter-scoped",
+        passed:
+          membershipReadiness.checks.find((check) => {
+            return check.key === "requested_role_valid";
+          })?.passed ?? false,
+        detail: "Membership approval cannot assign coach, admin, DS Admin, or Super Admin roles.",
+      },
+      {
+        key: "no_duplicate_membership",
+        label: "No duplicate membership exists",
+        passed:
+          membershipReadiness.checks.find((check) => {
+            return check.key === "no_duplicate_membership";
+          })?.passed ?? false,
+        detail: "The write must not create a second membership for the same chapter/profile.",
+      },
+      {
+        key: "audit_reason_present",
+        label: "Audit reason has enough context",
+        passed:
+          membershipReadiness.checks.find((check) => {
+            return check.key === "audit_reason_present";
+          })?.passed ?? false,
+        detail: "The audit log should explain why chapter access changed.",
+      },
+      {
+        key: "welcome_sends_disabled",
+        label: "Welcome messages stay disabled",
+        passed: !writeConfig.sendsWelcome,
+        detail:
+          "Approving membership may shape a future outbox row, but no email or SMS welcome should send.",
+      },
+      {
+        key: "crm_sync_disabled",
+        label: "CRM sync stays disabled",
+        passed: !writeConfig.syncsCrm,
+        detail:
+          "Approving membership should not update HubSpot or any CRM destination until separately approved.",
+      },
+      {
+        key: "external_writes_disabled",
+        label: "External writes stay disabled",
+        passed: !writeConfig.externalWritesEnabled,
+        detail:
+          "Membership approval records internal/integration events and a disabled outbox row; it does not send external writes.",
+      },
+      {
+        key: "live_auth_approved",
+        label: "Live auth/browser session approved",
+        passed: localAuthApproved,
+        detail: localAuthApproved
+          ? "A signed-in local Supabase Auth session is driving actor context."
+          : "A signed-in local Supabase Auth session is required before this write can run.",
+      },
+      {
+        key: "browser_write_approved",
+        label: "Browser write approval granted",
+        passed: writeConfig.enabled,
+        detail: writeConfig.reason,
+      },
+    ],
+    preview: createChapterMembershipApprovalMock(
+      actor,
+      input,
+      existingMemberEmails,
+    ),
   };
 }
 
@@ -588,6 +778,139 @@ export function getHqSharingDecisionBrowserWriteGate(
       },
     ],
     preview: createHqSharingDecisionMock(actor, evidenceItem, input),
+  };
+}
+
+export function getLeaderProofDecisionBrowserWriteGate(
+  actor: LocalActorContext,
+  assignment: Assignment,
+  evidenceItem: EvidenceItem,
+  input: LeaderProofDecisionInput,
+  env: EnvSource = process.env,
+): BrowserWriteActivationGate {
+  const writePlan = getWritePlanOperation("leader_proof_decision");
+  const writeConfig = getLeaderProofDecisionWriteConfig(env);
+  const readiness = getLeaderProofDecisionWriteReadiness(
+    actor,
+    assignment,
+    evidenceItem,
+    input,
+    env,
+  );
+  const actorCanRecord = canRecordLeaderProofDecision(actor);
+  const actorAllowedByPlan = writePlan.allowedActors.includes(actor.audience);
+  const proofReady =
+    assignment.status === "submitted" && evidenceItem.status === "pending_review";
+  const noteLongEnough = input.note.trim().length >= 12;
+  const localAuthApproved =
+    actor.identitySource === "local_auth_session" &&
+    actor.authSessionStatus === "signed_in";
+
+  return {
+    operation: "leader_proof_decision",
+    route: "/rush-month/review",
+    label: "Leader proof decision browser write",
+    localFunction: "app.record_leader_proof_decision",
+    functionSignature:
+      "app.record_leader_proof_decision(evidence_uuid, decision_input, review_note)",
+    status: readiness.canSubmit ? "ready_for_local_write" : "blocked_until_approval",
+    canRenderEnabledControl: readiness.canSubmit,
+    envRequestedLocalWrites: env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true",
+    nextApprovalNeeded: readiness.canSubmit
+      ? "Local leader proof decision write is ready for localhost-only testing."
+      : approvalMessage,
+    checks: [
+      {
+        key: "actor_can_record_leader_proof_decision",
+        label: "Current local actor can record chapter proof decisions",
+        passed: actorCanRecord,
+        detail: actorCanRecord
+          ? `${actor.audienceLabel} can record chapter proof decisions.`
+          : `${actor.audienceLabel} cannot record chapter proof decisions.`,
+      },
+      {
+        key: "actor_allowed_by_write_plan",
+        label: "Actor is allowed by the planned write matrix",
+        passed: actorAllowedByPlan,
+        detail: actorAllowedByPlan
+          ? `${actor.audienceLabel} is allowed for leader proof decisions in the write plan.`
+          : `${actor.audienceLabel} is blocked from leader proof decisions in the write plan.`,
+      },
+      {
+        key: "local_database_function_exists",
+        label: "Local database function exists",
+        passed: true,
+        detail:
+          "Goal 115 implemented app.record_leader_proof_decision(evidence_uuid uuid, decision_input text, review_note text).",
+      },
+      {
+        key: "rls_tests_exist",
+        label: "RLS/security tests exist",
+        passed: true,
+        detail:
+          "supabase/tests/database/rls_goal_115.test.sql proves direct bypasses are blocked and function writes are audited.",
+      },
+      {
+        key: "evidence_uuid",
+        label: "Evidence item ID is a Supabase UUID",
+        passed: isUuid(evidenceItem.id),
+        detail: isUuid(evidenceItem.id)
+          ? "This proof item can be sent to the local Supabase function."
+          : "Mock proof IDs cannot be sent to the local Supabase function.",
+      },
+      {
+        key: "proof_ready_for_leader_decision",
+        label: "Proof is ready for leader decision",
+        passed: proofReady,
+        detail: proofReady
+          ? "Assignment is submitted and proof is pending review."
+          : "Leader decisions require submitted assignments with proof pending review.",
+      },
+      {
+        key: "note_long_enough",
+        label: "Decision note has enough context",
+        passed: noteLongEnough,
+        detail: noteLongEnough
+          ? "The local note is long enough for audit context."
+          : "Leader proof decisions need a plain-English note.",
+      },
+      {
+        key: "member_nudges_disabled",
+        label: "Member nudges stay disabled",
+        passed: true,
+        detail:
+          "Goal 116 does not send notifications after leader proof decisions.",
+      },
+      {
+        key: "public_sharing_disabled",
+        label: "Public proof sharing stays disabled",
+        passed: true,
+        detail:
+          "Leader proof decisions affect chapter completion only; HQ broad sharing remains separate.",
+      },
+      {
+        key: "external_writes_disabled",
+        label: "External writes stay disabled",
+        passed: true,
+        detail:
+          "Leader proof decisions create disabled outbox rows only; they do not send external writes.",
+      },
+      {
+        key: "live_auth_approved",
+        label: "Live auth/browser session approved",
+        passed: localAuthApproved,
+        detail: localAuthApproved
+          ? "A signed-in local Supabase Auth session is driving actor context."
+          : "A signed-in local Supabase Auth session is required before this write can run.",
+      },
+      {
+        key: "browser_write_approved",
+        label: "Browser write approval granted",
+        passed: writeConfig.enabled,
+        detail: writeConfig.reason,
+      },
+    ],
+    preview: createLeaderProofDecisionMock(actor, assignment, evidenceItem, input),
   };
 }
 

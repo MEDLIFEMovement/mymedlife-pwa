@@ -18,7 +18,9 @@ adds the second local-only browser-to-Supabase write path for
 local-only browser-to-Supabase write path for `hq_sharing_decision`. Goal 64
 adds the fourth local-only browser-to-Supabase write path for `action_assigned`
 assignment creation. Goal 65 adds the fifth local-only browser-to-Supabase
-write path for `coach_decision_logged`.
+write path for `coach_decision_logged`. Goal 116 adds the sixth local-only
+browser-to-Supabase write path for `leader_proof_decision` on
+`/rush-month/review`.
 Goals 74 through 76 add `/admin/first-write` so staff can inspect the first
 action-start write drill, review post-drill readback evidence, and use one
 operator-ready packet for env settings, fake sign-in, route sequence, proof
@@ -34,12 +36,137 @@ write, `hq_sharing_decision_logged`, only after proof metadata readback is
 proven.
 Goal 80 adds `/admin/assignment-write` so staff can prepare the fourth local
 write, `action_assigned`, only after HQ proof decision readback is proven.
+Goal 115 adds the local-only database/RLS packet for
+`leader_proof_decision`. Goal 116 adds the local browser/server-action path for
+that function, but it remains disabled by default and requires local Supabase
+Auth plus the explicit leader proof decision write flag.
+Goal 130 adds `/admin/database-security` as the focused read-only
+Supabase-versus-PlanetScale review surface for DS/security before production
+setup.
+Goal 131 adds `/admin/launch-gate` as the focused read-only production launch
+gate before any live pilot approval.
+Goal 150 adds the launch evidence checklist inside `/admin/launch-gate` so
+staging URL, Supabase posture, auth callback, RLS/CI, proof storage,
+device/PWA/accessibility QA, monitoring, integration hold, and pilot support
+ownership can be collected before any pilot approval.
+Goal 132 adds `/admin/release-readiness` as the focused read-only MVP
+release-readiness summary before deeper launch, security, operations, or pilot
+approval routes.
+Goal 133 adds `/admin/review-path` as the focused read-only no-code stakeholder
+walkthrough with fake local actor emails, route-level review expectations, and
+safety boundaries before final Nick review.
+Goal 134 makes `/login` a first-class local sign-in review checkpoint for fake
+seed users and Supabase Auth session readiness without enabling production auth.
+Goal 135 makes `/chapter` a first-class member chapter-home review checkpoint
+without enabling membership, role, points, campaign, proof, or external writes.
+Goal 136 makes `/rush-month/actions/member-push` a first-class member action
+detail review checkpoint without enabling action-start saves, proof metadata
+saves, file uploads, points/KPI writes, reminders, or external writes.
+Goal 137 makes `/rush-month` a first-class member Rush Month overview review
+checkpoint without enabling campaign phase changes, assignment saves, proof
+saves, points/KPI writes, Luma writes, n8n workflows, or external writes.
+Goal 138 makes `/rush-month/actions` a first-class member assigned-actions
+review checkpoint without enabling assignment creation, action-start saves,
+proof saves, reminders, points/KPI writes, browser writes, or external writes.
+Goal 139 makes `/rush-month/events` a first-class member events review
+checkpoint without enabling attendance imports, NPS reminders, proof uploads,
+public proof sharing, Luma writes, warehouse exports, AI summaries, or external
+writes.
+Goal 140 orders the `/admin/review-path` member walkthrough from local sign-in
+through profile scope, onboarding, chapter home, Rush Month overview, assigned
+actions, action detail, evidence, leaderboard, dashboard, events, and one event
+detail before leader, coach, and admin surfaces without enabling any new writes
+or external sends.
+Goal 141 adds a President / VP dashboard checkpoint to the leader walkthrough
+before leader follow-up, member-role coverage, the operating loop, event
+readiness, and proof decisions without enabling assignment creation, proof
+decision writes, membership changes, KPI writes, reminders, or external sends.
+Goal 142 separates coach portfolio health from coach readiness in the
+stakeholder walkthrough so reviewers can inspect assigned chapters, campaign
+health, overdue work, pending evidence, KPI movement, risk alerts,
+advance/hold/intervene posture, support notes, and disabled coach decisions
+without enabling coach decisions, notes, reassignments, KPI writes, n8n
+workflows, or external sends.
+Goal 143 orders the admin walkthrough from control center to master data,
+integration outbox, audit log, system health, database security, final review
+path, release readiness, launch gate, design QA, operations, and write packets
+without enabling user creation, role writes, chapter edits, campaign template
+edits, outbox mutations, audit exports, system-health launch claims, admin
+writes, or external sends.
+Goal 144 adds a phase map to `/admin/review-path` so reviewers can scan the
+member, leader, proof, coach, admin, and write-packet phases before opening the
+43 detailed route checks without enabling production auth, browser writes,
+uploads, public proof sharing, or external sends.
+Goal 145 adds `/admin/nick-review` as the final local MVP review packet for
+owner lanes, pass signals, launch boundaries, local review yes, live launch no,
+zero writes, zero sends, and zero student invitations before any pilot decision.
+Goal 151 extends `/admin/nick-review` with the Goal 150 launch evidence
+checkpoint and first-pilot scope route before any pilot decision.
+Goal 160 extends `/chapter/members` with a membership approval packet that
+shows the future join-request payload, `app.approve_chapter_membership`
+function target, readiness checks, structured event, disabled outbox, audit
+action, and locked controls before any membership approval write is approved.
+Goal 161 adds membership approval result states for success, disabled,
+welcome-disabled, CRM-disabled, duplicate, auth, permission, missing request,
+profile, role, audit reason, and server-error outcomes before any membership
+approval write is approved.
+Goal 162 adds membership approval write readiness on `/chapter/members`, the
+write plan, browser-write gate, and staff rehearsal surfaces. It names the future
+`app.approve_chapter_membership` function, required SQL/RLS tests, future
+membership/event/outbox/audit tables, and disabled welcome/CRM posture while
+keeping the database function and RLS checks blocked.
+Goal 152 extends `/rush-month/evidence` with proof prep checklists, story
+prompts, review lanes, proof-intake links, and disabled controls before any
+proof metadata save or upload is approved.
+Goal 158 extends `/rush-month/evidence` with a proof submission packet that
+shows the future metadata payload, `app.submit_assignment_proof_metadata`
+function target, result preview, readiness checks, structured event, disabled
+outbox, and audit action before any proof metadata save or upload is approved.
+Goal 159 extends `/proof-library/upload` with a proof storage intake packet that
+shows the future private bucket, storage-path preview,
+`app.prepare_proof_upload_intake` function target, required metadata,
+moderation queue, structured event, disabled outbox, audit action, and locked
+storage controls before any Supabase Storage bucket or upload write is approved.
+Goal 153 extends `/rush-month/review` with a leader proof review rubric for
+assignment fit, story context, points/KPI impact, and the HQ sharing boundary
+before any leader proof decision save, nudge, public sharing action, or external
+send is approved.
+Goal 154 extends `/coach` with a coach intervention checklist for proof review,
+stalled work, decision notes, risk response, and escalation boundaries before
+any coach note save, coach decision save, nudge, escalation send, or external
+automation is approved.
+Goal 155 extends `/admin/integration-outbox` with a live-send preflight
+checklist for source events, payload/idempotency, audit readback, destination
+policy, and secrets boundaries before any queue mutation, retry, payload edit,
+unlock, external worker, or live send is approved.
+Goal 156 extends `/admin/audit-log` with a write-audit preflight checklist for
+actor identity, target readback, before/after summaries, reason notes,
+visibility boundaries, and retention/export locks before any audit-producing
+production write is approved.
+Goal 157 extends `/onboarding` with a staff-only production auth preflight for
+callback URLs, role coverage, auth/profile mapping, join approval, chapter role
+assignment, coach scope, staff role assignment, audit/outbox posture, and
+rollback ownership before any real users are invited.
+Goal 146 extends `/admin/design-qa` with an eight-route mobile visual smoke plan
+for the 390px phone viewport across member Rush Month, assigned actions,
+evidence, leader dashboard, coach portfolio, Nick final review, offline
+recovery, and proof-upload readiness routes.
+Goal 147 connects that same mobile plan to the admin route smoke manifest, so
+`/admin` shows reviewer actor emails, 390px viewport, target signals, pass
+signals, and still-blocked launch boundaries for the eight mobile checks.
+Goal 148 extends `/admin/design-qa` with a seven-check accessibility smoke plan
+for skip links, focus order, screen-reader headings, disabled proof controls,
+coach risk copy, offline recovery, and restricted admin states.
+Goal 149 extends `/admin/design-qa` with a seven-check real-device/PWA smoke
+matrix for iPhone Safari, Android Chrome, installed PWA behavior, offline
+recovery, tablet leader review, desktop admin review, and staging
+cross-browser rendering.
 
 This does not connect the app to production Supabase. It does not create real
 users, enable production auth in the UI, enable browser writes beyond the local
-action-start, assignment creation, proof metadata, HQ proof decision, and coach
-decision slices, or trigger HubSpot, Luma, n8n, warehouse, Power BI, email, SMS,
-or AI writes.
+action-start, assignment creation, proof metadata, HQ proof decision, coach
+decision, and explicitly gated leader proof decision slices, or trigger
+HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 
 ## What Was Added
 
@@ -63,9 +190,13 @@ or AI writes.
 - `supabase/migrations/20260616120000_goal_27_coach_decision.sql`: first local
   coach advance / hold / intervene function plus direct readiness validation
   bypass protection.
+- `supabase/migrations/20260617010000_goal_115_leader_proof_decision.sql`:
+  first local leader proof decision function plus direct approval, points, KPI,
+  and evidence-status bypass protection.
 - `supabase/seed.sql`: fake local users, chapters, memberships, staff roles,
   Rush Month records, proof/testimonial records, disabled/mock outbox rows, and
-  fake Goal 7 operating-model records.
+  fake Goal 7 operating-model records, including one local submitted proof
+  fixture for Goal 116 leader proof decision rehearsal.
 - `supabase/tests/database/rls_goal_5.test.sql`: pgTAP tests for the first RLS
   permission model.
 - `supabase/tests/database/rls_goal_7.test.sql`: pgTAP tests for campaign
@@ -81,6 +212,16 @@ or AI writes.
   local `action_assigned` assignment creation path.
 - `supabase/tests/database/rls_goal_27.test.sql`: pgTAP tests for the first
   local `coach_decision_logged` readiness decision path.
+- `supabase/tests/database/rls_goal_115.test.sql`: pgTAP tests for the first
+  local `leader_proof_decision` approval / request-changes / reject path.
+- `src/services/leader-proof-decision-write.ts`: local-only server-action
+  readiness, RPC result mapping, and readback handling for Goal 116.
+- `src/components/leader-proof-decision-server-action-panel.tsx`: gated
+  `/rush-month/review` panel for the local leader proof decision rehearsal.
+- `tests/leader-proof-decision-write.test.ts`: unit coverage for disabled
+  default state, local auth and role gates, RPC mapping, and readback states.
+- `docs/architecture/goal-116-leader-proof-decision-server-action.md`: review
+  packet for the local-only browser/server-action boundary.
 - `src/lib/supabase-readonly.ts`: server-only REST reader for local Supabase.
 - `src/services/read-only-app-data.ts`: mock-safe read model used by app pages.
 - `.env.example`: local-only read configuration template.
@@ -122,6 +263,120 @@ or AI writes.
   chapter-leader assignment creation architecture note.
 - `docs/architecture/goal-19-auth-onboarding-plan.md`: future auth/onboarding
   architecture note with live auth still disabled.
+- `docs/architecture/goal-122-auth-onboarding-readiness-route.md`: read-only
+  auth/onboarding reviewer route with live auth, production users, onboarding
+  writes, and external sends still disabled.
+- `docs/architecture/goal-157-production-auth-onboarding-preflight.md`: review
+  packet for the staff production auth preflight before real users, callbacks,
+  onboarding writes, role writes, or automations are approved.
+- `docs/architecture/goal-123-evidence-submission-readiness-route.md`:
+  member-facing evidence submission queue with proof metadata saves, uploads,
+  public proof, exports, reminders, and AI summaries still disabled.
+- `docs/architecture/goal-158-proof-submission-packet.md`: review packet for
+  the evidence-route proof payload, readiness checks, structured event, disabled
+  outbox, and audit action before proof metadata saves are approved.
+- `src/services/admin-master-data-workspace.ts`: read-only admin inventory
+  workspace for fake users, named roles, chapters, and campaign templates with
+  production user, role, chapter, template, coach assignment, and external-send
+  controls still disabled.
+- `src/app/admin/master-data/page.tsx`: focused admin/DS Admin/Super Admin
+  review route for the master-data inventory.
+- `tests/admin-master-data-workspace.test.ts`: unit tests proving the focused
+  admin inventory stays readable only to admin audiences and keeps admin
+  mutations, production auth, and external writes disabled.
+- `docs/architecture/goal-124-admin-master-data-route.md`: review packet for
+  the focused admin master-data route.
+- `src/services/admin-integration-outbox-workspace.ts`: read-only DS/Admin
+  integration and outbox workspace for structured events, disabled queue rows,
+  Goal 155 live-send preflight, destination safety, audit posture, and blocked
+  live-send controls.
+- `src/app/admin/integration-outbox/page.tsx`: focused admin/DS Admin/Super
+  Admin review route for integration and automation queue posture.
+- `tests/admin-integration-outbox-workspace.test.ts`: unit tests proving the
+  focused outbox route hides operating roles, hides audit row details from DS
+  Admin, and keeps live sends, external writes, browser writes, and secrets at
+  zero.
+- `docs/architecture/goal-125-admin-integration-outbox-route.md`: review packet
+  for the focused admin integration outbox route.
+- `src/app/admin/audit-log/page.tsx`: focused admin/DS Admin/Super Admin audit
+  posture route that reuses the read-only audit review service and Goal 156
+  write-audit preflight checklist.
+- `docs/architecture/goal-126-admin-audit-log-route.md`: review packet for the
+  focused admin audit log route.
+- `docs/architecture/goal-156-admin-write-audit-preflight.md`: review packet
+  for the audit preflight checklist before production write approval.
+- `src/app/admin/system-health/page.tsx`: focused admin/DS Admin/Super Admin
+  system-health route that reuses the read-only system health review service.
+- `docs/architecture/goal-127-admin-system-health-route.md`: review packet for
+  the focused admin system health route.
+- `src/app/admin/design-qa/page.tsx`: focused admin/DS Admin/Super Admin
+  design-QA route that reuses the read-only Figma/mobile QA readiness service
+  and renders the Goal 146 mobile visual smoke plan.
+- `docs/architecture/goal-128-admin-design-qa-route.md`: review packet for the
+  focused admin design QA route.
+- `docs/architecture/goal-146-mobile-visual-smoke-plan.md`: review packet for
+  the eight-route phone-sized visual smoke plan.
+- `docs/architecture/goal-147-mobile-route-smoke-manifest.md`: review packet
+  for the route-smoke bridge that reuses the Goal 146 mobile checks.
+- `docs/architecture/goal-148-accessibility-smoke-plan.md`: review packet for
+  the keyboard and screen-reader accessibility smoke plan.
+- `docs/architecture/goal-149-device-pwa-smoke-matrix.md`: review packet for
+  real-device, installed-PWA, offline, tablet, desktop, and staging QA.
+- `src/app/admin/operations/page.tsx`: focused admin/DS Admin/Super Admin
+  operations route that reuses the read-only production operations runbook
+  service.
+- `docs/architecture/goal-129-admin-operations-route.md`: review packet for the
+  focused admin operations route.
+- `src/app/admin/database-security/page.tsx`: focused admin/DS Admin/Super
+  Admin route for the Supabase Postgres/Auth/Storage versus PlanetScale
+  MySQL/Vitess review.
+- `docs/architecture/goal-130-admin-database-security-route.md`: review packet
+  for the focused admin database-security route.
+- `src/app/admin/launch-gate/page.tsx`: focused admin/DS Admin/Super Admin
+  route for the production launch gate and Goal 150 launch evidence checklist.
+- `docs/architecture/goal-131-admin-launch-gate-route.md`: review packet for
+  the focused admin launch-gate route.
+- `docs/architecture/goal-150-launch-evidence-checklist.md`: review packet for
+  the staging and pilot launch evidence checklist.
+- `src/app/admin/release-readiness/page.tsx`: focused admin/DS Admin/Super
+  Admin route for the MVP release-readiness summary.
+- `docs/architecture/goal-132-admin-release-readiness-route.md`: review packet
+  for the focused admin release-readiness route.
+- `src/app/admin/review-path/page.tsx`: focused admin/DS Admin/Super Admin
+  route for the no-code stakeholder review path.
+- `docs/architecture/goal-133-admin-review-path-route.md`: review packet for
+  the focused admin stakeholder review path route.
+- `src/app/admin/nick-review/page.tsx`: focused admin/DS Admin/Super Admin
+  route for the final local Nick review packet and Goal 151 pilot approval
+  checkpoint.
+- `src/services/nick-mvp-review.ts`: final local review packet data, pass
+  signals, launch boundaries, and zero-write / zero-send / zero-invite posture.
+- `src/components/nick-mvp-review-panel.tsx`: panel used on `/admin` and
+  `/admin/nick-review`.
+- `docs/architecture/goal-134-local-sign-in-review-coverage.md`: review packet
+  for local sign-in review coverage.
+- `docs/architecture/goal-135-member-chapter-home-review-coverage.md`: review
+  packet for member chapter-home review coverage.
+- `docs/architecture/goal-136-member-action-detail-review-coverage.md`: review
+  packet for member action-detail review coverage.
+- `docs/architecture/goal-137-member-rush-month-overview-review-coverage.md`:
+  review packet for member Rush Month overview review coverage.
+- `docs/architecture/goal-138-member-assigned-actions-review-coverage.md`:
+  review packet for member assigned-actions review coverage.
+- `docs/architecture/goal-139-member-rush-month-events-review-coverage.md`:
+  review packet for member Rush Month events review coverage.
+- `docs/architecture/goal-140-member-walkthrough-sequence.md`: review packet
+  for the member walkthrough sequence in the stakeholder review path.
+- `docs/architecture/goal-141-leader-walkthrough-sequence.md`: review packet
+  for the leader walkthrough sequence in the stakeholder review path.
+- `docs/architecture/goal-142-coach-walkthrough-sequence.md`: review packet
+  for the coach walkthrough sequence in the stakeholder review path.
+- `docs/architecture/goal-143-admin-walkthrough-sequence.md`: review packet
+  for the admin walkthrough sequence in the stakeholder review path.
+- `docs/architecture/goal-144-stakeholder-review-phase-map.md`: review packet
+  for the phase map in the stakeholder review path.
+- `docs/architecture/goal-145-nick-final-review-packet.md`: review packet for
+  the final local Nick review route.
 - `docs/architecture/goal-20-live-data-connection-plan.md`: future
   route-by-route live-data connection plan with production data still disabled.
 - `docs/architecture/goal-21-campaign-operating-shells.md`: read-only campaign
@@ -169,8 +424,46 @@ or AI writes.
   decision form and readback panel for the coach page.
 - `src/services/auth-onboarding-plan.ts`: disabled auth/onboarding plan for
   future sign-in, join requests, membership approvals, and role assignments.
+- `src/services/auth-onboarding-workspace.ts`: read-only onboarding route state
+  that makes the future sequence, owner boundaries, and staff production auth
+  preflight reviewable without writes.
 - `tests/auth-onboarding-plan.test.ts`: unit tests proving live auth and
   production users remain disabled.
+- `tests/auth-onboarding-workspace.test.ts`: unit tests proving `/onboarding`
+  stays event-ready, browser-disabled, and write-safe for member, leader, DS
+  Admin, and Super Admin actors while staff can inspect the Goal 157 production
+  auth preflight.
+- `src/services/evidence-submission-workspace.ts`: read-only proof submission
+  queue for the evidence route with Goal 152 proof prep packets, future records,
+  Goal 158 proof submission packet, and blocked write posture.
+- `src/services/proof-upload-intake.ts`: read-only proof upload route state with
+  Goal 159 storage intake packets, future bucket/path previews, consent and
+  moderation gates, disabled outbox posture, and locked storage controls.
+- `src/services/chapter-membership-workspace.ts`: read-only membership route
+  state with Goal 160 membership approval packets, join-request payload
+  previews, readiness checks, disabled outbox posture, and locked approval
+  controls.
+- `src/services/membership-approval-result-states.ts`: membership approval
+  result-state definitions for the Goal 161 future write family.
+- `src/services/membership-approval-write-readiness.ts`: Goal 162 readiness
+  checks for the future membership approval write, including env flags,
+  still-missing SQL/RLS implementation checks, disabled welcome/CRM sends, and
+  required RLS test names.
+- `tests/evidence-submission-workspace.test.ts`: unit tests proving the evidence
+  route keeps uploads, external sends, and public proof disabled while guiding
+  members/leaders to the right next proof item.
+- `tests/proof-upload-intake.test.ts`: unit tests proving the proof upload route
+  keeps file uploads disabled while exposing the Goal 159 storage packet for
+  reviewers.
+- `tests/chapter-membership-workspace.test.ts`: unit tests proving membership
+  approval packets are visible to leaders/admins, hidden from coaches and DS
+  Admin, and still keep membership writes disabled.
+- `tests/membership-approval-result-states.test.ts`: unit tests proving
+  membership approval success and blocked result states are explicit while
+  welcome messages and CRM syncs remain disabled.
+- `tests/membership-approval-write-readiness.test.ts`: unit tests proving
+  membership approval write readiness remains blocked even if local write flags
+  are requested before SQL/RLS implementation exists.
 - `src/services/local-actor-context.ts`: actor context service that now prefers
   the signed-in local auth user and falls back to `MYMEDLIFE_LOCAL_ACTOR_EMAIL`.
 - `src/services/action-start-write.ts`: local action-start write readiness and
@@ -349,6 +642,10 @@ production Supabase, browser writes, or external sends. Goal 27 adds the first
 local Supabase coach decision function for `coach_decision_logged` and a visible
 browser gate on `/coach`, but it still does not enable browser saves, live auth,
 n8n escalation packets, or external sends.
+Goal 115 adds the local Supabase leader proof decision function for
+`leader_proof_decision`. Goal 116 adds the local browser/server action for that
+function, but it still does not enable production saves, production auth, member
+nudges, public proof publishing, or external sends.
 
 ## GitHub CI
 
@@ -362,10 +659,11 @@ The PR workflow at `.github/workflows/goal-5-ci.yml` runs two jobs:
 
 The seed file creates fake local-only users:
 
-- `member.a@mymedlife.test`: General Member in Northview MEDLIFE.
+- `member.a@mymedlife.test`: General Member in UCLA MEDLIFE.
 - `committee.member@mymedlife.test`: Action Committee Member in Northview.
 - `committee.chair@mymedlife.test`: Action Committee Chair in Northview.
-- `leader.a@mymedlife.test`: President/VP and E-Board Member in Northview.
+- `leader.a@mymedlife.test`: President/VP in Northview.
+- `eboard.a@mymedlife.test`: E-Board Member in Northview.
 - `coach@mymedlife.test`: Coach assigned to Northview only.
 - `admin@mymedlife.test`: MEDLIFE Admin.
 - `ds.admin@mymedlife.test`: DS Admin for integration/outbox controls.
@@ -568,6 +866,73 @@ This test still does not send n8n escalation packets, enable production auth,
 upload files, publish proof, or send HubSpot, Luma, warehouse, Power BI, email,
 SMS, or AI writes.
 
+## Goal 115 Leader Proof Decision SQL/RLS Test
+
+Goal 115 is the database/RLS packet that Goal 116 depends on. After running the
+local Supabase reset, run the SQL test suite:
+
+```bash
+pnpm supabase:test
+```
+
+Expected database behavior:
+
+- `app.record_leader_proof_decision(...)` is the only path for local chapter
+  proof approval, request-changes, or reject decisions.
+- Direct approval, points, KPI, and evidence-status bypasses are blocked.
+- Chapter Leader can approve, request changes, and reject submitted proof.
+- Super Admin can record an audited break-glass leader proof decision.
+- General Member, Coach, Admin, and DS Admin cannot record routine leader proof
+  decisions.
+- Approving proof records assignment status, evidence status, approval, points,
+  KPI, internal event, integration event, disabled outbox, and audit rows
+  together.
+- Requesting changes or rejecting proof records the decision without points or
+  KPI movement.
+- No leader proof decision approves or sends external automation.
+
+This test still does not enable production auth, member nudges, proof uploads,
+public proof publishing, or HubSpot, Luma, n8n, warehouse, Power BI, email, SMS,
+or AI writes.
+
+## Goal 116 Leader Proof Decision Browser Test
+
+Goal 116 is the local browser/server-action layer over the Goal 115 function.
+After running the local Supabase reset and the Goal 115 SQL/RLS test, use this
+fake submitted Northview proof item:
+
+```text
+assignment: 50000000-0000-4000-8000-000000000004
+evidence:   60000000-0000-4000-8000-000000000004
+```
+
+Recommended local test path:
+
+1. Set `MYMEDLIFE_DATA_SOURCE=supabase`.
+2. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS=true`.
+3. Set `MYMEDLIFE_AUTH_MODE=local_supabase`.
+4. Set `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`.
+5. Set `MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE=true`.
+6. Sign in at `/login` as `leader.a@mymedlife.test` with password `password`.
+7. Open `/rush-month/review`.
+8. Confirm the local leader proof decision panel is enabled for the fake
+   submitted proof fixture.
+9. Submit Approve, Request changes, or Reject with a plain-English note.
+10. Confirm the refreshed page shows the matching local readback state.
+
+Expected database behavior:
+
+- `app.record_leader_proof_decision(...)` records the chapter proof decision.
+- Approve updates assignment/evidence status and records approval, points, KPI,
+  internal event, integration event, disabled outbox, and audit rows together.
+- Request changes and Reject record the decision, event, integration event,
+  disabled outbox, and audit rows without points or KPI movement.
+- No member nudge, public proof publish, or live external send runs.
+
+This test still does not enable production auth, production data, proof uploads,
+public proof publishing, or HubSpot, Luma, n8n, warehouse, Power BI, email, SMS,
+or AI writes.
+
 `MYMEDLIFE_LOCAL_ACTOR_EMAIL` also works when the app is using mock fallback
 data, so developers can preview all role views without Docker. Restart the local
 development server after changing the env var.
@@ -615,6 +980,14 @@ development server after changing the env var.
   update, readiness review row, event row, integration event row, disabled
   outbox row, and audit log are written together.
 - General Members, Chapter Leaders, and DS Admin cannot log coach decisions.
+- Leader proof decisions must use `app.record_leader_proof_decision` so the
+  assignment/evidence status, approval row, optional points/KPI rows, event row,
+  integration event row, disabled outbox row, and audit log are written
+  together.
+- General Members, Coaches, Admin, and DS Admin cannot record routine leader
+  proof decisions.
+- Leader proof decisions do not publish proof, nudge members, or approve live
+  external sends.
 
 ## Known Codex Environment Limitation
 

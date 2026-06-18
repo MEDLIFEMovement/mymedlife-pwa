@@ -3,7 +3,7 @@ import type { LeaderboardRow } from "@/shared/types/rush-month-dashboard";
 export const rushMonthLeaderboard: LeaderboardRow[] = [
   {
     id: "leaderboard-maya",
-    displayName: "Maya Member",
+    displayName: "Sofia Alvarez",
     roleLabel: "General Member",
     points: 42,
     completedActions: 3,
@@ -19,7 +19,7 @@ export const rushMonthLeaderboard: LeaderboardRow[] = [
   },
   {
     id: "leaderboard-leo",
-    displayName: "Leo Leader",
+    displayName: "Priya President",
     roleLabel: "President / VP",
     points: 35,
     completedActions: 2,

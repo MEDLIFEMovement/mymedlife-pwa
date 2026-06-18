@@ -79,7 +79,7 @@ export type ActorEmailResolution = {
 export const localActorOptions: LocalActorOption[] = [
   {
     email: "member.a@mymedlife.test",
-    displayName: "Maya Member",
+    displayName: "Sofia Alvarez",
     audience: "chapter_member",
     chapterRoles: ["General Member"],
     staffRoles: [],

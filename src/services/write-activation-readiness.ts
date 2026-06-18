@@ -5,6 +5,8 @@ import {
   getBlockingActivationChecks,
   getCoachDecisionBrowserWriteGate,
   getHqSharingDecisionBrowserWriteGate,
+  getLeaderProofDecisionBrowserWriteGate,
+  getMembershipApprovalBrowserWriteGate,
   getPassedActivationChecks,
   getProofSubmissionBrowserWriteGate,
   type BrowserWriteActivationGate,
@@ -45,6 +47,10 @@ export function getWriteActivationReadinessSummary(
 ): WriteActivationReadinessSummary {
   const actionAssignment = findAssignment(input.assignments, "member-push");
   const hqEvidenceItem = input.evidenceItem ?? evidenceItems[0];
+  const leaderEvidenceItem = hqEvidenceItem;
+  const leaderAssignment =
+    input.assignments.find((item) => item.id === leaderEvidenceItem.assignmentId) ??
+    actionAssignment;
   const gates = [
     getActionStartBrowserWriteGate(actor, actionAssignment, env),
     getAssignmentCreateBrowserWriteGate(
@@ -85,6 +91,17 @@ export function getWriteActivationReadinessSummary(
       },
       env,
     ),
+    getLeaderProofDecisionBrowserWriteGate(
+      actor,
+      leaderAssignment,
+      leaderEvidenceItem,
+      {
+        decision: "approve",
+        note:
+          "Local preview only: leader approves this proof for chapter completion.",
+      },
+      env,
+    ),
     getCoachDecisionBrowserWriteGate(
       actor,
       {
@@ -101,6 +118,19 @@ export function getWriteActivationReadinessSummary(
         campaignId: "mock-campaign",
         phaseId: "mock-phase",
       },
+      env,
+    ),
+    getMembershipApprovalBrowserWriteGate(
+      actor,
+      {
+        chapterId: "mock-chapter",
+        joinRequestId: "join-avery",
+        applicantEmail: "avery.new@mymedlife.test",
+        requestedRoleKey: "general_member",
+        requestedCommitteeLane: "Recruitment",
+        auditReason: "Approve local Rush Month join request for chapter review.",
+      },
+      [],
       env,
     ),
   ];

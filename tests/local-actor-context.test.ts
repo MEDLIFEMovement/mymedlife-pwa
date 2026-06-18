@@ -62,10 +62,10 @@ describe("local actor context service", () => {
 
     expect(actor.source.status).toBe("supabase_ready");
     expect(actor.identitySource).toBe("local_actor_email");
-    expect(actor.user.displayName).toBe("Maya Member");
+    expect(actor.user.displayName).toBe("Sofia Alvarez");
     expect(actor.audience).toBe("chapter_member");
     expect(actor.chapterRoles).toEqual(["General Member"]);
-    expect(actor.chapterNames).toEqual(["Northview MEDLIFE"]);
+    expect(actor.chapterNames).toEqual(["UCLA MEDLIFE"]);
   });
 
   it("derives leader, coach, and staff contexts from fake local rows", async () => {
@@ -185,7 +185,7 @@ function createFakeClient(
 
 const fakeActorRows: Record<string, unknown[]> = {
   profiles: [
-    profile("user-1", "Maya Member", "member.a@mymedlife.test"),
+    profile("user-1", "Sofia Alvarez", "member.a@mymedlife.test"),
     profile("user-2", "Priya President", "leader.a@mymedlife.test"),
     profile("user-3", "Cam Coach", "coach@mymedlife.test"),
     profile("user-4", "Ari Admin", "admin@mymedlife.test"),
@@ -226,8 +226,8 @@ const fakeActorRows: Record<string, unknown[]> = {
   chapters: [
     {
       id: "chapter-1",
-      name: "Northview MEDLIFE",
-      campus: "Northview University",
+      name: "UCLA MEDLIFE",
+      campus: "UCLA",
       region: "Midwest",
       status: "active",
       created_by: "user-4",

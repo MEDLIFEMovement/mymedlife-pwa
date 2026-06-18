@@ -149,7 +149,7 @@ const chapterMemberWorkspaceRoles = new Set(["E-Board Member"]);
 const memberRows: ChapterMemberRow[] = [
   {
     id: "member-maya",
-    displayName: "Maya Member",
+    displayName: "Sofia Alvarez",
     email: "member.a@mymedlife.test",
     roleKey: "general_member",
     roleLabel: "General Member",

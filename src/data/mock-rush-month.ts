@@ -12,9 +12,9 @@ import type {
 
 export const mockChapter: Chapter = {
   id: "chapter-northview",
-  name: "Northview University MEDLIFE",
-  campus: "Northview University",
-  region: "Midwest",
+  name: "UCLA MEDLIFE",
+  campus: "UCLA",
+  region: "West Coast",
   coachName: "Renato Coach",
 };
 

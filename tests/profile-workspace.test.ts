@@ -20,7 +20,7 @@ describe("profile workspace", () => {
       "Audience",
     ]);
     expect(workspace.scopeRows.find((row) => row.label === "Chapter scope")?.value).toBe(
-      "Northview University MEDLIFE",
+      "UCLA MEDLIFE",
     );
     expect(workspace.counts.profileWritesExpected).toBe(0);
     expect(workspace.counts.roleWritesExpected).toBe(0);
@@ -35,7 +35,7 @@ describe("profile workspace", () => {
     expect(workspace.profileLabel).toBe("Coach");
     expect(
       workspace.scopeRows.find((row) => row.label === "Coach portfolio")?.value,
-    ).toBe("Northview University MEDLIFE");
+    ).toBe("UCLA MEDLIFE");
     expect(workspace.nextStep.href).toBe("/coach");
     expect(workspace.counts.coachPortfolioChapters).toBe(1);
     expect(workspace.counts.membershipWritesExpected).toBe(0);

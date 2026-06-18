@@ -213,7 +213,7 @@ const staffViewLabels: Record<StaffCommandCenterView, string> = {
 };
 
 const leadNameByChapter: Record<string, string> = {
-  "Northview University MEDLIFE": "Priya President",
+  "UCLA MEDLIFE": "Priya President",
   "Lakeside University MEDLIFE": "Jordan Growth Lead",
   "Riverside State MEDLIFE": "Avery Recruitment Lead",
   "Mesa College MEDLIFE": "Taylor Transition Lead",
@@ -523,7 +523,7 @@ function getHubSpotSignals(
   const baseSignals = hubspotEvents.map((event) => ({
     title: event.title,
     statusLabel: event.status,
-    chapterLabel: "Northview University MEDLIFE",
+    chapterLabel: "UCLA MEDLIFE",
     detail: event.detail,
     nextAction:
       "Keep CRM sends mocked and use this payload to verify fields, owner mapping, and timing.",

@@ -157,7 +157,6 @@ function canReadRoleFocus(
 
   return actor.chapterRoles.includes("E-Board Member");
 }
-
 function hasChapterRole(actor: LocalActorContext, role: string): boolean {
   return actor.chapterRoles.includes(role);
 }

@@ -41,7 +41,7 @@ describe("staff command center", () => {
       "Riverside State MEDLIFE",
     );
     expect(highRisk.chapterRows.map((row) => row.chapterName)).toContain(
-      "Northview University MEDLIFE",
+      "UCLA MEDLIFE",
     );
     expect(riverside.chapterRows).toHaveLength(1);
     expect(riverside.chapterRows[0]?.chapterName).toBe("Riverside State MEDLIFE");
