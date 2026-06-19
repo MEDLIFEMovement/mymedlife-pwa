@@ -17,6 +17,7 @@ permissions:
   contents: write        # needed to merge
   pull-requests: write   # needed to comment / approve / merge
   issues: write          # needed to add the needs-human label
+  actions: read
   id-token: write
 
 jobs:
@@ -35,6 +36,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # REQUIRED for pull_request + prompt: makes the action post a visible
+          # tracking/review comment on the PR. Without this, the review runs
+          # but stays hidden in the Actions log (green run, no comment).
+          track_progress: true
           prompt: |
             You are the automated reviewer for the myMEDLIFE PWA.
             Review pull request #${{ github.event.pull_request.number }}
@@ -49,6 +54,8 @@ jobs:
             3. Post one concise PR review comment. Lead with the verdict
                (APPROVE or BLOCK), then a summary under these four headings:
                Safety gates, Correctness, Standards, Tests & coverage.
+               If for any reason the tracked comment is not created, also post
+               your summary with: gh pr comment ${{ github.event.pull_request.number }} --body "<your summary>"
             4. Apply the verdict using the gh CLI:
 
                If BLOCK (any MUST-BLOCK rule applies, or you are not fully
@@ -68,6 +75,6 @@ jobs:
           claude_args: |
             --model claude-sonnet-4-6
             --max-turns 15
-            --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr review:*),Bash(gh pr merge:*),Bash(gh pr edit:*),Bash(gh label:*)"
+            --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr review:*),Bash(gh pr merge:*),Bash(gh pr edit:*),Bash(gh label:*)"
           # For deeper review on a safety-critical change, switch the model
           # line above to:  --model claude-opus-4-8
