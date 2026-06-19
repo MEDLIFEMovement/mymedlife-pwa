@@ -12,8 +12,8 @@ describe("write sequence planner", () => {
 
     expect(planner.canReadPlanner).toBe(true);
     expect(planner.title).toBe("Admin write sequence planner");
-    expect(planner.counts.operations).toBe(7);
-    expect(planner.counts.localBrowserWriteCandidates).toBe(7);
+    expect(planner.counts.operations).toBe(8);
+    expect(planner.counts.localBrowserWriteCandidates).toBe(8);
     expect(planner.counts.externalWritesExpected).toBe(0);
     expect(planner.nextRecommendedOperation).toBe("membership_approved");
     expect(planner.operations.map((operation) => operation.key)).toEqual([
@@ -23,6 +23,7 @@ describe("write sequence planner", () => {
       "evidence_submitted",
       "leader_proof_decision_logged",
       "hq_sharing_decision_logged",
+      "points_kpi_materialized",
       "coach_decision_logged",
     ]);
     expect(
@@ -109,6 +110,12 @@ describe("write sequence planner", () => {
         key: "hq_sharing_decision_logged",
         packetLabel: "HQ proof decision packet",
         packetRoute: "/admin/hq-proof-write",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "points_kpi_materialized",
+        packetLabel: "Points and KPI packet",
+        packetRoute: "/admin/points-write",
         externalWritesExpected: 0,
       },
       {

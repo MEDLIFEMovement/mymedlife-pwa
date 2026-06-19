@@ -291,7 +291,7 @@ function buildWriteRehearsal(
   const steps = planner.operations.map(toWriteRehearsalStep);
 
   return {
-    title: "Seven local write rehearsal",
+    title: `${steps.length} local write rehearsal`,
     summary:
       "Use these packets to rehearse the guarded Rush Month local writes and the separate membership approval readiness packet in order. This section is a checklist and status mirror, not a write console.",
     steps,
@@ -337,6 +337,8 @@ function getOperatingRoute(operation: WriteSequenceOperation): string {
       return "/rush-month/review";
     case "hq_sharing_decision_logged":
       return "/rush-month/review";
+    case "points_kpi_materialized":
+      return "/rush-month/leaderboard";
     case "action_assigned":
       return "/rush-month/actions";
     case "coach_decision_logged":
@@ -356,6 +358,8 @@ function getRehearsalAction(operation: WriteSequenceOperation): string {
       return "Open the leader proof decision panel only after Goal 115 SQL/RLS tests pass, then rehearse one local approve, request-changes, or reject decision with member nudges disabled.";
     case "hq_sharing_decision_logged":
       return "Open the HQ proof decision packet and rehearse the sharing posture decision without publishing proof publicly.";
+    case "points_kpi_materialized":
+      return "Open the points and KPI packet and confirm one approved proof path maps to one points row and one KPI row without duplicate materialization.";
     case "action_assigned":
       return "Open the leader assignment packet and rehearse one chapter-scoped assignment without reminders or external handoffs.";
     case "coach_decision_logged":
