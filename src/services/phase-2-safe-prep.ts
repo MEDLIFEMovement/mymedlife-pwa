@@ -797,6 +797,21 @@ const phase2ReviewerChecklist: Phase2ReviewerStep[] = [
 
 const phase2ReviewLinks: Phase2ReviewLink[] = [
   {
+    href: "/admin/environment-setup",
+    label: "Environment setup",
+    summary: "Review the MED-472 local, preview, staging, and production setup checklist.",
+  },
+  {
+    href: "/admin/auth-onboarding",
+    label: "Auth and onboarding",
+    summary: "Review the MED-473 callback, role-routing, profile, and ownership packet.",
+  },
+  {
+    href: "/admin/security-gate",
+    label: "Security gate",
+    summary: "Review the MED-474 RLS, audit, storage, and hosted proof gate.",
+  },
+  {
     href: "/admin/audit-log",
     label: "Audit log",
     summary: "Inspect readback posture and the safety boundary around audit rows.",
