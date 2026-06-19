@@ -326,6 +326,9 @@ select is(
   'Leader approval updates assignment and proof status'
 );
 
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
+set local "request.jwt.claim.role" = 'authenticated';
+
 select is(
   (
     select count(*)::int
@@ -374,9 +377,6 @@ select is(
   1,
   'Leader approval creates one internal event without public publishing'
 );
-
-set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
-set local "request.jwt.claim.role" = 'authenticated';
 
 select is(
   (
