@@ -1,6 +1,6 @@
 export type Phase2Owner = "Codex" | "Kiomi / DS" | "Nick";
 
-export type Phase2IssueStatus = "Backlog";
+export type Phase2IssueStatus = "Backlog" | "In Review";
 
 export type Phase2IssueType =
   | "umbrella"
@@ -19,6 +19,19 @@ export type Phase2LinearIssue = {
   liveWorkAllowed: false;
 };
 
+export type Phase2StatusGroupKey =
+  | "prep_ready"
+  | "blocked_pending_ds_review"
+  | "live_implementation_not_authorized";
+
+export type Phase2StatusGroup = {
+  key: Phase2StatusGroupKey;
+  label: string;
+  summary: string;
+  issueIds: `MED-${number}`[];
+  note: string;
+};
+
 export type Phase2BlockedLiveAction = {
   key: string;
   label: string;
@@ -31,6 +44,19 @@ export type Phase2AllowedPrepItem = {
   label: string;
   owner: Phase2Owner[];
   output: string;
+};
+
+export type Phase2ReviewLink = {
+  href: string;
+  label: string;
+  summary: string;
+};
+
+export type Phase2ApprovalStep = {
+  key: string;
+  label: string;
+  owner: Phase2Owner[];
+  reason: string;
 };
 
 export type Phase2EnvironmentItem = {
@@ -76,6 +102,7 @@ export type Phase2WriteGate = {
   owner: Phase2Owner[];
   gateChecklist: [
     "staging proof",
+    "permission tests",
     "RLS/security coverage",
     "audit readback",
     "duplicate/error handling",
@@ -106,12 +133,20 @@ export type Phase2SafePrepPacket = {
   pilotScope: string[];
   mockOnlyBoundaries: string[];
   linearIssues: Phase2LinearIssue[];
+  statusGroups: Phase2StatusGroup[];
+  reviewLinks: Phase2ReviewLink[];
+  nextApprovalSteps: Phase2ApprovalStep[];
   ownerResponsibilities: Record<Phase2Owner, string[]>;
   openQuestions: Record<"Kiomi / DS" | "Nick", string[]>;
   officialReferences: { label: string; url: string }[];
   counts: {
     linearIssues: number;
     writeGates: number;
+    prepReady: number;
+    blockedPendingDsReview: number;
+    liveImplementationNotAuthorized: number;
+    inReview: number;
+    backlog: number;
     liveActionsAllowedNow: 0;
     externalWritesExpected: 0;
     secretsShown: 0;
@@ -146,12 +181,20 @@ export function getPhase2SafePrepPacket(): Phase2SafePrepPacket {
     pilotScope: phase2PilotScope,
     mockOnlyBoundaries: phase2MockOnlyBoundaries,
     linearIssues: phase2LinearIssues,
+    statusGroups: phase2StatusGroups,
+    reviewLinks: phase2ReviewLinks,
+    nextApprovalSteps: phase2NextApprovalSteps,
     ownerResponsibilities: phase2OwnerResponsibilities,
     openQuestions: phase2OpenQuestions,
     officialReferences: phase2OfficialReferences,
     counts: {
       linearIssues: phase2LinearIssues.length,
       writeGates: phase2WritePromotionSequence.length,
+      prepReady: phase2StatusGroups[0].issueIds.length,
+      blockedPendingDsReview: phase2StatusGroups[1].issueIds.length,
+      liveImplementationNotAuthorized: phase2StatusGroups[2].issueIds.length,
+      inReview: phase2LinearIssues.filter((issue) => issue.status === "In Review").length,
+      backlog: phase2LinearIssues.filter((issue) => issue.status === "Backlog").length,
       liveActionsAllowedNow: 0,
       externalWritesExpected: 0,
       secretsShown: 0,
@@ -433,13 +476,14 @@ const phase2RlsSecurityTestPlan: Phase2SecurityTest[] = [
 ];
 
 const gateChecklist: Phase2WriteGate["gateChecklist"] = [
-  "staging proof",
-  "RLS/security coverage",
-  "audit readback",
-  "duplicate/error handling",
-  "rollback step",
-  "Linear/GitHub evidence",
-];
+    "staging proof",
+    "permission tests",
+    "RLS/security coverage",
+    "audit readback",
+    "duplicate/error handling",
+    "rollback step",
+    "Linear/GitHub evidence",
+  ];
 
 const phase2WritePromotionSequence: Phase2WriteGate[] = [
   {
@@ -580,7 +624,7 @@ const phase2LinearIssues: Phase2LinearIssue[] = [
     title: "Phase 2 safe prep packet and live MVP pilot boundary",
     type: "umbrella",
     owner: ["Codex"],
-    status: "Backlog",
+    status: "In Review",
     purpose: "Keep safe prep moving while live implementation remains blocked.",
     liveWorkAllowed: false,
   },
@@ -637,6 +681,103 @@ const phase2LinearIssues: Phase2LinearIssue[] = [
     status: "Backlog",
     purpose: "Prepare staff dry run, support owner, rollback, smoke checks, and stop rules.",
     liveWorkAllowed: false,
+  },
+];
+
+const phase2StatusGroups: Phase2StatusGroup[] = [
+  {
+    key: "prep_ready",
+    label: "Prep ready",
+    summary:
+      "MED-471 is the reviewable prep packet. It is ready for discussion now because it stays mock-only and blocks all live implementation.",
+    issueIds: ["MED-471"],
+    note: "This is the only Phase 2 item in review right now.",
+  },
+  {
+    key: "blocked_pending_ds_review",
+    label: "Blocked pending DS review",
+    summary:
+      "MED-472, MED-473, MED-474, MED-475, and MED-486 are the foundation and rollout lanes that wait for Kiomi/DS to confirm the stack and environment path.",
+    issueIds: ["MED-472", "MED-473", "MED-474", "MED-475", "MED-486"],
+    note: "These issues define the path but stay Backlog until the stack and env plan is confirmed.",
+  },
+  {
+    key: "live_implementation_not_authorized",
+    label: "Live implementation not authorized",
+    summary:
+      "MED-476 through MED-485 are the ten gated write tickets. They exist so the promotion order is explicit, but none of them may start live implementation yet.",
+    issueIds: [
+      "MED-476",
+      "MED-477",
+      "MED-478",
+      "MED-479",
+      "MED-480",
+      "MED-481",
+      "MED-482",
+      "MED-483",
+      "MED-484",
+      "MED-485",
+    ],
+    note: "Every write remains blocked until its predecessor has staging proof, RLS proof, audit readback, rollback, and Linear/GitHub evidence.",
+  },
+];
+
+const phase2ReviewLinks: Phase2ReviewLink[] = [
+  {
+    href: "/admin/audit-log",
+    label: "Audit log",
+    summary: "Inspect readback posture and the safety boundary around audit rows.",
+  },
+  {
+    href: "/admin/system-health",
+    label: "System health",
+    summary: "Check environment flags, outbox, auth, proof, and backup posture.",
+  },
+  {
+    href: "/admin/launch-gate",
+    label: "Launch gate",
+    summary: "Review the missing live evidence before any pilot or deploy is approved.",
+  },
+  {
+    href: "/admin/database-security",
+    label: "Database security",
+    summary: "Confirm the stack decision, RLS posture, and vendor-risk tradeoff.",
+  },
+  {
+    href: "/admin/operations",
+    label: "Operations runbook",
+    summary: "See the rollback, incident, and support path for the first pilot.",
+  },
+];
+
+const phase2NextApprovalSteps: Phase2ApprovalStep[] = [
+  {
+    key: "review_pr94",
+    label: "Review PR #94",
+    owner: ["Kiomi / DS"],
+    reason:
+      "Phase 1 needs to be reviewed before any live Phase 2 implementation work can start.",
+  },
+  {
+    key: "confirm_stack",
+    label: "Confirm the stack and environment path",
+    owner: ["Kiomi / DS"],
+    reason:
+      "The team needs a clear decision on Next.js, Supabase, Vercel, and the environment ownership model.",
+  },
+  {
+    key: "approve_foundation_lane",
+    label: "Approve the foundation lane",
+    owner: ["Kiomi / DS", "Nick"],
+    reason:
+      "MED-472, MED-473, and MED-474 are the first implementation gates after prep is reviewed.",
+  },
+  {
+    key: "start_write_sequence",
+    label: "Start the write-promotion sequence",
+    owner: ["Codex", "Kiomi / DS"],
+    reason:
+      "MED-476 through MED-485 can only begin one at a time after the foundation lane has evidence.",
   },
 ];
 
