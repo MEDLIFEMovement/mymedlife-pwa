@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type {
+  CoachDecisionCoverageStatus,
   CoachDecisionPacket,
   CoachDecisionPacketStatus,
   CoachDecisionReadbackStatus,
@@ -172,6 +173,91 @@ export function CoachDecisionVerificationPanel({
         </article>
       </section>
 
+      <section className="mt-5 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <article className="rounded-[2rem] border border-white/10 bg-black/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/42">
+            Role and ownership rules
+          </p>
+          <div className="mt-4 grid gap-3">
+            {packet.verificationPacket.roleCoverage.map((rule) => (
+              <article
+                key={rule.role}
+                className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+              >
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">{rule.role}</h2>
+                    <p className="mt-1 text-xs leading-5 text-white/52">
+                      {rule.packetAccess}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                    {rule.decisionAccess}
+                  </span>
+                </div>
+                <dl className="mt-3 grid gap-3 text-sm leading-6 text-white/64 sm:grid-cols-2">
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                      Notes
+                    </dt>
+                    <dd>{rule.noteVisibility}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                      Ownership
+                    </dt>
+                    <dd>{rule.truthOwnership}</dd>
+                  </div>
+                </dl>
+                <p className="mt-3 text-xs leading-5 text-cyan-100/72">
+                  Audit: {rule.auditExpectation}
+                </p>
+              </article>
+            ))}
+          </div>
+        </article>
+
+        <article className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100/80">
+            Coach note visibility
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">
+            {packet.verificationPacket.supportNotesSummary.title}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-white/66">
+            {packet.verificationPacket.supportNotesSummary.summary}
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+            <MiniStat
+              label="Visible"
+              value={`${packet.verificationPacket.supportNotesSummary.visibleNotes}`}
+            />
+            <MiniStat
+              label="Coach-private"
+              value={`${packet.verificationPacket.supportNotesSummary.coachPrivate}`}
+            />
+            <MiniStat
+              label="HQ"
+              value={`${packet.verificationPacket.supportNotesSummary.hqSupport}`}
+            />
+            <MiniStat
+              label="Chapter"
+              value={`${packet.verificationPacket.supportNotesSummary.chapterFollowUp}`}
+            />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {packet.verificationPacket.supportNotesSummary.blockedControls.map((control) => (
+              <span
+                key={control}
+                className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/58"
+              >
+                Locked {control}
+              </span>
+            ))}
+          </div>
+        </article>
+      </section>
+
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {packet.checks.map((check) => (
           <article
@@ -220,6 +306,61 @@ export function CoachDecisionVerificationPanel({
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="mt-5 rounded-[2rem] border border-violet-300/20 bg-violet-300/10 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-100/80">
+              Coverage and rollback
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              What this path proves
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
+              These checks explain what is covered in the coach/staff path right now,
+              what stays locked, and how corrections must be handled.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {packet.verificationPacket.coverageChecklist.map((item) => (
+            <article
+              key={item.key}
+              className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className={coverageStatusClassName(item.status)}>
+                    {item.status.replaceAll("_", " ")}
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-white">
+                    {item.label}
+                  </h3>
+                </div>
+                <Link
+                  href={item.route}
+                  className="rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+                >
+                  Open {item.route}
+                </Link>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-white/62">{item.detail}</p>
+            </article>
+          ))}
+        </div>
+
+        <article className="mt-4 rounded-3xl border border-white/10 bg-black/20 p-4">
+          <p className="text-sm font-semibold text-white">Correction rules</p>
+          <ul className="mt-3 grid gap-2">
+            {packet.verificationPacket.rollbackPlan.map((item) => (
+              <li key={item} className="text-xs leading-5 text-white/62">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </article>
       </section>
 
       <article className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
@@ -283,5 +424,14 @@ function readbackStatusClassName(status: CoachDecisionReadbackStatus): string {
     case "missing":
     case "blocked":
       return "text-xs font-semibold uppercase tracking-[0.18em] text-white/42";
+  }
+}
+
+function coverageStatusClassName(status: CoachDecisionCoverageStatus): string {
+  switch (status) {
+    case "covered":
+      return "text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100";
+    case "locked":
+      return "text-xs font-semibold uppercase tracking-[0.18em] text-amber-100";
   }
 }

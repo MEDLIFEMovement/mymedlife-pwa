@@ -3,6 +3,7 @@ import {
   getCoachDecisionWriteConfig,
   getCoachDecisionWriteReadiness,
 } from "@/services/coach-decision-write";
+import { getCoachSupportNotesWorkspace } from "@/services/coach-support-notes";
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import type { CoachDecisionInput } from "@/services/local-action-contracts";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
@@ -46,6 +47,10 @@ export type CoachDecisionVerificationPacket = {
   canPromoteToStagingReview: boolean;
   title: string;
   plainEnglishDecision: string;
+  roleCoverage: CoachDecisionRoleCoverage[];
+  coverageChecklist: CoachDecisionCoverageItem[];
+  supportNotesSummary: CoachSupportNotesSummary;
+  rollbackPlan: string[];
   envSettings: Array<{
     key: string;
     value: string;
@@ -62,6 +67,36 @@ export type CoachDecisionVerificationPacket = {
     expectedProof: string;
   }>;
   safetyStops: string[];
+};
+
+export type CoachDecisionRoleCoverage = {
+  role: string;
+  packetAccess: string;
+  noteVisibility: string;
+  decisionAccess: string;
+  truthOwnership: string;
+  auditExpectation: string;
+};
+
+export type CoachDecisionCoverageStatus = "covered" | "locked";
+
+export type CoachDecisionCoverageItem = {
+  key: string;
+  label: string;
+  status: CoachDecisionCoverageStatus;
+  detail: string;
+  route: string;
+};
+
+export type CoachSupportNotesSummary = {
+  title: string;
+  summary: string;
+  canReadNotes: boolean;
+  visibleNotes: number;
+  coachPrivate: number;
+  hqSupport: number;
+  chapterFollowUp: number;
+  blockedControls: string[];
 };
 
 export type CoachDecisionPacket = {
@@ -149,14 +184,19 @@ export function getCoachDecisionPacket(
   const status = getStatus(checks, writeConfig.enabled, readbackEvidence);
   const browserWritesExpected: 0 | 1 =
     status === "ready_for_local_coach_decision" ? 1 : 0;
-  const verificationPacket = buildVerificationPacket(status, readbackEvidence);
+  const supportNotesSummary = buildSupportNotesSummary(actor, data);
+  const verificationPacket = buildVerificationPacket(
+    status,
+    readbackEvidence,
+    supportNotesSummary,
+  );
 
   return {
     canReadPacket: true,
     title: getTitle(actor),
     status,
     plainEnglishSummary:
-      "This packet prepares the fifth local Rush Month write: a fake coach records advance, hold, or intervene after assignment, proof metadata, HQ decision, and leader assignment readback have been proven. It must create readiness review, structured event, disabled escalation outbox, and audit evidence without sending any escalation packet.",
+      "This packet prepares the staff chapter decision and coach note path: a fake coach records advance, hold, or intervene after the earlier Rush Month and SLT review lanes are proven. It must keep coach-private notes scoped, create readiness review plus event and audit evidence together, and leave every nudge, escalation packet, and external send at zero.",
     chapterId: data.chapter.id,
     campaignId: data.campaign.id,
     phaseId: activePhase?.id ?? "missing-phase",
@@ -168,6 +208,7 @@ export function getCoachDecisionPacket(
       "Screenshot of `/admin/coach-write` before the test showing the packet is ready.",
       "Screenshot of `/coach` with the coach decision form enabled for a fake coach.",
       "Screenshot after submit showing the intervention_recorded result state.",
+      "Evidence that coach note visibility stayed scoped and DS Admin remained safety-only.",
       "Readback proof that the phase readiness review exists.",
       "Evidence that coach_decision_logged internal event, integration event, disabled outbox row, and audit log were created.",
       "Evidence that n8n escalation packets, email, SMS, HubSpot notes, warehouse exports, Power BI, and AI summaries stayed at zero.",
@@ -445,6 +486,7 @@ function hasLeaderAssignmentReadback(data: ReadOnlyAppData): boolean {
 function buildVerificationPacket(
   status: CoachDecisionPacketStatus,
   readbackEvidence: CoachDecisionReadbackItem[],
+  supportNotesSummary: CoachSupportNotesSummary,
 ): CoachDecisionVerificationPacket {
   const evidenceObserved = isCoachDecisionReadbackObserved(readbackEvidence);
   const auditNeedsManualCheck =
@@ -453,12 +495,20 @@ function buildVerificationPacket(
   return {
     status,
     canPromoteToStagingReview: evidenceObserved,
-    title: "Coach decision operator packet",
+    title: "Staff chapter decision and coach note packet",
     plainEnglishDecision: getPlainEnglishDecision(
       status,
       evidenceObserved,
       auditNeedsManualCheck,
     ),
+    roleCoverage: buildRoleCoverage(),
+    coverageChecklist: buildCoverageChecklist(supportNotesSummary),
+    supportNotesSummary,
+    rollbackPlan: [
+      "If the wrong decision is logged, record a new correction event with a plain-English reason instead of silently overwriting the earlier chapter decision.",
+      "If a note should move from coach-private to chapter follow-up, rewrite it as a new scoped follow-up note rather than exposing the original coach-private text broadly.",
+      "If escalation is truly needed, stop at the packet boundary and get separate approval before any n8n send, HubSpot write, email, SMS, or downstream automation is enabled.",
+    ],
     envSettings: [
       {
         key: "MYMEDLIFE_AUTH_MODE",
@@ -602,6 +652,10 @@ function buildHiddenVerificationPacket(): CoachDecisionVerificationPacket {
     title: "Coach decision packet hidden",
     plainEnglishDecision:
       "This packet is hidden for chapter operating roles and visible only to HQ safety reviewers.",
+    roleCoverage: [],
+    coverageChecklist: [],
+    supportNotesSummary: emptySupportNotesSummary(),
+    rollbackPlan: [],
     envSettings: [],
     fakeCoachCredential: {
       email: "coach@mymedlife.test",
@@ -610,6 +664,156 @@ function buildHiddenVerificationPacket(): CoachDecisionVerificationPacket {
     },
     operatorSequence: [],
     safetyStops: [],
+  };
+}
+
+function buildRoleCoverage(): CoachDecisionRoleCoverage[] {
+  return [
+    {
+      role: "Coach",
+      packetAccess: "Operating route only",
+      noteVisibility: "Coach-private and chapter follow-up notes on /coach",
+      decisionAccess: "Can log one local decision for assigned portfolio chapters",
+      truthOwnership:
+        "Owns the support recommendation only inside assigned chapter scope.",
+      auditExpectation:
+        "Decision, readiness review, integration event, disabled outbox, and audit rows must all tie back to the coach and phase.",
+    },
+    {
+      role: "Admin / Super Admin",
+      packetAccess: "Full review packet",
+      noteVisibility: "HQ support notes plus visibility policy review",
+      decisionAccess: "Can rehearse the guarded local path for review",
+      truthOwnership:
+        "Can inspect and rehearse the path, but corrections still require a new audited event instead of silent history edits.",
+      auditExpectation:
+        "Admin review must stay chapter-scoped, explicit, and fully auditable.",
+    },
+    {
+      role: "DS Admin",
+      packetAccess: "Safety-only packet",
+      noteVisibility: "No raw coach-private notes",
+      decisionAccess: "Blocked from owning chapter truth",
+      truthOwnership:
+        "Can inspect the safety packet and audit posture only.",
+      auditExpectation:
+        "DS review stops at packet evidence; no decision ownership, note ownership, or student/chapter truth mutation is allowed here.",
+    },
+    {
+      role: "Chapter Leader / Member",
+      packetAccess: "Hidden",
+      noteVisibility: "No coach note access through this path",
+      decisionAccess: "Blocked",
+      truthOwnership:
+        "Should stay on member and chapter operating routes instead of the HQ safety packet.",
+      auditExpectation:
+        "No chapter-role shortcut should bypass the coach/staff decision guardrails.",
+    },
+  ];
+}
+
+function buildCoverageChecklist(
+  supportNotesSummary: CoachSupportNotesSummary,
+): CoachDecisionCoverageItem[] {
+  return [
+    {
+      key: "decision_categories",
+      label: "Decision categories and escalation posture",
+      status: "covered",
+      detail:
+        "The path explicitly rehearses advance, hold, and intervene. Intervene still requires a blocker summary, and escalation packets stay disabled even when intervention is chosen.",
+      route: "/coach",
+    },
+    {
+      key: "portfolio_scope",
+      label: "Portfolio scope and staff ownership",
+      status: "covered",
+      detail:
+        "Only a coach with assigned portfolio access, Admin, or Super Admin can pass the local write checks. DS Admin can inspect the packet but cannot own the decision path.",
+      route: "/admin/coach-write",
+    },
+    {
+      key: "private_notes",
+      label: "Private note visibility",
+      status: "covered",
+      detail: supportNotesSummary.canReadNotes
+        ? `${supportNotesSummary.visibleNotes} visible note(s) stay scoped across coach-private, HQ support, and chapter follow-up lanes without opening raw coach-private text to DS Admin.`
+        : "This role can inspect the safety packet only. Raw coach-private notes remain hidden by design.",
+      route: "/coach",
+    },
+    {
+      key: "duplicate_and_correction",
+      label: "Duplicate and correction handling",
+      status: "covered",
+      detail:
+        "Duplicate or final-state follow-up should stop in review. Any correction must create a fresh readiness review, event, integration row, disabled outbox row, and audit entry instead of mutating history in place.",
+      route: "/admin/coach-write",
+    },
+    {
+      key: "downstream_locks",
+      label: "Nudges and downstream automation stay locked",
+      status: "locked",
+      detail:
+        "Member nudges, escalation packets, HubSpot updates, n8n sends, warehouse exports, Power BI updates, AI summaries, and other downstream automation remain disabled for this path.",
+      route: "/admin/integration-outbox",
+    },
+  ];
+}
+
+function buildSupportNotesSummary(
+  actor: LocalActorContext,
+  data: ReadOnlyAppData,
+): CoachSupportNotesSummary {
+  const workspace = getCoachSupportNotesWorkspace(actor, data);
+
+  if (!workspace.canReadWorkspace) {
+    return {
+      title: "Coach notes remain hidden for this role",
+      summary:
+        actor.audience === "ds_admin"
+          ? "DS Admin can inspect the safety packet, but coach-private notes and chapter-truth ownership stay locked."
+          : "Use the coach or HQ support route to inspect note visibility and follow-up posture.",
+      canReadNotes: false,
+      visibleNotes: 0,
+      coachPrivate: 0,
+      hqSupport: 0,
+      chapterFollowUp: 0,
+      blockedControls: [
+        "coach note save",
+        "coach decision save",
+        "member nudge",
+        "escalation packet send",
+        "external automation",
+      ],
+    };
+  }
+
+  return {
+    title: workspace.title,
+    summary: workspace.summary,
+    canReadNotes: true,
+    visibleNotes: workspace.notes.length,
+    coachPrivate: workspace.notes.filter((note) => note.visibility === "coach_private")
+      .length,
+    hqSupport: workspace.notes.filter((note) => note.visibility === "hq_support")
+      .length,
+    chapterFollowUp: workspace.notes.filter(
+      (note) => note.visibility === "chapter_follow_up",
+    ).length,
+    blockedControls: workspace.interventionChecklist.blockedControls,
+  };
+}
+
+function emptySupportNotesSummary(): CoachSupportNotesSummary {
+  return {
+    title: "Coach notes summary unavailable",
+    summary: "",
+    canReadNotes: false,
+    visibleNotes: 0,
+    coachPrivate: 0,
+    hqSupport: 0,
+    chapterFollowUp: 0,
+    blockedControls: [],
   };
 }
 

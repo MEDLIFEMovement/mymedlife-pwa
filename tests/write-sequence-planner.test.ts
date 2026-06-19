@@ -127,7 +127,7 @@ describe("write sequence planner", () => {
       },
       {
         key: "coach_decision_logged",
-        packetLabel: "Coach decision packet",
+        packetLabel: "Staff chapter decision and coach note packet",
         packetRoute: "/admin/coach-write",
         externalWritesExpected: 0,
       },
