@@ -16,6 +16,15 @@ const validInput = {
   auditReason: "Approve local Rush Month join request for chapter review.",
 } satisfies ChapterMembershipApprovalInput;
 
+const validSupabaseInput = {
+  chapterId: "10000000-0000-4000-8000-000000000001",
+  joinRequestId: "20000000-0000-4000-8000-000000000005",
+  applicantEmail: "avery.new@mymedlife.test",
+  requestedRoleKey: "general_member",
+  requestedCommitteeLane: "Recruitment",
+  auditReason: "Approve local Rush Month join request for chapter review.",
+} satisfies ChapterMembershipApprovalInput;
+
 describe("membership approval write readiness", () => {
   it("keeps the future membership approval write disabled by default", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
@@ -51,7 +60,43 @@ describe("membership approval write readiness", () => {
     );
   });
 
-  it("stays blocked even when local env flags are requested because SQL and RLS are not implemented yet", () => {
+  it("allows a signed-in local reviewer to submit when env flags and Supabase UUIDs are present", () => {
+    const actor = {
+      ...getMockLocalActorContext("leader.a@mymedlife.test"),
+      identitySource: "local_auth_session" as const,
+      authSessionStatus: "signed_in" as const,
+    };
+    const readiness = getMembershipApprovalWriteReadiness(
+      actor,
+      validSupabaseInput,
+      [],
+      {
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+      },
+    );
+
+    expect(getMembershipApprovalWriteConfig({
+      MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+      MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+    }).enabled).toBe(true);
+    expect(readiness.canSubmit).toBe(true);
+    expect(readiness.resultCodeIfSubmitted).toBe("membership_approved");
+    expect(
+      readiness.checks.find((check) => check.key === "database_function_ready"),
+    ).toEqual(expect.objectContaining({ passed: true }));
+    expect(readiness.checks.find((check) => check.key === "rls_tests_ready")).toEqual(
+      expect.objectContaining({ passed: true }),
+    );
+    expect(readiness.checks.find((check) => check.key === "chapter_uuid")).toEqual(
+      expect.objectContaining({ passed: true }),
+    );
+    expect(readiness.checks.find((check) => check.key === "local_auth_session")).toEqual(
+      expect.objectContaining({ passed: true }),
+    );
+  });
+
+  it("keeps mock chapter and join-request IDs blocked even after the write is implemented", () => {
     const actor = {
       ...getMockLocalActorContext("leader.a@mymedlife.test"),
       identitySource: "local_auth_session" as const,
@@ -67,21 +112,14 @@ describe("membership approval write readiness", () => {
       },
     );
 
-    expect(getMembershipApprovalWriteConfig({
-      MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
-      MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
-    }).enabled).toBe(true);
     expect(readiness.canSubmit).toBe(false);
-    expect(readiness.resultCodeIfSubmitted).toBe("write_disabled");
-    expect(
-      readiness.checks.find((check) => check.key === "database_function_ready"),
-    ).toEqual(expect.objectContaining({ passed: false }));
-    expect(readiness.checks.find((check) => check.key === "rls_tests_ready")).toEqual(
+    expect(readiness.resultCodeIfSubmitted).toBe("join_request_not_found");
+    expect(readiness.checks.find((check) => check.key === "chapter_uuid")).toEqual(
       expect.objectContaining({ passed: false }),
     );
-    expect(readiness.checks.find((check) => check.key === "local_auth_session")).toEqual(
-      expect.objectContaining({ passed: true }),
-    );
+    expect(
+      readiness.checks.find((check) => check.key === "join_request_visible"),
+    ).toEqual(expect.objectContaining({ passed: false }));
   });
 
   it("maps duplicate, invalid role, missing audit reason, and blocked actors to result states", () => {

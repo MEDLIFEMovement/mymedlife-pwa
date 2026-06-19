@@ -2,6 +2,7 @@ import {
   canApproveChapterMembership,
   type ChapterMembershipApprovalInput,
 } from "@/services/local-action-contracts";
+import { isUuid } from "@/services/action-start-write";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   getFutureMembershipApprovalResultIfEnabled,
@@ -19,6 +20,7 @@ export type MembershipApprovalWriteCheckKey =
   | "database_function_ready"
   | "rls_tests_ready"
   | "local_auth_session"
+  | "chapter_uuid"
   | "join_request_visible"
   | "applicant_profile_ready"
   | "requested_role_valid"
@@ -168,12 +170,12 @@ export function getMembershipApprovalWriteReadiness(
     {
       key: "database_function_ready",
       label: "Membership approval database function is implemented",
-      passed: false,
+      passed: true,
     },
     {
       key: "rls_tests_ready",
       label: "Membership approval RLS tests are implemented",
-      passed: false,
+      passed: true,
     },
     {
       key: "local_auth_session",
@@ -181,9 +183,14 @@ export function getMembershipApprovalWriteReadiness(
       passed: localAuthSession,
     },
     {
+      key: "chapter_uuid",
+      label: "Chapter ID is a Supabase UUID",
+      passed: isUuid(input.chapterId),
+    },
+    {
       key: "join_request_visible",
-      label: "Join request is visible and specific",
-      passed: input.joinRequestId.trim().length >= 3,
+      label: "Join request is a visible Supabase UUID",
+      passed: isUuid(input.joinRequestId),
     },
     {
       key: "applicant_profile_ready",
@@ -276,6 +283,7 @@ function getBlockedResultCode(
       return "permission_denied";
     case "local_auth_session":
       return "missing_auth";
+    case "chapter_uuid":
     case "join_request_visible":
       return "join_request_not_found";
     case "applicant_profile_ready":

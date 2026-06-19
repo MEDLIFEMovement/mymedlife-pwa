@@ -35,6 +35,7 @@ describe("chapter membership workspace", () => {
         requestedCommitteeLane: "Recruitment",
         source: "rush_event",
         approvedByActorEmail: "leader.a@mymedlife.test",
+        auditReason: "Approve local Rush Month join request for chapter review.",
       }),
     );
     expect(workspace.membershipApprovalPacket?.resultPreview.currentResult.code).toBe(
@@ -136,7 +137,7 @@ describe("chapter membership workspace", () => {
       workspace.membershipApprovalPacket?.writeReadiness.checks.find(
         (check) => check.key === "database_function_ready",
       ),
-    ).toEqual(expect.objectContaining({ passed: false }));
+    ).toEqual(expect.objectContaining({ passed: true }));
     expect(
       workspace.membershipApprovalPacket?.writeReadiness.requiredRlsTests,
     ).toEqual(expect.arrayContaining(["ds_admin_cannot_approve_membership"]));
