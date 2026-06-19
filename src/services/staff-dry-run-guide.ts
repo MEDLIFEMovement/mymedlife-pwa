@@ -293,7 +293,7 @@ function buildWriteRehearsal(
   return {
     title: `${steps.length} local write rehearsal`,
     summary:
-      "Use these packets to rehearse the guarded Rush Month local writes and the separate membership approval readiness packet in order. This section is a checklist and status mirror, not a write console.",
+      "Use these packets to rehearse the guarded Rush Month and SLT local writes plus the separate membership approval readiness packet in order. This section is a checklist and status mirror, not a write console.",
     steps,
     counts: {
       steps: steps.length,
@@ -339,6 +339,8 @@ function getOperatingRoute(operation: WriteSequenceOperation): string {
       return "/rush-month/review";
     case "points_kpi_materialized":
       return "/rush-month/leaderboard";
+    case "slt_checklist_completed":
+      return "/slt-prep/checklist";
     case "action_assigned":
       return "/rush-month/actions";
     case "coach_decision_logged":
@@ -360,6 +362,8 @@ function getRehearsalAction(operation: WriteSequenceOperation): string {
       return "Open the HQ proof decision packet and rehearse the sharing posture decision without publishing proof publicly.";
     case "points_kpi_materialized":
       return "Open the points and KPI packet and confirm one approved proof path maps to one points row and one KPI row without duplicate materialization.";
+    case "slt_checklist_completed":
+      return "Open the SLT checklist packet and confirm one traveler-owned checklist item can preview a readiness increase while payments, forms, flights, meetings, and external systems stay locked.";
     case "action_assigned":
       return "Open the leader assignment packet and rehearse one chapter-scoped assignment without reminders or external handoffs.";
     case "coach_decision_logged":
@@ -398,7 +402,7 @@ function getTitle(actor: LocalActorContext): string {
 
 function emptyWriteRehearsal(): StaffDryRunWriteRehearsal {
   return {
-    title: "Seven local write rehearsal hidden for this role",
+    title: "Local write rehearsal hidden for this role",
     summary:
       "Write rehearsal packets are HQ safety surfaces, not student or chapter operating views.",
     steps: [],

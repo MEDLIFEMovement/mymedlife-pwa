@@ -57,6 +57,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/admin/proof-write", label: "Proof metadata packet", routeType: "exact" },
   { href: "/admin/hq-proof-write", label: "HQ proof decision packet", routeType: "exact" },
   { href: "/admin/points-write", label: "Points and KPI packet", routeType: "exact" },
+  { href: "/admin/slt-checklist-write", label: "SLT checklist packet", routeType: "exact" },
   { href: "/admin/assignment-write", label: "Leader assignment packet", routeType: "exact" },
   { href: "/admin/coach-write", label: "Coach decision packet", routeType: "exact" },
   { href: "/admin/pilot-scope", label: "Pilot scope", routeType: "exact" },

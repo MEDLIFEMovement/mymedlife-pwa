@@ -109,7 +109,7 @@ const reviewPhaseDefinitions: Omit<
     id: "write-packets",
     title: "Write packets",
     summary:
-      "Review staff dry run, pilot scope, first write, write sequence, proof metadata, HQ proof, leader assignment, and coach decision packets.",
+      "Review staff dry run, pilot scope, first write, write sequence, proof metadata, HQ proof, points/KPI, SLT checklist, leader assignment, and coach decision packets.",
     stepIds: [
       "staff-dry-run",
       "pilot-scope",
@@ -117,6 +117,8 @@ const reviewPhaseDefinitions: Omit<
       "write-sequence",
       "proof-metadata-packet",
       "hq-proof-decision-packet",
+      "points-kpi-packet",
+      "slt-checklist-packet",
       "leader-assignment-packet",
       "coach-decision-packet",
     ],
@@ -570,6 +572,28 @@ const reviewSteps: StakeholderReviewStep[] = [
       "HQ can see the third local write packet for deciding whether submitted proof/testimonials can be shared later, including proof metadata prerequisites and disabled publish/send posture.",
     safetyBoundary:
       "The HQ decision packet must not publish proof, export proof, generate AI summaries, or send external automation.",
+  },
+  {
+    id: "points-kpi-packet",
+    title: "Review the points and KPI packet",
+    route: "/admin/points-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the points/KPI review packet for confirming one approved proof path maps to one points row and one KPI row, with duplicate protection and disabled downstream sends.",
+    safetyBoundary:
+      "The points/KPI packet must not trigger warehouse exports, Power BI updates, member nudges, or external automation.",
+  },
+  {
+    id: "slt-checklist-packet",
+    title: "Review the SLT checklist packet",
+    route: "/admin/slt-checklist-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the SLT checklist completion packet for one traveler-owned readiness item, including the readiness delta, staff follow-up visibility, and locked external travel-system posture.",
+    safetyBoundary:
+      "The SLT checklist packet must not change Shopify, HubSpot, Luma, flight, payment, form, meeting, upload, or external automation state.",
   },
   {
     id: "leader-assignment-packet",

@@ -52,6 +52,7 @@ export type StaticRouteMetadataKey =
   | "adminProofWrite"
   | "adminHqProofWrite"
   | "adminPointsWrite"
+  | "adminSltChecklistWrite"
   | "adminAssignmentWrite"
   | "adminCoachWrite"
   | "adminPilotScope"
@@ -299,6 +300,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Points And KPI Packet",
     description:
       "Staff-only local packet for reviewing points/KPI materialization, duplicate posture, and audit linkage.",
+  },
+  adminSltChecklistWrite: {
+    title: "SLT Checklist Packet",
+    description:
+      "Staff-only local packet for reviewing traveler-owned checklist completion, readiness deltas, and locked external travel systems.",
   },
   adminAssignmentWrite: {
     title: "Leader Assignment Packet",

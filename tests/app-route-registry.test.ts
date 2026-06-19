@@ -71,6 +71,7 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/admin/design-qa")).toBe(true);
     expect(isKnownAppRouteHref("/admin/operations")).toBe(true);
     expect(isKnownAppRouteHref("/admin/points-write")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/slt-checklist-write")).toBe(true);
     expect(isKnownAppRouteHref("/unknown")).toBe(false);
   });
 });

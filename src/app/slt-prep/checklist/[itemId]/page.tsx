@@ -138,6 +138,16 @@ export default async function SltPrepChecklistDetailPage({
                 >
                   Preview completion packet
                 </Link>
+                {actor.audience === "admin" ||
+                actor.audience === "ds_admin" ||
+                actor.audience === "super_admin" ? (
+                  <Link
+                    href={`/admin/slt-checklist-write?travelerId=${workspace.traveler.id}&itemId=${workspace.item.id}`}
+                    className="inline-flex rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
+                  >
+                    Open admin packet
+                  </Link>
+                ) : null}
                 <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/46">
                     Mock source
