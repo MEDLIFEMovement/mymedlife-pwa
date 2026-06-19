@@ -87,7 +87,7 @@ function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
-            Promote {operation.promotionOrder} / student step{" "}
+            Promote {operation.promotionOrder} / journey step{" "}
             {operation.studentJourneyOrder}
           </p>
           <h2 className="mt-2 text-xl font-semibold text-white">
