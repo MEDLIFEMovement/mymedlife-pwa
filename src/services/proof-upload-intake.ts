@@ -1,5 +1,6 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
+  buildPrivateProofStoragePath,
   getProofStoragePlan,
   getProofStorageReadinessConfig,
   isAllowedProofMimeType,
@@ -315,7 +316,10 @@ function buildProofUploadStoragePacket(
       },
       {
         label: "Evidence item",
-        value: `storage_path -> ${disabledAttempt.normalizedFileName}`,
+        value: `storage_path -> ${buildStoragePathPreview(
+          input,
+          disabledAttempt.normalizedFileName,
+        )}`,
       },
       {
         label: "Structured event",
@@ -350,13 +354,11 @@ function buildStoragePathPreview(
   input: ProofUploadIntakeInput,
   normalizedFileName: string,
 ): string {
-  return [
-    "chapters/chapter-a",
-    "campaigns/rush-month",
-    "evidence",
+  return buildPrivateProofStoragePath(
+    "chapter-a",
     input.evidenceItemId,
     normalizedFileName,
-  ].join("/");
+  );
 }
 
 function getTitle(actor: LocalActorContext): string {

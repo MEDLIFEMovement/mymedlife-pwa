@@ -32,7 +32,7 @@ describe("proof upload intake", () => {
       }),
     );
     expect(workspace.storagePacket?.storagePathPreview).toBe(
-      "chapters/chapter-a/campaigns/rush-month/evidence/local-proof-upload-preview/rush-social-bridge-video.mov",
+      "chapters/chapter-a/evidence/local-proof-upload-preview/rush-social-bridge-video.mov",
     );
     expect(workspace.storagePacket?.rawUploadReaders).toEqual([
       "submitter",
@@ -153,7 +153,7 @@ describe("proof upload intake", () => {
     });
 
     expect(workspace.storagePacket?.storagePathPreview).toBe(
-      "chapters/chapter-a/campaigns/rush-month/evidence/evidence-bridge-video/leader-recap.mp4",
+      "chapters/chapter-a/evidence/evidence-bridge-video/leader-recap.mp4",
     );
     expect(
       workspace.storagePacket?.readinessChecks.find(

@@ -74,12 +74,32 @@ const requiredMetadata = [
 export function getProofStorageReadinessConfig(
   env: EnvSource = process.env,
 ): ProofStorageReadinessConfig {
+  if (env.MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE === "true") {
+    if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+      return {
+        uploadsEnabled: false,
+        publicPublishingEnabled: false,
+        reason:
+          "Private proof upload was requested, but local Supabase writes are still disabled.",
+        approvalRequired,
+      };
+    }
+
+    return {
+      uploadsEnabled: false,
+      publicPublishingEnabled: false,
+      reason:
+        "Private proof upload is approved for a later local write lane, but this readiness packet stays review-first until the route-specific write gate is checked.",
+      approvalRequired,
+    };
+  }
+
   if (env.MYMEDLIFE_ALLOW_PROOF_UPLOADS === "true") {
     return {
       uploadsEnabled: false,
       publicPublishingEnabled: false,
       reason:
-        "Proof uploads were requested, but Goal 17 keeps upload and publishing paths disabled.",
+        "Proof uploads were requested, but Goal 17 keeps upload and publishing paths disabled until the private upload lane is explicitly enabled.",
       approvalRequired,
     };
   }
@@ -144,7 +164,21 @@ export function prepareDisabledProofFileUpload(
   };
 }
 
-function normalizeProofFileName(fileName: string): string {
+export function normalizeProofFileName(fileName: string): string {
   const trimmed = fileName.trim().toLowerCase();
   return trimmed.replace(/[^a-z0-9._-]+/g, "-").replace(/-+/g, "-");
+}
+
+export function buildPrivateProofStoragePath(
+  chapterToken: string,
+  evidenceToken: string,
+  fileName: string,
+): string {
+  return [
+    "chapters",
+    chapterToken,
+    "evidence",
+    evidenceToken,
+    normalizeProofFileName(fileName),
+  ].join("/");
 }
