@@ -10,6 +10,12 @@ the production-style custom PWA path.
 
 ## Current Goal
 
+The current priority is review readiness for PR #94 and PR #95. Use
+`docs/review/pr-94-pr-95-review-checklist.md` for the reviewer order and
+approval questions, then use `/admin/review-path`, `/admin/nick-review`,
+`/admin/launch-gate`, and `/admin/database-security` as the Phase 1 review
+packet routes.
+
 The current goal is Goal 162: membership approval write readiness. This extends
 `/chapter/members`, the write plan, browser-write readiness, and staff rehearsal
 surfaces so reviewers can inspect the future `app.approve_chapter_membership`

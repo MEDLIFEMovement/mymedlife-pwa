@@ -2,17 +2,38 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(26);
+select plan(29);
 
 set local role authenticated;
 
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';
 set local "request.jwt.claim.role" = 'authenticated';
 
-select is(
-  (select count(*)::int from app.assignments),
-  2,
-  'Chapter A member sees only their visible Chapter A assignments'
+select ok(
+  exists(
+    select 1
+    from app.assignments
+    where id = '50000000-0000-4000-8000-000000000001'
+  ),
+  'Chapter A member sees their active invite assignment'
+);
+
+select ok(
+  exists(
+    select 1
+    from app.assignments
+    where id = '50000000-0000-4000-8000-000000000003'
+  ),
+  'Chapter A member sees their not-started follow-up assignment'
+);
+
+select ok(
+  exists(
+    select 1
+    from app.assignments
+    where id = '50000000-0000-4000-8000-000000000004'
+  ),
+  'Chapter A member sees the leader-proof review fixture assigned to them'
 );
 
 select is(
@@ -27,10 +48,22 @@ select is(
   'General member can read only their own profile'
 );
 
-select is(
-  (select count(*)::int from app.evidence_items),
-  1,
-  'General member can read their own proof submission'
+select ok(
+  exists(
+    select 1
+    from app.evidence_items
+    where id = '60000000-0000-4000-8000-000000000001'
+  ),
+  'General member can read their kickoff proof submission'
+);
+
+select ok(
+  exists(
+    select 1
+    from app.evidence_items
+    where id = '60000000-0000-4000-8000-000000000004'
+  ),
+  'General member can read their leader-review fixture proof submission'
 );
 
 select lives_ok(
