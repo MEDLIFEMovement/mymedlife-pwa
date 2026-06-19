@@ -63,13 +63,13 @@ describe("staff dry-run guide", () => {
     ).toEqual(expect.arrayContaining(["action_started", "evidence_submitted"]));
   });
 
-  it("mirrors the seven local write packets for staff rehearsal", () => {
+  it("mirrors the eight local write packets for staff rehearsal", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const guide = getStaffDryRunGuide(actor, mockData);
 
-    expect(guide.writeRehearsal.title).toBe("Seven local write rehearsal");
-    expect(guide.writeRehearsal.counts.steps).toBe(7);
-    expect(guide.writeRehearsal.counts.localBrowserWriteCandidates).toBe(7);
+    expect(guide.writeRehearsal.title).toBe("9 local write rehearsal");
+    expect(guide.writeRehearsal.counts.steps).toBe(9);
+    expect(guide.writeRehearsal.counts.localBrowserWriteCandidates).toBe(9);
     expect(guide.writeRehearsal.counts.externalWritesExpected).toBe(0);
     expect(guide.writeRehearsal.steps.map((step) => step.operation)).toEqual([
       "membership_approved",
@@ -78,6 +78,8 @@ describe("staff dry-run guide", () => {
       "evidence_submitted",
       "leader_proof_decision_logged",
       "hq_sharing_decision_logged",
+      "points_kpi_materialized",
+      "slt_checklist_completed",
       "coach_decision_logged",
     ]);
     expect(guide.writeRehearsal.steps.map((step) => step.packetRoute)).toEqual([
@@ -87,12 +89,16 @@ describe("staff dry-run guide", () => {
       "/admin/proof-write",
       "/rush-month/review",
       "/admin/hq-proof-write",
+      "/admin/points-write",
+      "/admin/slt-checklist-write",
       "/admin/coach-write",
     ]);
     expect(guide.writeRehearsal.steps.map((step) => step.operatingRoute)).toEqual(
       expect.arrayContaining([
         "/rush-month/actions",
         "/rush-month/review",
+        "/rush-month/leaderboard",
+        "/slt-prep/checklist",
         "/coach",
         "/chapter/members",
       ]),

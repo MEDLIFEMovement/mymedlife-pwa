@@ -109,7 +109,7 @@ const reviewPhaseDefinitions: Omit<
     id: "write-packets",
     title: "Write packets",
     summary:
-      "Review staff dry run, pilot scope, first write, write sequence, proof metadata, HQ proof, leader assignment, and coach decision packets.",
+      "Review staff dry run, pilot scope, first write, write sequence, proof metadata, HQ proof, points/KPI, SLT checklist, leader assignment, and coach decision packets.",
     stepIds: [
       "staff-dry-run",
       "pilot-scope",
@@ -117,6 +117,8 @@ const reviewPhaseDefinitions: Omit<
       "write-sequence",
       "proof-metadata-packet",
       "hq-proof-decision-packet",
+      "points-kpi-packet",
+      "slt-checklist-packet",
       "leader-assignment-packet",
       "coach-decision-packet",
     ],
@@ -572,6 +574,28 @@ const reviewSteps: StakeholderReviewStep[] = [
       "The HQ decision packet must not publish proof, export proof, generate AI summaries, or send external automation.",
   },
   {
+    id: "points-kpi-packet",
+    title: "Review the points and KPI packet",
+    route: "/admin/points-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the points/KPI review packet for confirming one approved proof path maps to one points row and one KPI row, with duplicate protection and disabled downstream sends.",
+    safetyBoundary:
+      "The points/KPI packet must not trigger warehouse exports, Power BI updates, member nudges, or external automation.",
+  },
+  {
+    id: "slt-checklist-packet",
+    title: "Review the SLT checklist packet",
+    route: "/admin/slt-checklist-write",
+    localActorEmail: "admin@mymedlife.test",
+    actorLabel: "Admin",
+    expectedReview:
+      "HQ can see the SLT checklist completion packet for one traveler-owned readiness item, including the readiness delta, staff follow-up visibility, and locked external travel-system posture.",
+    safetyBoundary:
+      "The SLT checklist packet must not change Shopify, HubSpot, Luma, flight, payment, form, meeting, upload, or external automation state.",
+  },
+  {
     id: "leader-assignment-packet",
     title: "Review the leader assignment packet",
     route: "/admin/assignment-write",
@@ -584,14 +608,14 @@ const reviewSteps: StakeholderReviewStep[] = [
   },
   {
     id: "coach-decision-packet",
-    title: "Review the coach decision packet",
+    title: "Review the coach decision and note packet",
     route: "/admin/coach-write",
     localActorEmail: "admin@mymedlife.test",
     actorLabel: "Admin",
     expectedReview:
-      "HQ can see the fifth local write packet for coach advance / hold / intervene logging, including leader assignment prerequisites, disabled escalation posture, and readback evidence.",
+      "HQ can see the staff chapter decision and coach note packet for advance / hold / intervene logging, including leader assignment prerequisites, note visibility boundaries, disabled escalation posture, and readback evidence.",
     safetyBoundary:
-      "The coach decision packet must not send n8n escalation packets, HubSpot notes, email, SMS, warehouse exports, Power BI updates, AI summaries, or external automation.",
+      "The coach decision packet must not send member nudges, n8n escalation packets, HubSpot notes, email, SMS, warehouse exports, Power BI updates, AI summaries, or external automation.",
   },
 ];
 

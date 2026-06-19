@@ -3,8 +3,10 @@ import { getFirstWriteActivationDrill } from "@/services/first-write-activation-
 import { getHqProofDecisionPacket } from "@/services/hq-proof-decision-verification-packet";
 import { getLeaderAssignmentPacket } from "@/services/leader-assignment-verification-packet";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getPointsKpiMaterializationPacket } from "@/services/points-kpi-materialization-packet";
 import { getProofMetadataPacket } from "@/services/proof-metadata-verification-packet";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import { getSltChecklistCompletionPacket } from "@/services/slt-checklist-completion-packet";
 
 type EnvSource = Record<string, string | undefined>;
 
@@ -28,6 +30,8 @@ export type WriteSequenceOperation = {
     | "evidence_submitted"
     | "leader_proof_decision_logged"
     | "hq_sharing_decision_logged"
+    | "points_kpi_materialized"
+    | "slt_checklist_completed"
     | "action_assigned"
     | "coach_decision_logged"
     | "membership_approved";
@@ -116,9 +120,9 @@ export function getWriteSequencePlanner(
     summary:
       "This planner shows the implemented local-write subset inside the broader Phase 2 promotion order. It is a control-room view: it explains which guarded write should be proven next, what evidence to inspect, and what must stay disabled.",
     studentJourneySummary:
-      "The review journey starts with chapter access approval, then moves into leader assignment, member action start, member proof/testimonial submission, leader proof review, HQ sharing review, and coach support decisions.",
+      "The review journey starts with chapter access approval, then moves into leader assignment, member action start, member proof/testimonial submission, leader proof review, HQ sharing review, points/KPI materialization review, SLT checklist completion review, and coach support decisions.",
     promotionSummary:
-      "Within the currently implemented Phase 2 subset, prove membership approval first, then leader assignment creation, student action start, proof metadata submission, leader proof review, HQ sharing decision, and coach decision logging. Private uploads, points/KPI materialization, and SLT checklist completion stay in separate later gates.",
+      "Within the currently implemented Phase 2 subset, prove membership approval first, then leader assignment creation, student action start, proof metadata submission, leader proof review, HQ sharing decision, points/KPI materialization review, SLT checklist completion review, and the staff chapter decision plus coach note path. Private uploads stay in a separate later gate.",
     firstWriteRuntimeStatus: packetStatuses.membership_approved.status,
     nextRecommendedOperation: "membership_approved",
     operations,
@@ -378,10 +382,93 @@ function buildOperations(
       packetStatus: packetStatuses.hq_sharing_decision_logged,
     },
     {
-      key: "coach_decision_logged",
-      label: "Coach logs advance / hold / intervene decision",
+      key: "points_kpi_materialized",
+      label: "Points and KPI rows are reviewed",
       promotionOrder: 7,
       studentJourneyOrder: 7,
+      route: "/admin/points-write",
+      localActorEmail: "admin@mymedlife.test",
+      actorLabel: "Admin, DS Admin, or Super Admin",
+      roleResponsibility: {
+        roleLabel: "Admin / DS Admin / Super Admin",
+        responsibility: "Verify recognition and KPI materialization",
+        reviewPrompt:
+          "Confirm one approved proof path creates one points row and one KPI row from the assignment rules, with no duplicate materialization.",
+        safetyBoundary:
+          "No warehouse export, Power BI push, member nudge, public proof publish, or external automation should run from this packet.",
+      },
+      status: "packet_ready",
+      plainEnglish:
+        "HQ reviewers confirm that the approved proof path created the expected local points and KPI rows, that the values came from the assignment rules, and that recognition stayed append-only and mock-safe.",
+      expectedTables: [
+        "points_events",
+        "kpi_events",
+        "events",
+        "integration_events",
+        "automation_outbox",
+        "audit_logs",
+      ],
+      structuredEvents: ["evidence_approved"],
+      auditEvidence: [
+        "one points row matches the assignment points rule",
+        "one KPI row matches the assignment KPI rule",
+        "source event and disabled outbox posture are visible",
+        "audit linkage ties the approved proof back to the materialized rows",
+      ],
+      outboxPosture:
+        "No warehouse export, Power BI sync, member nudge, or external automation send should happen.",
+      safetyBoundary:
+        "Requires local Supabase readback, approved proof, proven HQ posture, duplicate protection, and correction guidance that uses offset rows instead of silent mutation.",
+      nextGate:
+        "Open `/admin/points-write` after HQ review evidence is proven, then confirm row counts, rule derivation, and audit linkage before moving to the SLT checklist packet.",
+      packetStatus: packetStatuses.points_kpi_materialized,
+    },
+    {
+      key: "slt_checklist_completed",
+      label: "Traveler completes one SLT checklist item",
+      promotionOrder: 8,
+      studentJourneyOrder: 8,
+      route: "/admin/slt-checklist-write",
+      localActorEmail: "member.a@mymedlife.test",
+      actorLabel: "Traveler",
+      roleResponsibility: {
+        roleLabel: "Traveler",
+        responsibility: "Complete one visible SLT prep item",
+        reviewPrompt:
+          "Confirm the traveler can preview a checklist completion only for their own visible SLT item and that staff can inspect the result without taking ownership of the write.",
+        safetyBoundary:
+          "No Shopify, HubSpot, Luma, payment, meeting, flight, form, upload, or external send should activate from this packet.",
+      },
+      status: "packet_ready",
+      plainEnglish:
+        "A traveler-owned SLT checklist item is previewed as complete so reviewers can verify readiness recalculation, staff visibility, and locked external travel-system posture before any save is approved.",
+      expectedTables: [
+        "trip_prep_checklist_items",
+        "trip_prep_readiness_reviews",
+        "events",
+        "integration_events",
+        "audit_logs",
+      ],
+      structuredEvents: ["slt_checklist_completed"],
+      auditEvidence: [
+        "the traveler-owned checklist item shows a before and after status",
+        "the readiness score delta is visible to both traveler and staff views",
+        "payment, form, flight, and meeting truth stay read-only",
+        "future audit payload documents actor, checklist item, before/after state, and readiness delta",
+      ],
+      outboxPosture:
+        "No payment collection, reminder send, HubSpot update, Luma write, warehouse export, or external automation should happen.",
+      safetyBoundary:
+        "Requires traveler-owned visibility, preview-only posture, duplicate and reopen guidance, and all external travel systems staying locked.",
+      nextGate:
+        "Open `/admin/slt-checklist-write` after the points packet is reviewed, then confirm readiness delta, staff follow-up visibility, and locked external travel systems before moving to coach decisions.",
+      packetStatus: packetStatuses.slt_checklist_completed,
+    },
+    {
+      key: "coach_decision_logged",
+      label: "Staff chapter decision and coach note path",
+      promotionOrder: 9,
+      studentJourneyOrder: 9,
       route: "/admin/coach-write",
       localActorEmail: "coach@mymedlife.test",
       actorLabel: "Coach",
@@ -389,13 +476,13 @@ function buildOperations(
         roleLabel: "Coach",
         responsibility: "Advance, hold, or intervene",
         reviewPrompt:
-          "Confirm the coach can read chapter health, risk, proof posture, KPI movement, and intervention notes before recording a decision.",
+          "Confirm the coach can read chapter health, risk, proof posture, KPI movement, and note visibility before recording a decision.",
         safetyBoundary:
-          "No escalation packet, reassignment, email, SMS, HubSpot note, warehouse export, or AI summary should run.",
+          "No member nudge, escalation packet, reassignment, email, SMS, HubSpot note, warehouse export, or AI summary should run.",
       },
       status: "packet_ready",
       plainEnglish:
-        "A coach records whether the chapter should advance, hold, or receive intervention after the Rush Month closeout signals are reviewed.",
+        "A coach records whether the chapter should advance, hold, or receive intervention after the Rush Month closeout signals are reviewed, while note visibility and staff ownership stay explicit.",
       expectedTables: ["kpi_events", "events", "integration_events", "audit_logs"],
       structuredEvents: ["coach_decision_logged"],
       auditEvidence: [
@@ -405,11 +492,11 @@ function buildOperations(
         "audit log records the coach decision",
       ],
       outboxPosture:
-        "No n8n escalation packet, email, SMS, HubSpot note, warehouse export, or AI summary should send automatically.",
+        "No member nudge, n8n escalation packet, email, SMS, HubSpot note, warehouse export, or AI summary should send automatically.",
       safetyBoundary:
-        "Requires coach portfolio scope, decision notes, intervention blocker summary, and escalation packets staying disabled.",
+        "Requires coach portfolio scope, decision notes, intervention blocker summary, note-visibility guardrails, and escalation packets staying disabled.",
       nextGate:
-        "Open `/admin/coach-write` before allowing staff to test coach decisions in a browser.",
+        "Open `/admin/coach-write` before allowing staff to test coach decisions or coach note visibility in a browser.",
       packetStatus: packetStatuses.coach_decision_logged,
     },
   ];
@@ -427,6 +514,8 @@ function buildPacketStatuses(
 ): Record<WriteSequenceOperation["key"], WriteSequencePacketStatus> {
   const proofPacket = getProofMetadataPacket(actor, data, env);
   const hqPacket = getHqProofDecisionPacket(actor, data, env);
+  const pointsPacket = getPointsKpiMaterializationPacket(actor, data);
+  const sltPacket = getSltChecklistCompletionPacket(actor);
   const assignmentPacket = getLeaderAssignmentPacket(actor, data, env);
   const coachPacket = getCoachDecisionPacket(actor, data, env);
 
@@ -464,6 +553,28 @@ function buildPacketStatuses(
       browserWritesExpected: hqPacket.counts.browserWritesExpected,
       externalWritesExpected: hqPacket.counts.externalWritesExpected,
     },
+    points_kpi_materialized: {
+      route: "/admin/points-write",
+      status: pointsPacket.status,
+      label: "Points and KPI packet",
+      plainEnglish: pointsPacket.verificationPacket.plainEnglishDecision,
+      canPromoteToStagingReview:
+        pointsPacket.verificationPacket.canPromoteToStagingReview,
+      observedReadbackItems: pointsPacket.counts.observedReadbackItems,
+      browserWritesExpected: pointsPacket.counts.browserWritesExpected,
+      externalWritesExpected: pointsPacket.counts.externalWritesExpected,
+    },
+    slt_checklist_completed: {
+      route: "/admin/slt-checklist-write",
+      status: sltPacket.status,
+      label: "SLT checklist packet",
+      plainEnglish: sltPacket.verificationPacket.plainEnglishDecision,
+      canPromoteToStagingReview:
+        sltPacket.verificationPacket.canPromoteToStagingReview,
+      observedReadbackItems: sltPacket.counts.observedReadbackItems,
+      browserWritesExpected: sltPacket.counts.browserWritesExpected,
+      externalWritesExpected: sltPacket.counts.externalWritesExpected,
+    },
     leader_proof_decision_logged: {
       route: "/rush-month/review",
       status: "server_action_ready",
@@ -489,7 +600,7 @@ function buildPacketStatuses(
     coach_decision_logged: {
       route: "/admin/coach-write",
       status: coachPacket.status,
-      label: "Coach decision packet",
+      label: "Staff chapter decision and coach note packet",
       plainEnglish: coachPacket.verificationPacket.plainEnglishDecision,
       canPromoteToStagingReview:
         coachPacket.verificationPacket.canPromoteToStagingReview,

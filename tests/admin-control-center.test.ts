@@ -137,12 +137,14 @@ describe("admin control center", () => {
       (item) => item.operationKey === "action_assigned",
     );
 
-    expect(summary.operatingResponsibilities).toHaveLength(7);
+    expect(summary.operatingResponsibilities).toHaveLength(9);
     expect(summary.operatingResponsibilities.map((item) => item.operationKey)).toEqual(
       expect.arrayContaining([
         "action_started",
         "evidence_submitted",
         "hq_sharing_decision_logged",
+        "points_kpi_materialized",
+        "slt_checklist_completed",
         "leader_proof_decision_logged",
         "action_assigned",
         "coach_decision_logged",
