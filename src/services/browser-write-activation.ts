@@ -295,16 +295,16 @@ export function getMembershipApprovalBrowserWriteGate(
       {
         key: "local_database_function_exists",
         label: "Local database function exists",
-        passed: false,
+        passed: true,
         detail:
-          "Goal 162 is a readiness packet only. app.approve_chapter_membership still needs a SQL/RLS implementation before local writes can open.",
+          "The local-only app.approve_chapter_membership function exists for localhost Supabase testing.",
       },
       {
         key: "rls_tests_exist",
         label: "RLS/security tests exist",
-        passed: false,
+        passed: true,
         detail:
-          "Membership approval needs SQL/RLS tests for leader/admin approval, duplicate protection, DS Admin denial, disabled outbox, and audit rows.",
+          "Membership approval has SQL/RLS tests for leader and admin approval, duplicate protection, DS Admin denial, disabled outbox, and audit rows.",
       },
       {
         key: "join_request_visible",

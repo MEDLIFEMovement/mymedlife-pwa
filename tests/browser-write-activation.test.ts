@@ -7,6 +7,7 @@ import {
   getCoachDecisionBrowserWriteGate,
   getHqSharingDecisionBrowserWriteGate,
   getLeaderProofDecisionBrowserWriteGate,
+  getMembershipApprovalBrowserWriteGate,
   getPassedActivationChecks,
   getProofSubmissionBrowserWriteGate,
 } from "@/services/browser-write-activation";
@@ -209,6 +210,38 @@ describe("browser write activation gate", () => {
       "live_auth_approved",
       "browser_write_approved",
     ]);
+  });
+
+  it("can mark membership approval ready for a signed-in local leader with real UUIDs", () => {
+    const actor = getMockLocalActorContext(
+      "leader.a@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const gate = getMembershipApprovalBrowserWriteGate(
+      actor,
+      {
+        chapterId: "10000000-0000-4000-8000-000000000001",
+        joinRequestId: "20000000-0000-4000-8000-000000000005",
+        applicantEmail: "avery.new@mymedlife.test",
+        requestedRoleKey: "general_member",
+        requestedCommitteeLane: "Recruitment",
+        auditReason: "Approve local Rush Month join request for chapter review.",
+      },
+      [],
+      {
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+      },
+    );
+
+    expect(gate.operation).toBe("membership_approved");
+    expect(gate.route).toBe("/chapter/members");
+    expect(gate.canRenderEnabledControl).toBe(true);
+    expect(gate.status).toBe("ready_for_local_write");
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
   });
 
   it("does not enable browser writes when the local write env var is requested", () => {

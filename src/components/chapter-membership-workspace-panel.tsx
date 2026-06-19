@@ -102,7 +102,9 @@ export function ChapterMembershipWorkspacePanel({
               Join requests
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
-              Approval queue is visible, not editable.
+              {workspace.counts.enabledControls > 0
+                ? "Approval queue is locally testable."
+                : "Approval queue is visible, not editable."}
             </h2>
             <div className="mt-4 grid gap-3">
               {workspace.joinRequests.length > 0 ? (
@@ -152,7 +154,9 @@ export function ChapterMembershipWorkspacePanel({
             Disabled controls
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">
-            Future membership writes stay locked.
+            {workspace.counts.enabledControls > 0
+              ? "Only the approved local write path is open."
+              : "Future membership writes stay locked."}
           </h2>
           <div className="mt-4 grid gap-3">
             {workspace.disabledControls.map((control) => (
@@ -238,6 +242,7 @@ function MembershipApprovalPacketPanel({
               label="Reviewer"
               value={packet.payload.approvedByActorEmail}
             />
+            <PacketRow label="Audit reason" value={packet.payload.auditReason} />
             <PacketRow
               label="Result states"
               value="Goal 161 membership approval result states"

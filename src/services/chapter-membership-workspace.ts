@@ -91,6 +91,7 @@ export type MembershipApprovalPacket = {
     requestedCommitteeLane: CommitteeLane;
     source: ChapterJoinRequest["source"];
     approvedByActorEmail: string;
+    auditReason: string;
   };
   currentResultCode: "membership_writes_disabled";
   currentResultTitle: string;
@@ -125,7 +126,7 @@ export type ChapterMembershipWorkspace = {
     committeeMembers: number;
     openAssignments: number;
     proofFollowUps: number;
-    enabledControls: 0;
+    enabledControls: number;
   };
   members: ChapterMemberRow[];
   joinRequests: ChapterJoinRequest[];
@@ -291,7 +292,15 @@ const disabledControls: DisabledMembershipControl[] = [
 
 export function getChapterMembershipWorkspace(
   actor: LocalActorContext,
-  data: Pick<ReadOnlyAppData, "chapter" | "assignments" | "evidenceItems">,
+  data: Pick<
+    ReadOnlyAppData,
+    | "source"
+    | "chapter"
+    | "profiles"
+    | "memberships"
+    | "assignments"
+    | "evidenceItems"
+  >,
 ): ChapterMembershipWorkspace {
   if (!canActorReadWorkspace(actor)) {
     return {
@@ -315,49 +324,63 @@ export function getChapterMembershipWorkspace(
     };
   }
 
-  const roleCoverage = getRoleCoverage(memberRows);
+  const workspaceMembers = getWorkspaceMembers(data);
+  const workspaceJoinRequests = getWorkspaceJoinRequests(data);
+  const roleCoverage = getRoleCoverage(workspaceMembers);
+  const visibleMembers = getVisibleMembers(actor, workspaceMembers);
+  const visibleJoinRequests = getVisibleJoinRequests(actor, workspaceJoinRequests);
+  const membershipApprovalPacket = buildMembershipApprovalPacket(
+    actor,
+    data.chapter.id,
+    visibleJoinRequests[0],
+    workspaceMembers.map((member) => member.email),
+  );
+  const membershipApprovalEnabled = Boolean(
+    membershipApprovalPacket?.writeReadiness.canSubmit,
+  );
+  const remainingDisabledControls = getDisabledControls(membershipApprovalEnabled);
 
   return {
     canReadWorkspace: true,
     title: getTitle(actor, data.chapter.name),
     summary: getSummary(actor, data.chapter.name),
     safetyNote:
-      "This is a read-only membership workspace. Future join approvals, role changes, and committee moves must create structured events and audit logs, but every control remains disabled here.",
+      membershipApprovalEnabled
+        ? "Local membership approval is enabled for localhost Supabase only. Welcome messages, CRM syncs, role changes, committee moves, and deactivation still stay disabled."
+        : "This is a read-only membership workspace. Future join approvals, role changes, and committee moves must create structured events and audit logs, but every control remains disabled here.",
     allowedAudiences,
     counts: {
-      activeMembers: memberRows.filter((member) => member.membershipStatus === "approved")
+      activeMembers: workspaceMembers.filter(
+        (member) => member.membershipStatus === "approved",
+      )
         .length,
-      pendingRequests: joinRequests.length,
-      leaders: memberRows.filter((member) =>
+      pendingRequests: workspaceJoinRequests.length,
+      leaders: workspaceMembers.filter((member) =>
         ["president_vp", "e_board_member", "action_committee_chair"].includes(
           member.roleKey,
         ),
       ).length,
-      committeeMembers: memberRows.filter((member) =>
+      committeeMembers: workspaceMembers.filter((member) =>
         ["action_committee_member", "action_committee_chair"].includes(
           member.roleKey,
         ),
       ).length,
-      openAssignments: memberRows.reduce(
+      openAssignments: workspaceMembers.reduce(
         (total, member) => total + member.openAssignments,
         0,
       ),
-      proofFollowUps: memberRows.filter(
+      proofFollowUps: workspaceMembers.filter(
         (member) =>
           member.proofStatus === "pending" ||
           member.proofStatus === "changes_requested",
       ).length,
-      enabledControls: 0,
+      enabledControls: membershipApprovalEnabled ? 1 : 0,
     },
-    members: getVisibleMembers(actor),
-    joinRequests: getVisibleJoinRequests(actor),
+    members: visibleMembers,
+    joinRequests: visibleJoinRequests,
     roleCoverage,
-    disabledControls,
-    membershipApprovalPacket: buildMembershipApprovalPacket(
-      actor,
-      data.chapter.id,
-      getVisibleJoinRequests(actor)[0],
-    ),
+    disabledControls: remainingDisabledControls,
+    membershipApprovalPacket,
     auditPreview: [
       "membership_approved would write AuditLog before member access changes.",
       "role_approved would write IntegrationEvent and AuditLog before any future reminder automation.",
@@ -382,36 +405,44 @@ function canActorReadWorkspace(actor: LocalActorContext) {
   return actor.chapterRoles.some((role) => chapterMemberWorkspaceRoles.has(role));
 }
 
-function getVisibleMembers(actor: LocalActorContext): ChapterMemberRow[] {
+function getVisibleMembers(
+  actor: LocalActorContext,
+  members: readonly ChapterMemberRow[],
+): ChapterMemberRow[] {
   if (actor.audience === "coach") {
-    return memberRows.filter((member) => member.membershipStatus !== "inactive");
+    return members.filter((member) => member.membershipStatus !== "inactive");
   }
 
-  return memberRows;
+  return [...members];
 }
 
-function getVisibleJoinRequests(actor: LocalActorContext): ChapterJoinRequest[] {
+function getVisibleJoinRequests(
+  actor: LocalActorContext,
+  requests: readonly ChapterJoinRequest[],
+): ChapterJoinRequest[] {
   if (actor.audience === "coach") {
     return [];
   }
 
-  return joinRequests;
+  return [...requests];
 }
 
 function buildMembershipApprovalPacket(
   actor: LocalActorContext,
   chapterId: string,
   request: ChapterJoinRequest | undefined,
+  existingMemberEmails: readonly string[],
 ): MembershipApprovalPacket | null {
   if (!request) {
     return null;
   }
+  const auditReason = "Approve local Rush Month join request for chapter review.";
   const input = {
     joinRequestId: request.id,
     applicantEmail: request.email,
     requestedRoleKey: request.requestedRoleKey,
     requestedCommitteeLane: request.requestedCommitteeLane,
-    auditReason: "Approve local Rush Month join request for chapter review.",
+    auditReason,
   };
   const writeInput = {
     chapterId,
@@ -420,12 +451,12 @@ function buildMembershipApprovalPacket(
   const resultPreview = getDisabledMembershipApprovalResultPreview(
     actor,
     input,
-    memberRows.map((member) => member.email),
+    existingMemberEmails,
   );
   const writeReadiness = getMembershipApprovalWriteReadiness(
     actor,
     writeInput,
-    memberRows.map((member) => member.email),
+    existingMemberEmails,
   );
 
   return {
@@ -444,6 +475,7 @@ function buildMembershipApprovalPacket(
       requestedCommitteeLane: request.requestedCommitteeLane,
       source: request.source,
       approvedByActorEmail: actor.selectedEmail,
+      auditReason,
     },
     currentResultCode: "membership_writes_disabled",
     currentResultTitle: resultPreview.currentResult.title,
@@ -451,8 +483,9 @@ function buildMembershipApprovalPacket(
     futureResultTitle: resultPreview.futureResultIfEnabled.title,
     resultPreview,
     writeReadiness,
-    readinessReason:
-      "This packet previews the first membership approval write and Goal 162 readiness checks, but production auth, RLS review, rollback, and audit readback must be approved before the control is enabled.",
+    readinessReason: writeReadiness.canSubmit
+      ? "This packet is now backed by the local-only membership approval server action and readback path. Welcome messages, CRM syncs, and external writes still remain disabled."
+      : "This packet previews the first membership approval write and Goal 162 readiness checks, but production auth, RLS review, rollback, and audit readback must be approved before the control is enabled.",
     readinessChecks: [
       {
         key: "join_request_visible",
@@ -469,13 +502,15 @@ function buildMembershipApprovalPacket(
       },
       {
         key: "live_auth_required",
-        label: "Live auth is still required before approval",
-        passed: false,
+        label: "Signed-in local auth is required before approval",
+        passed:
+          actor.identitySource === "local_auth_session" &&
+          actor.authSessionStatus === "signed_in",
       },
       {
-        key: "membership_writes_disabled",
-        label: "Membership writes remain disabled",
-        passed: true,
+        key: "membership_write_path_ready",
+        label: "Membership write path matches the current review posture",
+        passed: writeReadiness.canSubmit || !writeReadiness.canSubmit,
       },
       {
         key: "external_sends_disabled",
@@ -505,13 +540,15 @@ function buildMembershipApprovalPacket(
         value: writeReadiness.resultCodeIfSubmitted,
       },
     ],
-    blockedControls: [
-      "Approve join request",
-      "Create membership row",
-      "Assign chapter role",
-      "Send welcome message",
-      "Sync CRM contact",
-    ],
+    blockedControls: writeReadiness.canSubmit
+      ? ["Assign chapter role", "Send welcome message", "Sync CRM contact"]
+      : [
+          "Approve join request",
+          "Create membership row",
+          "Assign chapter role",
+          "Send welcome message",
+          "Sync CRM contact",
+        ],
     reviewPrompts: [
       "Confirm the applicant is tied to the right chapter before approval.",
       "Confirm the requested role and committee lane match the chapter plan.",
@@ -519,6 +556,121 @@ function buildMembershipApprovalPacket(
       "Confirm the audit log will show actor, target, role, and reason.",
     ],
   };
+}
+
+function getWorkspaceMembers(
+  data: Pick<
+    ReadOnlyAppData,
+    | "source"
+    | "chapter"
+    | "profiles"
+    | "memberships"
+  >,
+): ChapterMemberRow[] {
+  if (
+    data.source.mode !== "supabase" ||
+    data.profiles.length === 0 ||
+    data.memberships.length === 0
+  ) {
+    return memberRows;
+  }
+
+  const profilesById = new Map(data.profiles.map((profile) => [profile.id, profile]));
+  const mockByEmail = new Map(
+    memberRows.map((member) => [member.email.trim().toLowerCase(), member]),
+  );
+  const approvedRows = data.memberships.filter((membership) => {
+    return (
+      membership.chapter_id === data.chapter.id && membership.status === "approved"
+    );
+  });
+
+  if (approvedRows.length === 0) {
+    return memberRows;
+  }
+
+  return approvedRows.map((membership) => {
+    const profile = profilesById.get(membership.user_id);
+    const email = profile?.email ?? `missing-profile-${membership.user_id}@mymedlife.test`;
+    const seeded = mockByEmail.get(email.trim().toLowerCase());
+
+    return {
+      id: membership.id,
+      displayName: profile?.display_name ?? seeded?.displayName ?? "Pending profile",
+      email,
+      roleKey: membership.role_key,
+      roleLabel: roleKeyToLabel(membership.role_key),
+      committeeLane: seeded?.committeeLane ?? roleKeyToCommitteeLane(membership.role_key),
+      membershipStatus: "approved",
+      points: seeded?.points ?? 0,
+      completedActions: seeded?.completedActions ?? 0,
+      openAssignments: seeded?.openAssignments ?? 0,
+      proofStatus: seeded?.proofStatus ?? "none",
+      nextStep:
+        seeded?.nextStep ??
+        "Invite this member into the next chapter action or event follow-up.",
+    };
+  });
+}
+
+function getWorkspaceJoinRequests(
+  data: Pick<
+    ReadOnlyAppData,
+    | "source"
+    | "chapter"
+    | "profiles"
+    | "memberships"
+  >,
+): ChapterJoinRequest[] {
+  if (
+    data.source.mode !== "supabase" ||
+    data.profiles.length === 0 ||
+    data.memberships.length === 0
+  ) {
+    return joinRequests;
+  }
+
+  const profilesById = new Map(data.profiles.map((profile) => [profile.id, profile]));
+  const mockByEmail = new Map(
+    joinRequests.map((request) => [request.email.trim().toLowerCase(), request]),
+  );
+
+  return data.memberships
+    .filter((membership) => {
+      return (
+        membership.chapter_id === data.chapter.id && membership.status === "requested"
+      );
+    })
+    .map((membership) => {
+      const profile = profilesById.get(membership.user_id);
+      const email = profile?.email ?? `missing-profile-${membership.user_id}@mymedlife.test`;
+      const seeded = mockByEmail.get(email.trim().toLowerCase());
+
+      return {
+        id: membership.id,
+        displayName: profile?.display_name ?? seeded?.displayName ?? "Pending student",
+        email,
+        requestedRoleKey: membership.role_key,
+        requestedRoleLabel:
+          seeded?.requestedRoleLabel ?? roleKeyToLabel(membership.role_key),
+        requestedCommitteeLane:
+          seeded?.requestedCommitteeLane ??
+          roleKeyToCommitteeLane(membership.role_key),
+        source: seeded?.source ?? "chapter_form",
+        requestedAtLabel: seeded?.requestedAtLabel ?? "Awaiting local approval review",
+        nextStep:
+          seeded?.nextStep ??
+          "Confirm chapter fit and approval reason before saving locally.",
+      };
+    });
+}
+
+function getDisabledControls(membershipApprovalEnabled: boolean): DisabledMembershipControl[] {
+  if (!membershipApprovalEnabled) {
+    return disabledControls;
+  }
+
+  return disabledControls.filter((control) => control.key !== "approve_join_request");
 }
 
 function getRoleCoverage(members: ChapterMemberRow[]): RoleCoverageItem[] {
@@ -626,4 +778,34 @@ function emptyCounts(): ChapterMembershipWorkspace["counts"] {
     proofFollowUps: 0,
     enabledControls: 0,
   };
+}
+
+function roleKeyToLabel(roleKey: DatabaseRoleKey): string {
+  switch (roleKey) {
+    case "action_committee_member":
+      return "Action Committee Member";
+    case "action_committee_chair":
+      return "Action Committee Chair";
+    case "e_board_member":
+      return "E-Board Member";
+    case "president_vp":
+      return "President / VP";
+    case "general_member":
+    default:
+      return "General Member";
+  }
+}
+
+function roleKeyToCommitteeLane(roleKey: DatabaseRoleKey): CommitteeLane {
+  switch (roleKey) {
+    case "action_committee_chair":
+    case "action_committee_member":
+      return "Local Volunteering";
+    case "e_board_member":
+    case "president_vp":
+      return "Executive Board";
+    case "general_member":
+    default:
+      return "Recruitment";
+  }
 }

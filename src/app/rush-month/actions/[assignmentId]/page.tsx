@@ -32,6 +32,11 @@ import {
 } from "@/services/local-action-contracts";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
+  getActionDetailFacts,
+  getActionSteps,
+  getActionWhyItMatters,
+} from "@/services/member-action-detail";
+import {
   type ProofSubmissionResultCode,
   getDisabledProofSubmissionResultPreview,
   getProofSubmissionResultStates,
@@ -48,7 +53,6 @@ import {
 } from "@/services/write-readiness";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
-import type { Assignment } from "@/shared/types/domain";
 
 export const metadata = getStaticRouteMetadata("rushMonthActionDetail");
 export const dynamic = "force-dynamic";
@@ -374,41 +378,4 @@ function parseActionStartResultCode(
   return value && allowedCodes.has(value as ActionStartResultCode)
     ? (value as ActionStartResultCode)
     : undefined;
-}
-
-export function getActionWhyItMatters(assignment: Assignment) {
-  return `This ${assignment.points}-point action makes ${assignment.kpi} believable. One member invite push, one clean proof note, and one readable handoff are what turn chapter energy into something leaders and coaches can trust.`;
-}
-
-export function getActionSteps(assignment: Assignment) {
-  return [
-    assignment.instructions,
-    `Capture proof that answers this requirement: ${assignment.evidenceRequired}`,
-    "Confirm the proof is accurate, preview the submission locally, and use the confirmation state before any real save path is approved.",
-  ];
-}
-
-export function getActionDetailFacts(assignment: Assignment) {
-  return [
-    {
-      label: "Due date",
-      value: assignment.dueLabel,
-      note: "What needs to happen this week.",
-    },
-    {
-      label: "Assignee",
-      value: assignment.ownerRole,
-      note: "Who owns the next real move.",
-    },
-    {
-      label: "Status",
-      value: assignment.status.replaceAll("_", " "),
-      note: "Current local preview posture.",
-    },
-    {
-      label: "Points",
-      value: `${assignment.points}`,
-      note: "Recognition unlocked after review.",
-    },
-  ];
 }

@@ -22,6 +22,8 @@ describe("read-only app data service", () => {
     await readLocalDataSnapshot(client);
 
     expect(requestedTables).toEqual([
+      "profiles",
+      "memberships",
       "chapters",
       "campaigns",
       "phases",
