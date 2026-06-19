@@ -50,6 +50,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/admin/master-data", label: "Admin master data", routeType: "exact" },
   { href: "/admin/database-security", label: "Admin database security", routeType: "exact" },
   { href: "/admin/system-health", label: "Admin system health", routeType: "exact" },
+  { href: "/admin/phase-2", label: "Admin phase 2 review", routeType: "exact" },
   { href: "/admin/design-qa", label: "Admin design QA", routeType: "exact" },
   { href: "/admin/operations", label: "Admin operations", routeType: "exact" },
   { href: "/admin/first-write", label: "First write drill", routeType: "exact" },

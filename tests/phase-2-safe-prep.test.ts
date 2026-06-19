@@ -29,6 +29,11 @@ describe("phase 2 safe prep packet", () => {
     const packet = getPhase2SafePrepPacket();
 
     expect(packet.counts.linearIssues).toBe(16);
+    expect(packet.counts.prepReady).toBe(1);
+    expect(packet.counts.blockedPendingDsReview).toBe(5);
+    expect(packet.counts.liveImplementationNotAuthorized).toBe(10);
+    expect(packet.counts.inReview).toBe(1);
+    expect(packet.counts.backlog).toBe(15);
     expect(packet.linearIssues.map((issue) => issue.id)).toEqual([
       "MED-471",
       "MED-472",
@@ -47,12 +52,51 @@ describe("phase 2 safe prep packet", () => {
       "MED-485",
       "MED-486",
     ]);
-    expect(packet.linearIssues.every((issue) => issue.status === "Backlog")).toBe(
-      true,
+    expect(packet.linearIssues.filter((issue) => issue.status === "In Review")).toEqual(
+      [expect.objectContaining({ id: "MED-471" })],
+    );
+    expect(packet.linearIssues.filter((issue) => issue.status === "Backlog")).toHaveLength(
+      15,
     );
     expect(
       packet.linearIssues.every((issue) => issue.liveWorkAllowed === false),
     ).toBe(true);
+  });
+
+  it("groups the Phase 2 issues into prep, blocked, and live-not-authorized lanes", () => {
+    const packet = getPhase2SafePrepPacket();
+
+    expect(packet.statusGroups.map((group) => group.key)).toEqual([
+      "prep_ready",
+      "blocked_pending_ds_review",
+      "live_implementation_not_authorized",
+    ]);
+    expect(packet.statusGroups[0]).toEqual(
+      expect.objectContaining({
+        label: "Prep ready",
+        issueIds: ["MED-471"],
+      }),
+    );
+    expect(packet.statusGroups[1].issueIds).toEqual([
+      "MED-472",
+      "MED-473",
+      "MED-474",
+      "MED-475",
+      "MED-486",
+    ]);
+    expect(packet.statusGroups[2].issueIds).toEqual([
+      "MED-476",
+      "MED-477",
+      "MED-478",
+      "MED-479",
+      "MED-480",
+      "MED-481",
+      "MED-482",
+      "MED-483",
+      "MED-484",
+      "MED-485",
+    ]);
+    expect(packet.statusGroups.every((group) => group.note.length > 20)).toBe(true);
   });
 
   it("locks the write promotion sequence to the approved one-at-a-time order", () => {
@@ -96,6 +140,7 @@ describe("phase 2 safe prep packet", () => {
   it("requires the same evidence gate for every future write", () => {
     const expectedGate = [
       "staging proof",
+      "permission tests",
       "RLS/security coverage",
       "audit readback",
       "duplicate/error handling",
@@ -137,6 +182,24 @@ describe("phase 2 safe prep packet", () => {
         "Approve RLS, storage, backup, monitoring, and security posture",
       ]),
     );
+    expect(packet.reviewLinks.map((link) => link.href)).toEqual(
+      expect.arrayContaining([
+        "/admin/audit-log",
+        "/admin/system-health",
+        "/admin/launch-gate",
+        "/admin/database-security",
+        "/admin/operations",
+      ]),
+    );
+    expect(packet.nextApprovalSteps.map((step) => step.key)).toEqual([
+      "review_pr94",
+      "confirm_stack",
+      "approve_foundation_lane",
+      "start_write_sequence",
+    ]);
+    expect(
+      packet.mockOnlyBoundaries.every((boundary) => boundary.length > 20),
+    ).toBe(true);
   });
 
   it("keeps live platform actions explicitly blocked", () => {

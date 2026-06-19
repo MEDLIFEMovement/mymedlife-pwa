@@ -45,6 +45,7 @@ export type StaticRouteMetadataKey =
   | "adminMasterData"
   | "adminDatabaseSecurity"
   | "adminSystemHealth"
+  | "adminPhase2Review"
   | "adminDesignQa"
   | "adminOperations"
   | "adminFirstWrite"
@@ -265,6 +266,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Admin System Health",
     description:
       "Read-only system health, launch blocker, environment, audit, outbox, and production readiness review.",
+  },
+  adminPhase2Review: {
+    title: "Admin Phase 2 Review",
+    description:
+      "Read-only Phase 2 readiness, issue map, write gates, owner responsibilities, and mock-only boundary review.",
   },
   adminDesignQa: {
     title: "Admin Design QA",
