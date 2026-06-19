@@ -126,4 +126,7 @@ follow-ups. Prefer blocking over guessing.
 - This file is the contract. If the project's safety posture changes (e.g. a
   real write gate is intentionally opened), update the MUST-BLOCK list here in
   the same PR, and expect that PR itself to be `needs-human`.
+- Expected automation behavior: Claude should leave a visible tracked PR
+  review/comment on each run. If tracked progress fails, the workflow falls
+  back to a standard PR comment so the verdict is still visible in GitHub.
 - Keep this file short and current. Stale rules are worse than no rules.
