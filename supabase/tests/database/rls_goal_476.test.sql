@@ -4,6 +4,25 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(13);
 
+insert into auth.users (
+  instance_id,
+  id,
+  aud,
+  role,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+) values
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000012', 'authenticated', 'authenticated', 'jordan.pending@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Jordan Pending"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000013', 'authenticated', 'authenticated', 'taylor.pending@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Taylor Pending"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000014', 'authenticated', 'authenticated', 'morgan.pending@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Morgan Pending"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000015', 'authenticated', 'authenticated', 'riley.pending@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Riley Pending"}', now(), now())
+on conflict (id) do nothing;
+
 insert into app.profiles (id, display_name, email) values
   ('00000000-0000-4000-8000-000000000012', 'Jordan Pending', 'jordan.pending@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000013', 'Taylor Pending', 'taylor.pending@mymedlife.test'),
@@ -29,16 +48,20 @@ set local "request.jwt.claim.role" = 'authenticated';
 
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
 
-select throws_ok(
-  $$
-    update app.memberships
-    set status = 'approved',
-        approved_at = now(),
-        approved_by = '00000000-0000-4000-8000-000000000002'
+update app.memberships
+set status = 'approved',
+    approved_at = now(),
+    approved_by = '00000000-0000-4000-8000-000000000002'
+where id = '20000000-0000-4000-8000-000000000005';
+
+select is(
+  (
+    select count(*)::int
+    from app.memberships
     where id = '20000000-0000-4000-8000-000000000005'
-  $$,
-  '42501',
-  null,
+      and status = 'requested'
+  ),
+  1,
   'Chapter leader cannot bypass the membership approval function with a direct update'
 );
 
@@ -51,6 +74,8 @@ select lives_ok(
   ) $$,
   'Chapter leader can approve a visible join request through the audited function'
 );
+
+reset role;
 
 select is(
   (
@@ -111,6 +136,7 @@ select is(
   'Membership approval records one audit log'
 );
 
+set local role authenticated;
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000005';
 
 select throws_ok(

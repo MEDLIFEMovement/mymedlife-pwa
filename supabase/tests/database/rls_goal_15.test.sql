@@ -4,13 +4,23 @@ create extension if not exists pgtap with schema extensions;
 
 select plan(21);
 
-update app.memberships
-set status = 'approved',
-    approved_at = now(),
-    approved_by = '00000000-0000-4000-8000-000000000002'
-where user_id = '00000000-0000-4000-8000-000000000008'
-  and chapter_id = '10000000-0000-4000-8000-000000000001'
-  and role_key = 'general_member';
+set local role authenticated;
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
+set local "request.jwt.claim.role" = 'authenticated';
+
+do $$
+begin
+  perform *
+  from app.approve_chapter_membership(
+    '10000000-0000-4000-8000-000000000001',
+    '20000000-0000-4000-8000-000000000005',
+    'general_member',
+    'Approve requested membership for Goal 15 proof RLS fixtures.'
+  );
+end;
+$$;
+
+reset role;
 
 insert into app.assignments (
   id,
