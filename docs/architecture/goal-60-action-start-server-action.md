@@ -16,6 +16,8 @@ records assignment status, structured event, integration event, and audit log.
 - Local auth/session checks before any RPC call.
 - UUID validation so mock IDs like `member-push` never call Supabase.
 - RPC mapping for `app.start_assignment_action(assignment_uuid)`.
+- A stale-page safeguard so a changed assignment returns `stale_assignment`
+  instead of writing outdated browser truth.
 - Result-state redirects using the existing action-start result language.
 - Tests for disabled-by-default behavior, env gating, auth requirement, UUID
   requirement, and RPC result mapping.
@@ -48,6 +50,10 @@ This goal does not enable:
 The local database function records an `integration_events` row with
 `liveExternalWrite=false`. It does not create or send automation outbox rows for
 action starts.
+
+If a localhost drill needs repair, rollback remains local-only: reset the
+assignment status and matching `action_started` event/audit rows, or rerun
+`supabase db reset` to restore the full seed state.
 
 ## Next Step
 

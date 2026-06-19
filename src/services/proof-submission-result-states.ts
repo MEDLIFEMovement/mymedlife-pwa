@@ -8,6 +8,7 @@ import type { Assignment } from "@/shared/types/domain";
 
 export type ProofSubmissionResultCode =
   | "action_not_ready"
+  | "accuracy_required"
   | "already_submitted"
   | "assignment_not_found"
   | "missing_auth"
@@ -90,6 +91,19 @@ const proofSubmissionResultStates = [
     plainEnglishMessage:
       "The action has not been started yet, so proof should not be submitted for it.",
     nextStep: "Start the action first, then come back with a testimonial, link, or note.",
+    tone: "warning",
+    success: false,
+    retryAllowed: true,
+    createsEvidenceItem: false,
+    createsOutboxItem: false,
+  },
+  {
+    code: "accuracy_required",
+    title: "Confirm the proof is accurate first",
+    plainEnglishMessage:
+      "Before this proof can be saved, the student needs to confirm the summary is accurate and safe for private MEDLIFE review.",
+    nextStep:
+      "Check the accuracy confirmation box, then resubmit the testimonial or proof note.",
     tone: "warning",
     success: false,
     retryAllowed: true,

@@ -18,6 +18,8 @@ or real external automation.
   passes.
 - A proof readback state that only confirms success when the refreshed
   assignment status is `submitted`.
+- An accuracy-confirmation checkbox for private MEDLIFE review before any proof
+  metadata write is attempted.
 - Environment safety reporting for the new proof metadata write flag.
 - Tests for proof write readiness, result mapping, readback, environment
   posture, and browser-write gate behavior.
@@ -54,6 +56,11 @@ That function is responsible for writing the related records together:
 
 The app does not insert directly into those tables from the browser.
 
+If the assignment is already `submitted` or `approved`, the server action now
+returns the explicit `already_submitted` result instead of a generic denial. If
+the student leaves the accuracy/consent confirmation unchecked, the server
+returns `accuracy_required` before any Supabase write attempt.
+
 ## Safety Boundary
 
 Still disabled:
@@ -71,6 +78,11 @@ Still disabled:
 The proof metadata path is intentionally narrow. It exists to prove the second
 safe local operating-loop write before expanding the MVP into uploads, HQ
 review, points/KPIs, coach decisions, and later automation.
+
+If a localhost drill needs repair, rollback remains local-only: reset the
+assignment status, remove the matching proof metadata rows and related
+event/outbox/audit rows, or rerun `supabase db reset` to restore the seed
+state.
 
 ## Local Review Path
 
