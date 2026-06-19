@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(31);
+select plan(33);
 
 insert into app.assignments (
   id,
@@ -98,6 +98,22 @@ insert into app.assignments (
     'submitted',
     'Short testimonial from the owner.',
     10,
+    'students_invited'
+  ),
+  (
+    'd9000000-0000-4000-8000-000000000006',
+    '10000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    '41000000-0000-4000-8000-000000000001',
+    '51000000-0000-4000-8000-000000000001',
+    'Goal 115 committee chair proof',
+    'Committee chair can review this submitted proof.',
+    '00000000-0000-4000-8000-000000000001',
+    'general_member',
+    '00000000-0000-4000-8000-000000000010',
+    'submitted',
+    'Short testimonial from the owner.',
+    9,
     'students_invited'
   );
 
@@ -202,6 +218,23 @@ insert into app.evidence_items (
     'rush_month',
     'Will I belong?',
     'Goal 115 super proof'
+  ),
+  (
+    'd9100000-0000-4000-8000-000000000006',
+    'd9000000-0000-4000-8000-000000000006',
+    '10000000-0000-4000-8000-000000000001',
+    '51000000-0000-4000-8000-000000000001',
+    '00000000-0000-4000-8000-000000000001',
+    'testimonial_text',
+    'Goal 115 proof for committee chair review.',
+    'submitted',
+    'pending_review',
+    array['student'],
+    array['belonging'],
+    'student',
+    'rush_month',
+    'Will I belong?',
+    'Goal 115 committee chair proof'
   );
 
 set local role authenticated;
@@ -579,6 +612,32 @@ select throws_ok(
   '42501',
   'actor cannot record leader proof decision',
   'DS Admin cannot record routine leader proof decisions'
+);
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
+set local "request.jwt.claim.role" = 'authenticated';
+
+select throws_ok(
+  $$ select * from app.record_leader_proof_decision(
+    'd9100000-0000-4000-8000-000000000005',
+    'approve',
+    'A UCLA chapter leader should not decide another chapter proof.'
+  ) $$,
+  '42501',
+  'actor cannot record leader proof decision',
+  'Chapter leaders cannot record proof decisions outside their chapter'
+);
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000010';
+set local "request.jwt.claim.role" = 'authenticated';
+
+select lives_ok(
+  $$ select * from app.record_leader_proof_decision(
+    'd9100000-0000-4000-8000-000000000006',
+    'request_changes',
+    'Committee chair needs clearer detail before this proof should count.'
+  ) $$,
+  'Approved chapter leader roles can record a chapter proof decision'
 );
 
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
