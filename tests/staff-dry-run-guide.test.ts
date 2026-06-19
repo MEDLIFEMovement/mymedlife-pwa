@@ -72,22 +72,22 @@ describe("staff dry-run guide", () => {
     expect(guide.writeRehearsal.counts.localBrowserWriteCandidates).toBe(7);
     expect(guide.writeRehearsal.counts.externalWritesExpected).toBe(0);
     expect(guide.writeRehearsal.steps.map((step) => step.operation)).toEqual([
+      "membership_approved",
+      "action_assigned",
       "action_started",
       "evidence_submitted",
       "leader_proof_decision_logged",
       "hq_sharing_decision_logged",
-      "action_assigned",
       "coach_decision_logged",
-      "membership_approved",
     ]);
     expect(guide.writeRehearsal.steps.map((step) => step.packetRoute)).toEqual([
+      "/chapter/members",
+      "/admin/assignment-write",
       "/admin/first-write",
       "/admin/proof-write",
       "/rush-month/review",
       "/admin/hq-proof-write",
-      "/admin/assignment-write",
       "/admin/coach-write",
-      "/chapter/members",
     ]);
     expect(guide.writeRehearsal.steps.map((step) => step.operatingRoute)).toEqual(
       expect.arrayContaining([
