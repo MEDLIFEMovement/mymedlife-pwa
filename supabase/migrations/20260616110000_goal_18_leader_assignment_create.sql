@@ -97,6 +97,17 @@ begin
     raise exception 'assignment points must be between 0 and 1000' using errcode = '22023';
   end if;
 
+  if exists (
+    select 1
+    from app.assignments assignments
+    where assignments.chapter_id = chapter_uuid
+      and assignments.campaign_id = campaign_uuid
+      and lower(assignments.title) = lower(normalized_title)
+  ) then
+    raise exception 'duplicate assignment title exists for this chapter campaign'
+      using errcode = '23505';
+  end if;
+
   if not exists (
     select 1
     from app.campaigns campaigns
