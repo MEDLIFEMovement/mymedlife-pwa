@@ -12,7 +12,9 @@ Review packet order:
 2. Use `/admin/review-path`, `/admin/nick-review`, `/admin/launch-gate`, and
    `/admin/database-security` to confirm the current MVP and review boundary.
 3. Review PR #95 and `/admin/phase-2` as a planning packet only.
-4. Confirm stack, environment, auth, and secret ownership before any live work.
+4. Use `docs/review/supabase-connector-approval-matrix.md` to confirm what the
+   Supabase connector can do and what remains blocked.
+5. Confirm stack, environment, auth, and secret ownership before any live work.
 
 ## Decision
 
@@ -47,6 +49,26 @@ Blocked until PR #94 review and Kiomi/DS confirmation:
 - Production deploys.
 - HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, or AI writes.
 - External automation.
+
+## Supabase Connector Boundary
+
+Current connector findings:
+
+- Hosted project visible: `myMEDLIFE`
+- Project ref: `rceupryepjgkdeqgxzrc`
+- Environment identity: still unconfirmed from the connector alone
+- SQL session runs as `postgres`
+- Hosted project does not currently match the repo's `app` schema migrations
+
+Because the connector is admin-capable, treat it as a read-only inspection tool
+until Kiomi/DS explicitly approves a live lane. The connector may be used now
+for schema reads, count-only checks, security-advisor reads, and repo-vs-hosted
+comparison notes. It may not be used now for migrations, write SQL, policy
+changes, auth changes, storage changes, uploads, Edge Function deploys, or any
+external-system enablement.
+
+Use `docs/review/supabase-connector-approval-matrix.md` as the review source of
+truth for those decisions.
 
 ## Linear Issue Breakdown
 
@@ -240,6 +262,7 @@ For Kiomi / DS:
 
 - Are we confirmed on Next.js, Supabase, and Vercel through MVP and first live
   launch?
+- Is project `rceupryepjgkdeqgxzrc` staging, production, or another environment?
 - Who will own Supabase and Vercel production keys?
 - Should staging use a separate Supabase project or a Supabase branch/project
   pattern?

@@ -43,6 +43,8 @@ Review:
 - PR #95 summary, scope, and validation notes.
 - `/admin/phase-2` for the issue map, review order, and approval gates.
 - `docs/architecture/phase-2-safe-prep-packet.md` for the detailed prep packet.
+- `docs/review/supabase-connector-approval-matrix.md` for the exact connector
+  power, remote-project state, and blocked live boundary.
 
 Approve PR #95 when reviewers agree that:
 
@@ -50,6 +52,7 @@ Approve PR #95 when reviewers agree that:
 - the stack path remains Next.js, Supabase, and Vercel unless explicitly reopened
 - environment, auth, and secret ownership questions are clearly assigned
 - Phase 2 is still mock-only and does not imply live implementation approval
+- the Supabase connector remains read-only until the live lane is explicitly approved
 
 ## Explicit Non-Goals During Review
 
@@ -77,6 +80,9 @@ Kiomi / DS:
 
 - confirm the stack and environment path
 - confirm secret ownership and callback-domain expectations
+- confirm whether Supabase project `rceupryepjgkdeqgxzrc` is staging, production,
+  or another environment
+- confirm the Supabase connector stays read-only until further approval
 - confirm whether real auth and foundation work can begin after review feedback is resolved
 
 Renato:

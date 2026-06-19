@@ -303,6 +303,13 @@ const phase2BlockedLiveActions: Phase2BlockedLiveAction[] = [
     allowedNow: false,
   },
   {
+    key: "connector_writes",
+    label: "Supabase connector writes or config changes",
+    reason:
+      "The connector can execute SQL as postgres and must stay read-only until Kiomi/DS approves the live lane.",
+    allowedNow: false,
+  },
+  {
     key: "production_deploys",
     label: "Production deploys",
     reason: "Pilot support, rollback, monitoring, and owner sign-off are not complete.",
@@ -760,6 +767,15 @@ const phase2ReviewerChecklist: Phase2ReviewerStep[] = [
       "Everyone understands that MED-471 through MED-486 are prep and gating artifacts, not approved live implementation.",
   },
   {
+    key: "confirm_connector_boundary",
+    label: "Confirm the Supabase connector boundary",
+    owners: "Kiomi, DS, Nick",
+    reviewTarget:
+      "docs/review/supabase-connector-approval-matrix.md and the current hosted-project posture",
+    successSignal:
+      "The team confirms the connector remains read-only and names whether the visible project is staging, production, or another environment.",
+  },
+  {
     key: "confirm_stack_and_owners",
     label: "Confirm the stack, environment owners, and auth decision path",
     owners: "Kiomi, DS, Nick",
@@ -823,6 +839,13 @@ const phase2NextApprovalSteps: Phase2ApprovalStep[] = [
       "The team needs a clear decision on Next.js, Supabase, Vercel, and the environment ownership model.",
   },
   {
+    key: "confirm_connector_mode",
+    label: "Confirm the Supabase connector stays read-only",
+    owner: ["Kiomi / DS"],
+    reason:
+      "The connector currently has admin-capable SQL access and needs an explicit no-write boundary until a live lane is approved.",
+  },
+  {
     key: "approve_foundation_lane",
     label: "Approve the foundation lane",
     owner: ["Kiomi / DS", "Nick"],
@@ -859,6 +882,8 @@ const phase2OwnerResponsibilities: Record<Phase2Owner, string[]> = {
 const phase2OpenQuestions: Phase2SafePrepPacket["openQuestions"] = {
   "Kiomi / DS": [
     "Are we confirmed on Next.js, Supabase, and Vercel through MVP and first live launch?",
+    "Is project rceupryepjgkdeqgxzrc staging, production, or another environment?",
+    "Should the Supabase connector remain read-only until a live lane is explicitly approved?",
     "Who owns Supabase and Vercel production keys?",
     "Should staging use a separate Supabase project or a Supabase branch/project pattern?",
     "Which sign-in providers and callback domains are approved?",
