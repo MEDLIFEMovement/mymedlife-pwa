@@ -10,6 +10,13 @@ the production-style custom PWA path.
 
 ## Current Goal
 
+The current Phase 2 prep lane is MED-471: safe prep packet and live MVP pilot
+boundary. This adds a Phase 2 execution plan and mock-safe test contract while
+PR #94 is under Kiomi/DS review. See
+`docs/architecture/phase-2-safe-prep-packet.md`. It does not enable live
+Supabase/Vercel setup, live auth, production credentials, browser writes, proof
+uploads, migrations, production deploys, or external automation.
+
 The current goal is Goal 162: membership approval write readiness. This extends
 `/chapter/members`, the write plan, browser-write readiness, and staff rehearsal
 surfaces so reviewers can inspect the future `app.approve_chapter_membership`
