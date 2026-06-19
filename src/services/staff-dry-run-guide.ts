@@ -367,7 +367,7 @@ function getRehearsalAction(operation: WriteSequenceOperation): string {
     case "action_assigned":
       return "Open the leader assignment packet and rehearse one chapter-scoped assignment without reminders or external handoffs.";
     case "coach_decision_logged":
-      return "Open the coach decision packet and rehearse advance / hold / intervene without escalation sends.";
+      return "Open the coach decision and note packet, rehearse advance / hold / intervene, and confirm note visibility plus nudges stay locked.";
     case "membership_approved":
       return "Open the membership approval readiness packet and rehearse one join-request approval without changing access, sending welcome messages, or syncing CRM.";
   }

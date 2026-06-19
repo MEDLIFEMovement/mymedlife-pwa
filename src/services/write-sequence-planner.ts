@@ -122,7 +122,7 @@ export function getWriteSequencePlanner(
     studentJourneySummary:
       "The review journey starts with chapter access approval, then moves into leader assignment, member action start, member proof/testimonial submission, leader proof review, HQ sharing review, points/KPI materialization review, SLT checklist completion review, and coach support decisions.",
     promotionSummary:
-      "Within the currently implemented Phase 2 subset, prove membership approval first, then leader assignment creation, student action start, proof metadata submission, leader proof review, HQ sharing decision, points/KPI materialization review, SLT checklist completion review, and coach decision logging. Private uploads stay in a separate later gate.",
+      "Within the currently implemented Phase 2 subset, prove membership approval first, then leader assignment creation, student action start, proof metadata submission, leader proof review, HQ sharing decision, points/KPI materialization review, SLT checklist completion review, and the staff chapter decision plus coach note path. Private uploads stay in a separate later gate.",
     firstWriteRuntimeStatus: packetStatuses.membership_approved.status,
     nextRecommendedOperation: "membership_approved",
     operations,
@@ -466,7 +466,7 @@ function buildOperations(
     },
     {
       key: "coach_decision_logged",
-      label: "Coach logs advance / hold / intervene decision",
+      label: "Staff chapter decision and coach note path",
       promotionOrder: 9,
       studentJourneyOrder: 9,
       route: "/admin/coach-write",
@@ -476,13 +476,13 @@ function buildOperations(
         roleLabel: "Coach",
         responsibility: "Advance, hold, or intervene",
         reviewPrompt:
-          "Confirm the coach can read chapter health, risk, proof posture, KPI movement, and intervention notes before recording a decision.",
+          "Confirm the coach can read chapter health, risk, proof posture, KPI movement, and note visibility before recording a decision.",
         safetyBoundary:
-          "No escalation packet, reassignment, email, SMS, HubSpot note, warehouse export, or AI summary should run.",
+          "No member nudge, escalation packet, reassignment, email, SMS, HubSpot note, warehouse export, or AI summary should run.",
       },
       status: "packet_ready",
       plainEnglish:
-        "A coach records whether the chapter should advance, hold, or receive intervention after the Rush Month closeout signals are reviewed.",
+        "A coach records whether the chapter should advance, hold, or receive intervention after the Rush Month closeout signals are reviewed, while note visibility and staff ownership stay explicit.",
       expectedTables: ["kpi_events", "events", "integration_events", "audit_logs"],
       structuredEvents: ["coach_decision_logged"],
       auditEvidence: [
@@ -492,11 +492,11 @@ function buildOperations(
         "audit log records the coach decision",
       ],
       outboxPosture:
-        "No n8n escalation packet, email, SMS, HubSpot note, warehouse export, or AI summary should send automatically.",
+        "No member nudge, n8n escalation packet, email, SMS, HubSpot note, warehouse export, or AI summary should send automatically.",
       safetyBoundary:
-        "Requires coach portfolio scope, decision notes, intervention blocker summary, and escalation packets staying disabled.",
+        "Requires coach portfolio scope, decision notes, intervention blocker summary, note-visibility guardrails, and escalation packets staying disabled.",
       nextGate:
-        "Open `/admin/coach-write` before allowing staff to test coach decisions in a browser.",
+        "Open `/admin/coach-write` before allowing staff to test coach decisions or coach note visibility in a browser.",
       packetStatus: packetStatuses.coach_decision_logged,
     },
   ];
@@ -600,7 +600,7 @@ function buildPacketStatuses(
     coach_decision_logged: {
       route: "/admin/coach-write",
       status: coachPacket.status,
-      label: "Coach decision packet",
+      label: "Staff chapter decision and coach note packet",
       plainEnglish: coachPacket.verificationPacket.plainEnglishDecision,
       canPromoteToStagingReview:
         coachPacket.verificationPacket.canPromoteToStagingReview,
