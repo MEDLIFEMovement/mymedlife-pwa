@@ -375,6 +375,9 @@ select is(
   'Leader approval creates one internal event without public publishing'
 );
 
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
+set local "request.jwt.claim.role" = 'authenticated';
+
 select is(
   (
     select count(*)::int
@@ -410,6 +413,9 @@ select is(
   1,
   'Leader approval creates one audit log'
 );
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select throws_ok(
   $$ select * from app.record_leader_proof_decision(
@@ -504,6 +510,9 @@ select is(
   0,
   'Reject does not award points or KPI movement'
 );
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000004';
+set local "request.jwt.claim.role" = 'authenticated';
 
 select is(
   (

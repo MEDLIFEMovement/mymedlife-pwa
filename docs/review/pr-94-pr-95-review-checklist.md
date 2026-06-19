@@ -2,7 +2,7 @@
 
 Date: 2026-06-19
 
-Purpose: keep the current myMEDLIFE review packets easy for Nick, Kiomi, DS,
+Purpose: keep the active myMEDLIFE review packets easy for Nick, Kiomi, DS,
 and Renato to review and approve without expanding scope.
 
 ## Review Order
@@ -46,7 +46,7 @@ Review:
 
 Approve PR #95 when reviewers agree that:
 
-- MED-471 through MED-486 are the right prep/foundation/write/runbook slices
+- MED-471 through MED-486 are the right prep, foundation, write, and runbook slices
 - the stack path remains Next.js, Supabase, and Vercel unless explicitly reopened
 - environment, auth, and secret ownership questions are clearly assigned
 - Phase 2 is still mock-only and does not imply live implementation approval
@@ -77,7 +77,7 @@ Kiomi / DS:
 
 - confirm the stack and environment path
 - confirm secret ownership and callback-domain expectations
-- confirm whether real auth/foundation work can begin after review feedback is resolved
+- confirm whether real auth and foundation work can begin after review feedback is resolved
 
 Renato:
 
