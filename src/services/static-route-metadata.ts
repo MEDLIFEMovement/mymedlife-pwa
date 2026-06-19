@@ -45,6 +45,10 @@ export type StaticRouteMetadataKey =
   | "adminMasterData"
   | "adminDatabaseSecurity"
   | "adminSystemHealth"
+  | "adminPhase2Review"
+  | "adminEnvironmentSetup"
+  | "adminAuthOnboarding"
+  | "adminSecurityGate"
   | "adminDesignQa"
   | "adminOperations"
   | "adminFirstWrite"
@@ -265,6 +269,26 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Admin System Health",
     description:
       "Read-only system health, launch blocker, environment, audit, outbox, and production readiness review.",
+  },
+  adminPhase2Review: {
+    title: "Admin Phase 2 Review",
+    description:
+      "Read-only Phase 2 readiness, issue map, write gates, owner responsibilities, and mock-only boundary review.",
+  },
+  adminEnvironmentSetup: {
+    title: "Admin Environment Setup",
+    description:
+      "Read-only environment setup checklist covering local, preview, staging, production, env vars, and secret ownership boundaries.",
+  },
+  adminAuthOnboarding: {
+    title: "Admin Auth Onboarding",
+    description:
+      "Read-only auth and onboarding foundation covering callback flow, role routing, ownership, duplicate handling, and rollback boundaries.",
+  },
+  adminSecurityGate: {
+    title: "Admin Security Gate",
+    description:
+      "Read-only RLS and security gate covering schema exposure, direct-write denials, audit proof, storage gating, and hosted review requirements.",
   },
   adminDesignQa: {
     title: "Admin Design QA",

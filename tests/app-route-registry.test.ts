@@ -68,6 +68,9 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/admin/master-data")).toBe(true);
     expect(isKnownAppRouteHref("/admin/database-security")).toBe(true);
     expect(isKnownAppRouteHref("/admin/system-health")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/environment-setup")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/auth-onboarding")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/security-gate")).toBe(true);
     expect(isKnownAppRouteHref("/admin/design-qa")).toBe(true);
     expect(isKnownAppRouteHref("/admin/operations")).toBe(true);
     expect(isKnownAppRouteHref("/admin/points-write")).toBe(true);

@@ -9,7 +9,7 @@ describe("route smoke manifest", () => {
 
     expect(manifest.canReadManifest).toBe(true);
     expect(manifest.title).toBe("Admin route smoke manifest");
-    expect(manifest.counts.totalRoutes).toBe(42);
+    expect(manifest.counts.totalRoutes).toBe(46);
     expect(manifest.counts.criticalRoutes).toBeGreaterThan(0);
     expect(manifest.counts.mobileVisualChecks).toBe(8);
     expect(manifest.counts.browserWritesExpected).toBe(0);
@@ -47,6 +47,10 @@ describe("route smoke manifest", () => {
         "/admin/nick-review",
         "/admin/release-readiness",
         "/admin/launch-gate",
+        "/admin/phase-2",
+        "/admin/environment-setup",
+        "/admin/auth-onboarding",
+        "/admin/security-gate",
         "/admin/audit-log",
         "/admin/integration-outbox",
         "/admin/master-data",
@@ -207,6 +211,42 @@ describe("route smoke manifest", () => {
       manifest.routes.find((route) => route.path === "/admin/launch-gate")
         ?.safetyAssertion,
     ).toContain("Launch gate review");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/phase-2")
+        ?.expectedResult,
+    ).toContain("Phase 2 issue map");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/phase-2")
+        ?.expectedResult,
+    ).toContain("MED-471 through MED-486");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/phase-2")
+        ?.safetyAssertion,
+    ).toContain("live Supabase or Vercel setup");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/environment-setup")
+        ?.expectedResult,
+    ).toContain("MED-472 environment plan");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/environment-setup")
+        ?.safetyAssertion,
+    ).toContain("create live projects");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/auth-onboarding")
+        ?.expectedResult,
+    ).toContain("MED-473 callback route");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/auth-onboarding")
+        ?.safetyAssertion,
+    ).toContain("create hosted users");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/security-gate")
+        ?.expectedResult,
+    ).toContain("MED-474 security gate checks");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/security-gate")
+        ?.safetyAssertion,
+    ).toContain("run hosted migrations");
     expect(
       manifest.routes.find((route) => route.path === "/admin/audit-log")
         ?.expectedResult,

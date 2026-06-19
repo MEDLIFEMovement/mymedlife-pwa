@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { AdminAuditLogReviewPanel } from "@/components/admin-audit-log-review-panel";
 import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
@@ -89,6 +90,38 @@ export default async function AdminPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+
+      <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-sky-100">
+              Phase 2 review
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-white">
+              Open the safe prep surface.
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
+              Review MED-471 through MED-486, the mock-only boundary, and the
+              approval steps for the next implementation lane without enabling
+              any live infrastructure.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/phase-2"
+              className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#082136]"
+            >
+              Open Phase 2 review
+            </Link>
+            <Link
+              href="/admin/launch-gate"
+              className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
+            >
+              Launch gate
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">

@@ -356,6 +356,46 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "Admin mutations, production auth, and external writes remain disabled.",
   },
   {
+    path: "/admin/phase-2",
+    label: "Phase 2 safe prep review",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the Phase 2 issue map, readiness groups, environment checklist, auth/onboarding plan, write-promotion sequence, mock-only boundary, and next approval steps for MED-471 through MED-486.",
+    safetyAssertion:
+      "Phase 2 review must not enable live Supabase or Vercel setup, credentials, live auth, browser writes, proof uploads, DB migrations, production deploys, or external automation.",
+  },
+  {
+    path: "/admin/environment-setup",
+    label: "Environment setup foundation",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the MED-472 environment plan for local, preview, staging, and production, plus env-var boundaries, callback patterns, and owner expectations.",
+    safetyAssertion:
+      "Environment review must not create live projects, add secrets, promote deployments, change DNS, or expose service-role credentials.",
+  },
+  {
+    path: "/admin/auth-onboarding",
+    label: "Auth and onboarding foundation",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the MED-473 callback route, identity source of truth, role-routing plan, profile rules, ownership decisions, and blocked live-auth actions.",
+    safetyAssertion:
+      "Auth review must not create hosted users, auto-approve membership, trust browser-only identity, or enable production sign-in flows.",
+  },
+  {
+    path: "/admin/security-gate",
+    label: "RLS and security release gate",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the MED-474 security gate checks, current local evidence, hosted proof requirements, and blocked live security actions before any write is approved.",
+    safetyAssertion:
+      "Security review must not run hosted migrations, enable storage/uploads, allow production browser writes, or point the app at production Supabase without sign-off.",
+  },
+  {
     path: "/admin/review-path",
     label: "Admin stakeholder review path",
     priority: "critical",
