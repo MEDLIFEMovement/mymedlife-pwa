@@ -25,6 +25,7 @@ The result-state contract includes:
 - `write_disabled`
 - `upload_disabled`
 - `action_not_ready`
+- `accuracy_required`
 - `already_submitted`
 - `permission_denied`
 - `missing_auth`
