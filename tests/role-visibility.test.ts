@@ -28,7 +28,10 @@ describe("role visibility service", () => {
     expect(actor.chapterRoles).toEqual(["Action Committee Member"]);
     expect(visibleAssignments).toHaveLength(1);
     expect(visibleAssignments.every((assignment) => assignment.lane === "Member")).toBe(true);
+    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Home");
     expect(getNavigationForActor(actor).map((item) => item.label)).toContain("My Actions");
+    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Points");
+    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Profile");
   });
 
   it("lets chapter leaders read member and leader work but not coach-only work", () => {
@@ -102,9 +105,17 @@ describe("role visibility service", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
+    const coach = getMockLocalActorContext("coach@mymedlife.test");
+    const admin = getMockLocalActorContext("admin@mymedlife.test");
+    const superAdmin = getMockLocalActorContext("super.admin@mymedlife.test");
 
     expect(getNavigationForActor(member).map((item) => item.label)).toContain("My Actions");
     expect(getNavigationForActor(leader).map((item) => item.label)).toContain("Members");
+    expect(getNavigationForActor(coach).map((item) => item.label)).toContain("Staff Center");
+    expect(getNavigationForActor(admin).map((item) => item.label)).toContain("Staff Center");
+    expect(getNavigationForActor(superAdmin).map((item) => item.label)).toContain(
+      "Staff Center",
+    );
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Integration Outbox" },
       { href: "/admin/first-write", label: "First Write Safety" },
@@ -115,17 +126,19 @@ describe("role visibility service", () => {
       { href: "/admin/coach-write", label: "Coach Safety" },
       { href: "/admin/pilot-scope", label: "Pilot Safety" },
       { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
+      { href: "/profile", label: "Profile" },
     ]);
   });
 
-  it("gives members a mobile quick path to their week, actions, proof, and chapter", () => {
+  it("gives members a mobile quick path to home, campaigns, events, points, and profile", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
-      { href: "/rush-month/dashboard", label: "My Week", helper: "Next" },
-      { href: "/rush-month/actions", label: "Actions", helper: "Do" },
-      { href: "/proof-library", label: "Proof", helper: "Learn" },
-      { href: "/chapter", label: "Chapter", helper: "Home" },
+      { href: "/", label: "Home", helper: "Today" },
+      { href: "/campaigns", label: "Campaigns", helper: "Goals" },
+      { href: "/rush-month/events", label: "Events", helper: "Meet" },
+      { href: "/rush-month/leaderboard", label: "Points", helper: "Rank" },
+      { href: "/profile", label: "Profile", helper: "Me" },
     ]);
   });
 

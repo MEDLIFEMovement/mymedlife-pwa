@@ -126,6 +126,32 @@ export function StaffDryRunGuidePanel({ guide }: StaffDryRunGuidePanelProps) {
 
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
                   <p className="text-sm font-semibold text-white">
+                    Role responsibility
+                  </p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100/70">
+                    {step.roleResponsibility.responsibility}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-white/58">
+                    {step.roleResponsibility.reviewPrompt}
+                  </p>
+                  <p className="mt-3 rounded-xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/52">
+                    {step.roleResponsibility.safetyBoundary}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <p className="text-sm font-semibold text-white">
+                    Responsible role
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-white/58">
+                    {step.roleResponsibility.roleLabel}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <p className="text-sm font-semibold text-white">
                     Packet decision
                   </p>
                   <p className="mt-2 text-xs leading-5 text-white/58">

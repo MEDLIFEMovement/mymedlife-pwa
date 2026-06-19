@@ -3,6 +3,7 @@ import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { CoachDecisionServerActionPanel } from "@/components/coach-decision-server-action-panel";
 import { CoachPortfolioReadinessPanel } from "@/components/coach-portfolio-readiness-panel";
 import { CoachDecisionResultStatesPanel } from "@/components/coach-decision-result-states-panel";
+import { CoachSupportNotesPanel } from "@/components/coach-support-notes-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { MetricCard } from "@/components/metric-card";
@@ -16,6 +17,7 @@ import {
 } from "@/services/coach-decision-result-states";
 import { getCoachDecisionWriteReadiness } from "@/services/coach-decision-write";
 import { getCoachPortfolioReadiness } from "@/services/coach-portfolio-readiness";
+import { getCoachSupportNotesWorkspace } from "@/services/coach-support-notes";
 import {
   canLogCoachDecision,
   createCoachDecisionMock,
@@ -65,6 +67,7 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
   } satisfies CoachDecisionInput;
   const canLogDecision = canLogCoachDecision(actor);
   const portfolio = getCoachPortfolioReadiness(actor, data);
+  const coachSupportNotes = getCoachSupportNotesWorkspace(actor, data);
   const coachDecisionPreview = createCoachDecisionMock(actor, sampleCoachDecisionInput);
   const coachDecisionResultPreview = getDisabledCoachDecisionResultPreview(
     actor,
@@ -158,6 +161,7 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
           </section>
 
           <CoachPortfolioReadinessPanel portfolio={portfolio} />
+          <CoachSupportNotesPanel workspace={coachSupportNotes} />
 
           {coachDecisionPreview.success ? (
             <section className="grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">

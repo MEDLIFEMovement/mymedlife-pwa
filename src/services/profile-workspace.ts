@@ -1,0 +1,235 @@
+import type { LocalActorContext } from "@/services/local-actor-context";
+import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import { getRoleNextActionBrief } from "@/services/role-next-actions";
+import type { IntegrationEvent } from "@/shared/types/domain";
+
+export type ProfileScopeRow = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
+export type ProfileWorkspace = {
+  title: string;
+  summary: string;
+  profileLabel: string;
+  nextStep: {
+    label: string;
+    href: string;
+    detail: string;
+  };
+  identityRows: ProfileScopeRow[];
+  scopeRows: ProfileScopeRow[];
+  futureStructuredEvents: IntegrationEvent[];
+  safetyNotes: string[];
+  counts: {
+    chapterRoles: number;
+    staffRoles: number;
+    chapterScopes: number;
+    coachPortfolioChapters: number;
+    profileWritesExpected: 0;
+    membershipWritesExpected: 0;
+    roleWritesExpected: 0;
+    externalWritesExpected: 0;
+  };
+};
+
+export function getProfileWorkspace(
+  actor: LocalActorContext,
+  data: ReadOnlyAppData,
+): ProfileWorkspace {
+  const nextAction = getRoleNextActionBrief(actor, data);
+
+  return {
+    title: getTitle(actor),
+    summary:
+      "This local profile shows who the selected actor is, which role and chapter scope the app is using, and what the role should do next. It is a read-only preview of future profile/onboarding truth.",
+    profileLabel: getProfileLabel(actor),
+    nextStep: {
+      label: nextAction.primaryLabel,
+      href: nextAction.primaryHref,
+      detail: nextAction.title,
+    },
+    identityRows: buildIdentityRows(actor),
+    scopeRows: buildScopeRows(actor),
+    futureStructuredEvents: buildFutureEvents(actor),
+    safetyNotes: [
+      "No profile save runs from this route.",
+      "No join request, role approval, membership change, or coach assignment runs from this route.",
+      "No HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, or AI write runs from this route.",
+      "Production profile and role truth must come from approved Supabase Auth, membership, RLS, and audit paths.",
+    ],
+    counts: {
+      chapterRoles: actor.chapterRoles.length,
+      staffRoles: actor.staffRoles.length,
+      chapterScopes: actor.chapterNames.length,
+      coachPortfolioChapters: actor.coachPortfolioChapterNames.length,
+      profileWritesExpected: 0,
+      membershipWritesExpected: 0,
+      roleWritesExpected: 0,
+      externalWritesExpected: 0,
+    },
+  };
+}
+
+function buildIdentityRows(actor: LocalActorContext): ProfileScopeRow[] {
+  return [
+    {
+      label: "Name",
+      value: actor.user.displayName,
+      detail: "Local app-facing display name for this preview actor.",
+    },
+    {
+      label: "Email",
+      value: actor.user.email,
+      detail: "Fake local account used for role review.",
+    },
+    {
+      label: "Identity source",
+      value: actor.identitySource.replaceAll("_", " "),
+      detail: `Auth session is ${actor.authSessionStatus.replaceAll("_", " ")}.`,
+    },
+    {
+      label: "Audience",
+      value: actor.audienceLabel,
+      detail: actor.accessSummary,
+    },
+  ];
+}
+
+function buildScopeRows(actor: LocalActorContext): ProfileScopeRow[] {
+  if (actor.audience === "ds_admin") {
+    return [
+      {
+        label: "Systems scope",
+        value: "Integration posture only",
+        detail:
+          "DS Admin can inspect disabled integration and outbox posture without owning student truth.",
+      },
+      {
+        label: "Student data",
+        value: "Hidden",
+        detail: "Assignments, proof, points, KPIs, and chapter event truth stay app-owned.",
+      },
+    ];
+  }
+
+  const rows: ProfileScopeRow[] = [
+    {
+      label: "Chapter roles",
+      value: actor.chapterRoles.length > 0 ? actor.chapterRoles.join(", ") : "None",
+      detail:
+        actor.chapterRoles.length > 0
+          ? "Chapter-scoped roles decide what student and leader surfaces are visible."
+          : "No chapter-scoped role is attached to this local actor.",
+    },
+    {
+      label: "Staff roles",
+      value: actor.staffRoles.length > 0 ? actor.staffRoles.join(", ") : "None",
+      detail:
+        actor.staffRoles.length > 0
+          ? "Staff roles open coach, admin, or super-admin review surfaces."
+          : "No staff role is attached to this local actor.",
+    },
+  ];
+
+  if (actor.chapterNames.length > 0) {
+    rows.push({
+      label: "Chapter scope",
+      value: actor.chapterNames.join(", "),
+      detail: "Chapter-scoped data should remain limited to approved memberships.",
+    });
+  }
+
+  if (actor.coachPortfolioChapterNames.length > 0) {
+    rows.push({
+      label: "Coach portfolio",
+      value: actor.coachPortfolioChapterNames.join(", "),
+      detail: "Coach visibility should stay limited to assigned portfolio chapters.",
+    });
+  }
+
+  if (rows.length === 2) {
+    rows.push({
+      label: "Chapter scope",
+      value: "No chapter",
+      detail: "This actor uses staff or admin scope instead of chapter membership.",
+    });
+  }
+
+  return rows;
+}
+
+function buildFutureEvents(actor: LocalActorContext): IntegrationEvent[] {
+  return [
+    {
+      id: `${actor.user.id}-profile-viewed`,
+      eventType: "profile_viewed",
+      title: "Future profile viewed",
+      destination: "internal",
+      status: "disabled",
+      detail:
+        "A future production profile view can be audited after auth, privacy, and retention rules are approved.",
+      occurredAt: "local-mock-time",
+    },
+    {
+      id: `${actor.user.id}-profile-updated`,
+      eventType: "profile_updated",
+      title: "Future profile update",
+      destination: "internal",
+      status: "disabled",
+      detail:
+        "Display-name, contact, or preference changes must use an approved server-side profile write path.",
+      occurredAt: "local-mock-time",
+    },
+    {
+      id: `${actor.user.id}-membership-requested`,
+      eventType: "membership_join_requested",
+      title: "Future chapter join request",
+      destination: "internal",
+      status: "disabled",
+      detail:
+        "Future chapter join requests must create audit records and stay separate from direct role grants.",
+      occurredAt: "local-mock-time",
+    },
+    {
+      id: `${actor.user.id}-role-change-requested`,
+      eventType: "role_change_requested",
+      title: "Future role change requested",
+      destination: "internal",
+      status: "disabled",
+      detail:
+        "Future role changes require approved membership workflows and must not be self-granted from the browser.",
+      occurredAt: "local-mock-time",
+    },
+  ];
+}
+
+function getTitle(actor: LocalActorContext): string {
+  switch (actor.audience) {
+    case "chapter_member":
+      return "Your myMEDLIFE profile";
+    case "chapter_leader":
+      return "Leader profile and role scope";
+    case "coach":
+      return "Coach profile and portfolio scope";
+    case "admin":
+      return "Admin profile and support scope";
+    case "ds_admin":
+      return "DS Admin profile and integration scope";
+    case "super_admin":
+      return "Super Admin profile and oversight scope";
+  }
+}
+
+function getProfileLabel(actor: LocalActorContext): string {
+  if (actor.chapterRoles.length > 0) {
+    return actor.chapterRoles.join(" / ");
+  }
+
+  if (actor.staffRoles.length > 0) {
+    return actor.staffRoles.join(" / ");
+  }
+
+  return actor.audienceLabel;
+}

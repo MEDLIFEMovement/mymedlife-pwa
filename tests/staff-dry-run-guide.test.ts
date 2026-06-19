@@ -63,34 +63,62 @@ describe("staff dry-run guide", () => {
     ).toEqual(expect.arrayContaining(["action_started", "evidence_submitted"]));
   });
 
-  it("mirrors the five local write packets for staff rehearsal", () => {
+  it("mirrors the seven local write packets for staff rehearsal", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const guide = getStaffDryRunGuide(actor, mockData);
 
-    expect(guide.writeRehearsal.title).toBe("Five local write rehearsal");
-    expect(guide.writeRehearsal.counts.steps).toBe(5);
-    expect(guide.writeRehearsal.counts.localBrowserWriteCandidates).toBe(5);
+    expect(guide.writeRehearsal.title).toBe("Seven local write rehearsal");
+    expect(guide.writeRehearsal.counts.steps).toBe(7);
+    expect(guide.writeRehearsal.counts.localBrowserWriteCandidates).toBe(7);
     expect(guide.writeRehearsal.counts.externalWritesExpected).toBe(0);
     expect(guide.writeRehearsal.steps.map((step) => step.operation)).toEqual([
       "action_started",
       "evidence_submitted",
+      "leader_proof_decision_logged",
       "hq_sharing_decision_logged",
       "action_assigned",
       "coach_decision_logged",
+      "membership_approved",
     ]);
     expect(guide.writeRehearsal.steps.map((step) => step.packetRoute)).toEqual([
       "/admin/first-write",
       "/admin/proof-write",
+      "/rush-month/review",
       "/admin/hq-proof-write",
       "/admin/assignment-write",
       "/admin/coach-write",
+      "/chapter/members",
     ]);
     expect(guide.writeRehearsal.steps.map((step) => step.operatingRoute)).toEqual(
       expect.arrayContaining([
         "/rush-month/actions",
         "/rush-month/review",
         "/coach",
+        "/chapter/members",
       ]),
+    );
+  });
+
+  it("inherits role responsibility for every write rehearsal step", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const guide = getStaffDryRunGuide(actor, mockData);
+    const assignment = guide.writeRehearsal.steps.find(
+      (step) => step.operation === "action_assigned",
+    );
+
+    expect(
+      guide.writeRehearsal.steps.every(
+        (step) =>
+          step.roleResponsibility.roleLabel.length > 0 &&
+          step.roleResponsibility.reviewPrompt.length > 20 &&
+          step.roleResponsibility.safetyBoundary.length > 20,
+      ),
+    ).toBe(true);
+    expect(assignment?.roleResponsibility.responsibility).toBe(
+      "Approve, hand off, and coordinate assignment work",
+    );
+    expect(assignment?.roleResponsibility.reviewPrompt).toContain(
+      "E-Board owner handoff",
     );
   });
 

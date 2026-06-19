@@ -43,6 +43,12 @@ export default async function LoginPage() {
               <li>Proof uploads and public sharing remain disabled.</li>
               <li>HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes remain disabled.</li>
             </ul>
+            <Link
+              href="/onboarding"
+              className="mt-4 inline-flex rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+            >
+              Review onboarding path
+            </Link>
           </div>
         </div>
       </section>

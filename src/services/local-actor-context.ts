@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { mockChapter } from "@/data/mock-rush-month";
 import {
   createSupabaseReadonlyClient,
@@ -32,7 +33,14 @@ export type ActorAudience =
   | "ds_admin"
   | "super_admin";
 
-export type ActorIdentitySource = "local_actor_email" | "local_auth_session";
+export type ActorIdentitySource =
+  | "local_actor_email"
+  | "local_preview_cookie"
+  | "local_auth_session";
+export type LocalActorPreviewIdentitySource = Exclude<
+  ActorIdentitySource,
+  "local_auth_session"
+>;
 
 export type LocalActorContext = {
   source: DataSourceMeta;
@@ -68,6 +76,13 @@ type LocalActorSnapshot = {
   chapters: ChapterRow[];
 };
 
+type LocalActorPreviewSelection = {
+  email: string;
+  identitySource: LocalActorPreviewIdentitySource;
+};
+
+export const localActorPreviewCookieName = "mymedlife_preview_actor_email";
+
 export type ActorEmailResolution = {
   email: string;
   identitySource: ActorIdentitySource;
@@ -79,7 +94,7 @@ export type ActorEmailResolution = {
 export const localActorOptions: LocalActorOption[] = [
   {
     email: "member.a@mymedlife.test",
-    displayName: "Maya Member",
+    displayName: "Sofia Alvarez",
     audience: "chapter_member",
     chapterRoles: ["General Member"],
     staffRoles: [],
@@ -106,9 +121,18 @@ export const localActorOptions: LocalActorOption[] = [
   },
   {
     email: "leader.a@mymedlife.test",
-    displayName: "Leo Leader",
+    displayName: "Priya President",
     audience: "chapter_leader",
-    chapterRoles: ["President / VP", "E-Board Member"],
+    chapterRoles: ["President / VP"],
+    staffRoles: [],
+    chapterNames: [mockChapter.name],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "eboard.a@mymedlife.test",
+    displayName: "Eli E-Board",
+    audience: "chapter_leader",
+    chapterRoles: ["E-Board Member"],
     staffRoles: [],
     chapterNames: [mockChapter.name],
     coachPortfolioChapterNames: [],
@@ -152,10 +176,13 @@ export const localActorOptions: LocalActorOption[] = [
 ];
 
 export async function getLocalActorContext(): Promise<LocalActorContext> {
-  const selectedEmail =
-    process.env.MYMEDLIFE_LOCAL_ACTOR_EMAIL?.trim() || defaultLocalActorEmail;
+  const previewSelection = await getLocalActorPreviewSelection();
   const authSession = await getLocalAuthSessionState();
-  const resolvedActor = resolveActorEmailFromSession(authSession, selectedEmail);
+  const resolvedActor = resolveActorEmailFromSession(
+    authSession,
+    previewSelection.email,
+    previewSelection.identitySource,
+  );
   const config = getSupabaseReadConfig();
 
   if (!config.enabled) {
@@ -294,6 +321,7 @@ export function getMockLocalActorContext(
 export function resolveActorEmailFromSession(
   authSession: AuthSessionState,
   fallbackEmail = defaultLocalActorEmail,
+  fallbackIdentitySource: LocalActorPreviewIdentitySource = "local_actor_email",
 ): ActorEmailResolution {
   if (authSession.status === "signed_in" && authSession.user?.email) {
     return {
@@ -308,11 +336,32 @@ export function resolveActorEmailFromSession(
 
   return {
     email: fallbackEmail,
-    identitySource: "local_actor_email",
+    identitySource: fallbackIdentitySource,
     authSessionStatus: authSession.status,
     authSessionEmail: authSession.user?.email ?? null,
     message:
-      "Using MYMEDLIFE_LOCAL_ACTOR_EMAIL because no signed-in local auth user is active.",
+      fallbackIdentitySource === "local_preview_cookie"
+        ? "Using the local preview role switch because no signed-in local auth user is active."
+        : "Using MYMEDLIFE_LOCAL_ACTOR_EMAIL because no signed-in local auth user is active.",
+  };
+}
+
+export function resolveLocalActorPreviewSelection(
+  cookieEmail: string | null | undefined,
+  envEmail = defaultLocalActorEmail,
+): LocalActorPreviewSelection {
+  const cookieActor = findKnownLocalActorOption(cookieEmail);
+  if (cookieActor) {
+    return {
+      email: cookieActor.email,
+      identitySource: "local_preview_cookie",
+    };
+  }
+
+  const envActor = findKnownLocalActorOption(envEmail) ?? localActorOptions[0];
+  return {
+    email: envActor.email,
+    identitySource: "local_actor_email",
   };
 }
 
@@ -328,6 +377,14 @@ async function getLocalAuthSessionState(): Promise<AuthSessionState> {
 
 function actorContextMessage(resolution: ActorEmailResolution, dataSourceReason: string) {
   return `${resolution.message} ${dataSourceReason}`;
+}
+
+async function getLocalActorPreviewSelection(): Promise<LocalActorPreviewSelection> {
+  const cookieStore = await cookies();
+  return resolveLocalActorPreviewSelection(
+    cookieStore.get(localActorPreviewCookieName)?.value,
+    process.env.MYMEDLIFE_LOCAL_ACTOR_EMAIL?.trim() || defaultLocalActorEmail,
+  );
 }
 
 export async function readLocalActorSnapshot(
@@ -405,11 +462,20 @@ function findChapterName(chapters: ChapterRow[], chapterId: string) {
   return chapters.find((chapter) => chapter.id === chapterId)?.name ?? "";
 }
 
+function findKnownLocalActorOption(selectedEmail: string | null | undefined) {
+  const normalizedEmail = selectedEmail?.trim().toLowerCase();
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  return localActorOptions.find((option) => option.email === normalizedEmail) ?? null;
+}
+
 function findLocalActorOption(selectedEmail: string) {
   const normalizedEmail = selectedEmail.toLowerCase();
 
   return (
-    localActorOptions.find((option) => option.email === normalizedEmail) ??
+    findKnownLocalActorOption(normalizedEmail) ??
     localActorOptions[0]
   );
 }

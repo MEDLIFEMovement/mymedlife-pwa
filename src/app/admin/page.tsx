@@ -1,7 +1,10 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminAuditLogReviewPanel } from "@/components/admin-audit-log-review-panel";
 import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
+import { AdminSystemHealthReviewPanel } from "@/components/admin-system-health-review-panel";
 import { AdminGlossaryPanel } from "@/components/admin-glossary-panel";
 import { ControlledPilotReadinessPanel } from "@/components/controlled-pilot-readiness-panel";
+import { DatabaseSecurityDecisionPanel } from "@/components/database-security-decision-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { DesignQaReadinessPanel } from "@/components/design-qa-readiness-panel";
 import { EnvironmentSafetySummaryPanel } from "@/components/environment-safety-summary-panel";
@@ -10,6 +13,9 @@ import { MetricCard } from "@/components/metric-card";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
 import { MvpProgressMapPanel } from "@/components/mvp-progress-map-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
+import { NickMvpReviewPanel } from "@/components/nick-mvp-review-panel";
+import { ProductionLaunchGatePanel } from "@/components/production-launch-gate-panel";
+import { ProductionOperationsRunbookPanel } from "@/components/production-operations-runbook-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { RouteCoverageSummaryPanel } from "@/components/route-coverage-summary-panel";
 import { RouteSmokeManifestPanel } from "@/components/route-smoke-manifest-panel";
@@ -18,9 +24,12 @@ import { WriteActivationApprovalPlanPanel } from "@/components/write-activation-
 import { WriteActivationReadinessPanel } from "@/components/write-activation-readiness-panel";
 import { WriteResultStateCoveragePanel } from "@/components/write-result-state-coverage-panel";
 import { getAdminControlCenterSummary } from "@/services/admin-control-center";
+import { getAdminAuditLogReview } from "@/services/admin-audit-log-review";
 import { getAdminGlossary } from "@/services/admin-glossary";
+import { getAdminSystemHealthReview } from "@/services/admin-system-health-review";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getControlledPilotReadiness } from "@/services/controlled-pilot-readiness";
+import { getDatabaseSecurityDecisionPacket } from "@/services/database-security-decision";
 import { getDesignQaReadiness } from "@/services/design-qa-readiness";
 import { getEnvironmentSafetySummary } from "@/services/environment-safety-summary";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
@@ -28,6 +37,9 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
 import { getMvpProgressMap } from "@/services/mvp-progress-map";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
+import { getNickMvpReviewPacket } from "@/services/nick-mvp-review";
+import { getProductionLaunchGate } from "@/services/production-launch-gate";
+import { getProductionOperationsRunbook } from "@/services/production-operations-runbook";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRouteCoverageSummary } from "@/services/route-coverage-summary";
 import { getRouteSmokeManifest } from "@/services/route-smoke-manifest";
@@ -51,6 +63,8 @@ export default async function AdminPage() {
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
   const adminControlCenter = getAdminControlCenterSummary(data);
+  const adminAuditLogReview = getAdminAuditLogReview(actor, data);
+  const adminSystemHealthReview = getAdminSystemHealthReview(actor, data);
   const adminGlossary = getAdminGlossary(actor);
   const controlledPilotReadiness = getControlledPilotReadiness(actor);
   const designQaReadiness = getDesignQaReadiness(actor);
@@ -60,6 +74,10 @@ export default async function AdminPage() {
   const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
   const mvpProgressMap = getMvpProgressMap(actor);
   const releaseReadiness = getMvpReleaseReadinessSummary(actor);
+  const nickMvpReviewPacket = getNickMvpReviewPacket(actor);
+  const productionLaunchGate = getProductionLaunchGate(actor);
+  const productionOperationsRunbook = getProductionOperationsRunbook(actor);
+  const databaseSecurityDecision = getDatabaseSecurityDecisionPacket(actor);
   const routeSmokeManifest = getRouteSmokeManifest(actor);
   const routeCoverageSummary = getRouteCoverageSummary(actor);
   const stakeholderReviewPlan = getStakeholderReviewPlan(actor);
@@ -108,10 +126,15 @@ export default async function AdminPage() {
           </section>
 
           <MvpReleaseReadinessPanel summary={releaseReadiness} />
+          <NickMvpReviewPanel packet={nickMvpReviewPacket} />
+          <ProductionLaunchGatePanel gate={productionLaunchGate} />
+          <DatabaseSecurityDecisionPanel packet={databaseSecurityDecision} />
           <ControlledPilotReadinessPanel readiness={controlledPilotReadiness} />
           <MvpProgressMapPanel progressMap={mvpProgressMap} />
           <DesignQaReadinessPanel readiness={designQaReadiness} />
           <EnvironmentSafetySummaryPanel summary={environmentSafetySummary} />
+          <AdminSystemHealthReviewPanel review={adminSystemHealthReview} />
+          <ProductionOperationsRunbookPanel runbook={productionOperationsRunbook} />
           <StakeholderReviewPlanPanel plan={stakeholderReviewPlan} />
           <AdminGlossaryPanel glossary={adminGlossary} />
           <section className="grid gap-3 md:grid-cols-2">
@@ -130,6 +153,7 @@ export default async function AdminPage() {
           <RouteSmokeManifestPanel manifest={routeSmokeManifest} />
           <RouteCoverageSummaryPanel summary={routeCoverageSummary} />
           <AdminControlCenterPanel summary={adminControlCenter} />
+          <AdminAuditLogReviewPanel review={adminAuditLogReview} />
           <WriteActivationReadinessPanel summary={writeActivationSummary} />
           <WriteActivationApprovalPlanPanel plan={writeActivationApprovalPlan} />
           <WriteResultStateCoveragePanel summary={writeResultStateCoverage} />

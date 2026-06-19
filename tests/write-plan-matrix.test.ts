@@ -12,6 +12,8 @@ import {
   prepareDisabledActionStartWrite,
   prepareDisabledCoachDecisionWrite,
   prepareDisabledHqSharingDecisionWrite,
+  prepareDisabledLeaderProofDecisionWrite,
+  prepareDisabledMembershipApprovalWrite,
   prepareDisabledProofSubmissionWrite,
 } from "@/services/write-readiness";
 
@@ -23,12 +25,14 @@ describe("write plan matrix", () => {
       "coach_decision_logged",
       "evidence_submitted",
       "hq_sharing_decision",
+      "leader_proof_decision",
+      "membership_approved",
     ]);
 
     expect(writePlanOperations.every((operation) => operation.stillDisabled)).toBe(true);
     expect(getWritePlanSummary()).toEqual(
       expect.objectContaining({
-        operationCount: 5,
+        operationCount: 7,
         allOperationsStillDisabled: true,
         externalWritesAllowed: false,
       }),
@@ -75,6 +79,36 @@ describe("write plan matrix", () => {
         note: "Strong future proof-sharing candidate.",
       }).wouldWriteTables,
     );
+    expect(
+      Array.from(getWritePlanOperation("leader_proof_decision").futureTables),
+    ).toEqual(
+      prepareDisabledLeaderProofDecisionWrite(
+        leader,
+        {
+          ...requireAssignment("assign-eboard"),
+          id: "00000000-0000-4000-8000-000000000101",
+        },
+        {
+          ...evidenceItem,
+          id: "00000000-0000-4000-8000-000000000201",
+          assignmentId: "00000000-0000-4000-8000-000000000101",
+        },
+        {
+          decision: "approve",
+          note: "This proof has enough context to count locally.",
+        },
+      ).wouldWriteTables,
+    );
+    expect(Array.from(getWritePlanOperation("membership_approved").futureTables)).toEqual(
+      prepareDisabledMembershipApprovalWrite(leader, {
+        chapterId: "mock-chapter",
+        joinRequestId: "join-avery",
+        applicantEmail: "avery.new@mymedlife.test",
+        requestedRoleKey: "general_member",
+        requestedCommitteeLane: "Recruitment",
+        auditReason: "Approve local Rush Month join request for chapter review.",
+      }).wouldWriteTables,
+    );
   });
 
   it("blocks DS Admin from owning student truth or HQ sharing decisions", () => {
@@ -90,6 +124,12 @@ describe("write plan matrix", () => {
     );
     expect(isActorAllowedForPlannedWrite("ds_admin", "evidence_submitted")).toBe(false);
     expect(isActorAllowedForPlannedWrite("ds_admin", "hq_sharing_decision")).toBe(
+      false,
+    );
+    expect(isActorAllowedForPlannedWrite("ds_admin", "leader_proof_decision")).toBe(
+      false,
+    );
+    expect(isActorAllowedForPlannedWrite("ds_admin", "membership_approved")).toBe(
       false,
     );
   });
@@ -172,12 +212,56 @@ describe("write plan matrix", () => {
     );
   });
 
-  it("marks assignment, coach, proof, and HQ decisions as future outbox writes", () => {
+  it("limits leader proof decisions to chapter leaders and super admins", () => {
+    const leaderDecision = getWritePlanOperation("leader_proof_decision");
+
+    expect(Array.from(leaderDecision.allowedActors)).toEqual([
+      "chapter_leader",
+      "super_admin",
+    ]);
+    expect(leaderDecision.blockedActors).toEqual([
+      "chapter_member",
+      "coach",
+      "admin",
+      "ds_admin",
+    ]);
+    expect(isActorAllowedForPlannedWrite("chapter_leader", "leader_proof_decision")).toBe(true);
+    expect(isActorAllowedForPlannedWrite("super_admin", "leader_proof_decision")).toBe(true);
+    expect(isActorAllowedForPlannedWrite("admin", "leader_proof_decision")).toBe(false);
+  });
+
+  it("limits membership approvals to chapter leaders and HQ admin roles", () => {
+    const membershipApproval = getWritePlanOperation("membership_approved");
+
+    expect(Array.from(membershipApproval.allowedActors)).toEqual([
+      "chapter_leader",
+      "admin",
+      "super_admin",
+    ]);
+    expect(membershipApproval.blockedActors).toEqual([
+      "chapter_member",
+      "coach",
+      "ds_admin",
+    ]);
+    expect(isActorAllowedForPlannedWrite("chapter_leader", "membership_approved")).toBe(true);
+    expect(isActorAllowedForPlannedWrite("admin", "membership_approved")).toBe(true);
+    expect(isActorAllowedForPlannedWrite("super_admin", "membership_approved")).toBe(
+      true,
+    );
+    expect(isActorAllowedForPlannedWrite("coach", "membership_approved")).toBe(false);
+    expect(isActorAllowedForPlannedWrite("ds_admin", "membership_approved")).toBe(
+      false,
+    );
+  });
+
+  it("marks assignment, coach, proof, HQ, leader, and membership decisions as future outbox writes", () => {
     expect(getWritePlanSummary().operationsTouchingOutbox).toEqual([
       "action_assigned",
       "coach_decision_logged",
       "evidence_submitted",
       "hq_sharing_decision",
+      "leader_proof_decision",
+      "membership_approved",
     ]);
   });
 });

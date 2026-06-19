@@ -2,6 +2,14 @@ import type {
   ActorAudience,
   LocalActorContext,
 } from "@/services/local-actor-context";
+import {
+  getDisabledMembershipApprovalResultPreview,
+  type MembershipApprovalResultPreview,
+} from "@/services/membership-approval-result-states";
+import {
+  getMembershipApprovalWriteReadiness,
+  type MembershipApprovalWriteReadiness,
+} from "@/services/membership-approval-write-readiness";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import type { DatabaseRoleKey } from "@/shared/types/persistence";
 
@@ -39,7 +47,9 @@ export type ChapterJoinRequest = {
   id: string;
   displayName: string;
   email: string;
+  requestedRoleKey: DatabaseRoleKey;
   requestedRoleLabel: string;
+  requestedCommitteeLane: CommitteeLane;
   source: "rush_event" | "friend_referral" | "chapter_form";
   requestedAtLabel: string;
   nextStep: string;
@@ -65,6 +75,43 @@ export type DisabledMembershipControl = {
   futureEventType: string;
 };
 
+export type MembershipApprovalPacket = {
+  title: string;
+  targetRoute: "/chapter/members";
+  futureFunction: "app.approve_chapter_membership";
+  joinRequestId: string;
+  applicantName: string;
+  applicantEmail: string;
+  requestedRoleLabel: string;
+  payload: {
+    chapterId: string;
+    joinRequestId: string;
+    applicantEmail: string;
+    requestedRoleKey: DatabaseRoleKey;
+    requestedCommitteeLane: CommitteeLane;
+    source: ChapterJoinRequest["source"];
+    approvedByActorEmail: string;
+  };
+  currentResultCode: "membership_writes_disabled";
+  currentResultTitle: string;
+  futureResultCode: "membership_approved";
+  futureResultTitle: string;
+  resultPreview: MembershipApprovalResultPreview;
+  writeReadiness: MembershipApprovalWriteReadiness;
+  readinessReason: string;
+  readinessChecks: Array<{
+    key: string;
+    label: string;
+    passed: boolean;
+  }>;
+  futureRecords: Array<{
+    label: string;
+    value: string;
+  }>;
+  blockedControls: string[];
+  reviewPrompts: string[];
+};
+
 export type ChapterMembershipWorkspace = {
   canReadWorkspace: boolean;
   title: string;
@@ -84,21 +131,25 @@ export type ChapterMembershipWorkspace = {
   joinRequests: ChapterJoinRequest[];
   roleCoverage: RoleCoverageItem[];
   disabledControls: DisabledMembershipControl[];
+  membershipApprovalPacket: MembershipApprovalPacket | null;
   auditPreview: string[];
   outboxPreview: string[];
 };
 
 const allowedAudiences: ActorAudience[] = [
+  "chapter_member",
   "chapter_leader",
   "coach",
   "admin",
   "super_admin",
 ];
 
+const chapterMemberWorkspaceRoles = new Set(["E-Board Member"]);
+
 const memberRows: ChapterMemberRow[] = [
   {
     id: "member-maya",
-    displayName: "Maya Member",
+    displayName: "Sofia Alvarez",
     email: "member.a@mymedlife.test",
     roleKey: "general_member",
     roleLabel: "General Member",
@@ -112,7 +163,7 @@ const memberRows: ChapterMemberRow[] = [
   },
   {
     id: "member-leo",
-    displayName: "Leo Leader",
+    displayName: "Priya President",
     email: "leader.a@mymedlife.test",
     roleKey: "president_vp",
     roleLabel: "President / VP",
@@ -187,7 +238,9 @@ const joinRequests: ChapterJoinRequest[] = [
     id: "join-avery",
     displayName: "Avery New",
     email: "avery.new@mymedlife.test",
+    requestedRoleKey: "general_member",
     requestedRoleLabel: "General Member",
+    requestedCommitteeLane: "Recruitment",
     source: "rush_event",
     requestedAtLabel: "After Tuesday tabling",
     nextStep: "President/VP should approve membership only after live auth is approved.",
@@ -196,7 +249,9 @@ const joinRequests: ChapterJoinRequest[] = [
     id: "join-sam",
     displayName: "Sam Service",
     email: "sam.service@mymedlife.test",
+    requestedRoleKey: "action_committee_member",
     requestedRoleLabel: "Action Committee Member",
+    requestedCommitteeLane: "Local Volunteering",
     source: "friend_referral",
     requestedAtLabel: "This week",
     nextStep: "Leader should ask which action committee lane fits before approval.",
@@ -238,7 +293,7 @@ export function getChapterMembershipWorkspace(
   actor: LocalActorContext,
   data: Pick<ReadOnlyAppData, "chapter" | "assignments" | "evidenceItems">,
 ): ChapterMembershipWorkspace {
-  if (!allowedAudiences.includes(actor.audience)) {
+  if (!canActorReadWorkspace(actor)) {
     return {
       canReadWorkspace: false,
       title: "Member management hidden for this role",
@@ -254,6 +309,7 @@ export function getChapterMembershipWorkspace(
       joinRequests: [],
       roleCoverage: [],
       disabledControls,
+      membershipApprovalPacket: null,
       auditPreview: [],
       outboxPreview: [],
     };
@@ -297,6 +353,11 @@ export function getChapterMembershipWorkspace(
     joinRequests: getVisibleJoinRequests(actor),
     roleCoverage,
     disabledControls,
+    membershipApprovalPacket: buildMembershipApprovalPacket(
+      actor,
+      data.chapter.id,
+      getVisibleJoinRequests(actor)[0],
+    ),
     auditPreview: [
       "membership_approved would write AuditLog before member access changes.",
       "role_approved would write IntegrationEvent and AuditLog before any future reminder automation.",
@@ -307,6 +368,18 @@ export function getChapterMembershipWorkspace(
       "Future HubSpot contact update stays disabled until CRM sync approval.",
     ],
   };
+}
+
+function canActorReadWorkspace(actor: LocalActorContext) {
+  if (!allowedAudiences.includes(actor.audience)) {
+    return false;
+  }
+
+  if (actor.audience !== "chapter_member") {
+    return true;
+  }
+
+  return actor.chapterRoles.some((role) => chapterMemberWorkspaceRoles.has(role));
 }
 
 function getVisibleMembers(actor: LocalActorContext): ChapterMemberRow[] {
@@ -323,6 +396,129 @@ function getVisibleJoinRequests(actor: LocalActorContext): ChapterJoinRequest[] 
   }
 
   return joinRequests;
+}
+
+function buildMembershipApprovalPacket(
+  actor: LocalActorContext,
+  chapterId: string,
+  request: ChapterJoinRequest | undefined,
+): MembershipApprovalPacket | null {
+  if (!request) {
+    return null;
+  }
+  const input = {
+    joinRequestId: request.id,
+    applicantEmail: request.email,
+    requestedRoleKey: request.requestedRoleKey,
+    requestedCommitteeLane: request.requestedCommitteeLane,
+    auditReason: "Approve local Rush Month join request for chapter review.",
+  };
+  const writeInput = {
+    chapterId,
+    ...input,
+  };
+  const resultPreview = getDisabledMembershipApprovalResultPreview(
+    actor,
+    input,
+    memberRows.map((member) => member.email),
+  );
+  const writeReadiness = getMembershipApprovalWriteReadiness(
+    actor,
+    writeInput,
+    memberRows.map((member) => member.email),
+  );
+
+  return {
+    title: "Goal 160 membership approval packet",
+    targetRoute: "/chapter/members",
+    futureFunction: "app.approve_chapter_membership",
+    joinRequestId: request.id,
+    applicantName: request.displayName,
+    applicantEmail: request.email,
+    requestedRoleLabel: request.requestedRoleLabel,
+    payload: {
+      chapterId,
+      joinRequestId: request.id,
+      applicantEmail: request.email,
+      requestedRoleKey: request.requestedRoleKey,
+      requestedCommitteeLane: request.requestedCommitteeLane,
+      source: request.source,
+      approvedByActorEmail: actor.selectedEmail,
+    },
+    currentResultCode: "membership_writes_disabled",
+    currentResultTitle: resultPreview.currentResult.title,
+    futureResultCode: "membership_approved",
+    futureResultTitle: resultPreview.futureResultIfEnabled.title,
+    resultPreview,
+    writeReadiness,
+    readinessReason:
+      "This packet previews the first membership approval write and Goal 162 readiness checks, but production auth, RLS review, rollback, and audit readback must be approved before the control is enabled.",
+    readinessChecks: [
+      {
+        key: "join_request_visible",
+        label: "Join request is visible to the reviewer",
+        passed: true,
+      },
+      {
+        key: "actor_can_review_membership",
+        label: "Actor can review membership posture",
+        passed:
+          actor.audience === "chapter_leader" ||
+          actor.audience === "admin" ||
+          actor.audience === "super_admin",
+      },
+      {
+        key: "live_auth_required",
+        label: "Live auth is still required before approval",
+        passed: false,
+      },
+      {
+        key: "membership_writes_disabled",
+        label: "Membership writes remain disabled",
+        passed: true,
+      },
+      {
+        key: "external_sends_disabled",
+        label: "Welcome messages and CRM updates remain disabled",
+        passed: true,
+      },
+    ],
+    futureRecords: [
+      {
+        label: "Membership row",
+        value: `${request.email} -> ${request.requestedRoleKey}`,
+      },
+      {
+        label: "Structured event",
+        value: "membership_approved",
+      },
+      {
+        label: "Disabled outbox",
+        value: "welcome message, HubSpot update, and n8n workflow disabled",
+      },
+      {
+        label: "Audit action",
+        value: "membership_approved",
+      },
+      {
+        label: "Goal 162 write readiness",
+        value: writeReadiness.resultCodeIfSubmitted,
+      },
+    ],
+    blockedControls: [
+      "Approve join request",
+      "Create membership row",
+      "Assign chapter role",
+      "Send welcome message",
+      "Sync CRM contact",
+    ],
+    reviewPrompts: [
+      "Confirm the applicant is tied to the right chapter before approval.",
+      "Confirm the requested role and committee lane match the chapter plan.",
+      "Confirm production auth can map this email to exactly one profile.",
+      "Confirm the audit log will show actor, target, role, and reason.",
+    ],
+  };
 }
 
 function getRoleCoverage(members: ChapterMemberRow[]): RoleCoverageItem[] {

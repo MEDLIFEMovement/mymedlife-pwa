@@ -112,7 +112,7 @@ export type EvidenceItem = {
     | "recap_note"
     | "external_link";
   summary: string;
-  status: "pending_review" | "approved" | "changes_requested";
+  status: "pending_review" | "approved" | "rejected" | "changes_requested";
 };
 
 export type Approval = {

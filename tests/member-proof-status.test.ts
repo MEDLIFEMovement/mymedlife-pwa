@@ -67,7 +67,7 @@ describe("member proof status", () => {
       {
         id: "evidence-member-push-approved",
         assignmentId: "member-push",
-        submittedBy: "Maya Member",
+        submittedBy: "Sofia Alvarez",
         evidenceType: "testimonial_text",
         summary: "A useful member testimonial.",
         status: "approved",

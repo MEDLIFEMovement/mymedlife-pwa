@@ -225,7 +225,7 @@ function submitProof(state: RushMonthLocalLoopState): RushMonthLocalLoopState {
   const evidenceItem: EvidenceItem = {
     id: "local-loop-proof-invite-story",
     assignmentId: state.assignment.id,
-    submittedBy: "Maya Member",
+    submittedBy: "Sofia Alvarez",
     evidenceType: "testimonial_text",
     summary:
       "I invited two freshmen and learned they were worried about joining alone, so I shared how MEDLIFE events help people make friends while taking action.",

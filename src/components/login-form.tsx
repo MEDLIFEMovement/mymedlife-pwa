@@ -13,6 +13,7 @@ const fakeAccounts = [
   "committee.member@mymedlife.test",
   "committee.chair@mymedlife.test",
   "leader.a@mymedlife.test",
+  "eboard.a@mymedlife.test",
   "coach@mymedlife.test",
   "admin@mymedlife.test",
   "ds.admin@mymedlife.test",

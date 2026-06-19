@@ -64,6 +64,70 @@ export default async function RushMonthDashboardPage() {
         </>
       ) : (
         <>
+          <section className="grid gap-4 lg:grid-cols-[0.88fr_1.12fr]">
+            <article className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+                Phase
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">
+                {dashboard.phaseSummary.label}
+              </h2>
+              <p className="mt-2 text-sm font-semibold text-sky-100/84">
+                {dashboard.phaseSummary.status}
+              </p>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
+                {dashboard.phaseSummary.note}
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl bg-black/20 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
+                    Invite KPIs
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-white">
+                    {dashboard.kpiSummary.invitePushes}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/58">
+                    Invite signals connected to this phase.
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-black/20 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
+                    Proof pending
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-white">
+                    {dashboard.kpiSummary.proofPending}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/58">
+                    Follow-up or review items still visible.
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-black/20 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
+                    Points
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold text-white">
+                    {dashboard.pointsSummary.earned}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/58">
+                    Friendly recognition earned so far.
+                  </p>
+                </div>
+              </div>
+            </article>
+
+            <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
+                Why it matters
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">
+                Keep the week legible for the role doing the work.
+              </h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-white/72">
+                {dashboard.whyItMatters}
+              </p>
+            </article>
+          </section>
+
           <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
               Next best action
@@ -81,6 +145,84 @@ export default async function RushMonthDashboardPage() {
               {dashboard.nextStep.ctaLabel}
             </Link>
           </section>
+
+          <section className="rounded-[2rem] border border-[#f7d05e]/24 bg-[#f7d05e]/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f7d05e]">
+              Role action groups
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              The work is grouped so this role can move with less guessing.
+            </h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {dashboard.actionGroups.map((group) => (
+                <article
+                  key={group.label}
+                  className="rounded-[1.35rem] border border-white/10 bg-[#081d46]/55 p-4"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/46">
+                    {group.label}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/74">
+                    {group.summary}
+                  </p>
+                  <Link
+                    href={group.href}
+                    className="mt-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#08224c]"
+                  >
+                    {group.linkLabel}
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          {dashboard.roleFocus ? (
+            <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+                {dashboard.roleFocus.roleLabel}
+              </p>
+              <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">
+                    {dashboard.roleFocus.title}
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-white/68">
+                    {dashboard.roleFocus.summary}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={dashboard.roleFocus.primaryHref}
+                    className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#06211d]"
+                  >
+                    {dashboard.roleFocus.primaryLabel}
+                  </Link>
+                  {dashboard.roleFocus.secondaryHref ? (
+                    <Link
+                      href={dashboard.roleFocus.secondaryHref}
+                      className="rounded-full border border-white/14 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+                    >
+                      {dashboard.roleFocus.secondaryLabel}
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                {dashboard.roleFocus.items.map((item) => (
+                  <div key={item.label} className="rounded-2xl bg-black/20 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-white">{item.value}</p>
+                    <p className="mt-2 text-sm leading-6 text-white/58">{item.note}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 rounded-2xl border border-white/10 bg-black/18 p-3 text-sm leading-6 text-white/62">
+                {dashboard.roleFocus.safetyNote}
+              </p>
+            </section>
+          ) : null}
 
           <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {dashboard.metrics.map((metric) => (

@@ -26,6 +26,12 @@ export type StaffDryRunWriteRehearsalStep = {
   operatingRoute: string;
   localActorEmail: string;
   actorLabel: string;
+  roleResponsibility: {
+    roleLabel: string;
+    responsibility: string;
+    reviewPrompt: string;
+    safetyBoundary: string;
+  };
   packetStatus: string;
   packetDecision: string;
   observedReadbackItems: number;
@@ -285,9 +291,9 @@ function buildWriteRehearsal(
   const steps = planner.operations.map(toWriteRehearsalStep);
 
   return {
-    title: "Five local write rehearsal",
+    title: "Seven local write rehearsal",
     summary:
-      "Use these packets to rehearse the five guarded Rush Month local writes in order. This section is a checklist and status mirror, not a write console.",
+      "Use these packets to rehearse the guarded Rush Month local writes and the separate membership approval readiness packet in order. This section is a checklist and status mirror, not a write console.",
     steps,
     counts: {
       steps: steps.length,
@@ -309,6 +315,7 @@ function toWriteRehearsalStep(
     operatingRoute: getOperatingRoute(operation),
     localActorEmail: operation.localActorEmail,
     actorLabel: operation.actorLabel,
+    roleResponsibility: operation.roleResponsibility,
     packetStatus: operation.packetStatus.status,
     packetDecision: operation.packetStatus.plainEnglish,
     observedReadbackItems: operation.packetStatus.observedReadbackItems,
@@ -326,12 +333,16 @@ function getOperatingRoute(operation: WriteSequenceOperation): string {
     case "action_started":
     case "evidence_submitted":
       return operation.route;
+    case "leader_proof_decision_logged":
+      return "/rush-month/review";
     case "hq_sharing_decision_logged":
       return "/rush-month/review";
     case "action_assigned":
       return "/rush-month/actions";
     case "coach_decision_logged":
       return "/coach";
+    case "membership_approved":
+      return "/chapter/members";
   }
 }
 
@@ -341,12 +352,16 @@ function getRehearsalAction(operation: WriteSequenceOperation): string {
       return "Open the action-start packet, sign in as the fake member, and start one assignment only if the packet says the local write is ready.";
     case "evidence_submitted":
       return "Open the proof metadata packet and rehearse testimonial metadata only; do not upload files or publish proof.";
+    case "leader_proof_decision_logged":
+      return "Open the leader proof decision panel only after Goal 115 SQL/RLS tests pass, then rehearse one local approve, request-changes, or reject decision with member nudges disabled.";
     case "hq_sharing_decision_logged":
       return "Open the HQ proof decision packet and rehearse the sharing posture decision without publishing proof publicly.";
     case "action_assigned":
       return "Open the leader assignment packet and rehearse one chapter-scoped assignment without reminders or external handoffs.";
     case "coach_decision_logged":
       return "Open the coach decision packet and rehearse advance / hold / intervene without escalation sends.";
+    case "membership_approved":
+      return "Open the membership approval readiness packet and rehearse one join-request approval without changing access, sending welcome messages, or syncing CRM.";
   }
 }
 
@@ -379,7 +394,7 @@ function getTitle(actor: LocalActorContext): string {
 
 function emptyWriteRehearsal(): StaffDryRunWriteRehearsal {
   return {
-    title: "Five local write rehearsal hidden for this role",
+    title: "Seven local write rehearsal hidden for this role",
     summary:
       "Write rehearsal packets are HQ safety surfaces, not student or chapter operating views.",
     steps: [],

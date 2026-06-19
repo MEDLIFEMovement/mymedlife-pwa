@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { ChapterEngagementCampaignPanel } from "@/components/chapter-engagement-campaign-panel";
+import { GrowTheMovementCampaignPanel } from "@/components/grow-the-movement-campaign-panel";
+import { LeadershipTransitionCampaignPanel } from "@/components/leadership-transition-campaign-panel";
 import { MetricCard } from "@/components/metric-card";
+import { MovingMountainsCampaignPanel } from "@/components/moving-mountains-campaign-panel";
+import { PlanningGoalSettingCampaignPanel } from "@/components/planning-goal-setting-campaign-panel";
 import { RestrictedState } from "@/components/restricted-state";
+import { SltPromotionCampaignPanel } from "@/components/slt-promotion-campaign-panel";
+import { StartAChapterCampaignPanel } from "@/components/start-a-chapter-campaign-panel";
+import { getChapterEngagementCampaignPlan } from "@/services/chapter-engagement-campaign";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
   getCampaignIntegrationPosture,
@@ -11,6 +19,12 @@ import {
   getProofLibraryItemsForCampaign,
   getVisibleCampaignShellsForActor,
 } from "@/services/campaign-ops-service";
+import { getGrowTheMovementCampaignPlan } from "@/services/grow-the-movement-campaign";
+import { getLeadershipTransitionCampaignPlan } from "@/services/leadership-transition-campaign";
+import { getMovingMountainsCampaignPlan } from "@/services/moving-mountains-campaign";
+import { getPlanningGoalSettingCampaignPlan } from "@/services/planning-goal-setting-campaign";
+import { getSltPromotionCampaignPlan } from "@/services/slt-promotion-campaign";
+import { getStartAChapterCampaignPlan } from "@/services/start-a-chapter-campaign";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("campaignDetail");
@@ -38,6 +52,30 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
   const eventPlans = getEventPlansForCampaign(campaign.slug);
   const proofItems = getProofLibraryItemsForCampaign(campaign.slug);
   const integrationPosture = getCampaignIntegrationPosture(campaign.slug);
+  const planningGoalSettingPlan =
+    campaign.slug === "planning-goal-setting"
+      ? getPlanningGoalSettingCampaignPlan(actor)
+      : null;
+  const chapterEngagementPlan =
+    campaign.slug === "chapter-engagement"
+      ? getChapterEngagementCampaignPlan(actor)
+      : null;
+  const sltPromotionPlan =
+    campaign.slug === "slt-promotion" ? getSltPromotionCampaignPlan(actor) : null;
+  const movingMountainsPlan =
+    campaign.slug === "moving-mountains"
+      ? getMovingMountainsCampaignPlan(actor)
+      : null;
+  const leadershipTransitionPlan =
+    campaign.slug === "leadership-transition"
+      ? getLeadershipTransitionCampaignPlan(actor)
+      : null;
+  const growTheMovementPlan =
+    campaign.slug === "grow-the-movement"
+      ? getGrowTheMovementCampaignPlan(actor)
+      : null;
+  const startAChapterPlan =
+    campaign.slug === "start-a-chapter" ? getStartAChapterCampaignPlan(actor) : null;
 
   return (
     <AppShell actor={actor}>
@@ -123,6 +161,34 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
               <p className="mt-2 text-sm leading-6 text-white/68">{campaign.coachFocus}</p>
             </article>
           </section>
+
+          {planningGoalSettingPlan ? (
+            <PlanningGoalSettingCampaignPanel plan={planningGoalSettingPlan} />
+          ) : null}
+
+          {chapterEngagementPlan ? (
+            <ChapterEngagementCampaignPanel plan={chapterEngagementPlan} />
+          ) : null}
+
+          {sltPromotionPlan ? (
+            <SltPromotionCampaignPanel plan={sltPromotionPlan} />
+          ) : null}
+
+          {movingMountainsPlan ? (
+            <MovingMountainsCampaignPanel plan={movingMountainsPlan} />
+          ) : null}
+
+          {leadershipTransitionPlan ? (
+            <LeadershipTransitionCampaignPanel plan={leadershipTransitionPlan} />
+          ) : null}
+
+          {growTheMovementPlan ? (
+            <GrowTheMovementCampaignPanel plan={growTheMovementPlan} />
+          ) : null}
+
+          {startAChapterPlan ? (
+            <StartAChapterCampaignPanel plan={startAChapterPlan} />
+          ) : null}
 
           <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
             <h2 className="text-2xl font-semibold text-white">Primary KPIs</h2>

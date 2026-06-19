@@ -63,6 +63,14 @@ export type LeaderAssignmentVerificationPacket = {
   safetyStops: string[];
 };
 
+export type LeaderAssignmentRoleResponsibility = {
+  roleLabel: string;
+  responsibility: string;
+  route: string;
+  reviewPrompt: string;
+  safetyBoundary: string;
+};
+
 export type LeaderAssignmentPacket = {
   canReadPacket: boolean;
   title: string;
@@ -73,6 +81,7 @@ export type LeaderAssignmentPacket = {
   defaultInput: ChapterAssignmentInput;
   checks: LeaderAssignmentPacketCheck[];
   readbackEvidence: LeaderAssignmentReadbackItem[];
+  roleResponsibilities: LeaderAssignmentRoleResponsibility[];
   verificationPacket: LeaderAssignmentVerificationPacket;
   proofToCollect: string[];
   counts: {
@@ -117,6 +126,7 @@ export function getLeaderAssignmentPacket(
       defaultInput: defaultLeaderAssignmentInput,
       checks: [],
       readbackEvidence: [],
+      roleResponsibilities: [],
       verificationPacket: buildHiddenVerificationPacket(),
       proofToCollect: [],
       counts: emptyCounts(),
@@ -161,6 +171,7 @@ export function getLeaderAssignmentPacket(
     defaultInput: defaultLeaderAssignmentInput,
     checks,
     readbackEvidence,
+    roleResponsibilities: buildRoleResponsibilities(),
     verificationPacket,
     proofToCollect: [
       "Screenshot of `/admin/assignment-write` before the test showing the packet is ready.",
@@ -181,6 +192,38 @@ export function getLeaderAssignmentPacket(
       externalWritesExpected: 0,
     },
   };
+}
+
+function buildRoleResponsibilities(): LeaderAssignmentRoleResponsibility[] {
+  return [
+    {
+      roleLabel: "President / VP",
+      responsibility: "Approval guardrails",
+      route: "/rush-month/actions",
+      reviewPrompt:
+        "Confirm the assignment title, owner role, points, KPI, proof requirement, and role coverage are safe before the local write is tested.",
+      safetyBoundary:
+        "Does not create assignments, approve memberships, change roles, or send reminders from the packet.",
+    },
+    {
+      roleLabel: "E-Board Member",
+      responsibility: "Owner handoff",
+      route: "/rush-month/actions",
+      reviewPrompt:
+        "Confirm the owner handoff is concrete enough for event execution and proof follow-up before more work is assigned.",
+      safetyBoundary:
+        "Does not trigger Luma, n8n, SMS, email, HubSpot, warehouse, Power BI, or AI writes.",
+    },
+    {
+      roleLabel: "Action Committee Chair",
+      responsibility: "Committee coordination",
+      route: "/action-committees",
+      reviewPrompt:
+        "Confirm the action committee lane has an owner pool ready to receive the assignment without overloading one student.",
+      safetyBoundary:
+        "Does not move committee lanes, assign roles, or change member access.",
+    },
+  ];
 }
 
 function buildChecks(

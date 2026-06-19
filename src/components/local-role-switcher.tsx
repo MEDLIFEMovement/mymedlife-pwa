@@ -2,6 +2,10 @@ import {
   localActorOptions,
   type LocalActorContext,
 } from "@/services/local-actor-context";
+import {
+  clearLocalActorPreviewAction,
+  setLocalActorPreviewAction,
+} from "@/components/local-role-switcher/actions";
 
 type LocalRoleSwitcherProps = {
   actor: LocalActorContext;
@@ -9,6 +13,7 @@ type LocalRoleSwitcherProps = {
 
 export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
   const isUsingAuthSession = actor.identitySource === "local_auth_session";
+  const isUsingPreviewCookie = actor.identitySource === "local_preview_cookie";
 
   return (
     <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
@@ -19,25 +24,51 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
         <h2 className="mt-2 text-xl font-semibold text-white">
           {isUsingAuthSession
             ? "Signed-in local auth user controls the current role."
-            : "Set `MYMEDLIFE_LOCAL_ACTOR_EMAIL` to preview another fake role."}
+            : "Preview another local role without leaving the app."}
         </h2>
         <p className="mt-2 text-sm leading-6 text-white/62">
           {isUsingAuthSession
             ? "Sign out or sign in as another fake local seed user to preview a different role. Browser writes and production auth remain disabled."
-            : "This is a local-only debug panel. It does not create browser sessions, sign-ins, cookies, production users, or app writes."}
+            : "This is a local-only review panel. It stores one preview-role cookie for this browser so you can move through member, leader, coach, and admin surfaces without changing env vars. It does not create production users, auth sessions, or app writes."}
         </p>
       </div>
+
+      {!isUsingAuthSession ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+          <p className="text-sm leading-6 text-white/62">
+            {isUsingPreviewCookie
+              ? "Preview cookie is active for this browser."
+              : "No preview cookie is active. The current role comes from the configured local actor email."}
+          </p>
+          {isUsingPreviewCookie ? (
+            <form action={clearLocalActorPreviewAction}>
+              <button
+                type="submit"
+                className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition hover:border-[#5d8ff6]/30 hover:bg-white/[0.1]"
+              >
+                Use configured default
+              </button>
+            </form>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-4 grid gap-2 md:grid-cols-2">
         {localActorOptions.map((option) => {
           const isSelected = option.email === actor.selectedEmail.toLowerCase();
+          const scopeSummary = option.chapterNames.length > 0
+            ? option.chapterNames.join(", ")
+            : option.coachPortfolioChapterNames.length > 0
+              ? `Portfolio: ${option.coachPortfolioChapterNames.join(", ")}`
+              : "Admin and system-wide review scope";
+          const roleSummary = [...option.chapterRoles, ...option.staffRoles].join(", ");
 
           return (
             <article
               key={option.email}
               className={
                 isSelected
-                  ? "rounded-2xl border border-emerald-300/30 bg-emerald-300/10 p-3"
+                  ? "rounded-2xl border border-[#f7d05e]/30 bg-[#f7d05e]/10 p-3"
                   : "rounded-2xl border border-white/10 bg-black/20 p-3"
               }
             >
@@ -50,9 +81,35 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
                   {option.audience.replace("_", " ")}
                 </span>
               </div>
-              <p className="mt-3 rounded-xl bg-black/20 px-3 py-2 font-mono text-xs text-emerald-100/80">
-                MYMEDLIFE_LOCAL_ACTOR_EMAIL={option.email}
+              <p className="mt-3 text-sm font-medium text-white/74">
+                {roleSummary || "No approved role"}
               </p>
+              <p className="mt-1 text-xs leading-5 text-white/50">{scopeSummary}</p>
+              {isUsingAuthSession ? (
+                <p className="mt-3 rounded-xl bg-black/20 px-3 py-2 text-xs text-white/56">
+                  Local auth is active, so the browser session controls this route.
+                </p>
+              ) : (
+                <form action={setLocalActorPreviewAction} className="mt-3">
+                  <input type="hidden" name="selectedEmail" value={option.email} />
+                  <button
+                    type="submit"
+                    disabled={isSelected}
+                    className={[
+                      "w-full rounded-xl px-3 py-2 text-sm font-semibold transition",
+                      isSelected
+                        ? "cursor-default bg-[#f7d05e] text-[#08224c]"
+                        : "border border-white/12 bg-white/[0.06] text-white hover:border-[#5d8ff6]/30 hover:bg-white/[0.1]",
+                    ].join(" ")}
+                  >
+                    {isSelected
+                      ? isUsingPreviewCookie
+                        ? "Previewing this role"
+                        : "Using configured default"
+                      : "Preview this role"}
+                  </button>
+                </form>
+              )}
             </article>
           );
         })}

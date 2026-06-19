@@ -13,23 +13,26 @@ describe("role next actions", () => {
     expect(brief.ownerLabel).toBe("General Member");
     expect(brief.primaryHref).toBe("/rush-month/actions/member-push");
     expect(brief.primaryLabel).toBe("Open my action");
+    expect(brief.secondaryHref).toBe("/rush-month/leaderboard");
+    expect(brief.secondaryLabel).toBe("See my points");
     expect(brief.signals.map((signal) => signal.label)).toContain("Points earned");
     expect(brief.safetyNote).toContain("read-only");
   });
 
-  it("points a leader to follow-up when proof needs a decision", () => {
+  it("points President / VP to approval when proof needs a decision", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const brief = getRoleNextActionBrief(actor, data);
 
-    expect(brief.ownerLabel).toBe("Chapter Leader / E-Board");
+    expect(brief.ownerLabel).toBe("President / VP");
     expect(brief.primaryHref).toBe("/rush-month/review");
-    expect(brief.primaryLabel).toBe("Open follow-up queue");
-    expect(brief.signals.find((signal) => signal.label === "Needs follow-up")?.value).toBe(
+    expect(brief.primaryLabel).toBe("Open approval queue");
+    expect(brief.secondaryHref).toBe("/rush-month/dashboard");
+    expect(brief.signals.find((signal) => signal.label === "Needs decision")?.value).toBe(
       "2",
     );
   });
 
-  it("points a leader to assignment creation when no proof is waiting", () => {
+  it("points President / VP to role coverage when no proof is waiting", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const calmData: ReadOnlyAppData = {
       ...data,
@@ -40,9 +43,20 @@ describe("role next actions", () => {
     };
     const brief = getRoleNextActionBrief(actor, calmData);
 
+    expect(brief.primaryHref).toBe("/chapter/members");
+    expect(brief.primaryLabel).toBe("Check role coverage");
+    expect(brief.title).toContain("Check role coverage");
+  });
+
+  it("points E-Board to owner follow-up and events", () => {
+    const actor = getMockLocalActorContext("eboard.a@mymedlife.test");
+    const brief = getRoleNextActionBrief(actor, data);
+
+    expect(brief.ownerLabel).toBe("E-Board Member");
     expect(brief.primaryHref).toBe("/rush-month/actions");
-    expect(brief.primaryLabel).toBe("Open team actions");
-    expect(brief.title).toContain("Assign the next concrete");
+    expect(brief.primaryLabel).toBe("Open owner follow-up");
+    expect(brief.secondaryHref).toBe("/rush-month/events");
+    expect(brief.safetyNote).toContain("Luma writes");
   });
 
   it("points a coach to the coach readout and decision posture", () => {

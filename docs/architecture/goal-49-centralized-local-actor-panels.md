@@ -6,8 +6,10 @@ Goal 49 moves the existing local role context panels into the shared
 ## What Changed
 
 - `AppShell` now renders the local actor notice when an actor is provided.
-- `AppShell` now renders the local role switcher instructions when an actor is
-  provided.
+- `AppShell` now renders the local role switcher when an actor is provided.
+- The switcher can set a local-only preview-role cookie so reviewers can move
+  between fake member, leader, coach, and admin personas without changing env
+  vars or enabling auth.
 - Route files no longer import and render the same local actor panels by hand.
 
 ## Why
@@ -28,14 +30,16 @@ Centralizing them means:
 This goal does not:
 
 - enable live auth
-- create browser sessions, cookies, or production users
+- create production users
 - enable browser writes
 - save to Supabase from the browser
 - upload or publish proof
 - send HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI events
 - change RLS policies or production database configuration
 
-`MYMEDLIFE_LOCAL_ACTOR_EMAIL` remains a local-only fake role switch for review.
+`MYMEDLIFE_LOCAL_ACTOR_EMAIL` remains a valid local-only fake role switch for
+review, and the role switcher can now temporarily override it with a
+browser-local preview cookie.
 
 ## Reviewer Outcome
 

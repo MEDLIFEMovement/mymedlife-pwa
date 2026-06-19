@@ -39,7 +39,7 @@ export function getRoleNextActionBrief(
     case "chapter_member":
       return getMemberBrief(visibleAssignments, data);
     case "chapter_leader":
-      return getLeaderBrief(visibleAssignments, data);
+      return getLeaderBrief(actor, visibleAssignments, data);
     case "coach":
       return getCoachBrief(visibleAssignments, data);
     case "admin":
@@ -69,8 +69,8 @@ function getMemberBrief(
       ? `/rush-month/actions/${nextAssignment.id}`
       : "/rush-month/actions",
     primaryLabel: "Open my action",
-    secondaryHref: "/rush-month/dashboard",
-    secondaryLabel: "See my week",
+    secondaryHref: "/rush-month/leaderboard",
+    secondaryLabel: "See my points",
     safetyNote:
       "This is still read-only guidance. Submitting or saving proof remains disabled until approved.",
     signals: [
@@ -94,6 +94,7 @@ function getMemberBrief(
 }
 
 function getLeaderBrief(
+  actor: LocalActorContext,
   assignments: Assignment[],
   data: ReadOnlyAppData,
 ): RoleNextActionBrief {
@@ -103,6 +104,78 @@ function getLeaderBrief(
       assignment.status === "not_started" || assignment.status === "in_progress",
   ).length;
   const shouldReview = pendingFollowUp > 0;
+
+  if (hasChapterRole(actor, "President / VP")) {
+    return {
+      eyebrow: "President / VP priority",
+      title: shouldReview
+        ? "Approve the next proof and role decisions"
+        : "Check role coverage before opening more work",
+      summary: shouldReview
+        ? "Submitted or changes-requested proof needs a decision posture before points, KPIs, and coach readiness can move."
+        : "Use member and role coverage before approving the next Rush Month owner push.",
+      ownerLabel: "President / VP",
+      primaryHref: shouldReview ? "/rush-month/review" : "/chapter/members",
+      primaryLabel: shouldReview ? "Open approval queue" : "Check role coverage",
+      secondaryHref: "/rush-month/dashboard",
+      secondaryLabel: "Open leader dashboard",
+      safetyNote:
+        "President / VP approval posture is read-only here. Membership approvals, proof decisions, assignment saves, and role changes remain disabled.",
+      signals: [
+        {
+          label: "Needs decision",
+          value: `${pendingFollowUp}`,
+          note: "Submitted or changes-requested items visible to President / VP.",
+        },
+        {
+          label: "Active owners",
+          value: `${activeOwners}`,
+          note: "Use this before approving new assignments.",
+        },
+        {
+          label: "Chapter KPI",
+          value: data.kpiSummary.coachDecision,
+          note: "Local read-only campaign posture.",
+        },
+      ],
+    };
+  }
+
+  if (hasChapterRole(actor, "E-Board Member")) {
+    return {
+      eyebrow: "E-Board priority",
+      title: activeOwners > 0
+        ? "Move the owners who are still stuck"
+        : "Prepare the next action committee push",
+      summary: activeOwners > 0
+        ? "Not-started and in-progress actions need concrete owner follow-up before the next event."
+        : "Keep action committees moving by naming the event goal, owner, due date, and proof reminder.",
+      ownerLabel: "E-Board Member",
+      primaryHref: "/rush-month/actions",
+      primaryLabel: "Open owner follow-up",
+      secondaryHref: "/rush-month/events",
+      secondaryLabel: "Check events",
+      safetyNote:
+        "E-Board execution posture is read-only here. Assignment saves, reminders, Luma writes, proof uploads, and external sends remain disabled.",
+      signals: [
+        {
+          label: "Active owners",
+          value: `${activeOwners}`,
+          note: "Owners who need follow-up from E-Board.",
+        },
+        {
+          label: "Proof follow-up",
+          value: `${pendingFollowUp}`,
+          note: "Items that need clearer proof, testimonial context, or HQ review.",
+        },
+        {
+          label: "Events linked",
+          value: `${data.kpiSummary.eventsLinked}`,
+          note: "Mock Luma posture only.",
+        },
+      ],
+    };
+  }
 
   return {
     eyebrow: "Leader operating priority",
@@ -137,6 +210,10 @@ function getLeaderBrief(
       },
     ],
   };
+}
+
+function hasChapterRole(actor: LocalActorContext, role: string): boolean {
+  return actor.chapterRoles.includes(role);
 }
 
 function getCoachBrief(

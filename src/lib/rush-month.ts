@@ -55,6 +55,8 @@ export function statusLabel(status: DisplayStatus): string {
       return "Approved";
     case "changes_requested":
       return "Needs changes";
+    case "rejected":
+      return "Rejected";
   }
 }
 
@@ -68,6 +70,7 @@ export function statusClassName(status: DisplayStatus): string {
     case "in_progress":
       return "border-amber-300/30 bg-amber-300/15 text-amber-100";
     case "changes_requested":
+    case "rejected":
       return "border-rose-300/30 bg-rose-300/15 text-rose-100";
     case "not_started":
       return "border-white/10 bg-white/10 text-white/70";

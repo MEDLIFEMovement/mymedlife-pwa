@@ -2,9 +2,11 @@ import {
   assignments as mockAssignments,
   evidenceItems as mockEvidenceItems,
   integrationEvents,
+  kpiEventRows as mockKpiEventRows,
   mockCampaign,
   mockChapter,
   outboxItems,
+  pointsEventRows as mockPointsEventRows,
 } from "@/data/mock-rush-month";
 import {
   createSupabaseReadonlyClient,
@@ -12,9 +14,9 @@ import {
   type SupabaseReadonlyClient,
 } from "@/lib/supabase-readonly";
 import {
-  calculateKpiSummary,
-  calculatePointsSummary,
-} from "@/services/rush-month-service";
+  buildPointsKpiLedger,
+  type MetricsPosture,
+} from "@/services/points-kpi-ledger";
 import type {
   Assignment,
   Campaign,
@@ -22,8 +24,10 @@ import type {
   ChapterRole,
   EvidenceItem,
   IntegrationEvent,
+  KPIEvent,
   KpiSummary,
   OutboxItem,
+  PointsEvent,
   PointsSummary,
 } from "@/shared/types/domain";
 import type {
@@ -41,9 +45,11 @@ import type {
   IntegrationDestination,
   IntegrationEventRow,
   IntegrationStatus,
+  KpiEventRow,
   OutboxStatus,
   PhaseReadinessReviewRow,
   PhaseRow,
+  PointsEventRow,
   RiskFlagRow,
 } from "@/shared/types/persistence";
 
@@ -69,11 +75,16 @@ export type ReadOnlyAppData = {
   riskFlags: RiskFlagRow[];
   closeouts: CampaignCloseoutRow[];
   evidenceItems: EvidenceItem[];
+  pointsEvents: PointsEvent[];
+  kpiEvents: KPIEvent[];
   pointsSummary: PointsSummary;
   kpiSummary: KpiSummary;
+  metricsPosture: MetricsPosture;
   integrationEvents: IntegrationEvent[];
   outboxItems: OutboxItem[];
   eventRows: EventRow[];
+  pointsEventRows: PointsEventRow[];
+  kpiEventRows: KpiEventRow[];
   integrationEventRows: IntegrationEventRow[];
   automationOutboxRows: AutomationOutboxRow[];
   auditLogs: AuditLogRow[];
@@ -107,7 +118,7 @@ export async function getSupabaseReadOnlyAppData(
 ): Promise<ReadOnlyAppData> {
   const snapshot = await readLocalDataSnapshot(client);
   const chapter =
-    snapshot.chapters.find((item) => item.name.includes("Northview")) ??
+    snapshot.chapters.find((item) => item.status === "active") ??
     snapshot.chapters[0];
 
   if (!chapter) {
@@ -150,6 +161,14 @@ export async function getSupabaseReadOnlyAppData(
     return item.chapter_id === chapter.id ||
       (item.assignment_id !== null && assignmentIds.has(item.assignment_id));
   });
+  const pointsEventRows = snapshot.pointsEventRows.filter((item) => {
+    return item.chapter_id === chapter.id ||
+      (item.assignment_id !== null && assignmentIds.has(item.assignment_id));
+  });
+  const kpiEventRows = snapshot.kpiEventRows.filter((item) => {
+    return item.chapter_id === chapter.id ||
+      (item.assignment_id !== null && assignmentIds.has(item.assignment_id));
+  });
   const eventIds = new Set(eventRows.map((item) => item.id));
   const integrationEventRows = snapshot.integrationEventRows.filter((item) => {
     return item.chapter_id === chapter.id ||
@@ -169,6 +188,12 @@ export async function getSupabaseReadOnlyAppData(
   });
   const mappedIntegrationEvents = integrationEventRows.map(toDomainIntegrationEvent);
   const mappedOutboxItems = automationOutboxRows.map(toDomainOutboxItem);
+  const ledger = buildPointsKpiLedger({
+    assignments,
+    integrationEvents: mappedIntegrationEvents,
+    pointsEventRows,
+    kpiEventRows,
+  });
 
   return {
     source: {
@@ -187,11 +212,16 @@ export async function getSupabaseReadOnlyAppData(
     riskFlags,
     closeouts,
     evidenceItems,
-    pointsSummary: calculatePointsSummary(assignments),
-    kpiSummary: calculateKpiSummary(assignments, mappedIntegrationEvents),
+    pointsEvents: ledger.pointsEvents,
+    kpiEvents: ledger.kpiEvents,
+    pointsSummary: ledger.pointsSummary,
+    kpiSummary: ledger.kpiSummary,
+    metricsPosture: ledger.posture,
     integrationEvents: mappedIntegrationEvents,
     outboxItems: mappedOutboxItems,
     eventRows,
+    pointsEventRows,
+    kpiEventRows,
     integrationEventRows,
     automationOutboxRows,
     auditLogs,
@@ -212,6 +242,8 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     closeouts,
     evidenceItems,
     eventRows,
+    pointsEventRows,
+    kpiEventRows,
     integrationEventRows,
     automationOutboxRows,
     auditLogs,
@@ -228,6 +260,8 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     readCloseouts(client),
     readEvidenceItems(client),
     readEvents(client),
+    readPointsEvents(client),
+    readKpiEvents(client),
     readIntegrationEvents(client),
     readAutomationOutbox(client),
     readAuditLogs(client),
@@ -246,6 +280,8 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     closeouts,
     evidenceItems,
     eventRows,
+    pointsEventRows,
+    kpiEventRows,
     integrationEventRows,
     automationOutboxRows,
     auditLogs,
@@ -320,6 +356,18 @@ export function readEvents(client: SupabaseReadonlyClient) {
   });
 }
 
+export function readPointsEvents(client: SupabaseReadonlyClient) {
+  return client.selectRows<PointsEventRow>("points_events", {
+    query: { order: "created_at.desc" },
+  });
+}
+
+export function readKpiEvents(client: SupabaseReadonlyClient) {
+  return client.selectRows<KpiEventRow>("kpi_events", {
+    query: { order: "created_at.desc" },
+  });
+}
+
 export function readIntegrationEvents(client: SupabaseReadonlyClient) {
   return client.selectRows<IntegrationEventRow>("integration_events", {
     query: { order: "created_at.desc" },
@@ -342,6 +390,13 @@ export function getMockReadOnlyAppData(
   message: string,
   status: DataSourceStatus = "mock_fallback",
 ): ReadOnlyAppData {
+  const ledger = buildPointsKpiLedger({
+    assignments: mockAssignments,
+    integrationEvents,
+    pointsEventRows: mockPointsEventRows,
+    kpiEventRows: mockKpiEventRows,
+  });
+
   return {
     source: {
       mode: "mock",
@@ -359,11 +414,16 @@ export function getMockReadOnlyAppData(
     riskFlags: [],
     closeouts: [],
     evidenceItems: mockEvidenceItems,
-    pointsSummary: calculatePointsSummary(mockAssignments),
-    kpiSummary: calculateKpiSummary(mockAssignments, integrationEvents),
+    pointsEvents: ledger.pointsEvents,
+    kpiEvents: ledger.kpiEvents,
+    pointsSummary: ledger.pointsSummary,
+    kpiSummary: ledger.kpiSummary,
+    metricsPosture: ledger.posture,
     integrationEvents,
     outboxItems,
     eventRows: [],
+    pointsEventRows: mockPointsEventRows,
+    kpiEventRows: mockKpiEventRows,
     integrationEventRows: [],
     automationOutboxRows: [],
     auditLogs: [],
@@ -412,7 +472,7 @@ function toDomainEvidenceItem(row: EvidenceItemRow): EvidenceItem {
     submittedBy: "Local Supabase member",
     evidenceType: row.evidence_type,
     summary: row.summary,
-    status: row.status === "rejected" ? "changes_requested" : row.status,
+    status: row.status,
   };
 }
 

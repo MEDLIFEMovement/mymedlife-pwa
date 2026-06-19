@@ -30,7 +30,7 @@ describe("auth session service", () => {
           user: {
             id: "user-1",
             email: "member.a@mymedlife.test",
-            user_metadata: { name: "Maya Member" },
+            user_metadata: { name: "Sofia Alvarez" },
           },
         },
         error: null,
@@ -42,7 +42,7 @@ describe("auth session service", () => {
       user: {
         id: "user-1",
         email: "member.a@mymedlife.test",
-        displayName: "Maya Member",
+        displayName: "Sofia Alvarez",
       },
     });
   });

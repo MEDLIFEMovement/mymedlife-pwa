@@ -117,6 +117,28 @@ function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
           </p>
         </div>
 
+        <div className="rounded-2xl border border-sky-300/20 bg-sky-300/10 p-3">
+          <p className="text-sm font-semibold text-white">Role responsibility</p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/70">
+            {operation.roleResponsibility.responsibility}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-white/62">
+            {operation.roleResponsibility.reviewPrompt}
+          </p>
+          <p className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/52">
+            {operation.roleResponsibility.safetyBoundary}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <p className="text-sm font-semibold text-white">Responsible role</p>
+          <p className="mt-2 text-sm leading-6 text-white/64">
+            {operation.roleResponsibility.roleLabel}
+          </p>
+        </div>
+
         <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>

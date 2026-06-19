@@ -15,6 +15,14 @@ describe("rush month dashboard service", () => {
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
     expect(dashboard.canReadChapterTruth).toBe(true);
+    expect(dashboard.phaseSummary.label).toBe("Week 1: Invite and prove the first push");
+    expect(dashboard.phaseSummary.status).toBe("Invite and prove the first push");
+    expect(dashboard.whyItMatters).toContain("Why it matters:");
+    expect(dashboard.actionGroups.map((group) => group.label)).toEqual([
+      "Invite push",
+      "Rush event",
+      "Proof and points",
+    ]);
     expect(dashboard.nextStep.href).toBe("/rush-month/actions/member-push");
     expect(dashboard.visibleAssignments).toHaveLength(1);
     expect(dashboard.eventPlans).toHaveLength(2);
@@ -23,15 +31,37 @@ describe("rush month dashboard service", () => {
     expect(dashboard.metrics.map((metric) => metric.label)).toContain("Points earned");
   });
 
-  it("gives leaders team actions and proof follow-up as the next step", () => {
+  it("gives President / VP approval and role-coverage focus", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
     expect(dashboard.nextStep.href).toBe("/rush-month/review");
+    expect(dashboard.nextStep.ctaLabel).toBe("Open approval queue");
+    expect(dashboard.actionGroups.map((group) => group.href)).toEqual([
+      "/rush-month/actions",
+      "/rush-month/review",
+      "/rush-month/events",
+    ]);
+    expect(dashboard.roleFocus?.roleLabel).toBe("President / VP");
+    expect(dashboard.roleFocus?.primaryHref).toBe("/rush-month/review");
+    expect(dashboard.roleFocus?.secondaryHref).toBe("/chapter/members");
     expect(dashboard.visibleAssignments.some((assignment) => assignment.lane === "Leader")).toBe(
       true,
     );
-    expect(dashboard.alerts.join(" ")).toContain("action committee");
+    expect(dashboard.alerts.join(" ")).toContain("role coverage");
+  });
+
+  it("gives E-Board owner follow-up and event execution focus", () => {
+    const actor = getMockLocalActorContext("eboard.a@mymedlife.test");
+    const dashboard = getRushMonthDashboardForActor(actor, data);
+
+    expect(dashboard.nextStep.href).toBe("/rush-month/actions");
+    expect(dashboard.nextStep.ctaLabel).toBe("Open team actions");
+    expect(dashboard.roleFocus?.roleLabel).toBe("E-Board Member");
+    expect(dashboard.roleFocus?.primaryHref).toBe("/rush-month/actions");
+    expect(dashboard.roleFocus?.secondaryHref).toBe("/rush-month/events");
+    expect(dashboard.roleFocus?.safetyNote).toContain("Luma writes");
+    expect(dashboard.alerts.join(" ")).toContain("execution follow-up");
   });
 
   it("gives coaches a coach readout next step and hides integration outbox rows", () => {

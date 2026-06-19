@@ -2,6 +2,7 @@ import type { ActorAudience } from "@/services/local-actor-context";
 import type { WriteOperation } from "@/services/write-readiness";
 
 type FutureTable =
+  | "memberships"
   | "phases"
   | "phase_readiness_reviews"
   | "assignments"
@@ -9,7 +10,9 @@ type FutureTable =
   | "approvals"
   | "events"
   | "integration_events"
+  | "kpi_events"
   | "automation_outbox"
+  | "points_events"
   | "audit_logs";
 
 export type WritePlanOperation = {
@@ -159,6 +162,65 @@ export const writePlanOperations = [
       "coach_cannot_record_hq_sharing_decision",
       "ds_admin_cannot_record_hq_sharing_decision",
       "hq_decision_creates_disabled_outbox_row",
+    ],
+    stillDisabled: true,
+  },
+  {
+    key: "leader_proof_decision",
+    label: "Leader proof decision",
+    plainEnglishOutcome:
+      "A chapter leader approves, requests changes, or rejects submitted proof for chapter completion and local points/KPI movement.",
+    transactionBoundary:
+      "Update assignment and proof status, create the approval decision, create points and KPI rows only for approval, record the internal event, record the integration event, create one disabled outbox row, and record one audit log entry together.",
+    futureTables: [
+      "assignments",
+      "evidence_items",
+      "approvals",
+      "points_events",
+      "kpi_events",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ],
+    allowedActors: ["chapter_leader", "super_admin"],
+    blockedActors: ["chapter_member", "coach", "admin", "ds_admin"],
+    requiredTests: [
+      "chapter_leader_can_record_leader_proof_decision",
+      "super_admin_can_record_leader_proof_decision",
+      "member_cannot_record_leader_proof_decision",
+      "coach_cannot_record_leader_proof_decision",
+      "admin_cannot_record_routine_leader_proof_decision",
+      "ds_admin_cannot_record_leader_proof_decision",
+      "leader_proof_approval_creates_points_kpi_and_disabled_outbox",
+    ],
+    stillDisabled: true,
+  },
+  {
+    key: "membership_approved",
+    label: "Membership approved",
+    plainEnglishOutcome:
+      "A chapter leader or HQ admin approves a visible join request into one chapter-scoped membership role.",
+    transactionBoundary:
+      "Create or update one membership row, record one internal event, record one integration event, create one disabled outbox row, and record one audit log entry together.",
+    futureTables: [
+      "memberships",
+      "events",
+      "integration_events",
+      "automation_outbox",
+      "audit_logs",
+    ],
+    allowedActors: ["chapter_leader", "admin", "super_admin"],
+    blockedActors: ["chapter_member", "coach", "ds_admin"],
+    requiredTests: [
+      "chapter_leader_can_approve_visible_join_request",
+      "admin_can_approve_chapter_membership_with_audit_reason",
+      "super_admin_can_approve_chapter_membership",
+      "member_cannot_approve_membership",
+      "coach_cannot_approve_membership",
+      "ds_admin_cannot_approve_membership",
+      "duplicate_membership_is_rejected",
+      "membership_approval_creates_disabled_outbox_row",
     ],
     stillDisabled: true,
   },

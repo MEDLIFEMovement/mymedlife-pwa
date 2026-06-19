@@ -12,16 +12,18 @@ describe("write sequence planner", () => {
 
     expect(planner.canReadPlanner).toBe(true);
     expect(planner.title).toBe("Admin write sequence planner");
-    expect(planner.counts.operations).toBe(5);
-    expect(planner.counts.localBrowserWriteCandidates).toBe(5);
+    expect(planner.counts.operations).toBe(7);
+    expect(planner.counts.localBrowserWriteCandidates).toBe(7);
     expect(planner.counts.externalWritesExpected).toBe(0);
     expect(planner.nextRecommendedOperation).toBe("action_started");
     expect(planner.operations.map((operation) => operation.key)).toEqual([
       "action_started",
       "evidence_submitted",
+      "leader_proof_decision_logged",
       "hq_sharing_decision_logged",
       "action_assigned",
       "coach_decision_logged",
+      "membership_approved",
     ]);
     expect(
       planner.operations.find((operation) => operation.key === "coach_decision_logged"),
@@ -43,8 +45,17 @@ describe("write sequence planner", () => {
 
     expect(actionStart?.promotionOrder).toBe(1);
     expect(actionStart?.studentJourneyOrder).toBe(2);
-    expect(leaderAssignment?.promotionOrder).toBe(4);
+    expect(leaderAssignment?.promotionOrder).toBe(5);
+    expect(
+      planner.operations.find(
+        (operation) => operation.key === "leader_proof_decision_logged",
+      )?.promotionOrder,
+    ).toBe(3);
     expect(leaderAssignment?.studentJourneyOrder).toBe(1);
+    expect(
+      planner.operations.find((operation) => operation.key === "membership_approved")
+        ?.promotionOrder,
+    ).toBe(7);
     expect(planner.promotionSummary).toContain("seed assignments already exist");
   });
 
@@ -72,6 +83,12 @@ describe("write sequence planner", () => {
         externalWritesExpected: 0,
       },
       {
+        key: "leader_proof_decision_logged",
+        packetLabel: "Leader proof decision server action",
+        packetRoute: "/rush-month/review",
+        externalWritesExpected: 0,
+      },
+      {
         key: "hq_sharing_decision_logged",
         packetLabel: "HQ proof decision packet",
         packetRoute: "/admin/hq-proof-write",
@@ -89,12 +106,44 @@ describe("write sequence planner", () => {
         packetRoute: "/admin/coach-write",
         externalWritesExpected: 0,
       },
+      {
+        key: "membership_approved",
+        packetLabel: "Membership approval readiness packet",
+        packetRoute: "/chapter/members",
+        externalWritesExpected: 0,
+      },
     ]);
     expect(
       planner.operations.every((operation) =>
         operation.packetStatus.plainEnglish.length > 20,
       ),
     ).toBe(true);
+  });
+
+  it("adds role responsibility to every guarded write step", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const planner = getWriteSequencePlanner(actor, mockData);
+    const assignment = planner.operations.find(
+      (operation) => operation.key === "action_assigned",
+    );
+
+    expect(
+      planner.operations.every(
+        (operation) =>
+          operation.roleResponsibility.roleLabel.length > 0 &&
+          operation.roleResponsibility.reviewPrompt.length > 20 &&
+          operation.roleResponsibility.safetyBoundary.length > 20,
+      ),
+    ).toBe(true);
+    expect(assignment?.roleResponsibility).toEqual(
+      expect.objectContaining({
+        roleLabel: "President / VP + E-Board + Action Committee Chair",
+        responsibility: "Approve, hand off, and coordinate assignment work",
+      }),
+    );
+    expect(assignment?.roleResponsibility.reviewPrompt).toContain(
+      "President / VP approval guardrails",
+    );
   });
 
   it("keeps DS Admin as a safety reviewer without making DS Admin an operator", () => {

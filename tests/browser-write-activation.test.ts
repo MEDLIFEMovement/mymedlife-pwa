@@ -6,6 +6,7 @@ import {
   getBlockingActivationChecks,
   getCoachDecisionBrowserWriteGate,
   getHqSharingDecisionBrowserWriteGate,
+  getLeaderProofDecisionBrowserWriteGate,
   getPassedActivationChecks,
   getProofSubmissionBrowserWriteGate,
 } from "@/services/browser-write-activation";
@@ -127,6 +128,51 @@ describe("browser write activation gate", () => {
     ]);
     expect(getBlockingActivationChecks(gate).map((check) => check.key)).toEqual([
       "evidence_uuid",
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
+  it("keeps leader proof decision browser control disabled for an allowed chapter leader", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const assignment = {
+      ...requireAssignment("assign-eboard"),
+      id: "00000000-0000-4000-8000-000000000101",
+    };
+    const evidence = {
+      ...evidenceItems[0],
+      id: "00000000-0000-4000-8000-000000000201",
+      assignmentId: assignment.id,
+    };
+    const gate = getLeaderProofDecisionBrowserWriteGate(
+      actor,
+      assignment,
+      evidence,
+      {
+        decision: "approve",
+        note: "This proof has enough context to count for the action.",
+      },
+    );
+
+    expect(gate.operation).toBe("leader_proof_decision");
+    expect(gate.localFunction).toBe("app.record_leader_proof_decision");
+    expect(gate.functionSignature).toContain("app.record_leader_proof_decision");
+    expect(gate.canRenderEnabledControl).toBe(false);
+    expect(gate.status).toBe("blocked_until_approval");
+    expect(gate.preview.success).toBe(true);
+    expect(getPassedActivationChecks(gate).map((check) => check.key)).toEqual([
+      "actor_can_record_leader_proof_decision",
+      "actor_allowed_by_write_plan",
+      "local_database_function_exists",
+      "rls_tests_exist",
+      "evidence_uuid",
+      "proof_ready_for_leader_decision",
+      "note_long_enough",
+      "member_nudges_disabled",
+      "public_sharing_disabled",
+      "external_writes_disabled",
+    ]);
+    expect(getBlockingActivationChecks(gate).map((check) => check.key)).toEqual([
       "live_auth_approved",
       "browser_write_approved",
     ]);
@@ -302,6 +348,42 @@ describe("browser write activation gate", () => {
     expect(getBlockingActivationChecks(gate)).toEqual([]);
   });
 
+  it("can mark leader proof decision ready only for local auth and explicit approval flags", () => {
+    const actor = getMockLocalActorContext(
+      "leader.a@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const assignment = {
+      ...requireAssignment("assign-eboard"),
+      id: "00000000-0000-4000-8000-000000000101",
+    };
+    const evidence = {
+      ...evidenceItems[0],
+      id: "00000000-0000-4000-8000-000000000201",
+      assignmentId: assignment.id,
+    };
+    const gate = getLeaderProofDecisionBrowserWriteGate(
+      actor,
+      assignment,
+      evidence,
+      {
+        decision: "approve",
+        note: "This proof has enough context to count for the action.",
+      },
+      {
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_LEADER_PROOF_DECISION_WRITE: "true",
+      },
+    );
+
+    expect(gate.status).toBe("ready_for_local_write");
+    expect(gate.canRenderEnabledControl).toBe(true);
+    expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
   it("can mark coach decision ready only for local auth and explicit approval flags", () => {
     const actor = getMockLocalActorContext(
       "coach@mymedlife.test",
@@ -395,6 +477,34 @@ describe("browser write activation gate", () => {
       }),
     ).toEqual([
       "actor_can_make_hq_sharing_decision",
+      "actor_allowed_by_write_plan",
+      "evidence_uuid",
+      "live_auth_approved",
+      "browser_write_approved",
+    ]);
+  });
+
+  it("blocks Admin from leader proof decision browser writes", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const assignment = requireAssignment("assign-eboard");
+    const evidence = evidenceItems[0];
+    const gate = getLeaderProofDecisionBrowserWriteGate(
+      actor,
+      assignment,
+      evidence,
+      {
+        decision: "approve",
+        note: "Admin should not own chapter proof completion truth.",
+      },
+    );
+
+    expect(gate.preview.success).toBe(false);
+    expect(
+      getBlockingActivationChecks(gate).map((check) => {
+        return check.key;
+      }),
+    ).toEqual([
+      "actor_can_record_leader_proof_decision",
       "actor_allowed_by_write_plan",
       "evidence_uuid",
       "live_auth_approved",

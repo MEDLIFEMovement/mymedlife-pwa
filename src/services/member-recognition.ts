@@ -63,22 +63,60 @@ export function getMemberRecognitionSummary(
     impacts: [
       {
         label: "Chapter points",
-        value: `${data.pointsSummary.earned}`,
-        note: "Mock read-only points earned from approved actions.",
+        value:
+          data.metricsPosture.points === "unknown"
+            ? "Unknown"
+            : `${data.pointsSummary.earned}`,
+        note: getPointsImpactNote(data),
       },
       {
         label: "Invite pushes",
-        value: `${data.kpiSummary.invitePushes}`,
-        note: "Chapter-level impact members can understand.",
+        value:
+          data.metricsPosture.kpis === "unknown"
+            ? "Unknown"
+            : `${data.kpiSummary.invitePushes}`,
+        note: getInviteImpactNote(data),
       },
       {
         label: "Events linked",
-        value: `${data.kpiSummary.eventsLinked}`,
-        note: "Mock Luma/event posture only.",
+        value:
+          data.integrationEvents.length === 0
+            ? "Unknown"
+            : `${data.kpiSummary.eventsLinked}`,
+        note:
+          data.integrationEvents.length === 0
+            ? "No Luma or event-link signal is visible yet."
+            : "Mock Luma/event posture only.",
       },
     ],
     pointsLedgerPosture: "mock_read_only",
   };
+}
+
+function getPointsImpactNote(data: ReadOnlyAppData) {
+  switch (data.metricsPosture.points) {
+    case "points_events":
+      return "Backed by read-only points event rows.";
+    case "assignment_preview":
+      return "Previewed from approved actions until live points rows are promoted.";
+    case "unknown":
+      return "No approved points event or preview is visible yet.";
+    case "kpi_events":
+      return "Points are still waiting for points event rows.";
+  }
+}
+
+function getInviteImpactNote(data: ReadOnlyAppData) {
+  switch (data.metricsPosture.kpis) {
+    case "kpi_events":
+      return "Backed by read-only KPI event rows.";
+    case "assignment_preview":
+      return "Previewed from assignment and integration posture until live KPI rows are promoted.";
+    case "unknown":
+      return "No KPI event or preview signal is visible yet.";
+    case "points_events":
+      return "KPI movement is still waiting for KPI event rows.";
+  }
 }
 
 function sortLeaderboard(leaderboard: LeaderboardRow[]): LeaderboardRow[] {

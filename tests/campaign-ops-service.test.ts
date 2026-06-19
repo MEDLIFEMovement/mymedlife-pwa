@@ -30,8 +30,19 @@ describe("campaign ops service", () => {
     expect(getVisibleCampaignShellsForActor(member).map((item) => item.slug)).toEqual([
       "rush-month",
     ]);
-    expect(getVisibleCampaignShellsForActor(leader).map((item) => item.status)).not.toContain(
-      "template",
+    expect(getVisibleCampaignShellsForActor(leader).map((item) => item.slug)).toEqual(
+      expect.arrayContaining([
+        "planning-goal-setting",
+        "chapter-engagement",
+        "slt-promotion",
+        "moving-mountains",
+        "leadership-transition",
+        "grow-the-movement",
+        "start-a-chapter",
+      ]),
+    );
+    expect(getVisibleCampaignShellsForActor(leader).map((item) => item.slug)).not.toContain(
+      "med-talk-series",
     );
     expect(getVisibleCampaignShellsForActor(dsAdmin)).toEqual([]);
   });

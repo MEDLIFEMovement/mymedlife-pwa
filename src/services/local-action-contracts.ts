@@ -9,7 +9,10 @@ import type {
   EvidenceItem,
   IntegrationEvent,
   KpiSummary,
+  KPIEvent,
+  PointsEvent,
 } from "@/shared/types/domain";
+import type { DatabaseRoleKey } from "@/shared/types/persistence";
 
 export type LocalContractResult<TData> =
   | { success: true; data: TData }
@@ -44,10 +47,38 @@ export type LocalHqSharingDecision = {
   auditLog: AuditLog;
 };
 
+export type LocalLeaderProofDecision = {
+  assignment: Assignment;
+  evidenceItem: EvidenceItem;
+  approval: Approval;
+  pointsEvent: PointsEvent | null;
+  kpiEvent: KPIEvent | null;
+  integrationEvent: IntegrationEvent;
+  automationOutbox: AutomationOutbox;
+  auditLog: AuditLog;
+};
+
 export type LocalCoachDecision = {
   decision: KpiSummary["coachDecision"];
   readinessStatus: "ready" | "validated" | "blocked";
   coachValidationStatus: "pending" | "validated" | "blocked";
+  integrationEvent: IntegrationEvent;
+  automationOutbox: AutomationOutbox;
+  auditLog: AuditLog;
+};
+
+export type LocalMembershipApproval = {
+  membership: {
+    id: string;
+    userId: string;
+    chapterId: string;
+    roles: ChapterRole[];
+    status: "approved";
+    committeeLane: string;
+    requestedRoleKey: DatabaseRoleKey;
+    approvedBy: string;
+    approvalReason: string;
+  };
   integrationEvent: IntegrationEvent;
   automationOutbox: AutomationOutbox;
   auditLog: AuditLog;
@@ -73,10 +104,24 @@ export type HqSharingDecisionInput = {
   note: string;
 };
 
+export type LeaderProofDecisionInput = {
+  decision: "approve" | "request_changes" | "reject";
+  note: string;
+};
+
 export type CoachDecisionInput = {
   decision: KpiSummary["coachDecision"];
   note: string;
   blockerSummary?: string;
+};
+
+export type ChapterMembershipApprovalInput = {
+  chapterId: string;
+  joinRequestId: string;
+  applicantEmail: string;
+  requestedRoleKey: DatabaseRoleKey;
+  requestedCommitteeLane: string;
+  auditReason: string;
 };
 
 const localOccurredAt = "local-mock-time";
@@ -100,9 +145,21 @@ export function canMakeHqSharingDecision(actor: LocalActorContext): boolean {
   return actor.audience === "admin" || actor.audience === "super_admin";
 }
 
+export function canRecordLeaderProofDecision(actor: LocalActorContext): boolean {
+  return actor.audience === "chapter_leader" || actor.audience === "super_admin";
+}
+
 export function canLogCoachDecision(actor: LocalActorContext): boolean {
   return (
     actor.audience === "coach" ||
+    actor.audience === "admin" ||
+    actor.audience === "super_admin"
+  );
+}
+
+export function canApproveChapterMembership(actor: LocalActorContext): boolean {
+  return (
+    actor.audience === "chapter_leader" ||
     actor.audience === "admin" ||
     actor.audience === "super_admin"
   );
@@ -359,6 +416,124 @@ export function createHqSharingDecisionMock(
   };
 }
 
+export function createLeaderProofDecisionMock(
+  actor: LocalActorContext,
+  assignment: Assignment,
+  evidenceItem: EvidenceItem,
+  input: LeaderProofDecisionInput,
+): LocalContractResult<LocalLeaderProofDecision> {
+  if (!canRecordLeaderProofDecision(actor)) {
+    return {
+      success: false,
+      error:
+        "Only chapter leaders or Super Admin can record chapter proof decisions in the local contract.",
+    };
+  }
+
+  if (assignment.status !== "submitted" || evidenceItem.status !== "pending_review") {
+    return {
+      success: false,
+      error:
+        "Leader proof decisions require a submitted assignment and proof pending review.",
+    };
+  }
+
+  const normalizedNote = input.note.trim();
+
+  if (normalizedNote.length < 12) {
+    return {
+      success: false,
+      error: "Leader proof decisions need a short plain-English note.",
+    };
+  }
+
+  const approved = input.decision === "approve";
+  const nextAssignmentStatus: Assignment["status"] = approved
+    ? "approved"
+    : "changes_requested";
+  const nextEvidenceStatus: EvidenceItem["status"] =
+    input.decision === "approve"
+      ? "approved"
+      : input.decision === "reject"
+        ? "rejected"
+        : "changes_requested";
+  const decision: Approval["decision"] =
+    input.decision === "approve"
+      ? "approved"
+      : input.decision === "reject"
+        ? "rejected"
+        : "changes_requested";
+  const eventType =
+    input.decision === "approve"
+      ? "evidence_approved"
+      : input.decision === "reject"
+        ? "evidence_rejected"
+        : "evidence_changes_requested";
+  const approval: Approval = {
+    id: `leader-approval-${evidenceItem.id}-${slugify(actor.user.id)}`,
+    evidenceItemId: evidenceItem.id,
+    reviewerRole: actorToReviewerRole(actor),
+    decision,
+    note: normalizedNote,
+  };
+  const integrationEvent = createLocalIntegrationEvent({
+    targetId: approval.id,
+    eventType,
+    title: "Leader proof decision previewed locally",
+    destination: "internal",
+    detail:
+      "A local leader proof decision was shaped for future Supabase persistence. No member nudge, public sharing, or external workflow happened.",
+  });
+  const pointsEvent: PointsEvent | null = approved
+    ? {
+        id: `points-${evidenceItem.id}-${slugify(actor.user.id)}`,
+        assignmentId: assignment.id,
+        userId: evidenceItem.submittedBy,
+        points: assignment.points,
+        reason: "Leader approved chapter proof for completion.",
+      }
+    : null;
+  const kpiEvent: KPIEvent | null = approved
+    ? {
+        id: `kpi-${evidenceItem.id}-${slugify(actor.user.id)}`,
+        assignmentId: assignment.id,
+        metric: assignment.kpi,
+        value: 1,
+      }
+    : null;
+
+  return {
+    success: true,
+    data: {
+      assignment: {
+        ...assignment,
+        status: nextAssignmentStatus,
+      },
+      evidenceItem: {
+        ...evidenceItem,
+        status: nextEvidenceStatus,
+      },
+      approval,
+      pointsEvent,
+      kpiEvent,
+      integrationEvent,
+      automationOutbox: createDisabledOutbox({
+        sourceEventId: integrationEvent.id,
+        destination: "n8n",
+        eventType,
+        payloadSummary:
+          "Future n8n workflow could notify the owner after leader proof review once member nudges are approved.",
+      }),
+      auditLog: createLocalAuditLog(
+        actor,
+        `leader_proof_${input.decision}`,
+        "evidence_item",
+        evidenceItem.id,
+      ),
+    },
+  };
+}
+
 export function createCoachDecisionMock(
   actor: LocalActorContext,
   input: CoachDecisionInput,
@@ -417,6 +592,107 @@ export function createCoachDecisionMock(
         "coach_decision_logged",
         "phase_readiness_review",
         event.id,
+      ),
+    },
+  };
+}
+
+export function createChapterMembershipApprovalMock(
+  actor: LocalActorContext,
+  input: ChapterMembershipApprovalInput,
+  existingMemberEmails: readonly string[] = [],
+): LocalContractResult<LocalMembershipApproval> {
+  if (!canApproveChapterMembership(actor)) {
+    return {
+      success: false,
+      error:
+        "Only chapter leaders, Admin, or Super Admin can approve chapter membership in the local contract.",
+    };
+  }
+
+  const normalizedJoinRequestId = input.joinRequestId.trim();
+  const normalizedChapterId = input.chapterId.trim();
+  const normalizedEmail = input.applicantEmail.trim().toLowerCase();
+  const normalizedCommitteeLane = input.requestedCommitteeLane.trim();
+  const normalizedReason = input.auditReason.trim();
+  const role = databaseRoleKeyToChapterRole(input.requestedRoleKey);
+
+  if (normalizedChapterId.length < 3 || normalizedJoinRequestId.length < 3) {
+    return {
+      success: false,
+      error: "Membership approval requires a chapter and join request.",
+    };
+  }
+
+  if (!normalizedEmail.includes("@") || normalizedEmail.length < 5) {
+    return {
+      success: false,
+      error: "Membership approval requires a valid applicant profile email.",
+    };
+  }
+
+  if (!role) {
+    return {
+      success: false,
+      error: "Membership approval can only assign chapter-scoped roles.",
+    };
+  }
+
+  if (normalizedReason.length < 12) {
+    return {
+      success: false,
+      error: "Membership approval needs a clear audit reason.",
+    };
+  }
+
+  const duplicateMembership = existingMemberEmails.some((email) => {
+    return email.trim().toLowerCase() === normalizedEmail;
+  });
+
+  if (duplicateMembership) {
+    return {
+      success: false,
+      error: "This applicant already has a membership row in the chapter roster.",
+    };
+  }
+
+  const membershipId = `membership-${slugify(normalizedChapterId)}-${slugify(normalizedEmail)}`;
+  const integrationEvent = createLocalIntegrationEvent({
+    targetId: membershipId,
+    eventType: "membership_approved",
+    title: "Membership approval previewed locally",
+    destination: "internal",
+    detail:
+      "A local membership approval was shaped for future Supabase persistence. No welcome message, CRM sync, or external automation happened.",
+  });
+
+  return {
+    success: true,
+    data: {
+      membership: {
+        id: membershipId,
+        userId: `profile-${slugify(normalizedEmail)}`,
+        chapterId: normalizedChapterId,
+        roles: [role],
+        status: "approved",
+        committeeLane: normalizedCommitteeLane || "Unassigned",
+        requestedRoleKey: input.requestedRoleKey,
+        approvedBy: actor.user.id,
+        approvalReason: normalizedReason,
+      },
+      integrationEvent,
+      automationOutbox: createDisabledOutbox({
+        sourceEventId: integrationEvent.id,
+        destination: "HubSpot",
+        eventType: "membership_approved",
+        payloadSummary:
+          "Future welcome message and HubSpot membership sync stay disabled until external communication and CRM approvals are complete.",
+      }),
+      auditLog: createLocalAuditLog(
+        actor,
+        "membership_approved",
+        "membership",
+        membershipId,
       ),
     },
   };
@@ -539,6 +815,26 @@ function roleToAssignmentLane(role: ChapterRole): Assignment["lane"] {
   }
 
   return "Leader";
+}
+
+function databaseRoleKeyToChapterRole(roleKey: DatabaseRoleKey): ChapterRole | null {
+  switch (roleKey) {
+    case "general_member":
+      return "General Member";
+    case "action_committee_member":
+      return "Action Committee Member";
+    case "action_committee_chair":
+      return "Action Committee Chair";
+    case "e_board_member":
+      return "E-Board Member";
+    case "president_vp":
+      return "Chapter President / Vice President";
+    case "coach":
+    case "admin":
+    case "ds_admin":
+    case "super_admin":
+      return null;
+  }
 }
 
 function slugify(value: string): string {

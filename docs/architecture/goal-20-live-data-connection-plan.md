@@ -21,14 +21,22 @@ this goal.
 
 Start with low-risk read-only routes:
 
+- `/login`
+- `/profile`
+- `/onboarding`
 - `/chapter`
+- `/chapter/members`
 - `/campaigns`
 - `/campaigns/[campaignSlug]`
 - `/action-committees`
 - `/rush-month`
 - `/rush-month/dashboard`
+- `/rush-month/leaderboard`
+- `/rush-month/events`
+- `/rush-month/events/[eventId]`
 - `/rush-month/actions`
 - `/proof-library`
+- `/proof-library/upload`
 
 Then connect function-only write routes:
 
@@ -41,6 +49,16 @@ boundaries are stable:
 
 - `/coach`
 - `/admin`
+- `/admin/review-path`
+- `/admin/release-readiness`
+- `/admin/launch-gate`
+- `/admin/audit-log`
+- `/admin/integration-outbox`
+- `/admin/master-data`
+- `/admin/database-security`
+- `/admin/system-health`
+- `/admin/design-qa`
+- `/admin/operations`
 
 ## Rules
 

@@ -15,6 +15,44 @@ describe("chapter membership workspace", () => {
     expect(workspace.counts.activeMembers).toBe(5);
     expect(workspace.counts.pendingRequests).toBe(2);
     expect(workspace.counts.enabledControls).toBe(0);
+    expect(workspace.membershipApprovalPacket).toEqual(
+      expect.objectContaining({
+        title: "Goal 160 membership approval packet",
+        targetRoute: "/chapter/members",
+        futureFunction: "app.approve_chapter_membership",
+        joinRequestId: "join-avery",
+        applicantEmail: "avery.new@mymedlife.test",
+        requestedRoleLabel: "General Member",
+        currentResultCode: "membership_writes_disabled",
+        futureResultCode: "membership_approved",
+      }),
+    );
+    expect(workspace.membershipApprovalPacket?.payload).toEqual(
+      expect.objectContaining({
+        chapterId: data.chapter.id,
+        applicantEmail: "avery.new@mymedlife.test",
+        requestedRoleKey: "general_member",
+        requestedCommitteeLane: "Recruitment",
+        source: "rush_event",
+        approvedByActorEmail: "leader.a@mymedlife.test",
+      }),
+    );
+    expect(workspace.membershipApprovalPacket?.resultPreview.currentResult.code).toBe(
+      "write_disabled",
+    );
+    expect(
+      workspace.membershipApprovalPacket?.resultPreview.futureResultIfEnabled.code,
+    ).toBe("membership_approved");
+    expect(workspace.membershipApprovalPacket?.writeReadiness).toEqual(
+      expect.objectContaining({
+        title: "Goal 162 membership approval write readiness",
+        operation: "membership_approved",
+        targetRoute: "/chapter/members",
+        futureFunction: "app.approve_chapter_membership",
+        canSubmit: false,
+        resultCodeIfSubmitted: "write_disabled",
+      }),
+    );
     expect(workspace.members.map((member) => member.roleLabel)).toEqual(
       expect.arrayContaining([
         "General Member",
@@ -33,6 +71,7 @@ describe("chapter membership workspace", () => {
     expect(workspace.canReadWorkspace).toBe(true);
     expect(workspace.title).toContain("coach roster readout");
     expect(workspace.joinRequests).toEqual([]);
+    expect(workspace.membershipApprovalPacket).toBeNull();
     expect(workspace.summary).toContain("without owning membership approvals");
   });
 
@@ -42,6 +81,8 @@ describe("chapter membership workspace", () => {
 
     expect(getChapterMembershipWorkspace(dsAdmin, data).canReadWorkspace).toBe(false);
     expect(getChapterMembershipWorkspace(member, data).canReadWorkspace).toBe(false);
+    expect(getChapterMembershipWorkspace(dsAdmin, data).membershipApprovalPacket).toBeNull();
+    expect(getChapterMembershipWorkspace(member, data).membershipApprovalPacket).toBeNull();
     expect(getChapterMembershipWorkspace(dsAdmin, data).summary).toContain(
       "should not read or own chapter membership truth",
     );
@@ -62,6 +103,43 @@ describe("chapter membership workspace", () => {
     ).toBe(true);
     expect(workspace.auditPreview.join(" ")).toContain("membership_approved");
     expect(workspace.outboxPreview.join(" ")).toContain("disabled");
+    expect(workspace.membershipApprovalPacket?.futureRecords).toEqual(
+      expect.arrayContaining([
+        {
+          label: "Structured event",
+          value: "membership_approved",
+        },
+        {
+          label: "Audit action",
+          value: "membership_approved",
+        },
+      ]),
+    );
+    expect(workspace.membershipApprovalPacket?.blockedControls).toEqual(
+      expect.arrayContaining([
+        "Approve join request",
+        "Create membership row",
+        "Send welcome message",
+        "Sync CRM contact",
+      ]),
+    );
+    expect(
+      workspace.membershipApprovalPacket?.readinessChecks.find(
+        (check) => check.key === "live_auth_required",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        passed: false,
+      }),
+    );
+    expect(
+      workspace.membershipApprovalPacket?.writeReadiness.checks.find(
+        (check) => check.key === "database_function_ready",
+      ),
+    ).toEqual(expect.objectContaining({ passed: false }));
+    expect(
+      workspace.membershipApprovalPacket?.writeReadiness.requiredRlsTests,
+    ).toEqual(expect.arrayContaining(["ds_admin_cannot_approve_membership"]));
   });
 
   it("flags thin action committee coverage before live launch", () => {

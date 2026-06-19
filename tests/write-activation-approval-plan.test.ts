@@ -21,10 +21,12 @@ describe("write activation approval plan", () => {
   it("recommends the lowest-risk first write activation order", () => {
     expect(writeActivationCandidates.map((candidate) => candidate.operation)).toEqual([
       "action_started",
-      "action_assigned",
       "evidence_submitted",
+      "leader_proof_decision",
       "hq_sharing_decision",
+      "action_assigned",
       "coach_decision_logged",
+      "membership_approved",
     ]);
     expect(writeActivationCandidates[0]).toEqual(
       expect.objectContaining({
@@ -32,7 +34,10 @@ describe("write activation approval plan", () => {
         route: "/rush-month/actions/[assignmentId]",
       }),
     );
-    expect(writeActivationCandidates.slice(3).map((candidate) => candidate.riskLevel)).toEqual([
+    expect(writeActivationCandidates.slice(2).map((candidate) => candidate.riskLevel)).toEqual([
+      "high",
+      "high",
+      "medium",
       "high",
       "high",
     ]);
@@ -59,15 +64,17 @@ describe("write activation approval plan", () => {
   it("returns the next unactivated write candidate", () => {
     expect(getNextWriteActivationCandidate([])?.operation).toBe("action_started");
     expect(getNextWriteActivationCandidate(["action_started"])?.operation).toBe(
-      "action_assigned",
+      "evidence_submitted",
     );
     expect(
       getNextWriteActivationCandidate([
         "action_started",
-        "action_assigned",
         "evidence_submitted",
+        "leader_proof_decision",
         "hq_sharing_decision",
+        "action_assigned",
         "coach_decision_logged",
+        "membership_approved",
       ]),
     ).toBeNull();
   });

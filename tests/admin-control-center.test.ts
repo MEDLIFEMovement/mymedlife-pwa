@@ -6,6 +6,7 @@ import {
 } from "@/services/admin-control-center";
 import { localActorOptions } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
+import type { AuditLogRow } from "@/shared/types/persistence";
 
 describe("admin control center", () => {
   it("covers the required admin MVP surfaces without enabling writes", () => {
@@ -37,6 +38,45 @@ describe("admin control center", () => {
     expect(summary.campaignTemplateCount).toBe(campaignShells.length);
     expect(summary.disabledOutboxCount).toBe(
       data.outboxItems.filter((item) => item.status === "disabled").length,
+    );
+    expect(summary.auditLogCount).toBe(0);
+  });
+
+  it("exposes read-only master data inventory for admin review", () => {
+    const data = getMockReadOnlyAppData("Testing admin master data inventory.");
+    const summary = getAdminControlCenterSummary(data);
+
+    expect(summary.masterDataInventory.mutationControlsEnabled).toBe(0);
+    expect(summary.masterDataInventory.externalWritesExpected).toBe(0);
+    expect(summary.masterDataInventory.users).toHaveLength(localActorOptions.length);
+    expect(summary.masterDataInventory.roles).toEqual(summary.roleCoverage);
+    expect(summary.masterDataInventory.chapters).toEqual([
+      expect.objectContaining({
+        id: data.chapter.id,
+        name: data.chapter.name,
+        campus: data.chapter.campus,
+        status: "mock_only",
+      }),
+    ]);
+    expect(summary.masterDataInventory.campaignTemplates).toHaveLength(
+      campaignShells.length,
+    );
+    expect(summary.masterDataInventory.campaignTemplates[0]).toEqual(
+      expect.objectContaining({
+        slug: "rush-month",
+        name: "Rush Month",
+        status: "active",
+        adminStatus: "ready_readonly",
+        integrationPosture: expect.stringContaining("No live external send"),
+      }),
+    );
+    expect(summary.masterDataInventory.users.find((user) => user.email === "leader.a@mymedlife.test")).toEqual(
+      expect.objectContaining({
+        displayName: "Priya President",
+        audience: "chapter_leader",
+        chapterRoles: ["President / VP"],
+        status: "mock_only",
+      }),
     );
   });
 
@@ -75,6 +115,55 @@ describe("admin control center", () => {
         localActorEmail: "committee.chair@mymedlife.test",
       }),
     );
+    expect(summary.roleCoverage.find((item) => item.role === "E-Board Member")).toEqual(
+      expect.objectContaining({
+        audience: "chapter_leader",
+        localActorEmail: "eboard.a@mymedlife.test",
+      }),
+    );
+    expect(summary.roleCoverage.find((item) => item.role === "President / VP")).toEqual(
+      expect.objectContaining({
+        audience: "chapter_leader",
+        localActorEmail: "leader.a@mymedlife.test",
+      }),
+    );
+  });
+
+  it("summarizes write-sequence role responsibility on the admin overview", () => {
+    const summary = getAdminControlCenterSummary(
+      getMockReadOnlyAppData("Testing admin responsibility summary."),
+    );
+    const assignment = summary.operatingResponsibilities.find(
+      (item) => item.operationKey === "action_assigned",
+    );
+
+    expect(summary.operatingResponsibilities).toHaveLength(7);
+    expect(summary.operatingResponsibilities.map((item) => item.operationKey)).toEqual(
+      expect.arrayContaining([
+        "action_started",
+        "evidence_submitted",
+        "hq_sharing_decision_logged",
+        "leader_proof_decision_logged",
+        "action_assigned",
+        "coach_decision_logged",
+        "membership_approved",
+      ]),
+    );
+    expect(
+      summary.operatingResponsibilities.every(
+        (item) =>
+          item.responsibleRole.length > 0 &&
+          item.reviewPrompt.length > 20 &&
+          item.safetyBoundary.length > 20,
+      ),
+    ).toBe(true);
+    expect(assignment).toEqual(
+      expect.objectContaining({
+        responsibleRole: "President / VP + E-Board + Action Committee Chair",
+        responsibility: "Approve, hand off, and coordinate assignment work",
+        route: "/admin/assignment-write",
+      }),
+    );
   });
 
   it("marks admin mutation areas as mock-only or blocked when production systems are not active", () => {
@@ -91,7 +180,8 @@ describe("admin control center", () => {
     expect(summary.areas.find((area) => area.key === "audit_logs")).toEqual(
       expect.objectContaining({
         status: "mock_only",
-        nextAction: expect.stringContaining("persisted audit rows"),
+        primaryMetric: "0 visible rows",
+        nextAction: expect.stringContaining("write/readback drills"),
       }),
     );
     expect(summary.healthItems.find((item) => item.key === "external_writes")).toEqual(
@@ -118,4 +208,39 @@ describe("admin control center", () => {
       "super_admin",
     ]);
   });
+
+  it("marks audit logs read-only ready when persisted rows are visible", () => {
+    const summary = getAdminControlCenterSummary({
+      ...getMockReadOnlyAppData("Testing admin audit rows."),
+      auditLogs: [auditLog()],
+    });
+
+    expect(summary.auditLogCount).toBe(1);
+    expect(summary.areas.find((area) => area.key === "audit_logs")).toEqual(
+      expect.objectContaining({
+        status: "ready_readonly",
+        primaryMetric: "1 visible rows",
+        detail: expect.stringContaining("persisted local audit rows"),
+      }),
+    );
+  });
 });
+
+function auditLog(): AuditLogRow {
+  return {
+    id: "audit-1",
+    actor_user_id: "member-1",
+    chapter_id: "chapter-1",
+    action: "action_started",
+    target_table: "assignments",
+    target_id: "assignment-1",
+    before_value: {
+      status: "not_started",
+    },
+    after_value: {
+      status: "in_progress",
+    },
+    reason: "Local action start test.",
+    created_at: "2026-06-15T00:00:00Z",
+  };
+}

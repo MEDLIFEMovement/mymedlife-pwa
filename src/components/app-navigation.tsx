@@ -8,20 +8,29 @@ import type {
 } from "@/services/role-visibility";
 
 type AppNavigationProps = {
+  mode?: "default" | "mobile-app";
   navItems: NavigationItem[];
   quickItems: MobileNavigationItem[];
 };
 
-export function AppNavigation({ navItems, quickItems }: AppNavigationProps) {
+export function AppNavigation({
+  mode = "default",
+  navItems,
+  quickItems,
+}: AppNavigationProps) {
   const pathname = usePathname();
   const activeNavIndex = getActiveIndex(pathname, navItems);
   const activeQuickIndex = getActiveIndex(pathname, quickItems);
+  const quickGridClassName = getQuickGridClassName(quickItems.length);
 
   return (
     <>
       <nav
         aria-label="Primary app navigation"
-        className="flex snap-x gap-2 overflow-x-auto pb-1"
+        className={[
+          "snap-x gap-2 overflow-x-auto pb-1",
+          mode === "mobile-app" ? "hidden sm:flex" : "flex",
+        ].join(" ")}
       >
         {navItems.map((item, index) => {
           const isActive = index === activeNavIndex;
@@ -34,7 +43,7 @@ export function AppNavigation({ navItems, quickItems }: AppNavigationProps) {
               className={[
                 "shrink-0 snap-start rounded-full border px-3 py-2 text-sm font-medium transition",
                 isActive
-                  ? "border-emerald-200/60 bg-emerald-200/18 text-white shadow-[0_0_24px_rgba(147,227,200,0.16)]"
+                  ? "border-[#5d8ff6]/45 bg-[#5d8ff6]/14 text-white shadow-[0_0_24px_rgba(93,143,246,0.18)]"
                   : "border-white/10 bg-black/20 text-white/72 hover:border-white/22 hover:text-white",
               ].join(" ")}
             >
@@ -46,7 +55,7 @@ export function AppNavigation({ navItems, quickItems }: AppNavigationProps) {
 
       <nav
         aria-label="Mobile quick navigation"
-        className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-4 gap-1 rounded-[1.5rem] border border-white/12 bg-[#071d1a]/95 p-2 shadow-[0_18px_60px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:hidden"
+        className={`fixed inset-x-3 bottom-3 z-40 grid gap-1 rounded-[1.5rem] border border-white/12 bg-[#081a3a]/95 p-2 shadow-[0_18px_60px_rgba(0,0,0,0.42)] backdrop-blur-xl sm:hidden ${quickGridClassName}`}
       >
         {quickItems.map((item, index) => {
           const isActive = index === activeQuickIndex;
@@ -59,7 +68,7 @@ export function AppNavigation({ navItems, quickItems }: AppNavigationProps) {
               className={[
                 "flex min-h-14 flex-col items-center justify-center rounded-[1rem] px-2 text-center transition",
                 isActive
-                  ? "bg-emerald-200 text-[#08231e] shadow-[0_0_24px_rgba(147,227,200,0.22)]"
+                  ? "bg-[#f7d05e] text-[#08224c] shadow-[0_0_24px_rgba(247,208,94,0.24)]"
                   : "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white",
               ].join(" ")}
             >
@@ -73,6 +82,18 @@ export function AppNavigation({ navItems, quickItems }: AppNavigationProps) {
       </nav>
     </>
   );
+}
+
+function getQuickGridClassName(count: number) {
+  if (count <= 3) {
+    return "grid-cols-3";
+  }
+
+  if (count === 5) {
+    return "grid-cols-5";
+  }
+
+  return "grid-cols-4";
 }
 
 function getActiveIndex(pathname: string, items: NavigationItem[]): number {

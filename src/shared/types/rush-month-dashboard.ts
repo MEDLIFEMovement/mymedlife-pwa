@@ -31,11 +31,42 @@ export type DashboardMetric = {
   note: string;
 };
 
+export type DashboardPhaseSummary = {
+  label: string;
+  status: string;
+  note: string;
+};
+
 export type DashboardNextStep = {
   label: string;
   href: string;
   summary: string;
   ctaLabel: string;
+};
+
+export type DashboardActionGroup = {
+  label: string;
+  summary: string;
+  href: string;
+  linkLabel: string;
+};
+
+export type DashboardRoleFocusItem = {
+  label: string;
+  value: string;
+  note: string;
+};
+
+export type DashboardRoleFocus = {
+  roleLabel: string;
+  title: string;
+  summary: string;
+  primaryHref: string;
+  primaryLabel: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+  safetyNote: string;
+  items: DashboardRoleFocusItem[];
 };
 
 export type RushMonthDashboard = {
@@ -44,7 +75,11 @@ export type RushMonthDashboard = {
   title: string;
   summary: string;
   canReadChapterTruth: boolean;
+  phaseSummary: DashboardPhaseSummary;
+  whyItMatters: string;
   nextStep: DashboardNextStep;
+  actionGroups: DashboardActionGroup[];
+  roleFocus: DashboardRoleFocus | null;
   metrics: DashboardMetric[];
   visibleAssignments: Assignment[];
   eventPlans: ChapterEventPlan[];

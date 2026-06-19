@@ -72,6 +72,47 @@ export function LeaderAssignmentVerificationPanel({
         </div>
       </article>
 
+      <section className="mt-5 rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+          Leader responsibility map
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold text-white">
+          Review who owns approval, handoff, and coordination before opening the write.
+        </h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+          Staff should verify the role split before this packet is allowed to
+          create one local assignment. The map is read-only and does not grant
+          permissions to any chapter role.
+        </p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          {packet.roleResponsibilities.map((item) => (
+            <article
+              key={item.roleLabel}
+              className="rounded-3xl border border-white/10 bg-black/20 p-4"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-100/70">
+                {item.responsibility}
+              </p>
+              <h3 className="mt-2 text-lg font-semibold text-white">
+                {item.roleLabel}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-white/62">
+                {item.reviewPrompt}
+              </p>
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3 text-xs leading-5 text-white/54">
+                {item.safetyBoundary}
+              </p>
+              <Link
+                href={item.route}
+                className="mt-3 inline-flex rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+              >
+                Open {item.route}
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="mt-5 rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>

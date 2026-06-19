@@ -274,7 +274,7 @@ export const evidenceItemSchema = createSchema<EvidenceItem>("EvidenceItem", (va
     status: enumField(
       record,
       "status",
-      ["pending_review", "approved", "changes_requested"] as const,
+      ["pending_review", "approved", "rejected", "changes_requested"] as const,
     ),
   };
 });

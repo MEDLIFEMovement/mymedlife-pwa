@@ -33,6 +33,40 @@ describe("leader assignment verification packet", () => {
     expect(packet.counts.browserWritesExpected).toBe(0);
     expect(packet.counts.remindersExpected).toBe(0);
     expect(packet.counts.externalWritesExpected).toBe(0);
+    expect(packet.roleResponsibilities.map((item) => item.roleLabel)).toEqual([
+      "President / VP",
+      "E-Board Member",
+      "Action Committee Chair",
+    ]);
+  });
+
+  it("maps leader assignment responsibility before a write can open", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const packet = getLeaderAssignmentPacket(actor, mockData, {});
+
+    expect(packet.roleResponsibilities).toEqual([
+      expect.objectContaining({
+        roleLabel: "President / VP",
+        responsibility: "Approval guardrails",
+        route: "/rush-month/actions",
+      }),
+      expect.objectContaining({
+        roleLabel: "E-Board Member",
+        responsibility: "Owner handoff",
+        route: "/rush-month/actions",
+      }),
+      expect.objectContaining({
+        roleLabel: "Action Committee Chair",
+        responsibility: "Committee coordination",
+        route: "/action-committees",
+      }),
+    ]);
+    expect(packet.roleResponsibilities.map((item) => item.safetyBoundary).join(" ")).toContain(
+      "Does not create assignments",
+    );
+    expect(packet.roleResponsibilities.map((item) => item.safetyBoundary).join(" ")).toContain(
+      "Does not trigger Luma",
+    );
   });
 
   it("blocks local Supabase data until HQ decision readback exists", () => {
@@ -147,6 +181,7 @@ describe("leader assignment verification packet", () => {
       "DS Admin assignment safety packet",
     );
     expect(getLeaderAssignmentPacket(member, mockData).canReadPacket).toBe(false);
+    expect(getLeaderAssignmentPacket(member, mockData).roleResponsibilities).toEqual([]);
     expect(getLeaderAssignmentPacket(leader, mockData).canReadPacket).toBe(false);
     expect(getLeaderAssignmentPacket(coach, mockData).canReadPacket).toBe(false);
   });

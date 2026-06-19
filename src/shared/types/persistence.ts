@@ -368,6 +368,37 @@ export type ApprovalRow = {
   created_at: Timestamp;
 };
 
+export type PointsEventRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid | null;
+  assignment_id: Uuid | null;
+  chapter_event_id: Uuid | null;
+  evidence_item_id: Uuid | null;
+  approval_id: Uuid | null;
+  awarded_to_user_id: Uuid;
+  points_delta: number;
+  reason: string;
+  created_by: Uuid | null;
+  created_at: Timestamp;
+};
+
+export type KpiEventRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid | null;
+  phase_id: Uuid | null;
+  assignment_id: Uuid | null;
+  chapter_event_id: Uuid | null;
+  evidence_item_id: Uuid | null;
+  metric_key: string;
+  metric_value: number;
+  unit: string | null;
+  source: string;
+  created_by: Uuid | null;
+  created_at: Timestamp;
+};
+
 export type IntegrationEventRow = {
   id: Uuid;
   source_event_id: Uuid | null;

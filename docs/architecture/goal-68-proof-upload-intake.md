@@ -21,6 +21,11 @@ raw files, or enable external automation.
 - disabled future outbox destinations
 - DS Admin restricted state
 
+Goal 159 extends this same route with a storage-intake packet. The packet names
+the future private bucket, public bucket, normalized storage path, required
+metadata, raw-reader boundary, future records, moderation queue, and locked
+storage controls without enabling any upload.
+
 ## Safety Rules
 
 - No production auth is enabled.
@@ -52,3 +57,7 @@ This closes the product gap between "proof metadata exists" and "students know
 how proof upload will work." It also keeps the team honest: the UI can explain
 the future upload path without pretending storage, consent, moderation, public
 sharing, or automation are approved.
+
+Goal 159 narrows the remaining review gap further: reviewers can now inspect the
+exact future storage target and audit/outbox posture before approving real
+Supabase Storage work.

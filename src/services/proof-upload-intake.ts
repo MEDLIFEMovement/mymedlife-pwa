@@ -36,6 +36,35 @@ export type ProofUploadIntakeCheck = {
   helpText: string;
 };
 
+export type ProofUploadStoragePacket = {
+  title: string;
+  targetRoute: "/proof-library/upload";
+  futureFunction: "app.prepare_proof_upload_intake";
+  privateBucket: string;
+  publicBucket: string;
+  storagePathPreview: string;
+  normalizedFileName: string;
+  currentResultCode: "upload_disabled";
+  currentResultTitle: string;
+  futureResultCode: "proof_upload_intake_recorded";
+  futureResultTitle: string;
+  readinessReason: string;
+  requiredMetadata: readonly string[];
+  rawUploadReaders: readonly string[];
+  publicAssetReaders: readonly string[];
+  readinessChecks: Array<{
+    key: string;
+    label: string;
+    passed: boolean;
+  }>;
+  futureRecords: Array<{
+    label: string;
+    value: string;
+  }>;
+  moderationQueue: string[];
+  blockedControls: string[];
+};
+
 export type ProofUploadIntakeWorkspace = {
   canReadWorkspace: boolean;
   title: string;
@@ -52,6 +81,7 @@ export type ProofUploadIntakeWorkspace = {
     label: string;
     reason: string;
   }>;
+  storagePacket: ProofUploadStoragePacket | null;
   futureStructuredEvents: string[];
   futureOutboxDestinations: string[];
 };
@@ -84,6 +114,7 @@ export function getProofUploadIntakeWorkspace(
   const plan = getProofStoragePlan();
   const config = getProofStorageReadinessConfig();
   const checks = getProofUploadIntakeChecks(input);
+  const disabledAttempt = prepareDisabledProofFileUpload(input);
 
   return {
     canReadWorkspace: true,
@@ -96,7 +127,7 @@ export function getProofUploadIntakeWorkspace(
     maxFileSizeMb: plan.maxFileSizeMb,
     allowedMimeTypes: plan.allowedMimeTypes,
     checks,
-    disabledAttempt: prepareDisabledProofFileUpload(input),
+    disabledAttempt,
     consentChecklist: [
       "Student agrees MEDLIFE HQ may review the proof privately.",
       "Student chooses whether the proof can be considered for future sharing.",
@@ -121,6 +152,7 @@ export function getProofUploadIntakeWorkspace(
           "Raw bridge videos/testimonials must not be exported to n8n, warehouse, Power BI, HubSpot, Luma, SMS, email, or AI until explicitly approved.",
       },
     ],
+    storagePacket: buildProofUploadStoragePacket(input, checks, disabledAttempt),
     futureStructuredEvents: [
       "proof_upload_requested",
       "proof_upload_validated",
@@ -218,9 +250,113 @@ function hiddenWorkspace(
     disabledAttempt: prepareDisabledProofFileUpload(input),
     consentChecklist: [],
     blockedControls: [],
+    storagePacket: null,
     futureStructuredEvents: [],
     futureOutboxDestinations: [],
   };
+}
+
+function buildProofUploadStoragePacket(
+  input: ProofUploadIntakeInput,
+  checks: ProofUploadIntakeCheck[],
+  disabledAttempt: ReturnType<typeof prepareDisabledProofFileUpload>,
+): ProofUploadStoragePacket {
+  const plan = getProofStoragePlan();
+  const config = getProofStorageReadinessConfig();
+
+  return {
+    title: "Goal 159 proof storage intake packet",
+    targetRoute: "/proof-library/upload",
+    futureFunction: "app.prepare_proof_upload_intake",
+    privateBucket: plan.privateSubmissionBucket,
+    publicBucket: plan.publicLibraryBucket,
+    storagePathPreview: buildStoragePathPreview(input, disabledAttempt.normalizedFileName),
+    normalizedFileName: disabledAttempt.normalizedFileName,
+    currentResultCode: "upload_disabled",
+    currentResultTitle: "Upload disabled",
+    futureResultCode: "proof_upload_intake_recorded",
+    futureResultTitle: "Proof upload intake recorded",
+    readinessReason: config.reason,
+    requiredMetadata: plan.requiredMetadata,
+    rawUploadReaders: plan.rawUploadReaders,
+    publicAssetReaders: plan.publicAssetReaders,
+    readinessChecks: [
+      ...checks.map((check) => ({
+        key: check.key,
+        label: check.label,
+        passed: check.passed,
+      })),
+      {
+        key: "private_bucket_previewed",
+        label: "Private bucket path is previewed",
+        passed: disabledAttempt.wouldUseBucket === plan.privateSubmissionBucket,
+      },
+      {
+        key: "public_default_locked",
+        label: "Public proof URL stays locked",
+        passed: !config.publicPublishingEnabled,
+      },
+      {
+        key: "raw_readers_restricted",
+        label: "Raw proof readers are restricted",
+        passed:
+          plan.rawUploadReaders.includes("admin") &&
+          plan.rawUploadReaders.includes("super_admin") &&
+          !plan.rawUploadReaders.includes("ds_admin"),
+      },
+    ],
+    futureRecords: [
+      {
+        label: "Storage object",
+        value: `${plan.privateSubmissionBucket}/${buildStoragePathPreview(
+          input,
+          disabledAttempt.normalizedFileName,
+        )}`,
+      },
+      {
+        label: "Evidence item",
+        value: `storage_path -> ${disabledAttempt.normalizedFileName}`,
+      },
+      {
+        label: "Structured event",
+        value: "proof_upload_requested",
+      },
+      {
+        label: "Disabled outbox",
+        value: "n8n, warehouse, AI summary, and public publish disabled",
+      },
+      {
+        label: "Audit action",
+        value: "proof_upload_intake_prepared",
+      },
+    ],
+    moderationQueue: [
+      "HQ confirms private review consent before opening the file.",
+      "HQ checks the context summary and hesitation addressed.",
+      "HQ confirms whether future sharing consent is declined, pending, or granted.",
+      "HQ decides whether the proof stays private, needs changes, or can move to a later sharing review.",
+    ],
+    blockedControls: [
+      "Create signed upload URL",
+      "Write storage object",
+      "Persist storage_path",
+      "Publish public proof URL",
+      "Export raw proof to automation",
+    ],
+  };
+}
+
+function buildStoragePathPreview(
+  input: ProofUploadIntakeInput,
+  normalizedFileName: string,
+): string {
+  return [
+    "chapters/chapter-a",
+    "campaigns/rush-month",
+    "evidence",
+    input.evidenceItemId,
+    normalizedFileName,
+  ].join("/");
 }
 
 function getTitle(actor: LocalActorContext): string {

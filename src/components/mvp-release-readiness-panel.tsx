@@ -39,6 +39,10 @@ export function MvpReleaseReadinessPanel({
         <ReadinessList title="Blocked before live launch" items={summary.blockers} />
       </div>
 
+      {summary.roleModelReviewCheckpoint ? (
+        <RoleModelCheckpoint checkpoint={summary.roleModelReviewCheckpoint} />
+      ) : null}
+
       <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
         <p className="text-sm font-semibold text-white">Approvals needed next</p>
         <ul className="mt-3 grid gap-2">
@@ -50,6 +54,59 @@ export function MvpReleaseReadinessPanel({
         </ul>
       </div>
     </section>
+  );
+}
+
+type RoleModelCheckpointValue = NonNullable<
+  MvpReleaseReadinessSummary["roleModelReviewCheckpoint"]
+>;
+
+function RoleModelCheckpoint({
+  checkpoint,
+}: {
+  checkpoint: RoleModelCheckpointValue;
+}) {
+  return (
+    <article className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-white">{checkpoint.title}</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
+            {checkpoint.plainEnglish}
+          </p>
+        </div>
+        <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-100">
+          {checkpoint.items.length} route checks
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        {checkpoint.items.map((item) => (
+          <div key={`${item.route}-${item.label}`} className="rounded-2xl bg-white/[0.05] p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                {item.route}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                {item.browserWritesExpected} writes
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                {item.externalWritesExpected} sends
+              </span>
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-white">{item.label}</h3>
+            <p className="mt-2 break-words font-mono text-xs text-emerald-100/70">
+              {item.reviewerActorEmail}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-white/60">{item.passSignal}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/54">
+        {checkpoint.finalDecisionPrompt}
+      </p>
+    </article>
   );
 }
 
