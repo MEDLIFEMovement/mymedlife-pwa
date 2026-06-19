@@ -6,6 +6,14 @@ Status: safe prep can proceed while PR #94 is under Kiomi/DS review. Live
 infrastructure, live auth, live writes, migrations, credentials, proof uploads,
 production deploys, and external automation remain blocked.
 
+Review packet order:
+
+1. Review PR #94 first as the main Phase 1 MVP packet.
+2. Use `/admin/review-path`, `/admin/nick-review`, `/admin/launch-gate`, and
+   `/admin/database-security` to confirm the current MVP and review boundary.
+3. Review PR #95 and `/admin/phase-2` as a planning packet only.
+4. Confirm stack, environment, auth, and secret ownership before any live work.
+
 ## Decision
 
 Phase 2 can start now as a prep lane. It should not wait idle for PR #94 review,
@@ -44,7 +52,7 @@ Blocked until PR #94 review and Kiomi/DS confirmation:
 
 | Issue | Purpose | Primary owner | Status |
 | --- | --- | --- | --- |
-| MED-471 | Phase 2 safe prep packet and live MVP pilot boundary | Codex | Backlog |
+| MED-471 | Phase 2 safe prep packet and live MVP pilot boundary | Codex | In Review |
 | MED-472 | Live environment setup checklist | Kiomi/DS + Codex | Backlog |
 | MED-473 | Production auth and onboarding implementation | Kiomi/DS + Codex | Backlog |
 | MED-474 | RLS and security release gate | Kiomi/DS | Backlog |

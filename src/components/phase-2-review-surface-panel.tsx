@@ -53,6 +53,39 @@ export function Phase2ReviewSurfacePanel({
         ))}
       </div>
 
+      <SectionCard
+        title="Reviewer checklist"
+        eyebrow="PR #94 first, then PR #95"
+        summary="This is the shortest path for Nick, Kiomi, DS, and Renato to review the current packets without drifting into Phase 3 or live implementation."
+      >
+        <div className="grid gap-2">
+          {packet.reviewerChecklist.map((step, index) => (
+            <article
+              key={step.key}
+              className="rounded-2xl border border-white/10 bg-black/20 p-3"
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/70">
+                    Step {index + 1}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-white">{step.label}</p>
+                </div>
+                <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/56">
+                  {step.owners}
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-white/62">
+                Review target: {step.reviewTarget}
+              </p>
+              <p className="mt-2 rounded-2xl bg-white/[0.05] p-3 text-xs leading-5 text-sky-50/72">
+                Success signal: {step.successSignal}
+              </p>
+            </article>
+          ))}
+        </div>
+      </SectionCard>
+
       <div className="mt-5 grid gap-3 xl:grid-cols-2">
         <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-100/70">

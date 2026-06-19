@@ -200,6 +200,18 @@ describe("phase 2 safe prep packet", () => {
     expect(
       packet.mockOnlyBoundaries.every((boundary) => boundary.length > 20),
     ).toBe(true);
+    expect(packet.reviewerChecklist.map((step) => step.key)).toEqual([
+      "review_phase1_pr",
+      "walk_phase1_routes",
+      "review_phase2_packet",
+      "confirm_stack_and_owners",
+      "hold_live_boundary",
+    ]);
+    expect(packet.reviewerChecklist[0]?.reviewTarget).toContain("PR #94");
+    expect(packet.reviewerChecklist[2]?.reviewTarget).toContain("/admin/phase-2");
+    expect(packet.reviewerChecklist.every((step) => step.successSignal.length > 30)).toBe(
+      true,
+    );
   });
 
   it("keeps live platform actions explicitly blocked", () => {

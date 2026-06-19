@@ -59,6 +59,14 @@ export type Phase2ApprovalStep = {
   reason: string;
 };
 
+export type Phase2ReviewerStep = {
+  key: string;
+  label: string;
+  owners: string;
+  reviewTarget: string;
+  successSignal: string;
+};
+
 export type Phase2EnvironmentItem = {
   key: string;
   environment: "local" | "staging" | "production" | "all";
@@ -134,6 +142,7 @@ export type Phase2SafePrepPacket = {
   mockOnlyBoundaries: string[];
   linearIssues: Phase2LinearIssue[];
   statusGroups: Phase2StatusGroup[];
+  reviewerChecklist: Phase2ReviewerStep[];
   reviewLinks: Phase2ReviewLink[];
   nextApprovalSteps: Phase2ApprovalStep[];
   ownerResponsibilities: Record<Phase2Owner, string[]>;
@@ -182,6 +191,7 @@ export function getPhase2SafePrepPacket(): Phase2SafePrepPacket {
     mockOnlyBoundaries: phase2MockOnlyBoundaries,
     linearIssues: phase2LinearIssues,
     statusGroups: phase2StatusGroups,
+    reviewerChecklist: phase2ReviewerChecklist,
     reviewLinks: phase2ReviewLinks,
     nextApprovalSteps: phase2NextApprovalSteps,
     ownerResponsibilities: phase2OwnerResponsibilities,
@@ -719,6 +729,53 @@ const phase2StatusGroups: Phase2StatusGroup[] = [
       "MED-485",
     ],
     note: "Every write remains blocked until its predecessor has staging proof, RLS proof, audit readback, rollback, and Linear/GitHub evidence.",
+  },
+];
+
+const phase2ReviewerChecklist: Phase2ReviewerStep[] = [
+  {
+    key: "review_phase1_pr",
+    label: "Review PR #94 first as the main Phase 1 MVP packet",
+    owners: "Nick, Kiomi, DS, Renato",
+    reviewTarget: "PR #94 summary, route checks, and Phase 1 MVP surface scope",
+    successSignal:
+      "Reviewers agree the local MVP is understandable, mock-safe, and ready for approval feedback.",
+  },
+  {
+    key: "walk_phase1_routes",
+    label: "Walk the focused Phase 1 review routes in the app",
+    owners: "Nick, Kiomi, DS, Renato",
+    reviewTarget:
+      "/admin/review-path, /admin/nick-review, /admin/launch-gate, and /admin/database-security",
+    successSignal:
+      "Reviewers can see what is demo-ready now, what remains blocked, and which launch gates are still open.",
+  },
+  {
+    key: "review_phase2_packet",
+    label: "Review PR #95 and the Phase 2 prep surface as a planning packet only",
+    owners: "Kiomi, DS, Nick",
+    reviewTarget:
+      "PR #95, /admin/phase-2, and docs/architecture/phase-2-safe-prep-packet.md",
+    successSignal:
+      "Everyone understands that MED-471 through MED-486 are prep and gating artifacts, not approved live implementation.",
+  },
+  {
+    key: "confirm_stack_and_owners",
+    label: "Confirm the stack, environment owners, and auth decision path",
+    owners: "Kiomi, DS, Nick",
+    reviewTarget:
+      "Next.js/Supabase/Vercel commitment, secret ownership, callback domains, and auth responsibility",
+    successSignal:
+      "The team names who owns Supabase, Vercel, secrets, callbacks, and the go/no-go for live auth work.",
+  },
+  {
+    key: "hold_live_boundary",
+    label: "Keep live work blocked until review comments are resolved",
+    owners: "Codex, Nick, Kiomi, DS",
+    reviewTarget:
+      "No live auth, writes, uploads, migrations, deploys, or external sends while PR #94 and PR #95 are open",
+    successSignal:
+      "The project stays review-ready, low-risk, and easy to approve without surprise scope changes.",
   },
 ];
 
