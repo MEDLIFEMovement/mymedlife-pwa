@@ -194,6 +194,7 @@ describe("phase 2 safe prep packet", () => {
     expect(packet.nextApprovalSteps.map((step) => step.key)).toEqual([
       "review_pr94",
       "confirm_stack",
+      "confirm_connector_mode",
       "approve_foundation_lane",
       "start_write_sequence",
     ]);
@@ -204,6 +205,7 @@ describe("phase 2 safe prep packet", () => {
       "review_phase1_pr",
       "walk_phase1_routes",
       "review_phase2_packet",
+      "confirm_connector_boundary",
       "confirm_stack_and_owners",
       "hold_live_boundary",
     ]);
@@ -224,6 +226,7 @@ describe("phase 2 safe prep packet", () => {
       "live_browser_writes",
       "proof_uploads",
       "live_db_migrations",
+      "connector_writes",
       "production_deploys",
       "external_integrations",
       "external_automation",
