@@ -481,7 +481,7 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["admin", "ds_admin", "super_admin"],
     expectedResult:
-      "HQ staff can see the safe promotion order for action-start, proof metadata, HQ proof decisions, leader assignments, and coach decisions.",
+      "HQ staff can see the implemented Phase 2 subset order for membership approval, leader assignment, action-start, proof metadata, leader proof decisions, HQ proof decisions, and coach decisions.",
     safetyAssertion:
       "The planner must not enable production auth, browser writes, proof uploads, public proof sharing, or external automation.",
   },
