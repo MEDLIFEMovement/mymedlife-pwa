@@ -62,8 +62,9 @@ export function HqProofDecisionVerificationPanel({
           <h2 className="mt-2 text-xl font-semibold text-white">
             {packet.candidateEvidence.summary}
           </h2>
-          <div className="mt-3 grid gap-2 sm:grid-cols-4">
+          <div className="mt-3 grid gap-2 sm:grid-cols-5">
             <MiniStat label="Status" value={packet.candidateEvidence.status} />
+            <MiniStat label="Proof" value={packet.candidateEvidence.proofTypeLabel} />
             <MiniStat
               label="Ready"
               value={packet.candidateEvidence.readyForHqDecision ? "yes" : "no"}
@@ -72,7 +73,37 @@ export function HqProofDecisionVerificationPanel({
               label="UUID"
               value={packet.candidateEvidence.usesSupabaseUuid ? "yes" : "no"}
             />
+            <MiniStat
+              label="Upload"
+              value={packet.candidateEvidence.privateUploadStatusLabel}
+            />
             <MiniStat label="Action" value={packet.candidateEvidence.route} />
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                Upload guidance
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/58">
+                {packet.candidateEvidence.privateUploadGuidance}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                Privacy boundary
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/58">
+                {packet.candidateEvidence.privacyBoundary}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                Deletion / takedown
+              </p>
+              <p className="mt-2 text-xs leading-5 text-white/58">
+                {packet.candidateEvidence.deletionBoundary}
+              </p>
+            </div>
           </div>
         </article>
       ) : (
