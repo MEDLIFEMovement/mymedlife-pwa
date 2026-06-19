@@ -184,6 +184,9 @@ describe("phase 2 safe prep packet", () => {
     );
     expect(packet.reviewLinks.map((link) => link.href)).toEqual(
       expect.arrayContaining([
+        "/admin/environment-setup",
+        "/admin/auth-onboarding",
+        "/admin/security-gate",
         "/admin/audit-log",
         "/admin/system-health",
         "/admin/launch-gate",
