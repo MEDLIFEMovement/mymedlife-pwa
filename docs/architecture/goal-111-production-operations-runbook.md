@@ -20,6 +20,9 @@ owner lanes, and missing live evidence for a controlled myMEDLIFE pilot.
   - integration and outbox recovery
   - mobile PWA support
   - pilot communications and day-one support
+- A pilot support packet on `/admin/operations` that turns the first pilot owner
+  list, rollback drill, day-one support checks, stop rules, and student
+  communications posture into one review surface.
 - First-response steps for local review.
 - Missing live evidence for monitoring, backup, rollback, recovery, and support.
 - Tests proving the runbook is admin-only, write-safe, explicit about DS
@@ -55,7 +58,9 @@ http://localhost:3000/admin
 The page should show production operations with launch `no`, `0` writes, `0`
 sends, `0` secrets, Data Solutions ownership for integration recovery, and
 blocked live evidence for auth, database/RLS, proof storage, mobile PWA support,
-and pilot communications.
+pilot communications. It should also show the pilot support packet with the
+first pilot owner lanes, review-ready dry-run and rollback checks, blocked
+device/accessibility evidence, and explicit stop rules before any invitation.
 
 ## Next Step
 
