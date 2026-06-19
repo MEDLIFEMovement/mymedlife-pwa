@@ -219,7 +219,7 @@ export function getMvpReleaseReadinessSummary(
         label: "Stakeholder review phase map",
         status: "ready_for_local_review",
         plainEnglish:
-          "The no-code stakeholder review path now shows a phase map for member, leader, proof, coach, admin, and write-packet review before the detailed route list so non-technical reviewers can run the 43-step path in plain English.",
+          "The no-code stakeholder review path now shows a phase map for member, leader, proof, coach, admin, and write-packet review before the detailed route list so non-technical reviewers can run the 46-step route review in plain English.",
       },
       {
         label: "Nick final review packet",

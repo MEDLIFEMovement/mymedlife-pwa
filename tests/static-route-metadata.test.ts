@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(57);
+    expect(entries).toHaveLength(60);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -50,6 +50,15 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("adminPhase2Review")).toMatchObject({
       title: "Admin Phase 2 Review",
+    });
+    expect(getStaticRouteMetadata("adminEnvironmentSetup")).toMatchObject({
+      title: "Admin Environment Setup",
+    });
+    expect(getStaticRouteMetadata("adminAuthOnboarding")).toMatchObject({
+      title: "Admin Auth Onboarding",
+    });
+    expect(getStaticRouteMetadata("adminSecurityGate")).toMatchObject({
+      title: "Admin Security Gate",
     });
     expect(getStaticRouteMetadata("adminDesignQa")).toMatchObject({
       title: "Admin Design QA",
