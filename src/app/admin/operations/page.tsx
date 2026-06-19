@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
+import { PilotSupportPacketPanel } from "@/components/pilot-support-packet-panel";
 import { ProductionOperationsRunbookPanel } from "@/components/production-operations-runbook-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getPilotSupportPacket } from "@/services/pilot-support-packet";
 import { getProductionOperationsRunbook } from "@/services/production-operations-runbook";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -18,6 +20,7 @@ export default async function AdminOperationsPage() {
     getReadOnlyAppData(),
   ]);
   const runbook = getProductionOperationsRunbook(actor);
+  const pilotSupportPacket = getPilotSupportPacket(actor);
   const nextStep = getNextStep(actor);
 
   return (
@@ -71,6 +74,7 @@ export default async function AdminOperationsPage() {
           </section>
 
           <ProductionOperationsRunbookPanel runbook={runbook} />
+          <PilotSupportPacketPanel packet={pilotSupportPacket} />
         </>
       )}
     </AppShell>
