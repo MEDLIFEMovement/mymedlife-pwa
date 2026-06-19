@@ -21,6 +21,7 @@ The immediate value is safety:
 
 - the current browser result still says writes are disabled
 - duplicate start attempts have a defined outcome
+- stale-page conflicts have a defined outcome
 - missing-auth and permission-denied cases are explicit
 - DS Admin stays out of student truth
 - no external automation can run from this path
@@ -32,6 +33,7 @@ The result-state contract includes:
 - `started`
 - `write_disabled`
 - `already_started`
+- `stale_assignment`
 - `permission_denied`
 - `missing_auth`
 - `assignment_not_found`

@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  getActionStartAlreadyStartedServerResult,
   getActionStartReadbackState,
+  getActionStartStaleServerResult,
   getActionStartWriteConfig,
   getActionStartWriteReadiness,
+  isActionStartableStatus,
   isUuid,
   mapActionStartRpcError,
   mapActionStartRpcSuccess,
+  parseActionStartStatus,
 } from "@/services/action-start-write";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import type { Assignment } from "@/shared/types/domain";
@@ -74,6 +78,32 @@ describe("action-start write readiness", () => {
     expect(readiness.checks.every((check) => check.passed)).toBe(true);
   });
 
+  it("allows a changes-requested assignment to be restarted", () => {
+    const actor = getMockLocalActorContext(
+      "member.a@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const readiness = getActionStartWriteReadiness(
+      {
+        ...actor,
+      },
+      {
+        ...makeStartableAssignment(),
+        status: "changes_requested",
+      },
+      {
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      },
+    );
+
+    expect(readiness.canSubmit).toBe(true);
+    expect(readiness.resultCodeIfSubmitted).toBe("started");
+  });
+
   it("blocks mock assignment IDs before calling Supabase", () => {
     const actor = getMockLocalActorContext(
       "member.a@mymedlife.test",
@@ -133,11 +163,43 @@ describe("action-start write readiness", () => {
       success: false,
       code: "permission_denied",
     });
+
+    expect(
+      mapActionStartRpcError("stale", {
+        message: "assignment changed since page load",
+      }),
+    ).toMatchObject({
+      success: false,
+      code: "stale_assignment",
+    });
+  });
+
+  it("returns dedicated already-started and stale server results", () => {
+    expect(getActionStartAlreadyStartedServerResult("assignment-1")).toMatchObject({
+      success: false,
+      code: "already_started",
+    });
+
+    expect(
+      getActionStartStaleServerResult("assignment-2", "submitted"),
+    ).toMatchObject({
+      success: false,
+      code: "stale_assignment",
+      plainEnglishMessage: expect.stringContaining("submitted"),
+    });
   });
 
   it("validates UUID shape", () => {
     expect(isUuid("00000000-0000-4000-8000-000000000101")).toBe(true);
     expect(isUuid("member-push")).toBe(false);
+  });
+
+  it("parses assignment statuses and startable states", () => {
+    expect(parseActionStartStatus("changes_requested")).toBe("changes_requested");
+    expect(parseActionStartStatus("unknown")).toBeNull();
+    expect(isActionStartableStatus("not_started")).toBe(true);
+    expect(isActionStartableStatus("changes_requested")).toBe(true);
+    expect(isActionStartableStatus("submitted")).toBe(false);
   });
 
   it("confirms local readback when the refreshed assignment is in progress", () => {

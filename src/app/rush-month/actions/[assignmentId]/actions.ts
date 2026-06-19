@@ -4,15 +4,24 @@ import { redirect } from "next/navigation";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getAuthSessionState } from "@/services/auth-session";
 import {
+  getActionStartAlreadyStartedServerResult,
+  getActionStartStaleServerResult,
   getActionStartWriteConfig,
+  isActionStartableStatus,
   isUuid,
   mapActionStartRpcError,
   mapActionStartRpcSuccess,
+  parseActionStartStatus,
   type ActionStartRpcRow,
   type ActionStartServerResult,
 } from "@/services/action-start-write";
+import type { Assignment } from "@/shared/types/domain";
 import {
+  getProofSubmissionAccuracyRequiredServerResult,
+  getProofSubmissionActionNotReadyServerResult,
+  getProofSubmissionAlreadySubmittedServerResult,
   getProofSubmissionWriteConfig,
+  isProofAccuracyConfirmed,
   mapProofSubmissionRpcError,
   mapProofSubmissionRpcSuccess,
   parseProofEvidenceType,
@@ -22,8 +31,14 @@ import {
 
 export async function startAssignmentAction(formData: FormData) {
   const assignmentId = String(formData.get("assignmentId") ?? "").trim();
+  const expectedStatus = parseActionStartStatus(
+    String(formData.get("expectedStatus") ?? "").trim() || null,
+  );
   const returnTo = normalizeReturnTo(formData.get("returnTo"), assignmentId);
-  const result = await startAssignmentActionForLocalSupabase(assignmentId);
+  const result = await startAssignmentActionForLocalSupabase(
+    assignmentId,
+    expectedStatus,
+  );
 
   redirect(`${returnTo}?actionStartResult=${result.code}`);
 }
@@ -38,6 +53,7 @@ export async function submitAssignmentProofAction(formData: FormData) {
 
 export async function startAssignmentActionForLocalSupabase(
   assignmentId: string,
+  expectedStatus: Assignment["status"] | null = null,
 ): Promise<ActionStartServerResult> {
   const config = getActionStartWriteConfig();
 
@@ -90,6 +106,17 @@ export async function startAssignmentActionForLocalSupabase(
     });
 
   if (error) {
+    const conflictResult = await getActionStartConflictResult(
+      client,
+      assignmentId,
+      expectedStatus,
+      error,
+    );
+
+    if (conflictResult) {
+      return conflictResult;
+    }
+
     return mapActionStartRpcError(assignmentId, error);
   }
 
@@ -108,6 +135,58 @@ export async function startAssignmentActionForLocalSupabase(
   return mapActionStartRpcSuccess(assignmentId, firstRow);
 }
 
+async function getActionStartConflictResult(
+  client: NonNullable<
+    Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"]
+  >,
+  assignmentId: string,
+  expectedStatus: Assignment["status"] | null,
+  error: { code?: string; message?: string },
+): Promise<ActionStartServerResult | null> {
+  const message = error.message?.toLowerCase() ?? "";
+
+  if (error.code !== "42501" && !message.includes("cannot start")) {
+    return null;
+  }
+
+  const currentStatus = await readCurrentAssignmentStatus(client, assignmentId);
+
+  if (!currentStatus) {
+    return null;
+  }
+
+  if (expectedStatus && currentStatus !== expectedStatus) {
+    return getActionStartStaleServerResult(assignmentId, currentStatus);
+  }
+
+  if (!isActionStartableStatus(currentStatus)) {
+    return getActionStartAlreadyStartedServerResult(assignmentId);
+  }
+
+  return null;
+}
+
+async function readCurrentAssignmentStatus(
+  client: NonNullable<
+    Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"]
+  >,
+  assignmentId: string,
+): Promise<Assignment["status"] | null> {
+  const { data } = await client
+    .schema("app")
+    .from("assignments")
+    .select("status")
+    .eq("id", assignmentId)
+    .maybeSingle();
+
+  const status =
+    data && typeof data === "object" && "status" in data && typeof data.status === "string"
+      ? data.status
+      : null;
+
+  return parseActionStartStatus(status);
+}
+
 export async function submitAssignmentProofForLocalSupabase(
   formData: FormData,
 ): Promise<ProofSubmissionServerResult> {
@@ -115,6 +194,9 @@ export async function submitAssignmentProofForLocalSupabase(
   const evidenceType = parseProofEvidenceType(formData.get("evidenceType"));
   const proofSummary = String(formData.get("proofSummary") ?? "").trim();
   const proofUrl = String(formData.get("proofUrl") ?? "").trim();
+  const accuracyConfirmed = isProofAccuracyConfirmed(
+    formData.get("accuracyConfirmed"),
+  );
   const config = getProofSubmissionWriteConfig();
 
   if (!config.enabled) {
@@ -154,6 +236,10 @@ export async function submitAssignmentProofForLocalSupabase(
       plainEnglishMessage:
         "Add a short testimonial or context note before saving proof.",
     };
+  }
+
+  if (!accuracyConfirmed) {
+    return getProofSubmissionAccuracyRequiredServerResult(assignmentId);
   }
 
   const { client, config: authConfig } = await createLocalSupabaseServerClient();
@@ -196,6 +282,16 @@ export async function submitAssignmentProofForLocalSupabase(
     });
 
   if (error) {
+    const conflictResult = await getProofSubmissionConflictResult(
+      client,
+      assignmentId,
+      error,
+    );
+
+    if (conflictResult) {
+      return conflictResult;
+    }
+
     return mapProofSubmissionRpcError(assignmentId, error);
   }
 
@@ -214,6 +310,36 @@ export async function submitAssignmentProofForLocalSupabase(
   }
 
   return mapProofSubmissionRpcSuccess(assignmentId, firstRow);
+}
+
+async function getProofSubmissionConflictResult(
+  client: NonNullable<
+    Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"]
+  >,
+  assignmentId: string,
+  error: { code?: string; message?: string },
+): Promise<ProofSubmissionServerResult | null> {
+  const message = error.message?.toLowerCase() ?? "";
+
+  if (error.code !== "42501" && !message.includes("cannot submit proof")) {
+    return null;
+  }
+
+  const currentStatus = await readCurrentAssignmentStatus(client, assignmentId);
+
+  if (!currentStatus) {
+    return null;
+  }
+
+  if (currentStatus === "submitted" || currentStatus === "approved") {
+    return getProofSubmissionAlreadySubmittedServerResult(assignmentId);
+  }
+
+  if (currentStatus === "not_started") {
+    return getProofSubmissionActionNotReadyServerResult(assignmentId);
+  }
+
+  return null;
 }
 
 function normalizeReturnTo(value: FormDataEntryValue | null, assignmentId: string) {
