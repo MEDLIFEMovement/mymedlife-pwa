@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  getProofSubmissionAccuracyRequiredServerResult,
+  getProofSubmissionActionNotReadyServerResult,
+  getProofSubmissionAlreadySubmittedServerResult,
   getProofSubmissionReadbackState,
   getProofSubmissionWriteConfig,
   getProofSubmissionWriteReadiness,
+  isProofAccuracyConfirmed,
+  isProofSubmissionReadyStatus,
   mapProofSubmissionRpcError,
   mapProofSubmissionRpcSuccess,
   parseProofEvidenceType,
+  parseProofSubmissionStatus,
 } from "@/services/proof-submission-write";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import type { Assignment } from "@/shared/types/domain";
@@ -196,6 +202,47 @@ describe("proof-submission write readiness", () => {
       success: false,
       code: "permission_denied",
     });
+
+    expect(
+      mapProofSubmissionRpcError("accuracy", {
+        message: "private medlife review confirmation required",
+      }),
+    ).toMatchObject({
+      success: false,
+      code: "accuracy_required",
+    });
+
+    expect(
+      mapProofSubmissionRpcError("duplicate", {
+        message: "proof already submitted",
+      }),
+    ).toMatchObject({
+      success: false,
+      code: "already_submitted",
+    });
+  });
+
+  it("returns dedicated accuracy, action-not-ready, and duplicate-proof states", () => {
+    expect(
+      getProofSubmissionAccuracyRequiredServerResult("assignment-1"),
+    ).toMatchObject({
+      success: false,
+      code: "accuracy_required",
+    });
+
+    expect(
+      getProofSubmissionActionNotReadyServerResult("assignment-2"),
+    ).toMatchObject({
+      success: false,
+      code: "action_not_ready",
+    });
+
+    expect(
+      getProofSubmissionAlreadySubmittedServerResult("assignment-3"),
+    ).toMatchObject({
+      success: false,
+      code: "already_submitted",
+    });
   });
 
   it("confirms local readback when the refreshed assignment is submitted", () => {
@@ -230,6 +277,16 @@ describe("proof-submission write readiness", () => {
     expect(parseProofEvidenceType("testimonial_text")).toBe("testimonial_text");
     expect(parseProofEvidenceType("mock_file")).toBeNull();
     expect(parseProofEvidenceType(null)).toBeNull();
+  });
+
+  it("parses proof status and accuracy confirmation helpers", () => {
+    expect(parseProofSubmissionStatus("changes_requested")).toBe("changes_requested");
+    expect(parseProofSubmissionStatus("unknown")).toBeNull();
+    expect(isProofSubmissionReadyStatus("in_progress")).toBe(true);
+    expect(isProofSubmissionReadyStatus("changes_requested")).toBe(true);
+    expect(isProofSubmissionReadyStatus("submitted")).toBe(false);
+    expect(isProofAccuracyConfirmed("yes")).toBe(true);
+    expect(isProofAccuracyConfirmed(null)).toBe(false);
   });
 });
 

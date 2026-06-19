@@ -23,6 +23,7 @@ describe("proof submission result states", () => {
       "write_disabled",
       "upload_disabled",
       "action_not_ready",
+      "accuracy_required",
       "already_submitted",
       "permission_denied",
       "missing_auth",
@@ -145,6 +146,16 @@ describe("proof submission result states", () => {
         title: "File uploads are not turned on yet",
         createsEvidenceItem: false,
         createsOutboxItem: false,
+      }),
+    );
+  });
+
+  it("requires an accuracy confirmation before save", () => {
+    expect(getProofSubmissionResultState("accuracy_required")).toEqual(
+      expect.objectContaining({
+        title: "Confirm the proof is accurate first",
+        retryAllowed: true,
+        createsEvidenceItem: false,
       }),
     );
   });
