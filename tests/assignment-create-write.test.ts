@@ -232,6 +232,16 @@ describe("assignment-create write readiness", () => {
       success: false,
       code: "invalid_points",
     });
+
+    expect(
+      mapAssignmentCreateRpcError({
+        code: "23505",
+        message: "duplicate assignment title exists for this chapter campaign",
+      }),
+    ).toMatchObject({
+      success: false,
+      code: "duplicate_assignment",
+    });
   });
 
   it("confirms local readback when the created assignment appears", () => {

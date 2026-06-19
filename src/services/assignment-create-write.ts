@@ -368,6 +368,16 @@ export function mapAssignmentCreateRpcError(
     );
   }
 
+  if (
+    error.code === "23505" ||
+    message.includes("duplicate assignment title exists")
+  ) {
+    return failureResult(
+      "duplicate_assignment",
+      "A similar assignment already exists for this chapter, so the app blocked a duplicate.",
+    );
+  }
+
   return failureResult(
     "server_error",
     "The app could not safely create this assignment. No reminder or external automation ran.",

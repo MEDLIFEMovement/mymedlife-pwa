@@ -52,6 +52,7 @@ The function validates:
 - optional chapter event belongs to the campaign and chapter
 - assigned user is an approved chapter member
 - assigned role is chapter-scoped
+- duplicate assignment titles are rejected inside the same chapter/campaign
 - title, instructions, evidence requirement, and KPI key are present
 - points are between 0 and 1000
 
@@ -83,8 +84,8 @@ The tests prove:
 - General Members, Coaches, Admin, and DS Admin cannot create routine
   assignments
 - Super Admin can create an audited break-glass assignment
-- invalid campaign ownership, unapproved assigned users, and unsafe points are
-  rejected
+- invalid campaign ownership, duplicate titles, unapproved assigned users, and
+  unsafe points are rejected
 - assignment creation records event, integration event, disabled outbox, and
   audit log rows
 - no outbox row is approved for live send or sent

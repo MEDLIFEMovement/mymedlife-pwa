@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(17);
+select plan(18);
 
 set local role authenticated;
 
@@ -132,6 +132,23 @@ select is(
 
 set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000002';
 set local "request.jwt.claim.role" = 'authenticated';
+
+select throws_ok(
+  $$ select * from app.create_chapter_assignment(
+    '10000000-0000-4000-8000-000000000001',
+    '40000000-0000-4000-8000-000000000001',
+    'Run a dorm invite table',
+    'Trying to create the same assignment twice in one chapter should fail.',
+    'Submit fake proof.',
+    'duplicate_assignment',
+    10,
+    '00000000-0000-4000-8000-000000000001',
+    'general_member'
+  ) $$,
+  '23505',
+  'duplicate assignment title exists for this chapter campaign',
+  'Assignment creation rejects duplicate chapter assignment titles'
+);
 
 select throws_ok(
   $$ select * from app.create_chapter_assignment(
