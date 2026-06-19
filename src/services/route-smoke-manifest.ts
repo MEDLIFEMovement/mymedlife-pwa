@@ -356,6 +356,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "Admin mutations, production auth, and external writes remain disabled.",
   },
   {
+    path: "/admin/phase-2",
+    label: "Phase 2 safe prep review",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see the Phase 2 issue map, readiness groups, environment checklist, auth/onboarding plan, write-promotion sequence, mock-only boundary, and next approval steps for MED-471 through MED-486.",
+    safetyAssertion:
+      "Phase 2 review must not enable live Supabase or Vercel setup, credentials, live auth, browser writes, proof uploads, DB migrations, production deploys, or external automation.",
+  },
+  {
     path: "/admin/review-path",
     label: "Admin stakeholder review path",
     priority: "critical",

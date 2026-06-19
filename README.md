@@ -12,9 +12,18 @@ the production-style custom PWA path.
 
 The current priority is review readiness for PR #94 and PR #95. Use
 `docs/review/pr-94-pr-95-review-checklist.md` for the reviewer order and
-approval questions, then use `/admin/review-path`, `/admin/nick-review`,
-`/admin/launch-gate`, and `/admin/database-security` as the Phase 1 review
+approval questions, and use `docs/review/supabase-connector-approval-matrix.md`
+for the exact Supabase environment and approval decisions still needed. Then use
+`/admin/review-path`, `/admin/nick-review`, `/admin/launch-gate`,
+`/admin/database-security`, and `/admin/phase-2` as the matching in-app review
 packet routes.
+
+The current Phase 2 prep lane is MED-471: safe prep packet and live MVP pilot
+boundary. This adds a Phase 2 execution plan and mock-safe test contract while
+PR #94 is under Kiomi/DS review. See
+`docs/architecture/phase-2-safe-prep-packet.md`. It does not enable live
+Supabase/Vercel setup, live auth, production credentials, browser writes, proof
+uploads, migrations, production deploys, or external automation.
 
 The current goal is Goal 162: membership approval write readiness. This extends
 `/chapter/members`, the write plan, browser-write readiness, and staff rehearsal
