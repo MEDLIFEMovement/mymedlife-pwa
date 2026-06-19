@@ -114,16 +114,13 @@ export function getWriteSequencePlanner(
     canReadPlanner: true,
     title: getTitle(actor),
     summary:
-      "This planner shows the safe order for promoting the local Rush Month write paths. It is a control-room view: it explains which local write should be proven first, what evidence to inspect, and what must stay disabled.",
+      "This planner shows the implemented local-write subset inside the broader Phase 2 promotion order. It is a control-room view: it explains which guarded write should be proven next, what evidence to inspect, and what must stay disabled.",
     studentJourneySummary:
-      "The real student-facing journey is leader assigns action, member starts action, member submits proof/testimonial, leader reviews proof for chapter completion, HQ decides whether proof can be shared, and coach logs advance/hold/intervene.",
+      "The review journey starts with chapter access approval, then moves into leader assignment, member action start, member proof/testimonial submission, leader proof review, HQ sharing review, and coach support decisions.",
     promotionSummary:
-      "The safest technical promotion order starts with action_started because seed assignments already exist. Broader assignment creation, proof, leader proof decisions, HQ decisions, and coach decisions should follow only after the first action-start readback is proven.",
-    firstWriteRuntimeStatus: firstWriteDrill.status,
-    nextRecommendedOperation:
-      firstWriteDrill.counts.observedReadbackItems >= 3
-        ? "evidence_submitted"
-        : "action_started",
+      "Within the currently implemented Phase 2 subset, prove membership approval first, then leader assignment creation, student action start, proof metadata submission, leader proof review, HQ sharing decision, and coach decision logging. Private uploads, points/KPI materialization, and SLT checklist completion stay in separate later gates.",
+    firstWriteRuntimeStatus: packetStatuses.membership_approved.status,
+    nextRecommendedOperation: "membership_approved",
     operations,
     counts: {
       operations: operations.length,
@@ -150,10 +147,87 @@ function buildOperations(
 ): WriteSequenceOperation[] {
   const operations: WriteSequenceOperation[] = [
     {
+      key: "membership_approved",
+      label: "Leader approves chapter membership",
+      promotionOrder: 1,
+      studentJourneyOrder: 1,
+      route: "/chapter/members",
+      localActorEmail: "leader.a@mymedlife.test",
+      actorLabel: "President / VP, Admin, or Super Admin",
+      roleResponsibility: {
+        roleLabel: "President / VP, Admin, or Super Admin",
+        responsibility: "Approve chapter access",
+        reviewPrompt:
+          "Confirm the join request, requested chapter role, profile mapping, and audit reason before a student enters the chapter operating loop.",
+        safetyBoundary:
+          "No welcome message, CRM sync, role escalation, email, SMS, HubSpot update, or external send should run from this step.",
+      },
+      status: "packet_ready",
+      plainEnglish:
+        "A chapter leader or HQ admin approves one visible join request into a chapter-scoped membership role. This opens chapter access locally while welcome sends, CRM sync, and external automation stay off.",
+      expectedTables: [
+        "memberships",
+        "events",
+        "integration_events",
+        "automation_outbox",
+        "audit_logs",
+      ],
+      structuredEvents: ["membership_approved"],
+      auditEvidence: [
+        "membership row records the approved chapter role",
+        "event row records membership_approved",
+        "integration event records future welcome and CRM intent",
+        "disabled outbox row proves welcome and CRM sync stayed off",
+        "audit log records actor, applicant, role, chapter, and reason",
+      ],
+      outboxPosture:
+        "No welcome email, SMS, HubSpot contact update, CRM sync, n8n workflow, warehouse export, or AI summary should happen.",
+      safetyBoundary:
+        "Requires local auth identity, chapter-scoped RLS, duplicate prevention, rollback, audit readback, and welcome/CRM sends staying disabled.",
+      nextGate:
+        "Open `/chapter/members`, verify the refreshed roster and disabled outbox readback, then move to leader assignment creation.",
+      packetStatus: packetStatuses.membership_approved,
+    },
+    {
+      key: "action_assigned",
+      label: "Leader creates a new assignment",
+      promotionOrder: 2,
+      studentJourneyOrder: 2,
+      route: "/admin/assignment-write",
+      localActorEmail: "leader.a@mymedlife.test",
+      actorLabel: "President / VP + E-Board + Action Committee Chair",
+      roleResponsibility: {
+        roleLabel: "President / VP + E-Board + Action Committee Chair",
+        responsibility: "Approve, hand off, and coordinate assignment work",
+        reviewPrompt:
+          "Confirm President / VP approval guardrails, E-Board owner handoff, and Action Committee Chair lane capacity before opening assignment creation.",
+        safetyBoundary:
+          "No reminder, committee move, role change, HubSpot handoff, or external send should run from this step.",
+      },
+      status: "packet_ready",
+      plainEnglish:
+        "A chapter leader creates a real assignment for a role or committee after membership access and chapter scope are confirmed.",
+      expectedTables: ["assignments", "events", "integration_events", "audit_logs"],
+      structuredEvents: ["action_assigned"],
+      auditEvidence: [
+        "assignment row is created with chapter and campaign ownership",
+        "event row records action_assigned",
+        "integration event records future reminder and handoff intent",
+        "audit log records the leader-created assignment",
+      ],
+      outboxPosture:
+        "No reminder email, SMS, HubSpot handoff, or n8n workflow should send automatically.",
+      safetyBoundary:
+        "Requires leader chapter scope, duplicate checks, rollback, and reminder automation staying disabled.",
+      nextGate:
+        "Open `/admin/assignment-write` after membership approval readback is proven, then collect assignment event and audit evidence.",
+      packetStatus: packetStatuses.action_assigned,
+    },
+    {
       key: "action_started",
       label: "Member starts an assigned action",
-      promotionOrder: 1,
-      studentJourneyOrder: 2,
+      promotionOrder: 3,
+      studentJourneyOrder: 3,
       route: candidateRoute,
       localActorEmail: "member.a@mymedlife.test",
       actorLabel: "General Member",
@@ -167,7 +241,7 @@ function buildOperations(
       },
       status: "packet_ready",
       plainEnglish:
-        "A fake local member starts one already-seeded Rush Month assignment. This proves the smallest useful browser-to-Supabase write before wider flows are promoted.",
+        "A fake local member starts one visible Rush Month assignment after chapter access and assignment ownership are already in place.",
       expectedTables: ["assignments", "events", "integration_events", "audit_logs"],
       structuredEvents: ["action_started"],
       auditEvidence: [
@@ -181,14 +255,14 @@ function buildOperations(
       safetyBoundary:
         "Local Supabase Auth, fake seed user, localhost-only write flags, and `/admin/first-write` proof are required.",
       nextGate:
-        "Run the first-write packet and collect readback evidence before promoting the next write.",
+        "Run the first-write packet after leader assignment readback is proven, then collect assignment status, event, and audit evidence.",
       packetStatus: packetStatuses.action_started,
     },
     {
       key: "evidence_submitted",
       label: "Member submits proof/testimonial metadata",
-      promotionOrder: 2,
-      studentJourneyOrder: 3,
+      promotionOrder: 4,
+      studentJourneyOrder: 4,
       route: candidateRoute,
       localActorEmail: "member.a@mymedlife.test",
       actorLabel: "General Member",
@@ -220,45 +294,10 @@ function buildOperations(
       packetStatus: packetStatuses.evidence_submitted,
     },
     {
-      key: "hq_sharing_decision_logged",
-      label: "HQ decides whether proof can be shared",
-      promotionOrder: 4,
-      studentJourneyOrder: 5,
-      route: "/admin/hq-proof-write",
-      localActorEmail: "admin@mymedlife.test",
-      actorLabel: "Admin or Super Admin",
-      roleResponsibility: {
-        roleLabel: "Admin / Super Admin",
-        responsibility: "HQ sharing decision",
-        reviewPrompt:
-          "Confirm HQ decides whether proof stays internal, needs changes, or can be prepared for later sharing.",
-        safetyBoundary:
-          "No public publish, social share, AI summary, warehouse export, or external automation should run.",
-      },
-      status: "packet_ready",
-      plainEnglish:
-        "HQ records whether a submitted proof/testimonial should stay internal, needs changes, or can later be shared broadly.",
-      expectedTables: ["approvals", "evidence_items", "events", "integration_events", "audit_logs"],
-      structuredEvents: ["hq_sharing_decision_logged"],
-      auditEvidence: [
-        "approval row records the HQ decision",
-        "proof metadata reflects the sharing posture",
-        "event row records hq_sharing_decision_logged",
-        "audit log records the staff decision",
-      ],
-      outboxPosture:
-        "No public proof publish, social share, warehouse export, AI summary, or external send should happen.",
-      safetyBoundary:
-        "Requires Admin or Super Admin identity, proof consent rules, and public sharing controls staying disabled.",
-      nextGate:
-        "Open `/admin/hq-proof-write` before allowing staff to test HQ proof decisions in a browser.",
-      packetStatus: packetStatuses.hq_sharing_decision_logged,
-    },
-    {
       key: "leader_proof_decision_logged",
       label: "Leader reviews proof for chapter completion",
-      promotionOrder: 3,
-      studentJourneyOrder: 4,
+      promotionOrder: 5,
+      studentJourneyOrder: 5,
       route: "/rush-month/review",
       localActorEmail: "leader.a@mymedlife.test",
       actorLabel: "President / VP or E-Board",
@@ -304,45 +343,45 @@ function buildOperations(
       packetStatus: packetStatuses.leader_proof_decision_logged,
     },
     {
-      key: "action_assigned",
-      label: "Leader creates a new assignment",
-      promotionOrder: 5,
-      studentJourneyOrder: 1,
-      route: "/admin/assignment-write",
-      localActorEmail: "leader.a@mymedlife.test",
-      actorLabel: "President / VP + E-Board + Action Committee Chair",
+      key: "hq_sharing_decision_logged",
+      label: "HQ decides whether proof can be shared",
+      promotionOrder: 6,
+      studentJourneyOrder: 6,
+      route: "/admin/hq-proof-write",
+      localActorEmail: "admin@mymedlife.test",
+      actorLabel: "Admin or Super Admin",
       roleResponsibility: {
-        roleLabel: "President / VP + E-Board + Action Committee Chair",
-        responsibility: "Approve, hand off, and coordinate assignment work",
+        roleLabel: "Admin / Super Admin",
+        responsibility: "HQ sharing decision",
         reviewPrompt:
-          "Confirm President / VP approval guardrails, E-Board owner handoff, and Action Committee Chair lane capacity before opening assignment creation.",
+          "Confirm HQ decides whether proof stays internal, needs changes, or can be prepared for later sharing.",
         safetyBoundary:
-          "No assignment creation, membership approval, role change, committee move, reminder, or external send should run from the planner.",
+          "No public publish, social share, AI summary, warehouse export, or external automation should run.",
       },
       status: "packet_ready",
       plainEnglish:
-        "A chapter leader creates a real assignment for a role or committee after the smaller action-start and proof writes have been proven.",
-      expectedTables: ["assignments", "events", "integration_events", "audit_logs"],
-      structuredEvents: ["action_assigned"],
+        "HQ records whether a submitted proof/testimonial should stay internal, needs changes, or can later be shared broadly.",
+      expectedTables: ["approvals", "evidence_items", "events", "integration_events", "audit_logs"],
+      structuredEvents: ["hq_sharing_decision_logged"],
       auditEvidence: [
-        "assignment row is created with chapter and campaign ownership",
-        "event row records action_assigned",
-        "integration event records future reminder/handoff intent",
-        "audit log records the leader-created assignment",
+        "approval row records the HQ decision",
+        "proof metadata reflects the sharing posture",
+        "event row records hq_sharing_decision_logged",
+        "audit log records the staff decision",
       ],
       outboxPosture:
-        "No reminder email, SMS, HubSpot handoff, or n8n workflow should send automatically.",
+        "No public proof publish, social share, warehouse export, AI summary, or external send should happen.",
       safetyBoundary:
-        "Requires leader chapter scope, duplicate checks, rollback, and reminder automation staying disabled.",
+        "Requires Admin or Super Admin identity, proof consent rules, and public sharing controls staying disabled.",
       nextGate:
-        "Open `/admin/assignment-write` before allowing staff to test leader assignment creation in a browser.",
-      packetStatus: packetStatuses.action_assigned,
+        "Open `/admin/hq-proof-write` after leader proof review evidence is proven, then record the HQ decision locally.",
+      packetStatus: packetStatuses.hq_sharing_decision_logged,
     },
     {
       key: "coach_decision_logged",
       label: "Coach logs advance / hold / intervene decision",
-      promotionOrder: 6,
-      studentJourneyOrder: 6,
+      promotionOrder: 7,
+      studentJourneyOrder: 7,
       route: "/admin/coach-write",
       localActorEmail: "coach@mymedlife.test",
       actorLabel: "Coach",
@@ -372,48 +411,6 @@ function buildOperations(
       nextGate:
         "Open `/admin/coach-write` before allowing staff to test coach decisions in a browser.",
       packetStatus: packetStatuses.coach_decision_logged,
-    },
-    {
-      key: "membership_approved",
-      label: "Leader approves chapter membership",
-      promotionOrder: 7,
-      studentJourneyOrder: 0,
-      route: "/chapter/members",
-      localActorEmail: "leader.a@mymedlife.test",
-      actorLabel: "President / VP, Admin, or Super Admin",
-      roleResponsibility: {
-        roleLabel: "President / VP, Admin, or Super Admin",
-        responsibility: "Approve chapter access",
-        reviewPrompt:
-          "Confirm the join request, requested chapter role, profile mapping, and audit reason before any future approval control opens.",
-        safetyBoundary:
-          "No membership approval, role escalation, welcome message, CRM sync, email, SMS, HubSpot update, or external send should run from the planner.",
-      },
-      status: "packet_ready",
-      plainEnglish:
-        "A chapter leader or HQ admin approves one visible join request into a chapter-scoped membership role. This changes app access, so it stays behind the strictest auth, RLS, rollback, and audit review.",
-      expectedTables: [
-        "memberships",
-        "events",
-        "integration_events",
-        "automation_outbox",
-        "audit_logs",
-      ],
-      structuredEvents: ["membership_approved"],
-      auditEvidence: [
-        "membership row records the approved chapter role",
-        "event row records membership_approved",
-        "integration event records future welcome/CRM intent",
-        "disabled outbox row proves welcome and CRM sync stayed off",
-        "audit log records actor, applicant, role, chapter, and reason",
-      ],
-      outboxPosture:
-        "No welcome email, SMS, HubSpot contact update, CRM sync, n8n workflow, warehouse export, or AI summary should happen.",
-      safetyBoundary:
-        "Requires production auth identity, chapter-scoped RLS, duplicate prevention, rollback, audit readback, and welcome/CRM sends staying disabled.",
-      nextGate:
-        "Open `/chapter/members` and review Goal 162 before implementing app.approve_chapter_membership.",
-      packetStatus: packetStatuses.membership_approved,
     },
   ];
 
@@ -505,7 +502,7 @@ function buildPacketStatuses(
       status: "packet_ready",
       label: "Membership approval readiness packet",
       plainEnglish:
-        "Goal 162 adds a read-only membership approval write readiness packet on `/chapter/members`; SQL/RLS, server action, rollback, and audit readback still need implementation before local writes can open.",
+        "PR #97 adds the local membership approval write path on `/chapter/members` via `app.approve_chapter_membership(...)`; welcome, CRM, and all external sends remain disabled while local auth, readback, and rollback evidence are reviewed.",
       canPromoteToStagingReview: false,
       observedReadbackItems: 0,
       browserWritesExpected: 0,

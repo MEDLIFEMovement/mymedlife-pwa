@@ -15,15 +15,15 @@ describe("write sequence planner", () => {
     expect(planner.counts.operations).toBe(7);
     expect(planner.counts.localBrowserWriteCandidates).toBe(7);
     expect(planner.counts.externalWritesExpected).toBe(0);
-    expect(planner.nextRecommendedOperation).toBe("action_started");
+    expect(planner.nextRecommendedOperation).toBe("membership_approved");
     expect(planner.operations.map((operation) => operation.key)).toEqual([
+      "membership_approved",
+      "action_assigned",
       "action_started",
       "evidence_submitted",
       "leader_proof_decision_logged",
       "hq_sharing_decision_logged",
-      "action_assigned",
       "coach_decision_logged",
-      "membership_approved",
     ]);
     expect(
       planner.operations.find((operation) => operation.key === "coach_decision_logged"),
@@ -42,21 +42,26 @@ describe("write sequence planner", () => {
     const actionStart = planner.operations.find(
       (operation) => operation.key === "action_started",
     );
+    const membershipApproval = planner.operations.find(
+      (operation) => operation.key === "membership_approved",
+    );
 
-    expect(actionStart?.promotionOrder).toBe(1);
-    expect(actionStart?.studentJourneyOrder).toBe(2);
-    expect(leaderAssignment?.promotionOrder).toBe(5);
+    expect(membershipApproval?.promotionOrder).toBe(1);
+    expect(membershipApproval?.studentJourneyOrder).toBe(1);
+    expect(leaderAssignment?.promotionOrder).toBe(2);
+    expect(leaderAssignment?.studentJourneyOrder).toBe(2);
+    expect(actionStart?.promotionOrder).toBe(3);
+    expect(actionStart?.studentJourneyOrder).toBe(3);
     expect(
       planner.operations.find(
         (operation) => operation.key === "leader_proof_decision_logged",
       )?.promotionOrder,
-    ).toBe(3);
-    expect(leaderAssignment?.studentJourneyOrder).toBe(1);
+    ).toBe(5);
     expect(
       planner.operations.find((operation) => operation.key === "membership_approved")
         ?.promotionOrder,
-    ).toBe(7);
-    expect(planner.promotionSummary).toContain("seed assignments already exist");
+    ).toBe(1);
+    expect(planner.promotionSummary).toContain("prove membership approval first");
   });
 
   it("surfaces live packet status for every write step", () => {
@@ -70,6 +75,18 @@ describe("write sequence planner", () => {
     }));
 
     expect(packetStatuses).toEqual([
+      {
+        key: "membership_approved",
+        packetLabel: "Membership approval readiness packet",
+        packetRoute: "/chapter/members",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "action_assigned",
+        packetLabel: "Leader assignment packet",
+        packetRoute: "/admin/assignment-write",
+        externalWritesExpected: 0,
+      },
       {
         key: "action_started",
         packetLabel: "Action-start packet",
@@ -95,21 +112,9 @@ describe("write sequence planner", () => {
         externalWritesExpected: 0,
       },
       {
-        key: "action_assigned",
-        packetLabel: "Leader assignment packet",
-        packetRoute: "/admin/assignment-write",
-        externalWritesExpected: 0,
-      },
-      {
         key: "coach_decision_logged",
         packetLabel: "Coach decision packet",
         packetRoute: "/admin/coach-write",
-        externalWritesExpected: 0,
-      },
-      {
-        key: "membership_approved",
-        packetLabel: "Membership approval readiness packet",
-        packetRoute: "/chapter/members",
         externalWritesExpected: 0,
       },
     ]);
