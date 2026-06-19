@@ -121,7 +121,7 @@ export function getHqProofDecisionWriteConfig(
     externalWritesEnabled: false,
     publishesProof: false,
     reason:
-      "Local HQ proof decision writes are enabled for localhost Supabase only. Public proof sharing and external sends remain disabled.",
+      "Local HQ proof decision writes are enabled for localhost Supabase only. Raw files stay private, public proof sharing stays disabled, and external sends remain off.",
   };
 }
 
@@ -248,7 +248,7 @@ export function getHqProofDecisionReadbackState(
       confirmsDecision: true,
       tone: "success",
       message:
-        "Local readback confirms the HQ proof decision was recorded without publishing proof.",
+        "Local readback confirms the HQ proof decision was recorded without publishing proof or exposing private uploads.",
     };
   }
 
@@ -291,7 +291,7 @@ export function mapHqProofDecisionRpcSuccess(
     outboxId: row.outbox_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "HQ proof decision saved locally. The app recorded the approval decision, event, integration event, disabled outbox row, and audit log. No public sharing or external automation ran.",
+      "HQ proof decision saved locally. The app recorded the approval decision, event, integration event, disabled outbox row, and audit log. No public sharing, raw-file exposure, or external automation ran.",
   };
 }
 
@@ -344,7 +344,7 @@ export function mapHqProofDecisionRpcError(
   return failureResult(
     evidenceItemId,
     "server_error",
-    "The app could not safely save this HQ proof decision. No public sharing or external automation ran.",
+    "The app could not safely save this HQ proof decision. No public sharing, raw-file exposure, or external automation ran.",
   );
 }
 

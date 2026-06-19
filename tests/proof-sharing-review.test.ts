@@ -31,6 +31,8 @@ describe("proof sharing review", () => {
       expect.arrayContaining(["bridge_video", "alumni_ugc"]),
     );
     expect(board.rows[0]?.reviewState).toBe("needs_consent_or_context");
+    expect(board.rows[0]?.privacyBoundary).toContain("private");
+    expect(board.rows[0]?.deletionBoundary).toContain("audit");
   });
 
   it("counts internal learning and future public candidates", () => {

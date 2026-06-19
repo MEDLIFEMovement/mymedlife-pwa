@@ -18,6 +18,8 @@ export type ProofSharingReviewRow = {
   sharingStatus: ProofLibraryItem["sharingStatus"];
   reviewState: ProofSharingReviewState;
   actionNeeded: string;
+  privacyBoundary: string;
+  deletionBoundary: string;
   canBePublishedNow: false;
   externalExportPosture: "disabled";
 };
@@ -63,7 +65,7 @@ export function getProofSharingReviewBoard(
     canDecideSharing: actor.audience === "admin" || actor.audience === "super_admin",
     title: getTitle(actor),
     summary:
-      "Proof is testimonial evidence used to break self-limiting beliefs. HQ decides future sharing; no proof is published or exported from this MVP shell.",
+      "Proof is testimonial evidence used to break self-limiting beliefs. HQ decides future sharing while raw source material stays private, takedown/deletion remains manual-first, and nothing is published or exported from this MVP shell.",
     rows: sortRows(rows),
     counts: {
       total: rows.length,
@@ -95,6 +97,8 @@ function toReviewRow(item: ProofLibraryItem): ProofSharingReviewRow {
     sharingStatus: item.sharingStatus,
     reviewState,
     actionNeeded: getActionNeeded(item, reviewState),
+    privacyBoundary: getPrivacyBoundary(item),
+    deletionBoundary: getDeletionBoundary(item),
     canBePublishedNow: false,
     externalExportPosture: "disabled",
   };
@@ -136,6 +140,26 @@ function getActionNeeded(
     case "private_not_shared":
       return `Keep ${item.sourceLabel} private unless HQ creates a new sharing decision later.`;
   }
+}
+
+function getPrivacyBoundary(item: ProofLibraryItem): string {
+  if (item.proofType === "bridge_video" || item.proofType === "event_photo") {
+    return "Treat any raw media as private source material until HQ explicitly approves reuse and a separate publish tool exists.";
+  }
+
+  if (item.proofType === "alumni_ugc") {
+    return "Keep identity, channel context, and reuse posture explicit before this story leaves the app or internal staff review.";
+  }
+
+  return "This proof can inform internal learning now, but broader reuse still requires explicit consent and a later publishing path.";
+}
+
+function getDeletionBoundary(item: ProofLibraryItem): string {
+  if (item.sharingStatus === "not_shared") {
+    return "If the student asks for takedown or deletion, keep this proof private and remove any attached source asset before reconsidering reuse.";
+  }
+
+  return "If consent changes or a takedown request arrives, remove the underlying source asset first and preserve the HQ decision history in audit readback.";
 }
 
 function getTitle(actor: LocalActorContext): string {

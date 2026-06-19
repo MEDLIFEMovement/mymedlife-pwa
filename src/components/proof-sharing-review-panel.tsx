@@ -59,6 +59,24 @@ export function ProofSharingReviewPanel({ board }: ProofSharingReviewPanelProps)
                 </p>
               </div>
             </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                  Privacy boundary
+                </p>
+                <p className="mt-2 text-xs leading-5 text-white/58">
+                  {row.privacyBoundary}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                  Deletion / takedown
+                </p>
+                <p className="mt-2 text-xs leading-5 text-white/58">
+                  {row.deletionBoundary}
+                </p>
+              </div>
+            </div>
             <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/54">
               Publish now: {row.canBePublishedNow ? "yes" : "no"}. External
               export posture: {row.externalExportPosture}. No public proof page,
