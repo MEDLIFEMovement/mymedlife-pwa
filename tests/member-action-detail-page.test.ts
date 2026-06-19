@@ -4,7 +4,7 @@ import {
   getActionDetailFacts,
   getActionSteps,
   getActionWhyItMatters,
-} from "@/app/rush-month/actions/[assignmentId]/page";
+} from "@/services/member-action-detail";
 
 describe("member action detail copy", () => {
   const assignment = assignments.find((item) => item.id === "member-push");

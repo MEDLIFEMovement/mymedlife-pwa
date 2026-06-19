@@ -46,10 +46,12 @@ import type {
   IntegrationEventRow,
   IntegrationStatus,
   KpiEventRow,
+  MembershipRow,
   OutboxStatus,
   PhaseReadinessReviewRow,
   PhaseRow,
   PointsEventRow,
+  ProfileRow,
   RiskFlagRow,
 } from "@/shared/types/persistence";
 
@@ -66,6 +68,8 @@ export type ReadOnlyAppData = {
   source: DataSourceMeta;
   chapter: Chapter;
   campaign: Campaign;
+  profiles: ProfileRow[];
+  memberships: MembershipRow[];
   phases: PhaseRow[];
   assignments: Assignment[];
   campaignTemplates: CampaignTemplateRow[];
@@ -203,6 +207,8 @@ export async function getSupabaseReadOnlyAppData(
     },
     chapter: toDomainChapter(chapter),
     campaign: toDomainCampaign(campaign, phases[0]),
+    profiles: snapshot.profiles,
+    memberships: snapshot.memberships,
     phases,
     assignments,
     campaignTemplates,
@@ -230,6 +236,8 @@ export async function getSupabaseReadOnlyAppData(
 
 export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
   const [
+    profiles,
+    memberships,
     chapters,
     campaigns,
     phases,
@@ -248,6 +256,8 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     automationOutboxRows,
     auditLogs,
   ] = await Promise.all([
+    readProfiles(client),
+    readMemberships(client),
     readChapters(client),
     readCampaigns(client),
     readPhases(client),
@@ -268,6 +278,8 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
   ]);
 
   return {
+    profiles,
+    memberships,
     chapters,
     campaigns,
     phases,
@@ -286,6 +298,16 @@ export async function readLocalDataSnapshot(client: SupabaseReadonlyClient) {
     automationOutboxRows,
     auditLogs,
   };
+}
+
+export function readProfiles(client: SupabaseReadonlyClient) {
+  return client.selectRows<ProfileRow>("profiles", { query: { order: "email.asc" } });
+}
+
+export function readMemberships(client: SupabaseReadonlyClient) {
+  return client.selectRows<MembershipRow>("memberships", {
+    query: { order: "created_at.asc" },
+  });
 }
 
 export function readChapters(client: SupabaseReadonlyClient) {
@@ -405,6 +427,8 @@ export function getMockReadOnlyAppData(
     },
     chapter: mockChapter,
     campaign: mockCampaign,
+    profiles: [],
+    memberships: [],
     phases: [],
     assignments: mockAssignments,
     campaignTemplates: [],
