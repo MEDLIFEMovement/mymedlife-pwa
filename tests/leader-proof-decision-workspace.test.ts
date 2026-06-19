@@ -6,7 +6,7 @@ import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 const data = getMockReadOnlyAppData("Testing leader proof decisions.");
 
 describe("leader proof decision workspace", () => {
-  it("gives chapter leaders explicit proof decisions without enabling writes", () => {
+  it("gives chapter leaders explicit proof decisions with localhost-only review guidance", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const workspace = getLeaderProofDecisionWorkspace(
       actor,
@@ -25,7 +25,8 @@ describe("leader proof decision workspace", () => {
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
     });
-    expect(workspace.finalPrompt).toContain("points ledger writes");
+    expect(workspace.summary).toContain("localhost-only save panel");
+    expect(workspace.finalPrompt).toContain("private file is attached");
   });
 
   it("shows approve, request changes, and reject controls as disabled options", () => {
@@ -41,6 +42,7 @@ describe("leader proof decision workspace", () => {
       expect.objectContaining({
         status: "ready_for_approval",
         recommendedDecision: "approve",
+        privateUploadStatusLabel: "Raw file not required",
         pointsKpiImpact: "20 local points and KPI: Role-based assignments created.",
         recommendedDecisionRationale:
           "Approve only when every rubric check is clear; otherwise request changes.",
@@ -58,6 +60,19 @@ describe("leader proof decision workspace", () => {
     expect(
       row?.decisionOptions.every((option) => option.disabledReason.length > 30),
     ).toBe(true);
+  });
+
+  it("surfaces private-upload posture without exposing the raw file", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const workspace = getLeaderProofDecisionWorkspace(
+      actor,
+      data.assignments,
+      data.evidenceItems,
+    );
+    const row = workspace.rows.find((item) => item.assignmentId === "proof-pack");
+
+    expect(row?.privateUploadStatusLabel).toBe("Private file attached");
+    expect(row?.privateUploadGuidance).toContain("without exposing the raw file");
   });
 
   it("adds a leader review rubric before any points or KPI decision", () => {

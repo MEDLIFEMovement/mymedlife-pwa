@@ -75,12 +75,16 @@ function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
         <DecisionFact title="Leader next step" body={row.leaderNextStep} />
         <DecisionFact title="Review prompt" body={row.storyContextPrompt} />
         <DecisionFact
           title="Recommended posture"
           body={row.recommendedDecisionRationale}
+        />
+        <DecisionFact
+          title="Private upload"
+          body={`${row.privateUploadStatusLabel}. ${row.privateUploadGuidance}`}
         />
       </div>
 
@@ -111,7 +115,11 @@ function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
 
       <div className="mt-4 rounded-2xl bg-white/[0.05] p-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-          Disabled decision controls
+          Preview decision options
+        </p>
+        <p className="mt-2 text-sm leading-6 text-white/60">
+          The localhost-only save panel below owns the real write path. These buttons
+          stay as a quick decision preview for the current proof row.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {row.decisionOptions.map((option) => (
@@ -131,6 +139,7 @@ function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
       <div className="mt-3 flex flex-wrap gap-2">
         <MiniToken label="Recommended" value={row.recommendedDecision.replaceAll("_", " ")} />
         <MiniToken label="Proof" value={row.proofTypeLabel} />
+        <MiniToken label="Upload" value={row.privateUploadStatusLabel} />
       </div>
     </article>
   );
