@@ -25,7 +25,7 @@ describe("phase 2 environment setup packet", () => {
       "production Supabase project has been created",
     );
     expect(packet.hostedSupabaseState.summary).toContain(
-      "leaked password protection being disabled",
+      "security advisor is clean",
     );
     expect(staging).toMatchObject({
       appHost: "https://staging.mymedlife.org",
@@ -39,7 +39,7 @@ describe("phase 2 environment setup packet", () => {
       "hosted staging auth is proven on staging.mymedlife.org",
     );
     expect(staging?.notes.join(" ")).toContain(
-      "leaked password protection is disabled",
+      "security advisor is now clean after enabling leaked password protection",
     );
   });
 
@@ -125,7 +125,6 @@ describe("phase 2 environment setup packet", () => {
       expect.arrayContaining([
         "Production schema migrations must not be applied until DS/security owners approve the path and rollback evidence.",
         "Hosted auth, RLS, first-write validation, backup checks, monitoring, and rollback owners still need to be named before pilot users are invited.",
-        "Staging Supabase Auth still warns that leaked password protection is disabled and needs an owner decision.",
       ]),
     );
     expect(packet.officialReferences).toHaveLength(5);

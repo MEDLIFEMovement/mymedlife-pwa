@@ -141,7 +141,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
       "The approved repo migrations have been applied to staging, including the MED-492 search-path security cleanup.",
       "The repo now supports a `staging_supabase` auth mode and hosted staging auth is proven on staging.mymedlife.org against the staging project.",
       "Hosted staging now proves signed-in reads plus one narrow membership-approval rehearsal with audit/readback evidence while welcome, CRM, and external sends stay disabled.",
-      "Current staging verification shows all 27 app tables still have RLS enabled, while the Supabase security advisor now reports one auth warning: leaked password protection is disabled.",
+      "Current staging verification shows all 27 app tables still have RLS enabled, and the Supabase security advisor is now clean after enabling leaked password protection.",
       "Backup posture, monitoring, rollback ownership, and final pilot-release sign-off still need to be named before staging is treated as a release candidate.",
     ],
   },
@@ -168,7 +168,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
 
 const hostedSupabaseState: Phase2HostedSupabaseState = {
   summary:
-    "The existing hosted Supabase project is confirmed as staging and the dedicated production Supabase project has been created. Staging is migrated, clean after the MED-492 security cleanup, and now proven for hosted auth plus the narrow membership-approval rehearsal. Current live verification still shows one Supabase auth advisor warning about leaked password protection being disabled, even though all 27 app tables keep RLS enabled. Production is healthy but intentionally empty until DS/security owners approve the production schema application path. Topology B is still not fully provisioned because production env setup, production schema application, and pilot-release ownership remain owner-owned setup work.",
+    "The existing hosted Supabase project is confirmed as staging and the dedicated production Supabase project has been created. Staging is migrated, clean after the MED-492 security cleanup, and now proven for hosted auth plus the narrow membership-approval rehearsal. Current live verification shows all 27 app tables keep RLS enabled and the Supabase security advisor is clean after enabling leaked password protection on staging. Production is healthy but intentionally empty until DS/security owners approve the production schema application path. Topology B is still not fully provisioned because production env setup, production schema application, and pilot-release ownership remain owner-owned setup work.",
   projects: [
     {
       name: "myMEDLIFE",
@@ -191,7 +191,6 @@ const hostedSupabaseState: Phase2HostedSupabaseState = {
     "Preview, staging, and production environment-variable scope still needs to be documented outside source control, with production setup still incomplete.",
     "Production schema migrations must not be applied until DS/security owners approve the path and rollback evidence.",
     "Hosted auth, RLS, first-write validation, backup checks, monitoring, and rollback owners still need to be named before pilot users are invited.",
-    "Staging Supabase Auth still warns that leaked password protection is disabled and needs an owner decision.",
     "External integrations must stay disabled unless separately approved.",
   ],
 };
