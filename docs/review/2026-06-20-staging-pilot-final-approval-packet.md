@@ -96,6 +96,8 @@ Use these as the core review path:
 
 2. Fill-in approval worksheet
    - `docs/review/2026-06-20-staging-pilot-approval-checklist.md`
+   - includes a copy-paste reply block plus the evidence already recorded so
+     reviewers can confirm or correct instead of starting from blanks
 
 3. Hosted review routes
    - `/admin/staff-dry-run`

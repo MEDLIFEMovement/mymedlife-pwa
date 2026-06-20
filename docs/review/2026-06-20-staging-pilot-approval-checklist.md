@@ -37,6 +37,63 @@ when all of the following are true:
 6. Review `/admin/integration-outbox`.
 7. Record the decisions below in one place.
 
+## Fastest reply format
+
+If the reviewers want the shortest possible path, they can reply to the latest
+email, PR comment, or Linear thread by copying this block and filling only the
+blank values:
+
+```text
+Platform/build:
+- approved build:
+- signed-in reviewer session is the intended staging path: yes/no
+- alias re-point needed: yes/no
+- alias owner:
+
+Staff dry run:
+- reviewer names:
+- what passed:
+- what felt confusing:
+- follow-up before pilot:
+
+Device/accessibility:
+- phone:
+- tablet:
+- desktop:
+- offline or PWA:
+- keyboard:
+- screen reader or label audit:
+- blocking issue:
+
+Pilot scope:
+- chapter or cohort:
+- launch window:
+- max students:
+- chapter leader owner:
+- coach owner:
+- HQ/admin owner:
+- DS owner:
+- pause/support channel:
+- pause-message approver:
+
+First hosted write:
+- approved first write lane:
+- rollback owner:
+- disable-write owner:
+- audit/readback proof required:
+- approver after drill:
+
+Integration hold:
+- HubSpot off:
+- Luma writes off:
+- n8n off:
+- warehouse/Power BI off:
+- SMS/email off:
+- AI actions off:
+- read-only exception:
+- escalation owner:
+```
+
 ## Approval worksheet
 
 ### 1. Platform or app owner
@@ -63,6 +120,25 @@ Approval standard:
 Route:
 - `/admin/staff-dry-run`
 
+Evidence already recorded:
+- reviewer lane: Codex route-level hosted review
+- review date: `2026-06-20`
+- build used: `https://staging.mymedlife.org`
+- what passed:
+  - route loads on hosted staging
+  - `8` steps visible
+  - `24` checks visible
+  - `0` browser writes
+  - `0` external sends
+  - `9` local write rehearsal packets visible
+- what felt confusing:
+  - packet still says `before staging`
+  - route mixes walkthrough steps with local write-rehearsal status
+  - `Local Supabase Auth mode is selected` still reads like a local-only note
+
+Use this as a starting point if the human reviewers agree with it, or replace it
+with the final staff-run notes from the reviewer pass.
+
 Record:
 - reviewer names:
 - review date:
@@ -80,6 +156,29 @@ Approval standard:
 Routes:
 - `/admin/design-qa`
 - `/offline`
+
+Evidence already recorded:
+- desktop Safari on hosted staging loads `/admin/design-qa` and `/offline`
+- signed-in Safari narrow-window smoke exists at:
+  - phone-like width: `430px`
+  - tablet-like width: `940px`
+- `/offline` still shows:
+  - the `You are offline` heading
+  - the short recovery explanation
+  - all three return actions
+  - the disabled-offline limitations note
+- current hosted keyboard concern:
+  - first `Tab` appears to move to the hidden
+    `vercel.live/_next-live/feedback/feedback.html` iframe
+  - that iframe is visible in the Safari accessibility tree as a second hosted
+    scroll area
+
+Still missing from the evidence packet:
+- real phone check
+- real tablet check
+- installed-PWA check
+- full keyboard-only signoff
+- full screen-reader or label-audit signoff
 
 Record:
 - phone result:
