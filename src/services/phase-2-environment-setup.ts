@@ -32,22 +32,64 @@ export type Phase2EnvironmentExpectation = {
   evidenceRequired: string;
 };
 
+export type Phase2EnvironmentTopology = {
+  key: "B";
+  label: string;
+  plainEnglishSummary: string;
+  technicalSummary: string;
+};
+
+export type Phase2HostedSupabaseProject = {
+  name: string;
+  ref: string;
+  region: string;
+  status: string;
+  createdAt: string;
+  environmentRole: "unknown" | "staging" | "production";
+};
+
+export type Phase2HostedSupabaseState = {
+  summary: string;
+  projects: Phase2HostedSupabaseProject[];
+  blockers: string[];
+};
+
+export type Phase2EnvironmentOwnerFollowUp = {
+  key: string;
+  label: string;
+  owners: Phase2Owner[];
+  nextAction: string;
+};
+
 export type Phase2EnvironmentSetupPacket = {
   title: string;
   summary: string;
   liveSetupBlocked: true;
+  selectedTopology: Phase2EnvironmentTopology;
+  hostedSupabaseState: Phase2HostedSupabaseState;
   environments: Phase2EnvironmentLane[];
   environmentVariables: Phase2EnvironmentVariablePlan[];
   expectations: Phase2EnvironmentExpectation[];
+  ownerFollowUp: Phase2EnvironmentOwnerFollowUp[];
   blockedLiveActions: string[];
   officialReferences: { label: string; url: string }[];
   counts: {
     environments: number;
+    hostedProjects: number;
     readyForReview: number;
     ownerInputRequired: number;
     browserVariables: number;
     serverOnlyVariables: number;
   };
+};
+
+const selectedTopology: Phase2EnvironmentTopology = {
+  key: "B",
+  label: "Environment path B",
+  plainEnglishSummary:
+    "Use three real lanes: local for development, staging for rehearsal and first approved writes, and production for the live app. Vercel preview stays connected to staging and never production.",
+  technicalSummary:
+    "Topology B = localhost + dedicated staging Supabase/Vercel + dedicated production Supabase/Vercel, with `https://*-<team-or-account-slug>.vercel.app/**` allowed as preview redirect URLs and preview secrets scoped to staging only.",
 };
 
 const environmentLanes: Phase2EnvironmentLane[] = [
@@ -117,6 +159,26 @@ const environmentLanes: Phase2EnvironmentLane[] = [
   },
 ];
 
+const hostedSupabaseState: Phase2HostedSupabaseState = {
+  summary:
+    "Read-only connector inspection currently shows one healthy hosted Supabase project. Its environment role is still unconfirmed, so topology B is not fully provisioned yet.",
+  projects: [
+    {
+      name: "myMEDLIFE",
+      ref: "rceupryepjgkdeqgxzrc",
+      region: "us-east-1",
+      status: "ACTIVE_HEALTHY",
+      createdAt: "2026-06-17",
+      environmentRole: "unknown",
+    },
+  ],
+  blockers: [
+    "Kiomi / DS still needs to confirm whether `rceupryepjgkdeqgxzrc` is meant to be staging or production.",
+    "Whichever role is missing in topology B still needs its own hosted Supabase project.",
+    "Supabase branch listing through the connector still errors, so branch-based environment proof is not available yet.",
+  ],
+};
+
 const environmentVariablePlan: Phase2EnvironmentVariablePlan[] = [
   {
     name: "NEXT_PUBLIC_SUPABASE_URL",
@@ -175,6 +237,37 @@ const environmentVariablePlan: Phase2EnvironmentVariablePlan[] = [
   },
 ];
 
+const environmentOwnerFollowUp: Phase2EnvironmentOwnerFollowUp[] = [
+  {
+    key: "confirm_existing_project_role",
+    label: "Confirm the current hosted project role",
+    owners: ["Kiomi / DS"],
+    nextAction:
+      "Decide whether the existing hosted Supabase project `rceupryepjgkdeqgxzrc` is the staging project or the production project.",
+  },
+  {
+    key: "create_missing_hosted_project",
+    label: "Create the missing hosted Supabase lane",
+    owners: ["Kiomi / DS"],
+    nextAction:
+      "If the current project is staging, create production; if it is production, create staging. Keep local on Docker only.",
+  },
+  {
+    key: "name_staging_domain_and_vercel_env",
+    label: "Name the staging domain and Vercel target",
+    owners: ["Kiomi / DS", "Nick"],
+    nextAction:
+      "Confirm the exact staging domain, attach it to the Vercel staging environment, and keep preview deployments mapped to staging rather than production.",
+  },
+  {
+    key: "load_env_vars_without_source_control",
+    label: "Load environment variables outside source control",
+    owners: ["Kiomi / DS", "Codex"],
+    nextAction:
+      "Populate preview, staging, and production variables in Vercel/Supabase, then hand Codex the approved names and callback URLs without posting secrets into the repo.",
+  },
+];
+
 const environmentExpectations: Phase2EnvironmentExpectation[] = [
   {
     key: "supabase_ownership",
@@ -217,11 +310,14 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
   return {
     title: "MED-472 environment setup checklist",
     summary:
-      "Names the local, preview, staging, and production setup plan for Supabase and Vercel without creating live environments or committing secrets.",
+      "Environment path B is selected: local + staging + production, with preview pointed at staging. This packet keeps the hosted setup reviewable without creating live environments or committing secrets.",
     liveSetupBlocked: true,
+    selectedTopology,
+    hostedSupabaseState,
     environments: environmentLanes,
     environmentVariables: environmentVariablePlan,
     expectations: environmentExpectations,
+    ownerFollowUp: environmentOwnerFollowUp,
     blockedLiveActions: [
       "Creating or linking real Supabase projects",
       "Adding staging or production keys to source control",
@@ -245,9 +341,14 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
         label: "Vercel deployment promotion and rollback",
         url: "https://vercel.com/docs/deployments/promoting-a-deployment",
       },
+      {
+        label: "Vercel system environment variables",
+        url: "https://vercel.com/docs/environment-variables/system-environment-variables",
+      },
     ],
     counts: {
       environments: environmentLanes.length,
+      hostedProjects: hostedSupabaseState.projects.length,
       readyForReview: environmentLanes.filter((lane) => lane.status === "ready_for_review")
         .length,
       ownerInputRequired: environmentLanes.filter(

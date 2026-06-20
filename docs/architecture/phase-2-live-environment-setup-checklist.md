@@ -7,6 +7,28 @@ Date: 2026-06-19
 Define the local, preview, staging, and production setup plan for Supabase and
 Vercel without creating real hosted environments or committing credentials.
 
+## Selected Topology
+
+Environment path `B` is the selected Phase 2 topology.
+
+Plain English:
+
+- local stays for development only
+- staging is where auth, RLS, and the first approved writes get rehearsed
+- production is the real public app
+- Vercel preview can exist for branch review, but it points at staging and never
+  at production
+
+Technical summary:
+
+- dedicated local Docker Supabase
+- dedicated staging Supabase + Vercel staging environment
+- dedicated production Supabase + Vercel production environment
+- Supabase redirect allow-list includes `http://localhost:3000/**`,
+  `http://127.0.0.1:3000/**`, and
+  `https://*-<team-or-account-slug>.vercel.app/**`
+- production keeps an exact site URL and exact callback URL only
+
 ## Named Environments
 
 - Local app: `http://localhost:3000`
@@ -14,6 +36,23 @@ Vercel without creating real hosted environments or committing credentials.
 - Vercel preview: branch and commit preview URLs
 - Staging: exact domain still needs owner confirmation
 - Production: `https://www.mymedlife.org`
+
+## Current Hosted Supabase State
+
+Read-only connector inspection on 2026-06-19 found:
+
+- one healthy hosted project: `myMEDLIFE`
+- project ref: `rceupryepjgkdeqgxzrc`
+- region: `us-east-1`
+- status: `ACTIVE_HEALTHY`
+- created at: `2026-06-17`
+
+What is still unknown:
+
+- whether `rceupryepjgkdeqgxzrc` is meant to be staging or production
+- whether the missing topology-B hosted project has been created elsewhere
+- whether Supabase branch-based environments are available, since branch listing
+  still errors through the connector
 
 ## Supabase Ownership
 
@@ -74,6 +113,25 @@ Production:
 - Agree whether rollback uses Vercel instant rollback, preview promotion, or a
   rebuild-to-production flow.
 - Keep the rollback owner human, not tool-driven.
+
+## Owner Follow-Up
+
+Kiomi / DS:
+
+- confirm whether `rceupryepjgkdeqgxzrc` is the staging project or the
+  production project
+- create whichever hosted project is still missing so topology `B` is real
+- name the exact staging domain and attach it to the Vercel staging environment
+- load preview, staging, and production variables outside source control
+
+Codex:
+
+- wire approved variable names, callback URLs, and route behavior once the human
+  owners provide them safely
+
+Nick:
+
+- approve pilot timing and final go/no-go after staging proof exists
 
 ## Blocked Live Actions
 
