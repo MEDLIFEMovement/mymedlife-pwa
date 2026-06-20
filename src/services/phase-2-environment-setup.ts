@@ -139,6 +139,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
       "The staging domain is confirmed as staging.mymedlife.org.",
       "The hosted Supabase project `rceupryepjgkdeqgxzrc` is confirmed as the staging project.",
       "The approved repo migrations have been applied to staging, including the MED-492 search-path security cleanup.",
+      "The repo now supports a `staging_supabase` auth mode, but Vercel should keep auth disabled until the staging domain and browser env vars are loaded deliberately.",
       "Staging is where auth, RLS, and the first approved writes must be proven before a pilot invite goes out.",
       "Vercel staging, environment variables, backup posture, monitoring, and rollback owner still need to be named before staging is treated as a release candidate.",
     ],
@@ -194,6 +195,14 @@ const hostedSupabaseState: Phase2HostedSupabaseState = {
 };
 
 const environmentVariablePlan: Phase2EnvironmentVariablePlan[] = [
+  {
+    name: "MYMEDLIFE_AUTH_MODE",
+    scope: "server_only",
+    environments: ["local", "preview", "staging", "production"],
+    owners: ["Kiomi / DS", "Codex"],
+    notes:
+      "Keep this `disabled` by default. `local_supabase` is for localhost only. `staging_supabase` is allowed only on staging.mymedlife.org against the staging Supabase project.",
+  },
   {
     name: "NEXT_PUBLIC_SUPABASE_URL",
     scope: "browser",
@@ -324,7 +333,7 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
   return {
     title: "MED-472 environment setup checklist",
     summary:
-      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned and migrated; production Supabase is provisioned but intentionally empty; Vercel staging, environment variables, production schema application, and hosted validation ownership remain blocked outside source control.",
+      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned and migrated; production Supabase is provisioned but intentionally empty; the repo now supports a gated staging-only auth mode; Vercel staging, live environment variables, production schema application, and hosted validation ownership remain blocked outside source control.",
     liveSetupBlocked: true,
     selectedTopology,
     hostedSupabaseState,

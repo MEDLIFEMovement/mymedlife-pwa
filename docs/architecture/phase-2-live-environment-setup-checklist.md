@@ -72,6 +72,14 @@ What is still missing:
 - named owners for hosted auth, RLS, first-write validation, backups,
   monitoring, and rollback evidence
 
+Repo posture already in place:
+
+- the repo now supports `MYMEDLIFE_AUTH_MODE=staging_supabase`
+- that auth mode only enables on `https://staging.mymedlife.org`
+- it only accepts the staging hosted project `rceupryepjgkdeqgxzrc`
+- it refuses the production project and production host
+- it stays disabled if any write or upload flag is set to `true`
+
 ## Supabase Ownership
 
 - Kiomi / DS owns hosted Supabase project creation and key handling.
@@ -98,6 +106,7 @@ Browser:
 
 Server only:
 
+- `MYMEDLIFE_AUTH_MODE`
 - `SUPABASE_SECRET_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (legacy compatibility if retained)
 
@@ -117,11 +126,14 @@ Preview:
 Staging:
 
 - `https://staging.mymedlife.org/auth/callback`
+- keep `MYMEDLIFE_AUTH_MODE=disabled` until the staging domain and env vars are loaded
+- after approval, use `MYMEDLIFE_AUTH_MODE=staging_supabase` only on the custom staging domain
 
 Production:
 
 - `https://www.mymedlife.org/auth/callback`
 - exact production Site URL only
+- keep `MYMEDLIFE_AUTH_MODE=disabled` until a separate production auth approval exists
 
 ## Backup, Monitoring, And Rollback Expectations
 

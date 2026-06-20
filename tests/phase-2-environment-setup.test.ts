@@ -32,12 +32,16 @@ describe("phase 2 environment setup packet", () => {
     expect(staging?.notes.join(" ")).toContain(
       "The hosted Supabase project `rceupryepjgkdeqgxzrc` is confirmed as the staging project.",
     );
+    expect(staging?.notes.join(" ")).toContain(
+      "The repo now supports a `staging_supabase` auth mode",
+    );
   });
 
   it("captures browser and server-only key boundaries without secrets", () => {
     const packet = getPhase2EnvironmentSetupPacket();
 
     expect(packet.environmentVariables.map((item) => item.name)).toEqual([
+      "MYMEDLIFE_AUTH_MODE",
       "NEXT_PUBLIC_SUPABASE_URL",
       "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
       "NEXT_PUBLIC_SUPABASE_ANON_KEY",
@@ -47,7 +51,7 @@ describe("phase 2 environment setup packet", () => {
       "NEXT_PUBLIC_VERCEL_URL",
     ]);
     expect(packet.counts.browserVariables).toBe(5);
-    expect(packet.counts.serverOnlyVariables).toBe(2);
+    expect(packet.counts.serverOnlyVariables).toBe(3);
     expect(
       packet.environmentVariables.find(
         (item) => item.name === "SUPABASE_SECRET_KEY",
@@ -55,6 +59,14 @@ describe("phase 2 environment setup packet", () => {
     ).toMatchObject({
       scope: "server_only",
       environments: ["staging", "production"],
+    });
+    expect(
+      packet.environmentVariables.find(
+        (item) => item.name === "MYMEDLIFE_AUTH_MODE",
+      ),
+    ).toMatchObject({
+      scope: "server_only",
+      environments: ["local", "preview", "staging", "production"],
     });
   });
 

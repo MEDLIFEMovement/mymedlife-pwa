@@ -15,8 +15,9 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage() {
   const { client, config } = await createLocalSupabaseServerClient();
   const session = client
-    ? await getAuthSessionState(client)
+    ? await getAuthSessionState(client, config)
     : getDisabledAuthSessionState(config);
+  const isHostedStaging = config.isHostedStaging;
 
   return (
     <AppShell>
@@ -27,17 +28,24 @@ export default async function LoginPage() {
         <div className="mt-4 grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <div>
             <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-              Local sign-in is the bridge from review mode to real MVP behavior.
+              {isHostedStaging
+                ? "Staging sign-in is the review gate before the first hosted write."
+                : "Local sign-in is the bridge from review mode to real MVP behavior."}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
-              This page adds Supabase Auth session plumbing for fake local users.
-              It is the next required step before browser writes can safely use
-              server-derived identity instead of the local role switcher.
+              {isHostedStaging
+                ? "This page proves Supabase Auth on staging.mymedlife.org only, using the approved staging project while production auth, uploads, and external sends remain blocked."
+                : "This page adds Supabase Auth session plumbing for fake local users. It is the next required step before browser writes can safely use server-derived identity instead of the local role switcher."}
             </p>
           </div>
           <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
             <p className="text-sm font-semibold text-white">Safety boundary</p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-white/64">
+              <li>
+                {isHostedStaging
+                  ? "Hosted auth is allowed only on staging.mymedlife.org."
+                  : "Hosted auth remains disabled outside localhost."}
+              </li>
               <li>Production auth remains disabled.</li>
               <li>Browser writes remain disabled.</li>
               <li>Proof uploads and public sharing remain disabled.</li>
@@ -54,26 +62,47 @@ export default async function LoginPage() {
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-        <LoginForm />
+        <LoginForm config={config} />
         <AuthSessionPanel session={session} />
       </div>
 
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-        <h2 className="text-xl font-semibold text-white">How to test locally</h2>
-        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/64">
-          <li>Run the local Supabase stack and seed data.</li>
-          <li>
-            Set <code className="text-emerald-100">MYMEDLIFE_AUTH_MODE=local_supabase</code>.
-          </li>
-          <li>
-            Set the local <code className="text-emerald-100">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>.
-          </li>
-          <li>Sign in with any fake seed user and password `password`.</li>
-          <li>
-            Use <Link href="/admin" className="text-emerald-100 underline">Admin</Link>{" "}
-            to confirm writes and external sends are still blocked.
-          </li>
-        </ol>
+        <h2 className="text-xl font-semibold text-white">
+          {isHostedStaging ? "How staging auth stays safe" : "How to test locally"}
+        </h2>
+        {isHostedStaging ? (
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/64">
+            <li>Keep the site host on `https://staging.mymedlife.org`.</li>
+            <li>
+              Set <code className="text-emerald-100">MYMEDLIFE_AUTH_MODE=staging_supabase</code>{" "}
+              only in the approved staging environment.
+            </li>
+            <li>
+              Load the staging <code className="text-emerald-100">NEXT_PUBLIC_SUPABASE_URL</code>{" "}
+              and browser key outside source control.
+            </li>
+            <li>Keep every write flag, upload flag, and external-send path disabled.</li>
+            <li>
+              Use <Link href="/admin" className="text-emerald-100 underline">Admin</Link>{" "}
+              to confirm the review posture before any hosted write proof starts.
+            </li>
+          </ol>
+        ) : (
+          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-white/64">
+            <li>Run the local Supabase stack and seed data.</li>
+            <li>
+              Set <code className="text-emerald-100">MYMEDLIFE_AUTH_MODE=local_supabase</code>.
+            </li>
+            <li>
+              Set the local <code className="text-emerald-100">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>.
+            </li>
+            <li>Sign in with any fake seed user and password `password`.</li>
+            <li>
+              Use <Link href="/admin" className="text-emerald-100 underline">Admin</Link>{" "}
+              to confirm writes and external sends are still blocked.
+            </li>
+          </ol>
+        )}
       </section>
     </AppShell>
   );
