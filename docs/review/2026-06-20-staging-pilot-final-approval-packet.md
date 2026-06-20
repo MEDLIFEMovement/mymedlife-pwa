@@ -6,6 +6,7 @@ Primary hosted build: `https://staging.mymedlife.org`
 Companion notes:
 - `docs/review/2026-06-20-hosted-staging-pilot-evidence.md`
 - `docs/review/2026-06-20-staging-pilot-approval-checklist.md`
+- `docs/review/2026-06-20-staging-pilot-approval-delta.md`
 
 ## Purpose
 
@@ -104,7 +105,12 @@ Use these as the core review path:
    - includes a copy-paste reply block plus the evidence already recorded so
      reviewers can confirm or correct instead of starting from blanks
 
-3. Hosted review routes
+3. Approval delta summary
+   - `docs/review/2026-06-20-staging-pilot-approval-delta.md`
+   - shows what current evidence already supports, what is only a proposed
+     default, and which blanks still belong to human approvers
+
+4. Hosted review routes
    - `/admin/staff-dry-run`
    - `/admin/design-qa`
    - `/offline`
@@ -114,7 +120,7 @@ Use these as the core review path:
    - `/admin/operations`
    - `/admin/launch-gate`
 
-4. Latest PR preview for newer packet copy
+5. Latest PR preview for newer packet copy
    - `https://mymedlife-pwa-git-fix-med-486-stag-07feff-nellis-6036s-projects.vercel.app`
    - use this for the newest review-packet language when alias drift is the
      question
@@ -143,6 +149,35 @@ Reviewers can use either of these paths:
 
 The defaults below are intentionally conservative. They are proposed answers
 from current evidence, not completed approvals.
+
+## Approval delta at a glance
+
+If reviewers accept the current evidence as written, this packet already
+proposes the following defaults:
+
+- staging should remain the final signoff target, even if packet-copy review
+  temporarily uses the PR preview
+- the staff dry run is a conditional pass for a tiny pilot review
+- desktop Safari, narrow signed-in phone-like width, narrow signed-in
+  tablet-like width, and the offline route all have enough evidence to stay in
+  the packet
+- the planning default pilot shape is one chapter, Rush Month only, `5-10`
+  students, with `UCLA MEDLIFE` used only as a planning placeholder
+- the first hosted write default remains `action_started`
+- downstream systems remain off unless explicitly approved later
+
+What the packet still needs from humans is narrower:
+
+- one platform decision about final staging-target alignment
+- one human confirmation pass on the device and accessibility notes
+- named pilot owners and support path
+- explicit first-write approval ownership
+- explicit DS confirmation that downstream systems stay off
+
+Use the delta summary note if a reviewer wants the shortest version of these
+remaining asks:
+
+- `docs/review/2026-06-20-staging-pilot-approval-delta.md`
 
 ## What still blocks completion of this goal
 
@@ -291,6 +326,11 @@ Current evidence:
 - `/offline` still shows the expected honest recovery copy and disabled
   limitations
 - the hidden Vercel iframe still takes first `Tab` focus on hosted staging
+- repo-side accessibility sanity check confirms:
+  - the shared app shell exposes a skip link to `#main-content`
+  - the shared shell includes a matching `id="main-content"` focus target
+  - shared navigation uses explicit `aria-label` values
+  - the offline route exposes a semantic `main` and visible `h1`
 
 Recommended default answer:
 - desktop Safari: pass
@@ -305,6 +345,8 @@ Why this is the default:
   remaining accessibility question
 - the keyboard concern now looks cross-route and shell-related, but that still
   needs one human pass before it can be closed
+- the repo-side shell semantics make it less likely that the first-focus issue
+  comes from missing in-app skip-link or landmark wiring
 
 Still needs human confirmation:
 - one human keyboard-only pass
@@ -327,6 +369,9 @@ Current evidence:
 - staging already recommends one chapter, Rush Month only, and `action_started`
   first
 - seeded chapter context is strongest for `UCLA MEDLIFE`
+- the hosted planning route still shows the broader seeded `5-15` range, so
+  this packet keeps `5-10` only as the tighter proposed default, not as a
+  claimed hosted approval
 
 Recommended default answer:
 - one chapter only

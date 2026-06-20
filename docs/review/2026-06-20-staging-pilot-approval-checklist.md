@@ -4,6 +4,7 @@ Date: 2026-06-20
 Primary build under review: `https://staging.mymedlife.org`
 Companion evidence note: `docs/review/2026-06-20-hosted-staging-pilot-evidence.md`
 Final approval packet: `docs/review/2026-06-20-staging-pilot-final-approval-packet.md`
+Approval delta: `docs/review/2026-06-20-staging-pilot-approval-delta.md`
 
 ## Why this note exists
 
@@ -36,6 +37,45 @@ when all of the following are true:
 5. Review `/admin/first-write`.
 6. Review `/admin/integration-outbox`.
 7. Record the decisions below in one place.
+
+## Ten-minute reviewer scripts
+
+Use these only to make review faster. They do not replace the final approval
+decisions.
+
+### `/admin/design-qa`
+
+1. Confirm the top summary counts are visible without clipping.
+2. Confirm the route still shows three sections:
+   - phone-sized route smoke
+   - keyboard and screen-reader smoke
+   - device and PWA release smoke
+3. Press `Tab` once and note whether focus lands inside the visible app or in
+   the hidden Vercel feedback iframe.
+4. Confirm the route still reads as a review packet, not as launch approval.
+5. Record whether the keyboard issue feels like hosted-shell noise or a real
+   pilot blocker.
+
+### `/offline`
+
+1. Confirm the `You are offline` heading is visible immediately.
+2. Confirm all three return actions are visible:
+   - `Home`
+   - `Rush Month`
+   - `Actions`
+3. Confirm the bottom note still says offline mode does not submit, upload,
+   update points, send nudges, or run external automation.
+4. Press `Tab` once and note whether focus lands on a visible action or in the
+   hidden Vercel feedback iframe.
+
+### `/admin/pilot-scope`
+
+1. Confirm the route still recommends one chapter and Rush Month only.
+2. Treat `UCLA MEDLIFE` as a planning placeholder unless Nick or HQ says
+   otherwise.
+3. Decide whether `5-10` students is accepted as the tiny-pilot default or
+   should be replaced.
+4. Fill only the owner fields that are ready to be named now.
 
 ## Fastest reply format
 
@@ -100,6 +140,17 @@ Integration hold:
 ```
 
 ## Approval worksheet
+
+## Smallest remaining approval delta
+
+If the reviewers agree with the recommended defaults, the only things still
+needed are:
+
+- final platform/app-owner decision on staging-target alignment
+- one human accessibility confirmation pass
+- named pilot owners and support path
+- first hosted write approval ownership
+- DS confirmation that downstream systems stay off
 
 ### 1. Platform or app owner
 
@@ -198,6 +249,11 @@ Evidence already recorded:
     `vercel.live/_next-live/feedback/feedback.html` iframe
   - that iframe is visible in the Safari accessibility tree as a second hosted
     scroll area
+- repo-side accessibility sanity check:
+  - `src/components/app-shell.tsx` defines a skip link to `#main-content`
+  - the same file defines the matching `id="main-content"` focus target
+  - shared navigation uses explicit `aria-label` values
+  - `src/app/offline/page.tsx` exposes semantic `main` and `h1` structure
 
 Still missing from the evidence packet:
 - real phone check
@@ -257,6 +313,11 @@ Recommended default answer:
 - `5-10` students
 - proposed planning chapter: `UCLA MEDLIFE`
 - all owner names remain pending by role until Nick/HQ and DS confirm them
+
+Guardrail:
+- `UCLA MEDLIFE` is a planning default only, because the hosted route still
+  exposes the broader seeded `5-15` range and does not by itself approve the
+  final pilot chapter
 
 What still requires human confirmation:
 - exact chapter or internal cohort

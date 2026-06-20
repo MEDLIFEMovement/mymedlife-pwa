@@ -17,6 +17,11 @@ Final approval packet:
   single go or no-go packet for the first hosted write and one-chapter live MVP
   pilot decision
 
+Approval delta summary:
+- use `docs/review/2026-06-20-staging-pilot-approval-delta.md` for the
+  shortest reviewer-facing summary of what is already supported versus what
+  still needs named human approval
+
 ## What was confirmed on hosted staging
 
 ### 0. Deployment alignment explains the staging mismatch
@@ -394,6 +399,28 @@ Current hosted interpretation:
   accessibility gate should stay open until keyboard behavior is rechecked on
   the final hosted review path
 
+### 6.25 Repo-side accessibility sanity check supports the shell-noise theory
+
+Read-only source inspected:
+- `src/components/app-shell.tsx`
+- `src/components/app-navigation.tsx`
+- `src/app/offline/page.tsx`
+
+Observed in the repo:
+- the shared shell defines a visible-on-focus skip link targeting
+  `#main-content`
+- the shared shell defines the matching `id="main-content"` focus target with
+  `tabIndex={-1}`
+- shared primary and mobile navigation both use explicit `aria-label` values
+- the offline route uses semantic `main` plus a visible top-level `h1`
+
+Interpretation:
+- the repo already contains the basic in-app focus target and landmark wiring
+- the hosted first-Tab problem is therefore more consistent with staging-shell
+  interference than with a missing skip-link or missing main-content target
+- this does not close the accessibility gate, but it makes the remaining human
+  keyboard pass easier to interpret
+
 ### 6.5 Signed-in home route shows the same hosted keyboard issue
 
 Route: `/`
@@ -460,6 +487,43 @@ Current hosted interpretation:
   installed-PWA or mobile-device proof check
 - this is still not full device or installed-PWA proof, but it is stronger
   release-build evidence than a route plan alone
+
+### 7.5 Recommended final reviewer scripts
+
+Use these as the fastest final smoke checks before signoff:
+
+- `/admin/design-qa`
+  - confirm the top counts load
+  - confirm the phone, accessibility, and device/PWA sections are visible
+  - press `Tab` once and record whether focus lands in the visible app or the
+    hidden Vercel iframe
+  - record whether that focus result is considered non-blocking shell noise or
+    a pilot blocker
+- `/offline`
+  - confirm the `You are offline` heading is visible
+  - confirm `Home`, `Rush Month`, and `Actions` are visible
+  - confirm the route still says offline mode does not submit, upload, update
+    points, send nudges, or run external automation
+  - press `Tab` once and record whether focus lands in the visible app or the
+    hidden Vercel iframe
+- `/admin/pilot-scope`
+  - treat `UCLA MEDLIFE` as a planning placeholder only
+  - decide whether `5-10` students is accepted as the tiny-pilot default
+  - fill any owner fields that are actually ready to be named now
+
+### 7.75 Pilot-scope default is now intentionally tighter than the hosted seed
+
+Observed tension:
+- the hosted planning route still shows the broader seeded `5-15` student
+  range
+- the final packet recommends the tighter `5-10` range
+
+Interpretation:
+- this is an intentional decision-framing choice, not hidden drift
+- the packet is tightening the proposed default to the smallest reasonable live
+  pilot shape
+- `UCLA MEDLIFE` is still only a planning placeholder until Nick or HQ names
+  the real first chapter or internal cohort
 
 ### 8. Admin operations route proves the hosted review packet is still stale
 
