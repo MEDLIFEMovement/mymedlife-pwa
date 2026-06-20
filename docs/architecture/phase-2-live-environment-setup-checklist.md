@@ -41,12 +41,11 @@ Technical summary:
 
 Connector and CLI verification on 2026-06-20 found:
 
-- one healthy hosted project: `myMEDLIFE`
-- project ref: `rceupryepjgkdeqgxzrc`
-- environment role: staging
-- region: `us-east-1`
-- status: `ACTIVE_HEALTHY`
-- created at: `2026-06-17`
+- staging hosted project: `myMEDLIFE`
+- staging project ref: `rceupryepjgkdeqgxzrc`
+- staging region: `us-east-1`
+- staging status: `ACTIVE_HEALTHY`
+- staging created at: `2026-06-17`
 - repo migrations applied: 11
 - latest migration: `20260620093821_fix_function_search_path_warnings`
 - app schema tables: 27
@@ -55,12 +54,21 @@ Connector and CLI verification on 2026-06-20 found:
 - edge functions: 0
 - Supabase security advisor: no lints after MED-492
 - final migration dry run: remote database is up to date
+- production hosted project: `myMEDLIFE Production`
+- production project ref: `fnlhontvvprwgooevzdl`
+- production region: `us-east-1`
+- production status: `ACTIVE_HEALTHY`
+- production created at: `2026-06-20`
+- production migrations: 0
+- production security advisor: no lints
+- production app schema/data/auth/storage/integrations: not applied
 
 What is still missing:
 
-- the dedicated production Supabase project
 - Vercel staging attachment for `staging.mymedlife.org`
 - preview, staging, and production environment variables outside source control
+- approval for if/when Codex should apply the approved schema migrations to
+  production, with rollback evidence
 - named owners for hosted auth, RLS, first-write validation, backups,
   monitoring, and rollback evidence
 
@@ -127,8 +135,8 @@ Production:
 
 Kiomi / DS:
 
-- create the missing production Supabase project after explicit cost and owner
-  approval
+- review the empty production Supabase project and approve whether/when Codex
+  should apply the already-approved schema migrations to production
 - attach `staging.mymedlife.org` to the Vercel staging environment
 - load preview, staging, and production variables outside source control
 - name owners for hosted auth, RLS, first-write validation, backups,
@@ -149,8 +157,8 @@ Nick:
 
 Do not do the following from this issue alone:
 
-- create the production Supabase project without explicit cost and owner
-  approval
+- apply production schema migrations or enable production writes without
+  DS/security approval
 - add staging or production keys to source control
 - point the live domain at an unapproved deployment
 - promote preview to production before the security gate is satisfied

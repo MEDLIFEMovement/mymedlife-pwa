@@ -15,14 +15,14 @@ describe("phase 2 environment setup packet", () => {
       "production",
     ]);
     expect(packet.counts.environments).toBe(4);
-    expect(packet.counts.hostedProjects).toBe(1);
-    expect(packet.counts.readyForReview).toBe(3);
-    expect(packet.counts.ownerInputRequired).toBe(1);
+    expect(packet.counts.hostedProjects).toBe(2);
+    expect(packet.counts.readyForReview).toBe(2);
+    expect(packet.counts.ownerInputRequired).toBe(2);
     expect(packet.hostedSupabaseState.summary).toContain(
       "confirmed as staging",
     );
     expect(packet.hostedSupabaseState.summary).toContain(
-      "security advisor currently returns no lints",
+      "production Supabase project has been created",
     );
     expect(staging).toMatchObject({
       appHost: "https://staging.mymedlife.org",
@@ -70,13 +70,13 @@ describe("phase 2 environment setup packet", () => {
     ]);
     expect(packet.blockedLiveActions).toEqual(
       expect.arrayContaining([
-        "Creating the production Supabase project without explicit cost and owner approval",
+        "Applying production schema migrations or enabling production writes without DS/security approval",
         "Adding staging or production keys to source control",
         "Promoting a preview deployment to production before the security gate is approved",
       ]),
     );
     expect(packet.ownerFollowUp.map((item) => item.key)).toEqual([
-      "create_production_supabase_project",
+      "approve_production_schema_path",
       "assign_staging_validation_owners",
       "name_staging_domain_and_vercel_env",
       "load_env_vars_without_source_control",
@@ -96,10 +96,15 @@ describe("phase 2 environment setup packet", () => {
         ref: "rceupryepjgkdeqgxzrc",
         environmentRole: "staging",
       }),
+      expect.objectContaining({
+        name: "myMEDLIFE Production",
+        ref: "fnlhontvvprwgooevzdl",
+        environmentRole: "production",
+      }),
     ]);
     expect(packet.hostedSupabaseState.blockers).toEqual(
       expect.arrayContaining([
-        "The production Supabase project still needs explicit owner approval and creation.",
+        "Production schema migrations must not be applied until DS/security owners approve the path and rollback evidence.",
         "Hosted auth, RLS, and first-write validation still need approved owners before pilot users are invited.",
       ]),
     );

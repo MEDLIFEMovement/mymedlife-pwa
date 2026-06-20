@@ -147,15 +147,18 @@ const environmentLanes: Phase2EnvironmentLane[] = [
     key: "production",
     label: "Production",
     owners: ["Kiomi / DS", "Nick"],
-    status: "ready_for_review",
+    status: "owner_input_required",
     appHost: "https://www.mymedlife.org",
     authCallback: "https://www.mymedlife.org/auth/callback",
     redirectPattern: "Exact production URL only",
     supabaseProject: "Dedicated production Supabase project",
     vercelEnvironment: "Production",
     notes: [
+      "The production Supabase project `fnlhontvvprwgooevzdl` has been created and is ACTIVE_HEALTHY.",
+      "Production migrations are intentionally empty until DS/security owners approve the production schema application path.",
       "Production Site URL should be the public myMEDLIFE domain, not localhost.",
       "Production secret and service-role keys stay server-only and human-owned.",
+      "No production app data, auth/storage setup, or external integrations were applied during project creation.",
       "Production promotion and rollback must be run from an approved deployment, not by swapping hidden environment values in the browser.",
     ],
   },
@@ -163,7 +166,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
 
 const hostedSupabaseState: Phase2HostedSupabaseState = {
   summary:
-    "The existing hosted Supabase project is now confirmed as staging. Repo migrations have been applied there, the MED-492 security cleanup is in place, and the Supabase security advisor currently returns no lints. Topology B is still not fully provisioned because production, Vercel staging, and live environment variables remain owner-owned setup work.",
+    "The existing hosted Supabase project is confirmed as staging and the dedicated production Supabase project has been created. Staging is migrated and clean after the MED-492 security cleanup. Production is healthy but intentionally empty until DS/security owners approve the production schema application path. Topology B is still not fully provisioned because Vercel staging, live environment variables, production schema application, and hosted validation ownership remain owner-owned setup work.",
   projects: [
     {
       name: "myMEDLIFE",
@@ -173,11 +176,19 @@ const hostedSupabaseState: Phase2HostedSupabaseState = {
       createdAt: "2026-06-17",
       environmentRole: "staging",
     },
+    {
+      name: "myMEDLIFE Production",
+      ref: "fnlhontvvprwgooevzdl",
+      region: "us-east-1",
+      status: "ACTIVE_HEALTHY",
+      createdAt: "2026-06-20",
+      environmentRole: "production",
+    },
   ],
   blockers: [
-    "The production Supabase project still needs explicit owner approval and creation.",
     "Vercel still needs `staging.mymedlife.org` attached to the staging environment.",
     "Preview, staging, and production environment variables still need to be loaded outside source control.",
+    "Production schema migrations must not be applied until DS/security owners approve the path and rollback evidence.",
     "Hosted auth, RLS, and first-write validation still need approved owners before pilot users are invited.",
   ],
 };
@@ -242,11 +253,11 @@ const environmentVariablePlan: Phase2EnvironmentVariablePlan[] = [
 
 const environmentOwnerFollowUp: Phase2EnvironmentOwnerFollowUp[] = [
   {
-    key: "create_production_supabase_project",
-    label: "Create the production Supabase lane",
+    key: "approve_production_schema_path",
+    label: "Approve the production schema path",
     owners: ["Kiomi / DS"],
     nextAction:
-      "Create the missing production Supabase project after explicit cost and owner approval. Keep `rceupryepjgkdeqgxzrc` as staging.",
+      "Review the empty production Supabase project, then approve whether and when Codex should apply the already-approved schema migrations with rollback evidence.",
   },
   {
     key: "assign_staging_validation_owners",
@@ -313,7 +324,7 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
   return {
     title: "MED-472 environment setup checklist",
     summary:
-      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned and migrated; production, Vercel staging, environment variables, and hosted validation ownership remain blocked outside source control.",
+      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned and migrated; production Supabase is provisioned but intentionally empty; Vercel staging, environment variables, production schema application, and hosted validation ownership remain blocked outside source control.",
     liveSetupBlocked: true,
     selectedTopology,
     hostedSupabaseState,
@@ -322,7 +333,7 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
     expectations: environmentExpectations,
     ownerFollowUp: environmentOwnerFollowUp,
     blockedLiveActions: [
-      "Creating the production Supabase project without explicit cost and owner approval",
+      "Applying production schema migrations or enabling production writes without DS/security approval",
       "Adding staging or production keys to source control",
       "Pointing production DNS at a live Vercel deployment",
       "Promoting a preview deployment to production before the security gate is approved",
