@@ -107,6 +107,7 @@ Browser:
 Server only:
 
 - `MYMEDLIFE_AUTH_MODE`
+- `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES` (staging only; keep false unless one hosted write rehearsal is approved)
 - `SUPABASE_SECRET_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (legacy compatibility if retained)
 
@@ -128,6 +129,7 @@ Staging:
 - `https://staging.mymedlife.org/auth/callback`
 - keep `MYMEDLIFE_AUTH_MODE=disabled` until the staging domain and env vars are loaded
 - after approval, use `MYMEDLIFE_AUTH_MODE=staging_supabase` only on the custom staging domain
+- keep `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=false` until one narrow hosted write rehearsal is intentionally opened
 
 Production:
 

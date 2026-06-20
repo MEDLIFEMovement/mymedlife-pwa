@@ -1,3 +1,6 @@
+import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthSessionState } from "@/services/auth-session";
+
 type EnvSource = Record<string, string | undefined>;
 
 export type SupabaseReadConfig =
@@ -23,6 +26,17 @@ export type SupabaseReadonlyClient = {
     options?: SupabaseSelectOptions,
   ) => Promise<TRow[]>;
 };
+
+export type HostedStagingSessionReadonlyResult =
+  | {
+      enabled: true;
+      client: SupabaseReadonlyClient;
+      reason: string;
+    }
+  | {
+      enabled: false;
+      reason: string;
+    };
 
 export function getSupabaseReadConfig(env: EnvSource = process.env): SupabaseReadConfig {
   if (env.MYMEDLIFE_DATA_SOURCE !== "supabase") {
@@ -108,6 +122,67 @@ export function createSupabaseReadonlyClient(
   };
 }
 
+export function createSupabaseQueryReadonlyClient(
+  client: NonNullable<
+    Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"]
+  >,
+): SupabaseReadonlyClient {
+  return {
+    async selectRows<TRow>(
+      tableName: string,
+      options: SupabaseSelectOptions = {},
+    ): Promise<TRow[]> {
+      let query = client.schema("app").from(tableName).select(options.select ?? "*");
+      const order = parseOrder(options.query?.order);
+
+      if (order) {
+        query = query.order(order.column, {
+          ascending: order.ascending,
+          nullsFirst: order.nullsFirst,
+        });
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(
+          `Supabase query read failed for ${tableName}: ${error.message}`,
+        );
+      }
+
+      return (data ?? []) as TRow[];
+    },
+  };
+}
+
+export async function getHostedStagingSessionReadonlyClient(
+  env: EnvSource = process.env,
+): Promise<HostedStagingSessionReadonlyResult> {
+  const { client, config } = await createLocalSupabaseServerClient(env);
+
+  if (!client || !config.isHostedStaging) {
+    return {
+      enabled: false,
+      reason: config.reason,
+    };
+  }
+
+  const session = await getAuthSessionState(client, config);
+
+  if (session.status !== "signed_in") {
+    return {
+      enabled: false,
+      reason: session.message,
+    };
+  }
+
+  return {
+    enabled: true,
+    client: createSupabaseQueryReadonlyClient(client),
+    reason: "Reading hosted staging Supabase data for the signed-in session.",
+  };
+}
+
 function isLocalSupabaseUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -123,4 +198,27 @@ function isLocalSupabaseUrl(url: string): boolean {
 
 function stripTrailingSlash(value: string): string {
   return value.endsWith("/") ? value.slice(0, -1) : value;
+}
+
+function parseOrder(
+  value: string | undefined,
+): { column: string; ascending: boolean; nullsFirst?: boolean } | null {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const [column, direction = "asc", nulls] = trimmed.split(".");
+
+  if (!column) {
+    return null;
+  }
+
+  return {
+    column,
+    ascending: direction !== "desc",
+    nullsFirst:
+      nulls === "nullsfirst" ? true : nulls === "nullslast" ? false : undefined,
+  };
 }

@@ -42,6 +42,7 @@ describe("phase 2 environment setup packet", () => {
 
     expect(packet.environmentVariables.map((item) => item.name)).toEqual([
       "MYMEDLIFE_AUTH_MODE",
+      "MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES",
       "NEXT_PUBLIC_SUPABASE_URL",
       "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
       "NEXT_PUBLIC_SUPABASE_ANON_KEY",
@@ -51,7 +52,7 @@ describe("phase 2 environment setup packet", () => {
       "NEXT_PUBLIC_VERCEL_URL",
     ]);
     expect(packet.counts.browserVariables).toBe(5);
-    expect(packet.counts.serverOnlyVariables).toBe(3);
+    expect(packet.counts.serverOnlyVariables).toBe(4);
     expect(
       packet.environmentVariables.find(
         (item) => item.name === "SUPABASE_SECRET_KEY",

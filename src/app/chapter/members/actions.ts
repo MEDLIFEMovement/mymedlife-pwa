@@ -52,7 +52,7 @@ export async function submitMembershipApprovalForLocalSupabase(
       code: "join_request_not_found",
       membershipId: null,
       plainEnglishMessage:
-        "The current chapter or join request uses mock data, not local Supabase UUIDs, so no membership was approved.",
+        "The current chapter or join request uses mock data instead of approved Supabase UUIDs, so no membership was approved.",
     };
   }
 
@@ -95,7 +95,7 @@ export async function submitMembershipApprovalForLocalSupabase(
       code: "missing_auth",
       membershipId: null,
       plainEnglishMessage:
-        "Sign in with a local Supabase chapter leader, Admin, or Super Admin seed user before approving membership.",
+        "Sign in with an approved chapter leader, Admin, or Super Admin reviewer before approving membership.",
     };
   }
 
@@ -122,7 +122,7 @@ export async function submitMembershipApprovalForLocalSupabase(
       code: "server_error",
       membershipId: null,
       plainEnglishMessage:
-        "Local Supabase did not return the expected membership approval record. No welcome message, CRM sync, or external automation ran.",
+        "Supabase did not return the expected membership approval record. No welcome message, CRM sync, or external automation ran.",
     };
   }
 

@@ -204,6 +204,14 @@ const environmentVariablePlan: Phase2EnvironmentVariablePlan[] = [
       "Keep this `disabled` by default. `local_supabase` is for localhost only. `staging_supabase` is allowed only on staging.mymedlife.org against the staging Supabase project.",
   },
   {
+    name: "MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES",
+    scope: "server_only",
+    environments: ["staging"],
+    owners: ["Kiomi / DS", "Codex"],
+    notes:
+      "Leave this `false` until one approved hosted staging write rehearsal is underway. This is the master switch for staged write proof and should stay off outside the narrow validation window.",
+  },
+  {
     name: "NEXT_PUBLIC_SUPABASE_URL",
     scope: "browser",
     environments: ["local", "preview", "staging", "production"],
