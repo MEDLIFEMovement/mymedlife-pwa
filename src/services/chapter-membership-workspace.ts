@@ -346,7 +346,9 @@ export function getChapterMembershipWorkspace(
     summary: getSummary(actor, data.chapter.name),
     safetyNote:
       membershipApprovalEnabled
-        ? "Local membership approval is enabled for localhost Supabase only. Welcome messages, CRM syncs, role changes, committee moves, and deactivation still stay disabled."
+        ? membershipApprovalPacket?.writeReadiness.config.isHostedStaging
+          ? "Hosted staging membership approval is enabled for staging.mymedlife.org only. Welcome messages, CRM syncs, role changes, committee moves, and deactivation still stay disabled."
+          : "Local membership approval is enabled for localhost Supabase only. Welcome messages, CRM syncs, role changes, committee moves, and deactivation still stay disabled."
         : "This is a read-only membership workspace. Future join approvals, role changes, and committee moves must create structured events and audit logs, but every control remains disabled here.",
     allowedAudiences,
     counts: {
@@ -436,7 +438,7 @@ function buildMembershipApprovalPacket(
   if (!request) {
     return null;
   }
-  const auditReason = "Approve local Rush Month join request for chapter review.";
+  const auditReason = "Approve Rush Month join request for chapter review.";
   const input = {
     joinRequestId: request.id,
     applicantEmail: request.email,
@@ -484,7 +486,9 @@ function buildMembershipApprovalPacket(
     resultPreview,
     writeReadiness,
     readinessReason: writeReadiness.canSubmit
-      ? "This packet is now backed by the local-only membership approval server action and readback path. Welcome messages, CRM syncs, and external writes still remain disabled."
+      ? writeReadiness.config.isHostedStaging
+        ? "This packet is now backed by the hosted staging membership approval server action and readback path. Welcome messages, CRM syncs, and external writes still remain disabled."
+        : "This packet is now backed by the local-only membership approval server action and readback path. Welcome messages, CRM syncs, and external writes still remain disabled."
       : "This packet previews the first membership approval write and Goal 162 readiness checks, but production auth, RLS review, rollback, and audit readback must be approved before the control is enabled.",
     readinessChecks: [
       {
@@ -502,7 +506,9 @@ function buildMembershipApprovalPacket(
       },
       {
         key: "live_auth_required",
-        label: "Signed-in local auth is required before approval",
+        label: writeReadiness.config.isHostedStaging
+          ? "Signed-in hosted staging Supabase Auth session is required before approval"
+          : "Signed-in local Supabase Auth session is required before approval",
         passed:
           actor.identitySource === "local_auth_session" &&
           actor.authSessionStatus === "signed_in",
