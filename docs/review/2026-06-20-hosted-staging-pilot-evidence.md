@@ -234,6 +234,44 @@ Current hosted interpretation:
   accessibility gate should stay open until keyboard behavior is rechecked on
   the final hosted review path
 
+### 7. Offline recovery route is live on hosted staging and keeps the copy honest
+
+Route: `/offline`
+
+Observed on hosted staging:
+- route loads directly on the hosted build
+- visible heading: `You are offline`
+- the main recovery copy says the app can show this screen without saving
+  private chapter data on the device
+- visible return actions are:
+  - `Home`
+  - `Rush Month`
+  - `Actions`
+- the route explicitly states that offline mode does not:
+  - submit assignments
+  - upload proof
+  - update points
+  - send nudges
+  - run external automation
+
+Hosted accessibility-semantic readback:
+- the route exposes a visible top-level heading in the accessibility tree
+- the route content is short and specific enough to read as one recovery state
+  rather than a hidden dashboard
+- the route does not imply private cache, offline writes, or background sends
+
+Quick hosted keyboard observation in Safari:
+- on the first `Tab` from the page, focus again appears to move to the hidden
+  `vercel.live/_next-live/feedback/feedback.html` iframe instead of the visible
+  recovery actions
+
+Current hosted interpretation:
+- the offline route itself is aligned with the pilot-safety message
+- the keyboard issue appears to be cross-route on hosted staging rather than a
+  one-page quirk
+- this is still not full device or installed-PWA proof, but it is stronger
+  release-build evidence than a route plan alone
+
 ## What is still missing before we can honestly say staging is ready for a controlled live MVP pilot
 
 ## Decision checklist for approvers
@@ -302,9 +340,10 @@ Still needed:
 - screen-reader or label-audit result
 
 Reason:
-- the hosted design QA route is now visible on staging and one Safari keyboard
-  observation is recorded, but the actual device matrix and full accessibility
-  pass are still missing from the release build evidence packet
+- the hosted design QA route and offline route are now both visible on staging,
+  and cross-route Safari keyboard observations are recorded, but the actual
+  device matrix, installed-PWA behavior, and full accessibility pass are still
+  missing from the release build evidence packet
 
 ### 3. Exact pilot group and named day-one owners
 
@@ -353,6 +392,8 @@ Hosted staging already proves the conservative pilot posture:
 - integration hold and blocked live-send controls are visible on the hosted
   build
 - the design QA route is live on staging and still keeps final launch blocked
+- the offline recovery route is live on staging and keeps offline limitations
+  explicit
 
 Hosted staging does not yet prove pilot readiness end to end because:
 - the current domain is still missing the newest review-note packet
