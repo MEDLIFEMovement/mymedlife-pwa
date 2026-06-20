@@ -122,6 +122,35 @@ Use this split until the alias decision is made:
   staging alias should be re-pointed or whether the split review path is enough
   for final sign-off
 
+## What still blocks completion of this goal
+
+This goal is not complete until all six items below are explicitly answered and
+recorded:
+
+- staging build alignment decision
+- hosted staff dry-run signoff
+- phone, tablet, desktop, offline or PWA, and accessibility proof
+- named pilot cohort and day-one owners
+- first hosted write approval with rollback owner
+- DS signoff that downstream systems stay off
+
+Until those answers are recorded, the honest status stays:
+
+`staging reviewable, pilot posture visible, controlled live MVP pilot not yet approved`
+
+## Scope of this pass
+
+No app behavior changed in this pass.
+
+This pass only tightened:
+- review-packet wording
+- hosted evidence capture
+- blocker visibility
+- approval guidance for reviewers
+
+No new browser writes, external sends, auth changes, migration changes, or
+integration activations were introduced here.
+
 ## Final approval questions
 
 These are the exact questions this packet is asking reviewers to answer:
