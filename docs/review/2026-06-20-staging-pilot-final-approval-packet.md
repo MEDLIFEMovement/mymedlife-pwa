@@ -48,12 +48,13 @@ Use this wording only after every required decision below is recorded:
 
 ## Recommended pilot shape
 
-Unless a reviewer explicitly approves something broader, the recommended live
-pilot shape is:
+Unless a reviewer explicitly approves something broader, the proposed planning
+default is:
 
 - exact scope: one chapter only
 - product surface: Rush Month only
-- student count: 5-15 students
+- student count: 5-10 students
+- proposed planning chapter: `UCLA MEDLIFE`
 - leader coverage: one chapter leader owner
 - support coverage: one coach owner and one HQ/admin owner
 - DS coverage: one DS owner
@@ -61,6 +62,10 @@ pilot shape is:
 - proof uploads and sharing: off
 - role or membership writes: off
 - external systems: off
+
+This is a recommended default, not a final approval. The app and the hosted
+packet still show the broader seeded recommendation of `5-15` students until
+Nick or HQ confirms the final tiny pilot shape.
 
 ## Recommended first hosted write
 
@@ -127,6 +132,17 @@ Use this split until the alias decision is made:
 - do not call the pilot ready until the team explicitly decides whether the
   staging alias should be re-pointed or whether the split review path is enough
   for final sign-off
+
+## How to approve this packet
+
+Reviewers can use either of these paths:
+
+- reply `approved as written` if the proposed defaults below are correct
+- copy the reply block from the checklist and replace only the fields that
+  should differ
+
+The defaults below are intentionally conservative. They are proposed answers
+from current evidence, not completed approvals.
 
 ## What still blocks completion of this goal
 
@@ -203,12 +219,59 @@ These are the exact questions this packet is asking reviewers to answer:
 
 ### 1. Is the staging build aligned?
 
+Current evidence:
+- `staging.mymedlife.org` is the Supabase-backed staging evidence path
+- the PR preview has the newest `MED-486` packet copy
+- a clean browser session currently lands on Vercel login before the app
+- a signed-in reviewer session can open the staging review routes directly
+
+Recommended default answer:
+- final approval target should become `staging.mymedlife.org`
+- until alias alignment is fixed, use:
+  - `staging.mymedlife.org` for Supabase-backed evidence
+  - PR preview for newest packet copy
+  - signed-in reviewer session as the intended access path
+  - sign-out/sign-in for role switching
+
+Why this is the default:
+- it keeps final pilot evidence tied to the real staging domain
+- it avoids pretending the PR preview and the staging alias are the same review
+  target today
+
+Still needs human confirmation:
+- platform/app owner must confirm the final target
+- platform/app owner must confirm whether alias re-point is required
+- platform/app owner must confirm the signed-in reviewer path is acceptable for
+  now
+
 Record:
 - approved branch or deployment:
 - owner of that decision:
 - if the alias must move, who will move it:
 
 ### 2. Did the staff dry run pass well enough for a tiny live pilot?
+
+Current evidence:
+- hosted staging route loads
+- `8` steps are visible
+- `24` checks are visible
+- `0` writes and `0` sends are visible
+- the staff packet is readable end to end in the signed-in staging reviewer
+  lane
+
+Recommended default answer:
+- conditional pass for tiny pilot review
+
+Why this is the default:
+- the route already proves the walkthrough is readable and conservative on the
+  hosted build
+- the remaining issues are clarity issues, not evidence that the route is
+  unsafe
+
+Still needs human confirmation:
+- reviewer names must be recorded
+- a human reviewer must confirm they agree with the current pass/confusion notes
+- any follow-up before invitations must be named explicitly
 
 Record:
 - reviewer names:
@@ -220,6 +283,35 @@ Record:
 
 ### 3. Did the hosted build pass device and accessibility review?
 
+Current evidence:
+- desktop Safari render pass exists for `/admin/design-qa` and `/offline`
+- signed-in Safari narrow-window smoke exists for:
+  - phone-like width: `430px`
+  - tablet-like width: `940px`
+- `/offline` still shows the expected honest recovery copy and disabled
+  limitations
+- the hidden Vercel iframe still takes first `Tab` focus on hosted staging
+
+Recommended default answer:
+- desktop Safari: pass
+- signed-in phone-like width: provisional pass
+- signed-in tablet-like width: provisional pass
+- offline route: pass
+- keyboard: open, likely hosted-shell issue
+- screen reader or label audit: still required
+
+Why this is the default:
+- the current evidence is strong enough to separate route rendering from the
+  remaining accessibility question
+- the keyboard concern now looks cross-route and shell-related, but that still
+  needs one human pass before it can be closed
+
+Still needs human confirmation:
+- one human keyboard-only pass
+- one screen-reader or label-audit smoke pass
+- explicit human judgment on whether the hosted iframe focus issue is
+  non-blocking for the tiny pilot
+
 Record:
 - phone:
 - tablet:
@@ -230,6 +322,33 @@ Record:
 - blocking issue, if any:
 
 ### 4. Is the pilot scope locked?
+
+Current evidence:
+- staging already recommends one chapter, Rush Month only, and `action_started`
+  first
+- seeded chapter context is strongest for `UCLA MEDLIFE`
+
+Recommended default answer:
+- one chapter only
+- Rush Month only
+- `5-10` students
+- proposed planning chapter: `UCLA MEDLIFE`
+- chapter leader owner: pending Nick/HQ
+- coach owner: pending Nick/HQ
+- HQ/admin owner: pending Nick/HQ
+- DS owner: pending DS
+- pause/support channel: pending HQ/admin
+- pause-message approver: pending HQ/admin
+
+Why this is the default:
+- it keeps the first pilot smaller than the broader seeded `5-15` range
+- it uses the strongest seeded chapter context without pretending that chapter
+  has already been approved
+
+Still needs human confirmation:
+- Nick or HQ must name the actual pilot chapter or internal cohort
+- Nick or HQ must name the day-one owners and support path
+- DS must confirm the day-one DS owner
 
 Record:
 - exact chapter or internal cohort:
@@ -244,6 +363,34 @@ Record:
 
 ### 5. Is the first hosted write approved?
 
+Current evidence:
+- `/admin/first-write` already frames `action_started` as the narrow candidate
+- the route lists the readback and audit proof expected after the drill
+
+Recommended default answer:
+- first hosted write lane: `action_started`
+- rollback owner: pending platform/app owner
+- disable-write owner: pending DS/platform owner
+- approver after drill: pending Kiomi/launch approver
+- required proof before any second write opens:
+  - before and after route evidence
+  - assignment status becomes `in_progress`
+  - one internal event row
+  - one integration event row
+  - one audit log row
+  - zero outbox sends
+  - zero external writes
+
+Why this is the default:
+- it is the narrowest save path
+- it stays inside the student action loop
+- it does not require proof upload, leader approval writes, or external sends
+
+Still needs human confirmation:
+- Kiomi or launch approver must explicitly approve this lane
+- rollback and disable-write owners must be named
+- the post-drill approver must be named
+
 Record:
 - approved first write lane:
 - rollback owner:
@@ -252,6 +399,29 @@ Record:
 - approver after drill:
 
 ### 6. Is the integration hold explicit and approved?
+
+Current evidence:
+- `/admin/integration-outbox` already shows the hold posture on hosted staging
+- live sends remain at zero
+
+Recommended default answer:
+- HubSpot writes off
+- Luma writes off
+- n8n off
+- warehouse or Power BI off
+- SMS or email off
+- AI actions off
+- read-only exception: none unless explicitly approved
+- escalation owner: pending DS
+
+Why this is the default:
+- it preserves the app and Supabase as source of truth for the first pilot
+- it keeps the first pilot auditable and reversible
+
+Still needs human confirmation:
+- DS must explicitly approve the hold
+- DS must name the day-one escalation owner
+- any read-only exception must be named explicitly
 
 Record:
 - HubSpot off:

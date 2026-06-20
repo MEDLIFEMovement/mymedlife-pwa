@@ -40,58 +40,63 @@ when all of the following are true:
 ## Fastest reply format
 
 If the reviewers want the shortest possible path, they can reply to the latest
-email, PR comment, or Linear thread by copying this block and filling only the
-blank values:
+email, PR comment, or Linear thread by copying this block and either:
+
+- replying `approved as written`, or
+- replacing only the fields they want to change
+
+Default proposed answers from current evidence:
 
 ```text
 Platform/build:
-- approved build:
-- signed-in reviewer session is the intended staging path: yes/no
-- alias re-point needed: yes/no
-- alias owner:
+- approved build: staging.mymedlife.org should become the final signoff target; until alias alignment is fixed, use staging for Supabase-backed evidence and the PR preview for newest packet copy
+- signed-in reviewer session is the intended staging path: yes
+- alias re-point needed: pending platform/app-owner decision
+- alias owner: pending platform/app owner
+- role-switch expectation approved: sign out and sign back in for role changes
 
 Staff dry run:
-- reviewer names:
-- what passed:
-- what felt confusing:
-- follow-up before pilot:
+- reviewer names: pending human reviewer confirmation
+- what passed: route loads; 8 steps; 24 checks; 0 writes; 0 sends; 9 rehearsal packets visible
+- what felt confusing: before staging wording; walkthrough mixed with rehearsal status; Local Supabase Auth mode wording is too implementation-specific
+- follow-up before pilot: confirm reviewer agrees with these notes and record any invitation blockers
 
 Device/accessibility:
-- phone:
-- tablet:
-- desktop:
-- offline or PWA:
-- keyboard:
-- screen reader or label audit:
-- blocking issue:
+- phone: provisional pass from signed-in phone-like width evidence; real phone check still needed
+- tablet: provisional pass from signed-in tablet-like width evidence; real tablet check still needed
+- desktop: pass in hosted Safari
+- offline or PWA: offline route passes; installed-PWA check still needed
+- keyboard: open; likely hosted-shell issue tied to hidden Vercel iframe
+- screen reader or label audit: still required
+- blocking issue: human reviewer must decide whether the iframe focus issue is non-blocking for the tiny pilot
 
 Pilot scope:
-- chapter or cohort:
-- launch window:
-- max students:
-- chapter leader owner:
-- coach owner:
-- HQ/admin owner:
-- DS owner:
-- pause/support channel:
-- pause-message approver:
+- chapter or cohort: proposed planning default = UCLA MEDLIFE; final chapter still pending Nick/HQ
+- launch window: pending Nick/HQ
+- max students: 5-10
+- chapter leader owner: pending Nick/HQ
+- coach owner: pending Nick/HQ
+- HQ/admin owner: pending Nick/HQ
+- DS owner: pending DS
+- pause/support channel: pending HQ/admin
+- pause-message approver: pending HQ/admin
 
 First hosted write:
-- approved first write lane:
-- rollback owner:
-- disable-write owner:
-- audit/readback proof required:
-- approver after drill:
+- approved first write lane: action_started
+- rollback owner: pending platform/app owner
+- disable-write owner: pending DS/platform owner
+- audit/readback proof required: before/after route evidence; assignment status in_progress; one internal event row; one integration event row; one audit row; zero outbox sends; zero external writes
+- approver after drill: pending Kiomi/launch approver
 
 Integration hold:
-- HubSpot off:
-- Luma writes off:
-- n8n off:
-- warehouse/Power BI off:
-- SMS/email off:
-- AI actions off:
-- read-only exception:
-- escalation owner:
+- HubSpot off: yes
+- Luma writes off: yes
+- n8n off: yes
+- warehouse/Power BI off: yes
+- SMS/email off: yes
+- AI actions off: yes
+- read-only exception: none unless explicitly approved
+- escalation owner: pending DS
 ```
 
 ## Approval worksheet
@@ -120,6 +125,15 @@ Approval standard:
   approving
 - reviewers understand that the hosted auth session is what currently controls
   role-specific review on staging
+
+Recommended default answer:
+- final signoff target should become `staging.mymedlife.org`
+- until alias alignment is fixed, use the split path already described in the
+  final packet
+
+What still requires human confirmation:
+- platform/app owner must confirm whether alias re-point is required
+- platform/app owner must confirm the reviewer access path is acceptable
 
 ### 2. Staff dry run
 
@@ -156,6 +170,12 @@ Record:
 Approval standard:
 - the team can walk the staff rehearsal in order and understands where pilot
   boundaries still hold
+
+Recommended default answer:
+- conditional pass for tiny pilot review
+
+What still requires human confirmation:
+- human reviewer must confirm they agree with the current pass/confusion notes
 
 ### 3. Device, offline, and accessibility checks
 
@@ -199,6 +219,19 @@ Approval standard:
 - the staging build is usable on the pilot devices and any accessibility issue
   is either fixed or explicitly judged non-blocking for the tiny pilot
 
+Recommended default answer:
+- desktop Safari: pass
+- signed-in phone-like width: provisional pass
+- signed-in tablet-like width: provisional pass
+- offline route: pass
+- keyboard: open, likely hosted-shell issue
+- screen-reader or label audit: still required
+
+What still requires human confirmation:
+- one human keyboard pass
+- one screen-reader or label-audit smoke pass
+- explicit human judgment on the iframe focus issue
+
 ### 4. Nick and HQ pilot scope decision
 
 Route:
@@ -217,6 +250,18 @@ Record:
 
 Approval standard:
 - the first pilot is intentionally small, named, and owned by real people
+
+Recommended default answer:
+- one chapter only
+- Rush Month only
+- `5-10` students
+- proposed planning chapter: `UCLA MEDLIFE`
+- all owner names remain pending by role until Nick/HQ and DS confirm them
+
+What still requires human confirmation:
+- exact chapter or internal cohort
+- launch window
+- all day-one owners and support path
 
 ### 5. Kiomi or launch approver first-write decision
 
@@ -237,6 +282,23 @@ Approval standard:
 - only one narrow write lane is approved first, and the team knows exactly who
   can stop it or roll it back
 
+Recommended default answer:
+- `action_started` first
+- proof required before any second write:
+  - before/after route evidence
+  - assignment status `in_progress`
+  - one internal event row
+  - one integration event row
+  - one audit log row
+  - zero outbox sends
+  - zero external writes
+
+What still requires human confirmation:
+- explicit approval of `action_started`
+- rollback owner
+- disable-write owner
+- approver after drill
+
 ### 6. DS integration hold decision
 
 Route:
@@ -256,13 +318,22 @@ Approval standard:
 - the first pilot keeps the app and Supabase as source of truth and does not
   silently turn on downstream systems
 
+Recommended default answer:
+- keep HubSpot, Luma writes, n8n, warehouse/Power BI, SMS/email, and AI off
+- no read-only exception unless explicitly approved
+
+What still requires human confirmation:
+- DS sign-off
+- escalation owner
+
 ## Recommended default pilot posture
 
 Unless a reviewer explicitly approves something broader, the safe default is:
 
 - one chapter only
 - Rush Month only
-- 5-15 students
+- 5-10 students
+- proposed planning chapter: `UCLA MEDLIFE`
 - 1 chapter leader owner
 - 1 coach owner
 - 1 HQ/admin owner

@@ -531,6 +531,114 @@ Current interpretation:
   - decide whether the staging alias should be re-pointed before final pilot
     sign-off
 
+## Recommended defaults from current evidence
+
+These are proposed defaults from the current packet and hosted evidence. They
+are not final approvals.
+
+### 1. Staging build alignment
+
+Proven evidence:
+- `staging.mymedlife.org` is the Supabase-backed staging path
+- the PR preview has the newest packet copy
+- signed-in reviewer access works today
+
+Proposed default answer:
+- make `staging.mymedlife.org` the final signoff target
+- until alias alignment is fixed, use the split review path:
+  - staging for Supabase-backed evidence
+  - PR preview for newest packet copy
+  - signed-in reviewer session as the intended access path
+  - sign-out/sign-in for role switching
+
+Unresolved approval owner:
+- platform/app owner
+
+### 2. Staff dry run
+
+Proven evidence:
+- hosted dry-run route loads
+- `8` steps and `24` checks are visible
+- `0` writes and `0` sends are visible
+- confusing wording is already captured in the packet
+
+Proposed default answer:
+- conditional pass for tiny pilot review
+
+Unresolved approval owner:
+- staff reviewer
+
+### 3. Device and accessibility review
+
+Proven evidence:
+- desktop Safari render pass exists
+- signed-in phone-like and tablet-like width smoke exists
+- offline route honesty is confirmed
+- hidden Vercel iframe takes first keyboard focus across hosted routes
+
+Proposed default answer:
+- desktop Safari: pass
+- signed-in phone-like width: provisional pass
+- signed-in tablet-like width: provisional pass
+- offline route: pass
+- keyboard: open, likely hosted-shell issue
+- screen-reader or label audit: still required
+
+Unresolved approval owner:
+- product or QA reviewer
+
+### 4. Pilot scope and owners
+
+Proven evidence:
+- staging already recommends one chapter, Rush Month only, and `action_started`
+  first
+- seeded chapter context is strongest for `UCLA MEDLIFE`
+
+Proposed default answer:
+- one chapter only
+- Rush Month only
+- `5-10` students
+- proposed planning chapter: `UCLA MEDLIFE`
+- owner names remain pending by role
+
+Unresolved approval owner:
+- Nick or HQ, plus DS for DS ownership
+
+### 5. First hosted write
+
+Proven evidence:
+- `/admin/first-write` already frames `action_started` as the narrow candidate
+- the packet already lists the expected proof after the drill
+
+Proposed default answer:
+- first hosted write lane: `action_started`
+- rollback owner: pending platform/app owner
+- disable-write owner: pending DS/platform owner
+- proof before any second write:
+  - before/after route evidence
+  - assignment status `in_progress`
+  - one internal event row
+  - one integration event row
+  - one audit log row
+  - zero outbox sends
+  - zero external writes
+
+Unresolved approval owner:
+- Kiomi or launch approver
+
+### 6. Integration hold
+
+Proven evidence:
+- hosted staging already shows the hold posture
+- live sends remain at zero
+
+Proposed default answer:
+- HubSpot, Luma writes, n8n, warehouse/Power BI, SMS/email, and AI stay off
+- no read-only exception unless explicitly approved
+
+Unresolved approval owner:
+- DS
+
 ## What is still missing before we can honestly say staging is ready for a controlled live MVP pilot
 
 ## Decision checklist for approvers
