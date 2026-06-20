@@ -52,7 +52,8 @@ Connector and CLI verification on 2026-06-20 found:
 - app tables with RLS enabled: 27
 - private storage bucket: `proof-submissions-private`
 - edge functions: 0
-- Supabase security advisor: no lints after MED-492
+- app schema / RLS posture: 27 app tables, 27 with RLS enabled
+- Supabase security advisor: one current auth warning (`Leaked Password Protection Disabled`)
 - final migration dry run: remote database is up to date
 - hosted staging auth: proven on `https://staging.mymedlife.org`
 - hosted membership approval rehearsal: completed with audit/outbox readback while welcome, CRM, and external sends stayed disabled
@@ -68,6 +69,7 @@ Connector and CLI verification on 2026-06-20 found:
 What is still missing:
 
 - documented preview, staging, and production environment-variable scope outside source control, with production setup still incomplete
+- owner decision on whether to enable leaked password protection on staging Supabase Auth
 - approval for if/when Codex should apply the approved schema migrations to
   production, with rollback evidence
 - named owners for hosted auth, RLS, first-write validation, backups,
