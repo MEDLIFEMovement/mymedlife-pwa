@@ -4,6 +4,7 @@ import { getPhase2EnvironmentSetupPacket } from "@/services/phase-2-environment-
 describe("phase 2 environment setup packet", () => {
   it("documents four environments while keeping live setup blocked", () => {
     const packet = getPhase2EnvironmentSetupPacket();
+    const staging = packet.environments.find((item) => item.key === "staging");
 
     expect(packet.liveSetupBlocked).toBe(true);
     expect(packet.selectedTopology.key).toBe("B");
@@ -17,6 +18,11 @@ describe("phase 2 environment setup packet", () => {
     expect(packet.counts.hostedProjects).toBe(1);
     expect(packet.counts.readyForReview).toBe(3);
     expect(packet.counts.ownerInputRequired).toBe(1);
+    expect(staging).toMatchObject({
+      appHost: "https://staging.mymedlife.org",
+      authCallback: "https://staging.mymedlife.org/auth/callback",
+      redirectPattern: "Exact staging URL only",
+    });
   });
 
   it("captures browser and server-only key boundaries without secrets", () => {
@@ -66,6 +72,15 @@ describe("phase 2 environment setup packet", () => {
       "name_staging_domain_and_vercel_env",
       "load_env_vars_without_source_control",
     ]);
+    expect(
+      packet.ownerFollowUp.find(
+        (item) => item.key === "name_staging_domain_and_vercel_env",
+      ),
+    ).toMatchObject({
+      label: "Attach the confirmed staging domain and Vercel target",
+      nextAction:
+        "Attach staging.mymedlife.org to the Vercel staging environment and keep preview deployments mapped to staging rather than production.",
+    });
     expect(packet.hostedSupabaseState.projects).toEqual([
       expect.objectContaining({
         name: "myMEDLIFE",
