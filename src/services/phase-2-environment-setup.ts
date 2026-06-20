@@ -130,13 +130,14 @@ const environmentLanes: Phase2EnvironmentLane[] = [
     label: "Staging pilot environment",
     owners: ["Kiomi / DS", "Codex", "Nick"],
     status: "owner_input_required",
-    appHost: "https://staging.mymedlife.org (placeholder pending owner confirmation)",
+    appHost: "https://staging.mymedlife.org",
     authCallback: "https://staging.mymedlife.org/auth/callback",
-    redirectPattern: "Exact staging URL once Kiomi / DS names the staging domain",
+    redirectPattern: "Exact staging URL only",
     supabaseProject: "Dedicated staging Supabase project",
     vercelEnvironment: "Custom staging environment on Vercel",
     notes: [
-      "Kiomi / DS still needs to name the exact staging domain and the staging Supabase project.",
+      "The staging domain is confirmed as staging.mymedlife.org.",
+      "Kiomi / DS still needs to confirm which hosted Supabase project backs staging and whether a second hosted lane still needs to be created.",
       "Staging is where auth, RLS, and the first approved writes must be proven before a pilot invite goes out.",
       "Backup posture, monitoring, and rollback owner need to be named before staging is treated as a release candidate.",
     ],
@@ -254,10 +255,10 @@ const environmentOwnerFollowUp: Phase2EnvironmentOwnerFollowUp[] = [
   },
   {
     key: "name_staging_domain_and_vercel_env",
-    label: "Name the staging domain and Vercel target",
+    label: "Attach the confirmed staging domain and Vercel target",
     owners: ["Kiomi / DS", "Nick"],
     nextAction:
-      "Confirm the exact staging domain, attach it to the Vercel staging environment, and keep preview deployments mapped to staging rather than production.",
+      "Attach staging.mymedlife.org to the Vercel staging environment and keep preview deployments mapped to staging rather than production.",
   },
   {
     key: "load_env_vars_without_source_control",

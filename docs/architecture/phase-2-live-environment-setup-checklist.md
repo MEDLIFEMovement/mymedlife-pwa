@@ -34,7 +34,7 @@ Technical summary:
 - Local app: `http://localhost:3000`
 - Local alternate host used in review and callbacks: `http://127.0.0.1:3000`
 - Vercel preview: branch and commit preview URLs
-- Staging: exact domain still needs owner confirmation
+- Staging: `https://staging.mymedlife.org`
 - Production: `https://www.mymedlife.org`
 
 ## Current Hosted Supabase State
@@ -98,8 +98,7 @@ Preview:
 
 Staging:
 
-- exact URL still needs owner confirmation
-- planned callback shape: `https://staging.mymedlife.org/auth/callback`
+- `https://staging.mymedlife.org/auth/callback`
 
 Production:
 
@@ -121,7 +120,7 @@ Kiomi / DS:
 - confirm whether `rceupryepjgkdeqgxzrc` is the staging project or the
   production project
 - create whichever hosted project is still missing so topology `B` is real
-- name the exact staging domain and attach it to the Vercel staging environment
+- attach `staging.mymedlife.org` to the Vercel staging environment
 - load preview, staging, and production variables outside source control
 
 Codex:
