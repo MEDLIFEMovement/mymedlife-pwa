@@ -3,6 +3,7 @@
 Date: 2026-06-20
 Primary build under review: `https://staging.mymedlife.org`
 Companion evidence note: `docs/review/2026-06-20-hosted-staging-pilot-evidence.md`
+Final approval packet: `docs/review/2026-06-20-staging-pilot-final-approval-packet.md`
 
 ## Why this note exists
 

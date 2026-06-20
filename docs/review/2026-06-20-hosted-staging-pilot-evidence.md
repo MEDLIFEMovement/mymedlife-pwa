@@ -12,6 +12,11 @@ deployment. It is meant to help Nick, Kiomi, DS, and launch reviewers see which
 parts of the Phase 2 pilot-readiness gate are already visible on staging and
 which parts still need explicit approval or fresher hosted evidence.
 
+Final approval packet:
+- use `docs/review/2026-06-20-staging-pilot-final-approval-packet.md` as the
+  single go or no-go packet for the first hosted write and one-chapter live MVP
+  pilot decision
+
 ## What was confirmed on hosted staging
 
 ### 0. Deployment alignment explains the staging mismatch
