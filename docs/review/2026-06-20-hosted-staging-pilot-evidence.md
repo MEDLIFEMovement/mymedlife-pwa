@@ -81,6 +81,41 @@ Interpretation:
 - switching hosted role context for review should be treated as a full sign-out
   and sign-in step until the team approves a cleaner reviewer path
 
+### 0.7 Signed-in staging review path is now re-proven end to end
+
+Read-only source inspected:
+- signed-in Safari session restored on `https://staging.mymedlife.org/login`
+- hosted home route after sign-in
+- hosted `/admin/staff-dry-run` route after sign-in
+
+Observed:
+- signing back in as `admin@mymedlife.test` returned the hosted session to the
+  admin-facing home route on `https://staging.mymedlife.org/`
+- the hosted home route shows:
+  - `LOCAL SUPABASE REVIEW DATA`
+  - `Reading hosted staging Supabase data for the signed-in session.`
+  - actor `Ari Admin`
+  - email `admin@mymedlife.test`
+  - identity source `Local auth session`
+  - auth session `signed_in`
+  - the role-switcher note `Signed-in local auth user controls the current role.`
+- the same signed-in session can directly open
+  `https://staging.mymedlife.org/admin/staff-dry-run`
+- the hosted dry-run route still shows:
+  - `8` steps
+  - `24` checks
+  - `0` writes
+  - `0` sends
+
+Interpretation:
+- the intended staging reviewer path does work once the reviewer is inside the
+  hosted auth session
+- staged review identity is visibly tied to the auth session, not to a route
+  toggle or mock role switch
+- the current blocker is not "can staging auth reach the review routes"; it is
+  whether the team accepts this signed-in reviewer path and records the
+  remaining pilot approvals around it
+
 ### 1. Staff dry run is live on staging
 
 Route: `/admin/staff-dry-run`
@@ -358,6 +393,24 @@ Current hosted interpretation:
 - this does not block staging review itself, but it is real evidence that the
   accessibility gate should stay open until keyboard behavior is rechecked on
   the final hosted review path
+
+### 6.5 Signed-in home route shows the same hosted keyboard issue
+
+Route: `/`
+
+Observed on hosted staging:
+- after restoring the signed-in admin session, the first `Tab` on the hosted
+  home route again moved focus to the hidden
+  `vercel.live/_next-live/feedback/feedback.html` iframe
+- the visible skip link and the main app navigation still exist in the
+  accessibility tree, but they do not receive the first keyboard focus in this
+  hosted Safari path
+
+Interpretation:
+- the keyboard issue is not limited to `/admin/design-qa` or `/offline`
+- it appears to be cross-route behavior on the hosted staging shell
+- this makes the keyboard concern stronger evidence for the accessibility gate,
+  even though the rest of the signed-in staging review flow still works
 
 ### 7. Offline recovery route is live on hosted staging and keeps the copy honest
 

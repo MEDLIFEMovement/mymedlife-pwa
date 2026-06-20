@@ -118,6 +118,8 @@ Record:
 Approval standard:
 - the staging domain must point at the review packet the team believes it is
   approving
+- reviewers understand that the hosted auth session is what currently controls
+  role-specific review on staging
 
 ### 2. Staff dry run
 

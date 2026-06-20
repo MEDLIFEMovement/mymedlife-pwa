@@ -121,6 +121,9 @@ Use this split until the alias decision is made:
 - use `staging.mymedlife.org` for Supabase-backed staging evidence
 - use the PR preview URL for the newest `MED-486` packet copy
 - use a signed-in reviewer browser session when checking the staging domain
+- treat the signed-in session as the real role context for review; switching
+  roles means signing out and signing back in as another approved fake staging
+  user
 - do not call the pilot ready until the team explicitly decides whether the
   staging alias should be re-pointed or whether the split review path is enough
   for final sign-off
