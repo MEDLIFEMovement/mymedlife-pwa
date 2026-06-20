@@ -43,12 +43,61 @@ Observed on hosted staging:
 - `24` checks are listed
 - expected browser writes remain `0`
 - expected external sends remain `0`
+- local write rehearsal packet count visible: `9`
+- ready packet count visible: `5`
+- candidate packet count visible: `9`
+- rehearsal send count visible: `0`
 
 Current hosted limitation:
 - this hosted route still shows older copy, including language that says the
   rehearsal happens "before staging"
 - the newer structured review-note template from PR `#121` is not yet visible
   on the hosted domain
+
+Hosted review snapshot recorded on 2026-06-20:
+- reviewer lane: Codex route-level hosted review
+- signed-in actor visible on the route: `admin@mymedlife.test`
+- build under review: `https://staging.mymedlife.org`
+- review scope: hosted packet read-through plus route-level safety checks, not a
+  human multi-device walkthrough
+
+What passed in this hosted read-through:
+- the staff dry-run packet loads on staging and is readable without exposing
+  browser writes or external sends
+- the packet still shows the eight-step review order for:
+  - admin safety posture
+  - member week
+  - leader follow-up
+  - event and NPS readiness
+  - proof upload intake
+  - HQ proof review
+  - coach readout
+  - DS Admin safety readout
+- the safety assertions remain conservative across the route:
+  - no production auth
+  - no public proof
+  - no external automation
+  - no browser write controls
+- the local write rehearsal mirror is still clearly a review surface rather than
+  a write console
+
+What felt confusing on the hosted build:
+- the lead sentence still says the dry run happens "before staging" even though
+  the packet is now being reviewed on staging
+- the route mixes two different ideas in one surface:
+  - staff dry-run walkthrough steps
+  - local write rehearsal packet status
+- the action-start packet still uses `Local Supabase Auth mode is selected` as
+  the first blocker, which reads like a local-only implementation note rather
+  than a clean hosted staging decision boundary
+- reviewers could still misread packet readiness as pilot approval if they do
+  not also look at `/admin/pilot-scope`, `/admin/first-write`, and
+  `/admin/integration-outbox`
+
+Current hosted interpretation:
+- the staff dry-run packet is usable as staging review evidence today
+- it is not yet the final clean hosted approval packet because the copy still
+  carries older local-review wording and mixed packet/readiness concepts
 
 ### 2. Pilot scope guidance is live on staging
 
