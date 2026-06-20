@@ -115,6 +115,76 @@ Current hosted interpretation:
 - role-aware review is working
 - permission-changing chapter writes remain correctly locked
 
+### 5. Integration hold is explicit on hosted staging
+
+Route: `/admin/integration-outbox`
+
+Observed on hosted staging:
+- route loads for the signed-in admin session
+- structured integration event count visible: `1`
+- automation outbox row count visible: `1`
+- raw event count visible: `1`
+- raw queue row count visible: `1`
+- live sends visible: `0`
+- secrets visible: `0`
+- HubSpot handoff contract is the only contract currently marked `ready`
+- Luma, warehouse / Power BI, and AI contracts remain in `watch`
+- live-send preflight checklist shows `5 ready`, `0 blocked`, `0 writes`, and
+  `0 sends`
+- the page explicitly says it reads current event and outbox posture only and
+  does not mutate queue state
+
+Hosted evidence visible on this route:
+- one internal `membership_approved` integration event is visible
+- one disabled HubSpot outbox row is visible
+- one audit row is visible
+- all live controls remain blocked, including send approval, retry, payload
+  edits, queue unlocks, secret access, warehouse export, and AI summaries
+
+Current hosted interpretation:
+- the integration hold is now visible on staging in plain language, not just in
+  docs
+- DS and launch reviewers can inspect event, outbox, audit, and contract
+  posture without gaining browser-side mutation controls
+- the first pilot can keep external systems explicitly off while still proving
+  that downstream contract structure exists
+
+### 6. Design QA route is live on hosted staging and exposes one real keyboard risk
+
+Route: `/admin/design-qa`
+
+Observed on hosted staging:
+- route loads for the signed-in admin session
+- top-line counts visible on staging are:
+  - items: `11`
+  - ready: `5`
+  - review: `5`
+  - blocked: `1`
+  - mobile checks: `8`
+  - accessibility checks: `7`
+  - device checks: `7`
+  - writes: `0`
+- the hosted route includes the Figma target link, the mobile route smoke
+  checklist, the keyboard and screen-reader smoke checklist, and the
+  device-and-PWA release smoke checklist
+- the route explicitly says final production visual QA is still blocked before
+  launch
+
+Quick hosted keyboard observation in Safari:
+- on the first `Tab` from the page, focus appears to move to the hidden
+  `vercel.live/_next-live/feedback/feedback.html` iframe instead of staying in
+  the app's visible skip-link or primary-content flow
+
+Current hosted interpretation:
+- staging now exposes the design and accessibility review packet directly on the
+  hosted build
+- the remaining device and accessibility gate is no longer just abstract: there
+  is at least one real release-build keyboard behavior that should be reviewed
+  before pilot invitations
+- this does not block staging review itself, but it is real evidence that the
+  accessibility gate should stay open until keyboard behavior is rechecked on
+  the final hosted review path
+
 ## What is still missing before we can honestly say staging is ready for a controlled live MVP pilot
 
 ### 1. Staff dry-run evidence packet on the hosted build
@@ -141,8 +211,9 @@ Still needed:
 - screen-reader or label-audit result
 
 Reason:
-- the hosted route plan exists in the codebase, but this evidence is not yet
-  recorded from the staging build itself
+- the hosted design QA route is now visible on staging and one Safari keyboard
+  observation is recorded, but the actual device matrix and full accessibility
+  pass are still missing from the release build evidence packet
 
 ### 3. Exact pilot group and named day-one owners
 
@@ -188,6 +259,9 @@ Hosted staging already proves the conservative pilot posture:
 - pilot scope is intentionally small
 - `action_started` is the narrow first-write candidate
 - membership and external writes remain locked
+- integration hold and blocked live-send controls are visible on the hosted
+  build
+- the design QA route is live on staging and still keeps final launch blocked
 
 Hosted staging does not yet prove pilot readiness end to end because:
 - the current domain is still missing the newest review-note packet
