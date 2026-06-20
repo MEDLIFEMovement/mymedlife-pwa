@@ -29,7 +29,12 @@ Reason:
 - the staging packet is strong enough for review
 - the safe first-write candidate is clear
 - the pilot boundary is explicit
+- desktop Safari checks now confirm the hosted design QA and offline routes
+  render with the expected launch-blocking copy
 - but the final human approvals are not fully recorded yet
+- and the hosted `/admin/operations` route still references older merge-era
+  review guidance, which is evidence that staging build alignment is still not
+  settled
 
 Use this exact wording today:
 
@@ -73,9 +78,9 @@ This packet does **not** approve any second write lane.
 
 | Decision area | Current status | What is already true | What still needs approval |
 |---|---|---|---|
-| Staging build alignment | Open | `staging.mymedlife.org` is live and reviewable | confirm whether the current preview deployment is the final review target or whether the alias must be re-pointed first |
+| Staging build alignment | Open | `staging.mymedlife.org` is live and reviewable, but `/admin/operations` still shows older merge-era packet guidance | confirm whether the current preview deployment is the final review target or whether the alias must be re-pointed first |
 | Staff dry run | Partially ready | `/admin/staff-dry-run` is live, readable, and keeps writes/sends at zero | record reviewer names, build reviewed, what passed, and what was confusing |
-| Device and accessibility proof | Partially ready | `/admin/design-qa` and `/offline` are live on staging; hosted keyboard concern is already noted | record phone, tablet, desktop, offline/PWA, keyboard, and screen-reader or label-audit results |
+| Device and accessibility proof | Partially ready | `/admin/design-qa` and `/offline` are live on staging; desktop Safari rendering is confirmed and the hosted keyboard concern is already noted | record phone, tablet, desktop, offline/PWA, keyboard, and screen-reader or label-audit results |
 | Pilot scope and owners | Open | `/admin/pilot-scope` already recommends one chapter, Rush Month only, and `action_started` first | name the exact cohort, launch window, chapter leader, coach, HQ/admin, DS owner, and pause/support channel |
 | First hosted write lane | Open | `/admin/first-write` already frames `action_started` as the narrow candidate and lists proof needed after the drill | approve the lane, name rollback owner, name disable-write owner, and confirm audit/readback proof expectations |
 | Integration hold | Partially ready | `/admin/integration-outbox` keeps downstream systems visibly disabled and review-only | DS must explicitly confirm HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI all stay off for the first pilot |

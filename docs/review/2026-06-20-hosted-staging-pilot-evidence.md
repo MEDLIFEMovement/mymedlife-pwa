@@ -276,6 +276,13 @@ Observed on hosted staging:
   device-and-PWA release smoke checklist
 - the route explicitly says final production visual QA is still blocked before
   launch
+- desktop Safari on the hosted build renders the review route with:
+  - the top-line design QA counts visible without overflow
+  - the `Phone-sized route smoke` section present
+  - the `Keyboard and screen-reader smoke` section present
+  - the `Device and PWA release smoke` section present
+- the desktop Safari render is readable as a launch-review route today, but it
+  does not substitute for real phone, tablet, or installed-PWA checks
 
 Quick hosted keyboard observation in Safari:
 - on the first `Tab` from the page, focus appears to move to the hidden
@@ -288,6 +295,9 @@ Current hosted interpretation:
 - the remaining device and accessibility gate is no longer just abstract: there
   is at least one real release-build keyboard behavior that should be reviewed
   before pilot invitations
+- the current hosted build does pass one narrower desktop rendering check:
+  Safari can load the full design QA packet, including the phone, accessibility,
+  and PWA smoke-plan sections, without hiding the launch-blocking guidance
 - this does not block staging review itself, but it is real evidence that the
   accessibility gate should stay open until keyboard behavior is rechecked on
   the final hosted review path
@@ -317,6 +327,9 @@ Hosted accessibility-semantic readback:
 - the route content is short and specific enough to read as one recovery state
   rather than a hidden dashboard
 - the route does not imply private cache, offline writes, or background sends
+- in desktop Safari, the recovery route renders as one narrow centered card with
+  all three return actions visible at once and the disabled-offline limitations
+  still visible near the bottom of the card
 
 Quick hosted keyboard observation in Safari:
 - on the first `Tab` from the page, focus again appears to move to the hidden
@@ -327,8 +340,43 @@ Current hosted interpretation:
 - the offline route itself is aligned with the pilot-safety message
 - the keyboard issue appears to be cross-route on hosted staging rather than a
   one-page quirk
+- the current hosted route passes a desktop layout sanity check, but not a real
+  installed-PWA or mobile-device proof check
 - this is still not full device or installed-PWA proof, but it is stronger
   release-build evidence than a route plan alone
+
+### 8. Admin operations route proves the hosted review packet is still stale
+
+Route: `/admin/operations`
+
+Observed on hosted staging in Safari:
+- route loads for the signed-in admin session
+- top-line runbook counts visible on staging:
+  - runbooks: `8`
+  - ready: `3`
+  - blocked: `5`
+  - launch: `no`
+  - sends: `0`
+  - secrets: `0`
+- the route still shows an older pilot-support summary and recommendation:
+  - summary says Phase 2 can close by naming pilot owners and merging the hosted
+    review lane
+  - recommended next move still says:
+    - `Merge PR #120`
+    - `keep staging on the merged codepath`
+    - `record whether production schema stays deferred`
+- the same route still names `Hosted staging review packet` as `review ready`
+  while pointing reviewers to merge and closure work that is older than the
+  current `MED-486` packet set
+
+Current hosted interpretation:
+- this is stronger evidence that `staging.mymedlife.org` is not serving the
+  newest review-packet copy
+- the build-alignment blocker is not theoretical reviewer confusion anymore; the
+  hosted route itself still references an older approval lane
+- until the staging alias is explicitly confirmed or re-pointed, the final
+  `MED-486` packet cannot honestly claim that the hosted build and the repo
+  packet are aligned
 
 ## What is still missing before we can honestly say staging is ready for a controlled live MVP pilot
 
@@ -403,9 +451,10 @@ Still needed:
 
 Reason:
 - the hosted design QA route and offline route are now both visible on staging,
-  and cross-route Safari keyboard observations are recorded, but the actual
-  device matrix, installed-PWA behavior, and full accessibility pass are still
-  missing from the release build evidence packet
+  cross-route Safari keyboard observations are recorded, and desktop Safari
+  render checks now exist for `/admin/design-qa` and `/offline`, but the actual
+  phone, tablet, installed-PWA, and full accessibility pass are still missing
+  from the release build evidence packet
 
 ### 3. Exact pilot group and named day-one owners
 
