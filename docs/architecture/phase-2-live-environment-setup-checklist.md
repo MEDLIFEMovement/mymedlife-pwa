@@ -1,11 +1,11 @@
 # MED-472 Phase 2 Live Environment Setup Checklist
 
-Date: 2026-06-19
+Date: 2026-06-20
 
 ## Goal
 
-Define the local, preview, staging, and production setup plan for Supabase and
-Vercel without creating real hosted environments or committing credentials.
+Define and track the local, preview, staging, and production setup plan for
+Supabase and Vercel without committing credentials.
 
 ## Selected Topology
 
@@ -39,20 +39,30 @@ Technical summary:
 
 ## Current Hosted Supabase State
 
-Read-only connector inspection on 2026-06-19 found:
+Connector and CLI verification on 2026-06-20 found:
 
 - one healthy hosted project: `myMEDLIFE`
 - project ref: `rceupryepjgkdeqgxzrc`
+- environment role: staging
 - region: `us-east-1`
 - status: `ACTIVE_HEALTHY`
 - created at: `2026-06-17`
+- repo migrations applied: 11
+- latest migration: `20260620093821_fix_function_search_path_warnings`
+- app schema tables: 27
+- app tables with RLS enabled: 27
+- private storage bucket: `proof-submissions-private`
+- edge functions: 0
+- Supabase security advisor: no lints after MED-492
+- final migration dry run: remote database is up to date
 
-What is still unknown:
+What is still missing:
 
-- whether `rceupryepjgkdeqgxzrc` is meant to be staging or production
-- whether the missing topology-B hosted project has been created elsewhere
-- whether Supabase branch-based environments are available, since branch listing
-  still errors through the connector
+- the dedicated production Supabase project
+- Vercel staging attachment for `staging.mymedlife.org`
+- preview, staging, and production environment variables outside source control
+- named owners for hosted auth, RLS, first-write validation, backups,
+  monitoring, and rollback evidence
 
 ## Supabase Ownership
 
@@ -117,16 +127,19 @@ Production:
 
 Kiomi / DS:
 
-- confirm whether `rceupryepjgkdeqgxzrc` is the staging project or the
-  production project
-- create whichever hosted project is still missing so topology `B` is real
+- create the missing production Supabase project after explicit cost and owner
+  approval
 - attach `staging.mymedlife.org` to the Vercel staging environment
 - load preview, staging, and production variables outside source control
+- name owners for hosted auth, RLS, first-write validation, backups,
+  monitoring, and rollback evidence
 
 Codex:
 
-- wire approved variable names, callback URLs, and route behavior once the human
+- keep the repo, Linear, GitHub, and staging evidence current
+- wire approved variable names, callback URLs, and route behavior once human
   owners provide them safely
+- run hosted validation only after owners approve the exact validation scope
 
 Nick:
 
@@ -136,7 +149,8 @@ Nick:
 
 Do not do the following from this issue alone:
 
-- create real hosted Supabase projects
+- create the production Supabase project without explicit cost and owner
+  approval
 - add staging or production keys to source control
 - point the live domain at an unapproved deployment
 - promote preview to production before the security gate is satisfied
