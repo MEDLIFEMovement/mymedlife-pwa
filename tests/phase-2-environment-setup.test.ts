@@ -27,6 +27,9 @@ describe("phase 2 environment setup packet", () => {
     expect(packet.hostedSupabaseState.summary).toContain(
       "security advisor is clean",
     );
+    expect(packet.hostedSupabaseState.summary).toContain(
+      "can close with production schema application explicitly deferred",
+    );
     expect(staging).toMatchObject({
       appHost: "https://staging.mymedlife.org",
       authCallback: "https://staging.mymedlife.org/auth/callback",
@@ -102,6 +105,13 @@ describe("phase 2 environment setup packet", () => {
     ]);
     expect(
       packet.ownerFollowUp.find(
+        (item) => item.key === "approve_production_schema_path",
+      ),
+    ).toMatchObject({
+      label: "Record the production schema decision",
+    });
+    expect(
+      packet.ownerFollowUp.find(
         (item) => item.key === "name_staging_domain_and_vercel_env",
       ),
     ).toMatchObject({
@@ -123,7 +133,7 @@ describe("phase 2 environment setup packet", () => {
     ]);
     expect(packet.hostedSupabaseState.blockers).toEqual(
       expect.arrayContaining([
-        "Production schema migrations must not be applied until DS/security owners approve the path and rollback evidence.",
+        "The team still needs to record one explicit production schema decision: defer schema application beyond Phase 2, or approve a separate production apply with rollback evidence.",
         "Hosted auth, RLS, first-write validation, backup checks, monitoring, and rollback owners still need to be named before pilot users are invited.",
       ]),
     );

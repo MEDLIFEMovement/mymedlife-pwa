@@ -70,10 +70,23 @@ Connector and CLI verification on 2026-06-20 found:
 What is still missing:
 
 - documented preview, staging, and production environment-variable scope outside source control, with production setup still incomplete
-- approval for if/when Codex should apply the approved schema migrations to
-  production, with rollback evidence
+- one explicit production schema decision: defer schema application beyond
+  Phase 2, or approve a separate production apply with rollback evidence
 - named owners for hosted auth, RLS, first-write validation, backups,
   monitoring, and rollback evidence
+
+## Phase 2 Stop Line
+
+Phase 2 can close with:
+
+- staging proved on the hosted domain
+- PR `#120` merged after human review
+- production Supabase still intentionally empty
+- production schema application explicitly deferred or separately approved
+- pilot owners, rollback path, and stop rules named
+
+Phase 2 does not require applying the approved schema to production unless
+Kiomi / DS and Nick choose to fold that work into a later live-launch lane.
 
 Repo posture already in place:
 
@@ -151,8 +164,9 @@ Production:
 
 Kiomi / DS:
 
-- review the empty production Supabase project and approve whether/when Codex
-  should apply the already-approved schema migrations to production
+- review the empty production Supabase project and record one explicit outcome:
+  defer production schema application until a later live-launch lane, or
+  approve a separate production apply with rollback evidence
 - keep `staging.mymedlife.org` attached to the Vercel staging environment and
   preview scoped to staging rather than production
 - document the approved staging variables already in use, then load any

@@ -34,13 +34,17 @@ describe("pilot support packet", () => {
     ).toBe(3);
   });
 
-  it("shows review-ready drills and keeps device smoke blocked before live", () => {
+  it("shows review-ready drills, hosted staging proof, and keeps device smoke blocked before live", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const packet = getPilotSupportPacket(actor);
 
     expect(packet.title).toBe("DS Admin pilot support and recovery packet");
     expect(
       packet.readinessChecks.find((item) => item.key === "staff_dry_run")?.status,
+    ).toBe("review_ready");
+    expect(
+      packet.readinessChecks.find((item) => item.key === "hosted_staging_review")
+        ?.status,
     ).toBe("review_ready");
     expect(
       packet.readinessChecks.find((item) => item.key === "rollback_drill")?.status,
@@ -62,6 +66,7 @@ describe("pilot support packet", () => {
       "support_load_exceeds_capacity",
     ]);
     expect(packet.studentCommsPolicy.join(" ")).toContain("approved MEDLIFE channels");
+    expect(packet.summary).toContain("production schema can stay deferred");
   });
 
   it("hides the pilot support packet from student, leader, and coach roles", () => {

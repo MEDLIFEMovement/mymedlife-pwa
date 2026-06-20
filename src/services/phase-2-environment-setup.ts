@@ -142,7 +142,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
       "The repo now supports a `staging_supabase` auth mode and hosted staging auth is proven on staging.mymedlife.org against the staging project.",
       "Hosted staging now proves signed-in reads plus one narrow membership-approval rehearsal with audit/readback evidence while welcome, CRM, and external sends stay disabled.",
       "Current staging verification shows all 27 app tables still have RLS enabled, and the Supabase security advisor is now clean after enabling leaked password protection.",
-      "Backup posture, monitoring, rollback ownership, and final pilot-release sign-off still need to be named before staging is treated as a release candidate.",
+      "The remaining staging gap is human review plus naming the hosted auth, RLS, rollback, monitoring, and pilot-release owners on the merged path.",
     ],
   },
   {
@@ -158,6 +158,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
     notes: [
       "The production Supabase project `fnlhontvvprwgooevzdl` has been created and is ACTIVE_HEALTHY.",
       "Production migrations are intentionally empty until DS/security owners approve the production schema application path.",
+      "Phase 2 can close with production schema application explicitly deferred; production schema apply is a separate approval lane, not an automatic closeout step.",
       "Production Site URL should be the public myMEDLIFE domain, not localhost.",
       "Production secret and service-role keys stay server-only and human-owned.",
       "No production app data, auth/storage setup, or external integrations were applied during project creation.",
@@ -168,7 +169,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
 
 const hostedSupabaseState: Phase2HostedSupabaseState = {
   summary:
-    "The existing hosted Supabase project is confirmed as staging and the dedicated production Supabase project has been created. Staging is migrated, clean after the MED-492 security cleanup, and now proven for hosted auth plus the narrow membership-approval rehearsal. Current live verification shows all 27 app tables keep RLS enabled and the Supabase security advisor is clean after enabling leaked password protection on staging. Production is healthy but intentionally empty until DS/security owners approve the production schema application path. Topology B is still not fully provisioned because production env setup, production schema application, and pilot-release ownership remain owner-owned setup work.",
+    "The existing hosted Supabase project is confirmed as staging and the dedicated production Supabase project has been created. Staging is migrated, clean after the MED-492 security cleanup, and now proven for hosted auth plus the narrow membership-approval rehearsal. Current live verification shows all 27 app tables keep RLS enabled and the Supabase security advisor is clean after enabling leaked password protection on staging. Production is healthy but intentionally empty. Phase 2 can close with production schema application explicitly deferred; it does not need to happen before hosted pilot-readiness review is complete. Topology B still needs owner-confirmed production env setup plus named pilot-release ownership outside source control.",
   projects: [
     {
       name: "myMEDLIFE",
@@ -189,7 +190,7 @@ const hostedSupabaseState: Phase2HostedSupabaseState = {
   ],
   blockers: [
     "Preview, staging, and production environment-variable scope still needs to be documented outside source control, with production setup still incomplete.",
-    "Production schema migrations must not be applied until DS/security owners approve the path and rollback evidence.",
+    "The team still needs to record one explicit production schema decision: defer schema application beyond Phase 2, or approve a separate production apply with rollback evidence.",
     "Hosted auth, RLS, first-write validation, backup checks, monitoring, and rollback owners still need to be named before pilot users are invited.",
     "External integrations must stay disabled unless separately approved.",
   ],
@@ -272,10 +273,10 @@ const environmentVariablePlan: Phase2EnvironmentVariablePlan[] = [
 const environmentOwnerFollowUp: Phase2EnvironmentOwnerFollowUp[] = [
   {
     key: "approve_production_schema_path",
-    label: "Approve the production schema path",
+    label: "Record the production schema decision",
     owners: ["Kiomi / DS"],
     nextAction:
-      "Review the empty production Supabase project, then approve whether and when Codex should apply the already-approved schema migrations with rollback evidence.",
+      "Review the empty production Supabase project, then record one explicit outcome: defer production schema application until a later live-launch lane, or approve a separate production apply with rollback evidence. Do not treat production schema apply as required for Phase 2 closeout.",
   },
   {
     key: "assign_staging_validation_owners",
@@ -342,7 +343,7 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
   return {
     title: "MED-472 environment setup checklist",
     summary:
-      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned, migrated, and proven for hosted auth plus the first narrow membership-approval rehearsal; production Supabase is provisioned but intentionally empty; production env setup, production schema application, and pilot-release ownership remain blocked outside source control.",
+      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned, migrated, and proven for hosted auth plus the first narrow membership-approval rehearsal; production Supabase is provisioned but intentionally empty; production env setup and pilot-release ownership still need human confirmation outside source control, but production schema application can stay explicitly deferred beyond Phase 2.",
     liveSetupBlocked: true,
     selectedTopology,
     hostedSupabaseState,

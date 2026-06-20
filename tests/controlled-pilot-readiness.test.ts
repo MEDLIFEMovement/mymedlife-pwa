@@ -29,6 +29,9 @@ describe("controlled pilot readiness", () => {
       readiness.stages.find((stage) => stage.key === "first_student_pilot")
         ?.status,
     ).toBe("blocked_before_pilot");
+    expect(
+      readiness.stages.find((stage) => stage.key === "staging_review")?.status,
+    ).toBe("needs_decision");
   });
 
   it("keeps pilot scope, event/NPS path, and coach support as decisions", () => {
@@ -46,20 +49,24 @@ describe("controlled pilot readiness", () => {
     ).toBe("needs_decision");
   });
 
-  it("keeps staging, auth, writes, and proof storage blocked before pilot", () => {
+  it("keeps auth and proof storage blocked, while staging and pilot writes need explicit decisions", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const readiness = getControlledPilotReadiness(actor);
     const blockedGateKeys = readiness.gates
       .filter((gate) => gate.status === "blocked_before_pilot")
       .map((gate) => gate.key);
+    const decisionGateKeys = readiness.gates
+      .filter((gate) => gate.status === "needs_decision")
+      .map((gate) => gate.key);
 
     expect(blockedGateKeys).toEqual(
       expect.arrayContaining([
-        "staging_environment",
         "auth_onboarding",
-        "pilot_writes",
         "proof_consent_storage",
       ]),
+    );
+    expect(decisionGateKeys).toEqual(
+      expect.arrayContaining(["staging_environment", "pilot_writes"]),
     );
   });
 

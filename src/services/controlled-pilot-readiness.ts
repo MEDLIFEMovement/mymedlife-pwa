@@ -81,9 +81,9 @@ export function getControlledPilotReadiness(
     title: getTitle(actor),
     verdict: "staff_dry_run_ready_not_student_pilot",
     plainEnglishVerdict:
-      "The app is ready for a staff dry run of the Rush Month operating loop, but it is not ready to invite real students until pilot scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership are approved.",
+      "Hosted staging is now technically proven, but the app is not ready to invite real students until PR #120 review closes, pilot scope is named, auth and write boundaries are approved, proof consent/storage is approved, and support ownership is explicit.",
     recommendedNextMove:
-      "Run a staff dry run with fake users, pick one pilot chapter or internal test group, then approve staging/auth/write gates before any student invitations.",
+      "Merge PR #120, keep staging on the merged codepath, choose one pilot chapter or internal test group with named support owners, and keep uploads plus external sends disabled until the remaining pilot gates are approved.",
     stages,
     gates,
     counts: {
@@ -133,13 +133,13 @@ function getPilotStages(): PilotReadinessStage[] {
     {
       key: "staging_review",
       label: "Staging deployment review",
-      status: "blocked_before_pilot",
+      status: "needs_decision",
       plainEnglish:
-        "The app still needs an approved staging environment, staging Supabase posture, and mobile/Figma smoke pass before student pilot use.",
+        "Hosted staging now exists and is proven for signed-in reads plus the narrow membership-approval rehearsal, but the release-candidate review and owner handoff still need explicit sign-off.",
       requiredProof: [
-        "Staging URL exists.",
-        "Secrets and environment flags are reviewed.",
-        "Mobile and accessibility smoke checks pass.",
+        "PR #120 / MED-494 is reviewed and merged.",
+        "staging.mymedlife.org sign-in and signed-in reads are re-verified on the merged path.",
+        "Phone and accessibility smoke checks are recorded against the release candidate.",
       ],
     },
     {
@@ -188,11 +188,11 @@ function getPilotGates(): PilotReadinessGate[] {
       key: "staging_environment",
       label: "Staging environment",
       owner: "Kiomi",
-      status: "blocked_before_pilot",
+      status: "needs_decision",
       plainEnglish:
-        "A real pilot needs a staging deployment and reviewed Supabase/environment settings.",
+        "The staging deployment and Supabase posture now exist; the remaining work is to merge the hosted review lane and record the human owner handoff.",
       nextStep:
-        "Create staging hosting and Supabase projects after secrets/access ownership is approved.",
+        "Merge PR #120, confirm staging.mymedlife.org stays on the approved merged path, and record the staging auth, RLS, rollback, and monitoring owners.",
     },
     {
       key: "auth_onboarding",
@@ -208,11 +208,11 @@ function getPilotGates(): PilotReadinessGate[] {
       key: "pilot_writes",
       label: "Minimum approved write paths",
       owner: "Kiomi",
-      status: "blocked_before_pilot",
+      status: "needs_decision",
       plainEnglish:
-        "A pilot needs the smallest safe save paths for the Rush Month loop, with audit logs and rollback posture.",
+        "One narrow hosted membership-approval write path is already proven on staging, but the pilot still needs an explicit decision about which writes stay enabled.",
       nextStep:
-        "Approve which write path goes live first and keep every other write disabled.",
+        "Approve whether the pilot keeps only membership approval live at first or pauses all writes beyond the review posture until a later approval.",
     },
     {
       key: "proof_consent_storage",
