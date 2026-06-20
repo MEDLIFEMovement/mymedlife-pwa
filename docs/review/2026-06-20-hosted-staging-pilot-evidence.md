@@ -366,6 +366,10 @@ Use this as the shortest path to a real pilot decision:
    - name the day-one integration or outbox escalation owner
    - note any read-only exception if one is allowed
 
+Companion worksheet:
+- use `docs/review/2026-06-20-staging-pilot-approval-checklist.md` to record
+  the actual approval answers in one place once reviewers respond
+
 Only after all five are done can this note support the statement:
 `ready for a controlled one-chapter live MVP pilot`
 
