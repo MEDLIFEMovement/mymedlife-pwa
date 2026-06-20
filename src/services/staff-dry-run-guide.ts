@@ -71,6 +71,13 @@ export type StaffDryRunGuide = {
   verdict: "ready_for_staff_dry_run";
   summary: string;
   staffInstructions: string[];
+  evidencePacket: {
+    summary: string;
+    runLogFields: string[];
+    passSummaryFields: string[];
+    confusionFields: string[];
+    handoffFields: string[];
+  };
   evidenceItems: StaffDryRunEvidenceItem[];
   writeRehearsal: StaffDryRunWriteRehearsal;
   steps: StaffDryRunStep[];
@@ -100,6 +107,7 @@ export function getStaffDryRunGuide(
       summary:
         "Staff dry-run instructions are for HQ review contexts, not student or chapter operating routes.",
       staffInstructions: [],
+      evidencePacket: emptyEvidencePacket(),
       evidenceItems: [],
       writeRehearsal: emptyWriteRehearsal(),
       steps: [],
@@ -116,13 +124,37 @@ export function getStaffDryRunGuide(
     title: getTitle(actor),
     verdict: "ready_for_staff_dry_run",
     summary:
-      "Use this guide to rehearse the Rush Month MVP with fake users now that hosted staging review exists, while real student invitations, uploads, production writes, and integrations remain blocked.",
+      "Use this guide to rehearse the Rush Month MVP with fake users on the current review build, while real student invitations, uploads, production writes, and integrations remain blocked.",
     staffInstructions: [
       "Run each step with the listed fake local actor email.",
       "Record whether each pass criterion is true in the staff review notes.",
       "Stop the dry run if any route implies real students, real uploads, production data, public proof, or external automation is active.",
       "Treat this as rehearsal evidence only. It does not approve a student pilot.",
     ],
+    evidencePacket: {
+      summary:
+        "Leave the dry run with one concrete note that says who ran it, what passed, what felt confusing, and what still stays blocked before the pilot can widen.",
+      runLogFields: [
+        "Reviewer names, date, and exact build or staging URL used.",
+        "Which fake actor emails were exercised during the run.",
+        "Whether the review happened locally, on a PR build, or on staging.",
+      ],
+      passSummaryFields: [
+        "Which of the eight rehearsal steps passed without explanation from a builder.",
+        "The first route where the team agreed the next action was obvious.",
+        "Any route where safety copy clearly prevented confusion about uploads, writes, or integrations.",
+      ],
+      confusionFields: [
+        "The first screen where reviewers needed clarification.",
+        "Any term, label, or state that sounded too technical or too ambiguous.",
+        "Any route where the team was unsure whether the app was local-only, staging-only, or live-ready.",
+      ],
+      handoffFields: [
+        "Which blocker should be fixed before a real pilot invitation.",
+        "Which issue is only a note for later polish.",
+        "Who owns the follow-up if the next review is on staging.",
+      ],
+    },
     evidenceItems,
     writeRehearsal,
     steps,
@@ -511,5 +543,15 @@ function emptyCounts(): StaffDryRunGuide["counts"] {
     evidenceItems: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
+  };
+}
+
+function emptyEvidencePacket(): StaffDryRunGuide["evidencePacket"] {
+  return {
+    summary: "",
+    runLogFields: [],
+    passSummaryFields: [],
+    confusionFields: [],
+    handoffFields: [],
   };
 }

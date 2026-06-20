@@ -19,6 +19,8 @@ describe("staff dry-run guide", () => {
     expect(guide.counts.browserWritesExpected).toBe(0);
     expect(guide.counts.externalWritesExpected).toBe(0);
     expect(guide.writeRehearsal.counts.externalWritesExpected).toBe(0);
+    expect(guide.evidencePacket.summary).toContain("who ran it");
+    expect(guide.evidencePacket.runLogFields).toHaveLength(3);
   });
 
   it("covers the member, leader, event, proof, coach, and DS safety rehearsal path", () => {
@@ -87,6 +89,9 @@ describe("staff dry-run guide", () => {
       guide.evidenceItems.find((item) => item.key === "first_hosted_write")
         ?.evidenceToCapture.join(" "),
     ).toContain("rollback");
+    expect(guide.evidencePacket.confusionFields.join(" ")).toContain(
+      "needed clarification",
+    );
   });
 
   it("mirrors the seven local write packets for staff rehearsal", () => {

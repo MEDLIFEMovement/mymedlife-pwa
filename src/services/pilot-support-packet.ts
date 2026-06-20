@@ -37,6 +37,13 @@ export type PilotSupportPacket = {
   title: string;
   summary: string;
   recommendedNextMove: string;
+  decisionPacket: {
+    summary: string;
+    pilotIdentityFields: string[];
+    ownerFields: string[];
+    firstWriteFields: string[];
+    integrationHoldFields: string[];
+  };
   pilotConstraints: string[];
   ownerChecklist: PilotSupportPacketOwner[];
   readinessChecks: PilotSupportPacketCheck[];
@@ -68,6 +75,7 @@ export function getPilotSupportPacket(
         "Pilot support planning is limited to HQ, DS Admin, and Super Admin review roles.",
       recommendedNextMove:
         "Use the student, chapter, or coach operating routes instead.",
+      decisionPacket: emptyDecisionPacket(),
       pilotConstraints: [],
       ownerChecklist: [],
       readinessChecks: [],
@@ -88,6 +96,30 @@ export function getPilotSupportPacket(
       "Use this packet to name the first pilot owners, prove the dry-run and rollback posture on the current review path, and make the stop rules explicit before any real student invitation.",
     recommendedNextMove:
       "Finish the staff dry run, name the chapter and owner lanes, capture the remaining device/accessibility evidence, confirm the first approved hosted write path, and keep uploads plus external sends disabled until the remaining gates are approved.",
+    decisionPacket: {
+      summary:
+        "Leave the pilot approval meeting with one note that captures exactly who the pilot is for, who owns day-one support, which write path is approved first, and which integrations remain off.",
+      pilotIdentityFields: [
+        "Exact pilot chapter or internal cohort name.",
+        "Launch window or review date for the first live rehearsal.",
+        "Maximum student count allowed in the first wave.",
+      ],
+      ownerFields: [
+        "Named chapter leader owner, coach owner, HQ/admin owner, and DS owner.",
+        "Pause or support channel for day-one questions.",
+        "Who approves student-facing pause or correction messages.",
+      ],
+      firstWriteFields: [
+        "The one hosted write lane approved first.",
+        "Rollback owner and disable-write owner for that lane.",
+        "Audit/readback proof that must be reviewed before any second write lane opens.",
+      ],
+      integrationHoldFields: [
+        "Confirmation that HubSpot, Luma writes, n8n, warehouse, Power BI, SMS, email, and AI remain disabled.",
+        "Any narrow read-only exceptions approved for the pilot.",
+        "Who owns replay or escalation if an outbox or integration row looks wrong.",
+      ],
+    },
     pilotConstraints: [
       "One chapter only.",
       "Five to fifteen students.",
@@ -283,5 +315,15 @@ function emptyCounts(): PilotSupportPacket["counts"] {
     blockedBeforeLive: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
+  };
+}
+
+function emptyDecisionPacket(): PilotSupportPacket["decisionPacket"] {
+  return {
+    summary: "",
+    pilotIdentityFields: [],
+    ownerFields: [],
+    firstWriteFields: [],
+    integrationHoldFields: [],
   };
 }

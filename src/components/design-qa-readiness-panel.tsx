@@ -96,6 +96,37 @@ export function DesignQaReadinessPanel({
         ))}
       </div>
 
+      <article className="mt-5 rounded-3xl border border-white/10 bg-[#071d1a]/72 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-100/70">
+              Staging evidence note
+            </p>
+            <h3 className="mt-2 text-xl font-semibold text-white">
+              Record the smoke in one consistent format
+            </h3>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/62">
+              {readiness.evidencePacket.summary}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          <EvidenceCard
+            title="Device and PWA"
+            items={readiness.evidencePacket.deviceFields}
+          />
+          <EvidenceCard
+            title="Accessibility"
+            items={readiness.evidencePacket.accessibilityFields}
+          />
+          <EvidenceCard
+            title="Launch blockers"
+            items={readiness.evidencePacket.blockerFields}
+          />
+        </div>
+      </article>
+
       <article className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -329,5 +360,20 @@ function StatusPill({ status }: { status: DesignQaStatus }) {
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
       {status.replaceAll("_", " ")}
     </span>
+  );
+}
+
+function EvidenceCard({ title, items }: { title: string; items: string[] }) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <ul className="mt-3 grid gap-2">
+        {items.map((item) => (
+          <li key={`${title}-${item}`} className="text-xs leading-5 text-white/58">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }

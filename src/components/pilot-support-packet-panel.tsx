@@ -72,6 +72,34 @@ export function PilotSupportPacketPanel({
         </ul>
       </section>
 
+      <section className="mt-5 rounded-[2rem] border border-white/10 bg-[#071d1a]/72 p-4">
+        <h3 className="text-xl font-semibold text-white">
+          Decision note to leave behind
+        </h3>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+          {packet.decisionPacket.summary}
+        </p>
+
+        <div className="mt-4 grid gap-3 xl:grid-cols-2">
+          <DecisionCard
+            title="Pilot identity"
+            items={packet.decisionPacket.pilotIdentityFields}
+          />
+          <DecisionCard
+            title="Owner lanes and support"
+            items={packet.decisionPacket.ownerFields}
+          />
+          <DecisionCard
+            title="First hosted write"
+            items={packet.decisionPacket.firstWriteFields}
+          />
+          <DecisionCard
+            title="Integration hold"
+            items={packet.decisionPacket.integrationHoldFields}
+          />
+        </div>
+      </section>
+
       <div className="mt-5 grid gap-3 xl:grid-cols-2">
         {packet.ownerChecklist.map((item) => (
           <OwnerCard key={item.key} item={item} />
@@ -211,5 +239,20 @@ function StatusPill({ status }: { status: PilotSupportPacketStatus }) {
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
       {status.replaceAll("_", " ")}
     </span>
+  );
+}
+
+function DecisionCard({ title, items }: { title: string; items: string[] }) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <ul className="mt-3 grid gap-2">
+        {items.map((item) => (
+          <li key={`${title}-${item}`} className="text-xs leading-5 text-white/58">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }

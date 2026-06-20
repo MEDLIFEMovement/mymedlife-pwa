@@ -17,6 +17,8 @@ describe("design QA readiness", () => {
     expect(readiness.counts.devicePwaSmokeChecks).toBe(7);
     expect(readiness.counts.browserWritesExpected).toBe(0);
     expect(readiness.counts.externalWritesExpected).toBe(0);
+    expect(readiness.evidencePacket.summary).toContain("real device");
+    expect(readiness.evidencePacket.deviceFields).toHaveLength(3);
   });
 
   it("keeps final visual QA blocked before launch", () => {
@@ -182,6 +184,9 @@ describe("design QA readiness", () => {
         check.blockedUntil.includes("Staging cross-browser smoke"),
       ),
     ).toBe(true);
+    expect(readiness.evidencePacket.blockerFields.join(" ")).toContain(
+      "block invitations",
+    );
   });
 
   it("hides design QA from operating roles", () => {

@@ -42,6 +42,41 @@ export function StaffDryRunGuidePanel({ guide }: StaffDryRunGuidePanelProps) {
         </ul>
       </div>
 
+      <div className="mt-5 rounded-3xl border border-white/10 bg-[#071d1a]/72 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100/70">
+              Review note template
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              Leave one clean staging note behind
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+              {guide.evidencePacket.summary}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          <TemplateCard
+            title="Who ran it"
+            items={guide.evidencePacket.runLogFields}
+          />
+          <TemplateCard
+            title="What passed"
+            items={guide.evidencePacket.passSummaryFields}
+          />
+          <TemplateCard
+            title="What felt confusing"
+            items={guide.evidencePacket.confusionFields}
+          />
+          <TemplateCard
+            title="What needs handoff"
+            items={guide.evidencePacket.handoffFields}
+          />
+        </div>
+      </div>
+
       <div className="mt-5 rounded-3xl border border-sky-300/20 bg-sky-300/10 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -333,5 +368,20 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-1 text-xl font-semibold text-white">{value}</p>
     </div>
+  );
+}
+
+function TemplateCard({ title, items }: { title: string; items: string[] }) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+      <p className="text-sm font-semibold text-white">{title}</p>
+      <ul className="mt-3 grid gap-2">
+        {items.map((item) => (
+          <li key={`${title}-${item}`} className="text-xs leading-5 text-white/58">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }

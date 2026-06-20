@@ -50,6 +50,12 @@ export type DesignQaReadiness = {
   summary: string;
   figmaTarget: string;
   mobileViewport: string;
+  evidencePacket: {
+    summary: string;
+    deviceFields: string[];
+    accessibilityFields: string[];
+    blockerFields: string[];
+  };
   items: DesignQaItem[];
   mobileSmokeChecks: MobileVisualSmokeCheck[];
   accessibilitySmokeChecks: AccessibilitySmokeCheck[];
@@ -85,6 +91,7 @@ export function getDesignQaReadiness(
         "Design readiness is an HQ review surface, not a student or chapter operating view.",
       figmaTarget,
       mobileViewport: "390px wide phone viewport",
+      evidencePacket: emptyEvidencePacket(),
       items: [],
       mobileSmokeChecks: [],
       accessibilitySmokeChecks: [],
@@ -105,6 +112,25 @@ export function getDesignQaReadiness(
       "Use this checklist to keep the app aligned to the Figma prototype direction, mobile-first student clarity, accessibility, and pilot safety before a real launch.",
     figmaTarget,
     mobileViewport: "390px wide phone viewport",
+    evidencePacket: {
+      summary:
+        "Record the staging smoke in a way that ties every result back to a real device, browser, route, and release blocker decision.",
+      deviceFields: [
+        "Device, browser, and whether the build was staging, preview, or local.",
+        "Route checked, signed-in actor, and whether navigation fit without zooming or horizontal scroll.",
+        "Offline or installed-PWA result, including whether recovery returned to the right state.",
+      ],
+      accessibilityFields: [
+        "Keyboard-only result, including skip link, focus order, and disabled-control clarity.",
+        "Screen-reader result or label audit for the routes that matter most before pilot approval.",
+        "Whether any route depended on color alone, trapped focus, or hid the next action.",
+      ],
+      blockerFields: [
+        "The first issue that should block invitations.",
+        "The issues that are safe to leave for later polish.",
+        "Who owns the follow-up and whether the next review must happen again on staging.",
+      ],
+    },
     items,
     mobileSmokeChecks,
     accessibilitySmokeChecks,
@@ -525,5 +551,14 @@ function emptyCounts(): DesignQaReadiness["counts"] {
     devicePwaSmokeChecks: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
+  };
+}
+
+function emptyEvidencePacket(): DesignQaReadiness["evidencePacket"] {
+  return {
+    summary: "",
+    deviceFields: [],
+    accessibilityFields: [],
+    blockerFields: [],
   };
 }

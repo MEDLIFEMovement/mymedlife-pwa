@@ -13,6 +13,8 @@ describe("pilot support packet", () => {
     expect(packet.pilotConstraints).toContain("Five to fifteen students.");
     expect(packet.counts.browserWritesExpected).toBe(0);
     expect(packet.counts.externalWritesExpected).toBe(0);
+    expect(packet.decisionPacket.summary).toContain("who the pilot is for");
+    expect(packet.decisionPacket.firstWriteFields).toHaveLength(3);
   });
 
   it("names owner lanes and keeps only DS ownership review-ready", () => {
@@ -62,6 +64,9 @@ describe("pilot support packet", () => {
       "support_load_exceeds_capacity",
     ]);
     expect(packet.studentCommsPolicy.join(" ")).toContain("approved MEDLIFE channels");
+    expect(packet.decisionPacket.integrationHoldFields.join(" ")).toContain(
+      "HubSpot",
+    );
   });
 
   it("hides the pilot support packet from student, leader, and coach roles", () => {
