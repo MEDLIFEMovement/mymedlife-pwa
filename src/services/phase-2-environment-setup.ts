@@ -137,9 +137,10 @@ const environmentLanes: Phase2EnvironmentLane[] = [
     vercelEnvironment: "Custom staging environment on Vercel",
     notes: [
       "The staging domain is confirmed as staging.mymedlife.org.",
-      "Kiomi / DS still needs to confirm which hosted Supabase project backs staging and whether a second hosted lane still needs to be created.",
+      "The hosted Supabase project `rceupryepjgkdeqgxzrc` is confirmed as the staging project.",
+      "The approved repo migrations have been applied to staging, including the MED-492 search-path security cleanup.",
       "Staging is where auth, RLS, and the first approved writes must be proven before a pilot invite goes out.",
-      "Backup posture, monitoring, and rollback owner need to be named before staging is treated as a release candidate.",
+      "Vercel staging, environment variables, backup posture, monitoring, and rollback owner still need to be named before staging is treated as a release candidate.",
     ],
   },
   {
@@ -162,7 +163,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
 
 const hostedSupabaseState: Phase2HostedSupabaseState = {
   summary:
-    "Read-only connector inspection currently shows one healthy hosted Supabase project. Its environment role is still unconfirmed, so topology B is not fully provisioned yet.",
+    "The existing hosted Supabase project is now confirmed as staging. Repo migrations have been applied there, the MED-492 security cleanup is in place, and the Supabase security advisor currently returns no lints. Topology B is still not fully provisioned because production, Vercel staging, and live environment variables remain owner-owned setup work.",
   projects: [
     {
       name: "myMEDLIFE",
@@ -170,13 +171,14 @@ const hostedSupabaseState: Phase2HostedSupabaseState = {
       region: "us-east-1",
       status: "ACTIVE_HEALTHY",
       createdAt: "2026-06-17",
-      environmentRole: "unknown",
+      environmentRole: "staging",
     },
   ],
   blockers: [
-    "Kiomi / DS still needs to confirm whether `rceupryepjgkdeqgxzrc` is meant to be staging or production.",
-    "Whichever role is missing in topology B still needs its own hosted Supabase project.",
-    "Supabase branch listing through the connector still errors, so branch-based environment proof is not available yet.",
+    "The production Supabase project still needs explicit owner approval and creation.",
+    "Vercel still needs `staging.mymedlife.org` attached to the staging environment.",
+    "Preview, staging, and production environment variables still need to be loaded outside source control.",
+    "Hosted auth, RLS, and first-write validation still need approved owners before pilot users are invited.",
   ],
 };
 
@@ -240,18 +242,18 @@ const environmentVariablePlan: Phase2EnvironmentVariablePlan[] = [
 
 const environmentOwnerFollowUp: Phase2EnvironmentOwnerFollowUp[] = [
   {
-    key: "confirm_existing_project_role",
-    label: "Confirm the current hosted project role",
+    key: "create_production_supabase_project",
+    label: "Create the production Supabase lane",
     owners: ["Kiomi / DS"],
     nextAction:
-      "Decide whether the existing hosted Supabase project `rceupryepjgkdeqgxzrc` is the staging project or the production project.",
+      "Create the missing production Supabase project after explicit cost and owner approval. Keep `rceupryepjgkdeqgxzrc` as staging.",
   },
   {
-    key: "create_missing_hosted_project",
-    label: "Create the missing hosted Supabase lane",
+    key: "assign_staging_validation_owners",
+    label: "Assign hosted staging validation owners",
     owners: ["Kiomi / DS"],
     nextAction:
-      "If the current project is staging, create production; if it is production, create staging. Keep local on Docker only.",
+      "Name who owns hosted auth, RLS, first-write validation, backup checks, monitoring, and rollback evidence for staging.",
   },
   {
     key: "name_staging_domain_and_vercel_env",
@@ -311,7 +313,7 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
   return {
     title: "MED-472 environment setup checklist",
     summary:
-      "Environment path B is selected: local + staging + production, with preview pointed at staging. This packet keeps the hosted setup reviewable without creating live environments or committing secrets.",
+      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned and migrated; production, Vercel staging, environment variables, and hosted validation ownership remain blocked outside source control.",
     liveSetupBlocked: true,
     selectedTopology,
     hostedSupabaseState,
@@ -320,7 +322,7 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
     expectations: environmentExpectations,
     ownerFollowUp: environmentOwnerFollowUp,
     blockedLiveActions: [
-      "Creating or linking real Supabase projects",
+      "Creating the production Supabase project without explicit cost and owner approval",
       "Adding staging or production keys to source control",
       "Pointing production DNS at a live Vercel deployment",
       "Promoting a preview deployment to production before the security gate is approved",

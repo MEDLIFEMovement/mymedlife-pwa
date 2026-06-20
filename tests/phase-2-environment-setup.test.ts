@@ -18,11 +18,20 @@ describe("phase 2 environment setup packet", () => {
     expect(packet.counts.hostedProjects).toBe(1);
     expect(packet.counts.readyForReview).toBe(3);
     expect(packet.counts.ownerInputRequired).toBe(1);
+    expect(packet.hostedSupabaseState.summary).toContain(
+      "confirmed as staging",
+    );
+    expect(packet.hostedSupabaseState.summary).toContain(
+      "security advisor currently returns no lints",
+    );
     expect(staging).toMatchObject({
       appHost: "https://staging.mymedlife.org",
       authCallback: "https://staging.mymedlife.org/auth/callback",
       redirectPattern: "Exact staging URL only",
     });
+    expect(staging?.notes.join(" ")).toContain(
+      "The hosted Supabase project `rceupryepjgkdeqgxzrc` is confirmed as the staging project.",
+    );
   });
 
   it("captures browser and server-only key boundaries without secrets", () => {
@@ -61,14 +70,14 @@ describe("phase 2 environment setup packet", () => {
     ]);
     expect(packet.blockedLiveActions).toEqual(
       expect.arrayContaining([
-        "Creating or linking real Supabase projects",
+        "Creating the production Supabase project without explicit cost and owner approval",
         "Adding staging or production keys to source control",
         "Promoting a preview deployment to production before the security gate is approved",
       ]),
     );
     expect(packet.ownerFollowUp.map((item) => item.key)).toEqual([
-      "confirm_existing_project_role",
-      "create_missing_hosted_project",
+      "create_production_supabase_project",
+      "assign_staging_validation_owners",
       "name_staging_domain_and_vercel_env",
       "load_env_vars_without_source_control",
     ]);
@@ -85,9 +94,15 @@ describe("phase 2 environment setup packet", () => {
       expect.objectContaining({
         name: "myMEDLIFE",
         ref: "rceupryepjgkdeqgxzrc",
-        environmentRole: "unknown",
+        environmentRole: "staging",
       }),
     ]);
+    expect(packet.hostedSupabaseState.blockers).toEqual(
+      expect.arrayContaining([
+        "The production Supabase project still needs explicit owner approval and creation.",
+        "Hosted auth, RLS, and first-write validation still need approved owners before pilot users are invited.",
+      ]),
+    );
     expect(packet.officialReferences).toHaveLength(5);
   });
 });
