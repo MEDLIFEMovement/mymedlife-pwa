@@ -35,6 +35,8 @@ Reason:
 - and the hosted `/admin/operations` route still references older merge-era
   review guidance, which is evidence that staging build alignment is still not
   settled
+- the PR preview does show the newer packet copy, but it is mock-seeded review
+  data rather than the Supabase-backed staging path
 
 Use this exact wording today:
 
@@ -78,7 +80,7 @@ This packet does **not** approve any second write lane.
 
 | Decision area | Current status | What is already true | What still needs approval |
 |---|---|---|---|
-| Staging build alignment | Open | `staging.mymedlife.org` is live and reviewable, but `/admin/operations` still shows older merge-era packet guidance | confirm whether the current preview deployment is the final review target or whether the alias must be re-pointed first |
+| Staging build alignment | Open | `staging.mymedlife.org` is live and reviewable, but `/admin/operations` still shows older merge-era packet guidance; the PR preview shows newer packet copy on mock-seeded review data | confirm whether the current preview deployment is the final review target for packet copy, whether the alias must be re-pointed, or whether reviewers should split copy review and staging-data review temporarily |
 | Staff dry run | Partially ready | `/admin/staff-dry-run` is live, readable, and keeps writes/sends at zero | record reviewer names, build reviewed, what passed, and what was confusing |
 | Device and accessibility proof | Partially ready | `/admin/design-qa` and `/offline` are live on staging; desktop Safari rendering is confirmed and the hosted keyboard concern is already noted | record phone, tablet, desktop, offline/PWA, keyboard, and screen-reader or label-audit results |
 | Pilot scope and owners | Open | `/admin/pilot-scope` already recommends one chapter, Rush Month only, and `action_started` first | name the exact cohort, launch window, chapter leader, coach, HQ/admin, DS owner, and pause/support channel |
@@ -104,6 +106,21 @@ Use these as the core review path:
    - `/admin/integration-outbox`
    - `/admin/operations`
    - `/admin/launch-gate`
+
+4. Latest PR preview for newer packet copy
+   - `https://mymedlife-pwa-git-fix-med-486-stag-07feff-nellis-6036s-projects.vercel.app`
+   - use this for the newest review-packet language when alias drift is the
+     question
+
+## Current build recommendation
+
+Use this split until the alias decision is made:
+
+- use `staging.mymedlife.org` for Supabase-backed staging evidence
+- use the PR preview URL for the newest `MED-486` packet copy
+- do not call the pilot ready until the team explicitly decides whether the
+  staging alias should be re-pointed or whether the split review path is enough
+  for final sign-off
 
 ## Final approval questions
 

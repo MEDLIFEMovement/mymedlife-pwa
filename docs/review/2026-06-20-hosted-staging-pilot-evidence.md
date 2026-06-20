@@ -378,6 +378,43 @@ Current hosted interpretation:
   `MED-486` packet cannot honestly claim that the hosted build and the repo
   packet are aligned
 
+### 9. PR preview proves the newer packet copy, but not the Supabase-backed staging path
+
+Preview deployment inspected:
+- `https://mymedlife-pwa-git-fix-med-486-stag-07feff-nellis-6036s-projects.vercel.app`
+
+Route checked:
+- `/admin/operations`
+
+Observed on the PR preview:
+- the route loads the newer `MED-486` operations and pilot-support copy
+- the newer pilot-support summary is visible:
+  - name the first pilot owners
+  - prove the dry-run and rollback posture
+  - make stop rules explicit before any real student invitation
+- the newer recommended next move is visible:
+  - finish the staff dry run
+  - name the chapter and owner lanes
+  - capture the remaining device/accessibility evidence
+  - confirm the first approved hosted write path
+  - keep uploads and external sends disabled
+- the preview route also shows:
+  - `MOCK-SEEDED REVIEW DATA`
+  - `Using mock data because MYMEDLIFE_DATA_SOURCE is not set to supabase`
+
+Current interpretation:
+- the PR preview proves the latest review-packet copy is deployed somewhere
+- the staging alias and the PR preview are serving materially different review
+  contexts right now:
+  - `staging.mymedlife.org` = Supabase-backed staging evidence path with older
+    packet copy
+  - PR preview URL = newer packet copy with mock-seeded review data
+- the cleanest short-term reviewer path is:
+  - use the PR preview URL to review the newest packet language
+  - use `staging.mymedlife.org` for Supabase-backed staging evidence
+  - decide whether the staging alias should be re-pointed before final pilot
+    sign-off
+
 ## What is still missing before we can honestly say staging is ready for a controlled live MVP pilot
 
 ## Decision checklist for approvers
