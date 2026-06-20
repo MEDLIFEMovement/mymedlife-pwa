@@ -131,6 +131,23 @@ describe("Supabase auth config", () => {
     });
   });
 
+  it("keeps hosted staging auth available for the approved membership write lane", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+        MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      mode: "staging_supabase",
+      isHostedStaging: true,
+    });
+  });
+
   it("recognizes local Supabase URL forms", () => {
     expect(isLocalSupabaseUrl("http://127.0.0.1:54321")).toBe(true);
     expect(isLocalSupabaseUrl("http://localhost:54321")).toBe(true);

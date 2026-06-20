@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { mockChapter } from "@/data/mock-rush-month";
 import {
   createSupabaseReadonlyClient,
+  getHostedStagingSessionReadonlyClient,
   getSupabaseReadConfig,
   type SupabaseReadonlyClient,
 } from "@/lib/supabase-readonly";
@@ -185,38 +186,66 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
   );
   const config = getSupabaseReadConfig();
 
-  if (!config.enabled) {
-    return getMockLocalActorContext(
-      resolvedActor.email,
-      actorContextMessage(resolvedActor, config.reason),
-      "mock_fallback",
-      resolvedActor.identitySource,
-      resolvedActor.authSessionStatus,
-    );
+  if (config.enabled) {
+    try {
+      return await getSupabaseLocalActorContext(
+        createSupabaseReadonlyClient(config),
+        resolvedActor.email,
+        actorContextMessage(resolvedActor, config.reason),
+        resolvedActor.identitySource,
+        resolvedActor.authSessionStatus,
+      );
+    } catch (error) {
+      return getMockLocalActorContext(
+        resolvedActor.email,
+        error instanceof Error
+          ? actorContextMessage(
+              resolvedActor,
+              `Local actor read failed, so mock fallback is active: ${error.message}`,
+            )
+          : "Local actor read failed, so mock fallback is active.",
+        "supabase_error",
+        resolvedActor.identitySource,
+        resolvedActor.authSessionStatus,
+      );
+    }
   }
 
-  try {
-    return await getSupabaseLocalActorContext(
-      createSupabaseReadonlyClient(config),
-      resolvedActor.email,
-      actorContextMessage(resolvedActor, config.reason),
-      resolvedActor.identitySource,
-      resolvedActor.authSessionStatus,
-    );
-  } catch (error) {
-    return getMockLocalActorContext(
-      resolvedActor.email,
-      error instanceof Error
-        ? actorContextMessage(
-            resolvedActor,
-            `Local actor read failed, so mock fallback is active: ${error.message}`,
-          )
-        : "Local actor read failed, so mock fallback is active.",
-      "supabase_error",
-      resolvedActor.identitySource,
-      resolvedActor.authSessionStatus,
-    );
+  const hostedStagingSession = await getHostedStagingSessionReadonlyClient();
+
+  if (hostedStagingSession.enabled) {
+    try {
+      return await getSupabaseLocalActorContext(
+        hostedStagingSession.client,
+        resolvedActor.email,
+        actorContextMessage(resolvedActor, hostedStagingSession.reason),
+        resolvedActor.identitySource,
+        resolvedActor.authSessionStatus,
+        false,
+      );
+    } catch (error) {
+      return getMockLocalActorContext(
+        resolvedActor.email,
+        error instanceof Error
+          ? actorContextMessage(
+              resolvedActor,
+              `Hosted staging actor read failed, so mock fallback is active: ${error.message}`,
+            )
+          : "Hosted staging actor read failed, so mock fallback is active.",
+        "supabase_error",
+        resolvedActor.identitySource,
+        resolvedActor.authSessionStatus,
+      );
+    }
   }
+
+  return getMockLocalActorContext(
+    resolvedActor.email,
+    actorContextMessage(resolvedActor, hostedStagingSession.reason),
+    "mock_fallback",
+    resolvedActor.identitySource,
+    resolvedActor.authSessionStatus,
+  );
 }
 
 export async function getSupabaseLocalActorContext(
@@ -225,6 +254,7 @@ export async function getSupabaseLocalActorContext(
   message = "Reading local Supabase actor context in read-only mode.",
   identitySource: ActorIdentitySource = "local_actor_email",
   authSessionStatus: AuthSessionStatus = "disabled",
+  isLocalOnly = true,
 ): Promise<LocalActorContext> {
   const snapshot = await readLocalActorSnapshot(client);
   const normalizedEmail = selectedEmail.toLowerCase();
@@ -280,7 +310,7 @@ export async function getSupabaseLocalActorContext(
     staffRoles: actorStaffRoles.map((item) => roleKeyToLabel(item.role_key)),
     chapterNames,
     coachPortfolioChapterNames,
-    isLocalOnly: true,
+    isLocalOnly,
   };
 }
 
@@ -330,7 +360,7 @@ export function resolveActorEmailFromSession(
       authSessionStatus: authSession.status,
       authSessionEmail: authSession.user.email,
       message:
-        "Using the signed-in local Supabase Auth user for role-aware app context.",
+        "Using the signed-in Supabase Auth user for role-aware app context.",
     };
   }
 

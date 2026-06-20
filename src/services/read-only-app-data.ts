@@ -10,6 +10,7 @@ import {
 } from "@/data/mock-rush-month";
 import {
   createSupabaseReadonlyClient,
+  getHostedStagingSessionReadonlyClient,
   getSupabaseReadConfig,
   type SupabaseReadonlyClient,
 } from "@/lib/supabase-readonly";
@@ -97,14 +98,32 @@ export type ReadOnlyAppData = {
 export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
   const config = getSupabaseReadConfig();
 
-  if (!config.enabled) {
-    return getMockReadOnlyAppData(config.reason);
+  if (config.enabled) {
+    try {
+      return await getSupabaseReadOnlyAppData(
+        createSupabaseReadonlyClient(config),
+        config.reason,
+      );
+    } catch (error) {
+      return getMockReadOnlyAppData(
+        error instanceof Error
+          ? `Supabase read failed, so mock fallback is active: ${error.message}`
+          : "Supabase read failed, so mock fallback is active.",
+        "supabase_error",
+      );
+    }
+  }
+
+  const hostedStagingSession = await getHostedStagingSessionReadonlyClient();
+
+  if (!hostedStagingSession.enabled) {
+    return getMockReadOnlyAppData(hostedStagingSession.reason);
   }
 
   try {
     return await getSupabaseReadOnlyAppData(
-      createSupabaseReadonlyClient(config),
-      config.reason,
+      hostedStagingSession.client,
+      hostedStagingSession.reason,
     );
   } catch (error) {
     return getMockReadOnlyAppData(

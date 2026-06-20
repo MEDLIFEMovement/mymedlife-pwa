@@ -91,7 +91,7 @@ export function getMembershipApprovalReadbackState(
       confirmsApproved: true,
       tone: "success",
       message:
-        "Local readback confirms this applicant now appears in the chapter roster as an approved member and the join request is no longer pending.",
+        "Readback confirms this applicant now appears in the chapter roster as an approved member and the join request is no longer pending.",
       currentMembershipStatus: approvedMember.membershipStatus,
       joinRequestStillVisible,
     };
@@ -119,7 +119,7 @@ export function mapMembershipApprovalRpcSuccess(
     outboxId: row.outbox_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "Membership approved locally. The app recorded the membership status, internal event, integration event, disabled outbox row, and audit log. No external send happened.",
+      "Membership approved in the current Supabase review lane. The app recorded the membership status, internal event, integration event, disabled outbox row, and audit log. No external send happened.",
   };
 }
 
@@ -142,7 +142,7 @@ export function mapMembershipApprovalRpcError(
   if (message.includes("authenticated user required")) {
     return failureResult(
       "missing_auth",
-      "Sign in with a local Supabase chapter leader, Admin, or Super Admin seed user before approving membership.",
+      "Sign in with an approved chapter leader, Admin, or Super Admin reviewer before approving membership.",
     );
   }
 
@@ -153,7 +153,7 @@ export function mapMembershipApprovalRpcError(
   ) {
     return failureResult(
       "permission_denied",
-      "This signed-in role is not allowed to approve chapter membership in the local write path.",
+      "This signed-in role is not allowed to approve chapter membership in the current write path.",
     );
   }
 

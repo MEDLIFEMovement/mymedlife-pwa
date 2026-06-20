@@ -42,9 +42,9 @@ const securityChecks: Phase2SecurityGateCheck[] = [
     owners: ["Kiomi / DS", "Codex"],
     status: "ds_review_required",
     localEvidence:
-      "The repo keeps business tables in the `app` schema and already carries schema/RLS planning docs. Supabase's April 2026 change means any new `public` tables exposed through the Data API need explicit grants plus RLS.",
+      "The repo keeps business tables in the `app` schema and already carries schema/RLS planning docs. On June 20, 2026, hosted staging reads proved the staging project also needs `app` exposed alongside `public` and `graphql_public` before signed-in browser or server reads will pass. Supabase's April 2026 change still means any new `public` tables exposed through the Data API need explicit grants plus RLS.",
     requiredBeforeLive:
-      "DS/security should confirm which schemas are exposed, whether any `public` tables remain reachable, and whether explicit grants are in place for every table that must be reachable via the Data API.",
+      "DS/security should confirm which schemas are exposed, whether the staging and future production projects expose `app` for signed-in reads, whether any `public` tables remain reachable, and whether explicit grants are in place for every table that must be reachable via the Data API.",
   },
   {
     key: "rls_enabled_on_app_tables",
@@ -124,6 +124,12 @@ const currentEvidence: Phase2SecurityEvidenceItem[] = [
     artifact: "docs/architecture/supabase-schema-auth-rls-plan.md",
     whyItMatters:
       "Defines the `app` schema, role boundaries, and the starting point for hosted-policy review.",
+  },
+  {
+    label: "Hosted staging schema-exposure proof",
+    artifact: "docs/architecture/phase-2-rls-security-release-gate.md",
+    whyItMatters:
+      "Captures the June 20 staging fix where `app` had to be exposed through PostgREST before signed-in staging reads moved from 406 failures to 200 success.",
   },
   {
     label: "RLS test plan",

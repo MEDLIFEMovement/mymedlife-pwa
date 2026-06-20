@@ -85,9 +85,9 @@ export function getPilotSupportPacket(
     canReadPacket: true,
     title: getTitle(actor),
     summary:
-      "Use this packet to name the first pilot owners, prove the dry-run and rollback posture, and make the stop rules explicit before any real student invitation.",
+      "Use this packet to close Phase 2 cleanly: staging review is real, production schema can stay deferred, and the remaining work is to name pilot owners, confirm stop rules, and merge the hosted review lane before any real student invitation.",
     recommendedNextMove:
-      "Finish the staff dry run, name the chapter and owner lanes, confirm the first approved write path, and keep uploads plus external sends disabled until the remaining gates are approved.",
+      "Merge PR #120, keep staging on the merged codepath, name the chapter, coach, HQ, and DS owner lanes, record whether production schema stays deferred, and keep uploads plus external sends disabled until the remaining gates are approved.",
     pilotConstraints: [
       "One chapter only.",
       "Five to fifteen students.",
@@ -185,6 +185,17 @@ function getReadinessChecks(): PilotSupportPacketCheck[] {
       missingApproval:
         "Run the rehearsal on the current review build and record who completed it.",
       reviewRoutes: ["/admin/staff-dry-run", "/rush-month/loop"],
+    },
+    {
+      key: "hosted_staging_review",
+      label: "Hosted staging review packet",
+      ownerLane: "App and Data",
+      status: "review_ready",
+      currentPosture:
+        "staging.mymedlife.org now proves hosted sign-in, signed-in reads, a clean security advisor, intact RLS, and the narrow membership-approval rehearsal while external sends stay disabled.",
+      missingApproval:
+        "Merge PR #120, close MED-494, and record the human sign-off on the staged write-gate contract before calling Phase 2 review-complete.",
+      reviewRoutes: ["/admin/environment-setup", "/admin/launch-gate", "/login", "/chapter/members"],
     },
     {
       key: "rollback_drill",

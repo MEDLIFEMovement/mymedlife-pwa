@@ -71,14 +71,20 @@ describe("membership approval write readiness", () => {
       validSupabaseInput,
       [],
       {
+        MYMEDLIFE_AUTH_MODE: "local_supabase",
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+        NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "local-anon-key",
       },
     );
 
     expect(getMembershipApprovalWriteConfig({
+      MYMEDLIFE_AUTH_MODE: "local_supabase",
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+      NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "local-anon-key",
     }).enabled).toBe(true);
     expect(readiness.canSubmit).toBe(true);
     expect(readiness.resultCodeIfSubmitted).toBe("membership_approved");
@@ -107,8 +113,11 @@ describe("membership approval write readiness", () => {
       validInput,
       [],
       {
+        MYMEDLIFE_AUTH_MODE: "local_supabase",
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+        NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "local-anon-key",
       },
     );
 
@@ -183,5 +192,55 @@ describe("membership approval write readiness", () => {
       }),
     );
     expect(attempt.preview.data.auditLog.action).toBe("membership_approved");
+  });
+
+  it("allows hosted staging membership approval only when the staging write master switch is on", () => {
+    const actor = {
+      ...getMockLocalActorContext("leader.a@mymedlife.test"),
+      identitySource: "local_auth_session" as const,
+      authSessionStatus: "signed_in" as const,
+      isLocalOnly: false,
+    };
+    const baseEnv = {
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+      NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+      MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+    } satisfies Record<string, string>;
+
+    const blocked = getMembershipApprovalWriteReadiness(
+      actor,
+      validSupabaseInput,
+      [],
+      baseEnv,
+    );
+
+    expect(blocked.canSubmit).toBe(false);
+    expect(blocked.resultCodeIfSubmitted).toBe("write_disabled");
+    expect(blocked.requiredEnvFlags).toEqual([
+      "MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=true",
+      "MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE=true",
+    ]);
+
+    const ready = getMembershipApprovalWriteReadiness(
+      actor,
+      validSupabaseInput,
+      [],
+      {
+        ...baseEnv,
+        MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES: "true",
+      },
+    );
+
+    expect(ready.canSubmit).toBe(true);
+    expect(ready.config).toEqual(
+      expect.objectContaining({
+        enabled: true,
+        isLocalOnly: false,
+        isHostedStaging: true,
+      }),
+    );
+    expect(ready.resultCodeIfSubmitted).toBe("membership_approved");
   });
 });

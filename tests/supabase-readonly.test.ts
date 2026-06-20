@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  createSupabaseQueryReadonlyClient,
   createSupabaseReadonlyClient,
   getSupabaseReadConfig,
 } from "@/lib/supabase-readonly";
@@ -61,5 +62,58 @@ describe("supabase read-only client", () => {
     );
     expect(requests[0]?.headers.get("accept-profile")).toBe("app");
     expect(requests[0]?.headers.get("authorization")).toBe("Bearer fake-key");
+  });
+
+  it("creates a signed-in query client for hosted staging reads", async () => {
+    const orderedBy: Array<{
+      column: string;
+      options?: { ascending?: boolean; nullsFirst?: boolean };
+    }> = [];
+    const client = createSupabaseQueryReadonlyClient({
+      schema(schemaName: string) {
+        expect(schemaName).toBe("app");
+
+        return {
+          from(tableName: string) {
+            expect(tableName).toBe("campaigns");
+
+            return {
+              select(selectClause: string) {
+                expect(selectClause).toBe("*");
+
+                return {
+                  order(
+                    column: string,
+                    options?: { ascending?: boolean; nullsFirst?: boolean },
+                  ) {
+                    orderedBy.push({ column, options });
+
+                    return Promise.resolve({
+                      data: [{ id: "campaign-1" }],
+                      error: null,
+                    });
+                  },
+                };
+              },
+            };
+          },
+        };
+      },
+    } as Parameters<typeof createSupabaseQueryReadonlyClient>[0]);
+
+    const rows = await client.selectRows<{ id: string }>("campaigns", {
+      query: { order: "opened_at.desc.nullslast" },
+    });
+
+    expect(rows).toEqual([{ id: "campaign-1" }]);
+    expect(orderedBy).toEqual([
+      {
+        column: "opened_at",
+        options: {
+          ascending: false,
+          nullsFirst: false,
+        },
+      },
+    ]);
   });
 });

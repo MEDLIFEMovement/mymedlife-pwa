@@ -30,6 +30,8 @@ release gate for staging and the first pilot.
 ## Hosted Review Items
 
 - confirm which schemas are exposed through the Data API
+- confirm the hosted staging project exposes `app` alongside `public` and
+  `graphql_public` before any signed-in browser or server read is trusted
 - confirm whether any `public` tables need explicit `GRANT` statements
 - confirm hosted RLS coverage for member, leader, coach, admin, DS Admin, and
   Super Admin scopes
@@ -41,6 +43,18 @@ release gate for staging and the first pilot.
 Supabase now expects explicit grants for new tables in `public` before those
 tables are reachable through the Data API. If the app ever exposes `public`
 tables, grants, RLS, and policies need to be reviewed as one unit.
+
+## June 20 Staging Proof
+
+- Hosted staging auth on `https://staging.mymedlife.org` was verified against
+  the approved staging Supabase project.
+- Signed-in browser reads initially failed because PostgREST only exposed
+  `public` and `graphql_public`.
+- Staging reads recovered after `app` was added to `pgrst.db_schemas` and the
+  PostgREST schema cache was reloaded.
+- After that fix, signed-in staging requests for `profiles`, `memberships`,
+  `campaigns`, `assignments`, and related review tables returned `200` in the
+  Supabase API logs instead of `406`.
 
 ## Blocked Live Actions
 

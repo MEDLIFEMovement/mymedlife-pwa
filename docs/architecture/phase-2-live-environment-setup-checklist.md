@@ -52,8 +52,12 @@ Connector and CLI verification on 2026-06-20 found:
 - app tables with RLS enabled: 27
 - private storage bucket: `proof-submissions-private`
 - edge functions: 0
-- Supabase security advisor: no lints after MED-492
+- app schema / RLS posture: 27 app tables, 27 with RLS enabled
+- staging leaked-password protection: enabled on `2026-06-20`
+- Supabase security advisor: no current lints
 - final migration dry run: remote database is up to date
+- hosted staging auth: proven on `https://staging.mymedlife.org`
+- hosted membership approval rehearsal: completed with audit/outbox readback while welcome, CRM, and external sends stayed disabled
 - production hosted project: `myMEDLIFE Production`
 - production project ref: `fnlhontvvprwgooevzdl`
 - production region: `us-east-1`
@@ -65,12 +69,24 @@ Connector and CLI verification on 2026-06-20 found:
 
 What is still missing:
 
-- Vercel staging attachment for `staging.mymedlife.org`
-- preview, staging, and production environment variables outside source control
-- approval for if/when Codex should apply the approved schema migrations to
-  production, with rollback evidence
+- documented preview, staging, and production environment-variable scope outside source control, with production setup still incomplete
+- one explicit production schema decision: defer schema application beyond
+  Phase 2, or approve a separate production apply with rollback evidence
 - named owners for hosted auth, RLS, first-write validation, backups,
   monitoring, and rollback evidence
+
+## Phase 2 Stop Line
+
+Phase 2 can close with:
+
+- staging proved on the hosted domain
+- PR `#120` merged after human review
+- production Supabase still intentionally empty
+- production schema application explicitly deferred or separately approved
+- pilot owners, rollback path, and stop rules named
+
+Phase 2 does not require applying the approved schema to production unless
+Kiomi / DS and Nick choose to fold that work into a later live-launch lane.
 
 Repo posture already in place:
 
@@ -107,6 +123,7 @@ Browser:
 Server only:
 
 - `MYMEDLIFE_AUTH_MODE`
+- `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES` (staging only; keep false unless one hosted write rehearsal is approved)
 - `SUPABASE_SECRET_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (legacy compatibility if retained)
 
@@ -126,8 +143,8 @@ Preview:
 Staging:
 
 - `https://staging.mymedlife.org/auth/callback`
-- keep `MYMEDLIFE_AUTH_MODE=disabled` until the staging domain and env vars are loaded
-- after approval, use `MYMEDLIFE_AUTH_MODE=staging_supabase` only on the custom staging domain
+- use `MYMEDLIFE_AUTH_MODE=staging_supabase` only on the custom staging domain
+- keep `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=false` outside an intentionally approved narrow hosted write rehearsal window
 
 Production:
 
@@ -147,10 +164,13 @@ Production:
 
 Kiomi / DS:
 
-- review the empty production Supabase project and approve whether/when Codex
-  should apply the already-approved schema migrations to production
-- attach `staging.mymedlife.org` to the Vercel staging environment
-- load preview, staging, and production variables outside source control
+- review the empty production Supabase project and record one explicit outcome:
+  defer production schema application until a later live-launch lane, or
+  approve a separate production apply with rollback evidence
+- keep `staging.mymedlife.org` attached to the Vercel staging environment and
+  preview scoped to staging rather than production
+- document the approved staging variables already in use, then load any
+  remaining preview/production variables outside source control
 - name owners for hosted auth, RLS, first-write validation, backups,
   monitoring, and rollback evidence
 
