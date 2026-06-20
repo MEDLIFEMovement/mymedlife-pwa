@@ -14,6 +14,25 @@ which parts still need explicit approval or fresher hosted evidence.
 
 ## What was confirmed on hosted staging
 
+### 0. Deployment alignment explains the staging mismatch
+
+Read-only source inspected: Vercel deployment overview for the active
+`staging.mymedlife.org` alias
+
+Observed in Vercel:
+- custom domain `staging.mymedlife.org` is attached to a preview deployment
+- deployment ID shown in Vercel: `9WJ1fTVa6`
+- source branch shown in Vercel: `feat/MED-494-hosted-staging-read-write-proof`
+- source commit shown in Vercel: `fc7afd6`
+- deployment status is `Ready`
+
+Interpretation:
+- the staging domain is not currently serving the `MED-486` review-packet branch
+- the mismatch between the latest local review packet work and the hosted staging
+  UI is a deployment-alignment issue, not just reviewer confusion
+- until the staging alias points at the newer review packet deployment, hosted
+  reviewers will keep seeing the older admin packet language
+
 ### 1. Staff dry run is live on staging
 
 Route: `/admin/staff-dry-run`
