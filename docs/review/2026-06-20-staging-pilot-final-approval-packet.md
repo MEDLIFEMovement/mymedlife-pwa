@@ -80,9 +80,9 @@ This packet does **not** approve any second write lane.
 
 | Decision area | Current status | What is already true | What still needs approval |
 |---|---|---|---|
-| Staging build alignment | Open | `staging.mymedlife.org` is live and reviewable, but `/admin/operations` still shows older merge-era packet guidance; the PR preview shows newer packet copy on mock-seeded review data | confirm whether the current preview deployment is the final review target for packet copy, whether the alias must be re-pointed, or whether reviewers should split copy review and staging-data review temporarily |
+| Staging build alignment | Open | `staging.mymedlife.org` is reviewable in a signed-in Safari session, but `/admin/operations` still shows older merge-era packet guidance; the PR preview shows newer packet copy on mock-seeded review data; a clean browser session currently lands on Vercel login before the app | confirm whether the current preview deployment is the final review target for packet copy, whether the alias must be re-pointed, whether reviewers should split copy review and staging-data review temporarily, and whether the signed-in reviewer path is the intended staging access path |
 | Staff dry run | Partially ready | `/admin/staff-dry-run` is live, readable, and keeps writes/sends at zero | record reviewer names, build reviewed, what passed, and what was confusing |
-| Device and accessibility proof | Partially ready | `/admin/design-qa` and `/offline` are live on staging; desktop Safari rendering is confirmed and the hosted keyboard concern is already noted | record phone, tablet, desktop, offline/PWA, keyboard, and screen-reader or label-audit results |
+| Device and accessibility proof | Partially ready | `/admin/design-qa` and `/offline` are live on staging; desktop Safari rendering is confirmed; signed-in Safari narrow-window smoke now exists for phone-like and tablet-like widths; the hosted keyboard concern is still noted and appears tied to the hidden Vercel feedback iframe | record phone, tablet, desktop, offline/PWA, keyboard, and screen-reader or label-audit results |
 | Pilot scope and owners | Open | `/admin/pilot-scope` already recommends one chapter, Rush Month only, and `action_started` first | name the exact cohort, launch window, chapter leader, coach, HQ/admin, DS owner, and pause/support channel |
 | First hosted write lane | Open | `/admin/first-write` already frames `action_started` as the narrow candidate and lists proof needed after the drill | approve the lane, name rollback owner, name disable-write owner, and confirm audit/readback proof expectations |
 | Integration hold | Partially ready | `/admin/integration-outbox` keeps downstream systems visibly disabled and review-only | DS must explicitly confirm HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI all stay off for the first pilot |
@@ -118,6 +118,7 @@ Use this split until the alias decision is made:
 
 - use `staging.mymedlife.org` for Supabase-backed staging evidence
 - use the PR preview URL for the newest `MED-486` packet copy
+- use a signed-in reviewer browser session when checking the staging domain
 - do not call the pilot ready until the team explicitly decides whether the
   staging alias should be re-pointed or whether the split review path is enough
   for final sign-off

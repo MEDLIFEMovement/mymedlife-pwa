@@ -44,11 +44,14 @@ when all of the following are true:
 Decision needed:
 - Should `staging.mymedlife.org` stay on the current preview deployment, or be
   re-pointed to the newer review-packet branch before final sign-off?
+- Is the intended reviewer path a signed-in browser session on the staging
+  domain, or should clean-session access work first?
 
 Record:
 - owner:
 - decision date:
 - branch or deployment approved:
+- reviewer access path approved:
 - if re-point needed, who will do it:
 
 Approval standard:

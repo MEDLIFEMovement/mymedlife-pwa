@@ -38,6 +38,25 @@ Interpretation:
 - until the staging alias points at the newer review packet deployment, hosted
   reviewers will keep seeing the older admin packet language
 
+### 0.5 Clean-session access currently lands on Vercel login
+
+Read-only source inspected:
+- one-off headless browser check against `https://staging.mymedlife.org/login`
+- signed-in Safari session check on the same hosted staging domain
+
+Observed:
+- a clean browser session does not land on myMEDLIFE first
+- it is redirected to a Vercel login URL before the app review route loads
+- a normal signed-in Safari session **can** still open the hosted staging review
+  routes directly
+
+Interpretation:
+- hosted staging is reviewable today for a reviewer who already has the needed
+  browser session
+- hosted staging is not yet a friction-free clean-session review path
+- this matters for pilot review because phone, tablet, and accessibility proof
+  should be tied to the same reviewer path the approvers will actually use
+
 ### 1. Staff dry run is live on staging
 
 Route: `/admin/staff-dry-run`
@@ -283,11 +302,25 @@ Observed on hosted staging:
   - the `Device and PWA release smoke` section present
 - the desktop Safari render is readable as a launch-review route today, but it
   does not substitute for real phone, tablet, or installed-PWA checks
+- in a signed-in Safari session, the accessibility tree also shows:
+  - the skip link before navigation
+  - a readable top-level heading and main review copy
+  - the local role context for `admin@mymedlife.test`
+- at a phone-like Safari window width (`430px`), the hosted route still exposes:
+  - mobile quick navigation links
+  - the phone-sized route smoke checklist
+  - the keyboard and screen-reader smoke checklist
+  - the device and PWA smoke checklist
+- at a tablet-like Safari window width (`940px`), the hosted route still keeps
+  the device and PWA smoke plan readable without obvious text overlap
 
 Quick hosted keyboard observation in Safari:
 - on the first `Tab` from the page, focus appears to move to the hidden
   `vercel.live/_next-live/feedback/feedback.html` iframe instead of staying in
   the app's visible skip-link or primary-content flow
+- the same hidden Vercel Live feedback iframe is visible in the Safari
+  accessibility tree as a second hosted scroll area, which makes the keyboard
+  risk look more like staging-shell noise than missing app semantics
 
 Current hosted interpretation:
 - staging now exposes the design and accessibility review packet directly on the
@@ -330,6 +363,12 @@ Hosted accessibility-semantic readback:
 - in desktop Safari, the recovery route renders as one narrow centered card with
   all three return actions visible at once and the disabled-offline limitations
   still visible near the bottom of the card
+- in a phone-like Safari window width (`430px`), the same hosted route still
+  shows:
+  - the `You are offline` heading
+  - the short recovery explanation
+  - all three return actions
+  - the disabled-offline limitations note inside the same visible card
 
 Quick hosted keyboard observation in Safari:
 - on the first `Tab` from the page, focus again appears to move to the hidden
@@ -488,10 +527,11 @@ Still needed:
 
 Reason:
 - the hosted design QA route and offline route are now both visible on staging,
-  cross-route Safari keyboard observations are recorded, and desktop Safari
-  render checks now exist for `/admin/design-qa` and `/offline`, but the actual
-  phone, tablet, installed-PWA, and full accessibility pass are still missing
-  from the release build evidence packet
+  cross-route Safari keyboard observations are recorded, desktop Safari render
+  checks exist, and signed-in Safari narrow-window smoke checks now exist for
+  phone-like and tablet-like layouts, but the actual phone, tablet,
+  installed-PWA, and full accessibility pass are still missing from the release
+  build evidence packet
 
 ### 3. Exact pilot group and named day-one owners
 
@@ -545,6 +585,8 @@ Hosted staging already proves the conservative pilot posture:
 
 Hosted staging does not yet prove pilot readiness end to end because:
 - the current domain is still missing the newest review-note packet
+- a clean browser session currently lands on Vercel login before the app, so
+  reviewer access is still session-dependent
 - device and accessibility evidence is still missing
 - named pilot owners are still missing
 - the first hosted write is still blocked on staging
