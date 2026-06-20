@@ -6,6 +6,7 @@ describe("phase 2 environment setup packet", () => {
     const packet = getPhase2EnvironmentSetupPacket();
 
     expect(packet.liveSetupBlocked).toBe(true);
+    expect(packet.selectedTopology.key).toBe("B");
     expect(packet.environments.map((item) => item.key)).toEqual([
       "local",
       "preview",
@@ -13,6 +14,7 @@ describe("phase 2 environment setup packet", () => {
       "production",
     ]);
     expect(packet.counts.environments).toBe(4);
+    expect(packet.counts.hostedProjects).toBe(1);
     expect(packet.counts.readyForReview).toBe(3);
     expect(packet.counts.ownerInputRequired).toBe(1);
   });
@@ -58,6 +60,19 @@ describe("phase 2 environment setup packet", () => {
         "Promoting a preview deployment to production before the security gate is approved",
       ]),
     );
-    expect(packet.officialReferences).toHaveLength(4);
+    expect(packet.ownerFollowUp.map((item) => item.key)).toEqual([
+      "confirm_existing_project_role",
+      "create_missing_hosted_project",
+      "name_staging_domain_and_vercel_env",
+      "load_env_vars_without_source_control",
+    ]);
+    expect(packet.hostedSupabaseState.projects).toEqual([
+      expect.objectContaining({
+        name: "myMEDLIFE",
+        ref: "rceupryepjgkdeqgxzrc",
+        environmentRole: "unknown",
+      }),
+    ]);
+    expect(packet.officialReferences).toHaveLength(5);
   });
 });

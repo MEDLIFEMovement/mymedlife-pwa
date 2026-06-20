@@ -1,5 +1,6 @@
 import type {
   Phase2EnvironmentExpectation,
+  Phase2EnvironmentOwnerFollowUp,
   Phase2EnvironmentLane,
   Phase2EnvironmentSetupPacket,
   Phase2EnvironmentVariablePlan,
@@ -24,10 +25,63 @@ export function Phase2EnvironmentSetupPanel({
         </div>
         <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
           <MiniStat label="Envs" value={`${packet.counts.environments}`} />
+          <MiniStat label="Hosted" value={`${packet.counts.hostedProjects}`} />
           <MiniStat label="Ready" value={`${packet.counts.readyForReview}`} />
           <MiniStat label="Owner input" value={`${packet.counts.ownerInputRequired}`} />
-          <MiniStat label="Live setup" value="blocked" />
+          <MiniStat label="Live" value="blocked" />
         </div>
+      </div>
+
+      <div className="mt-5 grid gap-3 xl:grid-cols-2">
+        <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
+            Selected topology
+          </p>
+          <h3 className="mt-2 text-lg font-semibold text-white">
+            {packet.selectedTopology.label}
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-white/62">
+            {packet.selectedTopology.plainEnglishSummary}
+          </p>
+          <p className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3 text-sm leading-6 text-cyan-100/78">
+            {packet.selectedTopology.technicalSummary}
+          </p>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
+            Hosted Supabase state
+          </p>
+          <h3 className="mt-2 text-lg font-semibold text-white">
+            Current connector readback
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-white/62">
+            {packet.hostedSupabaseState.summary}
+          </p>
+          <div className="mt-4 grid gap-2">
+            {packet.hostedSupabaseState.projects.map((project) => (
+              <article
+                key={project.ref}
+                className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
+              >
+                <p className="text-sm font-semibold text-white">{project.name}</p>
+                <p className="mt-1 text-xs text-white/48">
+                  {project.ref} / {project.region} / {project.status}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/62">
+                  Created {project.createdAt}. Environment role: {project.environmentRole}.
+                </p>
+              </article>
+            ))}
+          </div>
+          <ul className="mt-4 grid gap-1">
+            {packet.hostedSupabaseState.blockers.map((item) => (
+              <li key={item} className="text-sm leading-6 text-white/58">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
 
       <div className="mt-5 grid gap-3 xl:grid-cols-2">
@@ -36,7 +90,7 @@ export function Phase2EnvironmentSetupPanel({
         ))}
       </div>
 
-      <div className="mt-5 grid gap-3 xl:grid-cols-2">
+      <div className="mt-5 grid gap-3 xl:grid-cols-3">
         <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
             Environment variables
@@ -61,6 +115,20 @@ export function Phase2EnvironmentSetupPanel({
           <div className="mt-4 grid gap-2">
             {packet.expectations.map((item) => (
               <ExpectationCard key={item.key} item={item} />
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
+            Next owner actions
+          </p>
+          <h3 className="mt-2 text-lg font-semibold text-white">
+            What Kiomi / DS needs to do next
+          </h3>
+          <div className="mt-4 grid gap-2">
+            {packet.ownerFollowUp.map((item) => (
+              <OwnerFollowUpCard key={item.key} item={item} />
             ))}
           </div>
         </section>
@@ -173,6 +241,20 @@ function ExpectationCard({ item }: { item: Phase2EnvironmentExpectation }) {
       <p className="mt-2 text-sm leading-6 text-white/62">
         {item.evidenceRequired}
       </p>
+    </article>
+  );
+}
+
+function OwnerFollowUpCard({ item }: { item: Phase2EnvironmentOwnerFollowUp }) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <p className="text-sm font-semibold text-white">{item.label}</p>
+        <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-semibold text-white/56">
+          {item.owners.join(" / ")}
+        </span>
+      </div>
+      <p className="mt-2 text-sm leading-6 text-white/62">{item.nextAction}</p>
     </article>
   );
 }
