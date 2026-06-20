@@ -187,6 +187,48 @@ Current hosted interpretation:
 
 ## What is still missing before we can honestly say staging is ready for a controlled live MVP pilot
 
+## Decision checklist for approvers
+
+Use this as the shortest path to a real pilot decision:
+
+1. Platform / app owner
+   - confirm whether `staging.mymedlife.org` should keep following the current
+     preview deployment or be re-pointed to the newer review-packet branch
+   - if the hosted staff-dry-run copy needs to match PR `#121`, fix the alias
+     before the final review round
+
+2. Product / launch reviewer
+   - run the release-build device matrix:
+     - phone
+     - tablet
+     - desktop
+     - offline or PWA recovery
+     - keyboard-only
+     - screen-reader or label audit
+   - record whether the Safari keyboard focus issue is only preview-noise or a
+     real app-flow problem
+
+3. Nick / HQ
+   - name the exact pilot chapter or internal cohort
+   - name the chapter leader owner, coach owner, HQ/admin owner, and support
+     channel
+   - approve the stop rules and pause-message owner
+
+4. Kiomi / launch approvers
+   - confirm whether `action_started` is the first hosted write lane
+   - name the rollback owner and disable-write owner
+   - confirm what hosted audit and readback proof must be reviewed before a
+     second write lane can open
+
+5. DS
+   - explicitly sign off that HubSpot, Luma writes, n8n, warehouse, Power BI,
+     SMS, email, and AI stay off for the first pilot
+   - name the day-one integration or outbox escalation owner
+   - note any read-only exception if one is allowed
+
+Only after all five are done can this note support the statement:
+`ready for a controlled one-chapter live MVP pilot`
+
 ### 1. Staff dry-run evidence packet on the hosted build
 
 Still needed:
