@@ -7,6 +7,8 @@ type AuthSessionPanelProps = {
 };
 
 export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
+  const isHostedStaging = session.isHostedStaging;
+
   if (session.status !== "signed_in" || !session.user) {
     return (
       <section className="rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-5">
@@ -14,7 +16,7 @@ export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
           Auth status
         </p>
         <h2 className="mt-2 text-2xl font-semibold text-white">
-          No local session yet
+          {isHostedStaging ? "No staging session yet" : "No local session yet"}
         </h2>
         <p className="mt-2 text-sm leading-6 text-white/68">{session.message}</p>
       </section>
@@ -24,16 +26,16 @@ export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
   return (
     <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-        Signed in locally
+        {isHostedStaging ? "Signed in on staging" : "Signed in locally"}
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
         {session.user.displayName}
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/68">{session.user.email}</p>
       <p className="mt-3 text-sm leading-6 text-white/64">
-        This confirms the local Supabase Auth cookie flow works. Role-aware app
-        routes now prefer this local session over the debug actor email when the
-        matching fake profile exists.
+        {isHostedStaging
+          ? "This confirms the hosted staging Supabase Auth cookie flow works on staging.mymedlife.org. Role-aware routes now prefer the signed-in staging identity while production auth remains blocked."
+          : "This confirms the local Supabase Auth cookie flow works. Role-aware app routes now prefer this local session over the debug actor email when the matching fake profile exists."}
       </p>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Link

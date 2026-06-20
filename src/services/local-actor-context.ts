@@ -372,7 +372,7 @@ async function getLocalAuthSessionState(): Promise<AuthSessionState> {
     return getDisabledAuthSessionState(config);
   }
 
-  return getAuthSessionState(client);
+  return getAuthSessionState(client, config);
 }
 
 function actorContextMessage(resolution: ActorEmailResolution, dataSourceReason: string) {
