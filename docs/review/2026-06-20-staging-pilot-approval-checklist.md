@@ -103,12 +103,16 @@ Decision needed:
   re-pointed to the newer review-packet branch before final sign-off?
 - Is the intended reviewer path a signed-in browser session on the staging
   domain, or should clean-session access work first?
+- Is role-specific review expected to follow the signed-in auth identity for
+  now, with full sign-out and sign-in used when a reviewer needs to switch
+  roles?
 
 Record:
 - owner:
 - decision date:
 - branch or deployment approved:
 - reviewer access path approved:
+- role-switch expectation approved:
 - if re-point needed, who will do it:
 
 Approval standard:

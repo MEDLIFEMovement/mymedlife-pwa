@@ -57,6 +57,30 @@ Interpretation:
 - this matters for pilot review because phone, tablet, and accessibility proof
   should be tied to the same reviewer path the approvers will actually use
 
+### 0.6 Hosted auth gate and reviewer identity are behaving as real session controls
+
+Read-only source inspected:
+- signed-in Safari session on `https://staging.mymedlife.org/login`
+- hosted sign-out and invalid-email validation state after sign-out
+
+Observed:
+- the hosted login route shows a real staging sign-in gate rather than skipping
+  directly into the app
+- the signed-in Safari session showed an authenticated staging state for
+  `admin@mymedlife.test`
+- the visible sign-out control worked and returned the route to a signed-out
+  state
+- after sign-out, the route showed `No staging session yet`
+- attempting to submit the form without a valid email showed inline validation:
+  `Enter a valid email address.`
+
+Interpretation:
+- the hosted auth gate is real and visible on staging
+- reviewer identity on staging follows the actual auth session, not just route
+  navigation
+- switching hosted role context for review should be treated as a full sign-out
+  and sign-in step until the team approves a cleaner reviewer path
+
 ### 1. Staff dry run is live on staging
 
 Route: `/admin/staff-dry-run`

@@ -141,6 +141,43 @@ Until those answers are recorded, the honest status stays:
 
 `staging reviewable, pilot posture visible, controlled live MVP pilot not yet approved`
 
+## Recommended next moves
+
+To close this goal without expanding scope, the next actions should stay
+review-only and owner-specific:
+
+1. Platform owner
+   - decide whether `staging.mymedlife.org` stays on the current alias target
+     or is re-pointed to the newer `MED-486` review packet deployment
+   - confirm whether the signed-in reviewer browser session is the approved
+     staging access path for now
+
+2. Staff reviewer
+   - walk `/admin/staff-dry-run`
+   - record reviewer names, build used, what passed, and what still felt
+     confusing
+
+3. Product or QA reviewer
+   - record phone, tablet, desktop, offline or installed-PWA, keyboard-only,
+     and screen-reader or label-audit results
+   - explicitly note whether the hosted keyboard focus issue is Vercel-shell
+     noise or a real pilot blocker
+
+4. Nick or HQ owner
+   - name the exact pilot chapter or internal cohort
+   - name the day-one chapter leader, coach, HQ/admin, and DS owners
+   - name the pause or support channel and pause-message approver
+
+5. Kiomi or launch approver
+   - approve the first hosted write lane
+   - name the rollback owner and disable-write owner
+   - confirm the audit and readback proof required before any second write lane
+
+6. DS
+   - confirm HubSpot, Luma writes, n8n, warehouse, Power BI, SMS, email, and
+     AI all stay off for the first pilot
+   - name the day-one escalation owner for downstream or outbox questions
+
 ## Scope of this pass
 
 No app behavior changed in this pass.
@@ -150,6 +187,9 @@ This pass only tightened:
 - hosted evidence capture
 - blocker visibility
 - approval guidance for reviewers
+
+Because this was a documentation and evidence pass only, I did not rerun lint,
+typecheck, tests, or build.
 
 No new browser writes, external sends, auth changes, migration changes, or
 integration activations were introduced here.
