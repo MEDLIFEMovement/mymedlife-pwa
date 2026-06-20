@@ -16,6 +16,9 @@ describe("controlled pilot readiness", () => {
       readiness.stages.find((stage) => stage.key === "staff_dry_run")?.status,
     ).toBe("ready_now");
     expect(
+      readiness.stages.find((stage) => stage.key === "staging_review")?.status,
+    ).toBe("ready_now");
+    expect(
       readiness.stages.find((stage) => stage.key === "staff_dry_run")
         ?.requiredProof,
     ).toContain("Open `/admin/staff-dry-run`.");
@@ -46,7 +49,7 @@ describe("controlled pilot readiness", () => {
     ).toBe("needs_decision");
   });
 
-  it("keeps staging, auth, writes, and proof storage blocked before pilot", () => {
+  it("keeps auth, writes, and proof storage blocked before pilot while staging stays review-ready", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const readiness = getControlledPilotReadiness(actor);
     const blockedGateKeys = readiness.gates
@@ -55,12 +58,14 @@ describe("controlled pilot readiness", () => {
 
     expect(blockedGateKeys).toEqual(
       expect.arrayContaining([
-        "staging_environment",
         "auth_onboarding",
         "pilot_writes",
         "proof_consent_storage",
       ]),
     );
+    expect(
+      readiness.gates.find((gate) => gate.key === "staging_environment")?.status,
+    ).toBe("ready_now");
   });
 
   it("keeps DS Admin eligible without making external integrations live", () => {

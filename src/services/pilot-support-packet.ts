@@ -85,9 +85,9 @@ export function getPilotSupportPacket(
     canReadPacket: true,
     title: getTitle(actor),
     summary:
-      "Use this packet to name the first pilot owners, prove the dry-run and rollback posture, and make the stop rules explicit before any real student invitation.",
+      "Use this packet to name the first pilot owners, prove the dry-run and rollback posture on the current review path, and make the stop rules explicit before any real student invitation.",
     recommendedNextMove:
-      "Finish the staff dry run, name the chapter and owner lanes, confirm the first approved write path, and keep uploads plus external sends disabled until the remaining gates are approved.",
+      "Finish the staff dry run, name the chapter and owner lanes, capture the remaining device/accessibility evidence, confirm the first approved hosted write path, and keep uploads plus external sends disabled until the remaining gates are approved.",
     pilotConstraints: [
       "One chapter only.",
       "Five to fifteen students.",
@@ -168,7 +168,7 @@ function getOwnerChecklist(): PilotSupportPacketOwner[] {
       currentPosture:
         "The production operations runbook already names Data Solutions as the owner lane for integration and outbox recovery.",
       nextStep:
-        "Confirm which DS person will own day-one monitoring and replay decisions once staging exists.",
+        "Confirm which DS person will own day-one monitoring and replay decisions for the hosted pilot rehearsal.",
     },
   ];
 }
@@ -183,7 +183,7 @@ function getReadinessChecks(): PilotSupportPacketCheck[] {
       currentPosture:
         "The admin staff dry-run route already walks the team through member, leader, event/NPS, proof, coach, and DS safety review with zero writes and zero sends.",
       missingApproval:
-        "Run the rehearsal on the current review build and record who completed it.",
+        "Run the rehearsal on the current review or staging build and record who completed it.",
       reviewRoutes: ["/admin/staff-dry-run", "/rush-month/loop"],
     },
     {

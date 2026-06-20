@@ -435,7 +435,7 @@ export function getMvpReleaseReadinessSummary(
         label: "Controlled pilot decision packet",
         status: "ready_for_local_review",
         plainEnglish:
-          "Admin can see that staff dry run is ready while staging, real student pilot, and scale gates remain blocked until approval.",
+          "Admin can see that staff dry run and hosted staging review are ready while real student pilot and scale gates remain blocked until approval.",
       },
       {
         label: "Staff dry-run guide",

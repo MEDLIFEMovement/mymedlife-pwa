@@ -102,7 +102,7 @@ export function getStaffDryRunGuide(
     title: getTitle(actor),
     verdict: "ready_for_staff_dry_run",
     summary:
-      "Use this guide to rehearse the Rush Month MVP with fake users before staging, real student data, uploads, production writes, or integrations are approved.",
+      "Use this guide to rehearse the Rush Month MVP with fake users now that hosted staging review exists, while real student invitations, uploads, production writes, and integrations remain blocked.",
     staffInstructions: [
       "Run each step with the listed fake local actor email.",
       "Record whether each pass criterion is true in the staff review notes.",

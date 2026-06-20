@@ -406,11 +406,11 @@ function getSubprojects(): MvpSubprojectProgress[] {
         "/rush-month/events/[eventId]",
       ],
       plainEnglish:
-        "The app can support a staff dry run now and now has a first-pilot scope planner, production operations runbook, direct event detail, leader proof decision workspace, local leader proof server action, leader proof decision result states, Goal 154 coach intervention checklists, coach support notes, and launch evidence checklist, but a real student pilot still needs a named group, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership decisions.",
+        "The app can support a staff dry run now, has a hosted staging review path, and has a first-pilot scope planner, production operations runbook, direct event detail, leader proof decision workspace, local leader proof server action, leader proof decision result states, Goal 154 coach intervention checklists, coach support notes, and launch evidence checklist, but a real student pilot still needs a named group, auth, writes, proof consent/storage, event/NPS handling, device/accessibility evidence, and support ownership decisions.",
       technicalEvidence:
         "Controlled pilot readiness service, staff dry-run guide, pilot scope planner, focused operations route, production operations runbook, Rush Month event detail workspace, leader proof decision workspace, Goal 116 local leader proof server action, leader proof decision result states, Goal 154 coach intervention checklists, coach support notes, Goal 150 launch evidence checklist, and admin panels separate local review, staff dry run, staging, first student pilot, and later expansion gates.",
       remainingWork:
-        "Pick the first pilot group, set up staging, collect the Goal 150 launch evidence checklist, approve production auth/onboarding, choose first write path, approve proof consent/storage, and name incident, coach, and support ownership.",
+        "Pick the first pilot group, collect the Goal 150 launch evidence checklist on staging, approve production auth/onboarding, choose the first hosted write path, approve proof consent/storage, and name incident, coach, and support ownership.",
       nextReviewStep:
         "Open `/admin/launch-gate`, then `/admin/operations` and `/admin/pilot-scope`, and collect launch evidence before inviting any students.",
       totalWeight: 8,

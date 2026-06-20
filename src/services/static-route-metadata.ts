@@ -312,7 +312,7 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   adminStaffDryRun: {
     title: "Staff Dry Run",
     description:
-      "Staff-only fake-user rehearsal path for the Rush Month MVP before staging or student pilot approval.",
+      "Staff-only fake-user rehearsal path for the Rush Month MVP before student pilot approval.",
   },
 };
 

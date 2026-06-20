@@ -81,9 +81,9 @@ export function getControlledPilotReadiness(
     title: getTitle(actor),
     verdict: "staff_dry_run_ready_not_student_pilot",
     plainEnglishVerdict:
-      "The app is ready for a staff dry run of the Rush Month operating loop, but it is not ready to invite real students until pilot scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership are approved.",
+      "The app is ready for a staff dry run and hosted staging review of the Rush Month operating loop, but it is not ready to invite real students until pilot scope, auth, writes, proof consent/storage, event/NPS handling, device/accessibility evidence, and support ownership are approved.",
     recommendedNextMove:
-      "Run a staff dry run with fake users, pick one pilot chapter or internal test group, then approve staging/auth/write gates before any student invitations.",
+      "Run a staff dry run with fake users, collect the remaining staging device/accessibility evidence, pick one pilot chapter or internal test group, then approve auth and the first hosted write lane before any student invitations.",
     stages,
     gates,
     counts: {
@@ -123,7 +123,7 @@ function getPilotStages(): PilotReadinessStage[] {
       label: "Staff dry run with fake users",
       status: "ready_now",
       plainEnglish:
-        "HQ can rehearse the Rush Month loop with fake seed users before staging or real student data enters the app.",
+        "HQ can rehearse the Rush Month loop with fake seed users while hosted staging review and real student access stay separate.",
       requiredProof: [
         "Open `/admin/staff-dry-run`.",
         "Member week, leader follow-up, event/NPS, proof, coach, and DS safety steps are rehearsed.",
@@ -133,13 +133,13 @@ function getPilotStages(): PilotReadinessStage[] {
     {
       key: "staging_review",
       label: "Staging deployment review",
-      status: "blocked_before_pilot",
+      status: "ready_now",
       plainEnglish:
-        "The app still needs an approved staging environment, staging Supabase posture, and mobile/Figma smoke pass before student pilot use.",
+        "A hosted staging review path exists, so the team can verify branch, domain, environment, and mobile/browser posture before student pilot use.",
       requiredProof: [
         "Staging URL exists.",
-        "Secrets and environment flags are reviewed.",
-        "Mobile and accessibility smoke checks pass.",
+        "Secrets and environment flags are reviewed on the hosted build.",
+        "Mobile and accessibility smoke checks pass on staging.",
       ],
     },
     {
@@ -188,11 +188,11 @@ function getPilotGates(): PilotReadinessGate[] {
       key: "staging_environment",
       label: "Staging environment",
       owner: "Kiomi",
-      status: "blocked_before_pilot",
+      status: "ready_now",
       plainEnglish:
-        "A real pilot needs a staging deployment and reviewed Supabase/environment settings.",
+        "A hosted staging deployment and reviewed Supabase/environment posture now exist for narrow pilot rehearsals.",
       nextStep:
-        "Create staging hosting and Supabase projects after secrets/access ownership is approved.",
+        "Keep the staging branch, domain, and environment ownership fixed, then use the current build to collect auth, device, and first-write evidence.",
     },
     {
       key: "auth_onboarding",

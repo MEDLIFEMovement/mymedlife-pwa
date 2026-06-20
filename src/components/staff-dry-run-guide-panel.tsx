@@ -73,8 +73,8 @@ export function StaffDryRunGuidePanel({ guide }: StaffDryRunGuidePanelProps) {
 
         <p className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-3 text-xs leading-5 text-amber-50/78">
           This is not a write button. It tells staff which local packet to inspect,
-          which fake actor to use, and when to stop before staging, pilot, or external
-          automation approval.
+          which fake actor to use, and when to stop before any hosted write
+          promotion, student pilot, or external automation approval.
         </p>
 
         <div className="mt-4 grid gap-3">
