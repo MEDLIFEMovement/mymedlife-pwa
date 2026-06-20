@@ -33,7 +33,7 @@ describe("phase 2 environment setup packet", () => {
       "The hosted Supabase project `rceupryepjgkdeqgxzrc` is confirmed as the staging project.",
     );
     expect(staging?.notes.join(" ")).toContain(
-      "The repo now supports a `staging_supabase` auth mode",
+      "hosted staging auth is proven on staging.mymedlife.org",
     );
   });
 
@@ -99,9 +99,9 @@ describe("phase 2 environment setup packet", () => {
         (item) => item.key === "name_staging_domain_and_vercel_env",
       ),
     ).toMatchObject({
-      label: "Attach the confirmed staging domain and Vercel target",
+      label: "Record the staging Vercel target and preview scope",
       nextAction:
-        "Attach staging.mymedlife.org to the Vercel staging environment and keep preview deployments mapped to staging rather than production.",
+        "Keep staging.mymedlife.org attached to the Vercel staging environment, confirm preview stays scoped to staging rather than production, and record any remaining live-env gaps outside source control.",
     });
     expect(packet.hostedSupabaseState.projects).toEqual([
       expect.objectContaining({
@@ -118,7 +118,7 @@ describe("phase 2 environment setup packet", () => {
     expect(packet.hostedSupabaseState.blockers).toEqual(
       expect.arrayContaining([
         "Production schema migrations must not be applied until DS/security owners approve the path and rollback evidence.",
-        "Hosted auth, RLS, and first-write validation still need approved owners before pilot users are invited.",
+        "Hosted auth, RLS, first-write validation, backup checks, monitoring, and rollback owners still need to be named before pilot users are invited.",
       ]),
     );
     expect(packet.officialReferences).toHaveLength(5);

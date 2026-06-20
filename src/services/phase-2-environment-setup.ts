@@ -139,9 +139,9 @@ const environmentLanes: Phase2EnvironmentLane[] = [
       "The staging domain is confirmed as staging.mymedlife.org.",
       "The hosted Supabase project `rceupryepjgkdeqgxzrc` is confirmed as the staging project.",
       "The approved repo migrations have been applied to staging, including the MED-492 search-path security cleanup.",
-      "The repo now supports a `staging_supabase` auth mode, but Vercel should keep auth disabled until the staging domain and browser env vars are loaded deliberately.",
-      "Staging is where auth, RLS, and the first approved writes must be proven before a pilot invite goes out.",
-      "Vercel staging, environment variables, backup posture, monitoring, and rollback owner still need to be named before staging is treated as a release candidate.",
+      "The repo now supports a `staging_supabase` auth mode and hosted staging auth is proven on staging.mymedlife.org against the staging project.",
+      "Hosted staging now proves signed-in reads plus one narrow membership-approval rehearsal with audit/readback evidence while welcome, CRM, and external sends stay disabled.",
+      "Backup posture, monitoring, rollback ownership, and final pilot-release sign-off still need to be named before staging is treated as a release candidate.",
     ],
   },
   {
@@ -167,7 +167,7 @@ const environmentLanes: Phase2EnvironmentLane[] = [
 
 const hostedSupabaseState: Phase2HostedSupabaseState = {
   summary:
-    "The existing hosted Supabase project is confirmed as staging and the dedicated production Supabase project has been created. Staging is migrated and clean after the MED-492 security cleanup. Production is healthy but intentionally empty until DS/security owners approve the production schema application path. Topology B is still not fully provisioned because Vercel staging, live environment variables, production schema application, and hosted validation ownership remain owner-owned setup work.",
+    "The existing hosted Supabase project is confirmed as staging and the dedicated production Supabase project has been created. Staging is migrated, clean after the MED-492 security cleanup, and now proven for hosted auth plus the narrow membership-approval rehearsal. Production is healthy but intentionally empty until DS/security owners approve the production schema application path. Topology B is still not fully provisioned because production env setup, production schema application, and pilot-release ownership remain owner-owned setup work.",
   projects: [
     {
       name: "myMEDLIFE",
@@ -187,10 +187,10 @@ const hostedSupabaseState: Phase2HostedSupabaseState = {
     },
   ],
   blockers: [
-    "Vercel still needs `staging.mymedlife.org` attached to the staging environment.",
-    "Preview, staging, and production environment variables still need to be loaded outside source control.",
+    "Preview, staging, and production environment-variable scope still needs to be documented outside source control, with production setup still incomplete.",
     "Production schema migrations must not be applied until DS/security owners approve the path and rollback evidence.",
-    "Hosted auth, RLS, and first-write validation still need approved owners before pilot users are invited.",
+    "Hosted auth, RLS, first-write validation, backup checks, monitoring, and rollback owners still need to be named before pilot users are invited.",
+    "External integrations must stay disabled unless separately approved.",
   ],
 };
 
@@ -209,7 +209,7 @@ const environmentVariablePlan: Phase2EnvironmentVariablePlan[] = [
     environments: ["staging"],
     owners: ["Kiomi / DS", "Codex"],
     notes:
-      "Leave this `false` until one approved hosted staging write rehearsal is underway. This is the master switch for staged write proof and should stay off outside the narrow validation window.",
+      "Keep this `false` outside the approved hosted staging write rehearsal window. This is the master switch for staged write proof and should only be turned on deliberately for narrow validation.",
   },
   {
     name: "NEXT_PUBLIC_SUPABASE_URL",
@@ -285,17 +285,17 @@ const environmentOwnerFollowUp: Phase2EnvironmentOwnerFollowUp[] = [
   },
   {
     key: "name_staging_domain_and_vercel_env",
-    label: "Attach the confirmed staging domain and Vercel target",
+    label: "Record the staging Vercel target and preview scope",
     owners: ["Kiomi / DS", "Nick"],
     nextAction:
-      "Attach staging.mymedlife.org to the Vercel staging environment and keep preview deployments mapped to staging rather than production.",
+      "Keep staging.mymedlife.org attached to the Vercel staging environment, confirm preview stays scoped to staging rather than production, and record any remaining live-env gaps outside source control.",
   },
   {
     key: "load_env_vars_without_source_control",
     label: "Load environment variables outside source control",
     owners: ["Kiomi / DS", "Codex"],
     nextAction:
-      "Populate preview, staging, and production variables in Vercel/Supabase, then hand Codex the approved names and callback URLs without posting secrets into the repo.",
+      "Document the approved staging variable set already in use, then load and verify the remaining preview/production variables in Vercel and Supabase without posting secrets into the repo.",
   },
 ];
 
@@ -341,7 +341,7 @@ export function getPhase2EnvironmentSetupPacket(): Phase2EnvironmentSetupPacket 
   return {
     title: "MED-472 environment setup checklist",
     summary:
-      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned and migrated; production Supabase is provisioned but intentionally empty; the repo now supports a gated staging-only auth mode; Vercel staging, live environment variables, production schema application, and hosted validation ownership remain blocked outside source control.",
+      "Environment path B is selected: local + staging + production, with preview pointed at staging. Staging Supabase is provisioned, migrated, and proven for hosted auth plus the first narrow membership-approval rehearsal; production Supabase is provisioned but intentionally empty; production env setup, production schema application, and pilot-release ownership remain blocked outside source control.",
     liveSetupBlocked: true,
     selectedTopology,
     hostedSupabaseState,

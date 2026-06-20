@@ -54,6 +54,8 @@ Connector and CLI verification on 2026-06-20 found:
 - edge functions: 0
 - Supabase security advisor: no lints after MED-492
 - final migration dry run: remote database is up to date
+- hosted staging auth: proven on `https://staging.mymedlife.org`
+- hosted membership approval rehearsal: completed with audit/outbox readback while welcome, CRM, and external sends stayed disabled
 - production hosted project: `myMEDLIFE Production`
 - production project ref: `fnlhontvvprwgooevzdl`
 - production region: `us-east-1`
@@ -65,8 +67,7 @@ Connector and CLI verification on 2026-06-20 found:
 
 What is still missing:
 
-- Vercel staging attachment for `staging.mymedlife.org`
-- preview, staging, and production environment variables outside source control
+- documented preview, staging, and production environment-variable scope outside source control, with production setup still incomplete
 - approval for if/when Codex should apply the approved schema migrations to
   production, with rollback evidence
 - named owners for hosted auth, RLS, first-write validation, backups,
@@ -127,9 +128,8 @@ Preview:
 Staging:
 
 - `https://staging.mymedlife.org/auth/callback`
-- keep `MYMEDLIFE_AUTH_MODE=disabled` until the staging domain and env vars are loaded
-- after approval, use `MYMEDLIFE_AUTH_MODE=staging_supabase` only on the custom staging domain
-- keep `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=false` until one narrow hosted write rehearsal is intentionally opened
+- use `MYMEDLIFE_AUTH_MODE=staging_supabase` only on the custom staging domain
+- keep `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=false` outside an intentionally approved narrow hosted write rehearsal window
 
 Production:
 
@@ -151,8 +151,10 @@ Kiomi / DS:
 
 - review the empty production Supabase project and approve whether/when Codex
   should apply the already-approved schema migrations to production
-- attach `staging.mymedlife.org` to the Vercel staging environment
-- load preview, staging, and production variables outside source control
+- keep `staging.mymedlife.org` attached to the Vercel staging environment and
+  preview scoped to staging rather than production
+- document the approved staging variables already in use, then load any
+  remaining preview/production variables outside source control
 - name owners for hosted auth, RLS, first-write validation, backups,
   monitoring, and rollback evidence
 
