@@ -15,6 +15,7 @@ describe("staff dry-run guide", () => {
     expect(guide.verdict).toBe("ready_for_staff_dry_run");
     expect(guide.counts.steps).toBe(8);
     expect(guide.counts.passCriteria).toBeGreaterThan(20);
+    expect(guide.counts.evidenceItems).toBe(5);
     expect(guide.counts.browserWritesExpected).toBe(0);
     expect(guide.counts.externalWritesExpected).toBe(0);
     expect(guide.writeRehearsal.counts.externalWritesExpected).toBe(0);
@@ -61,6 +62,31 @@ describe("staff dry-run guide", () => {
     expect(
       guide.steps.flatMap((step) => step.structuredEventsToNotice),
     ).toEqual(expect.arrayContaining(["action_started", "evidence_submitted"]));
+  });
+
+  it("turns the dry run into a concrete evidence packet for pilot approvals", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const guide = getStaffDryRunGuide(actor, mockData);
+
+    expect(guide.evidenceItems.map((item) => item.key)).toEqual([
+      "rehearsal_completion",
+      "device_accessibility",
+      "pilot_scope_support",
+      "first_hosted_write",
+      "integration_hold",
+    ]);
+    expect(
+      guide.evidenceItems.find((item) => item.key === "device_accessibility")
+        ?.reviewRoute,
+    ).toBe("/admin/design-qa");
+    expect(
+      guide.evidenceItems.find((item) => item.key === "pilot_scope_support")
+        ?.blockedUntil,
+    ).toContain("day-one owners");
+    expect(
+      guide.evidenceItems.find((item) => item.key === "first_hosted_write")
+        ?.evidenceToCapture.join(" "),
+    ).toContain("rollback");
   });
 
   it("mirrors the seven local write packets for staff rehearsal", () => {

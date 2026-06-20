@@ -55,17 +55,29 @@ export type StaffDryRunWriteRehearsal = {
   };
 };
 
+export type StaffDryRunEvidenceItem = {
+  key: string;
+  label: string;
+  ownerLane: string;
+  reviewRoute: string;
+  whyItMatters: string;
+  evidenceToCapture: string[];
+  blockedUntil: string;
+};
+
 export type StaffDryRunGuide = {
   canReadGuide: boolean;
   title: string;
   verdict: "ready_for_staff_dry_run";
   summary: string;
   staffInstructions: string[];
+  evidenceItems: StaffDryRunEvidenceItem[];
   writeRehearsal: StaffDryRunWriteRehearsal;
   steps: StaffDryRunStep[];
   counts: {
     steps: number;
     passCriteria: number;
+    evidenceItems: number;
     browserWritesExpected: 0;
     externalWritesExpected: 0;
   };
@@ -88,6 +100,7 @@ export function getStaffDryRunGuide(
       summary:
         "Staff dry-run instructions are for HQ review contexts, not student or chapter operating routes.",
       staffInstructions: [],
+      evidenceItems: [],
       writeRehearsal: emptyWriteRehearsal(),
       steps: [],
       counts: emptyCounts(),
@@ -95,6 +108,7 @@ export function getStaffDryRunGuide(
   }
 
   const steps = getDryRunSteps();
+  const evidenceItems = getEvidenceItems();
   const writeRehearsal = buildWriteRehearsal(actor, data, env);
 
   return {
@@ -109,6 +123,7 @@ export function getStaffDryRunGuide(
       "Stop the dry run if any route implies real students, real uploads, production data, public proof, or external automation is active.",
       "Treat this as rehearsal evidence only. It does not approve a student pilot.",
     ],
+    evidenceItems,
     writeRehearsal,
     steps,
     counts: {
@@ -117,6 +132,7 @@ export function getStaffDryRunGuide(
         (total, step) => total + step.passCriteria.length,
         0,
       ),
+      evidenceItems: evidenceItems.length,
       browserWritesExpected: 0,
       externalWritesExpected: 0,
     },
@@ -305,6 +321,86 @@ function buildWriteRehearsal(
   };
 }
 
+function getEvidenceItems(): StaffDryRunEvidenceItem[] {
+  return [
+    {
+      key: "rehearsal_completion",
+      label: "Staff dry-run completion note",
+      ownerLane: "HQ operations",
+      reviewRoute: "/admin/staff-dry-run",
+      whyItMatters:
+        "The team needs a named record of who ran the rehearsal, which steps passed, and where the first confusion showed up.",
+      evidenceToCapture: [
+        "Date, build, and reviewer names.",
+        "Pass or fail result for each of the eight rehearsal steps.",
+        "The first route where staff needed clarification or hit a blocker.",
+      ],
+      blockedUntil:
+        "The rehearsal is run on the current review or staging build and the result is written down.",
+    },
+    {
+      key: "device_accessibility",
+      label: "Device, PWA, and accessibility follow-up",
+      ownerLane: "Product design and launch",
+      reviewRoute: "/admin/design-qa",
+      whyItMatters:
+        "A staff dry run is not enough by itself; the same flows still need phone, tablet, desktop, offline, and accessibility proof on staging.",
+      evidenceToCapture: [
+        "Phone, tablet, and desktop pass/fail notes for the review routes.",
+        "Keyboard and screen-reader findings for launch-blocking routes.",
+        "Offline/PWA recovery notes from the hosted staging build.",
+      ],
+      blockedUntil:
+        "Device, PWA, and accessibility checks are recorded against the staging build.",
+    },
+    {
+      key: "pilot_scope_support",
+      label: "Pilot scope and support ownership",
+      ownerLane: "Nick, HQ operations, and coach lead",
+      reviewRoute: "/admin/pilot-scope",
+      whyItMatters:
+        "Before a real pilot starts, the team must name the exact chapter, member count, and day-one support owners rather than leave that implied.",
+      evidenceToCapture: [
+        "Pilot chapter or internal cohort name and launch window.",
+        "Named chapter leader, coach, HQ/admin, and DS owners.",
+        "Pause channel and student-communications approver.",
+      ],
+      blockedUntil:
+        "The smallest approved pilot group and day-one owners are explicitly named.",
+    },
+    {
+      key: "first_hosted_write",
+      label: "First hosted write candidate and rollback owner",
+      ownerLane: "Engineering and data/security",
+      reviewRoute: "/admin/first-write",
+      whyItMatters:
+        "The staff run should narrow the next hosted write lane so auth, audit, rollback, and readback reviews can stay focused.",
+      evidenceToCapture: [
+        "Which write lane is proposed first.",
+        "Who owns rollback and disable-write decisions.",
+        "What audit/readback proof must be visible before promotion.",
+      ],
+      blockedUntil:
+        "The first hosted write path is chosen and the rollback owner agrees to the plan.",
+    },
+    {
+      key: "integration_hold",
+      label: "External integration hold confirmation",
+      ownerLane: "Data solutions",
+      reviewRoute: "/admin/integration-outbox",
+      whyItMatters:
+        "The pilot must remain app-first and mock-safe until the team explicitly approves live sends to outside systems.",
+      evidenceToCapture: [
+        "Confirmation that HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes stay off.",
+        "Any outbox or integration records reviewed during the rehearsal.",
+        "Owner name for future replay and escalation decisions.",
+      ],
+      blockedUntil:
+        "Data Solutions confirms the pilot remains review-only for external destinations.",
+    },
+  ];
+}
+
 function toWriteRehearsalStep(
   operation: WriteSequenceOperation,
 ): StaffDryRunWriteRehearsalStep {
@@ -412,6 +508,7 @@ function emptyCounts(): StaffDryRunGuide["counts"] {
   return {
     steps: 0,
     passCriteria: 0,
+    evidenceItems: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
   };

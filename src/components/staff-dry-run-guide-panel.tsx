@@ -25,6 +25,7 @@ export function StaffDryRunGuidePanel({ guide }: StaffDryRunGuidePanelProps) {
         <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
           <MiniStat label="Steps" value={`${guide.counts.steps}`} />
           <MiniStat label="Checks" value={`${guide.counts.passCriteria}`} />
+          <MiniStat label="Evidence" value={`${guide.counts.evidenceItems}`} />
           <MiniStat label="Writes" value={`${guide.counts.browserWritesExpected}`} />
           <MiniStat label="Sends" value={`${guide.counts.externalWritesExpected}`} />
         </div>
@@ -39,6 +40,81 @@ export function StaffDryRunGuidePanel({ guide }: StaffDryRunGuidePanelProps) {
             </li>
           ))}
         </ul>
+      </div>
+
+      <div className="mt-5 rounded-3xl border border-sky-300/20 bg-sky-300/10 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-100/70">
+              Evidence to leave with
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              Turn the rehearsal into a pilot packet
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+              These are the concrete notes the staff run should produce so the
+              next approval step stays small, reviewable, and honest.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-3">
+            <MiniStat label="Items" value={`${guide.evidenceItems.length}`} />
+            <MiniStat label="Writes" value={`${guide.counts.browserWritesExpected}`} />
+            <MiniStat label="Sends" value={`${guide.counts.externalWritesExpected}`} />
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          {guide.evidenceItems.map((item) => (
+            <article
+              key={item.key}
+              className="rounded-[1.5rem] border border-white/10 bg-[#082236]/72 p-4"
+            >
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-100/70">
+                    {item.ownerLane}
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-white">
+                    {item.label}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-white/62">
+                    {item.whyItMatters}
+                  </p>
+                </div>
+                <Link
+                  href={item.reviewRoute}
+                  className="w-fit rounded-full bg-sky-300 px-3 py-2 text-xs font-semibold text-[#062038]"
+                >
+                  Open {item.reviewRoute}
+                </Link>
+              </div>
+
+              <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.9fr]">
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <p className="text-sm font-semibold text-white">
+                    Capture these notes
+                  </p>
+                  <ul className="mt-3 grid gap-2">
+                    {item.evidenceToCapture.map((entry) => (
+                      <li key={entry} className="text-xs leading-5 text-white/58">
+                        {entry}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <p className="text-sm font-semibold text-white">
+                    Still blocked until
+                  </p>
+                  <p className="mt-3 rounded-xl border border-sky-200/15 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/56">
+                    {item.blockedUntil}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
 
       <div className="mt-5 rounded-3xl border border-cyan-300/20 bg-cyan-300/10 p-4">
