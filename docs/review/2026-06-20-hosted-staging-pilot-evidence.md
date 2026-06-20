@@ -121,6 +121,35 @@ Named decision owners visible on staging:
 - `Coach lead` for named support ownership
 - `Data Solutions` for keeping external writes disabled
 
+Hosted detail now visible on this route:
+- one-chapter Rush Month pilot is the only route marked `recommended after gates`
+- recommended first real pilot size is still:
+  - `1 chapter`
+  - `5-15 student users`
+  - `1 coach`
+  - `1 HQ owner`
+- the route explicitly lists required approvals before that pilot:
+  - `staging environment`
+  - `auth/onboarding`
+  - `first write path via /admin/first-write`
+  - `proof consent/storage posture`
+  - `named coach/support owner`
+- the route explicitly says these must stay manual or disabled:
+  - `Luma writes`
+  - `HubSpot sync`
+  - `n8n automation`
+  - `warehouse exports`
+  - `public proof sharing`
+
+Hosted minimum-pilot path now visible on this route:
+- sign in and land in chapter context: `blocked`
+- member sees what to do next: `staff rehearsal`
+- member starts an assigned action: `first live candidate`
+- leader follow-up: `manual first`
+- event attendance and NPS: `manual first`
+- proof/testimonial intake: `blocked`
+- coach support posture: `manual first`
+
 ### 3. First-write drill is live on staging but still blocked
 
 Route: `/admin/first-write`
@@ -141,9 +170,33 @@ Current hosted blockers shown on staging:
 - readback for internal event and integration event rows is still missing
 - audit log proof still requires a manual check
 
+Hosted proof and operator details now visible on staging:
+- packet status badge: `blocked until flags`
+- fake member sign-in instruction is visible:
+  - `member.a@mymedlife.test`
+  - password shown as local fake seed only
+- the five-step packet sequence is visible on staging:
+  - confirm the packet is not blocked
+  - sign in as the fake member
+  - start the candidate action
+  - return to the verification packet
+  - verify event, integration event, and audit rows
+- the route explicitly says the first write does **not** approve production
+  writes
+- the route lists exact proof to collect after the drill:
+  - screenshot of `/admin/first-write` with required checks green
+  - screenshot of the selected action detail route before start
+  - screenshot after redirect showing the `started` result
+  - readback proof that assignment status is `in_progress`
+  - evidence of one internal event row, one integration event row, and one
+    audit log row
+  - evidence that automation outbox sends and external writes stayed at zero
+
 Current hosted interpretation:
 - staging already supports review of the narrow first-write lane
 - staging does not yet prove that the first hosted write is approved to run
+- staging now exposes the exact owner lane and proof shape for the first hosted
+  write approval, even though the write itself remains blocked
 
 ### 4. Leader membership workspace keeps approval writes locked
 
