@@ -1,7 +1,9 @@
+import Link from "next/link";
 import type {
   ProductionLaunchGate,
   ProductionLaunchEvidenceCheck,
   ProductionLaunchGateItem,
+  StagingPilotMilestone,
 } from "@/services/production-launch-gate";
 
 type ProductionLaunchGatePanelProps = {
@@ -34,8 +36,11 @@ export function ProductionLaunchGatePanel({
             label="Evidence"
             value={`${gate.counts.launchEvidenceChecks}`}
           />
+          <MiniStat
+            label="Next 5"
+            value={`${gate.counts.stagingPilotMilestones}`}
+          />
           <MiniStat label="Writes" value={`${gate.browserWritesEnabled}`} />
-          <MiniStat label="Sends" value={`${gate.externalWritesEnabled}`} />
         </div>
       </div>
 
@@ -69,6 +74,37 @@ export function ProductionLaunchGatePanel({
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {gate.launchEvidenceChecks.map((check) => (
             <LaunchEvidenceCard key={check.key} check={check} />
+          ))}
+        </div>
+      </article>
+
+      <article className="mt-5 rounded-3xl border border-sky-300/20 bg-sky-300/10 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-100/70">
+              Phase 2 staging packet
+            </p>
+            <h3 className="mt-2 text-xl font-semibold text-white">
+              Close the gate in this order
+            </h3>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/62">
+              These five milestones are the shortest honest path from staging review
+              to a controlled one-chapter live MVP pilot.
+            </p>
+          </div>
+          <MiniStat
+            label="Milestones"
+            value={`${gate.counts.stagingPilotMilestones}`}
+          />
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          {gate.stagingPilotMilestones.map((milestone, index) => (
+            <StagingPilotMilestoneCard
+              key={milestone.key}
+              milestone={milestone}
+              index={index}
+            />
           ))}
         </div>
       </article>
@@ -173,6 +209,62 @@ function LaunchEvidenceCard({ check }: { check: ProductionLaunchEvidenceCheck })
         </div>
       </dl>
     </div>
+  );
+}
+
+function StagingPilotMilestoneCard({
+  milestone,
+  index,
+}: {
+  milestone: StagingPilotMilestone;
+  index: number;
+}) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-[#082236]/72 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/70">
+            Step {index + 1} / {milestone.ownerLane}
+          </p>
+          <h4 className="mt-2 text-lg font-semibold text-white">
+            {milestone.label}
+          </h4>
+          <p className="mt-2 text-sm leading-6 text-white/64">
+            {milestone.goal}
+          </p>
+        </div>
+        <Link
+          href={milestone.reviewRoute}
+          className="w-fit rounded-full bg-sky-300 px-3 py-2 text-xs font-semibold text-[#062038]"
+        >
+          Open {milestone.reviewRoute}
+        </Link>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.95fr]">
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/42">
+            Evidence to capture
+          </p>
+          <ul className="mt-2 grid gap-2">
+            {milestone.evidenceToCapture.map((entry) => (
+              <li key={entry} className="text-sm leading-6 text-white/62">
+                {entry}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/42">
+            Still blocked until
+          </p>
+          <p className="mt-2 text-sm leading-6 text-white/60">
+            {milestone.blockedUntil}
+          </p>
+        </div>
+      </div>
+    </article>
   );
 }
 

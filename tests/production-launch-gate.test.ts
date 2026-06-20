@@ -17,8 +17,10 @@ describe("production launch gate", () => {
       localEvidenceReady: 1,
       blockedBeforeLive: 7,
       launchEvidenceChecks: 9,
+      stagingPilotMilestones: 5,
     });
     expect(gate.launchEvidenceChecks).toHaveLength(9);
+    expect(gate.stagingPilotMilestones).toHaveLength(5);
     expect(gate.finalReviewPrompt).toContain("production writes");
   });
 
@@ -159,6 +161,39 @@ describe("production launch gate", () => {
       gate.launchEvidenceChecks.find((check) => check.key === "pilot_support_owner")
         ?.reviewRoute,
     ).toBe("/admin/pilot-scope");
+  });
+
+  it("turns the Phase 2 gate into an ordered staging approval sequence", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor);
+
+    expect(gate.stagingPilotMilestones.map((item) => item.key)).toEqual([
+      "staff_dry_run",
+      "device_accessibility",
+      "pilot_scope_owners",
+      "first_hosted_write",
+      "integration_hold",
+    ]);
+    expect(
+      gate.stagingPilotMilestones.find((item) => item.key === "staff_dry_run")
+        ?.reviewRoute,
+    ).toBe("/admin/staff-dry-run");
+    expect(
+      gate.stagingPilotMilestones.find((item) => item.key === "device_accessibility")
+        ?.evidenceToCapture.join(" "),
+    ).toContain("staging build");
+    expect(
+      gate.stagingPilotMilestones.find((item) => item.key === "pilot_scope_owners")
+        ?.blockedUntil,
+    ).toContain("support owners");
+    expect(
+      gate.stagingPilotMilestones.find((item) => item.key === "first_hosted_write")
+        ?.evidenceToCapture.join(" "),
+    ).toContain("Rollback");
+    expect(
+      gate.stagingPilotMilestones.find((item) => item.key === "integration_hold")
+        ?.goal,
+    ).toContain("outside systems");
   });
 
   it("keeps every gate write-safe and approval-bound", () => {

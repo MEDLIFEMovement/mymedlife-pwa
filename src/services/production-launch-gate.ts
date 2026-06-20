@@ -40,6 +40,16 @@ export type ProductionLaunchEvidenceCheck = {
   blockedUntil: string;
 };
 
+export type StagingPilotMilestone = {
+  key: string;
+  label: string;
+  ownerLane: string;
+  reviewRoute: string;
+  goal: string;
+  evidenceToCapture: string[];
+  blockedUntil: string;
+};
+
 export type ProductionLaunchGate = {
   canReadGate: boolean;
   title: string;
@@ -53,9 +63,11 @@ export type ProductionLaunchGate = {
     localEvidenceReady: number;
     blockedBeforeLive: number;
     launchEvidenceChecks: number;
+    stagingPilotMilestones: number;
   };
   items: ProductionLaunchGateItem[];
   launchEvidenceChecks: ProductionLaunchEvidenceCheck[];
+  stagingPilotMilestones: StagingPilotMilestone[];
   finalReviewPrompt: string;
 };
 
@@ -81,15 +93,18 @@ export function getProductionLaunchGate(
         localEvidenceReady: 0,
         blockedBeforeLive: 0,
         launchEvidenceChecks: 0,
+        stagingPilotMilestones: 0,
       },
       items: [],
       launchEvidenceChecks: [],
+      stagingPilotMilestones: [],
       finalReviewPrompt: "",
     };
   }
 
   const items = productionLaunchGateItems;
   const launchEvidenceChecks = getProductionLaunchEvidenceChecks();
+  const stagingPilotMilestones = getStagingPilotMilestones();
 
   return {
     canReadGate: true,
@@ -107,9 +122,11 @@ export function getProductionLaunchGate(
       blockedBeforeLive: items.filter((item) => item.status === "blocked_before_live")
         .length,
       launchEvidenceChecks: launchEvidenceChecks.length,
+      stagingPilotMilestones: stagingPilotMilestones.length,
     },
     items,
     launchEvidenceChecks,
+    stagingPilotMilestones,
     finalReviewPrompt:
       "Approve a live pilot only after every blocked gate has named evidence, owner sign-off, rollback, and a current smoke test. Until then, keep production writes and external sends disabled.",
   };
@@ -224,6 +241,86 @@ export function getProductionLaunchEvidenceChecks(): ProductionLaunchEvidenceChe
       acceptanceSignal:
         "Nick/HQ can name the exact pilot group, support owner, rollback/stop rule, and communication path before invitations.",
       blockedUntil: "Pilot scope, support ownership, and stop rules are approved.",
+    },
+  ];
+}
+
+function getStagingPilotMilestones(): StagingPilotMilestone[] {
+  return [
+    {
+      key: "staff_dry_run",
+      label: "Finish the staff dry run on staging",
+      ownerLane: "HQ operations",
+      reviewRoute: "/admin/staff-dry-run",
+      goal:
+        "Run the full staff rehearsal on the hosted build and leave behind a concrete note of who ran it, what passed, and what was confusing.",
+      evidenceToCapture: [
+        "Reviewer names, date, and build used.",
+        "Pass or fail result for each rehearsal step.",
+        "The first route where the team needed clarification or hit a blocker.",
+      ],
+      blockedUntil:
+        "The staff run is completed on the current staging or review build and written down.",
+    },
+    {
+      key: "device_accessibility",
+      label: "Collect device, PWA, and accessibility proof",
+      ownerLane: "Product design and launch",
+      reviewRoute: "/admin/design-qa",
+      goal:
+        "Prove that the hosted build works on phone, tablet, desktop, offline/PWA, keyboard, and screen-reader flows before any real student invitation.",
+      evidenceToCapture: [
+        "Phone, tablet, and desktop results tied to the staging build.",
+        "Offline and installed-PWA recovery notes.",
+        "Keyboard and screen-reader findings for launch-blocking routes.",
+      ],
+      blockedUntil:
+        "Goal 148 and Goal 149 checks are recorded against the staging build.",
+    },
+    {
+      key: "pilot_scope_owners",
+      label: "Lock the first pilot scope and owners",
+      ownerLane: "Nick, HQ operations, coach lead, and data solutions",
+      reviewRoute: "/admin/pilot-scope",
+      goal:
+        "Name the exact chapter or internal cohort, the day-one owners, and the pause or support path so the first pilot stays intentionally small.",
+      evidenceToCapture: [
+        "Pilot chapter or cohort name and launch window.",
+        "Named chapter leader, coach, HQ/admin, and DS owners.",
+        "Pause channel and student-communications approver.",
+      ],
+      blockedUntil:
+        "The pilot group, support owners, and pause path are explicitly approved.",
+    },
+    {
+      key: "first_hosted_write",
+      label: "Approve the first hosted write lane",
+      ownerLane: "Engineering and data/security",
+      reviewRoute: "/admin/first-write",
+      goal:
+        "Pick the narrowest live write path and prove its audit, rollback, and readback posture before anything broader is enabled.",
+      evidenceToCapture: [
+        "The exact first hosted write lane chosen for the pilot.",
+        "Rollback and disable-write owner.",
+        "Audit/readback proof required before promotion.",
+      ],
+      blockedUntil:
+        "The first hosted write path, rollback owner, and audit expectations are approved.",
+    },
+    {
+      key: "integration_hold",
+      label: "Keep the external integration hold explicit",
+      ownerLane: "Data solutions",
+      reviewRoute: "/admin/integration-outbox",
+      goal:
+        "Keep the app-first pilot boundary visible by confirming that outside systems remain disabled unless separately approved.",
+      evidenceToCapture: [
+        "Confirmation that HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes stay off.",
+        "Any integration or outbox rows reviewed during staging proof.",
+        "Owner for future replay and escalation decisions.",
+      ],
+      blockedUntil:
+        "Data Solutions signs off that the pilot remains review-only for external destinations.",
     },
   ];
 }
