@@ -242,8 +242,16 @@ Current verified route-family checkpoint:
 - chapter leader routes exist across `/chapter?view=overview|leaderboard|members|member_profile|committees|events|impact|bridge_videos|succession|feed_analytics`
 - coach and staff command-center routes exist as separate shells
 - SLT Prep traveler and staff routes exist as their own surface family
-- admin/backend routes now include `/admin/permissions`, `/admin/committees`,
-  `/admin/workflows`, `/admin/sop-library`, and `/admin/sop-builder/[campaignSlug]`
+- admin/backend routes now include the owned review and tooling family across
+  `/admin`, `/admin/review-path`, `/admin/nick-review`,
+  `/admin/release-readiness`, `/admin/launch-gate`, `/admin/audit-log`,
+  `/admin/integration-outbox`, `/admin/master-data`,
+  `/admin/database-security`, `/admin/system-health`, `/admin/design-qa`,
+  `/admin/operations`, `/admin/first-write`, `/admin/write-sequence`,
+  `/admin/proof-write`, `/admin/hq-proof-write`, `/admin/assignment-write`,
+  `/admin/coach-write`, `/admin/pilot-scope`, `/admin/permissions`,
+  `/admin/committees`, `/admin/workflows`, `/admin/sop-library`, and
+  `/admin/sop-builder/[campaignSlug]`
 
 Most recently tightened from live Figma/browser comparison:
 

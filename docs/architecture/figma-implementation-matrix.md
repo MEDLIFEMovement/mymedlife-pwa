@@ -626,8 +626,8 @@ Primary roles:
 
 - current launch/review packets remain first-class
 - `/admin` now acts as the overview lane for the backend route family, so
-  reviewers can move into permissions, committees, workflows, and SOP tooling
-  without the admin surface reading like a disconnected stack of pages
+  reviewers can move into the broader review and tooling lanes without the
+  admin surface reading like a disconnected stack of pages
 - new backend lanes should extend the admin story, not replace it
 - committee registry state should stay route-owned on `/admin/committees`
 - keep inspector/configuration routes read-only or mock-safe until explicit

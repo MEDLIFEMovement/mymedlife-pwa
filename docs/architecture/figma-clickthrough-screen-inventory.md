@@ -53,7 +53,14 @@ These Make files were inspected as clickable prototypes, not static images:
 
 Implementation note:
 
-- the local admin backend lane now includes `/admin/permissions`,
+- the local admin backend lane now includes the shared owned route family for
+  `/admin`, `/admin/review-path`, `/admin/nick-review`,
+  `/admin/release-readiness`, `/admin/launch-gate`, `/admin/audit-log`,
+  `/admin/integration-outbox`, `/admin/master-data`,
+  `/admin/database-security`, `/admin/system-health`, `/admin/design-qa`,
+  `/admin/operations`, `/admin/first-write`, `/admin/write-sequence`,
+  `/admin/proof-write`, `/admin/hq-proof-write`, `/admin/assignment-write`,
+  `/admin/coach-write`, `/admin/pilot-scope`, `/admin/permissions`,
   `/admin/committees`, `/admin/workflows`, `/admin/sop-library`, and
   `/admin/sop-builder/[campaignSlug]`
 - the live SOP inspection now proves the library first viewport plus the Rush
