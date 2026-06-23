@@ -391,7 +391,7 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("Feed Analytics");
+    expect(html).toContain(">Feed Analytics</h1>");
     expect(html).toContain("Post Performance");
     expect(html).toContain("How Stanford captured 91 leads in one weekend");
     expect(html).toContain("Total Views");

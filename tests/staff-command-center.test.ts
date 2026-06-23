@@ -1277,7 +1277,7 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter: selectedCenter }),
     );
 
-    expect(overviewHtml).toContain("Feed Analytics");
+    expect(overviewHtml).toContain(">Feed Analytics</h1>");
     expect(overviewHtml).toContain("Connecting feed engagement to chapter outcomes");
     expect(overviewHtml).toContain("Total Views");
     expect(overviewHtml).toContain("How Stanford captured 91 leads in one weekend");
