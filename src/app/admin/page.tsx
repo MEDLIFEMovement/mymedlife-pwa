@@ -276,6 +276,48 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
       summary:
         "Backend map of onboarding, writes, proof review, SLT readiness, coach intervention, and SOP tooling.",
     },
+    {
+      href: "/admin/review-path",
+      eyebrow: "Review",
+      title: "Stakeholder Review Path",
+      summary:
+        "No-code walkthrough for member, leader, coach, and admin review packets before live changes.",
+    },
+    {
+      href: "/admin/nick-review",
+      eyebrow: "Decision",
+      title: "Nick Review Packet",
+      summary:
+        "Final launch packet that ties review paths, pilot scope, and launch evidence into one checkpoint.",
+    },
+    {
+      href: "/admin/release-readiness",
+      eyebrow: "Ready",
+      title: "Release Readiness",
+      summary:
+        "Read-only launch summary that keeps pilot approval, auth, and safety gates explicit.",
+    },
+    {
+      href: "/admin/launch-gate",
+      eyebrow: "Gate",
+      title: "Production Launch Gate",
+      summary:
+        "Hosted launch checklist for staging, pilot scope, external writes, and rollback ownership.",
+    },
+    {
+      href: "/admin/audit-log",
+      eyebrow: "Audit",
+      title: "Audit Log",
+      summary:
+        "Write-readback posture for actor, target, before/after, reason, and visibility evidence.",
+    },
+    {
+      href: "/admin/operations",
+      eyebrow: "Ops",
+      title: "Production Operations",
+      summary:
+        "Incident, rollback, backup, support, and recovery runbook for the live MVP posture.",
+    },
   ];
 
   if (surfaceFamily === "ds_admin") {
@@ -287,6 +329,20 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
         title: "Integration Outbox",
         summary:
           "Read-only event, outbox, and blocked-send posture for DS review.",
+      },
+      {
+        href: "/admin/database-security",
+        eyebrow: "Security",
+        title: "Database Security",
+        summary:
+          "RLS and security review lane for local write promotion and staging rollout checks.",
+      },
+      {
+        href: "/admin/system-health",
+        eyebrow: "Health",
+        title: "System Health",
+        summary:
+          "Deployment, auth, data-source, and backend health checks for read-only oversight.",
       },
       {
         href: "/admin/master-data",
@@ -314,6 +370,20 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
         title: "Committee Registry",
         summary:
           "Action committee lanes, owner roles, and campaign links in one backend lane.",
+      },
+      {
+        href: "/admin/design-qa",
+        eyebrow: "QA",
+        title: "Design QA",
+        summary:
+          "Mobile, accessibility, and visual smoke checks for the Figma-backed review path.",
+      },
+      {
+        href: "/admin/pilot-scope",
+        eyebrow: "Pilot",
+        title: "Pilot Scope",
+        summary:
+          "One chapter, named owners, and approved launch posture for the narrow live pilot.",
       },
       {
         href: "/admin/sop-library",

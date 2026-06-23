@@ -47,6 +47,12 @@ describe("admin page", () => {
     expect(html).toContain('href="/admin/permissions"');
     expect(html).toContain('href="/admin/committees"');
     expect(html).toContain('href="/admin/workflows"');
+    expect(html).toContain('href="/admin/review-path"');
+    expect(html).toContain('href="/admin/nick-review"');
+    expect(html).toContain('href="/admin/release-readiness"');
+    expect(html).toContain('href="/admin/launch-gate"');
+    expect(html).toContain('href="/admin/audit-log"');
+    expect(html).toContain('href="/admin/operations"');
     expect(html).toContain('href="/admin/sop-library"');
     expect(html).toContain('href="/admin/master-data"');
     expect(html).toContain(">Overview<");
@@ -55,6 +61,12 @@ describe("admin page", () => {
     expect(html).toContain("Permission Registry");
     expect(html).toContain("Committee Registry");
     expect(html).toContain("Workflow Registry");
+    expect(html).toContain("Stakeholder Review Path");
+    expect(html).toContain("Nick Review Packet");
+    expect(html).toContain("Release Readiness");
+    expect(html).toContain("Production Launch Gate");
+    expect(html).toContain("Audit Log");
+    expect(html).toContain("Production Operations");
     expect(html).toContain("SOP Library");
     expect(html).toContain("System health signals");
     expect(html).toContain("4 local checks are visible here.");
