@@ -322,6 +322,9 @@ export async function getSupabaseLocalActorContext(
       ...actorMemberships.map((item) => item.role_key),
       ...actorStaffRoles.map((item) => item.role_key),
     ],
+    includeBreakglassScope:
+      audience === "super_admin" ||
+      actorStaffRoles.some((item) => item.role_key === "super_admin"),
   });
   const canonicalRoles = getCanonicalRoles(canonicalRoleAssignments);
   const canonicalScopes = getCanonicalScopes(canonicalRoleAssignments);
@@ -371,6 +374,7 @@ export function getMockLocalActorContext(
     chapterRoles: option.chapterRoles,
     staffRoles: option.staffRoles,
     includeTravelerRole: option.includeTravelerRole,
+    includeBreakglassScope: option.audience === "super_admin",
   });
   const canonicalRoles = getCanonicalRoles(canonicalRoleAssignments);
   const canonicalScopes = getCanonicalScopes(canonicalRoleAssignments);

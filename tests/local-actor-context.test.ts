@@ -120,6 +120,12 @@ describe("local actor context service", () => {
     await expectAudience("super.admin@mymedlife.test", "super_admin", ["Super Admin"]);
   });
 
+  it("adds breakglass scope for Super Admin local actor contexts", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+
+    expect(actor.canonicalScopes).toContain("breakglass");
+  });
+
   it("can mark Supabase actor context as auth-session derived", async () => {
     const actor = await getSupabaseLocalActorContext(
       createFakeClient(fakeActorRows),

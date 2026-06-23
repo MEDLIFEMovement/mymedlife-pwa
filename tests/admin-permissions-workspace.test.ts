@@ -10,8 +10,25 @@ describe("admin permissions workspace", () => {
     expect(workspace.canReadWorkspace).toBe(true);
     expect(workspace.title).toBe("Admin permission registry");
     expect(workspace.counts.personas).toBe(13);
+    expect(workspace.counts.backendRoutes).toBe(24);
     expect(workspace.routeFamilies.map((family) => family.key)).toContain(
       "admin_backend",
+    );
+    expect(workspace.routeFamilies.find((family) => family.key === "admin_backend"))
+      .toMatchObject({
+        label: "Admin review and tooling",
+      });
+    expect(
+      workspace.routeFamilies.find((family) => family.key === "admin_backend")?.routes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/review-path",
+        "/admin/launch-gate",
+        "/admin/integration-outbox",
+        "/admin/database-security",
+        "/admin/system-health",
+        "/admin/operations",
+      ]),
     );
     expect(workspace.personaRows.find((row) => row.email === "traveler.a@mymedlife.test"))
       .toMatchObject({
@@ -51,6 +68,15 @@ describe("admin permissions workspace", () => {
     expect(workspace.title).toBe("DS Admin permission registry");
     expect(workspace.nextStep.href).toBe("/admin/integration-outbox");
     expect(workspace.guardrails.join(" ")).toContain("DS Admin");
+  });
+
+  it("shows breakglass scope for Super Admin personas in the registry", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const workspace = getAdminPermissionsWorkspace(actor);
+
+    expect(
+      workspace.personaRows.find((row) => row.email === "super.admin@mymedlife.test")?.scopes,
+    ).toContain("breakglass");
   });
 
   it("hides the permission registry from operating roles", () => {
