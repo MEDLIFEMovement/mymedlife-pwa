@@ -422,7 +422,10 @@ Primary roles:
 - notification actions -> exact prep destinations
 - staff-dashboard access -> `/slt-prep/staff`
 - if a staff or coach reviewer opens the traveler packet, selected-traveler
-  context should persist across subnav destinations and child routes
+  context should persist across subnav destinations and child routes, but the
+  traveler-facing `/slt-prep/profile` and `/slt-prep/notifications` pages
+  should stay traveler-owned and avoid rendering a staff-review handoff card
+  on the page itself
 
 ### Required states
 

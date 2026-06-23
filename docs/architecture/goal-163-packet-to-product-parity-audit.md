@@ -59,6 +59,10 @@ The current repo has distinct owned surfaces instead of one generic dashboard:
 - SLT Prep traveler/staff routes
 - admin review, safety, and backend tooling routes
 
+The traveler-facing SLT profile and notifications routes now stay traveler-owned
+and keep the staff-review handoff in `/slt-prep/staff` instead of rendering that
+card on the traveler pages themselves.
+
 Visible controls on those surfaces now route into real screens or mock-safe
 owned review states instead of stopping at placeholder pages.
 

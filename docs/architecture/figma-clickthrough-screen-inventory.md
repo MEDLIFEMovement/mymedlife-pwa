@@ -1401,6 +1401,10 @@ Current parity note:
 - `/slt-prep/notifications` should lead with `Notifications`,
   `Recent Notifications`, and `Communication Preferences` rather than
   review-only explainer cards
+- traveler profile and notifications routes should stay traveler-owned surfaces;
+  preserve selected traveler context in URL/deep links, but keep the staff
+  review handoff card in `/slt-prep/staff` instead of rendering it on the
+  traveler pages themselves
 - `/slt-prep/forms` now should lead with `Required Forms Hub` and keep the
   traveler-specific context in supporting copy instead of putting the traveler
   name into the route title itself
@@ -1431,7 +1435,8 @@ Handoff rule:
   notification feed so the return path and explanation stay specific
 - when those routes are opened for a selected traveler from staff review, keep
   the selected traveler attached to the notification, profile, and next-step
-  prep links
+  prep links, but do not render a second staff-review handoff card on the
+  traveler screens themselves
 
 ### Staff Dashboard
 

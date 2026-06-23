@@ -93,7 +93,7 @@ describe("slt prep profile page", () => {
     expect(html).toContain("daniel.kim@email.com");
   });
 
-  it("shows the staff-review handoff when profile opens for a selected traveler from staff", async () => {
+  it("keeps the traveler-owned profile surface free of staff handoff chrome", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -114,12 +114,12 @@ describe("slt prep profile page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from staff traveler review.");
-    expect(html).toContain("Back to staff");
-    expect(html).toContain('href="/slt-prep/staff?traveler=daniel-kim"');
+    expect(html).not.toContain("This prep route was opened from staff traveler review.");
+    expect(html).not.toContain("Back to staff");
+    expect(html).not.toContain('href="/slt-prep/staff?traveler=daniel-kim"');
     expect(html).toContain('/slt-prep/notifications?source=staff&amp;traveler=daniel-kim');
     expect(html.indexOf("Recent Notifications")).toBeLessThan(
-      html.indexOf("This prep route was opened from staff traveler review."),
+      html.indexOf("Communication Preferences"),
     );
   });
 });

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { SltPrepRouteHandoffCard } from "@/components/slt-prep-route-handoff-card";
 import { SltPrepTonePill } from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
@@ -8,7 +7,6 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { mapChecklistDetailHref } from "@/services/slt-checklist-detail-href";
 import {
   buildSltTripPrepRouteHref,
-  getSltTripPrepRouteSourceContext,
   getSltTripPrepMobileQuickNavItems,
   getSltTripPrepSubnavItems,
   getSltTripPrepWorkspace,
@@ -36,12 +34,6 @@ export default async function SltPrepProfilePage({
   ]);
   const workspace = getSltTripPrepWorkspace(actor, search.traveler);
   const preservedRouteSource = parseSltTripPrepRouteSource(search.source);
-  const routeSource =
-    parseSltTripPrepRouteSource(search.source) === "staff" ? "staff" : null;
-  const routeSourceContext = getSltTripPrepRouteSourceContext(
-    routeSource,
-    search.traveler,
-  );
 
   return (
     <AppShell
@@ -90,7 +82,7 @@ export default async function SltPrepProfilePage({
                   </div>
                   <Link
                     href={buildSltTripPrepRouteHref("/slt-prep/notifications", {
-                      source: routeSource ?? undefined,
+                      source: preservedRouteSource ?? undefined,
                       travelerId: search.traveler,
                     })}
                     className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-[#0b66cc]"
@@ -201,10 +193,6 @@ export default async function SltPrepProfilePage({
               </section>
             </div>
           </section>
-
-          <div className="grid gap-4">
-            {routeSourceContext ? <SltPrepRouteHandoffCard {...routeSourceContext} /> : null}
-          </div>
         </>
       )}
     </AppShell>
