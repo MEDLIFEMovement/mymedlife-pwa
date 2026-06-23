@@ -17,7 +17,19 @@ describe("local actor context service", () => {
     expect(actor.authSessionStatus).toBe("disabled");
     expect(actor.audience).toBe("chapter_member");
     expect(actor.chapterRoles).toContain("General Member");
+    expect(actor.primaryCanonicalRole).toBe("student_member");
+    expect(actor.defaultLandingSurface).toBe("student_home_mobile");
     expect(actor.isLocalOnly).toBe(true);
+  });
+
+  it("can expose a traveler-specific local preview persona", () => {
+    const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
+
+    expect(actor.audience).toBe("chapter_member");
+    expect(actor.chapterRoles).toEqual(["General Member"]);
+    expect(actor.canonicalRoles).toContain("traveler");
+    expect(actor.primaryCanonicalRole).toBe("traveler");
+    expect(actor.defaultLandingSurface).toBe("slt_prep");
   });
 
   it("keeps separate mock personas for action committee roles", () => {
@@ -28,16 +40,34 @@ describe("local actor context service", () => {
     expect(committeeMember.chapterRoles).toEqual(["Action Committee Member"]);
     expect(committeeChair.audience).toBe("chapter_leader");
     expect(committeeChair.chapterRoles).toEqual(["Action Committee Chair"]);
+    expect(committeeChair.primaryCanonicalRole).toBe("committee_chair");
   });
 
   it("keeps separate mock personas for President/VP and E-Board roles", () => {
     const president = getMockLocalActorContext("leader.a@mymedlife.test");
+    const vicePresident = getMockLocalActorContext("vice.president@mymedlife.test");
     const eBoard = getMockLocalActorContext("eboard.a@mymedlife.test");
 
     expect(president.audience).toBe("chapter_leader");
     expect(president.chapterRoles).toEqual(["President / VP"]);
+    expect(vicePresident.audience).toBe("chapter_leader");
+    expect(vicePresident.chapterRoles).toEqual(["Vice President"]);
+    expect(vicePresident.primaryCanonicalRole).toBe("vice_president");
     expect(eBoard.audience).toBe("chapter_leader");
     expect(eBoard.chapterRoles).toEqual(["E-Board Member"]);
+  });
+
+  it("keeps separate mock personas for sales coach and sales admin roles", () => {
+    const salesCoach = getMockLocalActorContext("sales.coach@mymedlife.test");
+    const salesAdmin = getMockLocalActorContext("sales.admin@mymedlife.test");
+
+    expect(salesCoach.audience).toBe("coach");
+    expect(salesCoach.staffRoles).toEqual(["Sales Coach"]);
+    expect(salesCoach.primaryCanonicalRole).toBe("sales_coach");
+    expect(salesCoach.canonicalScopes).toContain("assigned_coach_portfolio");
+    expect(salesAdmin.audience).toBe("admin");
+    expect(salesAdmin.staffRoles).toEqual(["Sales Admin"]);
+    expect(salesAdmin.primaryCanonicalRole).toBe("sales_admin");
   });
 
   it("reads every Goal 9 actor context table", async () => {
@@ -66,6 +96,8 @@ describe("local actor context service", () => {
     expect(actor.user.displayName).toBe("Sofia Alvarez");
     expect(actor.audience).toBe("chapter_member");
     expect(actor.chapterRoles).toEqual(["General Member"]);
+    expect(actor.canonicalRoles).toContain("student_member");
+    expect(actor.canonicalScopes).toContain("own");
     expect(actor.chapterNames).toEqual(["UCLA MEDLIFE"]);
   });
 
@@ -166,6 +198,18 @@ describe("local actor context service", () => {
       ),
     ).toEqual({
       email: "coach@mymedlife.test",
+      identitySource: "local_preview_cookie",
+    });
+  });
+
+  it("accepts a percent-encoded local preview cookie value", () => {
+    expect(
+      resolveLocalActorPreviewSelection(
+        "leader.a%40mymedlife.test",
+        "member.a@mymedlife.test",
+      ),
+    ).toEqual({
+      email: "leader.a@mymedlife.test",
       identitySource: "local_preview_cookie",
     });
   });

@@ -23,6 +23,14 @@ export type MobileNavigationItem = NavigationItem & {
   helper: string;
 };
 
+export type ActorSurfaceFamily =
+  | "member"
+  | "leader"
+  | "coach"
+  | "staff"
+  | "ds_admin"
+  | "super_admin";
+
 const baseNavigation: NavigationItem[] = [
   { href: "/", label: "Home" },
   { href: "/campaigns", label: "Campaigns" },
@@ -35,22 +43,75 @@ const baseNavigation: NavigationItem[] = [
   { href: "/profile", label: "Profile" },
 ];
 
+const chapterLeaderNavigation: NavigationItem[] = [
+  { href: "/chapter?view=overview", label: "Chapter Home" },
+  { href: "/chapter?view=leaderboard", label: "Leaderboard" },
+  { href: "/chapter?view=members", label: "Member Pipeline" },
+  { href: "/chapter?view=member_profile", label: "Member Profile" },
+  { href: "/chapter?view=committees", label: "Committees" },
+  { href: "/chapter?view=events", label: "Events" },
+  { href: "/chapter?view=impact", label: "Impact" },
+  { href: "/chapter?view=bridge_videos", label: "Bridge Videos" },
+  { href: "/chapter?view=succession", label: "Succession" },
+  { href: "/chapter?view=feed_analytics", label: "Feed Analytics" },
+];
+
+const coachNavigation: NavigationItem[] = [
+  { href: "/coach?view=chapters", label: "Portfolio" },
+  { href: "/coach?view=chapter_detail", label: "Chapter Detail" },
+  { href: "/coach?view=campaigns", label: "Campaigns" },
+  { href: "/coach?view=support_notes#support-notes", label: "Support Notes" },
+  { href: "/slt-prep/staff", label: "Trip Prep" },
+  { href: "/profile", label: "Profile" },
+];
+
+const staffNavigation: NavigationItem[] = [
+  { href: "/staff?view=chapters", label: "Chapters" },
+  { href: "/staff?view=campaigns", label: "Campaigns" },
+  { href: "/staff?view=proof_ugc", label: "Proof / UGC" },
+  { href: "/staff?view=feed_studio", label: "Feed Studio" },
+  { href: "/staff?view=feed_analytics", label: "Feed Analytics" },
+  { href: "/staff?view=hubspot", label: "HubSpot" },
+  { href: "/staff?view=best_practices", label: "Best Practices" },
+  { href: "/staff?view=admin", label: "Admin" },
+  { href: "/profile", label: "Profile" },
+];
+
+const adminBackendNavigation: NavigationItem[] = [
+  { href: "/admin", label: "Admin Home" },
+  { href: "/admin/permissions", label: "Permissions" },
+  { href: "/admin/committees", label: "Committees" },
+  { href: "/admin/workflows", label: "Workflows" },
+  { href: "/admin/sop-library", label: "SOP Library" },
+  { href: "/admin/master-data", label: "Master Data" },
+  { href: "/profile", label: "Profile" },
+];
+
+const dsAdminNavigation: NavigationItem[] = [
+  { href: "/admin", label: "Admin Home" },
+  { href: "/admin/permissions", label: "Permissions" },
+  { href: "/admin/workflows", label: "Workflows" },
+  { href: "/admin/integration-outbox", label: "Outbox" },
+  { href: "/admin/system-health", label: "System Health" },
+  { href: "/profile", label: "Profile" },
+];
+
 export function canReadChapterData(actor: LocalActorContext): boolean {
-  return actor.audience !== "ds_admin";
+  return getActorSurfaceFamily(actor) !== "ds_admin";
 }
 
 export function canReadAssignment(
   actor: LocalActorContext,
   assignment: Assignment,
 ): boolean {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return assignment.lane === "Member";
-    case "chapter_leader":
+    case "leader":
       return assignment.lane === "Member" || assignment.lane === "Leader";
     case "coach":
       return assignment.lane === "Coach" || assignment.status !== "approved";
-    case "admin":
+    case "staff":
     case "super_admin":
       return true;
     case "ds_admin":
@@ -62,21 +123,29 @@ export function canReadCoachRisk(
   actor: LocalActorContext,
   risk: RiskFlagRow,
 ): boolean {
-  switch (actor.audience) {
-    case "chapter_leader":
+  switch (getActorSurfaceFamily(actor)) {
+    case "leader":
       return risk.visibility === "leader_visible";
     case "coach":
-    case "admin":
+    case "staff":
     case "super_admin":
       return true;
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return false;
   }
 }
 
 export function canReadIntegrationOutbox(actor: LocalActorContext): boolean {
-  return actor.audience === "ds_admin" || actor.audience === "super_admin";
+  const family = getActorSurfaceFamily(actor);
+
+  return family === "ds_admin" || family === "super_admin";
+}
+
+export function canReadAdminReviewSurface(actor: LocalActorContext): boolean {
+  const family = getActorSurfaceFamily(actor);
+
+  return family === "staff" || family === "ds_admin" || family === "super_admin";
 }
 
 export function getVisibleAssignmentsForActor(
@@ -94,8 +163,8 @@ export function getVisibleRiskFlagsForActor(
 }
 
 export function getVisibleAdminPanelsForActor(actor: LocalActorContext): AdminPanel[] {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return [supportContextPanel, proofSharingPanel];
     case "ds_admin":
       return [integrationOutboxPanel];
@@ -107,8 +176,8 @@ export function getVisibleAdminPanelsForActor(actor: LocalActorContext): AdminPa
         fullOversightPanel,
       ];
     case "coach":
-    case "chapter_leader":
-    case "chapter_member":
+    case "leader":
+    case "member":
       return [];
   }
 }
@@ -125,118 +194,25 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
     ];
   }
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return [
         { href: "/", label: "Home" },
         { href: "/campaigns", label: "Campaigns" },
-        { href: "/slt-prep", label: "Trip Prep" },
-        { href: "/rush-month", label: "Rush Month" },
-        { href: "/rush-month/actions", label: "My Actions" },
         { href: "/rush-month/events", label: "Events" },
         { href: "/rush-month/leaderboard", label: "Points" },
-        { href: "/rush-month/evidence", label: "Proof" },
         { href: "/profile", label: "Profile" },
       ];
-    case "chapter_leader":
-      return [
-        { href: "/chapter", label: "Chapter" },
-        { href: "/chapter/members", label: "Members" },
-        { href: "/campaigns", label: "Campaigns" },
-        { href: "/action-committees", label: "Committees" },
-        { href: "/rush-month", label: "Rush Month" },
-        { href: "/rush-month/dashboard", label: "Dashboard" },
-        { href: "/rush-month/leaderboard", label: "Leaderboard" },
-        { href: "/rush-month/events", label: "Events" },
-        { href: "/rush-month/loop", label: "MVP Loop" },
-        { href: "/rush-month/actions", label: "Team Actions" },
-        { href: "/rush-month/evidence", label: "Proof" },
-        { href: "/rush-month/review", label: "Follow-Up" },
-        { href: "/profile", label: "Profile" },
-      ];
+    case "leader":
+      return chapterLeaderNavigation;
     case "coach":
-      return [
-        { href: "/chapter", label: "Portfolio Chapter" },
-        { href: "/chapter/members", label: "Roster" },
-        { href: "/campaigns", label: "Campaigns" },
-        { href: "/slt-prep/staff", label: "Trip Prep" },
-        { href: "/action-committees", label: "Events" },
-        { href: "/rush-month", label: "Rush Month" },
-        { href: "/rush-month/dashboard", label: "Campaign Health" },
-        { href: "/rush-month/leaderboard", label: "Recognition" },
-        { href: "/rush-month/events", label: "Events" },
-        { href: "/rush-month/loop", label: "MVP Loop" },
-        { href: "/rush-month/actions", label: "Open Work" },
-        { href: "/proof-library", label: "Proof Library" },
-        { href: "/staff", label: "Staff Center" },
-        { href: "/coach", label: "Coach" },
-        { href: "/profile", label: "Profile" },
-      ];
-    case "admin":
-      return [
-        { href: "/chapter", label: "Chapter Support" },
-        { href: "/chapter/members", label: "Members" },
-        { href: "/campaigns", label: "Campaign Support" },
-        { href: "/slt-prep/staff", label: "Trip Prep" },
-        { href: "/proof-library", label: "Proof Library" },
-        { href: "/rush-month/dashboard", label: "Rush Dashboard" },
-        { href: "/rush-month/leaderboard", label: "Leaderboard" },
-        { href: "/rush-month/events", label: "Events" },
-        { href: "/rush-month/loop", label: "Rush Loop" },
-        { href: "/coach", label: "Coach Read" },
-        { href: "/staff", label: "Staff Center" },
-        { href: "/admin", label: "HQ Admin" },
-        { href: "/admin/first-write", label: "First Write" },
-        { href: "/admin/write-sequence", label: "Write Sequence" },
-        { href: "/admin/proof-write", label: "Proof Packet" },
-        { href: "/admin/hq-proof-write", label: "HQ Decision" },
-        { href: "/admin/assignment-write", label: "Assignment Packet" },
-        { href: "/admin/coach-write", label: "Coach Packet" },
-        { href: "/admin/pilot-scope", label: "Pilot Scope" },
-        { href: "/admin/staff-dry-run", label: "Dry Run" },
-        { href: "/profile", label: "Profile" },
-      ];
+      return coachNavigation;
+    case "staff":
+      return staffNavigation;
     case "ds_admin":
-      return [
-        { href: "/admin", label: "Integration Outbox" },
-        { href: "/admin/first-write", label: "First Write Safety" },
-        { href: "/admin/write-sequence", label: "Write Sequence Safety" },
-        { href: "/admin/proof-write", label: "Proof Packet Safety" },
-        { href: "/admin/hq-proof-write", label: "HQ Decision Safety" },
-        { href: "/admin/assignment-write", label: "Assignment Safety" },
-        { href: "/admin/coach-write", label: "Coach Safety" },
-        { href: "/admin/pilot-scope", label: "Pilot Safety" },
-        { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
-        { href: "/profile", label: "Profile" },
-      ];
+      return dsAdminNavigation;
     case "super_admin":
-      return [
-        { href: "/chapter", label: "All Chapters" },
-        { href: "/chapter/members", label: "Members" },
-        { href: "/rush-month", label: "Campaigns" },
-        { href: "/campaigns", label: "Campaign Library" },
-        { href: "/slt-prep/staff", label: "Trip Prep" },
-        { href: "/rush-month/dashboard", label: "Rush Dashboard" },
-        { href: "/rush-month/leaderboard", label: "Leaderboard" },
-        { href: "/rush-month/events", label: "Events" },
-        { href: "/rush-month/loop", label: "MVP Loop" },
-        { href: "/action-committees", label: "Committees" },
-        { href: "/rush-month/actions", label: "Assignments" },
-        { href: "/proof-library", label: "Proof Library" },
-        { href: "/rush-month/review", label: "Reviews" },
-        { href: "/coach", label: "Coach" },
-        { href: "/staff", label: "Staff Center" },
-        { href: "/admin", label: "Super Admin" },
-        { href: "/admin/first-write", label: "First Write" },
-        { href: "/admin/write-sequence", label: "Write Sequence" },
-        { href: "/admin/proof-write", label: "Proof Packet" },
-        { href: "/admin/hq-proof-write", label: "HQ Decision" },
-        { href: "/admin/assignment-write", label: "Assignment Packet" },
-        { href: "/admin/coach-write", label: "Coach Packet" },
-        { href: "/admin/pilot-scope", label: "Pilot Scope" },
-        { href: "/admin/staff-dry-run", label: "Dry Run" },
-        { href: "/profile", label: "Profile" },
-      ];
+      return adminBackendNavigation;
   }
 }
 
@@ -252,8 +228,8 @@ export function getMobileQuickNavigationForActor(
     ];
   }
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return [
         { href: "/", label: "Home", helper: "Today" },
         { href: "/campaigns", label: "Campaigns", helper: "Goals" },
@@ -261,25 +237,24 @@ export function getMobileQuickNavigationForActor(
         { href: "/rush-month/leaderboard", label: "Points", helper: "Rank" },
         { href: "/profile", label: "Profile", helper: "Me" },
       ];
-    case "chapter_leader":
+    case "leader":
       return [
-        { href: "/rush-month", label: "Rush", helper: "Plan" },
-        { href: "/chapter/members", label: "People", helper: "Roles" },
-        { href: "/rush-month/review", label: "Review", helper: "Proof" },
-        { href: "/rush-month/loop", label: "Loop", helper: "Demo" },
+        { href: "/chapter?view=overview", label: "Home", helper: "Health" },
+        { href: "/chapter?view=members", label: "Pipeline", helper: "People" },
+        { href: "/chapter?view=events", label: "Events", helper: "Plan" },
+        { href: "/chapter?view=succession", label: "Succession", helper: "Leaders" },
       ];
     case "coach":
       return [
-        { href: "/rush-month/dashboard", label: "Health", helper: "Read" },
-        { href: "/chapter/members", label: "Roster", helper: "Roles" },
-        { href: "/coach", label: "Coach", helper: "Decide" },
-        { href: "/proof-library", label: "Proof", helper: "Belief" },
+        { href: "/coach?view=chapters", label: "Portfolio", helper: "Overview" },
+        { href: "/coach?view=chapter_detail", label: "Chapter", helper: "Focus" },
+        { href: "/coach?view=campaigns", label: "Campaigns", helper: "Support" },
+        { href: "/coach?view=support_notes#support-notes", label: "Notes", helper: "Coach" },
       ];
-    case "admin":
+    case "staff":
       return [
         { href: "/admin", label: "Admin", helper: "Review" },
-        { href: "/admin/first-write", label: "Write", helper: "Drill" },
-        { href: "/admin/write-sequence", label: "Sequence", helper: "Order" },
+        { href: "/admin/workflows", label: "Flows", helper: "Map" },
         { href: "/admin/proof-write", label: "Proof", helper: "Packet" },
         { href: "/admin/hq-proof-write", label: "HQ", helper: "Review" },
         { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
@@ -289,25 +264,49 @@ export function getMobileQuickNavigationForActor(
     case "ds_admin":
       return [
         { href: "/admin", label: "Outbox", helper: "Safety" },
-        { href: "/admin/first-write", label: "Write", helper: "No sends" },
-        { href: "/admin/write-sequence", label: "Sequence", helper: "No sends" },
-        { href: "/admin/proof-write", label: "Proof", helper: "No uploads" },
-        { href: "/admin/hq-proof-write", label: "HQ", helper: "No publish" },
-        { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
-        { href: "/admin/coach-write", label: "Coach", helper: "No sends" },
-        { href: "/admin/pilot-scope", label: "Pilot", helper: "No sends" },
+        { href: "/admin/permissions", label: "Roles", helper: "Scope" },
+        { href: "/admin/workflows", label: "Flows", helper: "Map" },
+        { href: "/admin/integration-outbox", label: "Queue", helper: "Off" },
       ];
     case "super_admin":
       return [
-        { href: "/admin", label: "Admin", helper: "Full" },
-        { href: "/admin/first-write", label: "Write", helper: "Drill" },
-        { href: "/admin/write-sequence", label: "Sequence", helper: "Order" },
-        { href: "/admin/proof-write", label: "Proof", helper: "Packet" },
-        { href: "/admin/hq-proof-write", label: "HQ", helper: "Review" },
-        { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
-        { href: "/admin/coach-write", label: "Coach", helper: "No sends" },
-        { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
+        { href: "/admin", label: "Admin", helper: "Home" },
+        { href: "/admin/permissions", label: "Roles", helper: "Scope" },
+        { href: "/admin/committees", label: "Committees", helper: "Owners" },
+        { href: "/admin/workflows", label: "Flows", helper: "Map" },
+        { href: "/admin/sop-library", label: "SOP", helper: "Builder" },
+        { href: "/admin/master-data", label: "Data", helper: "Catalog" },
       ];
+  }
+}
+
+export function isMemberSurfaceFamily(actor: LocalActorContext): boolean {
+  return getActorSurfaceFamily(actor) === "member";
+}
+
+export function getActorSurfaceFamily(
+  actor: LocalActorContext,
+): ActorSurfaceFamily {
+  switch (actor.primaryCanonicalRole) {
+    case "committee_member":
+    case "student_member":
+    case "traveler":
+      return "member";
+    case "committee_chair":
+    case "eboard_officer":
+    case "vice_president":
+    case "president":
+      return "leader";
+    case "coach":
+    case "sales_coach":
+      return "coach";
+    case "department_staff":
+    case "sales_admin":
+      return "staff";
+    case "ds_admin":
+      return "ds_admin";
+    case "super_admin":
+      return "super_admin";
   }
 }
 

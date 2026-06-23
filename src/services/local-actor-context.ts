@@ -12,6 +12,17 @@ import {
   type AuthSessionState,
   type AuthSessionStatus,
 } from "@/services/auth-session";
+import {
+  getCanonicalLandingSurface,
+  getCanonicalRoleAssignments,
+  getCanonicalRoles,
+  getCanonicalScopes,
+  getHighestOperationalCanonicalRole,
+  type CanonicalLandingSurface,
+  type CanonicalRole,
+  type CanonicalRoleAssignment,
+  type CanonicalScope,
+} from "@/services/canonical-role-scope";
 import type { DataSourceMeta, DataSourceStatus } from "@/services/read-only-app-data";
 import type { User } from "@/shared/types/domain";
 import type {
@@ -53,6 +64,11 @@ export type LocalActorContext = {
   accessSummary: string;
   chapterRoles: string[];
   staffRoles: string[];
+  canonicalRoleAssignments: CanonicalRoleAssignment[];
+  canonicalRoles: CanonicalRole[];
+  canonicalScopes: CanonicalScope[];
+  primaryCanonicalRole: CanonicalRole;
+  defaultLandingSurface: CanonicalLandingSurface;
   chapterNames: string[];
   coachPortfolioChapterNames: string[];
   isLocalOnly: boolean;
@@ -66,6 +82,7 @@ export type LocalActorOption = {
   staffRoles: string[];
   chapterNames: string[];
   coachPortfolioChapterNames: string[];
+  includeTravelerRole?: boolean;
 };
 
 type LocalActorSnapshot = {
@@ -102,6 +119,16 @@ export const localActorOptions: LocalActorOption[] = [
     coachPortfolioChapterNames: [],
   },
   {
+    email: "traveler.a@mymedlife.test",
+    displayName: "Taylor Traveler",
+    audience: "chapter_member",
+    chapterRoles: ["General Member"],
+    staffRoles: [],
+    chapterNames: [mockChapter.name],
+    coachPortfolioChapterNames: [],
+    includeTravelerRole: true,
+  },
+  {
     email: "committee.member@mymedlife.test",
     displayName: "Nia Committee",
     audience: "chapter_member",
@@ -129,6 +156,15 @@ export const localActorOptions: LocalActorOption[] = [
     coachPortfolioChapterNames: [],
   },
   {
+    email: "vice.president@mymedlife.test",
+    displayName: "Val Vice President",
+    audience: "chapter_leader",
+    chapterRoles: ["Vice President"],
+    staffRoles: [],
+    chapterNames: [mockChapter.name],
+    coachPortfolioChapterNames: [],
+  },
+  {
     email: "eboard.a@mymedlife.test",
     displayName: "Eli E-Board",
     audience: "chapter_leader",
@@ -147,11 +183,29 @@ export const localActorOptions: LocalActorOption[] = [
     coachPortfolioChapterNames: [mockChapter.name],
   },
   {
+    email: "sales.coach@mymedlife.test",
+    displayName: "Sky Sales Coach",
+    audience: "coach",
+    chapterRoles: [],
+    staffRoles: ["Sales Coach"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [mockChapter.name],
+  },
+  {
     email: "admin@mymedlife.test",
     displayName: "Ari Admin",
     audience: "admin",
     chapterRoles: [],
     staffRoles: ["Admin"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "sales.admin@mymedlife.test",
+    displayName: "Rae Sales Admin",
+    audience: "admin",
+    chapterRoles: [],
+    staffRoles: ["Sales Admin"],
     chapterNames: [],
     coachPortfolioChapterNames: [],
   },
@@ -258,6 +312,21 @@ export async function getSupabaseLocalActorContext(
     actorMemberships.map((item) => item.role_key),
     actorStaffRoles.map((item) => item.role_key),
   );
+  const chapterRoles = actorMemberships.map((item) => roleKeyToLabel(item.role_key));
+  const staffRoles = actorStaffRoles.map((item) => roleKeyToLabel(item.role_key));
+  const canonicalRoleAssignments = getCanonicalRoleAssignments({
+    audience,
+    chapterRoles,
+    staffRoles,
+    databaseRoleKeys: [
+      ...actorMemberships.map((item) => item.role_key),
+      ...actorStaffRoles.map((item) => item.role_key),
+    ],
+  });
+  const canonicalRoles = getCanonicalRoles(canonicalRoleAssignments);
+  const canonicalScopes = getCanonicalScopes(canonicalRoleAssignments);
+  const primaryCanonicalRole =
+    getHighestOperationalCanonicalRole(canonicalRoleAssignments);
 
   return {
     source: {
@@ -276,8 +345,13 @@ export async function getSupabaseLocalActorContext(
     audience,
     audienceLabel: audienceToLabel(audience),
     accessSummary: audienceToAccessSummary(audience),
-    chapterRoles: actorMemberships.map((item) => roleKeyToLabel(item.role_key)),
-    staffRoles: actorStaffRoles.map((item) => roleKeyToLabel(item.role_key)),
+    chapterRoles,
+    staffRoles,
+    canonicalRoleAssignments,
+    canonicalRoles,
+    canonicalScopes,
+    primaryCanonicalRole,
+    defaultLandingSurface: getCanonicalLandingSurface(primaryCanonicalRole),
     chapterNames,
     coachPortfolioChapterNames,
     isLocalOnly: true,
@@ -292,6 +366,16 @@ export function getMockLocalActorContext(
   authSessionStatus: AuthSessionStatus = "disabled",
 ): LocalActorContext {
   const option = findLocalActorOption(selectedEmail);
+  const canonicalRoleAssignments = getCanonicalRoleAssignments({
+    audience: option.audience,
+    chapterRoles: option.chapterRoles,
+    staffRoles: option.staffRoles,
+    includeTravelerRole: option.includeTravelerRole,
+  });
+  const canonicalRoles = getCanonicalRoles(canonicalRoleAssignments);
+  const canonicalScopes = getCanonicalScopes(canonicalRoleAssignments);
+  const primaryCanonicalRole =
+    getHighestOperationalCanonicalRole(canonicalRoleAssignments);
 
   return {
     source: {
@@ -312,6 +396,11 @@ export function getMockLocalActorContext(
     accessSummary: audienceToAccessSummary(option.audience),
     chapterRoles: option.chapterRoles,
     staffRoles: option.staffRoles,
+    canonicalRoleAssignments,
+    canonicalRoles,
+    canonicalScopes,
+    primaryCanonicalRole,
+    defaultLandingSurface: getCanonicalLandingSurface(primaryCanonicalRole),
     chapterNames: option.chapterNames,
     coachPortfolioChapterNames: option.coachPortfolioChapterNames,
     isLocalOnly: true,
@@ -463,7 +552,7 @@ function findChapterName(chapters: ChapterRow[], chapterId: string) {
 }
 
 function findKnownLocalActorOption(selectedEmail: string | null | undefined) {
-  const normalizedEmail = selectedEmail?.trim().toLowerCase();
+  const normalizedEmail = normalizeLocalActorEmail(selectedEmail);
   if (!normalizedEmail) {
     return null;
   }
@@ -472,12 +561,25 @@ function findKnownLocalActorOption(selectedEmail: string | null | undefined) {
 }
 
 function findLocalActorOption(selectedEmail: string) {
-  const normalizedEmail = selectedEmail.toLowerCase();
+  const normalizedEmail = normalizeLocalActorEmail(selectedEmail) ?? defaultLocalActorEmail;
 
   return (
     findKnownLocalActorOption(normalizedEmail) ??
     localActorOptions[0]
   );
+}
+
+function normalizeLocalActorEmail(selectedEmail: string | null | undefined) {
+  const trimmedEmail = selectedEmail?.trim();
+  if (!trimmedEmail) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(trimmedEmail).trim().toLowerCase();
+  } catch {
+    return trimmedEmail.toLowerCase();
+  }
 }
 
 function roleKeyToLabel(roleKey: DatabaseRoleKey) {
