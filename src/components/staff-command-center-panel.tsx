@@ -1743,13 +1743,23 @@ function CampaignOperationsView({
 }) {
   return (
     <section className="grid gap-4">
-      <SectionCard eyebrow="Campaign operations" title="Campaign Operations">
+      <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Campaign operations
+            </p>
+            <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+              Campaign Operations
+            </h1>
+          </div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+            {overview.timestampLabel}
+          </p>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm leading-6 text-slate-600">
             {overview.activeCampaignCountLabel}
-          </p>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-            {overview.timestampLabel}
           </p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -1813,7 +1823,7 @@ function CampaignOperationsView({
             ))}
           </div>
         </div>
-      </SectionCard>
+      </section>
 
       <SectionCard
         eyebrow={overview.selectedCampaignName}

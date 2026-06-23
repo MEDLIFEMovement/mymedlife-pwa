@@ -996,7 +996,7 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain("Campaign Operations");
+    expect(html).toContain(">Campaign Operations</h1>");
     expect(html).toContain("Bulk Actions:");
     expect(html).toContain("Rush Month - Chapter Execution");
     expect(html).toContain("Rush Month");

@@ -332,7 +332,7 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("Campaign Operations");
+    expect(html).toContain(">Campaign Operations</h1>");
     expect(html).toContain("No event created");
     expect(html).not.toContain("Visible execution rows");
     expect(html).not.toContain("Visible chapters");
