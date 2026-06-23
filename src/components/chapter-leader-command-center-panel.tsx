@@ -2002,13 +2002,15 @@ function renderView(
     case "feed_analytics":
       return (
         <section className="grid gap-4">
-          <div className="grid gap-4 app-surface rounded-[1.75rem] p-4">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="app-eyebrow app-eyebrow-slate">Feed Analytics</p>
-                <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
                   Feed Analytics
-                </h2>
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Feed &amp; Engagement Analytics
+                </h1>
                 <p className="mt-4 text-sm leading-6 text-slate-600">
                   Understand what content drives real action — not just views.
                 </p>
@@ -2195,7 +2197,7 @@ function renderView(
                 </div>
               </div>
             ) : null}
-          </div>
+          </section>
 
           <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-5">
             {commandCenter.feedMetrics.map((metric) => (
@@ -2213,7 +2215,7 @@ function renderView(
           <section className="overflow-hidden rounded-[1.3rem] border border-slate-200 bg-white">
             <div className="border-b border-slate-200 px-4 py-3">
               <p className="app-eyebrow app-eyebrow-slate">Recent Posts</p>
-              <h3 className="mt-1 text-lg font-semibold text-slate-950">Recent Posts</h3>
+              <h2 className="mt-1 text-lg font-semibold text-slate-950">Recent Posts</h2>
             </div>
             <FeedPostsTable rows={commandCenter.feedPostRows} />
           </section>

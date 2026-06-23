@@ -334,9 +334,7 @@ describe("chapter page", () => {
       }),
     );
 
-    expect(html).toContain("Feed Analytics");
-    expect(html).toContain("Feed Analytics");
-    expect(html).not.toContain("Feed &amp; Engagement Analytics");
+    expect(html).toContain(">Feed &amp; Engagement Analytics</h1>");
     expect(html).toContain("Understand what content drives real action");
     expect(html).toContain("Content Engagement — Actions Driven");
     expect(html).toContain("Recent Posts");

@@ -1688,9 +1688,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("Feed Analytics");
-    expect(markup).toContain("Feed Analytics");
-    expect(markup).not.toContain("Feed &amp; Engagement Analytics");
+    expect(markup).toContain(">Feed &amp; Engagement Analytics</h1>");
     expect(markup).toContain("Understand what content drives real action");
     expect(markup).toContain("Share to Feed");
     expect(markup).toContain("Ask Members to Respond");
