@@ -219,6 +219,8 @@ describe("coach page", () => {
     expect(html).not.toContain("Coach decision path");
     expect(html).not.toContain("Coach decision write remains disabled");
     expect(html).not.toContain("Risk readout");
+    expect(html).not.toContain("Locked coach note save");
+    expect(html).not.toContain("Use these notes to prepare the next coach check-in");
   });
 
   it("preserves selected chapter and review context when the coach moves into support notes", async () => {
@@ -264,6 +266,8 @@ describe("coach page", () => {
       "/coach?view=feed_analytics&amp;campaign=rush-month&amp;feedDraft=proof-florida-event-recap-feed&amp;feedPost=feed-post-faith-story&amp;feedRole=leader&amp;feedAudience=selected_chapters",
     );
     expect(html).not.toContain('action="/staff"');
+    expect(html).not.toContain("Locked coach decision save");
+    expect(html).not.toContain("Locked external automation");
   });
 
   it("treats the campaigns lane as a coach-owned subpage instead of an unframed fallback", async () => {

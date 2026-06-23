@@ -341,11 +341,11 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
             <section className="app-surface rounded-[1.8rem] p-5">
               <p className="app-eyebrow app-eyebrow-blue">Coach note lane</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                Prepare the next chapter check-in with private notes and route evidence.
+                Prepare the next chapter check-in.
               </h2>
               <p className="app-copy mt-3">
-                This coach-owned state keeps the focus on follow-up posture, intervention
-                readiness, and what should be named before any decision is promoted.
+                Keep this coach-owned state focused on follow-up posture, intervention
+                readiness, and the notes that should guide the next conversation.
               </p>
               {selectedCoachChapter ? (
                 <div className="mt-4 rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
@@ -423,9 +423,9 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
                   note="Signals that stay out of the student and chapter view"
                 />
                 <ReviewStat
-                  label="Writes"
-                  value={`${coachSupportNotes.browserWritesEnabled}`}
-                  note="Coach note saves stay blocked until approval opens the lane"
+                  label="Follow-up"
+                  value={`${coachSupportNotes.counts.needsFollowUp}`}
+                  note="Notes that still need a chapter owner or next step"
                 />
               </div>
             </section>

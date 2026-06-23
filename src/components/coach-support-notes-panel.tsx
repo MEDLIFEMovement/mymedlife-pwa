@@ -27,13 +27,11 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
             {workspace.summary}
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-2 text-center sm:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
           <MiniStat label="Notes" value={`${workspace.counts.total}`} />
           <MiniStat label="Ready" value={`${workspace.counts.readyForCheckIn}`} />
           <MiniStat label="Follow-up" value={`${workspace.counts.needsFollowUp}`} />
           <MiniStat label="Watch" value={`${workspace.counts.escalationWatch}`} />
-          <MiniStat label="Writes" value={`${workspace.browserWritesEnabled}`} />
-          <MiniStat label="Sends" value={`${workspace.externalWritesEnabled}`} />
         </div>
       </div>
 
@@ -41,8 +39,6 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
         <MiniToken label="Chapter" value={workspace.chapterName} />
         <MiniToken label="Decision" value={workspace.decision} />
         <MiniToken label="Coach-private" value={`${workspace.counts.coachPrivate}`} />
-        <MiniToken label="Writes" value={`${workspace.browserWritesEnabled}`} />
-        <MiniToken label="Sends" value={`${workspace.externalWritesEnabled}`} />
       </div>
 
       <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -58,7 +54,7 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
               {workspace.interventionChecklist.summary}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center sm:grid-cols-5">
+          <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
             <MiniStat
               label="Items"
               value={`${workspace.interventionChecklist.counts.total}`}
@@ -75,20 +71,11 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
               label="Blocked"
               value={`${workspace.interventionChecklist.counts.blocked}`}
             />
-            <MiniStat
-              label="Sends"
-              value={`${workspace.interventionChecklist.counts.externalWritesEnabled}`}
-            />
           </div>
         </div>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {workspace.interventionChecklist.items.map((item) => (
             <InterventionChecklistCard key={item.key} item={item} />
-          ))}
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {workspace.interventionChecklist.blockedControls.map((control) => (
-            <MiniToken key={control} label="Locked" value={control} />
           ))}
         </div>
       </div>
@@ -98,10 +85,6 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
           <SupportNoteCard key={note.key} note={note} />
         ))}
       </div>
-
-      <p className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
-        {workspace.finalPrompt}
-      </p>
     </section>
   );
 }
@@ -118,10 +101,6 @@ function InterventionChecklistCard({
           <ChecklistStatusPill status={item.status} />
           <h4 className="mt-3 text-base font-semibold text-slate-950">{item.label}</h4>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <MiniToken label="Writes" value={`${item.browserWritesExpected}`} />
-          <MiniToken label="Sends" value={`${item.externalWritesExpected}`} />
-        </div>
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-700">{item.question}</p>
       <p className="mt-2 text-xs leading-5 text-[#2563eb]">
@@ -130,16 +109,6 @@ function InterventionChecklistCard({
       <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
         Signal: {item.sourceSignal}
       </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {item.routeEvidence.map((route) => (
-          <span
-            key={`${item.key}-${route}`}
-            className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-500"
-          >
-            {route}
-          </span>
-        ))}
-      </div>
     </article>
   );
 }
@@ -160,10 +129,6 @@ function SupportNoteCard({ note }: { note: CoachSupportNote }) {
             {note.ownerLane}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <MiniToken label="Writes" value={`${note.browserWritesExpected}`} />
-          <MiniToken label="Sends" value={`${note.externalWritesExpected}`} />
-        </div>
       </div>
 
       <p className="mt-3 text-sm leading-6 text-slate-600">{note.note}</p>
@@ -182,17 +147,6 @@ function SupportNoteCard({ note }: { note: CoachSupportNote }) {
             </li>
           ))}
         </ul>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {note.routeEvidence.map((route) => (
-          <span
-            key={`${note.key}-${route}`}
-            className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-500"
-          >
-            {route}
-          </span>
-        ))}
       </div>
     </article>
   );
