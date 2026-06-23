@@ -77,13 +77,13 @@ describe("slt prep timeline page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from staff traveler review.");
+    expect(html).toContain("Staff traveler review opened this prep route for Daniel Kim.");
     expect(html).toContain("Back to staff");
     expect(html).toContain('href="/slt-prep/staff?traveler=daniel-kim"');
     expect(html).toContain("/slt-prep/checklist?source=staff&amp;traveler=daniel-kim");
     expect(html).toContain("/slt-prep/profile?source=staff&amp;traveler=daniel-kim");
     expect(html.indexOf("Current milestone")).toBeLessThan(
-      html.indexOf("This prep route was opened from staff traveler review."),
+      html.indexOf("Staff traveler review opened this prep route for Daniel Kim."),
     );
   });
 });

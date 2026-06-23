@@ -40,7 +40,11 @@ export default async function SltPrepExtensionsPage({
   ]);
   const workspace = getSltTripPrepWorkspace(actor, search.traveler);
   const routeSource = parseSltTripPrepRouteSource(search.source);
-  const routeSourceContext = getSltTripPrepRouteSourceContext(routeSource, search.traveler);
+  const routeSourceContext = getSltTripPrepRouteSourceContext(
+    routeSource,
+    search.traveler,
+    workspace.traveler?.displayName,
+  );
   const selectedExtension =
     workspace.traveler?.extensions.find((item) => item.status === "selected") ?? null;
   const consideringExtension =

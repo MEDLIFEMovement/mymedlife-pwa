@@ -63,6 +63,11 @@ The traveler-facing SLT profile and notifications routes now stay traveler-owned
 and keep the staff-review handoff in `/slt-prep/staff` instead of rendering that
 card on the traveler pages themselves.
 
+The SLT packet routes now also carry traveler-aware source-copy handoffs across
+forms, payments, flights, meetings, extensions, timeline, and checklist detail
+states, so the review context reads as attached to the selected person instead
+of a generic route label.
+
 Visible controls on those surfaces now route into real screens or mock-safe
 owned review states instead of stopping at placeholder pages.
 

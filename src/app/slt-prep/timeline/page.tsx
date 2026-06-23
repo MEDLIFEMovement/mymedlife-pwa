@@ -38,7 +38,11 @@ export default async function SltPrepTimelinePage({
   ]);
   const routeSource = parseSltTripPrepRouteSource(search.source);
   const workspace = getSltTripPrepWorkspace(actor, search.traveler);
-  const routeSourceContext = getSltTripPrepRouteSourceContext(routeSource, search.traveler);
+  const routeSourceContext = getSltTripPrepRouteSourceContext(
+    routeSource,
+    search.traveler,
+    workspace.traveler?.displayName,
+  );
   const currentMilestone =
     workspace.traveler?.timeline.find((item) => item.status === "current") ?? null;
   const nextMilestone =

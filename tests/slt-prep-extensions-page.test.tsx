@@ -100,11 +100,11 @@ describe("slt prep extensions page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from the profile blend.");
+    expect(html).toContain("Profile opened this prep route for Daniel Kim.");
     expect(html).toContain("Back to profile");
     expect(html).toContain('href="/slt-prep/profile?traveler=daniel-kim"');
     expect(html.indexOf("Selected option")).toBeLessThan(
-      html.indexOf("This prep route was opened from the profile blend."),
+      html.indexOf("Profile opened this prep route for Daniel Kim."),
     );
   });
 
@@ -129,7 +129,7 @@ describe("slt prep extensions page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from staff traveler review.");
+    expect(html).toContain("Staff traveler review opened this prep route for Daniel Kim.");
     expect(html).toContain('href="/slt-prep/staff?traveler=daniel-kim"');
     expect(html).toContain('href="/slt-prep/payments?source=staff&amp;traveler=daniel-kim"');
   });

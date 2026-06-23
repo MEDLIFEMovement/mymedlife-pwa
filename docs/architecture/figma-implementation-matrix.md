@@ -64,8 +64,10 @@ What this implies for the next implementation slices:
   over proving the existence of the top-level routes again
 - the next SLT passes should focus on the remaining traveler packet routes
   where the packet is still more explicit than the current local wording,
-  especially any selected-traveler handoff copy or route-support copy that
-  still reads generically now that the packet-facing route titles are aligned
+  especially deeper checklist/detail states; the shared handoff copy now
+  carries traveler-aware source context, so the remaining work is mostly about
+  the last route-support details now that the packet-facing route titles are
+  aligned
 - SOP builder remains its own backend-lane parity track and should stay
   separated from the command-center route-title cleanup work
 - when a remaining gap is discovered inside a verified family, keep the next

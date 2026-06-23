@@ -39,7 +39,11 @@ export default async function SltPrepFlightsPage({
   ]);
   const workspace = getSltTripPrepWorkspace(actor, search.traveler);
   const routeSource = parseSltTripPrepRouteSource(search.source);
-  const routeSourceContext = getSltTripPrepRouteSourceContext(routeSource, search.traveler);
+  const routeSourceContext = getSltTripPrepRouteSourceContext(
+    routeSource,
+    search.traveler,
+    workspace.traveler?.displayName,
+  );
 
   if (!workspace.canReadWorkspace || !workspace.traveler) {
     return (

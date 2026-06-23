@@ -85,11 +85,11 @@ describe("slt prep flights page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from the notification feed.");
+    expect(html).toContain("Notifications opened this prep route for Daniel Kim.");
     expect(html).toContain("Back to notifications");
     expect(html).toContain("href=\"/slt-prep/notifications?traveler=daniel-kim\"");
     expect(html.indexOf("Upload and confirmation posture")).toBeLessThan(
-      html.indexOf("This prep route was opened from the notification feed."),
+      html.indexOf("Notifications opened this prep route for Daniel Kim."),
     );
   });
 
@@ -114,7 +114,7 @@ describe("slt prep flights page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from staff traveler review.");
+    expect(html).toContain("Staff traveler review opened this prep route for Daniel Kim.");
     expect(html).toContain('href="/slt-prep/staff?traveler=daniel-kim"');
     expect(html).toContain('href="/slt-prep/timeline?source=staff&amp;traveler=daniel-kim"');
     expect(html).toContain('href="/slt-prep/profile?source=staff&amp;traveler=daniel-kim"');

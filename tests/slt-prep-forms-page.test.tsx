@@ -104,11 +104,11 @@ describe("slt prep forms page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from the notification feed.");
+    expect(html).toContain("Notifications opened this prep route for Daniel Kim.");
     expect(html).toContain("Back to notifications");
     expect(html).toContain('href="/slt-prep/notifications?traveler=daniel-kim"');
     expect(html.indexOf("Review queue")).toBeLessThan(
-      html.indexOf("This prep route was opened from the notification feed."),
+      html.indexOf("Notifications opened this prep route for Daniel Kim."),
     );
   });
 });

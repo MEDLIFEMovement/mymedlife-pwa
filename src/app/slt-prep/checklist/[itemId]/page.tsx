@@ -86,7 +86,11 @@ export default async function SltPrepChecklistDetailPage({
   const detailTitle = isFlightForm ? "Flight information submitted" : workspace.title;
   const dueDateValue = workspace.item.dueLabel.replace(/^Due /, "").replace(/^Completed /, "");
   const detailSource = parseChecklistDetailSource(search.source);
-  const detailOrigin = getChecklistDetailOrigin(detailSource, search.traveler);
+  const detailOrigin = getChecklistDetailOrigin(
+    detailSource,
+    search.traveler,
+    workspace.traveler.displayName,
+  );
   const detailHref = buildSltTripPrepRouteHref(
     `/slt-prep/checklist/${workspace.item.id}${detailSource ? `?source=${detailSource}` : ""}`,
     {
@@ -369,14 +373,16 @@ function parseChecklistDetailSource(value?: string): SltChecklistDetailSource | 
 function getChecklistDetailOrigin(
   source: SltChecklistDetailSource | null,
   travelerId?: string,
+  travelerDisplayName?: string,
 ) {
+  const travelerLabel = travelerDisplayName ?? "the selected traveler";
+
   switch (source) {
     case "overview":
       return {
         eyebrow: "From overview",
-        title: "This detail opened from your SLT overview deadlines.",
-        detail:
-          "The overview route is trying to pull you into the most important open blocker first, so this detail should still feel attached to that readiness summary.",
+        title: `This detail opened from ${travelerLabel}'s SLT overview deadlines.`,
+        detail: `The overview route is trying to pull you into the most important open blocker first, so this detail should still feel attached to ${travelerLabel}'s readiness summary.`,
         submitDetail:
           "You are previewing completion from the overview handoff. Keep the resolution tied to the deadline the overview screen surfaced.",
         href: buildSltTripPrepRouteHref("/slt-prep", { travelerId }),
@@ -385,9 +391,8 @@ function getChecklistDetailOrigin(
     case "checklist":
       return {
         eyebrow: "From checklist",
-        title: "This detail opened from the trip-prep checklist.",
-        detail:
-          "The checklist route is the task inventory. This detail should still feel like one item inside that bigger readiness flow, not a disconnected form.",
+        title: `This detail opened from ${travelerLabel}'s trip-prep checklist.`,
+        detail: `The checklist route is the task inventory. This detail should still feel like one item inside that bigger readiness flow, not a disconnected form for ${travelerLabel}.`,
         submitDetail:
           "You are previewing completion from the checklist handoff. Keep the evidence and next step anchored to the exact item you opened there.",
         href: buildSltTripPrepRouteHref("/slt-prep/checklist", { travelerId }),
@@ -396,9 +401,8 @@ function getChecklistDetailOrigin(
     case "forms":
       return {
         eyebrow: "From forms",
-        title: "This detail opened from the forms hub.",
-        detail:
-          "The forms route should keep document status and signature risk readable, so this checklist detail still needs to feel like the next action from that forms surface.",
+        title: `This detail opened from the forms hub for ${travelerLabel}.`,
+        detail: `The forms route should keep document status and signature risk readable, so this checklist detail still needs to feel like the next action from that forms surface for ${travelerLabel}.`,
         submitDetail:
           "You are previewing completion from the forms handoff. Keep the update tied to the document state that the forms route surfaced.",
         href: buildSltTripPrepRouteHref("/slt-prep/forms", { travelerId }),
@@ -407,9 +411,8 @@ function getChecklistDetailOrigin(
     case "payments":
       return {
         eyebrow: "From payments",
-        title: "This detail opened from payment status.",
-        detail:
-          "The payments route is meant to clarify what is paid, due, or under review, so this checklist detail should still feel tied to that finance posture.",
+        title: `This detail opened from payment status for ${travelerLabel}.`,
+        detail: `The payments route is meant to clarify what is paid, due, or under review, so this checklist detail should still feel tied to that finance posture for ${travelerLabel}.`,
         submitDetail:
           "You are previewing completion from the payments handoff. Keep the update connected to the payment blocker that the finance route exposed.",
         href: buildSltTripPrepRouteHref("/slt-prep/payments", { travelerId }),
@@ -418,9 +421,8 @@ function getChecklistDetailOrigin(
     case "flights":
       return {
         eyebrow: "From flights",
-        title: "This detail opened from the traveler flight review.",
-        detail:
-          "The flights route is meant to keep itinerary status and airport coordination visible, so this detail should still feel like a drill-down from that travel surface.",
+        title: `This detail opened from the traveler flight review for ${travelerLabel}.`,
+        detail: `The flights route is meant to keep itinerary status and airport coordination visible, so this detail should still feel like a drill-down from that travel surface for ${travelerLabel}.`,
         submitDetail:
           "You are previewing completion from the flights handoff. Keep the update tied to the itinerary blocker that was visible on the flights route.",
         href: buildSltTripPrepRouteHref("/slt-prep/flights", { travelerId }),
@@ -429,9 +431,8 @@ function getChecklistDetailOrigin(
     case "meetings":
       return {
         eyebrow: "From meetings",
-        title: "This detail opened from the meetings route.",
-        detail:
-          "The meetings surface is supposed to keep attendance and the next required session clear, so this detail should still read like a drill-down from that plan.",
+        title: `This detail opened from the meetings route for ${travelerLabel}.`,
+        detail: `The meetings surface is supposed to keep attendance and the next required session clear, so this detail should still read like a drill-down from that plan for ${travelerLabel}.`,
         submitDetail:
           "You are previewing completion from the meetings handoff. Keep the change tied to the prep meeting that the traveler still needs to complete.",
         href: buildSltTripPrepRouteHref("/slt-prep/meetings", { travelerId }),
@@ -440,9 +441,8 @@ function getChecklistDetailOrigin(
     case "extensions":
       return {
         eyebrow: "From extensions",
-        title: "This detail opened from extensions and tours.",
-        detail:
-          "The extensions route should separate optional add-ons from required readiness, so this detail still needs to feel attached to that decision lane.",
+        title: `This detail opened from extensions and tours for ${travelerLabel}.`,
+        detail: `The extensions route should separate optional add-ons from required readiness, so this detail still needs to feel attached to that decision lane for ${travelerLabel}.`,
         submitDetail:
           "You are previewing completion from the extensions handoff. Keep the update tied to the add-on decision that route surfaced.",
         href: buildSltTripPrepRouteHref("/slt-prep/extensions", { travelerId }),
@@ -451,9 +451,8 @@ function getChecklistDetailOrigin(
     case "notifications":
       return {
         eyebrow: "From notifications",
-        title: "This detail opened from a readiness update.",
-        detail:
-          "The notification feed is meant to point you into the exact traveler blocker that changed, so the detail route should keep that alert context visible.",
+        title: `This detail opened from a readiness update for ${travelerLabel}.`,
+        detail: `The notification feed is meant to point you into the exact traveler blocker that changed, so the detail route should keep that alert context visible for ${travelerLabel}.`,
         submitDetail:
           "You are previewing completion from the notification handoff. Keep the update specific to the alert that sent you here.",
         href: buildSltTripPrepRouteHref("/slt-prep/notifications", { travelerId }),
@@ -462,9 +461,8 @@ function getChecklistDetailOrigin(
     case "profile":
       return {
         eyebrow: "From profile",
-        title: "This detail opened from profile and notifications.",
-        detail:
-          "The profile route blends traveler identity with recent updates, so the detail page should still feel like the next prep move surfaced from that member-owned destination.",
+        title: `This detail opened from profile and notifications for ${travelerLabel}.`,
+        detail: `The profile route blends traveler identity with recent updates, so the detail page should still feel like the next prep move surfaced from that member-owned destination for ${travelerLabel}.`,
         submitDetail:
           "You are previewing completion from the profile handoff. Keep the resolution tied to the profile update that brought you here.",
         href: buildSltTripPrepRouteHref("/slt-prep/profile", { travelerId }),
@@ -473,9 +471,8 @@ function getChecklistDetailOrigin(
     case "staff":
       return {
         eyebrow: "From staff dashboard",
-        title: "This detail opened from staff traveler review.",
-        detail:
-          "The staff dashboard is a reviewer surface, so this detail should still feel like a drill-down from a named readiness concern, not a generic traveler form.",
+        title: `This detail opened from staff traveler review for ${travelerLabel}.`,
+        detail: `The staff dashboard is a reviewer surface, so this detail should still feel like a drill-down from a named readiness concern for ${travelerLabel}, not a generic traveler form.`,
         submitDetail:
           "You are previewing completion from the staff handoff. Keep the change tied to the blocker the reviewer was inspecting.",
         href: buildSltTripPrepRouteHref("/slt-prep/staff", { travelerId }),

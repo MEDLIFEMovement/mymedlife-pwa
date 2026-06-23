@@ -112,32 +112,32 @@ export function parseSltTripPrepRouteSource(value?: string): SltTripPrepRouteSou
 export function getSltTripPrepRouteSourceContext(
   source: SltTripPrepRouteSource | null,
   travelerId?: string,
+  travelerDisplayName?: string,
 ) {
+  const travelerLabel = travelerDisplayName ?? "the selected traveler";
+
   switch (source) {
     case "notifications":
       return {
         eyebrow: "Opened from notifications",
-        title: "This prep route was opened from the notification feed.",
-        detail:
-          "Keep the traveler anchored in the readiness update that sent them here, with a clear path back to the notification center.",
+        title: `Notifications opened this prep route for ${travelerLabel}.`,
+        detail: `Keep ${travelerLabel} anchored in the readiness update that sent them here, with a clear path back to the notification center.`,
         backHref: buildSltTripPrepRouteHref("/slt-prep/notifications", { travelerId }),
         backLabel: "Back to notifications",
       };
     case "profile":
       return {
         eyebrow: "Opened from profile",
-        title: "This prep route was opened from the profile blend.",
-        detail:
-          "The profile route mixes traveler identity with recent updates, so the next prep move should still feel attached to that member-owned destination.",
+        title: `Profile opened this prep route for ${travelerLabel}.`,
+        detail: `The profile route mixes traveler identity with recent updates, so the next prep move should still feel attached to ${travelerLabel}'s member-owned destination.`,
         backHref: buildSltTripPrepRouteHref("/slt-prep/profile", { travelerId }),
         backLabel: "Back to profile",
       };
     case "staff":
       return {
         eyebrow: "Opened from staff",
-        title: "This prep route was opened from staff traveler review.",
-        detail:
-          "Keep the selected traveler attached to the prep flow so reviewers can move between context and next-step routes without losing the route they opened.",
+        title: `Staff traveler review opened this prep route for ${travelerLabel}.`,
+        detail: `Keep ${travelerLabel} attached to the prep flow so reviewers can move between context and next-step routes without losing the route they opened.`,
         backHref: buildSltTripPrepRouteHref("/slt-prep/staff", { travelerId }),
         backLabel: "Back to staff",
       };

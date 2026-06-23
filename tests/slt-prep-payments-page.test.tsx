@@ -143,11 +143,11 @@ describe("slt prep payments page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from the profile blend.");
+    expect(html).toContain("Profile opened this prep route for Daniel Kim.");
     expect(html).toContain("Back to profile");
     expect(html).toContain('href="/slt-prep/profile?traveler=daniel-kim"');
     expect(html.indexOf("Current payment lane")).toBeLessThan(
-      html.indexOf("This prep route was opened from the profile blend."),
+      html.indexOf("Profile opened this prep route for Daniel Kim."),
     );
   });
 
@@ -172,7 +172,7 @@ describe("slt prep payments page", () => {
       }),
     );
 
-    expect(html).toContain("This prep route was opened from staff traveler review.");
+    expect(html).toContain("Staff traveler review opened this prep route for Daniel Kim.");
     expect(html).toContain('href="/slt-prep/payments?action=receipts&amp;source=staff&amp;traveler=daniel-kim#payment-action"');
     expect(html).toContain('href="/slt-prep/payments?action=pay_balance&amp;source=staff&amp;traveler=daniel-kim#payment-action"');
     expect(html).toContain('href="/slt-prep/payments?action=payment_plan&amp;source=staff&amp;traveler=daniel-kim#payment-action"');

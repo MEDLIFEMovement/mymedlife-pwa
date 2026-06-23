@@ -39,7 +39,11 @@ export default async function SltPrepMeetingsPage({
   ]);
   const workspace = getSltTripPrepWorkspace(actor, search.traveler);
   const routeSource = parseSltTripPrepRouteSource(search.source);
-  const routeSourceContext = getSltTripPrepRouteSourceContext(routeSource, search.traveler);
+  const routeSourceContext = getSltTripPrepRouteSourceContext(
+    routeSource,
+    search.traveler,
+    workspace.traveler?.displayName,
+  );
   const nextMeeting =
     workspace.traveler?.meetings.find((item) => item.status === "upcoming") ?? null;
   const missedMeeting =

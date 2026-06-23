@@ -113,7 +113,7 @@ describe("slt prep checklist detail page", () => {
     );
 
     expect(html).toContain("From notifications");
-    expect(html).toContain("This detail opened from a readiness update.");
+    expect(html).toContain("This detail opened from a readiness update for Sofia Alvarez.");
     expect(html).toContain("Back to notifications");
     expect(html).toContain("href=\"/slt-prep/notifications\"");
   });
@@ -140,7 +140,7 @@ describe("slt prep checklist detail page", () => {
     );
 
     expect(html).toContain("From flights");
-    expect(html).toContain("This detail opened from the traveler flight review.");
+    expect(html).toContain("This detail opened from the traveler flight review for Sofia Alvarez.");
     expect(html).toContain("Back to flights");
     expect(html).toContain("href=\"/slt-prep/flights\"");
   });
@@ -167,7 +167,7 @@ describe("slt prep checklist detail page", () => {
     );
 
     expect(html).toContain("From forms");
-    expect(html).toContain("This detail opened from the forms hub.");
+    expect(html).toContain("This detail opened from the forms hub for Sofia Alvarez.");
     expect(html).toContain("Back to forms");
     expect(html).toContain("href=\"/slt-prep/forms\"");
   });
@@ -194,7 +194,7 @@ describe("slt prep checklist detail page", () => {
     );
 
     expect(html).toContain("From meetings");
-    expect(html).toContain("This detail opened from the meetings route.");
+    expect(html).toContain("This detail opened from the meetings route for Sofia Alvarez.");
     expect(html).toContain("Back to meetings");
     expect(html).toContain("href=\"/slt-prep/meetings\"");
   });
@@ -221,7 +221,7 @@ describe("slt prep checklist detail page", () => {
     );
 
     expect(html).toContain("From extensions");
-    expect(html).toContain("This detail opened from extensions and tours.");
+    expect(html).toContain("This detail opened from extensions and tours for Sofia Alvarez.");
     expect(html).toContain("Back to extensions");
     expect(html).toContain("href=\"/slt-prep/extensions\"");
   });
@@ -251,7 +251,7 @@ describe("slt prep checklist detail page", () => {
     );
 
     expect(html).toContain("From staff dashboard");
-    expect(html).toContain("This detail opened from staff traveler review.");
+    expect(html).toContain("This detail opened from staff traveler review for Sofia Alvarez.");
     expect(html).toContain("Back to staff dashboard");
     expect(html).toContain("href=\"/slt-prep/staff?traveler=sofia-alvarez\"");
   });
