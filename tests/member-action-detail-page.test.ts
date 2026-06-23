@@ -100,6 +100,9 @@ describe("member action detail page", () => {
     );
 
     expect(html).toContain("Action Detail");
+    expect(html.indexOf("Action Detail")).toBeLessThan(
+      html.indexOf("Invite 3 friends to the Intro GBM"),
+    );
     expect(html).toContain("Submit evidence");
     expect(html.match(/Evidence Required/g)?.length).toBe(1);
     expect(html.match(/Submit evidence/g)?.length).toBe(1);

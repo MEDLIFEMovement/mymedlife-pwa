@@ -25,8 +25,11 @@ export function MemberActionDetailPanel({
   return (
     <section className="grid gap-3">
       <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(180deg,#2455a4_0%,#2a5fb5_48%,#21457d_100%)] p-4 shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
-        <h1 className="text-[2rem] font-semibold leading-tight text-white sm:text-[2.35rem]">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
           Action Detail
+        </p>
+        <h1 className="mt-3 text-[2rem] font-semibold leading-tight text-white sm:text-[2.35rem]">
+          {workspace.title}
         </h1>
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
@@ -36,9 +39,6 @@ export function MemberActionDetailPanel({
             {workspace.statusLabel}
           </span>
         </div>
-        <h2 className="mt-3 text-[1.55rem] font-semibold leading-tight text-white">
-          {workspace.title}
-        </h2>
         <p className="mt-2 text-sm text-white/82">{workspace.dueLabel}</p>
         <p className="mt-2 text-sm text-white/78">{workspace.assignedByLabel}</p>
         <p className="mt-3 text-sm font-semibold text-[#f7d05e]">

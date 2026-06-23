@@ -231,6 +231,12 @@ Primary role:
 - submit-evidence form
 - confirmation panel
 
+### Current parity note
+
+- the member action-detail route now keeps `Action Detail` as the route label
+  while the assignment title owns the main hero hierarchy, matching the Make
+  clickthrough more closely than the earlier title-first local pass
+
 ### Boundaries
 
 - event attendance and proof approval can be mocked

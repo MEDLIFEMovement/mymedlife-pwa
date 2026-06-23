@@ -261,6 +261,7 @@ Observed visible state:
 
 Observed structure:
 
+- route label first, then the task title as the main hero
 - assignment status pill
 - due date
 - assignee label
@@ -273,6 +274,9 @@ Build rule:
 
 - the member action route should feel like a complete task screen, not a thin
   wrapper above the submit form
+- keep `Action Detail` as the smaller route label and let the task title own
+  the hero hierarchy, instead of promoting the route label above the actual
+  task
 - keep the evidence expectations and `Submit evidence` CTA in one owned section
   on the default task route instead of repeating the same proof prompt in both
   the hero and the lower task body

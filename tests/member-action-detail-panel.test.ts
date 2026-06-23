@@ -32,6 +32,12 @@ describe("member action detail panel", () => {
     expect(html).toContain("Evidence Required");
     expect(html).toContain("Not sure what to do? Ask your chapter leader");
     expect(html).toContain("Submit evidence");
+    expect(html.indexOf("Action Detail")).toBeLessThan(
+      html.indexOf("Invite 3 friends to the Intro GBM"),
+    );
+    expect(html.indexOf("Invite 3 friends to the Intro GBM")).toBeLessThan(
+      html.indexOf("Rush Month"),
+    );
     expect(html.match(/Evidence Required/g)?.length).toBe(1);
     expect(html.match(/Submit evidence/g)?.length).toBe(1);
     expect(html).toContain(
