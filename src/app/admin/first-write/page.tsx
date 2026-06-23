@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { FirstWriteActivationDrillPanel } from "@/components/first-write-activation-drill-panel";
 import { RestrictedState } from "@/components/restricted-state";
@@ -20,6 +21,7 @@ export default async function FirstWritePage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="workflows" />
       {drill.canReadDrill ? (
         <FirstWriteActivationDrillPanel drill={drill} />
       ) : (

@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
 import { StaffDryRunGuidePanel } from "@/components/staff-dry-run-guide-panel";
@@ -20,6 +21,7 @@ export default async function StaffDryRunPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="system_health" />
       {guide.canReadGuide ? (
         <StaffDryRunGuidePanel guide={guide} />
       ) : (

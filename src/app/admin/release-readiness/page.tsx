@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { DiscourseBakeoffPanel } from "@/components/discourse-bakeoff-panel";
@@ -27,6 +28,7 @@ export default async function AdminReleaseReadinessPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="overview" />
 
       {!summary.canReadSummary ? (
         <RestrictedState

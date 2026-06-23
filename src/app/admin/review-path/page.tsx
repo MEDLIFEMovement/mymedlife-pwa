@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
@@ -21,6 +22,7 @@ export default async function AdminReviewPathPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="overview" />
 
       {!plan.canReadPlan ? (
         <RestrictedState

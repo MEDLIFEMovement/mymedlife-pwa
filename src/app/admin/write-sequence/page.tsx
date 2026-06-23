@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
 import { WriteSequencePlannerPanel } from "@/components/write-sequence-planner-panel";
@@ -20,6 +21,7 @@ export default async function WriteSequencePage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="workflows" />
       {planner.canReadPlanner ? (
         <WriteSequencePlannerPanel planner={planner} />
       ) : (

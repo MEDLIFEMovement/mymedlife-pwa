@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { ProductionOperationsRunbookPanel } from "@/components/production-operations-runbook-panel";
@@ -24,6 +25,7 @@ export default async function AdminOperationsPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="system_health" />
 
       {!runbook.canReadRunbook ? (
         <RestrictedState

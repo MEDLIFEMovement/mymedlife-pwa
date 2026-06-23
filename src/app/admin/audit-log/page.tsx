@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { AdminAuditLogReviewPanel } from "@/components/admin-audit-log-review-panel";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
@@ -24,6 +25,7 @@ export default async function AdminAuditLogPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="integration_outbox" />
 
       {!review.canReadReview ? (
         <RestrictedState

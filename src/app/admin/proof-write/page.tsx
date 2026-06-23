@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { ProofMetadataVerificationPanel } from "@/components/proof-metadata-verification-panel";
 import { RestrictedState } from "@/components/restricted-state";
@@ -20,6 +21,7 @@ export default async function ProofWritePage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="workflows" />
       {packet.canReadPacket ? (
         <ProofMetadataVerificationPanel packet={packet} />
       ) : (
