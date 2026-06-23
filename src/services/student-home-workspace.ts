@@ -228,10 +228,16 @@ function getStudentCampaignProgress(assignments: Assignment[]) {
 }
 
 function getMemberHomeAssignments(assignments: Assignment[]) {
-  const activeStatuses: AssignmentStatus[] = ["not_started", "in_progress", "changes_requested"];
+  const homeVisibleStatuses: AssignmentStatus[] = [
+    "not_started",
+    "in_progress",
+    "submitted",
+    "approved",
+    "changes_requested",
+  ];
 
   return assignments.filter((assignment) => {
-    return activeStatuses.includes(assignment.status);
+    return homeVisibleStatuses.includes(assignment.status);
   }).slice(0, 3);
 }
 

@@ -75,6 +75,8 @@ describe("home page", () => {
     expect(html).toContain("RSVP");
     expect(html).toContain("RSVP&#x27;d");
     expect(html).toContain("Bruin Walk Table 7");
+    expect(html).toContain("Welcome one new student at tabling");
+    expect(html).toContain(">Approved<");
     expect(html).not.toContain("mock linked");
     expect(html).not.toContain("future sync disabled");
     expect(html.indexOf("Intro GBM")).toBeLessThan(html.indexOf("Tabling at Bruin Walk"));

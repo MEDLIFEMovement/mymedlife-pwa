@@ -38,6 +38,17 @@ describe("student home workspace", () => {
     expect(workspace.assignedActions.map((action) => action.href)).toEqual([
       "/rush-month/actions/member-push?source=home",
       "/rush-month/actions/share-rush-flyer?source=home",
+      "/rush-month/actions/welcome-table?source=home",
+    ]);
+    expect(workspace.assignedActions.map((action) => action.title)).toEqual([
+      "Invite 3 friends to the Intro GBM",
+      "Share Rush Week flyer on Instagram",
+      "Welcome one new student at tabling",
+    ]);
+    expect(workspace.assignedActions.map((action) => action.status)).toEqual([
+      "not_started",
+      "in_progress",
+      "approved",
     ]);
     expect(workspace.points.href).toBe("/rush-month/leaderboard");
     expect(workspace.points.total).toBe(145);
