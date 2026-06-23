@@ -732,7 +732,8 @@ describe("chapter page", () => {
         }),
       }),
     );
-    expect(html).toContain("Impact Dashboard");
+    expect(html).toContain("Impact");
+    expect(html).not.toContain("Impact Dashboard");
     expect(html).toContain("Create Bridge Video");
     expect(html).not.toContain("Story in focus");
     expect(html).toContain("/chapter?view=impact&amp;quickAction=share_impact_story");
@@ -852,7 +853,8 @@ describe("chapter page", () => {
         }),
       }),
     );
-    expect(html).toContain("Events &amp; Attendance");
+    expect(html).toContain("Events");
+    expect(html).not.toContain("Events &amp; Attendance");
     expect(html).toContain('aria-label="Committee filter"');
     expect(html).toContain('id="chapter-events-committee-filter"');
     expect(html).toContain("Tabling: Quad Recruitment");

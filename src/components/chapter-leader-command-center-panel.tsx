@@ -1109,9 +1109,9 @@ function renderView(
           <div className="grid gap-4 app-surface rounded-[1.75rem] p-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="app-eyebrow app-eyebrow-slate">Events & Attendance</p>
+                <p className="app-eyebrow app-eyebrow-slate">Events</p>
                 <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
-                  Events & Attendance
+                  Events
                 </h2>
                 <p className="text-sm leading-6 text-slate-600">
                   Track event execution, proof submission, and follow-up across the chapter.
@@ -1339,9 +1339,9 @@ function renderView(
           <div className="grid gap-4 app-surface rounded-[1.75rem] p-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="app-eyebrow app-eyebrow-slate">Impact Dashboard</p>
+                <p className="app-eyebrow app-eyebrow-slate">Impact</p>
                 <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
-                  Impact Dashboard
+                  Impact
                 </h2>
                 <p className="text-base font-medium text-slate-700">
                   This is why we do this. Real people. Real change.
