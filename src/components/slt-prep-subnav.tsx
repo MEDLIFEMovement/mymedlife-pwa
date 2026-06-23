@@ -17,7 +17,9 @@ export function SltPrepSubnav({ items }: { items: SltPrepSubnavItem[] }) {
       className="flex snap-x gap-2 overflow-x-auto pb-1"
     >
       {items.map((item) => {
-        const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+        const isActive =
+          pathname === item.href ||
+          (item.href !== "/slt-prep" && pathname.startsWith(`${item.href}/`));
 
         return (
           <Link
@@ -27,8 +29,8 @@ export function SltPrepSubnav({ items }: { items: SltPrepSubnavItem[] }) {
             className={[
               "shrink-0 snap-start rounded-full border px-3 py-2 text-sm font-medium transition",
               isActive
-                ? "border-[#f7d05e]/40 bg-[#f7d05e]/14 text-white"
-                : "border-white/10 bg-black/20 text-white/72 hover:border-white/22 hover:text-white",
+                ? "border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8] shadow-[0_12px_24px_rgba(59,115,231,0.12)]"
+                : "border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
             ].join(" ")}
           >
             {item.label}

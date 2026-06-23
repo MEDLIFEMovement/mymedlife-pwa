@@ -110,9 +110,12 @@ export type TripPrepNotification = {
   sentLabel: string;
   channelLabel: string;
   summary: string;
+  href: string;
 };
 
 export type TripPrepProfileSnapshot = {
+  travelerEmail: string;
+  travelerPhone: string;
   passportStatus: string;
   emergencyContactName: string;
   emergencyContactPhone: string;

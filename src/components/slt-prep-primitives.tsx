@@ -10,12 +10,12 @@ export function SltPrepMiniStat({
   note?: string;
 }) {
   return (
-    <div className="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/46">
+    <div className="app-surface rounded-[1.3rem] p-4">
+      <p className="app-eyebrow app-eyebrow-slate text-[0.64rem] sm:text-[0.68rem]">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
-      {note ? <p className="mt-2 text-sm leading-5 text-white/64">{note}</p> : null}
+      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+      {note ? <p className="app-copy mt-2 text-xs sm:text-sm">{note}</p> : null}
     </div>
   );
 }
@@ -39,20 +39,20 @@ export function SltPrepTonePill({
 }
 
 export function SltPrepSectionCard({
+  id,
   eyebrow,
   title,
   children,
 }: {
+  id?: string;
   eyebrow: string;
   title: string;
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/46">
-        {eyebrow}
-      </p>
-      <h2 className="mt-2 text-2xl font-semibold text-white">{title}</h2>
+    <section id={id} className="app-surface rounded-[1.75rem] p-4">
+      <p className="app-eyebrow app-eyebrow-slate">{eyebrow}</p>
+      <h2 className="mt-2 text-[1.72rem] font-semibold leading-tight text-slate-950">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -61,10 +61,10 @@ export function SltPrepSectionCard({
 export function getToneClassName(tone: "red" | "yellow" | "green") {
   switch (tone) {
     case "red":
-      return "border-rose-300/30 bg-rose-300/15 text-rose-100";
+      return "border-rose-200 bg-rose-50 text-rose-700";
     case "yellow":
-      return "border-[#f7d05e]/30 bg-[#f7d05e]/12 text-[#f9df8b]";
+      return "border-[#f7d05e]/30 bg-[#fff8df] text-[#a16207]";
     case "green":
-      return "border-emerald-300/30 bg-emerald-300/15 text-emerald-100";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
 }

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
+  buildSltTripPrepRouteHref,
   calculateReadinessScore,
+  getSltTripPrepMobileQuickNavItems,
+  getSltTripPrepSubnavItems,
   getSltTripPrepChecklistDetailWorkspace,
   getSltTripPrepChecklistWorkspace,
   sltTripPrepMobileQuickNavItems,
@@ -24,9 +27,47 @@ describe("slt trip prep workspace", () => {
       expect.arrayContaining([
         "/slt-prep/checklist",
         "/slt-prep/payments",
+        "/slt-prep/flights",
         "/slt-prep/meetings",
         "/slt-prep/profile",
       ]),
+    );
+    expect(workspace.notificationActions.map((action) => action.href)).toEqual([
+      "/slt-prep/flights",
+      "/slt-prep/meetings",
+      "/slt-prep/payments",
+      "/slt-prep/extensions",
+    ]);
+    expect(workspace.nextStep.href).toBe("/slt-prep/checklist/flight-itinerary?source=overview");
+    expect(workspace.traveler?.alerts[0]?.href).toBe("/slt-prep/checklist/flight-itinerary");
+    expect(workspace.traveler?.alerts[1]?.href).toBe("/slt-prep/checklist/second-installment");
+    expect(workspace.traveler?.notifications[0]?.href).toBe("/slt-prep/checklist/flight-itinerary");
+    expect(workspace.traveler?.notifications[1]?.href).toBe("/slt-prep/checklist/orientation-rsvp");
+  });
+
+  it("keeps selected-traveler overview alerts anchored to exact blocker details", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const workspace = getSltTripPrepWorkspace(actor, "daniel-kim");
+
+    expect(workspace.nextStep.href).toBe("/slt-prep/checklist/second-installment?source=overview");
+    expect(workspace.traveler?.alerts.map((alert) => alert.href)).toEqual([
+      "/slt-prep/checklist/second-installment",
+      "/slt-prep/checklist/orientation-rsvp",
+    ]);
+    expect(workspace.traveler?.notifications[0]?.href).toBe(
+      "/slt-prep/checklist/orientation-rsvp",
+    );
+  });
+
+  it("keeps low-risk traveler alerts aligned with the actual remaining extension decision", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const workspace = getSltTripPrepWorkspace(actor, "aria-patel");
+
+    expect(workspace.traveler?.alerts[0]).toEqual(
+      expect.objectContaining({
+        label: "Only the optional extension decision is still open",
+        href: "/slt-prep/checklist/extension-choice",
+      }),
     );
   });
 
@@ -70,7 +111,13 @@ describe("slt trip prep workspace", () => {
     expect(workspace?.canReadDetail).toBe(true);
     expect(workspace?.item?.title).toBe("Return itinerary upload");
     expect(workspace?.relatedLinks.map((link) => link.href)).toEqual(
-      expect.arrayContaining(["/slt-prep/checklist", "/slt-prep/payments"]),
+      [
+        "/slt-prep/checklist",
+        "/slt-prep/flights",
+        "/slt-prep/timeline",
+        "/slt-prep/profile",
+        "/slt-prep/staff",
+      ],
     );
     expect(workspace?.counts.browserWritesExpected).toBe(0);
     expect(workspace?.counts.externalWritesExpected).toBe(0);
@@ -97,10 +144,38 @@ describe("slt trip prep workspace", () => {
 
   it("exposes a trip-prep-specific mobile quick nav for traveler routes", () => {
     expect(sltTripPrepMobileQuickNavItems).toEqual([
-      { href: "/", label: "Home", helper: "Today" },
-      { href: "/slt-prep", label: "Trip Prep", helper: "Ready" },
-      { href: "/rush-month/events", label: "Events", helper: "Meet" },
-      { href: "/profile", label: "Profile", helper: "Me" },
+      { href: "/slt-prep", label: "Home", helper: "Trip" },
+      { href: "/slt-prep/checklist", label: "Trip Prep", helper: "Steps" },
+      { href: "/slt-prep/timeline", label: "Events", helper: "Dates" },
+      { href: "/slt-prep/profile", label: "Profile", helper: "Me" },
     ]);
+  });
+
+  it("can preserve the selected traveler across the SLT prep route family", () => {
+    expect(buildSltTripPrepRouteHref("/slt-prep/profile#notification-actions", {
+      travelerId: "sofia-alvarez",
+    })).toBe("/slt-prep/profile?traveler=sofia-alvarez#notification-actions");
+    expect(buildSltTripPrepRouteHref("/slt-prep/flights", {
+      source: "notifications",
+      travelerId: "sofia-alvarez",
+    })).toBe("/slt-prep/flights?source=notifications&traveler=sofia-alvarez");
+    expect(getSltTripPrepSubnavItems({ travelerId: "sofia-alvarez" })[0]?.href).toBe(
+      "/slt-prep?traveler=sofia-alvarez",
+    );
+    expect(getSltTripPrepMobileQuickNavItems({ travelerId: "sofia-alvarez" })[3]?.href).toBe(
+      "/slt-prep/profile?traveler=sofia-alvarez",
+    );
+    expect(
+      getSltTripPrepSubnavItems({
+        source: "staff",
+        travelerId: "sofia-alvarez",
+      })[7]?.href,
+    ).toBe("/slt-prep/timeline?source=staff&traveler=sofia-alvarez");
+    expect(
+      getSltTripPrepMobileQuickNavItems({
+        source: "notifications",
+        travelerId: "sofia-alvarez",
+      })[0]?.href,
+    ).toBe("/slt-prep?source=notifications&traveler=sofia-alvarez");
   });
 });
