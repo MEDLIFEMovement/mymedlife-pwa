@@ -1615,9 +1615,9 @@ function renderView(
           <div className="grid gap-4 app-surface rounded-[1.75rem] p-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="app-eyebrow app-eyebrow-slate">Bridge Video Hub</p>
+                <p className="app-eyebrow app-eyebrow-slate">Bridge Videos</p>
                 <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
-                  Bridge Video Hub
+                  Bridge Videos
                 </h2>
                 <p className="mt-4 text-sm leading-6 text-slate-600">
                   &quot;MEDLIFE leaders build a bridge for the next generation.&quot;
@@ -1986,7 +1986,7 @@ function renderView(
               <div>
                 <p className="app-eyebrow app-eyebrow-slate">Feed Analytics</p>
                 <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
-                  Feed &amp; Engagement Analytics
+                  Feed Analytics
                 </h2>
                 <p className="mt-4 text-sm leading-6 text-slate-600">
                   Understand what content drives real action — not just views.
@@ -2206,7 +2206,7 @@ function renderView(
               </div>
             </SectionCard>
 
-            <SectionCard eyebrow="Least Engaged" title="Least Engaged — Re-engage">
+            <SectionCard eyebrow="Least Engaged" title="Re-engagement Targets">
               <div className="grid gap-3">
                 {commandCenter.leastEngagedMembers.map((member) => (
                   <FeedMemberRow key={member.id} member={member} />

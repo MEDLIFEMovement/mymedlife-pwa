@@ -225,8 +225,8 @@ describe("chapter page", () => {
         }),
       }),
     );
-    expect(html).toContain("<p class=\"app-eyebrow app-eyebrow-slate\">Bridge Video Hub</p>");
-    expect(html).toContain("<h2 class=\"mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]\">Bridge Video Hub</h2>");
+    expect(html).toContain("<p class=\"app-eyebrow app-eyebrow-slate\">Bridge Videos</p>");
+    expect(html).toContain("<h2 class=\"mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]\">Bridge Videos</h2>");
     expect(html).toContain("Communications");
     expect(html).toContain("/chapter?view=feed_analytics");
     expect(html).not.toContain("Mock-seeded review data");
@@ -336,12 +336,13 @@ describe("chapter page", () => {
     );
 
     expect(html).toContain("Feed Analytics");
-    expect(html).toContain("Feed &amp; Engagement Analytics");
+    expect(html).toContain("Feed Analytics");
+    expect(html).not.toContain("Feed &amp; Engagement Analytics");
     expect(html).toContain("Understand what content drives real action");
     expect(html).toContain("Content Engagement — Actions Driven");
     expect(html).toContain("Recent Posts");
     expect(html).toContain("Most Engaged Members");
-    expect(html).toContain("Least Engaged — Re-engage");
+    expect(html).toContain("Re-engagement Targets");
     expect(html).toContain("Share to Feed");
     expect(html).toContain("Ask Members to Respond");
     expect(html).not.toContain("Mock-seeded review data");

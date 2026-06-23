@@ -1650,7 +1650,8 @@ describe("chapter leader command center", () => {
     );
 
     expect(markup).toContain("Feed Analytics");
-    expect(markup).toContain("Feed &amp; Engagement Analytics");
+    expect(markup).toContain("Feed Analytics");
+    expect(markup).not.toContain("Feed &amp; Engagement Analytics");
     expect(markup).toContain("Understand what content drives real action");
     expect(markup).toContain("Share to Feed");
     expect(markup).toContain("Ask Members to Respond");
@@ -1679,12 +1680,12 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Recent Posts");
     expect(markup).not.toContain("Selected post");
     expect(markup).toContain("Most Engaged Members");
-    expect(markup).toContain("Least Engaged — Re-engage");
+    expect(markup).toContain("Re-engagement Targets");
     expect(markup).toContain("Sofia Reyes");
     expect(markup).toContain("94 %");
     expect(markup).not.toContain("Open member follow-up");
     expect(markup.indexOf("Most Engaged Members")).toBeLessThan(
-      markup.indexOf("Least Engaged — Re-engage"),
+      markup.indexOf("Re-engagement Targets"),
     );
   });
 
@@ -1726,7 +1727,7 @@ describe("chapter leader command center", () => {
       markup.indexOf("Most Engaged Members"),
     );
     expect(markup.indexOf("Impact Analysis")).toBeLessThan(
-      markup.indexOf("Least Engaged — Re-engage"),
+      markup.indexOf("Re-engagement Targets"),
     );
   });
 
@@ -2108,8 +2109,8 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("<p class=\"app-eyebrow app-eyebrow-slate\">Bridge Video Hub</p>");
-    expect(markup).toContain("<h2 class=\"mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]\">Bridge Video Hub</h2>");
+    expect(markup).toContain("<p class=\"app-eyebrow app-eyebrow-slate\">Bridge Videos</p>");
+    expect(markup).toContain("<h2 class=\"mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]\">Bridge Videos</h2>");
     expect(markup).toContain("&quot;MEDLIFE leaders build a bridge for the next generation.&quot;");
     expect(markup).toContain("Submit Bridge Video");
     expect(markup).toContain(
