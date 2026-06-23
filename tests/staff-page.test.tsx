@@ -191,7 +191,7 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("Feed Curation Studio");
+    expect(html).toContain(">Feed Curation Studio</h1>");
     expect(html).toContain("Audience targeting");
     expect(html).toContain("Feed preview");
     expect(html).toContain("Schedule");

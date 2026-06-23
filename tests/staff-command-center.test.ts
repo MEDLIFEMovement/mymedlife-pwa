@@ -1223,7 +1223,7 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain("Feed Curation Studio");
+    expect(html).toContain(">Feed Curation Studio</h1>");
     expect(html).toContain("Compose and target content to student feeds");
     expect(html).toContain("Proof review source");
     expect(html).toContain("Opened from a reviewed content item");
