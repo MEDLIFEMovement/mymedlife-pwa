@@ -1397,6 +1397,12 @@ function renderView(
     case "admin":
       const isMemberHomeAdminHandoff =
         commandCenter.sourceContext?.eyebrow === "Member app handoff";
+      const adminHeroEyebrow = isMemberHomeAdminHandoff
+        ? "Platform Admin"
+        : "Staff Command Center";
+      const adminHeroTitle = isMemberHomeAdminHandoff
+        ? "Admin Console"
+        : commandCenter.adminWorkspace.title;
       const adminSummaryCards = isMemberHomeAdminHandoff
         ? commandCenter.adminWorkspace.handoffSummaryCards
         : [
@@ -1444,10 +1450,10 @@ function renderView(
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="max-w-3xl">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
-                    Platform Admin
+                    {adminHeroEyebrow}
                   </p>
                   <h2 className="mt-2 text-[2.25rem] font-semibold leading-none text-white sm:text-[2.6rem]">
-                    Admin Console
+                    {adminHeroTitle}
                   </h2>
                   <p className="mt-3 text-sm leading-6 text-white/78">
                     System health: {activeIntegrationCount} of{" "}
