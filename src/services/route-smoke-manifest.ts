@@ -3,6 +3,11 @@ import {
   getMobileVisualSmokeChecks,
   type MobileVisualSmokeCheck,
 } from "@/services/design-qa-readiness";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type RouteSmokePriority = "critical" | "important" | "support";
 
@@ -43,11 +48,9 @@ export type RouteSmokeManifest = {
 export function getRouteSmokeManifest(
   actor: LocalActorContext,
 ): RouteSmokeManifest {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadManifest: false,
       title: "Route smoke manifest hidden for this role",
@@ -62,7 +65,7 @@ export function getRouteSmokeManifest(
 
   return {
     canReadManifest: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "Use this manifest for manual browser smoke checks across the core Rush Month and SLT Prep MVP routes, local actor roles, and Goal 147 mobile-review metadata.",
     routes,
@@ -426,6 +429,56 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "Production user creation, profile edits, role writes, membership approvals, chapter edits, campaign template edits, coach assignment changes, and external sends remain disabled.",
   },
   {
+    path: "/admin/permissions",
+    label: "Admin permission registry",
+    priority: "important",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Backend reviewers see canonical roles, scopes, landing routes, route families, and local actor coverage without enabling writes.",
+    safetyAssertion:
+      "Permission review must not approve role writes, membership approvals, external sends, or hosted policy changes.",
+  },
+  {
+    path: "/admin/committees",
+    label: "Admin committee registry",
+    priority: "important",
+    audiences: ["admin", "super_admin"],
+    expectedResult:
+      "HQ reviewers see committee owner lanes, linked campaigns, sample actions, and blocked mutation posture.",
+    safetyAssertion:
+      "Committee review must not enable role reassignment, campaign editing, reminders, or external sends.",
+  },
+  {
+    path: "/admin/workflows",
+    label: "Admin workflow registry",
+    priority: "important",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Backend reviewers see onboarding, membership, write, proof, SLT, coach, and SOP lanes with mock-safe status.",
+    safetyAssertion:
+      "Workflow review must not enable production auth, browser writes, uploads, or external systems.",
+  },
+  {
+    path: "/admin/sop-library",
+    label: "Admin SOP library",
+    priority: "important",
+    audiences: ["admin", "super_admin"],
+    expectedResult:
+      "Backend reviewers see campaign workflow definitions and can open builder tabs for steps, roles, completion, KPIs, comms, preview, and version history.",
+    safetyAssertion:
+      "SOP library review must not enable admin editing, version publish, or external automation.",
+  },
+  {
+    path: "/admin/sop-builder/rush-month?tab=steps",
+    label: "Admin SOP builder",
+    priority: "important",
+    audiences: ["admin", "super_admin"],
+    expectedResult:
+      "Backend reviewers see a campaign-specific workflow builder with tab state and real route links into the existing product surfaces.",
+    safetyAssertion:
+      "SOP builder review must not enable admin edits, live writes, or external systems.",
+  },
+  {
     path: "/admin/database-security",
     label: "Admin database security",
     priority: "critical",
@@ -547,16 +600,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin route smoke manifest";
     case "ds_admin":
       return "DS Admin route safety manifest";
     case "super_admin":
       return "Full local route smoke manifest";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Route smoke manifest hidden for this role";
   }

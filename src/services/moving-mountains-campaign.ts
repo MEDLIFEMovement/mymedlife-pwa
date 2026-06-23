@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type MovingMountainsPhaseKey =
   | "movement_story_setup"
@@ -36,7 +40,9 @@ export type MovingMountainsCampaignPlan = {
 export function getMovingMountainsCampaignPlan(
   actor: LocalActorContext,
 ): MovingMountainsCampaignPlan {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadPlan: false,
       title: "Moving Mountains hidden for this role",
@@ -53,7 +59,7 @@ export function getMovingMountainsCampaignPlan(
 
   return {
     canReadPlan: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This deepens the Moving Mountains starter shell into a mock-safe operating plan: leaders choose a mission story, run advocacy and fundraising actions, follow up with new supporters, and bring participation proof into coach review before any payment, message, CRM, or reporting write is enabled.",
     route: "/campaigns/moving-mountains",
@@ -170,17 +176,17 @@ const movingMountainsPhases: MovingMountainsPhase[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader Moving Mountains campaign plan";
     case "coach":
       return "Coach Moving Mountains campaign plan";
-    case "admin":
+    case "staff":
       return "Admin Moving Mountains campaign plan";
     case "super_admin":
       return "Full Moving Mountains campaign plan";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Moving Mountains hidden for this role";
   }

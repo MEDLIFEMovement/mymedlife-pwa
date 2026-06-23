@@ -16,6 +16,7 @@ type LeaderAssignmentServerActionPanelProps = {
   input: ChapterAssignmentInput;
   existingAssignments: readonly Assignment[];
   readiness: AssignmentCreateWriteReadiness;
+  returnTo?: string;
   resultCode?: AssignmentCreateResultCode;
 };
 
@@ -25,6 +26,7 @@ export function LeaderAssignmentServerActionPanel({
   input,
   existingAssignments,
   readiness,
+  returnTo = "/rush-month/actions",
   resultCode,
 }: LeaderAssignmentServerActionPanelProps) {
   const resultState = resultCode ? getAssignmentCreateResultState(resultCode) : null;
@@ -84,7 +86,7 @@ export function LeaderAssignmentServerActionPanel({
       <form action={createLeaderAssignmentAction} className="mt-5 space-y-4">
         <input type="hidden" name="chapterId" value={chapterId} />
         <input type="hidden" name="campaignId" value={campaignId} />
-        <input type="hidden" name="returnTo" value="/rush-month/actions" />
+        <input type="hidden" name="returnTo" value={returnTo} />
 
         <label className="block text-sm font-semibold text-white" htmlFor="title">
           Assignment title

@@ -5,7 +5,12 @@ import {
 } from "@/services/hq-proof-decision-write";
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { HqSharingDecisionInput } from "@/services/local-action-contracts";
+import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import type { EvidenceItem } from "@/shared/types/domain";
 
 type EnvSource = Record<string, string | undefined>;
@@ -107,11 +112,7 @@ export function getHqProofDecisionPacket(
   data: ReadOnlyAppData,
   env: EnvSource = process.env,
 ): HqProofDecisionPacket {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPacket: false,
       title: "HQ proof decision packet hidden for this role",
@@ -231,7 +232,9 @@ function toCandidate(evidenceItem: EvidenceItem): HqProofDecisionCandidate {
     assignmentId: evidenceItem.assignmentId,
     summary: evidenceItem.summary,
     status: evidenceItem.status,
-    route: `/rush-month/actions/${evidenceItem.assignmentId}`,
+    route: buildLeaderAssignmentRouteHref(evidenceItem.assignmentId, {
+      source: "hq_proof_packet",
+    }),
     reviewRoute: "/rush-month/review",
     usesSupabaseUuid: isUuid(evidenceItem.id),
     readyForHqDecision: isReadyForHqDecision(evidenceItem),
@@ -704,15 +707,15 @@ function buildHiddenVerificationPacket(): HqProofDecisionVerificationPacket {
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return "Admin HQ proof decision packet";
     case "ds_admin":
       return "DS Admin HQ decision safety packet";
     case "super_admin":
       return "Full local HQ proof decision packet";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "HQ proof decision packet hidden for this role";
   }

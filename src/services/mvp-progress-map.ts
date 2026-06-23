@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type MvpProgressStatus =
   | "local_review_ready"
@@ -43,11 +48,9 @@ export type MvpProgressMap = {
 };
 
 export function getMvpProgressMap(actor: LocalActorContext): MvpProgressMap {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadProgressMap: false,
       title: "MVP progress hidden for this role",
@@ -73,7 +76,7 @@ export function getMvpProgressMap(actor: LocalActorContext): MvpProgressMap {
 
   return {
     canReadProgressMap: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     plainEnglishSummary:
       "The app has a strong local Rush Month foundation and several guarded local-write paths, but it is still not a live student launch until production auth, uploads, admin operations, deployment, and external integrations are approved and implemented.",
     confidenceNote:
@@ -462,16 +465,16 @@ function calculatePercent(value: number, subprojects: MvpSubprojectProgress[]) {
   return Math.round((value / total) * 100);
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin MVP progress map";
     case "ds_admin":
       return "DS Admin MVP progress and automation map";
     case "super_admin":
       return "Full MVP progress map";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "MVP progress hidden for this role";
   }

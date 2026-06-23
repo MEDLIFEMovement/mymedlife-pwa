@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type ProductionLaunchGateKey =
   | "production_auth"
@@ -62,11 +67,9 @@ export type ProductionLaunchGate = {
 export function getProductionLaunchGate(
   actor: LocalActorContext,
 ): ProductionLaunchGate {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadGate: false,
       title: "Production launch gate hidden for this role",
@@ -93,7 +96,7 @@ export function getProductionLaunchGate(
 
   return {
     canReadGate: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     verdict: "not_live_ready",
     summary:
       "This gate gathers the local evidence that exists today and the exact evidence still missing before myMEDLIFE can move from local MVP review to a live student pilot.",
@@ -418,16 +421,16 @@ const productionLaunchGateItems: ProductionLaunchGateItem[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin production launch gate";
     case "ds_admin":
       return "DS Admin production launch and integration gate";
     case "super_admin":
       return "Full production launch gate";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Production launch gate hidden for this role";
   }

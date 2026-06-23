@@ -81,10 +81,18 @@ describe("campaign starter shell readiness", () => {
 
   it("hides the starter-shell review from members and DS Admin", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
 
     expect(getCampaignStarterShellReadiness(member).canReadReadiness).toBe(false);
     expect(getCampaignStarterShellReadiness(member).items).toEqual([]);
+    expect(getCampaignStarterShellReadiness(committeeMember).canReadReadiness).toBe(false);
+    expect(getCampaignStarterShellReadiness(committeeMember).items).toEqual([]);
+    expect(getCampaignStarterShellReadiness(committeeChair).canReadReadiness).toBe(true);
+    expect(getCampaignStarterShellReadiness(committeeChair).title).toBe(
+      "Leader starter campaign shell checkpoint",
+    );
     expect(getCampaignStarterShellReadiness(dsAdmin).canReadReadiness).toBe(false);
     expect(getCampaignStarterShellReadiness(dsAdmin).items).toEqual([]);
   });

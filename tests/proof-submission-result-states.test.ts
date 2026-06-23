@@ -60,7 +60,7 @@ describe("proof submission result states", () => {
 
   it("previews success for a started member action with enough proof context", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
-    const assignment = requireAssignment("member-push");
+    const assignment = requireAssignment("share-rush-flyer");
 
     expect(getFutureProofSubmissionResultIfEnabled(actor, assignment, validProofInput)).toEqual(
       expect.objectContaining({
@@ -74,10 +74,7 @@ describe("proof submission result states", () => {
 
   it("blocks proof before an action has started", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
-    const assignment = {
-      ...requireAssignment("member-push"),
-      status: "not_started",
-    } as const;
+    const assignment = requireAssignment("member-push");
 
     expect(getFutureProofSubmissionResultIfEnabled(actor, assignment, validProofInput)).toEqual(
       expect.objectContaining({

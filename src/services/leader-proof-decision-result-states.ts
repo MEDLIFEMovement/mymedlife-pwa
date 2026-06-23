@@ -1,3 +1,4 @@
+import { canRecordLeaderProofDecision as canRecordLeaderProofDecisionInContract } from "@/services/local-action-contracts";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { LeaderProofDecisionValue } from "@/services/leader-proof-decision-workspace";
 import { getWriteReadinessSummary } from "@/services/write-readiness";
@@ -374,5 +375,5 @@ export function getDisabledLeaderProofDecisionResultPreview(
 }
 
 function canRecordLeaderProofDecision(actor: LocalActorContext): boolean {
-  return actor.audience === "chapter_leader" || actor.audience === "super_admin";
+  return canRecordLeaderProofDecisionInContract(actor);
 }

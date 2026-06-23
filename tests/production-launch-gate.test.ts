@@ -182,10 +182,14 @@ describe("production launch gate", () => {
 
   it("hides the launch gate from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getProductionLaunchGate(member).canReadGate).toBe(false);
+    expect(getProductionLaunchGate(committeeMember).canReadGate).toBe(false);
+    expect(getProductionLaunchGate(committeeChair).canReadGate).toBe(false);
     expect(getProductionLaunchGate(leader).canReadGate).toBe(false);
     expect(getProductionLaunchGate(coach).canReadGate).toBe(false);
     expect(getProductionLaunchGate(member).items).toEqual([]);

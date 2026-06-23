@@ -9,7 +9,7 @@ describe("route smoke manifest", () => {
 
     expect(manifest.canReadManifest).toBe(true);
     expect(manifest.title).toBe("Admin route smoke manifest");
-    expect(manifest.counts.totalRoutes).toBe(42);
+    expect(manifest.counts.totalRoutes).toBe(47);
     expect(manifest.counts.criticalRoutes).toBeGreaterThan(0);
     expect(manifest.counts.mobileVisualChecks).toBe(8);
     expect(manifest.counts.browserWritesExpected).toBe(0);
@@ -50,6 +50,11 @@ describe("route smoke manifest", () => {
         "/admin/audit-log",
         "/admin/integration-outbox",
         "/admin/master-data",
+        "/admin/permissions",
+        "/admin/committees",
+        "/admin/workflows",
+        "/admin/sop-library",
+        "/admin/sop-builder/rush-month?tab=steps",
         "/admin/database-security",
         "/admin/system-health",
         "/admin/design-qa",
@@ -412,10 +417,14 @@ describe("route smoke manifest", () => {
 
   it("hides the route manifest from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getRouteSmokeManifest(member).canReadManifest).toBe(false);
+    expect(getRouteSmokeManifest(committeeMember).canReadManifest).toBe(false);
+    expect(getRouteSmokeManifest(committeeChair).canReadManifest).toBe(false);
     expect(getRouteSmokeManifest(leader).canReadManifest).toBe(false);
     expect(getRouteSmokeManifest(coach).canReadManifest).toBe(false);
   });

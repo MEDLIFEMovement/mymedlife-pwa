@@ -62,7 +62,7 @@ describe("first-write activation drill", () => {
       drill.readbackEvidence.find((item) => item.key === "internal_event")?.status,
     ).toBe("missing");
     expect(drill.candidateAssignment?.route).toBe(
-      "/rush-month/actions/00000000-0000-4000-8000-000000000101",
+      "/rush-month/actions?assignmentId=00000000-0000-4000-8000-000000000101&source=first_write_packet",
     );
   });
 
@@ -162,6 +162,8 @@ describe("first-write activation drill", () => {
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
@@ -170,6 +172,8 @@ describe("first-write activation drill", () => {
       "DS Admin first-write safety drill",
     );
     expect(getFirstWriteActivationDrill(member, mockData).canReadDrill).toBe(false);
+    expect(getFirstWriteActivationDrill(committeeMember, mockData).canReadDrill).toBe(false);
+    expect(getFirstWriteActivationDrill(committeeChair, mockData).canReadDrill).toBe(false);
     expect(getFirstWriteActivationDrill(leader, mockData).canReadDrill).toBe(false);
     expect(getFirstWriteActivationDrill(coach, mockData).canReadDrill).toBe(false);
   });

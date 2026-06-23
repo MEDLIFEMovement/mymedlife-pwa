@@ -146,6 +146,8 @@ describe("staff dry-run guide", () => {
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
@@ -154,6 +156,8 @@ describe("staff dry-run guide", () => {
       "DS Admin staff dry-run safety guide",
     );
     expect(getStaffDryRunGuide(member, mockData).canReadGuide).toBe(false);
+    expect(getStaffDryRunGuide(committeeMember, mockData).canReadGuide).toBe(false);
+    expect(getStaffDryRunGuide(committeeChair, mockData).canReadGuide).toBe(false);
     expect(getStaffDryRunGuide(leader, mockData).canReadGuide).toBe(false);
     expect(getStaffDryRunGuide(coach, mockData).canReadGuide).toBe(false);
     expect(getStaffDryRunGuide(member, mockData).writeRehearsal.steps).toEqual([]);

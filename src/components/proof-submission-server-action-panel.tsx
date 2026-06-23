@@ -27,28 +27,28 @@ export function ProofSubmissionServerActionPanel({
   const readbackState = getProofSubmissionReadbackState(assignment, resultCode);
 
   return (
-    <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100">
-        Local proof/testimonial submission
+    <section className="app-surface-info rounded-[2rem] p-5">
+      <p className="app-eyebrow app-eyebrow-blue">
+        Proof submission preview
       </p>
-      <h2 className="mt-2 text-2xl font-semibold text-white">
+      <h2 className="app-title mt-2">
         {readiness.canSubmit
-          ? "You can submit this proof for local HQ review."
-          : "Proof submission is still safely gated."}
+          ? "This proof is ready to send into internal review."
+          : "Proof submission still stays gated."}
       </h2>
-      <p className="mt-2 text-sm leading-6 text-white/68">{readiness.reason}</p>
+      <p className="app-copy mt-2">{readiness.reason}</p>
 
       {resultState ? (
         <div
           className={[
             "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
               : resultState.tone === "warning"
-                ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
+                ? "border-amber-200 bg-amber-50 text-amber-700"
                 : resultState.tone === "error"
-                  ? "border-rose-300/30 bg-rose-300/10 text-rose-100"
-                  : "border-sky-300/30 bg-sky-300/10 text-sky-100",
+                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  : "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]",
           ].join(" ")}
           role="status"
         >
@@ -62,13 +62,13 @@ export function ProofSubmissionServerActionPanel({
           className={[
             "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
               : readbackState.tone === "warning"
-                ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
-                : "border-white/10 bg-black/18 text-white/68",
+                ? "border-amber-200 bg-amber-50 text-amber-700"
+                : "border-slate-200 bg-white text-slate-600",
           ].join(" ")}
         >
-          <p className="font-semibold">Local readback</p>
+          <p className="font-semibold">Preview readback</p>
           <p className="mt-1">{readbackState.message}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
             Current assignment status: {readbackState.assignmentStatus}
@@ -85,24 +85,24 @@ export function ProofSubmissionServerActionPanel({
         />
         <input type="hidden" name="evidenceType" value={defaultInput.evidenceType} />
 
-        <label className="block text-sm font-semibold text-white" htmlFor="proofSummary">
-          Testimonial or proof summary
+        <label className="block text-sm font-semibold text-slate-950" htmlFor="proofSummary">
+          Proof story summary
         </label>
         <textarea
           id="proofSummary"
           name="proofSummary"
-          className="min-h-32 w-full rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
+          className="min-h-32 w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
           defaultValue={defaultInput.summary}
           disabled={!readiness.canSubmit}
         />
 
-        <label className="block text-sm font-semibold text-white" htmlFor="proofUrl">
-          Optional proof link
+        <label className="block text-sm font-semibold text-slate-950" htmlFor="proofUrl">
+          Optional supporting link
         </label>
         <input
           id="proofUrl"
           name="proofUrl"
-          className="w-full rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
+          className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
           placeholder="Paste a Drive, Luma, or form link. No file upload happens here."
           disabled={!readiness.canSubmit}
         />
@@ -110,9 +110,9 @@ export function ProofSubmissionServerActionPanel({
         <button
           type="submit"
           disabled={!readiness.canSubmit}
-          className="w-full rounded-full bg-sky-200 px-5 py-3 text-sm font-semibold text-[#06211d] transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
+          className="w-full rounded-full bg-[#f7d05e] px-5 py-3 text-sm font-semibold text-[#10223f] transition hover:bg-[#f2c63f] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 sm:w-auto"
         >
-          {readiness.canSubmit ? "Submit proof locally" : "Proof submission locked"}
+          {readiness.canSubmit ? "Send proof to review" : "Proof submission unavailable"}
         </button>
       </form>
 
@@ -120,12 +120,12 @@ export function ProofSubmissionServerActionPanel({
         {readiness.checks.map((check) => (
           <div
             key={check.key}
-            className="rounded-2xl border border-white/10 bg-black/18 px-3 py-2"
+            className="app-surface rounded-[1.05rem] px-3 py-2"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+            <p className="app-eyebrow app-eyebrow-slate">
               {check.passed ? "Ready" : "Blocked"}
             </p>
-            <p className="mt-1 text-sm text-white/72">{check.label}</p>
+            <p className="mt-1 text-sm text-slate-600">{check.label}</p>
           </div>
         ))}
       </div>

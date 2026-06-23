@@ -166,10 +166,18 @@ describe("write sequence planner", () => {
 
   it("hides the planner from operating roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getWriteSequencePlanner(member, mockData).canReadPlanner).toBe(false);
+    expect(getWriteSequencePlanner(committeeMember, mockData).canReadPlanner).toBe(
+      false,
+    );
+    expect(getWriteSequencePlanner(committeeChair, mockData).canReadPlanner).toBe(
+      false,
+    );
     expect(getWriteSequencePlanner(leader, mockData).canReadPlanner).toBe(false);
     expect(getWriteSequencePlanner(coach, mockData).canReadPlanner).toBe(false);
   });

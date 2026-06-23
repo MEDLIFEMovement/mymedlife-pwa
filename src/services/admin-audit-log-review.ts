@@ -1,5 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { AuditLogRow, JsonValue } from "@/shared/types/persistence";
 
 export type AdminAuditLogPosture =
@@ -72,11 +76,9 @@ export function getAdminAuditLogReview(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
 ): AdminAuditLogReview {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadReview: false,
       canReadRows: false,
@@ -92,7 +94,7 @@ export function getAdminAuditLogReview(
     };
   }
 
-  if (actor.audience === "ds_admin") {
+  if (surfaceFamily === "ds_admin") {
     return {
       canReadReview: true,
       canReadRows: false,
@@ -120,7 +122,7 @@ export function getAdminAuditLogReview(
     canReadReview: true,
     canReadRows: true,
     title:
-      actor.audience === "super_admin"
+      surfaceFamily === "super_admin"
         ? "Super Admin audit readback"
         : "Admin audit readback",
     posture: hasRows ? "persisted_readback_visible" : "mock_intent_only",

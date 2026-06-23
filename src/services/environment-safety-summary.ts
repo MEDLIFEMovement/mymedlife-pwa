@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type EnvironmentSafetyInput = {
   MYMEDLIFE_DATA_SOURCE?: string;
@@ -39,11 +44,9 @@ export function getEnvironmentSafetySummary(
   actor: LocalActorContext,
   env: EnvironmentSafetyInput = readEnvironmentSafetyInput(),
 ): EnvironmentSafetySummary {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadSummary: false,
       title: "Environment safety hidden for this role",
@@ -140,7 +143,7 @@ export function getEnvironmentSafetySummary(
 
   return {
     canReadSummary: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "Shows safe local environment posture without exposing secrets, tokens, service keys, or passwords.",
     items,
@@ -260,16 +263,16 @@ function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
   );
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin environment safety";
     case "ds_admin":
       return "DS Admin environment safety";
     case "super_admin":
       return "Full local environment safety";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Environment safety hidden for this role";
   }

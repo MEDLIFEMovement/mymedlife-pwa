@@ -186,6 +186,8 @@ describe("design QA readiness", () => {
 
   it("hides design QA from operating roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
@@ -193,6 +195,8 @@ describe("design QA readiness", () => {
     expect(getDesignQaReadiness(member).mobileSmokeChecks).toEqual([]);
     expect(getDesignQaReadiness(member).accessibilitySmokeChecks).toEqual([]);
     expect(getDesignQaReadiness(member).devicePwaSmokeChecks).toEqual([]);
+    expect(getDesignQaReadiness(committeeMember).canReadReadiness).toBe(false);
+    expect(getDesignQaReadiness(committeeChair).canReadReadiness).toBe(false);
     expect(getDesignQaReadiness(leader).canReadReadiness).toBe(false);
     expect(getDesignQaReadiness(coach).canReadReadiness).toBe(false);
   });

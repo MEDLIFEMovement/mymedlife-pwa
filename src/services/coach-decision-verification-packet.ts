@@ -6,6 +6,10 @@ import {
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import type { CoachDecisionInput } from "@/services/local-action-contracts";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 type EnvSource = Record<string, string | undefined>;
 
@@ -101,11 +105,7 @@ export function getCoachDecisionPacket(
 ): CoachDecisionPacket {
   const activePhase = data.phases[0];
 
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPacket: false,
       title: "Coach decision packet hidden for this role",
@@ -614,15 +614,15 @@ function buildHiddenVerificationPacket(): CoachDecisionVerificationPacket {
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return "Admin coach decision packet";
     case "ds_admin":
       return "DS Admin coach decision safety packet";
     case "super_admin":
       return "Full local coach decision packet";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Coach decision packet hidden for this role";
   }

@@ -11,7 +11,7 @@ describe("route coverage summary", () => {
     expect(summary.counts.knownRoutes).toBeGreaterThan(10);
     expect(summary.counts.primaryNavigationHrefs).toBeGreaterThan(0);
     expect(summary.counts.mobileNavigationHrefs).toBeGreaterThan(0);
-    expect(summary.counts.smokeRoutes).toBe(42);
+    expect(summary.counts.smokeRoutes).toBe(47);
     expect(summary.counts.unknownNavigationHrefs).toBe(0);
     expect(summary.counts.unknownSmokeRoutes).toBe(0);
     expect(summary.counts.browserWritesExpected).toBe(0);
@@ -28,10 +28,14 @@ describe("route coverage summary", () => {
 
   it("hides route coverage from chapter and coach operating roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getRouteCoverageSummary(member).canReadSummary).toBe(false);
+    expect(getRouteCoverageSummary(committeeMember).canReadSummary).toBe(false);
+    expect(getRouteCoverageSummary(committeeChair).canReadSummary).toBe(false);
     expect(getRouteCoverageSummary(leader).canReadSummary).toBe(false);
     expect(getRouteCoverageSummary(coach).canReadSummary).toBe(false);
   });

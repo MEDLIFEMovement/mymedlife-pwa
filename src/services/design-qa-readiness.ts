@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type DesignQaStatus =
   | "ready_for_local_review"
@@ -73,11 +78,9 @@ const figmaTarget =
 export function getDesignQaReadiness(
   actor: LocalActorContext,
 ): DesignQaReadiness {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadReadiness: false,
       title: "Design QA hidden for this role",
@@ -100,7 +103,7 @@ export function getDesignQaReadiness(
 
   return {
     canReadReadiness: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "Use this checklist to keep the app aligned to the Figma prototype direction, mobile-first student clarity, accessibility, and pilot safety before a real launch.",
     figmaTarget,
@@ -242,6 +245,21 @@ function getDesignQaItems(): DesignQaItem[] {
       evidence: ["Figma Make target", "staging deployment", "mobile smoke checks", "/offline"],
     },
   ];
+}
+
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
+      return "Admin design QA readiness";
+    case "ds_admin":
+      return "DS Admin design and safety QA readiness";
+    case "super_admin":
+      return "Full design QA readiness";
+    case "member":
+    case "leader":
+    case "coach":
+      return "Design QA hidden for this role";
+  }
 }
 
 export function getDevicePwaSmokeChecks(): DevicePwaSmokeCheck[] {
@@ -497,21 +515,6 @@ export function getMobileVisualSmokeChecks(): MobileVisualSmokeCheck[] {
         "Storage, public publishing, consent review, and external export writes are approved.",
     },
   ];
-}
-
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
-      return "Admin design QA readiness";
-    case "ds_admin":
-      return "DS Admin design and safety QA readiness";
-    case "super_admin":
-      return "Full design QA readiness";
-    case "chapter_member":
-    case "chapter_leader":
-    case "coach":
-      return "Design QA hidden for this role";
-  }
 }
 
 function emptyCounts(): DesignQaReadiness["counts"] {

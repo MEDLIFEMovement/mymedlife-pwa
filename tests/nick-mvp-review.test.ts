@@ -57,10 +57,14 @@ describe("Nick MVP review packet", () => {
 
   it("hides the packet from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getNickMvpReviewPacket(member).canReadPacket).toBe(false);
+    expect(getNickMvpReviewPacket(committeeMember).canReadPacket).toBe(false);
+    expect(getNickMvpReviewPacket(committeeChair).canReadPacket).toBe(false);
     expect(getNickMvpReviewPacket(leader).reviewItems).toEqual([]);
     expect(getNickMvpReviewPacket(coach).counts.reviewItems).toBe(0);
   });

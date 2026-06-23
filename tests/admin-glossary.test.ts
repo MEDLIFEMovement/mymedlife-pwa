@@ -33,10 +33,14 @@ describe("admin glossary", () => {
 
   it("hides the glossary from operating roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getAdminGlossary(member).canReadGlossary).toBe(false);
+    expect(getAdminGlossary(committeeMember).canReadGlossary).toBe(false);
+    expect(getAdminGlossary(committeeChair).canReadGlossary).toBe(false);
     expect(getAdminGlossary(leader).canReadGlossary).toBe(false);
     expect(getAdminGlossary(coach).canReadGlossary).toBe(false);
   });

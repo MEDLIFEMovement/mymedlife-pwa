@@ -2,6 +2,7 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadChapterData,
+  getActorSurfaceFamily,
   getVisibleAssignmentsForActor,
 } from "@/services/role-visibility";
 import type { Assignment } from "@/shared/types/domain";
@@ -34,15 +35,16 @@ export function getRoleNextActionBrief(
   }
 
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
+  const surfaceFamily = getActorSurfaceFamily(actor);
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (surfaceFamily) {
+    case "member":
       return getMemberBrief(visibleAssignments, data);
-    case "chapter_leader":
+    case "leader":
       return getLeaderBrief(actor, visibleAssignments, data);
     case "coach":
       return getCoachBrief(visibleAssignments, data);
-    case "admin":
+    case "staff":
       return getAdminBrief(data);
     case "ds_admin":
       return getDsAdminBrief(data);

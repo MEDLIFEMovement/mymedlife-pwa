@@ -1,6 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   canReadAssignment,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
   getVisibleAssignmentsForActor,
 } from "@/services/role-visibility";
 import type { Assignment, EvidenceItem } from "@/shared/types/domain";
@@ -71,10 +73,12 @@ export function getLeaderProofDecisionWorkspace(
   assignments: Assignment[],
   evidenceItems: EvidenceItem[],
 ): LeaderProofDecisionWorkspace {
-  if (!canReadLeaderProofDecisionWorkspace(actor)) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadLeaderProofDecisionWorkspace(surfaceFamily)) {
     return {
       canReadWorkspace: false,
-      title: "Leader proof decision workspace hidden for this role",
+      title: getTitle(surfaceFamily),
       summary:
         "Chapter proof decisions are visible to chapter leaders and HQ staff, not members, coaches, or DS Admin.",
       rows: [],
@@ -92,9 +96,9 @@ export function getLeaderProofDecisionWorkspace(
 
   return {
     canReadWorkspace: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
-      "Preview the chapter-level proof decisions leaders need for points and KPI movement: approve, request changes, or reject. These controls are still disabled, and HQ broad sharing remains separate.",
+      "Review the chapter-level proof decisions leaders need for points and KPI movement: approve, request changes, or reject. These controls are still disabled, and HQ broad sharing remains separate.",
     rows,
     counts: {
       total: rows.length,
@@ -111,11 +115,11 @@ export function getLeaderProofDecisionWorkspace(
   };
 }
 
-function canReadLeaderProofDecisionWorkspace(actor: LocalActorContext): boolean {
+function canReadLeaderProofDecisionWorkspace(surfaceFamily: ActorSurfaceFamily): boolean {
   return (
-    actor.audience === "chapter_leader" ||
-    actor.audience === "admin" ||
-    actor.audience === "super_admin"
+    surfaceFamily === "leader" ||
+    surfaceFamily === "staff" ||
+    surfaceFamily === "super_admin"
   );
 }
 
@@ -314,18 +318,18 @@ const decisionOptions: LeaderProofDecisionOption[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
-      return "Leader proof decision workspace";
-    case "admin":
-      return "HQ proof decision support";
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
+      return "Chapter proof decision board";
+    case "staff":
+      return "Chapter proof support desk";
     case "super_admin":
-      return "Full local proof decision workspace";
-    case "chapter_member":
+      return "Proof decision operations";
+    case "member":
     case "coach":
     case "ds_admin":
-      return "Leader proof decision workspace hidden for this role";
+      return "Chapter proof decisions hidden for this role";
   }
 }
 

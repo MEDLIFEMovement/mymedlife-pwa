@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type PilotReadinessStatus =
   | "ready_now"
@@ -53,11 +58,9 @@ export type ControlledPilotReadiness = {
 export function getControlledPilotReadiness(
   actor: LocalActorContext,
 ): ControlledPilotReadiness {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadReadiness: false,
       title: "Controlled pilot readiness hidden for this role",
@@ -78,7 +81,7 @@ export function getControlledPilotReadiness(
 
   return {
     canReadReadiness: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     verdict: "staff_dry_run_ready_not_student_pilot",
     plainEnglishVerdict:
       "The app is ready for a staff dry run of the Rush Month operating loop, but it is not ready to invite real students until pilot scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership are approved.",
@@ -256,16 +259,16 @@ function getPilotGates(): PilotReadinessGate[] {
   ];
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin controlled pilot readiness";
     case "ds_admin":
       return "DS Admin controlled pilot safety readiness";
     case "super_admin":
       return "Full controlled pilot readiness";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Controlled pilot readiness hidden for this role";
   }

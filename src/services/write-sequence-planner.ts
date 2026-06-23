@@ -5,6 +5,10 @@ import { getLeaderAssignmentPacket } from "@/services/leader-assignment-verifica
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getProofMetadataPacket } from "@/services/proof-metadata-verification-packet";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 type EnvSource = Record<string, string | undefined>;
 
@@ -85,11 +89,7 @@ export function getWriteSequencePlanner(
   data: ReadOnlyAppData,
   env: EnvSource = process.env,
 ): WriteSequencePlanner {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPlanner: false,
       title: "Write sequence planner hidden for this role",
@@ -515,15 +515,15 @@ function buildPacketStatuses(
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return "Admin write sequence planner";
     case "ds_admin":
       return "DS Admin write sequence safety planner";
     case "super_admin":
       return "Full local write sequence planner";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Write sequence planner hidden for this role";
   }

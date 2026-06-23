@@ -5,6 +5,11 @@ import {
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import { getAppRouteRegistry } from "@/services/app-route-registry";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type AdminSystemHealthStatus =
   | "local_ready"
@@ -47,11 +52,9 @@ export function getAdminSystemHealthReview(
   data: ReadOnlyAppData,
   env?: EnvironmentSafetyInput,
 ): AdminSystemHealthReview {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadReview: false,
       title: "System health review hidden for this role",
@@ -73,7 +76,7 @@ export function getAdminSystemHealthReview(
 
   return {
     canReadReview: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     launchReady: false,
     summary:
       "Shows what is locally healthy, what is safely mocked, and what remains blocked before a live myMEDLIFE pilot.",
@@ -235,16 +238,16 @@ function emptyCounts(): AdminSystemHealthReview["counts"] {
   };
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin system health review";
     case "ds_admin":
       return "DS Admin system health and integration review";
     case "super_admin":
       return "Full system health review";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "System health review hidden for this role";
   }

@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type DatabaseDecisionStatus =
   | "preferred_for_mvp"
@@ -51,11 +56,9 @@ export type DatabaseSecurityDecisionPacket = {
 export function getDatabaseSecurityDecisionPacket(
   actor: LocalActorContext,
 ): DatabaseSecurityDecisionPacket {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPacket: false,
       title: "Database security decision hidden for this role",
@@ -81,7 +84,7 @@ export function getDatabaseSecurityDecisionPacket(
 
   return {
     canReadPacket: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     verdict: "keep_supabase_for_mvp_not_live_approved",
     recommendedStack: "Supabase Postgres/Auth/Storage",
     alternativeReviewed: "PlanetScale MySQL/Vitess",
@@ -228,16 +231,16 @@ const databaseSecurityControls: DatabaseSecurityControl[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin database security decision";
     case "ds_admin":
       return "DS Admin database security decision";
     case "super_admin":
       return "Full database security decision";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Database security decision hidden for this role";
   }

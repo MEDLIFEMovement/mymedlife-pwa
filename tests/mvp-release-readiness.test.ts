@@ -391,10 +391,14 @@ describe("mvp release readiness", () => {
 
   it("hides release readiness from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getMvpReleaseReadinessSummary(member).canReadSummary).toBe(false);
+    expect(getMvpReleaseReadinessSummary(committeeMember).canReadSummary).toBe(false);
+    expect(getMvpReleaseReadinessSummary(committeeChair).canReadSummary).toBe(false);
     expect(getMvpReleaseReadinessSummary(leader).canReadSummary).toBe(false);
     expect(getMvpReleaseReadinessSummary(coach).canReadSummary).toBe(false);
     expect(getMvpReleaseReadinessSummary(member).roleModelReviewCheckpoint).toBeNull();

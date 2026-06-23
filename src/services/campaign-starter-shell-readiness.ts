@@ -1,5 +1,9 @@
 import { campaignShells } from "@/data/mock-campaigns";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type {
   CampaignFamily,
   CampaignShell,
@@ -85,7 +89,9 @@ export function getCampaignStarterShellReadiness(
   actor: LocalActorContext,
   shells: readonly CampaignShell[] = campaignShells,
 ): CampaignStarterShellReadiness {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadReadiness: false,
       title: "Starter campaign readiness hidden for this role",
@@ -108,7 +114,7 @@ export function getCampaignStarterShellReadiness(
 
   return {
     canReadReadiness: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "These are the exact non-Rush starter campaign shells required for the MVP foundation. They are ready for local review, but they are not end-to-end campaign builds yet.",
     requiredCount: requiredStarterCampaigns.length,
@@ -169,17 +175,17 @@ function getNextBuildStep(family: CampaignFamily): string {
   }
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader starter campaign shell checkpoint";
     case "coach":
       return "Coach starter campaign shell checkpoint";
-    case "admin":
+    case "staff":
       return "Admin starter campaign shell checkpoint";
     case "super_admin":
       return "Full starter campaign shell checkpoint";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Starter campaign readiness hidden for this role";
   }

@@ -6,6 +6,10 @@ import {
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import type { ChapterAssignmentInput } from "@/services/local-action-contracts";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 type EnvSource = Record<string, string | undefined>;
 
@@ -110,11 +114,7 @@ export function getLeaderAssignmentPacket(
   data: ReadOnlyAppData,
   env: EnvSource = process.env,
 ): LeaderAssignmentPacket {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPacket: false,
       title: "Leader assignment packet hidden for this role",
@@ -634,15 +634,15 @@ function buildHiddenVerificationPacket(): LeaderAssignmentVerificationPacket {
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return "Admin leader assignment packet";
     case "ds_admin":
       return "DS Admin assignment safety packet";
     case "super_admin":
       return "Full local leader assignment packet";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Leader assignment packet hidden for this role";
   }

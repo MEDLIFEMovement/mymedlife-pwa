@@ -16,27 +16,26 @@ export function HqProofDecisionResultStatesPanel({
   return (
     <section className="rounded-[2rem] border border-teal-300/20 bg-teal-300/10 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-100/80">
-        HQ proof decision result states
+        Sharing decision outcomes
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
-        HQ decision messages are defined while publishing stays off.
+        HQ sharing outcomes stay defined before publishing opens.
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/66">
-        Today the browser still returns the disabled state. If Nick later
-        approves HQ decision writes, these outcomes keep the sharing decision
-        separate from any public proof publishing or external automation.
+        These states keep the chapter review trail separate from broader
+        sharing or automation while publishing stays off.
       </p>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <ResultCard label="Current browser result" state={preview.currentResult} />
+        <ResultCard label="Current sharing outcome" state={preview.currentResult} />
         <ResultCard
-          label="Future result for this mock decision"
+          label="If saved"
           state={preview.futureResultIfEnabled}
         />
       </div>
 
       <div className="mt-4 rounded-2xl bg-black/20 p-3">
-        <p className="text-sm font-semibold text-white">Disabled server result shape</p>
+        <p className="text-sm font-semibold text-white">Decision snapshot</p>
         <p className="mt-2 font-mono text-xs leading-5 text-teal-100/80">
           success: {String(preview.serverResultShape.success)}, errorCode:{" "}
           {preview.serverResultShape.errorCode}, evidenceItemId:{" "}

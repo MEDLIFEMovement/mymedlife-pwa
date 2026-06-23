@@ -29,12 +29,12 @@ export function HqProofDecisionServerActionPanel({
   return (
     <section className="rounded-[2rem] border border-teal-300/20 bg-teal-300/10 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-100">
-        Local HQ proof decision
+        Sharing decision preview
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
         {readiness.canSubmit
-          ? "HQ can record this local proof decision."
-          : "HQ proof decisions are still safely gated."}
+          ? "This sharing decision is ready to save in review."
+          : "Sharing decisions stay gated for now."}
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/68">{readiness.reason}</p>
 
@@ -68,7 +68,7 @@ export function HqProofDecisionServerActionPanel({
                 : "border-white/10 bg-black/18 text-white/68",
           ].join(" ")}
         >
-          <p className="font-semibold">Local readback</p>
+          <p className="font-semibold">Decision readback</p>
           <p className="mt-1">{readbackState.message}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
             Current proof status: {readbackState.evidenceStatus}
@@ -81,7 +81,7 @@ export function HqProofDecisionServerActionPanel({
         <input type="hidden" name="returnTo" value="/rush-month/review" />
 
         <label className="block text-sm font-semibold text-white" htmlFor="decision">
-          HQ decision
+          Sharing decision
         </label>
         <select
           id="decision"
@@ -90,9 +90,9 @@ export function HqProofDecisionServerActionPanel({
           defaultValue={defaultInput.decision}
           disabled={!readiness.canSubmit}
         >
-          <option value="approved">Approve for future sharing review</option>
+          <option value="approved">Approve for later sharing</option>
           <option value="changes_requested">Request better context</option>
-          <option value="rejected">Do not share broadly</option>
+          <option value="rejected">Keep private</option>
         </select>
 
         <label className="block text-sm font-semibold text-white" htmlFor="note">
@@ -111,7 +111,7 @@ export function HqProofDecisionServerActionPanel({
           disabled={!readiness.canSubmit}
           className="w-full rounded-full bg-teal-200 px-5 py-3 text-sm font-semibold text-[#06211d] transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
         >
-          {readiness.canSubmit ? "Save HQ decision locally" : "HQ decision locked"}
+          {readiness.canSubmit ? "Save sharing decision" : "Sharing decision unavailable"}
         </button>
       </form>
 

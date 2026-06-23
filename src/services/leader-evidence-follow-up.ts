@@ -1,7 +1,11 @@
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { canMakeHqSharingDecision } from "@/services/local-action-contracts";
-import { canReadAssignment } from "@/services/role-visibility";
+import {
+  canReadAssignment,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { Assignment, EvidenceItem } from "@/shared/types/domain";
 
 export type LeaderEvidenceFollowUpLane =
@@ -58,8 +62,10 @@ export function getLeaderEvidenceFollowUpBoard(
   allAssignments: Assignment[] = assignments,
   allEvidence: EvidenceItem[] = evidenceItems,
 ): LeaderEvidenceFollowUpBoard {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
-    return hiddenLeaderEvidenceFollowUpBoard(actor);
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
+    return hiddenLeaderEvidenceFollowUpBoard(surfaceFamily);
   }
 
   const rows = allAssignments
@@ -67,6 +73,7 @@ export function getLeaderEvidenceFollowUpBoard(
     .map((assignment) =>
       toFollowUpRow(
         actor,
+        surfaceFamily,
         assignment,
         allEvidence.find((item) => item.assignmentId === assignment.id),
       ),
@@ -75,7 +82,7 @@ export function getLeaderEvidenceFollowUpBoard(
   return {
     canReadBoard: true,
     canHqDecide: canMakeHqSharingDecision(actor),
-    title: getBoardTitle(actor),
+    title: getBoardTitle(surfaceFamily),
     summary:
       "This separates chapter follow-up from HQ sharing decisions. Leaders can see who needs a nudge or clearer story context, but broad proof-sharing remains HQ-controlled.",
     rows,
@@ -115,6 +122,7 @@ export function getLeaderEvidenceFollowUpBoard(
 
 function toFollowUpRow(
   actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
   assignment: Assignment,
   evidence: EvidenceItem | undefined,
 ): LeaderEvidenceFollowUpRow {
@@ -132,7 +140,7 @@ function toFollowUpRow(
     proofTypeLabel: evidence?.evidenceType.replaceAll("_", " ") ?? assignment.evidenceRequired,
     lane,
     ...statusCopy,
-    canLeaderNudge: actor.audience === "chapter_leader" && lane === "member_follow_up",
+    canLeaderNudge: surfaceFamily === "leader" && lane === "member_follow_up",
     canHqDecide: canMakeHqSharingDecision(actor) && lane === "hq_review",
     externalPosture: "disabled",
   };
@@ -219,26 +227,26 @@ function getLaneCopy(
   }
 }
 
-function getBoardTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getBoardTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader evidence follow-up";
     case "coach":
       return "Evidence follow-up as a coaching signal";
-    case "admin":
+    case "staff":
       return "HQ evidence follow-up view";
     case "super_admin":
       return "Full local evidence follow-up view";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Evidence follow-up hidden";
   }
 }
 
 function hiddenLeaderEvidenceFollowUpBoard(
-  actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
 ): LeaderEvidenceFollowUpBoard {
-  const isDsAdmin = actor.audience === "ds_admin";
+  const isDsAdmin = surfaceFamily === "ds_admin";
 
   return {
     canReadBoard: false,

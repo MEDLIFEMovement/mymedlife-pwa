@@ -20,7 +20,7 @@ export function LeaderProofDecisionWorkspacePanel({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-100/80">
-            Leader proof decisions
+            Chapter decisions
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{workspace.title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
@@ -111,7 +111,7 @@ function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
 
       <div className="mt-4 rounded-2xl bg-white/[0.05] p-3">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-          Disabled decision controls
+          Held decision controls
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {row.decisionOptions.map((option) => (

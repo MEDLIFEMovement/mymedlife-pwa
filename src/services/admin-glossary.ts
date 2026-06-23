@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type AdminGlossaryTerm = {
   term: string;
@@ -68,11 +72,7 @@ const glossaryTerms: AdminGlossaryTerm[] = [
 ];
 
 export function getAdminGlossary(actor: LocalActorContext): AdminGlossary {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadGlossary: false,
       title: "Admin glossary hidden for this role",
@@ -91,15 +91,15 @@ export function getAdminGlossary(actor: LocalActorContext): AdminGlossary {
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return "Admin glossary";
     case "ds_admin":
       return "DS Admin glossary";
     case "super_admin":
       return "Full local glossary";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Admin glossary hidden for this role";
   }

@@ -1,6 +1,11 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
+import {
   getWriteSequencePlanner,
   type WriteSequenceOperation,
 } from "@/services/write-sequence-planner";
@@ -76,11 +81,9 @@ export function getStaffDryRunGuide(
   data: ReadOnlyAppData,
   env: EnvSource = process.env,
 ): StaffDryRunGuide {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadGuide: false,
       title: "Staff dry run hidden for this role",
@@ -99,7 +102,7 @@ export function getStaffDryRunGuide(
 
   return {
     canReadGuide: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     verdict: "ready_for_staff_dry_run",
     summary:
       "Use this guide to rehearse the Rush Month MVP with fake users before staging, real student data, uploads, production writes, or integrations are approved.",
@@ -377,16 +380,16 @@ function isReadyOrObserved(step: StaffDryRunWriteRehearsalStep): boolean {
   );
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin staff dry-run guide";
     case "ds_admin":
       return "DS Admin staff dry-run safety guide";
     case "super_admin":
       return "Full staff dry-run guide";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Staff dry run hidden for this role";
   }

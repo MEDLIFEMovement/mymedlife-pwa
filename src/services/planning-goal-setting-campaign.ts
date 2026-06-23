@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type PlanningGoalSettingPhaseKey =
   | "goal_alignment"
@@ -36,7 +40,9 @@ export type PlanningGoalSettingCampaignPlan = {
 export function getPlanningGoalSettingCampaignPlan(
   actor: LocalActorContext,
 ): PlanningGoalSettingCampaignPlan {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadPlan: false,
       title: "Planning / Goal Setting hidden for this role",
@@ -53,7 +59,7 @@ export function getPlanningGoalSettingCampaignPlan(
 
   return {
     canReadPlan: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This deepens the Planning / Goal Setting starter shell into a mock-safe operating plan: leaders define goals, assign owners, publish the first action calendar, review risks, and prepare a coach check-in before any real campaign writes are enabled.",
     route: "/campaigns/planning-goal-setting",
@@ -158,17 +164,17 @@ const planningGoalSettingPhases: PlanningGoalSettingPhase[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader Planning / Goal Setting campaign plan";
     case "coach":
       return "Coach Planning / Goal Setting campaign plan";
-    case "admin":
+    case "staff":
       return "Admin Planning / Goal Setting campaign plan";
     case "super_admin":
       return "Full Planning / Goal Setting campaign plan";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Planning / Goal Setting hidden for this role";
   }

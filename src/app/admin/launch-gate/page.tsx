@@ -7,6 +7,7 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getProductionLaunchGate } from "@/services/production-launch-gate";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminLaunchGate");
@@ -77,7 +78,7 @@ export default async function AdminLaunchGatePage() {
 }
 
 function getNextStep(actor: LocalActorContext) {
-  if (actor.audience === "ds_admin") {
+  if (getActorSurfaceFamily(actor) === "ds_admin") {
     return {
       label: "Open integration outbox",
       href: "/admin/integration-outbox",

@@ -15,14 +15,14 @@ export function CampaignStarterShellReadinessPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-lime-300/20 bg-lime-300/10 p-5">
+    <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-lime-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
             Required starter shells
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">{readiness.title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">{readiness.title}</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             {readiness.summary}
           </p>
         </div>
@@ -36,25 +36,28 @@ export function CampaignStarterShellReadinessPanel({
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {readiness.items.map((item) => (
-          <article key={item.slug} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <article
+            key={item.slug}
+            className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+          >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2">
                   <StatusPill status={item.status} />
-                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
                     {item.templateStatus?.replaceAll("_", " ") ?? "missing"}
                   </span>
                 </div>
-                <h3 className="mt-3 text-lg font-semibold text-white">{item.name}</h3>
-                <p className="mt-1 break-words font-mono text-xs text-lime-100/70">
+                <h3 className="mt-3 text-lg font-semibold text-slate-950">{item.name}</h3>
+                <p className="mt-1 break-words font-mono text-xs text-[#0f766e]">
                   {item.route}
                 </p>
               </div>
               <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-                <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
                   {item.actionLaneCount} lanes
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
                   {item.kpiCount} KPIs
                 </span>
               </div>
@@ -65,10 +68,10 @@ export function CampaignStarterShellReadinessPanel({
               <ReadinessFlag label="Operating rhythm" ready={item.hasOperatingRhythm} />
             </div>
 
-            <p className="mt-3 text-sm leading-6 text-white/58">
+            <p className="mt-3 text-sm leading-6 text-slate-600">
               Next build step: {item.nextBuildStep}
             </p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/52">
+            <p className="mt-3 rounded-2xl border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-500">
               External sends: {item.externalWritesExpected}. Browser writes:{" "}
               {item.browserWritesExpected}. Safe to send externally: no.
             </p>
@@ -81,11 +84,11 @@ export function CampaignStarterShellReadinessPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
@@ -105,11 +108,11 @@ function StatusPill({ status }: { status: CampaignStarterShellReadinessStatus })
 
 function ReadinessFlag({ label, ready }: { label: string; ready: boolean }) {
   return (
-    <div className="rounded-2xl bg-white/[0.05] p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="rounded-2xl border border-slate-200 bg-white p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-sm font-semibold text-white">{ready ? "ready" : "missing"}</p>
+      <p className="mt-1 text-sm font-semibold text-slate-950">{ready ? "ready" : "missing"}</p>
     </div>
   );
 }

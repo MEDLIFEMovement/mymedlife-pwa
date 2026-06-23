@@ -1,3 +1,4 @@
+import { canApproveChapterMembership } from "@/services/local-action-contracts";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getWriteReadinessSummary } from "@/services/write-readiness";
 
@@ -338,9 +339,5 @@ export function getDisabledMembershipApprovalResultPreview(
 }
 
 function canApproveMembership(actor: LocalActorContext): boolean {
-  return (
-    actor.audience === "chapter_leader" ||
-    actor.audience === "admin" ||
-    actor.audience === "super_admin"
-  );
+  return canApproveChapterMembership(actor);
 }

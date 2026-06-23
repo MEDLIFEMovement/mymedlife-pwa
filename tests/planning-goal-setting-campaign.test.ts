@@ -74,10 +74,18 @@ describe("planning goal setting campaign", () => {
 
   it("hides the deeper planning campaign from members and DS Admin", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
 
     expect(getPlanningGoalSettingCampaignPlan(member).canReadPlan).toBe(false);
     expect(getPlanningGoalSettingCampaignPlan(member).phases).toEqual([]);
+    expect(getPlanningGoalSettingCampaignPlan(committeeMember).canReadPlan).toBe(false);
+    expect(getPlanningGoalSettingCampaignPlan(committeeMember).phases).toEqual([]);
+    expect(getPlanningGoalSettingCampaignPlan(committeeChair).canReadPlan).toBe(true);
+    expect(getPlanningGoalSettingCampaignPlan(committeeChair).title).toBe(
+      "Leader Planning / Goal Setting campaign plan",
+    );
     expect(getPlanningGoalSettingCampaignPlan(dsAdmin).canReadPlan).toBe(false);
     expect(getPlanningGoalSettingCampaignPlan(dsAdmin).phases).toEqual([]);
   });

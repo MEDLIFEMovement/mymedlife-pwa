@@ -173,6 +173,8 @@ describe("leader assignment verification packet", () => {
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
@@ -182,6 +184,12 @@ describe("leader assignment verification packet", () => {
     );
     expect(getLeaderAssignmentPacket(member, mockData).canReadPacket).toBe(false);
     expect(getLeaderAssignmentPacket(member, mockData).roleResponsibilities).toEqual([]);
+    expect(getLeaderAssignmentPacket(committeeMember, mockData).canReadPacket).toBe(
+      false,
+    );
+    expect(getLeaderAssignmentPacket(committeeChair, mockData).canReadPacket).toBe(
+      false,
+    );
     expect(getLeaderAssignmentPacket(leader, mockData).canReadPacket).toBe(false);
     expect(getLeaderAssignmentPacket(coach, mockData).canReadPacket).toBe(false);
   });

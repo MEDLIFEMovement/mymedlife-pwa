@@ -123,6 +123,8 @@ describe("coach decision verification packet", () => {
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
@@ -131,6 +133,12 @@ describe("coach decision verification packet", () => {
       "DS Admin coach decision safety packet",
     );
     expect(getCoachDecisionPacket(member, mockData).canReadPacket).toBe(false);
+    expect(getCoachDecisionPacket(committeeMember, mockData).canReadPacket).toBe(
+      false,
+    );
+    expect(getCoachDecisionPacket(committeeChair, mockData).canReadPacket).toBe(
+      false,
+    );
     expect(getCoachDecisionPacket(leader, mockData).canReadPacket).toBe(false);
     expect(getCoachDecisionPacket(coach, mockData).canReadPacket).toBe(false);
   });

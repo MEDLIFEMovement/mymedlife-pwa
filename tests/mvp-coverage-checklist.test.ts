@@ -282,10 +282,14 @@ describe("mvp coverage checklist", () => {
 
   it("hides the admin coverage checklist from chapter roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getMvpCoverageChecklist(member, data).canReadChecklist).toBe(false);
+    expect(getMvpCoverageChecklist(committeeMember, data).canReadChecklist).toBe(false);
+    expect(getMvpCoverageChecklist(committeeChair, data).canReadChecklist).toBe(false);
     expect(getMvpCoverageChecklist(leader, data).canReadChecklist).toBe(false);
     expect(getMvpCoverageChecklist(coach, data).canReadChecklist).toBe(false);
   });

@@ -14,36 +14,34 @@ export function LeaderProofDecisionResultStatesPanel({
   states,
 }: LeaderProofDecisionResultStatesPanelProps) {
   return (
-    <section className="rounded-[2rem] border border-indigo-300/20 bg-indigo-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-100/80">
-        Leader proof decision result states
-      </p>
-      <h2 className="mt-2 text-2xl font-semibold text-white">
-        Chapter proof outcomes are defined while saves stay off.
+    <section className="app-surface-info rounded-[2rem] p-5">
+      <p className="app-eyebrow app-eyebrow-blue">Chapter decision outcomes</p>
+      <h2 className="app-title mt-2">
+        Chapter proof outcomes stay defined before saving turns on.
       </h2>
-      <p className="mt-2 text-sm leading-6 text-white/66">
-        Today the browser still returns the disabled state. If Nick later
-        approves leader proof decision writes, these outcomes keep chapter
-        completion, points, KPI movement, member nudges, and HQ sharing separated.
+      <p className="app-copy mt-2">
+        These states keep chapter completion, points, KPI movement, member
+        follow-up, and HQ sharing separated while this workflow is still under
+        review.
       </p>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <ResultCard label="Current browser result" state={preview.currentResult} />
+        <ResultCard label="Current chapter outcome" state={preview.currentResult} />
         <ResultCard
-          label="Future result for this mock decision"
+          label="If saved"
           state={preview.futureResultIfEnabled}
         />
       </div>
 
-      <div className="mt-4 rounded-2xl bg-black/20 p-3">
-        <p className="text-sm font-semibold text-white">Disabled server result shape</p>
-        <p className="mt-2 font-mono text-xs leading-5 text-indigo-100/80">
+      <div className="app-surface rounded-[1.2rem] p-3">
+        <p className="text-sm font-semibold text-slate-950">Decision snapshot</p>
+        <p className="mt-2 font-mono text-xs leading-5 text-[#2563eb]">
           success: {String(preview.serverResultShape.success)}, errorCode:{" "}
           {preview.serverResultShape.errorCode}, assignmentId:{" "}
           {preview.serverResultShape.assignmentId}, evidenceItemId:{" "}
           {preview.serverResultShape.evidenceItemId ?? "none"}
         </p>
-        <p className="mt-2 text-xs leading-5 text-white/58">
+        <p className="mt-2 text-xs leading-5 text-slate-500">
           {preview.serverResultShape.plainEnglishMessage}
         </p>
       </div>
@@ -67,13 +65,11 @@ function ResultCard({
   state: LeaderProofDecisionResultState;
 }) {
   return (
-    <div className={`rounded-2xl bg-black/20 p-3 ${toneBorderClass(state.tone)}`}>
+    <div className={`app-surface rounded-[1.15rem] p-3 ${toneBorderClass(state.tone)}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
-            {label}
-          </p>
-          <p className="mt-2 text-sm font-semibold text-white">{state.title}</p>
+          <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+          <p className="mt-2 text-sm font-semibold text-slate-950">{state.title}</p>
         </div>
         <span
           className={`rounded-full px-2.5 py-1 text-[0.68rem] font-semibold ${toneBadgeClass(state.tone)}`}
@@ -81,15 +77,15 @@ function ResultCard({
           {state.success ? "recorded" : "blocked"}
         </span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-white/58">{state.plainEnglishMessage}</p>
+      <p className="mt-2 text-xs leading-5 text-slate-600">{state.plainEnglishMessage}</p>
       {!compact ? (
-        <p className="mt-2 text-xs leading-5 text-white/48">Next: {state.nextStep}</p>
+        <p className="mt-2 text-xs leading-5 text-slate-500">Next: {state.nextStep}</p>
       ) : null}
-      <p className="mt-2 text-xs leading-5 text-white/44">
+      <p className="mt-2 text-xs leading-5 text-slate-500">
         Event: {state.structuredEvent ?? "none"}. Audit:{" "}
         {state.auditAction ?? "none"}.
       </p>
-      <p className="mt-1 text-xs leading-5 text-white/44">
+      <p className="mt-1 text-xs leading-5 text-slate-500">
         Evidence: {state.updatesEvidenceStatus ? "yes" : "no"}. Points:{" "}
         {state.createsPointsEvent ? "yes" : "no"}. KPI:{" "}
         {state.createsKpiEvent ? "yes" : "no"}. Outbox:{" "}
@@ -103,25 +99,25 @@ function ResultCard({
 function toneBorderClass(tone: LeaderProofDecisionResultTone): string {
   switch (tone) {
     case "success":
-      return "border border-emerald-300/20";
+      return "border-emerald-200";
     case "warning":
-      return "border border-amber-300/20";
+      return "border-amber-200";
     case "error":
-      return "border border-rose-300/20";
+      return "border-rose-200";
     case "info":
-      return "border border-indigo-300/20";
+      return "border-[#bfdbfe]";
   }
 }
 
 function toneBadgeClass(tone: LeaderProofDecisionResultTone): string {
   switch (tone) {
     case "success":
-      return "bg-emerald-300/20 text-emerald-100";
+      return "border border-emerald-200 bg-emerald-50 text-emerald-700";
     case "warning":
-      return "bg-amber-300/20 text-amber-100";
+      return "border border-amber-200 bg-amber-50 text-amber-700";
     case "error":
-      return "bg-rose-300/20 text-rose-100";
+      return "border border-rose-200 bg-rose-50 text-rose-700";
     case "info":
-      return "bg-indigo-300/20 text-indigo-100";
+      return "border border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]";
   }
 }

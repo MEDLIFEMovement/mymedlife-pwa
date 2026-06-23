@@ -140,12 +140,20 @@ describe("admin integration outbox workspace", () => {
 
   it("hides integration and outbox review from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getAdminIntegrationOutboxWorkspace(member, data).canReadWorkspace).toBe(
       false,
     );
+    expect(
+      getAdminIntegrationOutboxWorkspace(committeeMember, data).canReadWorkspace,
+    ).toBe(false);
+    expect(
+      getAdminIntegrationOutboxWorkspace(committeeChair, data).canReadWorkspace,
+    ).toBe(false);
     expect(getAdminIntegrationOutboxWorkspace(leader, data).canReadWorkspace).toBe(
       false,
     );

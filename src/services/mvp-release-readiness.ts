@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type ReleaseReadinessStatus =
   | "ready_for_local_review"
@@ -44,11 +49,9 @@ export type MvpReleaseReadinessSummary = {
 export function getMvpReleaseReadinessSummary(
   actor: LocalActorContext,
 ): MvpReleaseReadinessSummary {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadSummary: false,
       title: "Release readiness hidden for this role",
@@ -68,7 +71,7 @@ export function getMvpReleaseReadinessSummary(
 
   return {
     canReadSummary: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     verdict: "local_review_ready_not_live",
     plainEnglishVerdict:
       "The Rush Month MVP is strong enough for local stakeholder review, but it is not ready for live student launch until auth, writes, uploads, production data, and integrations are approved.",
@@ -662,16 +665,16 @@ function getRoleModelReviewCheckpoint(): RoleModelReviewCheckpoint {
   };
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin release-readiness summary";
     case "ds_admin":
       return "DS Admin release-readiness summary";
     case "super_admin":
       return "Full local release-readiness summary";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Release readiness hidden for this role";
   }

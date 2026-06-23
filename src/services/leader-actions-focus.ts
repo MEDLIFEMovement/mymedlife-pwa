@@ -1,5 +1,7 @@
+import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { Assignment } from "@/shared/types/domain";
 
 export type LeaderActionsFocusItem = {
@@ -28,10 +30,10 @@ export function getLeaderActionsFocus(
   data: ReadOnlyAppData,
   visibleAssignments: Assignment[],
 ): LeaderActionsFocus {
-  if (actor.audience !== "chapter_leader") {
+  if (getActorSurfaceFamily(actor) !== "leader") {
     return {
       canReadFocus: false,
-      roleLabel: actor.audienceLabel,
+      roleLabel: getActorPrimaryRoleLabel(actor),
       title: "Leader action focus hidden for this role",
       summary:
         "Only chapter-leader review personas see assignment guardrail and owner follow-up guidance.",

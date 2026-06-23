@@ -3,6 +3,7 @@ import {
   type CoachDecisionInput,
 } from "@/services/local-action-contracts";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getWriteReadinessSummary } from "@/services/write-readiness";
 
 export type CoachDecisionResultCode =
@@ -222,7 +223,10 @@ export function getFutureCoachDecisionResultIfEnabled(
     return getCoachDecisionResultState("permission_denied");
   }
 
-  if (actor.audience === "coach" && actor.coachPortfolioChapterNames.length === 0) {
+  if (
+    getActorSurfaceFamily(actor) === "coach" &&
+    actor.coachPortfolioChapterNames.length === 0
+  ) {
     return getCoachDecisionResultState("portfolio_not_assigned");
   }
 

@@ -32,6 +32,21 @@ describe("campaign closeout readiness", () => {
     expect(closeout.summary).toContain("Members see simple progress");
   });
 
+  it("maps committee members to hidden closeout and committee chairs to leader closeout", () => {
+    const committeeMember = getCampaignCloseoutReadiness(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+      data,
+    );
+    const committeeChair = getCampaignCloseoutReadiness(
+      getMockLocalActorContext("committee.chair@mymedlife.test"),
+      data,
+    );
+
+    expect(committeeMember.canReadCloseout).toBe(false);
+    expect(committeeChair.canReadCloseout).toBe(true);
+    expect(committeeChair.title).toBe("Leader closeout readiness");
+  });
+
   it("hides closeout details from DS Admin", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const closeout = getCampaignCloseoutReadiness(actor, data);

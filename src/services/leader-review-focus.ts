@@ -1,5 +1,7 @@
+import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
 import type { LeaderEvidenceFollowUpBoard } from "@/services/leader-evidence-follow-up";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 
 export type LeaderReviewFocusItem = {
   label: string;
@@ -24,10 +26,10 @@ export function getLeaderReviewFocus(
   actor: LocalActorContext,
   board: LeaderEvidenceFollowUpBoard,
 ): LeaderReviewFocus {
-  if (actor.audience !== "chapter_leader" || !board.canReadBoard) {
+  if (getActorSurfaceFamily(actor) !== "leader" || !board.canReadBoard) {
     return {
       canReadFocus: false,
-      roleLabel: actor.audienceLabel,
+      roleLabel: getActorPrimaryRoleLabel(actor),
       title: "Leader review focus hidden for this role",
       summary:
         "Only chapter-leader preview personas see proof accountability and owner follow-up guidance here.",

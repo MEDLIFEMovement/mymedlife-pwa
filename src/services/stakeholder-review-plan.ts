@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type StakeholderReviewStep = {
   id: string;
@@ -160,7 +165,7 @@ const reviewSteps: StakeholderReviewStep[] = [
   {
     id: "member-chapter-home",
     title: "Open the member chapter home",
-    route: "/chapter",
+    route: "/chapter?view=overview",
     localActorEmail: "member.a@mymedlife.test",
     actorLabel: "General Member",
     expectedReview:
@@ -598,11 +603,9 @@ const reviewSteps: StakeholderReviewStep[] = [
 export function getStakeholderReviewPlan(
   actor: LocalActorContext,
 ): StakeholderReviewPlan {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPlan: false,
       title: "Stakeholder review path hidden for this role",
@@ -615,7 +618,7 @@ export function getStakeholderReviewPlan(
 
   return {
     canReadPlan: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "Use this sequence to review the local MVP in plain English without turning on auth, writes, uploads, public proof sharing, or integrations.",
     phases: buildReviewPhases(reviewSteps),
@@ -652,16 +655,16 @@ function buildReviewPhases(steps: StakeholderReviewStep[]): StakeholderReviewPha
   });
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin stakeholder review path";
     case "ds_admin":
       return "DS Admin stakeholder review path";
     case "super_admin":
       return "Full local stakeholder review path";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Stakeholder review path hidden for this role";
   }

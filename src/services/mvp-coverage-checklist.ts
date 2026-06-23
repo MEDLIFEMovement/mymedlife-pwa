@@ -1,5 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type MvpCoverageStatus =
   | "covered_mock"
@@ -34,11 +39,9 @@ export function getMvpCoverageChecklist(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
 ): MvpCoverageChecklist {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadChecklist: false,
       title: "MVP coverage checklist hidden for this role",
@@ -53,7 +56,7 @@ export function getMvpCoverageChecklist(
 
   return {
     canReadChecklist: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This checklist explains what the Rush Month MVP can demonstrate locally, what is read-only, and what remains blocked until Nick/team approve live auth, writes, uploads, or integrations.",
     items,
@@ -268,16 +271,16 @@ function buildCoverageItems(data: ReadOnlyAppData): MvpCoverageItem[] {
   ];
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin MVP coverage checklist";
     case "ds_admin":
       return "DS Admin MVP safety checklist";
     case "super_admin":
       return "Full local MVP coverage checklist";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "MVP coverage checklist hidden for this role";
   }

@@ -1,7 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadChapterData,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
   getVisibleAssignmentsForActor,
 } from "@/services/role-visibility";
 import type { Assignment } from "@/shared/types/domain";
@@ -42,14 +45,16 @@ export function getLeaderFollowUpBoard(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
 ): LeaderFollowUpBoard {
-  if (!canReadChapterData(actor) || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadChapterData(actor) || surfaceFamily === "ds_admin") {
     return buildRestrictedBoard(
       "Integration roles do not own member follow-up.",
       "DS Admin can inspect disabled outbox posture, but assignment follow-up stays with chapter, coach, and HQ operating roles.",
     );
   }
 
-  if (actor.audience === "chapter_member") {
+  if (surfaceFamily === "member") {
     return buildRestrictedBoard(
       "Members see their own actions below.",
       "This leader follow-up board is intentionally hidden from general members so they are not shown leadership operating queues.",
@@ -63,8 +68,8 @@ export function getLeaderFollowUpBoard(
 
   return {
     canReadBoard: true,
-    title: getBoardTitle(actor),
-    summary: getBoardSummary(actor),
+    title: getBoardTitle(surfaceFamily),
+    summary: getBoardSummary(surfaceFamily),
     emptyMessage:
       "No follow-up rows are visible for this role in the local read model.",
     rows: sortRows(rows),
@@ -89,9 +94,11 @@ function toFollowUpRow(assignment: Assignment): LeaderFollowUpRow {
     urgency,
     actionNeeded: getActionNeeded(assignment),
     nextHref:
-      assignment.status === "submitted" || assignment.status === "changes_requested"
-        ? "/rush-month/review"
-        : `/rush-month/actions/${assignment.id}`,
+      assignment.status === "submitted"
+        ? `/rush-month/review?assignmentId=${assignment.id}`
+        : buildLeaderAssignmentRouteHref(assignment.id, {
+            source: "leader_follow_up",
+          }),
     reminderPosture: "disabled",
   };
 }
@@ -125,33 +132,33 @@ function getActionNeeded(assignment: Assignment): string {
   }
 }
 
-function getBoardTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getBoardTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader follow-up board";
     case "coach":
       return "Coach-visible follow-up board";
-    case "admin":
+    case "staff":
       return "HQ follow-up posture";
     case "super_admin":
       return "Full local follow-up board";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Follow-up board unavailable";
   }
 }
 
-function getBoardSummary(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getBoardSummary(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Use this queue to decide who needs a nudge, what proof needs review, and where the chapter is stuck this week.";
     case "coach":
       return "Use this read-only queue to spot stuck work before deciding advance, hold, or intervene.";
-    case "admin":
+    case "staff":
       return "HQ can read proof and support posture without taking over chapter assignment truth.";
     case "super_admin":
       return "Review all local follow-up rows while writes, reminders, and external automation remain disabled.";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "This role should not read the leader follow-up board.";
   }

@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type NickMvpReviewStatus =
   | "ready_for_nick_review"
@@ -39,11 +44,9 @@ export type NickMvpReviewPacket = {
 export function getNickMvpReviewPacket(
   actor: LocalActorContext,
 ): NickMvpReviewPacket {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPacket: false,
       title: "Nick review packet hidden for this role",
@@ -62,7 +65,7 @@ export function getNickMvpReviewPacket(
 
   return {
     canReadPacket: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "Use this packet as the final local review handoff for Nick: the MVP can be reviewed end to end with fake actors, but live auth, production writes, uploads, external sends, and student invitations remain blocked.",
     localReviewReady: true,
@@ -229,13 +232,17 @@ function emptyCounts(): NickMvpReviewPacket["counts"] {
   };
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
+      return "Nick final local MVP review packet";
     case "ds_admin":
       return "DS Admin Nick review packet";
     case "super_admin":
       return "Super Admin Nick review packet";
-    default:
-      return "Nick final local MVP review packet";
+    case "member":
+    case "leader":
+    case "coach":
+      return "Nick review packet hidden for this role";
   }
 }

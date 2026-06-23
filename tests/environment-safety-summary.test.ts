@@ -113,11 +113,15 @@ describe("environment safety summary", () => {
   it("keeps DS Admin eligible and hides operating roles", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getEnvironmentSafetySummary(dsAdmin).canReadSummary).toBe(true);
     expect(getEnvironmentSafetySummary(member).canReadSummary).toBe(false);
+    expect(getEnvironmentSafetySummary(committeeMember).canReadSummary).toBe(false);
+    expect(getEnvironmentSafetySummary(committeeChair).canReadSummary).toBe(false);
     expect(getEnvironmentSafetySummary(leader).canReadSummary).toBe(false);
     expect(getEnvironmentSafetySummary(coach).canReadSummary).toBe(false);
   });

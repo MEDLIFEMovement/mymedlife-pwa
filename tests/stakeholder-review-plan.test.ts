@@ -27,7 +27,7 @@ describe("stakeholder review plan", () => {
       "/login",
       "/profile",
       "/onboarding",
-      "/chapter",
+      "/chapter?view=overview",
       "/rush-month",
       "/rush-month/actions",
       "/rush-month/actions/member-push",
@@ -178,7 +178,7 @@ describe("stakeholder review plan", () => {
     ).toContain("browser write");
     expect(
       plan.steps.find((step) => step.id === "member-chapter-home")?.route,
-    ).toBe("/chapter");
+    ).toBe("/chapter?view=overview");
     expect(
       plan.steps.find((step) => step.id === "member-chapter-home")?.expectedReview,
     ).toContain("visible progress");
@@ -433,11 +433,15 @@ describe("stakeholder review plan", () => {
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getStakeholderReviewPlan(dsAdmin).canReadPlan).toBe(true);
     expect(getStakeholderReviewPlan(member).canReadPlan).toBe(false);
+    expect(getStakeholderReviewPlan(committeeMember).canReadPlan).toBe(false);
+    expect(getStakeholderReviewPlan(committeeChair).canReadPlan).toBe(false);
     expect(getStakeholderReviewPlan(leader).canReadPlan).toBe(false);
     expect(getStakeholderReviewPlan(coach).canReadPlan).toBe(false);
     expect(getStakeholderReviewPlan(member).phases).toEqual([]);

@@ -22,7 +22,7 @@ const fakeAccounts = [
 
 const initialLoginActionState: LoginActionState = {
   status: "idle",
-  message: "Use a fake local Supabase account from the seed data.",
+  message: "Choose a seeded myMEDLIFE account to continue.",
   email: "member.a@mymedlife.test",
 };
 
@@ -35,22 +35,22 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
   return (
     <form
       action={formAction}
-      className="rounded-[2rem] border border-white/12 bg-white/[0.06] p-5"
+      className="app-surface rounded-[2rem] p-5"
     >
       <input type="hidden" name="redirectTo" value={redirectTo} />
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-          Local Supabase Auth
+        <p className="app-eyebrow app-eyebrow-blue">
+          Seeded account access
         </p>
-        <h2 className="text-2xl font-semibold text-white">Sign in to the local MVP</h2>
-        <p className="text-sm leading-6 text-white/64">
-          This uses fake local seed users only. It does not create production users,
-          enable browser writes, or send external automation.
+        <h2 className="text-2xl font-semibold text-slate-950">Sign in with a seeded account</h2>
+        <p className="text-sm leading-6 text-slate-600">
+          Choose a member, leader, coach, or staff account to open the matching
+          myMEDLIFE experience.
         </p>
       </div>
 
       <div className="mt-5 grid gap-4">
-        <label className="grid gap-2 text-sm font-semibold text-white">
+        <label className="grid gap-2 text-sm font-semibold text-slate-950">
           Email
           <input
             name="email"
@@ -58,7 +58,7 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
             defaultValue={state.email}
             list="fake-local-accounts"
             autoComplete="email"
-            className="rounded-2xl border border-white/14 bg-black/24 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/34 focus:border-emerald-200"
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
           />
         </label>
         <datalist id="fake-local-accounts">
@@ -67,14 +67,14 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
           ))}
         </datalist>
 
-        <label className="grid gap-2 text-sm font-semibold text-white">
+        <label className="grid gap-2 text-sm font-semibold text-slate-950">
           Password
           <input
             name="password"
             type="password"
             defaultValue="password"
             autoComplete="current-password"
-            className="rounded-2xl border border-white/14 bg-black/24 px-4 py-3 text-base text-white outline-none transition placeholder:text-white/34 focus:border-emerald-200"
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
           />
         </label>
       </div>
@@ -84,10 +84,10 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
         className={[
           "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
           state.status === "error"
-            ? "border-rose-300/30 bg-rose-300/10 text-rose-100"
+            ? "border-rose-200 bg-rose-50 text-rose-700"
             : state.status === "disabled"
-              ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
-              : "border-white/10 bg-white/[0.04] text-white/62",
+              ? "border-amber-200 bg-amber-50 text-amber-700"
+              : "border-slate-200 bg-slate-50 text-slate-600",
         ].join(" ")}
       >
         {state.message}
@@ -105,9 +105,9 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="mt-5 w-full rounded-full bg-emerald-300 px-5 py-3 text-sm font-semibold text-[#06211d] transition hover:bg-emerald-200 disabled:cursor-wait disabled:opacity-70"
+      className="mt-5 w-full rounded-full bg-[#f7d05e] px-5 py-3 text-sm font-semibold text-[#10223f] transition hover:bg-[#f2c63f] disabled:cursor-wait disabled:opacity-70"
     >
-      {pending ? "Signing in..." : "Sign in locally"}
+      {pending ? "Signing in..." : "Continue"}
     </button>
   );
 }

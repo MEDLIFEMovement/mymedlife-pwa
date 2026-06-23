@@ -152,11 +152,15 @@ describe("admin audit log review", () => {
 
   it("hides the review from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
     const data = dataWithAuditLogs([]);
 
     expect(getAdminAuditLogReview(member, data).canReadReview).toBe(false);
+    expect(getAdminAuditLogReview(committeeMember, data).canReadReview).toBe(false);
+    expect(getAdminAuditLogReview(committeeChair, data).canReadReview).toBe(false);
     expect(getAdminAuditLogReview(leader, data).canReadReview).toBe(false);
     const coachReview = getAdminAuditLogReview(coach, data);
 

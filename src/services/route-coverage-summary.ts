@@ -5,6 +5,9 @@ import {
 } from "@/services/local-actor-context";
 import { getAppRouteRegistry, isKnownAppRouteHref } from "@/services/app-route-registry";
 import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
   getMobileQuickNavigationForActor,
   getNavigationForActor,
 } from "@/services/role-visibility";
@@ -33,11 +36,9 @@ export type RouteCoverageSummary = {
 export function getRouteCoverageSummary(
   actor: LocalActorContext,
 ): RouteCoverageSummary {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadSummary: false,
       title: "Route coverage hidden for this role",
@@ -69,7 +70,7 @@ export function getRouteCoverageSummary(
 
   return {
     canReadSummary: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "Checks that current role navigation and the manual smoke manifest point at known local app routes before review.",
     unknownNavigationHrefs,
@@ -96,16 +97,16 @@ function getNavigationActors(): Array<LocalActorContext | undefined> {
   ];
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin route coverage summary";
     case "ds_admin":
       return "DS Admin route coverage summary";
     case "super_admin":
       return "Full local route coverage summary";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Route coverage hidden for this role";
   }

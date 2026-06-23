@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type ProductionOperationsRunbookStatus =
   | "local_runbook_ready"
@@ -39,11 +44,9 @@ export type ProductionOperationsRunbook = {
 export function getProductionOperationsRunbook(
   actor: LocalActorContext,
 ): ProductionOperationsRunbook {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadRunbook: false,
       title: "Production operations runbook hidden for this role",
@@ -63,7 +66,7 @@ export function getProductionOperationsRunbook(
 
   return {
     canReadRunbook: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     launchReady: false,
     summary:
       "Names the local first-response playbooks, owner lanes, and missing live evidence for a controlled myMEDLIFE pilot without enabling production writes, external sends, or secrets.",
@@ -287,16 +290,16 @@ function emptyCounts(): ProductionOperationsRunbook["counts"] {
   };
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin production operations runbook";
     case "ds_admin":
       return "DS Admin production operations and recovery runbook";
     case "super_admin":
       return "Full production operations runbook";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Production operations runbook hidden for this role";
   }

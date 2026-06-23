@@ -1,4 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type PilotScopeCandidateStatus =
   | "ready_for_staff_only"
@@ -65,11 +70,9 @@ export type PilotScopePlanner = {
 };
 
 export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanner {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPlanner: false,
       title: "Pilot scope planner hidden for this role",
@@ -90,7 +93,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
 
   return {
     canReadPlanner: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     verdict: "pilot_scope_not_approved",
     plainEnglishSummary:
       "Use this planner to choose the smallest safe first pilot before real students, production auth, browser writes, uploads, or integrations are activated.",
@@ -384,16 +387,16 @@ function getPilotDecisions(): PilotScopeDecision[] {
   ];
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin first pilot scope planner";
     case "ds_admin":
       return "DS Admin pilot safety planner";
     case "super_admin":
       return "Full first pilot scope planner";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Pilot scope planner hidden for this role";
   }

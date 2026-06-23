@@ -4,6 +4,10 @@ import {
   type IntegrationContractReview,
 } from "@/services/integration-contract-review";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
 import type { IntegrationDestination, JsonValue } from "@/shared/types/persistence";
 
@@ -142,8 +146,9 @@ export function getAdminIntegrationOutboxWorkspace(
     return hiddenWorkspace(data);
   }
 
+  const surfaceFamily = getActorSurfaceFamily(actor);
   const canReadAuditRows =
-    actor.audience === "admin" || actor.audience === "super_admin";
+    surfaceFamily === "staff" || surfaceFamily === "super_admin";
   const readbackRows = getReadbackRows(data);
   const auditRows = canReadAuditRows
     ? data.auditLogs.map((row) => ({
@@ -212,23 +217,19 @@ export function getAdminIntegrationOutboxWorkspace(
 }
 
 function canReadIntegrationOutbox(actor: LocalActorContext): boolean {
-  return (
-    actor.audience === "admin" ||
-    actor.audience === "ds_admin" ||
-    actor.audience === "super_admin"
-  );
+  return canReadAdminReviewSurface(actor);
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return "Admin integration and outbox review";
     case "ds_admin":
       return "DS Admin integration safety review";
     case "super_admin":
       return "Full integration and outbox review";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Integration outbox hidden for this role";
   }
@@ -237,7 +238,7 @@ function getTitle(actor: LocalActorContext): string {
 function getNextStep(
   actor: LocalActorContext,
 ): AdminIntegrationOutboxWorkspace["nextStep"] {
-  if (actor.audience === "ds_admin") {
+  if (getActorSurfaceFamily(actor) === "ds_admin") {
     return {
       label: "Open release readiness",
       href: "/admin",

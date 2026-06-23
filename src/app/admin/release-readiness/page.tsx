@@ -9,6 +9,7 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminReleaseReadiness");
@@ -84,7 +85,7 @@ export default async function AdminReleaseReadinessPage() {
 }
 
 function getNextStep(actor: LocalActorContext) {
-  if (actor.audience === "ds_admin") {
+  if (getActorSurfaceFamily(actor) === "ds_admin") {
     return {
       label: "Open database security",
       href: "/admin/database-security",

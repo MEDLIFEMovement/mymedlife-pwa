@@ -75,6 +75,8 @@ describe("pilot scope planner", () => {
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
@@ -83,6 +85,8 @@ describe("pilot scope planner", () => {
       "DS Admin pilot safety planner",
     );
     expect(getPilotScopePlanner(member).canReadPlanner).toBe(false);
+    expect(getPilotScopePlanner(committeeMember).canReadPlanner).toBe(false);
+    expect(getPilotScopePlanner(committeeChair).canReadPlanner).toBe(false);
     expect(getPilotScopePlanner(leader).canReadPlanner).toBe(false);
     expect(getPilotScopePlanner(coach).canReadPlanner).toBe(false);
   });

@@ -7,6 +7,7 @@ import { getAdminAuditLogReview } from "@/services/admin-audit-log-review";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminAuditLog");
@@ -73,7 +74,7 @@ export default async function AdminAuditLogPage() {
 }
 
 function getNextStep(actor: LocalActorContext) {
-  if (actor.audience === "ds_admin") {
+  if (getActorSurfaceFamily(actor) === "ds_admin") {
     return {
       label: "Open integration outbox",
       href: "/admin/integration-outbox",

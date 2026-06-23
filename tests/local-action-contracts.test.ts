@@ -5,6 +5,7 @@ import {
   canCreateChapterAssignment,
   canLogCoachDecision,
   canMakeHqSharingDecision,
+  canStartAssignmentAction,
   canSubmitProofForAssignment,
   createActionStartedMock,
   createChapterAssignmentMock,
@@ -78,6 +79,7 @@ describe("local action contracts", () => {
 
     const result = createActionStartedMock(coach, assignment);
 
+    expect(canStartAssignmentAction(coach, assignment)).toBe(true);
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.assignment.status).toBe("in_progress");
@@ -95,7 +97,24 @@ describe("local action contracts", () => {
       throw new Error("Expected member-push mock assignment");
     }
 
+    expect(canStartAssignmentAction(dsAdmin, assignment)).toBe(false);
     expect(createActionStartedMock(dsAdmin, assignment)).toEqual(
+      expect.objectContaining({
+        success: false,
+      }),
+    );
+  });
+
+  it("keeps admin from starting student assignments even when the assignment is visible", () => {
+    const admin = getMockLocalActorContext("admin@mymedlife.test");
+    const assignment = assignments.find((item) => item.id === "member-push");
+
+    if (!assignment) {
+      throw new Error("Expected member-push mock assignment");
+    }
+
+    expect(canStartAssignmentAction(admin, assignment)).toBe(false);
+    expect(createActionStartedMock(admin, assignment)).toEqual(
       expect.objectContaining({
         success: false,
       }),

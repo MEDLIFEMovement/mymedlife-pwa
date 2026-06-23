@@ -4,6 +4,10 @@ import {
 } from "@/services/campaign-ops-service";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import { getAssignmentStatusCounts } from "@/services/rush-month-dashboard-service";
 
 export type CampaignReadinessState =
@@ -42,7 +46,9 @@ export function getCampaignCloseoutReadiness(
   data: ReadOnlyAppData,
   campaignSlug = "rush-month",
 ): CampaignCloseoutReadiness {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadCloseout: false,
       title: "Campaign closeout hidden for this role",
@@ -63,7 +69,7 @@ export function getCampaignCloseoutReadiness(
 
   return {
     canReadCloseout: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This local readout previews whether Rush Month has enough assignment, proof, event, and coach-decision evidence to close out the phase.",
     readinessState,
@@ -142,17 +148,17 @@ function getReadinessState(
   return "advance_ready";
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader closeout readiness";
     case "coach":
       return "Coach closeout readiness";
-    case "admin":
+    case "staff":
       return "HQ closeout readiness";
     case "super_admin":
       return "Full local closeout readiness";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Campaign closeout hidden for this role";
   }

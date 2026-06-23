@@ -78,10 +78,14 @@ describe("controlled pilot readiness", () => {
 
   it("hides pilot readiness from operating roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getControlledPilotReadiness(member).canReadReadiness).toBe(false);
+    expect(getControlledPilotReadiness(committeeMember).canReadReadiness).toBe(false);
+    expect(getControlledPilotReadiness(committeeChair).canReadReadiness).toBe(false);
     expect(getControlledPilotReadiness(leader).canReadReadiness).toBe(false);
     expect(getControlledPilotReadiness(coach).canReadReadiness).toBe(false);
   });

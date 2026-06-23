@@ -60,6 +60,9 @@ describe("HQ proof decision verification packet", () => {
     expect(packet.counts.externalWritesExpected).toBe(0);
     expect(packet.counts.publicSharesExpected).toBe(0);
     expect(packet.checks.every((check) => check.passed)).toBe(true);
+    expect(packet.candidateEvidence?.route).toBe(
+      `/rush-month/actions?assignmentId=${assignmentId}&source=hq_proof_packet`,
+    );
     expect(packet.candidateEvidence?.reviewRoute).toBe("/rush-month/review");
     expect(packet.verificationPacket.envSettings).toEqual(
       expect.arrayContaining([
@@ -130,6 +133,8 @@ describe("HQ proof decision verification packet", () => {
   it("keeps DS Admin eligible and operating roles hidden", () => {
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
@@ -138,6 +143,12 @@ describe("HQ proof decision verification packet", () => {
       "DS Admin HQ decision safety packet",
     );
     expect(getHqProofDecisionPacket(member, mockData).canReadPacket).toBe(false);
+    expect(getHqProofDecisionPacket(committeeMember, mockData).canReadPacket).toBe(
+      false,
+    );
+    expect(getHqProofDecisionPacket(committeeChair, mockData).canReadPacket).toBe(
+      false,
+    );
     expect(getHqProofDecisionPacket(leader, mockData).canReadPacket).toBe(false);
     expect(getHqProofDecisionPacket(coach, mockData).canReadPacket).toBe(false);
   });

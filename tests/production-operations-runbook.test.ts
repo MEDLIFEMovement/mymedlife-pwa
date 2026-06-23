@@ -94,10 +94,14 @@ describe("production operations runbook", () => {
 
   it("hides production operations from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getProductionOperationsRunbook(member).canReadRunbook).toBe(false);
+    expect(getProductionOperationsRunbook(committeeMember).canReadRunbook).toBe(false);
+    expect(getProductionOperationsRunbook(committeeChair).canReadRunbook).toBe(false);
     expect(getProductionOperationsRunbook(leader).canReadRunbook).toBe(false);
     expect(getProductionOperationsRunbook(coach).canReadRunbook).toBe(false);
     expect(getProductionOperationsRunbook(member).items).toEqual([]);

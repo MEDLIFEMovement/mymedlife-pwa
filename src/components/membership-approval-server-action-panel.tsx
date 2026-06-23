@@ -38,8 +38,8 @@ export function MembershipApprovalServerActionPanel({
     joinRequestId ?? packet?.joinRequestId,
   );
   const buttonLabel = packet?.writeReadiness.canSubmit
-    ? "Approve membership locally"
-    : "Membership approval locked";
+    ? "Approve join request"
+    : "Join approval unavailable";
 
   if (!packet && !resultState) {
     return null;
@@ -48,16 +48,16 @@ export function MembershipApprovalServerActionPanel({
   return (
     <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-        Local membership approval
+        Join approval preview
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
         {packet?.writeReadiness.canSubmit
-          ? "This join request can be approved in local Supabase."
-          : "Membership approval is still safely gated."}
+          ? "This join request is ready for the localhost rehearsal."
+          : "Join approval is still safely gated."}
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/68">
         {packet?.writeReadiness.reason ??
-          "This panel is showing the most recent membership approval result and safe readback."}
+          "This panel shows the latest join-approval result and safe readback."}
       </p>
 
       {resultState ? (
@@ -90,7 +90,7 @@ export function MembershipApprovalServerActionPanel({
                 : "border-white/10 bg-black/18 text-white/68",
           ].join(" ")}
         >
-          <p className="font-semibold">Local readback</p>
+          <p className="font-semibold">Preview readback</p>
           <p className="mt-1">{readbackState.message}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
             Membership: {readbackState.currentMembershipStatus.replaceAll("_", " ")} · Join
@@ -141,7 +141,7 @@ export function MembershipApprovalServerActionPanel({
               />
               <span>
                 I confirmed this join request belongs to the right chapter and the role is
-                accurate for local approval testing.
+                accurate for this staged approval rehearsal.
               </span>
             </label>
 

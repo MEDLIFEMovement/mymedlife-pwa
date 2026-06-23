@@ -5,6 +5,12 @@ import {
 } from "@/services/action-start-write";
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
+import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import type { Assignment } from "@/shared/types/domain";
 
 type EnvSource = Record<string, string | undefined>;
@@ -110,11 +116,9 @@ export function getFirstWriteActivationDrill(
   data: ReadOnlyAppData,
   env: EnvSource = process.env,
 ): FirstWriteActivationDrill {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadDrill: false,
       title: "First-write drill hidden for this role",
@@ -158,7 +162,7 @@ export function getFirstWriteActivationDrill(
 
   return {
     canReadDrill: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     status,
     plainEnglishSummary:
       "This drill turns the first possible MVP save into a controlled local test: one member starts one Rush Month assignment, then staff confirm assignment status, event, integration event, and audit log readback. It does not approve production writes.",
@@ -191,6 +195,19 @@ function findCandidateAssignment(assignments: Assignment[]): Assignment | null {
   return (
     assignments.find((assignment) => {
       return (
+        isUuid(assignment.id) &&
+        assignment.lane === "Member" &&
+        isStartableAssignment(assignment)
+      );
+    }) ??
+    assignments.find((assignment) => {
+      return isUuid(assignment.id) && assignment.lane === "Member";
+    }) ??
+    assignments.find((assignment) => {
+      return isUuid(assignment.id) && isStartableAssignment(assignment);
+    }) ??
+    assignments.find((assignment) => {
+      return (
         assignment.lane === "Member" &&
         isStartableAssignment(assignment)
       );
@@ -216,7 +233,9 @@ function toCandidate(assignment: Assignment) {
     id: assignment.id,
     title: assignment.title,
     status: assignment.status,
-    route: `/rush-month/actions/${assignment.id}`,
+    route: buildLeaderAssignmentRouteHref(assignment.id, {
+      source: "first_write_packet",
+    }),
     usesSupabaseUuid: isUuid(assignment.id),
   };
 }
@@ -669,16 +688,16 @@ function buildHiddenVerificationPacket(): FirstWriteVerificationPacket {
   };
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin first-write activation drill";
     case "ds_admin":
       return "DS Admin first-write safety drill";
     case "super_admin":
       return "Full first-write activation drill";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "First-write drill hidden for this role";
   }

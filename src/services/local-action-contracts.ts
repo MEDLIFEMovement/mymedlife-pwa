@@ -1,5 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { canReadAssignment } from "@/services/role-visibility";
+import {
+  canReadAssignment,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type {
   Approval,
   Assignment,
@@ -134,34 +137,64 @@ export function canSubmitProofForAssignment(
     return false;
   }
 
-  return actor.audience === "chapter_member" || actor.audience === "chapter_leader";
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  return surfaceFamily === "member" || surfaceFamily === "leader";
+}
+
+export function canStartAssignmentAction(
+  actor: LocalActorContext,
+  assignment: Assignment,
+): boolean {
+  if (!canReadAssignment(actor, assignment)) {
+    return false;
+  }
+
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  return (
+    surfaceFamily === "member" ||
+    surfaceFamily === "leader" ||
+    surfaceFamily === "coach" ||
+    surfaceFamily === "super_admin"
+  );
 }
 
 export function canCreateChapterAssignment(actor: LocalActorContext): boolean {
-  return actor.audience === "chapter_leader" || actor.audience === "super_admin";
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  return surfaceFamily === "leader" || surfaceFamily === "super_admin";
 }
 
 export function canMakeHqSharingDecision(actor: LocalActorContext): boolean {
-  return actor.audience === "admin" || actor.audience === "super_admin";
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  return surfaceFamily === "staff" || surfaceFamily === "super_admin";
 }
 
 export function canRecordLeaderProofDecision(actor: LocalActorContext): boolean {
-  return actor.audience === "chapter_leader" || actor.audience === "super_admin";
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  return surfaceFamily === "leader" || surfaceFamily === "super_admin";
 }
 
 export function canLogCoachDecision(actor: LocalActorContext): boolean {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
   return (
-    actor.audience === "coach" ||
-    actor.audience === "admin" ||
-    actor.audience === "super_admin"
+    surfaceFamily === "coach" ||
+    surfaceFamily === "staff" ||
+    surfaceFamily === "super_admin"
   );
 }
 
 export function canApproveChapterMembership(actor: LocalActorContext): boolean {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
   return (
-    actor.audience === "chapter_leader" ||
-    actor.audience === "admin" ||
-    actor.audience === "super_admin"
+    surfaceFamily === "leader" ||
+    surfaceFamily === "staff" ||
+    surfaceFamily === "super_admin"
   );
 }
 
@@ -259,7 +292,7 @@ export function createActionStartedMock(
   actor: LocalActorContext,
   assignment: Assignment,
 ): LocalContractResult<LocalActionStarted> {
-  if (!canReadAssignment(actor, assignment)) {
+  if (!canStartAssignmentAction(actor, assignment)) {
     return {
       success: false,
       error: "This local actor cannot read or start this assignment.",
@@ -706,7 +739,9 @@ export function getReviewQueueForActor(
     return evidenceItems;
   }
 
-  if (actor.audience === "chapter_leader" || actor.audience === "coach") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "leader" || surfaceFamily === "coach") {
     return evidenceItems.filter((item) => item.status === "pending_review");
   }
 
@@ -714,11 +749,13 @@ export function getReviewQueueForActor(
 }
 
 export function getProofSubmissionGuidance(actor: LocalActorContext): string {
-  if (actor.audience === "chapter_member") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member") {
     return "Submit a short testimonial, bridge video link, event photo, or proof note showing what happened.";
   }
 
-  if (actor.audience === "chapter_leader") {
+  if (surfaceFamily === "leader") {
     return "Leaders can help collect proof, but HQ decides whether a testimonial should be shared broadly.";
   }
 
@@ -778,7 +815,7 @@ function createLocalAuditLog(
 }
 
 function actorToReviewerRole(actor: LocalActorContext): ChapterRole {
-  return actor.audience === "super_admin" ? "Super Admin" : "Admin";
+  return getActorSurfaceFamily(actor) === "super_admin" ? "Super Admin" : "Admin";
 }
 
 function coachDecisionToStatuses(decision: KpiSummary["coachDecision"]): {

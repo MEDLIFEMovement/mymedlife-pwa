@@ -5,7 +5,12 @@ import {
 } from "@/services/proof-submission-write";
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { ProofSubmissionInput } from "@/services/local-action-contracts";
+import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import type { Assignment } from "@/shared/types/domain";
 
 type EnvSource = Record<string, string | undefined>;
@@ -105,11 +110,7 @@ export function getProofMetadataPacket(
   data: ReadOnlyAppData,
   env: EnvSource = process.env,
 ): ProofMetadataPacket {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadPacket: false,
       title: "Proof metadata packet hidden for this role",
@@ -232,7 +233,9 @@ function toCandidate(assignment: Assignment): ProofMetadataCandidate {
     id: assignment.id,
     title: assignment.title,
     status: assignment.status,
-    route: `/rush-month/actions/${assignment.id}`,
+    route: buildLeaderAssignmentRouteHref(assignment.id, {
+      source: "proof_metadata_packet",
+    }),
     usesSupabaseUuid: isUuid(assignment.id),
     readyForProof: isProofReadyAssignment(assignment),
   };
@@ -682,15 +685,15 @@ function buildHiddenVerificationPacket(): ProofMetadataVerificationPacket {
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return "Admin proof metadata packet";
     case "ds_admin":
       return "DS Admin proof metadata safety packet";
     case "super_admin":
       return "Full local proof metadata packet";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Proof metadata packet hidden for this role";
   }
