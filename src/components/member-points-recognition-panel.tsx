@@ -169,7 +169,9 @@ export function MemberPointsRecognitionPanel({
       <section className="app-surface rounded-[1.8rem] p-4">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <p className="app-eyebrow app-eyebrow-blue">Chapter Leaderboard - Rush Month</p>
+            <p className="app-eyebrow app-eyebrow-blue">
+              Chapter Leaderboard {"\u2014"} Rush Month
+            </p>
           </div>
         </div>
         <div className="mt-3 grid gap-2">

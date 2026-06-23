@@ -50,6 +50,7 @@ describe("leaderboard page", () => {
     expect(html).not.toContain("Points loop");
     expect(html).toContain("Recent Approved Actions");
     expect(html).toContain("How points work");
+    expect(html).toContain("Chapter Leaderboard — Rush Month");
     expect(html).toContain("Welcome one new student at tabling");
     expect(html).not.toContain("Open the chapter home and align the leader team");
     expect(html).not.toContain("Assign Rush Month outreach owners");

@@ -27,7 +27,7 @@ describe("member points recognition panel", () => {
     expect(html).toContain("Rush Starter");
     expect(html).toContain("Complete first Rush Month action");
     expect(html).toContain("Top 3 on leaderboard for 2 weeks");
-    expect(html).toContain("Chapter Leaderboard - Rush Month");
+    expect(html).toContain("Chapter Leaderboard — Rush Month");
     expect(html).toContain("Recent Approved Actions");
     expect(html).toContain("How points work");
     expect(html).toContain("See how to earn more points");
