@@ -1885,13 +1885,15 @@ function renderView(
               </div>
             </SectionCard>
           ) : null}
-          <div className="grid gap-4 app-surface rounded-[1.75rem] p-4">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="app-eyebrow app-eyebrow-slate">Succession Planning</p>
-                <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Succession Planning
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
                   Leadership Succession
-                </h2>
+                </h1>
                 <p className="mt-4 text-sm leading-6 text-slate-600">
                   Ensure the chapter can survive and grow beyond any single leader.
                 </p>
@@ -1959,7 +1961,7 @@ function renderView(
                 note={commandCenter.successionOverview.transitionReadinessNote}
               />
             </div>
-          </div>
+          </section>
 
           <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
             <SectionCard eyebrow="Leadership Gaps" title="Leadership Gaps">

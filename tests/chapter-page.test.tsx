@@ -924,7 +924,7 @@ describe("chapter page", () => {
         }),
       }),
     );
-    expect(html).toContain("Leadership Succession");
+    expect(html).toContain(">Leadership Succession</h1>");
     expect(html).toContain("Succession Planning");
     expect(html).not.toContain("Selected candidate");
     expect(html).not.toContain("Selected now");
@@ -1020,7 +1020,7 @@ describe("chapter page", () => {
         }),
       }),
     );
-    expect(html).toContain("Leadership Succession");
+    expect(html).toContain(">Leadership Succession</h1>");
     expect(html).toContain("Succession Planning");
     expect(html).toContain("Leadership Gaps");
     expect(html).toContain("Candidate Pipeline");

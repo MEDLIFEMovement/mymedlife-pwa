@@ -2326,7 +2326,7 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.hasExplicitMemberSelection).toBe(false);
     expect(commandCenter.successionCandidates.some((candidate) => candidate.isSelected)).toBe(false);
-    expect(markup).toContain("Leadership Succession");
+    expect(markup).toContain(">Leadership Succession</h1>");
     expect(markup).toContain("Succession Planning");
     expect(markup).not.toContain("Selected candidate");
     expect(markup).not.toContain("Selected now");
@@ -2345,7 +2345,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("Leadership Succession");
+    expect(markup).toContain(">Leadership Succession</h1>");
     expect(markup).toContain("Succession Planning");
     expect(markup).toContain("Ensure the chapter can survive and grow beyond any single leader.");
     expect(markup).toContain("Selected candidate");
