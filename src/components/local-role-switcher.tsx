@@ -16,17 +16,15 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
   const isUsingPreviewCookie = actor.identitySource === "local_preview_cookie";
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-4">
+    <section className="app-surface rounded-3xl p-4">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/44">
-          Local role switcher
-        </p>
-        <h2 className="mt-2 text-xl font-semibold text-white">
+        <p className="app-eyebrow app-eyebrow-slate">Local role switcher</p>
+        <p className="mt-2 text-xl font-semibold text-slate-950">
           {isUsingAuthSession
             ? "Signed-in local auth user controls the current role."
             : "Preview another local role without leaving the app."}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-white/62">
+        </p>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
           {isUsingAuthSession
             ? "Sign out or sign in as another fake local seed user to preview a different role. Browser writes and production auth remain disabled."
             : "This is a local-only review panel. It stores one preview-role cookie for this browser so you can move through member, leader, coach, and admin surfaces without changing env vars. It does not create production users, auth sessions, or app writes."}
@@ -34,8 +32,8 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
       </div>
 
       {!isUsingAuthSession ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-          <p className="text-sm leading-6 text-white/62">
+        <div className="app-surface-soft mt-4 flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3">
+          <p className="text-sm leading-6 text-slate-600">
             {isUsingPreviewCookie
               ? "Preview cookie is active for this browser."
               : "No preview cookie is active. The current role comes from the configured local actor email."}
@@ -44,7 +42,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
             <form action={clearLocalActorPreviewAction}>
               <button
                 type="submit"
-                className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition hover:border-[#5d8ff6]/30 hover:bg-white/[0.1]"
+                className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
               >
                 Use configured default
               </button>
@@ -68,25 +66,25 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
               key={option.email}
               className={
                 isSelected
-                  ? "rounded-2xl border border-[#f7d05e]/30 bg-[#f7d05e]/10 p-3"
-                  : "rounded-2xl border border-white/10 bg-black/20 p-3"
+                  ? "app-surface-warm rounded-2xl p-3"
+                  : "app-surface rounded-2xl p-3"
               }
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-white">{option.displayName}</p>
-                  <p className="mt-1 text-xs text-white/52">{option.email}</p>
+                  <p className="text-sm font-semibold text-slate-950">{option.displayName}</p>
+                  <p className="mt-1 text-xs text-slate-500">{option.email}</p>
                 </div>
-                <span className="rounded-full border border-white/10 px-2 py-1 text-xs text-white/64">
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500">
                   {option.audience.replace("_", " ")}
                 </span>
               </div>
-              <p className="mt-3 text-sm font-medium text-white/74">
+              <p className="mt-3 text-sm font-medium text-slate-700">
                 {roleSummary || "No approved role"}
               </p>
-              <p className="mt-1 text-xs leading-5 text-white/50">{scopeSummary}</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">{scopeSummary}</p>
               {isUsingAuthSession ? (
-                <p className="mt-3 rounded-xl bg-black/20 px-3 py-2 text-xs text-white/56">
+                <p className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
                   Local auth is active, so the browser session controls this route.
                 </p>
               ) : (
@@ -99,7 +97,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
                       "w-full rounded-xl px-3 py-2 text-sm font-semibold transition",
                       isSelected
                         ? "cursor-default bg-[#f7d05e] text-[#08224c]"
-                        : "border border-white/12 bg-white/[0.06] text-white hover:border-[#5d8ff6]/30 hover:bg-white/[0.1]",
+                        : "border border-slate-200 bg-slate-50 text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
                     ].join(" ")}
                   >
                     {isSelected

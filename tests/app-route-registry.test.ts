@@ -51,6 +51,7 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/onboarding")).toBe(true);
     expect(isKnownAppRouteHref("/slt-prep")).toBe(true);
     expect(isKnownAppRouteHref("/slt-prep/staff")).toBe(true);
+    expect(isKnownAppRouteHref("/slt-prep/flights")).toBe(true);
     expect(isKnownAppRouteHref("/slt-prep/checklist/medical-clearance")).toBe(true);
     expect(isKnownAppRouteHref("/rush-month/leaderboard")).toBe(true);
     expect(isKnownAppRouteHref("/campaigns/rush-month")).toBe(true);
@@ -58,6 +59,10 @@ describe("app route registry", () => {
       true,
     );
     expect(isKnownAppRouteHref("/rush-month/actions/member-push")).toBe(true);
+    expect(isKnownAppRouteHref("/chapter?view=members")).toBe(true);
+    expect(isKnownAppRouteHref("/chapter?view=member_profile&member=member-ivy")).toBe(
+      true,
+    );
     expect(isKnownAppRouteHref("/staff")).toBe(true);
     expect(isKnownAppRouteHref("/admin/review-path")).toBe(true);
     expect(isKnownAppRouteHref("/admin/nick-review")).toBe(true);
@@ -66,6 +71,13 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/admin/audit-log")).toBe(true);
     expect(isKnownAppRouteHref("/admin/integration-outbox")).toBe(true);
     expect(isKnownAppRouteHref("/admin/master-data")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/permissions")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/committees")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/workflows")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/sop-library")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/sop-builder/rush-month?tab=steps")).toBe(
+      true,
+    );
     expect(isKnownAppRouteHref("/admin/database-security")).toBe(true);
     expect(isKnownAppRouteHref("/admin/system-health")).toBe(true);
     expect(isKnownAppRouteHref("/admin/design-qa")).toBe(true);

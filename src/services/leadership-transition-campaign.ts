@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type LeadershipTransitionPhaseKey =
   | "successor_map"
@@ -36,7 +40,9 @@ export type LeadershipTransitionCampaignPlan = {
 export function getLeadershipTransitionCampaignPlan(
   actor: LocalActorContext,
 ): LeadershipTransitionCampaignPlan {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadPlan: false,
       title: "Leadership Transition hidden for this role",
@@ -53,7 +59,7 @@ export function getLeadershipTransitionCampaignPlan(
 
   return {
     canReadPlan: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This deepens the Leadership Transition starter shell into a mock-safe operating plan: outgoing leaders name successors, write role handoff notes, confirm committee chairs, prepare coach validation, and close open risks before any real role, membership, or notification writes are enabled.",
     route: "/campaigns/leadership-transition",
@@ -170,17 +176,17 @@ const leadershipTransitionPhases: LeadershipTransitionPhase[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader Leadership Transition campaign plan";
     case "coach":
       return "Coach Leadership Transition campaign plan";
-    case "admin":
+    case "staff":
       return "Admin Leadership Transition campaign plan";
     case "super_admin":
       return "Full Leadership Transition campaign plan";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Leadership Transition hidden for this role";
   }

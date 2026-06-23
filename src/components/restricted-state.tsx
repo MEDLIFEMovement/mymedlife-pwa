@@ -16,16 +16,14 @@ export function RestrictedState({
   nextLabel,
 }: RestrictedStateProps) {
   return (
-    <section className="rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
-        {eyebrow}
-      </p>
-      <h2 className="mt-3 text-2xl font-semibold text-white">{title}</h2>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-white/68">{message}</p>
+    <section className="app-surface-warm rounded-[2rem] p-5">
+      <p className="app-eyebrow app-eyebrow-warm">{eyebrow}</p>
+      <h2 className="mt-3 text-2xl font-semibold text-slate-950">{title}</h2>
+      <p className="app-copy mt-2 max-w-2xl">{message}</p>
       {nextHref && nextLabel ? (
         <Link
           href={nextHref}
-          className="mt-4 inline-flex rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+          className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
         >
           {nextLabel}
         </Link>

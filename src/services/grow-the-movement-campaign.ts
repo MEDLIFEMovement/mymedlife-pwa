@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type GrowTheMovementPhaseKey =
   | "referral_owner_map"
@@ -36,7 +40,9 @@ export type GrowTheMovementCampaignPlan = {
 export function getGrowTheMovementCampaignPlan(
   actor: LocalActorContext,
 ): GrowTheMovementCampaignPlan {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadPlan: false,
       title: "Grow the Movement hidden for this role",
@@ -53,7 +59,7 @@ export function getGrowTheMovementCampaignPlan(
 
   return {
     canReadPlan: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This deepens the Grow the Movement starter shell into a mock-safe operating plan: leaders assign referral owners, prepare partnership outreach, use alumni proof, follow up with interested students, and bring conversion health into coach review before any real CRM, referral, message, or alumni workflow is enabled.",
     route: "/campaigns/grow-the-movement",
@@ -164,17 +170,17 @@ const growTheMovementPhases: GrowTheMovementPhase[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader Grow the Movement campaign plan";
     case "coach":
       return "Coach Grow the Movement campaign plan";
-    case "admin":
+    case "staff":
       return "Admin Grow the Movement campaign plan";
     case "super_admin":
       return "Full Grow the Movement campaign plan";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Grow the Movement hidden for this role";
   }

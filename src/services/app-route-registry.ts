@@ -20,6 +20,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/slt-prep/checklist/", label: "SLT prep checklist detail", routeType: "prefix" },
   { href: "/slt-prep/forms", label: "SLT prep forms", routeType: "exact" },
   { href: "/slt-prep/payments", label: "SLT prep payments", routeType: "exact" },
+  { href: "/slt-prep/flights", label: "SLT prep flights", routeType: "exact" },
   { href: "/slt-prep/meetings", label: "SLT prep meetings", routeType: "exact" },
   { href: "/slt-prep/extensions", label: "SLT prep extensions", routeType: "exact" },
   { href: "/slt-prep/timeline", label: "SLT prep timeline", routeType: "exact" },
@@ -48,6 +49,11 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/admin/audit-log", label: "Admin audit log", routeType: "exact" },
   { href: "/admin/integration-outbox", label: "Admin integration outbox", routeType: "exact" },
   { href: "/admin/master-data", label: "Admin master data", routeType: "exact" },
+  { href: "/admin/permissions", label: "Admin permissions", routeType: "exact" },
+  { href: "/admin/committees", label: "Admin committees", routeType: "exact" },
+  { href: "/admin/workflows", label: "Admin workflows", routeType: "exact" },
+  { href: "/admin/sop-library", label: "Admin SOP library", routeType: "exact" },
+  { href: "/admin/sop-builder/", label: "Admin SOP builder", routeType: "prefix" },
   { href: "/admin/database-security", label: "Admin database security", routeType: "exact" },
   { href: "/admin/system-health", label: "Admin system health", routeType: "exact" },
   { href: "/admin/design-qa", label: "Admin design QA", routeType: "exact" },
@@ -67,11 +73,26 @@ export function getAppRouteRegistry(): AppRouteRegistryItem[] {
 }
 
 export function isKnownAppRouteHref(href: string): boolean {
+  const normalizedHref = normalizeHref(href);
+
   return appRouteRegistry.some((route) => {
     if (route.routeType === "exact") {
-      return href === route.href;
+      return normalizedHref === route.href;
     }
 
-    return href.startsWith(route.href);
+    return normalizedHref.startsWith(route.href);
   });
+}
+
+function normalizeHref(href: string): string {
+  const queryIndex = href.indexOf("?");
+  const hashIndex = href.indexOf("#");
+  const cutoff =
+    queryIndex === -1
+      ? hashIndex
+      : hashIndex === -1
+        ? queryIndex
+        : Math.min(queryIndex, hashIndex);
+
+  return cutoff === -1 ? href : href.slice(0, cutoff);
 }

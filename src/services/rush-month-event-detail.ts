@@ -3,6 +3,14 @@ import {
   getChapterEventPlans,
 } from "@/services/campaign-ops-service";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  type MemberActionRouteSource,
+  buildMemberActionRouteHref,
+} from "@/services/member-action-route-href";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import { getRushMonthEventRsvpPosture } from "@/services/rush-month-event-rsvp";
 import type { ChapterEventPlan } from "@/shared/types/campaigns";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
@@ -26,6 +34,11 @@ export type RushMonthEventDetail = {
   title: string;
   committeeName: string;
   timing: string;
+  memberDateTimeLabel: string;
+  memberLocationLabel: string;
+  memberCampaignLabel: string;
+  memberPointsLabel: string;
+  memberLumaLabel: string | null;
   eventTypeLabel: string;
   rsvpStatusLabel: string;
   rsvpDetail: string;
@@ -46,6 +59,7 @@ export type RushMonthEventDetailWorkspace = {
   summary: string;
   event: RushMonthEventDetail | null;
   nextStep: EventDetailNextStep;
+  proofNextStep: EventDetailNextStep;
   readinessChecks: EventDetailCheck[];
   futureStructuredEvents: IntegrationEvent[];
   disabledOutboxItems: OutboxItem[];
@@ -61,7 +75,9 @@ export type RushMonthEventDetailWorkspace = {
 export function getRushMonthEventDetailWorkspace(
   actor: LocalActorContext,
   eventId: string,
+  source: MemberActionRouteSource | null = null,
 ): RushMonthEventDetailWorkspace | null {
+  const surfaceFamily = getActorSurfaceFamily(actor);
   const eventPlan = getChapterEventPlans().find(
     (item) => item.id === eventId && item.campaignSlug === "rush-month",
   );
@@ -70,7 +86,7 @@ export function getRushMonthEventDetailWorkspace(
     return null;
   }
 
-  if (actor.audience === "ds_admin") {
+  if (surfaceFamily === "ds_admin") {
     return hiddenWorkspace();
   }
 
@@ -79,11 +95,12 @@ export function getRushMonthEventDetailWorkspace(
 
   return {
     canReadWorkspace: true,
-    title: getTitle(actor),
+    title: getTitle(actor, surfaceFamily),
     summary:
-      "Use this event detail to connect RSVP posture, the student moment, owner, NPS prompt, proof prompt, and disabled automation posture before anyone treats the event as launch-ready.",
+      "See when to show up, what kind of student moment to create, and what proof to capture after the event.",
     event: toEventDetail(actor, eventPlan),
-    nextStep: getNextStep(actor),
+    nextStep: getNextStep(actor, surfaceFamily, eventPlan.id, source),
+    proofNextStep: getProofNextStep(surfaceFamily, eventPlan.id, source),
     readinessChecks,
     futureStructuredEvents: buildFutureEvents(eventPlan),
     disabledOutboxItems,
@@ -107,11 +124,17 @@ function toEventDetail(
   eventPlan: ChapterEventPlan,
 ): RushMonthEventDetail {
   const rsvpPosture = getRushMonthEventRsvpPosture(actor, eventPlan);
+  const memberDisplay = getMemberEventDetailDisplay(eventPlan);
   return {
     id: eventPlan.id,
     title: eventPlan.title,
     committeeName: getCommitteeName(eventPlan.committeeId),
     timing: eventPlan.timing,
+    memberDateTimeLabel: memberDisplay.memberDateTimeLabel,
+    memberLocationLabel: memberDisplay.memberLocationLabel,
+    memberCampaignLabel: memberDisplay.memberCampaignLabel,
+    memberPointsLabel: memberDisplay.memberPointsLabel,
+    memberLumaLabel: memberDisplay.memberLumaLabel,
     eventTypeLabel: eventPlan.eventType.replaceAll("_", " "),
     rsvpStatusLabel: rsvpPosture.label,
     rsvpDetail: rsvpPosture.detail,
@@ -125,6 +148,51 @@ function toEventDetail(
     proofPrompt: eventPlan.proofPrompt,
     npsQuestion: eventPlan.npsQuestion,
   };
+}
+
+function getMemberEventDetailDisplay(eventPlan: ChapterEventPlan) {
+  switch (eventPlan.id) {
+    case "event-rush-social-001":
+      return {
+        memberDateTimeLabel: "Tue Nov 13 · 11:00 AM - 1:00 PM",
+        memberLocationLabel: "Bruin Walk Table 7",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberLumaLabel: null,
+      };
+    case "event-rush-med-talk-001":
+      return {
+        memberDateTimeLabel: "Thu Nov 15 · 6:00 PM - 8:00 PM",
+        memberLocationLabel: "Ackerman 2100",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberLumaLabel: "Luma",
+      };
+    case "event-rush-social-002":
+      return {
+        memberDateTimeLabel: "Sat Nov 18 · 7:00 PM",
+        memberLocationLabel: "Student Activities Center",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberLumaLabel: null,
+      };
+    case "event-rush-orientation-001":
+      return {
+        memberDateTimeLabel: "Wed Nov 22 · 5:30 PM",
+        memberLocationLabel: "Engineering VI 289",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberLumaLabel: null,
+      };
+    default:
+      return {
+        memberDateTimeLabel: eventPlan.timing,
+        memberLocationLabel: "Location to be confirmed",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberLumaLabel: null,
+      };
+  }
 }
 
 function buildReadinessChecks(
@@ -262,7 +330,12 @@ function buildDisabledOutboxItems(
   ];
 }
 
-function getNextStep(actor: LocalActorContext): EventDetailNextStep {
+function getNextStep(
+  actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
+  eventId?: string,
+  source: MemberActionRouteSource | null = null,
+): EventDetailNextStep {
   if (actor.chapterRoles.includes("Action Committee Chair")) {
     return {
       label: "Check event assignments",
@@ -281,15 +354,18 @@ function getNextStep(actor: LocalActorContext): EventDetailNextStep {
     };
   }
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (surfaceFamily) {
+    case "member":
       return {
-        label: "Open my actions",
-        href: "/rush-month/actions",
+        label: "Start next action",
+        href: buildMemberActionRouteHref("member-push", {
+          eventId,
+          source: source ?? "events",
+        }),
         detail:
-          "Attend the event, do the next assigned Rush Month action, and be ready to submit proof when the local write path is approved.",
+          "Show up ready, do the linked Rush Month action, and capture a quick proof note after the event.",
       };
-    case "chapter_leader":
+    case "leader":
       return {
         label: "Review assignments",
         href: "/rush-month/actions",
@@ -303,7 +379,7 @@ function getNextStep(actor: LocalActorContext): EventDetailNextStep {
         detail:
           "Use the event detail as a coaching signal for chapter momentum, overdue work, and proof quality.",
       };
-    case "admin":
+    case "staff":
     case "super_admin":
       return {
         label: "Open admin outbox",
@@ -317,6 +393,37 @@ function getNextStep(actor: LocalActorContext): EventDetailNextStep {
         href: "/admin",
         detail:
           "DS Admin should inspect integration posture from admin surfaces, not chapter event truth.",
+      };
+  }
+}
+
+function getProofNextStep(
+  surfaceFamily: ActorSurfaceFamily,
+  eventId?: string,
+  source: MemberActionRouteSource | null = null,
+): EventDetailNextStep {
+  switch (surfaceFamily) {
+    case "member":
+      return {
+        label: "Submit evidence",
+        href: buildMemberActionRouteHref("member-push", {
+          eventId,
+          source: source ?? "events",
+          step: "submit",
+        }),
+        detail:
+          "After the event, save one photo, quote, or short proof note on the same action route.",
+      };
+    case "leader":
+    case "coach":
+    case "staff":
+    case "super_admin":
+    case "ds_admin":
+      return {
+        label: "Open evidence posture",
+        href: "/rush-month/evidence",
+        detail:
+          "Inspect the proof posture without enabling live uploads, public sharing, or external sends.",
       };
   }
 }
@@ -340,7 +447,10 @@ function getCommitteeName(committeeId: string): string {
   );
 }
 
-function getTitle(actor: LocalActorContext): string {
+function getTitle(
+  actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
+): string {
   if (actor.chapterRoles.includes("Action Committee Chair")) {
     return "Chair event execution check";
   }
@@ -349,14 +459,14 @@ function getTitle(actor: LocalActorContext): string {
     return "Your event support plan";
   }
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (surfaceFamily) {
+    case "member":
       return "Your event game plan";
-    case "chapter_leader":
+    case "leader":
       return "Leader event execution check";
     case "coach":
       return "Coach event risk readout";
-    case "admin":
+    case "staff":
       return "HQ event readiness detail";
     case "super_admin":
       return "Full event readiness detail";
@@ -379,6 +489,12 @@ function hiddenWorkspace(): RushMonthEventDetailWorkspace {
       href: "/admin",
       detail:
         "Use the admin control center for integration posture and outbox readiness.",
+    },
+    proofNextStep: {
+      label: "Open admin",
+      href: "/admin",
+      detail:
+        "Use the admin control center for disabled proof and integration posture.",
     },
     readinessChecks: [],
     futureStructuredEvents: [],

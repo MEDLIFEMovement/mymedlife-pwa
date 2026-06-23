@@ -1,5 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { buildMemberActionRouteHref } from "@/services/member-action-route-href";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type MemberLeaderboardNextStep = {
   label: string;
@@ -22,7 +27,12 @@ export type MemberLeaderboardWorkspace = {
 export function getMemberLeaderboardWorkspace(
   actor: LocalActorContext,
   recognition: MemberRecognitionSummary,
+  memberNextActionHref = buildMemberActionRouteHref("member-push", {
+    source: "points",
+  }),
 ): MemberLeaderboardWorkspace {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
   if (!recognition.canReadRecognition) {
     return {
       canReadLeaderboard: false,
@@ -47,11 +57,11 @@ export function getMemberLeaderboardWorkspace(
 
   return {
     canReadLeaderboard: true,
-    eyebrow: getEyebrow(actor),
-    title: getTitle(actor),
+    eyebrow: getEyebrow(surfaceFamily),
+    title: getTitle(surfaceFamily),
     summary:
-      "See points, rank, recognition, and chapter impact in one student-friendly readout. This is a mock-safe recognition surface, not the final production points ledger.",
-    nextStep: getNextStep(actor),
+      "See points, rank, recognition, and chapter impact in one student-friendly readout. This recognition surface stays read-only until the approved points ledger is live.",
+    nextStep: getNextStep(surfaceFamily, memberNextActionHref),
     safetyNotes: [
       `Points ledger posture: ${recognition.pointsLedgerPosture}.`,
       "No points write, KPI write, leaderboard mutation, member nudge, or external send is expected from this page.",
@@ -62,15 +72,15 @@ export function getMemberLeaderboardWorkspace(
   };
 }
 
-function getEyebrow(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+function getEyebrow(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "member":
       return "Your points";
-    case "chapter_leader":
+    case "leader":
       return "Member recognition";
     case "coach":
       return "Portfolio recognition";
-    case "admin":
+    case "staff":
       return "HQ recognition readout";
     case "super_admin":
       return "Full local recognition";
@@ -79,15 +89,15 @@ function getEyebrow(actor: LocalActorContext): string {
   }
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "member":
       return "Your Rush Month leaderboard";
-    case "chapter_leader":
+    case "leader":
       return "Chapter member leaderboard";
     case "coach":
       return "Portfolio chapter leaderboard";
-    case "admin":
+    case "staff":
       return "HQ member recognition readout";
     case "super_admin":
       return "Full local leaderboard readout";
@@ -96,17 +106,20 @@ function getTitle(actor: LocalActorContext): string {
   }
 }
 
-function getNextStep(actor: LocalActorContext): MemberLeaderboardNextStep {
-  switch (actor.audience) {
-    case "chapter_member":
+function getNextStep(
+  surfaceFamily: ActorSurfaceFamily,
+  memberNextActionHref: string,
+): MemberLeaderboardNextStep {
+  switch (surfaceFamily) {
+    case "member":
       return {
         label: "Move your rank by doing the next action",
-        href: "/rush-month/actions",
-        ctaLabel: "Open my actions",
+        href: memberNextActionHref,
+        ctaLabel: "Open next action",
         summary:
           "Complete your assigned Rush Month action and submit proof when the write path is approved.",
       };
-    case "chapter_leader":
+    case "leader":
       return {
         label: "Use recognition to guide follow-up",
         href: "/rush-month/actions",
@@ -122,7 +135,7 @@ function getNextStep(actor: LocalActorContext): MemberLeaderboardNextStep {
         summary:
           "Use recognition as one signal alongside overdue work, pending evidence, KPIs, and risks.",
       };
-    case "admin":
+    case "staff":
       return {
         label: "Keep points governance separate from launch approval",
         href: "/admin",

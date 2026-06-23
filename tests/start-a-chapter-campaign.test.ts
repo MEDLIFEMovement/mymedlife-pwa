@@ -76,10 +76,18 @@ describe("start a chapter campaign", () => {
 
   it("hides the deeper start-a-chapter campaign from members and DS Admin", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
 
     expect(getStartAChapterCampaignPlan(member).canReadPlan).toBe(false);
     expect(getStartAChapterCampaignPlan(member).phases).toEqual([]);
+    expect(getStartAChapterCampaignPlan(committeeMember).canReadPlan).toBe(false);
+    expect(getStartAChapterCampaignPlan(committeeMember).phases).toEqual([]);
+    expect(getStartAChapterCampaignPlan(committeeChair).canReadPlan).toBe(true);
+    expect(getStartAChapterCampaignPlan(committeeChair).title).toBe(
+      "Leader Start a Chapter campaign plan",
+    );
     expect(getStartAChapterCampaignPlan(dsAdmin).canReadPlan).toBe(false);
     expect(getStartAChapterCampaignPlan(dsAdmin).phases).toEqual([]);
   });

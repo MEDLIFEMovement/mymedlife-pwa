@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type ChapterEngagementPhaseKey =
   | "participation_pulse"
@@ -36,7 +40,9 @@ export type ChapterEngagementCampaignPlan = {
 export function getChapterEngagementCampaignPlan(
   actor: LocalActorContext,
 ): ChapterEngagementCampaignPlan {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadPlan: false,
       title: "Chapter Engagement hidden for this role",
@@ -53,7 +59,7 @@ export function getChapterEngagementCampaignPlan(
 
   return {
     canReadPlan: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This deepens the Chapter Engagement starter shell into a mock-safe operating plan: leaders create weekly participation, action committees host useful moments, members get recognized, and coaches can spot retention risk before the chapter goes quiet.",
     route: "/campaigns/chapter-engagement",
@@ -158,17 +164,17 @@ const chapterEngagementPhases: ChapterEngagementPhase[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader Chapter Engagement campaign plan";
     case "coach":
       return "Coach Chapter Engagement campaign plan";
-    case "admin":
+    case "staff":
       return "Admin Chapter Engagement campaign plan";
     case "super_admin":
       return "Full Chapter Engagement campaign plan";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Chapter Engagement hidden for this role";
   }

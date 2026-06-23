@@ -3,13 +3,16 @@ import {
   getEventPlansForCampaign,
   getProofLibraryItemsForCampaign,
 } from "@/services/campaign-ops-service";
+import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadChapterData,
   canReadIntegrationOutbox,
+  getActorSurfaceFamily,
   getVisibleAssignmentsForActor,
   getVisibleRiskFlagsForActor,
+  type ActorSurfaceFamily,
 } from "@/services/role-visibility";
 import type { Assignment } from "@/shared/types/domain";
 import type {
@@ -26,6 +29,7 @@ export function getRushMonthDashboardForActor(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
 ): RushMonthDashboard {
+  const surfaceFamily = getActorSurfaceFamily(actor);
   const canReadTruth = canReadChapterData(actor);
   const visibleAssignments = canReadTruth
     ? getVisibleAssignmentsForActor(actor, data.assignments)
@@ -39,16 +43,29 @@ export function getRushMonthDashboardForActor(
 
   return {
     audience: actor.audience,
-    eyebrow: getDashboardEyebrow(actor),
-    title: getDashboardTitle(actor),
-    summary: getDashboardSummary(actor),
+    surfaceFamily,
+    roleLabel: getActorPrimaryRoleLabel(actor),
+    eyebrow: getDashboardEyebrow(surfaceFamily),
+    title: getDashboardTitle(actor, surfaceFamily),
+    summary: getDashboardSummary(actor, surfaceFamily),
     canReadChapterTruth: canReadTruth,
-    phaseSummary: getDashboardPhaseSummary(actor, data, visibleAssignments),
-    whyItMatters: getDashboardWhyItMatters(actor, data, visibleAssignments),
-    nextStep: getDashboardNextStep(actor, visibleAssignments),
-    actionGroups: getDashboardActionGroups(actor, visibleAssignments, eventPlans.length),
-    roleFocus: getDashboardRoleFocus(actor, visibleAssignments, data),
-    metrics: getDashboardMetrics(actor, visibleAssignments, data, leaderboard, eventPlans.length),
+    phaseSummary: getDashboardPhaseSummary(surfaceFamily, data, visibleAssignments),
+    whyItMatters: getDashboardWhyItMatters(surfaceFamily, data, visibleAssignments),
+    nextStep: getDashboardNextStep(actor, surfaceFamily, visibleAssignments),
+    actionGroups: getDashboardActionGroups(
+      actor,
+      surfaceFamily,
+      visibleAssignments,
+      eventPlans.length,
+    ),
+    roleFocus: getDashboardRoleFocus(actor, surfaceFamily, visibleAssignments, data),
+    metrics: getDashboardMetrics(
+      surfaceFamily,
+      visibleAssignments,
+      data,
+      leaderboard,
+      eventPlans.length,
+    ),
     visibleAssignments,
     eventPlans,
     proofItems,
@@ -56,28 +73,34 @@ export function getRushMonthDashboardForActor(
     pointsSummary: data.pointsSummary,
     kpiSummary: data.kpiSummary,
     risks,
-    alerts: getDashboardAlerts(actor, visibleAssignments, proofItems.length, risks.length),
+    alerts: getDashboardAlerts(
+      actor,
+      surfaceFamily,
+      visibleAssignments,
+      proofItems.length,
+      risks.length,
+    ),
     integrationEvents,
     outboxItems,
   };
 }
 
 function getDashboardPhaseSummary(
-  actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
   data: ReadOnlyAppData,
   assignments: Assignment[],
 ): DashboardPhaseSummary {
   const counts = getAssignmentStatusCounts(assignments);
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (surfaceFamily) {
+    case "member":
       return {
         label: data.campaign.weekLabel,
         status: "Invite and prove the first push",
         note:
           "Move one concrete invite action, keep the event visible, and show proof that the chapter actually reached students.",
       };
-    case "chapter_leader":
+    case "leader":
       return {
         label: data.campaign.weekLabel,
         status: "Owner follow-up and chapter accountability",
@@ -90,7 +113,7 @@ function getDashboardPhaseSummary(
         note:
           "Use assignment movement, proof quality, and risk posture to decide whether the chapter should advance, hold, or get support.",
       };
-    case "admin":
+    case "staff":
       return {
         label: data.campaign.weekLabel,
         status: "HQ review posture",
@@ -115,20 +138,20 @@ function getDashboardPhaseSummary(
 }
 
 function getDashboardWhyItMatters(
-  actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
   data: ReadOnlyAppData,
   assignments: Assignment[],
 ): string {
   const counts = getAssignmentStatusCounts(assignments);
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (surfaceFamily) {
+    case "member":
       return "Why it matters: one student action plus one clean proof note is what turns Rush Month from a plan into visible chapter momentum. This view keeps the week understandable so you can act without guessing what counts.";
-    case "chapter_leader":
+    case "leader":
       return `Why it matters: leaders turn scattered effort into a chapter operating system. Right now ${counts.submitted + counts.changesRequested} visible proof or review item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} still need a decision posture before the next push feels believable.`;
     case "coach":
       return `Why it matters: the coach decision should reflect real chapter movement, not optimism. ${data.kpiSummary.proofPending} proof item${data.kpiSummary.proofPending === 1 ? "" : "s"} and the current ${data.kpiSummary.coachDecision} posture still shape whether this chapter is actually ready.`;
-    case "admin":
+    case "staff":
       return "Why it matters: HQ support only helps when it stays grounded in what the chapter actually did, what proof exists, and what should remain internal until broader sharing is approved.";
     case "ds_admin":
       return "Why it matters: systems work should make the app safer, not take over campaign truth. This role exists to inspect disabled integration posture without owning student operations.";
@@ -141,7 +164,7 @@ export function getVisibleLeaderboardForActor(
   actor: LocalActorContext,
   leaderboard: LeaderboardRow[] = rushMonthLeaderboard,
 ): LeaderboardRow[] {
-  if (actor.audience === "ds_admin") {
+  if (getActorSurfaceFamily(actor) === "ds_admin") {
     return [];
   }
 
@@ -162,15 +185,15 @@ export function getAssignmentStatusCounts(assignments: Assignment[]) {
   };
 }
 
-function getDashboardEyebrow(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+function getDashboardEyebrow(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "member":
       return "My Rush Month week";
-    case "chapter_leader":
+    case "leader":
       return "Leader operating dashboard";
     case "coach":
       return "Coach campaign health";
-    case "admin":
+    case "staff":
       return "HQ support dashboard";
     case "ds_admin":
       return "Integration posture only";
@@ -179,11 +202,14 @@ function getDashboardEyebrow(actor: LocalActorContext): string {
   }
 }
 
-function getDashboardTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+function getDashboardTitle(
+  actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
+): string {
+  switch (surfaceFamily) {
+    case "member":
       return "Know what to do next and how you are being recognized.";
-    case "chapter_leader":
+    case "leader":
       return hasChapterRole(actor, "President / VP")
         ? "Approve the right decisions and keep the chapter accountable."
         : hasChapterRole(actor, "E-Board Member")
@@ -191,7 +217,7 @@ function getDashboardTitle(actor: LocalActorContext): string {
           : "Track the week, unblock owners, and keep Rush Month moving.";
     case "coach":
       return "See whether this chapter should advance, hold, or get help.";
-    case "admin":
+    case "staff":
       return "Review proof posture and chapter support signals.";
     case "ds_admin":
       return "Inspect disabled automation posture without owning student truth.";
@@ -200,11 +226,14 @@ function getDashboardTitle(actor: LocalActorContext): string {
   }
 }
 
-function getDashboardSummary(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+function getDashboardSummary(
+  actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
+): string {
+  switch (surfaceFamily) {
+    case "member":
       return "This student view keeps the week simple: your next action, events to attend, points, leaderboard, and proof prompts.";
-    case "chapter_leader":
+    case "leader":
       return hasChapterRole(actor, "President / VP")
         ? "This President / VP view emphasizes approval queues, member-role readiness, chapter KPIs, and the decisions that keep Rush Month safe."
         : hasChapterRole(actor, "E-Board Member")
@@ -212,7 +241,7 @@ function getDashboardSummary(actor: LocalActorContext): string {
           : "This leader view combines assignments, event plans, proof follow-up, member recognition, and KPI signals.";
     case "coach":
       return "This coach view focuses on readiness, overdue or stuck work, proof flow, risk signals, and the decision state.";
-    case "admin":
+    case "staff":
       return "This HQ view keeps broad support and proof-sharing posture visible while leaving chapter truth in the app.";
     case "ds_admin":
       return "DS Admin can inspect integration/outbox safety only. Campaign, proof, points, and KPI truth stay hidden.";
@@ -223,10 +252,11 @@ function getDashboardSummary(actor: LocalActorContext): string {
 
 function getDashboardNextStep(
   actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
   visibleAssignments: Assignment[],
 ): DashboardNextStep {
-  switch (actor.audience) {
-    case "chapter_member": {
+  switch (surfaceFamily) {
+    case "member": {
       const nextMemberAssignment =
         visibleAssignments.find((assignment) => assignment.status !== "approved") ??
         visibleAssignments[0];
@@ -242,7 +272,7 @@ function getDashboardNextStep(
         ctaLabel: "Open my next action",
       };
     }
-    case "chapter_leader":
+    case "leader":
       if (hasChapterRole(actor, "President / VP")) {
         return {
           label: "Review proof and role decisions before the week scales",
@@ -278,7 +308,7 @@ function getDashboardNextStep(
           "Use assignment status, proof flow, risks, and KPI movement to decide whether the chapter needs help.",
         ctaLabel: "Open coach readout",
       };
-    case "admin":
+    case "staff":
       return {
         label: "Review HQ proof-sharing posture",
         href: "/rush-month/review",
@@ -307,6 +337,7 @@ function getDashboardNextStep(
 
 function getDashboardActionGroups(
   actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
   assignments: Assignment[],
   eventCount: number,
 ): DashboardActionGroup[] {
@@ -315,8 +346,8 @@ function getDashboardActionGroups(
   const proofFollowUpCount = getAssignmentStatusCounts(assignments).submitted +
     getAssignmentStatusCounts(assignments).changesRequested;
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (surfaceFamily) {
+    case "member":
       return [
         {
           label: "Invite push",
@@ -340,7 +371,7 @@ function getDashboardActionGroups(
           linkLabel: "See points",
         },
       ];
-    case "chapter_leader":
+    case "leader":
       return [
         {
           label: "Owner follow-up",
@@ -387,7 +418,7 @@ function getDashboardActionGroups(
           linkLabel: "Open events",
         },
       ];
-    case "admin":
+    case "staff":
       return [
         {
           label: "HQ review",
@@ -464,10 +495,11 @@ function getDashboardActionGroups(
 
 function getDashboardRoleFocus(
   actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
   assignments: Assignment[],
   data: ReadOnlyAppData,
 ): DashboardRoleFocus | null {
-  if (actor.audience !== "chapter_leader") {
+  if (surfaceFamily !== "leader") {
     return null;
   }
 
@@ -571,13 +603,13 @@ function getDashboardRoleFocus(
 }
 
 function getDashboardMetrics(
-  actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
   assignments: Assignment[],
   data: ReadOnlyAppData,
   leaderboard: LeaderboardRow[],
   eventCount: number,
 ): DashboardMetric[] {
-  if (actor.audience === "ds_admin") {
+  if (surfaceFamily === "ds_admin") {
     return [
       {
         label: "External sends",
@@ -635,11 +667,12 @@ function getDashboardMetrics(
 
 function getDashboardAlerts(
   actor: LocalActorContext,
+  surfaceFamily: ActorSurfaceFamily,
   assignments: Assignment[],
   proofItemCount: number,
   riskCount: number,
 ): string[] {
-  if (actor.audience === "ds_admin") {
+  if (surfaceFamily === "ds_admin") {
     return [
       "DS Admin can inspect disabled/mock integration rows only.",
       "Student truth, proof content, points, and KPIs remain hidden.",
@@ -648,13 +681,13 @@ function getDashboardAlerts(
 
   const counts = getAssignmentStatusCounts(assignments);
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (surfaceFamily) {
+    case "member":
       return [
         "Finish your visible action before the due date.",
         "Submit a testimonial or bridge video only when you can explain what happened and why it mattered.",
       ];
-    case "chapter_leader":
+    case "leader":
       if (hasChapterRole(actor, "President / VP")) {
         return [
           `${counts.submitted + counts.changesRequested} proof/action item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} need a decision posture before the chapter scales.`,
@@ -680,7 +713,7 @@ function getDashboardAlerts(
         `${riskCount} visible risk signal${riskCount === 1 ? "" : "s"} need coach attention.`,
         "Use proof, event movement, and assignment status before logging advance / hold / intervene.",
       ];
-    case "admin":
+    case "staff":
       return [
         `${proofItemCount} Rush Month proof item${proofItemCount === 1 ? "" : "s"} can be reviewed for future sharing posture.`,
         "Do not publish proof or trigger external syncs from this mock-safe app.",

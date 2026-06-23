@@ -18,17 +18,13 @@ export function ChapterMembershipWorkspacePanel({
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
+      <section className="app-surface-info rounded-[2rem] p-5">
+        <p className="app-eyebrow app-eyebrow-blue">
           Chapter members
         </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">
-          {workspace.title}
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
-          {workspace.summary}
-        </p>
-        <p className="mt-3 max-w-3xl rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/54">
+        <h1 className="mt-2 text-3xl font-semibold text-slate-950">{workspace.title}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">{workspace.summary}</p>
+        <p className="app-surface mt-3 max-w-3xl rounded-[1.05rem] p-3 text-xs leading-5 text-slate-500">
           {workspace.safetyNote}
         </p>
       </section>
@@ -45,37 +41,37 @@ export function ChapterMembershipWorkspacePanel({
       ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
+        <article className="app-surface rounded-[2rem] p-5">
+          <p className="app-eyebrow app-eyebrow-slate">
             Roster follow-up
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
             Who needs what next?
           </h2>
           <div className="mt-4 grid gap-3">
             {workspace.members.map((member) => (
               <div
                 key={member.id}
-                className="rounded-3xl border border-white/10 bg-black/20 p-4"
+                className="app-surface-soft rounded-[1.5rem] p-4"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div className="flex flex-wrap gap-2">
                       <StatusPill status={member.membershipStatus} />
-                      <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-500">
                         {member.committeeLane}
                       </span>
                     </div>
-                    <h3 className="mt-3 text-lg font-semibold text-white">
+                    <h3 className="mt-3 text-lg font-semibold text-slate-950">
                       {member.displayName}
                     </h3>
-                    <p className="mt-1 text-sm text-white/50">{member.email}</p>
+                    <p className="mt-1 text-sm text-slate-500">{member.email}</p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <p className="text-sm font-semibold text-emerald-100">
+                    <p className="text-sm font-semibold text-[#2563eb]">
                       {member.roleLabel}
                     </p>
-                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-white/42">
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
                       {member.points} pts / {member.completedActions} done
                     </p>
                   </div>
@@ -88,7 +84,7 @@ export function ChapterMembershipWorkspacePanel({
                   />
                   <MiniStat label="Role" value={member.roleKey.replaceAll("_", " ")} />
                 </div>
-                <p className="mt-3 text-sm leading-6 text-white/64">
+                <p className="mt-3 text-sm leading-6 text-slate-600">
                   {member.nextStep}
                 </p>
               </div>
@@ -97,11 +93,11 @@ export function ChapterMembershipWorkspacePanel({
         </article>
 
         <div className="grid gap-4">
-          <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
+          <article className="app-surface rounded-[2rem] p-5">
+            <p className="app-eyebrow app-eyebrow-slate">
               Join requests
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
               {workspace.counts.enabledControls > 0
                 ? "Approval queue is locally testable."
                 : "Approval queue is visible, not editable."}
@@ -111,20 +107,20 @@ export function ChapterMembershipWorkspacePanel({
                 workspace.joinRequests.map((request) => (
                   <div
                     key={request.id}
-                    className="rounded-2xl border border-white/10 bg-black/20 p-3"
+                    className="app-surface-soft rounded-[1.05rem] p-3"
                   >
-                    <p className="font-semibold text-white">{request.displayName}</p>
-                    <p className="mt-1 text-sm text-white/50">{request.email}</p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100/70">
+                    <p className="font-semibold text-slate-950">{request.displayName}</p>
+                    <p className="mt-1 text-sm text-slate-500">{request.email}</p>
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
                       {request.requestedRoleLabel} / {request.source.replaceAll("_", " ")}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white/62">
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
                       {request.nextStep}
                     </p>
                   </div>
                 ))
               ) : (
-                <p className="rounded-2xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-white/62">
+                <p className="app-surface-soft rounded-[1.05rem] p-3 text-sm leading-6 text-slate-600">
                   This role can read roster health but does not own join-request
                   approval.
                 </p>
@@ -132,11 +128,11 @@ export function ChapterMembershipWorkspacePanel({
             </div>
           </article>
 
-          <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
+          <article className="app-surface rounded-[2rem] p-5">
+            <p className="app-eyebrow app-eyebrow-slate">
               Role coverage
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
               Are the right roles covered?
             </h2>
             <div className="mt-4 grid gap-3">
@@ -149,42 +145,42 @@ export function ChapterMembershipWorkspacePanel({
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
-            Disabled controls
+        <article className="app-surface-warm rounded-[2rem] p-5">
+          <p className="app-eyebrow app-eyebrow-warm">
+            Held actions
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
             {workspace.counts.enabledControls > 0
-              ? "Only the approved local write path is open."
-              : "Future membership writes stay locked."}
+              ? "Only the staged join-approval lane is open."
+              : "Roster-changing actions stay paused."}
           </h2>
           <div className="mt-4 grid gap-3">
             {workspace.disabledControls.map((control) => (
-              <div key={control.key} className="rounded-2xl bg-black/20 p-3">
-                <p className="font-semibold text-white">{control.label}</p>
-                <p className="mt-1 text-sm leading-6 text-white/62">
+              <div key={control.key} className="app-surface rounded-[1.05rem] p-3">
+                <p className="font-semibold text-slate-950">{control.label}</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
                   {control.reason}
                 </p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-amber-100/70">
-                  Future event: {control.futureEventType}
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#a16207]">
+                  Future trail: {control.futureEventType}
                 </p>
               </div>
             ))}
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
-            Automation-ready, still disabled
+        <article className="app-surface-info rounded-[2rem] p-5">
+          <p className="app-eyebrow app-eyebrow-blue">
+            Future handoffs stay paused
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            Events and audit logs come before integrations.
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+            App records come before broader system handoffs.
           </h2>
           <div className="mt-4 grid gap-3">
             {[...workspace.auditPreview, ...workspace.outboxPreview].map((item) => (
               <p
                 key={item}
-                className="rounded-2xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-white/62"
+                className="app-surface rounded-[1.05rem] p-3 text-sm leading-6 text-slate-600"
               >
                 {item}
               </p>
@@ -202,16 +198,14 @@ function MembershipApprovalPacketPanel({
   packet: MembershipApprovalPacket;
 }) {
   return (
-    <section className="rounded-[2rem] border border-sky-300/20 bg-[#061f2a] p-5">
+    <section className="app-surface rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/78">
-            Membership packet
+          <p className="app-eyebrow app-eyebrow-blue">
+            Approval preview
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            {packet.title}
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">{packet.title}</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             {packet.readinessReason}
           </p>
         </div>
@@ -226,11 +220,11 @@ function MembershipApprovalPacketPanel({
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_1fr]">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-sm font-semibold text-white">Approval payload</p>
+        <div className="app-surface-soft rounded-[1.25rem] p-4">
+          <p className="text-sm font-semibold text-slate-950">Approval details</p>
           <div className="mt-3 grid gap-3">
-            <PacketRow label="Function" value={packet.futureFunction} />
-            <PacketRow label="Request" value={packet.joinRequestId} />
+            <PacketRow label="Save path" value={packet.futureFunction} />
+            <PacketRow label="Request record" value={packet.joinRequestId} />
             <PacketRow label="Applicant" value={packet.applicantName} />
             <PacketRow label="Email" value={packet.applicantEmail} />
             <PacketRow label="Role" value={packet.requestedRoleLabel} />
@@ -242,33 +236,34 @@ function MembershipApprovalPacketPanel({
               label="Reviewer"
               value={packet.payload.approvedByActorEmail}
             />
-            <PacketRow label="Audit reason" value={packet.payload.auditReason} />
+            <PacketRow label="Approval note" value={packet.payload.auditReason} />
             <PacketRow
-              label="Result states"
-              value="Goal 161 membership approval result states"
+              label="Decision outcomes"
+              value="Join approval result states"
             />
             <PacketRow
-              label="Write readiness"
+              label="Approval readiness"
               value={packet.writeReadiness.title}
             />
             <PacketRow
-              label="Can submit"
-              value={packet.writeReadiness.canSubmit ? "yes" : "no"}
+              label="Approval open"
+              value={packet.writeReadiness.canSubmit ? "yes" : "not yet"}
             />
-            <PacketRow label="Current result" value={packet.currentResultTitle} />
-            <PacketRow label="Future result" value={packet.futureResultTitle} />
+            <PacketRow label="Current outcome" value={packet.currentResultTitle} />
+            <PacketRow label="Future outcome" value={packet.futureResultTitle} />
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-sm font-semibold text-white">Future records</p>
+        <div className="app-surface-soft rounded-[1.25rem] p-4">
+          <p className="text-sm font-semibold text-slate-950">What updates later</p>
           <div className="mt-3 grid gap-2">
             {packet.futureRecords.map((record) => (
-              <div key={record.label} className="rounded-2xl bg-white/[0.04] p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/38">
-                  {record.label}
-                </p>
-                <p className="mt-1 text-sm font-semibold text-white">
+              <div
+                key={record.label}
+                className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)]"
+              >
+                <p className="app-eyebrow app-eyebrow-slate">{record.label}</p>
+                <p className="mt-1 text-sm font-semibold text-slate-950">
                   {record.value}
                 </p>
               </div>
@@ -279,28 +274,28 @@ function MembershipApprovalPacketPanel({
 
       <div className="mt-4 grid gap-4 lg:grid-cols-4">
         <PacketList
-          title="Readiness checks"
+          title="Before approval opens"
           items={packet.readinessChecks.map((check) =>
             `${check.passed ? "ready" : "blocked"} ${check.label}`,
           )}
         />
         <PacketList
-          title="Goal 162 write checks"
+          title="Current gate checks"
           items={packet.writeReadiness.checks.map((check) =>
             `${check.passed ? "ready" : "blocked"} ${check.label}`,
           )}
         />
         <PacketList title="Review prompts" items={packet.reviewPrompts} />
         <PacketList
-          title="Required RLS tests"
+          title="Required safety checks"
           items={Array.from(packet.writeReadiness.requiredRlsTests)}
         />
       </div>
 
       <div className="mt-4">
         <PacketList
-          title="Locked controls"
-          items={packet.blockedControls.map((control) => `Locked ${control}`)}
+          title="Held actions"
+          items={packet.blockedControls.map((control) => `Held ${control}`)}
         />
       </div>
     </section>
@@ -309,22 +304,20 @@ function MembershipApprovalPacketPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-        {label}
-      </p>
-      <p className="mt-1 text-lg font-semibold text-white">{value}</p>
+    <div className="app-surface rounded-[1.05rem] px-3 py-2">
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
 
 function PacketList({ items, title }: { items: string[]; title: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-      <p className="text-sm font-semibold text-white">{title}</p>
+    <div className="app-surface rounded-[1.05rem] p-3">
+      <p className="text-sm font-semibold text-slate-950">{title}</p>
       <ul className="mt-3 grid gap-2">
         {items.map((item) => (
-          <li key={item} className="text-sm leading-6 text-white/62">
+          <li key={item} className="text-sm leading-6 text-slate-600">
             {item}
           </li>
         ))}
@@ -336,21 +329,17 @@ function PacketList({ items, title }: { items: string[]; title: string }) {
 function PacketRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/38">
-        {label}
-      </p>
-      <p className="mt-1 break-words text-sm font-semibold text-white">{value}</p>
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 break-words text-sm font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
 
 function PacketToken({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/24 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-        {label}
-      </p>
-      <p className="mt-1 break-words text-sm font-semibold text-sky-50">{value}</p>
+    <div className="app-surface-soft rounded-[1.05rem] px-3 py-2">
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 break-words text-sm font-semibold text-[#2563eb]">{value}</p>
     </div>
   );
 }
@@ -358,12 +347,12 @@ function PacketToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: ChapterMembershipStatus }) {
   const className =
     status === "approved"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : status === "requested"
-        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
+        ? "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]"
         : status === "needs_follow_up"
-          ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-          : "border-white/10 bg-white/10 text-white/70";
+          ? "border-amber-200 bg-amber-50 text-amber-700"
+          : "border-slate-200 bg-slate-50 text-slate-600";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -375,23 +364,23 @@ function StatusPill({ status }: { status: ChapterMembershipStatus }) {
 function RoleCoverageCard({ item }: { item: RoleCoverageItem }) {
   const className =
     item.status === "covered"
-      ? "border-emerald-300/20 bg-emerald-300/10"
+      ? "border-emerald-200 bg-emerald-50"
       : item.status === "thin"
-        ? "border-amber-300/20 bg-amber-300/10"
-        : "border-rose-300/20 bg-rose-300/10";
+        ? "border-amber-200 bg-amber-50"
+        : "border-rose-200 bg-rose-50";
 
   return (
     <div className={`rounded-2xl border p-3 ${className}`}>
       <div className="flex items-center justify-between gap-3">
-        <p className="font-semibold text-white">{item.roleLabel}</p>
-        <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-semibold text-white/64">
+        <p className="font-semibold text-slate-950">{item.roleLabel}</p>
+        <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-500">
           {item.currentCount}/{item.recommendedMinimum}
         </span>
       </div>
-      <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+      <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {item.status}
       </p>
-      <p className="mt-2 text-sm leading-6 text-white/62">{item.nextStep}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{item.nextStep}</p>
     </div>
   );
 }

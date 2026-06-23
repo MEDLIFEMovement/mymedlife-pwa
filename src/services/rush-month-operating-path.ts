@@ -1,6 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
-import { canReadChapterData } from "@/services/role-visibility";
+import {
+  canReadChapterData,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { Assignment, AssignmentStatus } from "@/shared/types/domain";
 
 export type RushMonthOperatingPathStepState = "complete" | "current" | "upcoming";
@@ -143,16 +146,16 @@ function getFocusStepId(
   actor: LocalActorContext,
   assignments: Assignment[],
 ): string | null {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return "member-push";
     case "coach":
       return "coach-summary";
-    case "admin":
+    case "staff":
       return "proof-pack";
     case "super_admin":
       return "coach-summary";
-    case "chapter_leader":
+    case "leader":
       if (actor.chapterRoles.includes("President / VP")) {
         return hasProofFollowUp(assignments) ? "proof-pack" : "assign-eboard";
       }
@@ -171,16 +174,16 @@ function hasProofFollowUp(assignments: Assignment[]): boolean {
 }
 
 function getPathTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return "See where your work fits in this week's Rush Month path.";
-    case "chapter_leader":
+    case "leader":
       return actor.chapterRoles.includes("President / VP")
         ? "Lead the week without turning on live writes."
         : "Keep the outreach owners moving as one operating path.";
     case "coach":
       return "Read the chapter path before recording the coach decision.";
-    case "admin":
+    case "staff":
       return "Support the proof-sharing posture without publishing anything.";
     case "super_admin":
       return "Inspect the full MVP path before approving live systems.";
@@ -190,16 +193,16 @@ function getPathTitle(actor: LocalActorContext): string {
 }
 
 function getPathSummary(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return "Leader setup, member outreach, proof collection, and coach review are one sequence. Your action is the student-facing middle of that loop.";
-    case "chapter_leader":
+    case "leader":
       return actor.chapterRoles.includes("President / VP")
         ? "Set the owner path, clear proof follow-up, and hand the coach a readable chapter state before the next push."
         : "Keep the team moving by naming owners, checking follow-up, and making sure proof becomes reviewable chapter context.";
     case "coach":
       return "The coach decision should come after assignments, proof, and visible movement make the chapter's week legible.";
-    case "admin":
+    case "staff":
       return "HQ should support review and proof-sharing posture while keeping app writes, publishing, and external sends off.";
     case "super_admin":
       return "This view keeps the MVP legible across leader, member, proof, and coach checkpoints before any write-activation decision.";
@@ -209,16 +212,16 @@ function getPathSummary(actor: LocalActorContext): string {
 }
 
 function getBoundaryNote(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return "Members should understand the whole path, but only their readable work, proof prompts, and recognition views belong to them.";
-    case "chapter_leader":
+    case "leader":
       return actor.chapterRoles.includes("President / VP")
         ? "President / VP can steer chapter operating work, but HQ proof-sharing, external sends, and platform admin controls still stay off."
         : "Leader follow-up lives inside the chapter lane. HQ proof-sharing decisions and platform controls stay separate.";
     case "coach":
       return "Coach reads chapter state and logs intervention posture later. Coach does not own membership truth, HQ proof-sharing, or platform controls.";
-    case "admin":
+    case "staff":
       return "Admin can support proof posture and chapter operations, but real publishing, live automation, and DS-only system controls remain off.";
     case "super_admin":
       return "Full local visibility is not approval to enable production auth, writes, uploads, or external automation.";

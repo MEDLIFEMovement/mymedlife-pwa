@@ -16,6 +16,14 @@ export type DashboardAudience =
   | "ds_admin"
   | "super_admin";
 
+export type DashboardSurfaceFamily =
+  | "member"
+  | "leader"
+  | "coach"
+  | "staff"
+  | "ds_admin"
+  | "super_admin";
+
 export type LeaderboardRow = {
   id: string;
   displayName: string;
@@ -71,6 +79,8 @@ export type DashboardRoleFocus = {
 
 export type RushMonthDashboard = {
   audience: DashboardAudience;
+  surfaceFamily: DashboardSurfaceFamily;
+  roleLabel: string;
   eyebrow: string;
   title: string;
   summary: string;

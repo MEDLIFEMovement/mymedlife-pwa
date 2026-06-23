@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(54);
+    expect(entries).toHaveLength(60);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -41,6 +41,21 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("adminMasterData")).toMatchObject({
       title: "Admin Master Data",
+    });
+    expect(getStaticRouteMetadata("adminPermissions")).toMatchObject({
+      title: "Admin Permissions",
+    });
+    expect(getStaticRouteMetadata("adminCommittees")).toMatchObject({
+      title: "Admin Committees",
+    });
+    expect(getStaticRouteMetadata("adminWorkflows")).toMatchObject({
+      title: "Admin Workflows",
+    });
+    expect(getStaticRouteMetadata("adminSopLibrary")).toMatchObject({
+      title: "Admin SOP Library",
+    });
+    expect(getStaticRouteMetadata("adminSopBuilder")).toMatchObject({
+      title: "Admin SOP Builder",
     });
     expect(getStaticRouteMetadata("adminDatabaseSecurity")).toMatchObject({
       title: "Admin Database Security",
@@ -96,6 +111,13 @@ describe("static route metadata", () => {
     expect(getStaticRouteMetadata("sltPrepChecklist")).toMatchObject({
       title: "SLT Checklist",
     });
+    expect(getStaticRouteMetadata("sltPrepFlights")).toMatchObject({
+      title: "SLT Flights",
+    });
+    expect(getStaticRouteMetadata("sltPrepProfile")).toMatchObject({
+      title: "SLT Profile",
+      description: expect.stringContaining("alerts"),
+    });
     expect(getStaticRouteMetadata("sltPrepStaff")).toMatchObject({
       title: "SLT Staff Dashboard",
     });
@@ -111,6 +133,10 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("coach")).toMatchObject({
       title: "Coach Dashboard",
+    });
+    expect(getStaticRouteMetadata("chapter")).toMatchObject({
+      title: "Student Leadership Command Center",
+      description: expect.stringContaining("member pipeline"),
     });
     expect(getStaticRouteMetadata("staff")).toMatchObject({
       title: "Staff Command Center",

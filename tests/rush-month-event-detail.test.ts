@@ -12,11 +12,27 @@ describe("rush month event detail", () => {
 
     expect(workspace?.canReadWorkspace).toBe(true);
     expect(workspace?.title).toBe("Your event game plan");
-    expect(workspace?.event?.title).toBe("Freshman welcome social");
+    expect(workspace?.event?.title).toBe("Tabling at Bruin Walk");
     expect(workspace?.event?.committeeName).toBe("Social Action Committee");
-    expect(workspace?.event?.rsvpStatusLabel).toBe("Registered locally");
-    expect(workspace?.event?.rsvpDetail).toContain("No live Luma attendee record");
-    expect(workspace?.nextStep.href).toBe("/rush-month/actions");
+    expect(workspace?.event?.rsvpStatusLabel).toBe("You're on the list");
+    expect(workspace?.event?.rsvpDetail).toContain("showing up ready");
+    expect(workspace?.summary).toBe(
+      "See when to show up, what kind of student moment to create, and what proof to capture after the event.",
+    );
+    expect(workspace?.nextStep.href).toBe(
+      "/rush-month/actions/member-push?event=event-rush-social-001&source=events",
+    );
+    expect(workspace?.nextStep.label).toBe("Start next action");
+    expect(workspace?.nextStep.detail).toBe(
+      "Show up ready, do the linked Rush Month action, and capture a quick proof note after the event.",
+    );
+    expect(workspace?.proofNextStep.href).toBe(
+      "/rush-month/actions/member-push?step=submit&event=event-rush-social-001&source=events#submit-evidence",
+    );
+    expect(workspace?.proofNextStep.label).toBe("Submit evidence");
+    expect(workspace?.proofNextStep.detail).toBe(
+      "After the event, save one photo, quote, or short proof note on the same action route.",
+    );
     expect(workspace?.readinessChecks.map((check) => check.label)).toEqual([
       "Owner",
       "Student action",
@@ -27,6 +43,21 @@ describe("rush month event detail", () => {
     ]);
     expect(workspace?.counts.browserWritesExpected).toBe(0);
     expect(workspace?.counts.externalWritesExpected).toBe(0);
+    expect(workspace?.summary).not.toContain("disabled automation posture");
+    expect(workspace?.summary).not.toContain("launch-ready");
+    expect(workspace?.nextStep.detail).not.toContain("local write path is approved");
+  });
+
+  it("keeps committee members on the member-owned event game-plan posture", () => {
+    const actor = getMockLocalActorContext("committee.member@mymedlife.test");
+    const workspace = getRushMonthEventDetailWorkspace(
+      actor,
+      "event-rush-social-001",
+    );
+
+    expect(workspace?.title).toBe("Your event support plan");
+    expect(workspace?.event?.rsvpStatusLabel).toBe("You're on the list");
+    expect(workspace?.proofNextStep.label).toBe("Submit evidence");
   });
 
   it("focuses committee chairs on event execution ownership", () => {
@@ -43,6 +74,22 @@ describe("rush month event detail", () => {
       workspace?.readinessChecks.find((check) => check.label === "Luma posture")
         ?.status,
     ).toBe("disabled");
+  });
+
+  it("preserves campaign origin when the event detail was opened from the campaign route", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const workspace = getRushMonthEventDetailWorkspace(
+      actor,
+      "event-rush-med-talk-001",
+      "campaigns",
+    );
+
+    expect(workspace?.nextStep.href).toBe(
+      "/rush-month/actions/member-push?event=event-rush-med-talk-001&source=campaigns",
+    );
+    expect(workspace?.proofNextStep.href).toBe(
+      "/rush-month/actions/member-push?step=submit&event=event-rush-med-talk-001&source=campaigns#submit-evidence",
+    );
   });
 
   it("keeps DS Admin out of chapter event detail truth", () => {

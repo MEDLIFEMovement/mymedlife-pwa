@@ -1,6 +1,11 @@
+import { getActorPrimaryRoleLabel, getActorSurfaceLabel } from "@/services/actor-role-display";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { buildMemberActionRouteHref } from "@/services/member-action-route-href";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
+import {
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { IntegrationEvent } from "@/shared/types/domain";
 
 export type ProfileScopeRow = {
@@ -43,11 +48,11 @@ export function getProfileWorkspace(
   return {
     title: getTitle(actor),
     summary:
-      "This local profile shows who the selected actor is, which role and chapter scope the app is using, and what the role should do next. It is a read-only preview of future profile/onboarding truth.",
+      "Keep your role, chapter context, and next step easy to understand from one place.",
     profileLabel: getProfileLabel(actor),
     nextStep: {
-      label: nextAction.primaryLabel,
-      href: nextAction.primaryHref,
+      label: getProfileNextStepLabel(actor, nextAction.primaryLabel),
+      href: getProfileNextStepHref(actor, nextAction.primaryHref),
       detail: nextAction.title,
     },
     identityRows: buildIdentityRows(actor),
@@ -77,28 +82,33 @@ function buildIdentityRows(actor: LocalActorContext): ProfileScopeRow[] {
     {
       label: "Name",
       value: actor.user.displayName,
-      detail: "Local app-facing display name for this preview actor.",
+      detail: "How your name appears across myMEDLIFE.",
     },
     {
       label: "Email",
       value: actor.user.email,
-      detail: "Fake local account used for role review.",
+      detail: "Email connected to this myMEDLIFE profile.",
     },
     {
-      label: "Identity source",
-      value: actor.identitySource.replaceAll("_", " "),
-      detail: `Auth session is ${actor.authSessionStatus.replaceAll("_", " ")}.`,
+      label: "Sign-in status",
+      value: getIdentitySourceLabel(actor),
+      detail: getIdentityStatusDetail(actor),
     },
     {
-      label: "Audience",
-      value: actor.audienceLabel,
-      detail: actor.accessSummary,
+      label: "Primary role",
+      value: getActorPrimaryRoleLabel(actor),
+      detail: getPrimaryRoleDetail(actor),
+    },
+    {
+      label: "Surface",
+      value: getActorSurfaceLabel(actor),
+      detail: getSurfaceDetail(actor),
     },
   ];
 }
 
 function buildScopeRows(actor: LocalActorContext): ProfileScopeRow[] {
-  if (actor.audience === "ds_admin") {
+  if (getActorSurfaceFamily(actor) === "ds_admin") {
     return [
       {
         label: "Systems scope",
@@ -206,14 +216,14 @@ function buildFutureEvents(actor: LocalActorContext): IntegrationEvent[] {
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return "Your myMEDLIFE profile";
-    case "chapter_leader":
+    case "leader":
       return "Leader profile and role scope";
     case "coach":
       return "Coach profile and portfolio scope";
-    case "admin":
+    case "staff":
       return "Admin profile and support scope";
     case "ds_admin":
       return "DS Admin profile and integration scope";
@@ -223,13 +233,83 @@ function getTitle(actor: LocalActorContext): string {
 }
 
 function getProfileLabel(actor: LocalActorContext): string {
-  if (actor.chapterRoles.length > 0) {
-    return actor.chapterRoles.join(" / ");
+  return getActorPrimaryRoleLabel(actor);
+}
+
+function getProfileNextStepHref(actor: LocalActorContext, href: string) {
+  if (getActorSurfaceFamily(actor) !== "member") {
+    return href;
   }
 
-  if (actor.staffRoles.length > 0) {
-    return actor.staffRoles.join(" / ");
+  const match = href.match(/^\/rush-month\/actions\/([^/?#]+)/);
+
+  if (!match) {
+    return href;
   }
 
-  return actor.audienceLabel;
+  return buildMemberActionRouteHref(match[1], { source: "profile" });
+}
+
+function getProfileNextStepLabel(actor: LocalActorContext, label: string) {
+  if (getActorSurfaceFamily(actor) === "member" && label === "Open my action") {
+    return "Start next action";
+  }
+
+  return label;
+}
+
+function getIdentitySourceLabel(actor: LocalActorContext): string {
+  if (actor.identitySource === "local_auth_session") {
+    return actor.authSessionStatus === "signed_in" ? "Signed in" : "Sign-in needs attention";
+  }
+
+  if (actor.identitySource === "local_preview_cookie") {
+    return "Preview sign-in";
+  }
+
+  return "Preview profile";
+}
+
+function getIdentityStatusDetail(actor: LocalActorContext): string {
+  if (actor.identitySource === "local_auth_session") {
+    return actor.authSessionStatus === "signed_in"
+      ? "Your signed-in session is active for this view."
+      : "Your account is visible here, but live sign-in still needs follow-through.";
+  }
+
+  return "This preview keeps your chapter role and next steps visible in the current app flow.";
+}
+
+function getPrimaryRoleDetail(actor: LocalActorContext): string {
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
+      return "Your role shapes the actions, events, and points you see first.";
+    case "leader":
+      return "Your role opens chapter planning, people, and follow-through views.";
+    case "coach":
+      return "Your role focuses this surface on chapter support and coaching follow-through.";
+    case "staff":
+      return "Your role opens portfolio, review, and operations context across chapters.";
+    case "ds_admin":
+      return "Your role stays focused on systems posture, auditability, and integration safety.";
+    case "super_admin":
+      return "Your role can inspect cross-platform operations and backend configuration lanes.";
+  }
+}
+
+function getSurfaceDetail(actor: LocalActorContext): string {
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
+      return "Your home, campaigns, events, points, and profile all stay inside the member loop.";
+    case "leader":
+      return "Leadership views keep chapter health, members, events, and succession in one command center.";
+    case "coach":
+      return "Coach views stay centered on assigned chapters, risks, and support notes.";
+    case "staff":
+      return "Staff views stay centered on chapter oversight, proof review, and operational follow-through.";
+    case "ds_admin":
+      return "DS Admin views keep the focus on audit logs, system posture, and integration safety.";
+    case "super_admin":
+      return "Super Admin views connect backend controls, workflows, and oversight in one lane.";
+  }
 }

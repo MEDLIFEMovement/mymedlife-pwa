@@ -3,6 +3,7 @@ import {
   getEventPlansForCampaign,
 } from "@/services/campaign-ops-service";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { ChapterEventPlan } from "@/shared/types/campaigns";
 
 export type EventProofBridgeMode =
@@ -119,26 +120,26 @@ function toEventProofBridgeRow(eventPlan: ChapterEventPlan): EventProofBridgeRow
 }
 
 function getEventProofBridgeMode(actor: LocalActorContext): EventProofBridgeMode {
-  if (actor.chapterRoles.includes("Action Committee Chair")) {
+  if (actor.canonicalRoles.includes("committee_chair")) {
     return "committee_chair";
   }
 
-  if (actor.chapterRoles.includes("Action Committee Member")) {
+  if (actor.canonicalRoles.includes("committee_member")) {
     return "committee_member";
   }
 
-  switch (actor.audience) {
-    case "chapter_leader":
+  switch (getActorSurfaceFamily(actor)) {
+    case "leader":
       return "chapter_leader";
     case "coach":
       return "coach";
-    case "admin":
+    case "staff":
       return "admin";
     case "ds_admin":
       return "ds_admin";
     case "super_admin":
       return "super_admin";
-    case "chapter_member":
+    case "member":
     default:
       return "member";
   }

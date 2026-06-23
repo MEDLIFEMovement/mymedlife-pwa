@@ -5,6 +5,7 @@ import {
   proofLibraryItems,
 } from "@/data/mock-campaigns";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type {
   ActionCommittee,
   CampaignIntegrationPosture,
@@ -37,22 +38,21 @@ export function getVisibleCampaignShellsForActor(
   actor: LocalActorContext,
   shells: CampaignShell[] = campaignShells,
 ): CampaignShell[] {
-  if (actor.audience === "ds_admin") {
-    return [];
+  switch (getActorSurfaceFamily(actor)) {
+    case "ds_admin":
+      return [];
+    case "member":
+      return shells.filter((campaign) => campaign.status === "active");
+    case "leader":
+      return shells.filter(
+        (campaign) =>
+          campaign.status !== "template" || leaderVisibleStarterShellSlugs.has(campaign.slug),
+      );
+    case "coach":
+    case "staff":
+    case "super_admin":
+      return shells;
   }
-
-  if (actor.audience === "chapter_member") {
-    return shells.filter((campaign) => campaign.status === "active");
-  }
-
-  if (actor.audience === "chapter_leader") {
-    return shells.filter(
-      (campaign) =>
-        campaign.status !== "template" || leaderVisibleStarterShellSlugs.has(campaign.slug),
-    );
-  }
-
-  return shells;
 }
 
 export function getActionCommittees(): ActionCommittee[] {
@@ -142,13 +142,12 @@ export function getProofLibraryItemsForActor(
   actor: LocalActorContext,
   items: ProofLibraryItem[] = proofLibraryItems,
 ): ProofLibraryItem[] {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return items.filter((item) => item.sharingStatus !== "not_shared");
-    case "chapter_leader":
+    case "leader":
     case "coach":
-      return items;
-    case "admin":
+    case "staff":
     case "super_admin":
       return items;
     case "ds_admin":
@@ -223,26 +222,26 @@ export function getCommitteeOperatingSummary(committee: ActionCommittee): string
 }
 
 function getCommitteeWorkspaceMode(actor: LocalActorContext): CommitteeWorkspaceMode {
-  if (actor.chapterRoles.includes("Action Committee Chair")) {
+  if (actor.canonicalRoles.includes("committee_chair")) {
     return "committee_chair";
   }
 
-  if (actor.chapterRoles.includes("Action Committee Member")) {
+  if (actor.canonicalRoles.includes("committee_member")) {
     return "committee_member";
   }
 
-  switch (actor.audience) {
-    case "chapter_leader":
+  switch (getActorSurfaceFamily(actor)) {
+    case "leader":
       return "chapter_leader";
     case "coach":
       return "coach";
-    case "admin":
+    case "staff":
       return "admin";
     case "ds_admin":
       return "ds_admin";
     case "super_admin":
       return "super_admin";
-    case "chapter_member":
+    case "member":
     default:
       return "member";
   }

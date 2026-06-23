@@ -3,6 +3,7 @@ import {
   getEventPlansForCampaign,
 } from "@/services/campaign-ops-service";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getRushMonthEventRsvpPosture } from "@/services/rush-month-event-rsvp";
 import type { ChapterEventPlan } from "@/shared/types/campaigns";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
@@ -12,6 +13,14 @@ export type RushMonthEventReadinessRow = {
   title: string;
   committeeName: string;
   timing: string;
+  memberSection: "this_week" | "coming_up";
+  memberDateTimeLabel: string;
+  memberLocationLabel: string;
+  memberCampaignLabel: string;
+  memberPointsLabel: string;
+  memberRsvpLabel: string;
+  memberRsvpState: "registered" | "open";
+  memberLumaLabel: string | null;
   eventTypeLabel: string;
   rsvpStatusLabel: string;
   rsvpDetail: string;
@@ -46,7 +55,9 @@ export type RushMonthEventReadinessWorkspace = {
 export function getRushMonthEventReadinessWorkspace(
   actor: LocalActorContext,
 ): RushMonthEventReadinessWorkspace {
-  if (actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "ds_admin") {
     return hiddenWorkspace();
   }
 
@@ -96,6 +107,7 @@ function toEventReadinessRow(
     title: eventPlan.title,
     committeeName: getCommitteeName(eventPlan.committeeId),
     timing: eventPlan.timing,
+    ...getMemberEventDisplay(eventPlan),
     eventTypeLabel: eventPlan.eventType.replaceAll("_", " "),
     rsvpStatusLabel: rsvpPosture.label,
     rsvpDetail: rsvpPosture.detail,
@@ -108,6 +120,66 @@ function toEventReadinessRow(
     npsQuestion: eventPlan.npsQuestion,
     proofPrompt: eventPlan.proofPrompt,
   };
+}
+
+function getMemberEventDisplay(eventPlan: ChapterEventPlan) {
+  switch (eventPlan.id) {
+    case "event-rush-social-001":
+      return {
+        memberSection: "this_week" as const,
+        memberDateTimeLabel: "Tue Nov 13 · 11:00 AM - 1:00 PM",
+        memberLocationLabel: "Bruin Walk Table 7",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberRsvpLabel: "RSVP'd",
+        memberRsvpState: "registered" as const,
+        memberLumaLabel: null,
+      };
+    case "event-rush-med-talk-001":
+      return {
+        memberSection: "this_week" as const,
+        memberDateTimeLabel: "Thu Nov 15 · 6:00 PM - 8:00 PM",
+        memberLocationLabel: "Ackerman 2100",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberRsvpLabel: "RSVP",
+        memberRsvpState: "open" as const,
+        memberLumaLabel: "Luma",
+      };
+    case "event-rush-social-002":
+      return {
+        memberSection: "coming_up" as const,
+        memberDateTimeLabel: "Sat Nov 18 · 7:00 PM",
+        memberLocationLabel: "Student Activities Center",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberRsvpLabel: "RSVP",
+        memberRsvpState: "open" as const,
+        memberLumaLabel: null,
+      };
+    case "event-rush-orientation-001":
+      return {
+        memberSection: "coming_up" as const,
+        memberDateTimeLabel: "Wed Nov 22 · 5:30 PM",
+        memberLocationLabel: "Engineering VI 289",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberRsvpLabel: "RSVP",
+        memberRsvpState: "open" as const,
+        memberLumaLabel: null,
+      };
+    default:
+      return {
+        memberSection: "coming_up" as const,
+        memberDateTimeLabel: eventPlan.timing,
+        memberLocationLabel: "Location to be confirmed",
+        memberCampaignLabel: "Rush Month",
+        memberPointsLabel: "20 pts for attending",
+        memberRsvpLabel: "RSVP",
+        memberRsvpState: "open" as const,
+        memberLumaLabel: null,
+      };
+  }
 }
 
 function buildFutureEvents(eventPlans: ChapterEventPlan[]): IntegrationEvent[] {
@@ -233,14 +305,14 @@ function getCommitteeName(committeeId: string): string {
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return "Your Rush Month events";
-    case "chapter_leader":
+    case "leader":
       return "Leader event readiness";
     case "coach":
       return "Coach event and NPS readiness";
-    case "admin":
+    case "staff":
       return "HQ event readiness";
     case "super_admin":
       return "Full Rush Month event readiness";

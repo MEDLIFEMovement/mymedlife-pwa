@@ -12,13 +12,23 @@ describe("profile workspace", () => {
 
     expect(workspace.title).toBe("Your myMEDLIFE profile");
     expect(workspace.profileLabel).toBe("General Member");
-    expect(workspace.nextStep.href).toBe("/rush-month/actions/member-push");
+    expect(workspace.nextStep.href).toBe("/rush-month/actions/member-push?source=profile");
     expect(workspace.identityRows.map((row) => row.label)).toEqual([
       "Name",
       "Email",
-      "Identity source",
-      "Audience",
+      "Sign-in status",
+      "Primary role",
+      "Surface",
     ]);
+    expect(workspace.identityRows.find((row) => row.label === "Sign-in status")?.value).toBe(
+      "Preview profile",
+    );
+    expect(workspace.identityRows.find((row) => row.label === "Primary role")?.value).toBe(
+      "General Member",
+    );
+    expect(workspace.identityRows.find((row) => row.label === "Surface")?.value).toBe(
+      "Member view",
+    );
     expect(workspace.scopeRows.find((row) => row.label === "Chapter scope")?.value).toBe(
       "UCLA MEDLIFE",
     );
@@ -27,12 +37,34 @@ describe("profile workspace", () => {
     expect(workspace.counts.externalWritesExpected).toBe(0);
   });
 
+  it("maps committee members to member profile flow and committee chairs to leader profile scope", () => {
+    const committeeMember = getProfileWorkspace(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+      data,
+    );
+    const committeeChair = getProfileWorkspace(
+      getMockLocalActorContext("committee.chair@mymedlife.test"),
+      data,
+    );
+
+    expect(committeeMember.title).toBe("Your myMEDLIFE profile");
+    expect(committeeMember.nextStep.href).toBe(
+      "/rush-month/actions/member-push?source=profile",
+    );
+    expect(committeeChair.title).toBe("Leader profile and role scope");
+    expect(committeeChair.profileLabel).toBe("Action Committee Chair");
+    expect(committeeChair.nextStep.href).toBe("/rush-month/review");
+  });
+
   it("shows coach portfolio scope without enabling coach assignment writes", () => {
     const actor = getMockLocalActorContext("coach@mymedlife.test");
     const workspace = getProfileWorkspace(actor, data);
 
     expect(workspace.title).toBe("Coach profile and portfolio scope");
     expect(workspace.profileLabel).toBe("Coach");
+    expect(workspace.identityRows.find((row) => row.label === "Surface")?.value).toBe(
+      "Coach view",
+    );
     expect(
       workspace.scopeRows.find((row) => row.label === "Coach portfolio")?.value,
     ).toBe("UCLA MEDLIFE");

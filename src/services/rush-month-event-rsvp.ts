@@ -1,4 +1,5 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { ChapterEventPlan } from "@/shared/types/campaigns";
 
 export type RushMonthEventRsvpTone = "ready" | "mocked" | "disabled";
@@ -13,29 +14,30 @@ export function getRushMonthEventRsvpPosture(
   actor: LocalActorContext,
   eventPlan: ChapterEventPlan,
 ): RushMonthEventRsvpPosture {
-  if (actor.audience === "chapter_member") {
+  if (getActorSurfaceFamily(actor) === "member") {
     if (eventPlan.lumaStatus === "mock_linked") {
       return {
-        label: "Registered locally",
+        label: "You're on the list",
         detail:
-          "Your RSVP is represented in local mock data only. No live Luma attendee record exists yet.",
+          "Your RSVP is already marked here, so focus on showing up ready and capturing one useful follow-up moment after the event.",
         tone: "mocked",
       };
     }
 
     if (eventPlan.lumaStatus === "future_sync_disabled") {
       return {
-        label: "RSVP not open",
+        label: "RSVP ready",
         detail:
-          "This event is planned, but the live RSVP flow is still intentionally disabled.",
-        tone: "disabled",
+          "Your chapter can share the RSVP details from this page. Use the event plan to know what to show up for and what proof to capture after.",
+        tone: "mocked",
       };
     }
 
     return {
-      label: "Invite pending",
-      detail: "No live RSVP link has been published yet for this event.",
-      tone: "disabled",
+      label: "RSVP details coming",
+      detail:
+        "Your chapter will share RSVP details here. For now, use the event plan to know the moment you are helping create and the follow-up proof that matters.",
+      tone: "mocked",
     };
   }
 

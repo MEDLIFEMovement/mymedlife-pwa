@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type StartAChapterPhaseKey =
   | "expansion_interest"
@@ -36,7 +40,9 @@ export type StartAChapterCampaignPlan = {
 export function getStartAChapterCampaignPlan(
   actor: LocalActorContext,
 ): StartAChapterCampaignPlan {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadPlan: false,
       title: "Start a Chapter hidden for this role",
@@ -53,7 +59,7 @@ export function getStartAChapterCampaignPlan(
 
   return {
     canReadPlan: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This deepens the Start a Chapter starter shell into a mock-safe operating plan: staff and coaches confirm campus interest, form a founding team, prepare first events, review readiness gates, and plan the handoff into normal chapter coaching before any real CRM, chapter, role, or membership writes are enabled.",
     route: "/campaigns/start-a-chapter",
@@ -170,17 +176,17 @@ const startAChapterPhases: StartAChapterPhase[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
       return "Leader Start a Chapter campaign plan";
     case "coach":
       return "Coach Start a Chapter campaign plan";
-    case "admin":
+    case "staff":
       return "Admin Start a Chapter campaign plan";
     case "super_admin":
       return "Full Start a Chapter campaign plan";
-    case "chapter_member":
+    case "member":
     case "ds_admin":
       return "Start a Chapter hidden for this role";
   }

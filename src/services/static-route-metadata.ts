@@ -15,6 +15,7 @@ export type StaticRouteMetadataKey =
   | "sltPrepChecklistDetail"
   | "sltPrepForms"
   | "sltPrepPayments"
+  | "sltPrepFlights"
   | "sltPrepMeetings"
   | "sltPrepExtensions"
   | "sltPrepTimeline"
@@ -43,6 +44,11 @@ export type StaticRouteMetadataKey =
   | "adminAuditLog"
   | "adminIntegrationOutbox"
   | "adminMasterData"
+  | "adminPermissions"
+  | "adminCommittees"
+  | "adminWorkflows"
+  | "adminSopLibrary"
+  | "adminSopBuilder"
   | "adminDatabaseSecurity"
   | "adminSystemHealth"
   | "adminDesignQa"
@@ -78,8 +84,9 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
       "Local Supabase Auth sign-in for fake myMEDLIFE seed users and session readiness.",
   },
   chapter: {
-    title: "Chapter",
-    description: "Chapter operating context, role guidance, assignments, and progress.",
+    title: "Student Leadership Command Center",
+    description:
+      "Chapter leadership home, member pipeline, committees, events, impact, succession, and feed analytics for the student leader surface.",
   },
   chapterMembers: {
     title: "Chapter Members",
@@ -123,6 +130,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     description:
       "Mock-safe payment milestones shaped for future Shopify-backed travel finance states.",
   },
+  sltPrepFlights: {
+    title: "SLT Flights",
+    description:
+      "Dedicated flight itinerary review for outbound and return segments, airport timing, and mock-safe travel coordination.",
+  },
   sltPrepMeetings: {
     title: "SLT Meetings",
     description:
@@ -144,9 +156,9 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
       "Traveler notifications, reminders, and update posture with live sends still disabled.",
   },
   sltPrepProfile: {
-    title: "SLT Traveler Profile",
+    title: "SLT Profile",
     description:
-      "Traveler profile, emergency contacts, flights, and support notes in one mock-safe view.",
+      "Traveler profile, alerts, communication posture, and flights in one mock-safe SLT destination.",
   },
   sltPrepStaff: {
     title: "SLT Staff Dashboard",
@@ -178,7 +190,7 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   rushMonthEventDetail: {
     title: "Rush Month Event Detail",
     description:
-      "Role-aware Rush Month event detail with owner, NPS, proof, and disabled automation posture.",
+      "Role-aware Rush Month event detail with RSVP status, next action, proof prompt, and event context.",
   },
   rushMonthActions: {
     title: "Rush Month Actions",
@@ -253,6 +265,31 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Admin Master Data",
     description:
       "Read-only users, roles, chapters, and campaign template inventory with admin writes disabled.",
+  },
+  adminPermissions: {
+    title: "Admin Permissions",
+    description:
+      "Read-only canonical role, scope, landing-route, and route-family registry for the myMEDLIFE backend.",
+  },
+  adminCommittees: {
+    title: "Admin Committees",
+    description:
+      "Read-only committee registry showing owner lanes, linked campaigns, and blocked admin mutation posture.",
+  },
+  adminWorkflows: {
+    title: "Admin Workflows",
+    description:
+      "Read-only backend workflow registry for onboarding, writes, proof review, SLT readiness, coach intervention, and SOP configuration.",
+  },
+  adminSopLibrary: {
+    title: "Admin SOP Library",
+    description:
+      "Read-only campaign workflow library with route-owned SOP definitions and admin edits still blocked.",
+  },
+  adminSopBuilder: {
+    title: "Admin SOP Builder",
+    description:
+      "Read-only workflow builder tabs for steps, role matrix, completion, points/KPI, comms, preview, and version history.",
   },
   adminDatabaseSecurity: {
     title: "Admin Database Security",

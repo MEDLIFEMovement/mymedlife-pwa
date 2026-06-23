@@ -6,12 +6,16 @@ import {
   localActorOptions,
   localActorPreviewCookieName,
 } from "@/services/local-actor-context";
+import { normalizeLocalRoleSwitcherReturnTo } from "@/components/local-role-switcher/return-to";
 
 const previewCookieMaxAgeSeconds = 60 * 60 * 24 * 30;
 
 export async function setLocalActorPreviewAction(formData: FormData) {
   const selectedEmail = String(formData.get("selectedEmail") ?? "").trim().toLowerCase();
   const isKnownActor = localActorOptions.some((option) => option.email === selectedEmail);
+  const requestedReturnTo = normalizeLocalRoleSwitcherReturnTo(
+    formData.get("returnTo"),
+  );
 
   if (isKnownActor) {
     const cookieStore = await cookies();
@@ -23,7 +27,7 @@ export async function setLocalActorPreviewAction(formData: FormData) {
     });
   }
 
-  redirect(await getReturnToPath());
+  redirect(requestedReturnTo ?? await getReturnToPath());
 }
 
 export async function clearLocalActorPreviewAction() {
@@ -42,21 +46,8 @@ async function getReturnToPath() {
 
   try {
     const url = new URL(referer);
-    return normalizeReturnTo(`${url.pathname}${url.search}`);
+    return normalizeLocalRoleSwitcherReturnTo(`${url.pathname}${url.search}`) ?? "/";
   } catch {
     return "/";
   }
-}
-
-function normalizeReturnTo(value: string) {
-  if (
-    !value.startsWith("/") ||
-    value.startsWith("//") ||
-    value.includes("\n") ||
-    value.includes("\r")
-  ) {
-    return "/";
-  }
-
-  return value;
 }
