@@ -883,7 +883,7 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Marcus + Elena");
     expect(markup).toContain("No chair assigned");
     expect(markup).not.toContain("Selected Committee");
-    expect(markup).not.toContain("Open committee workspace");
+    expect(markup).not.toContain("Broader committee workspace");
   });
 
   it("renders the selected committee as an explicit chapter-owned detail state", () => {
@@ -907,9 +907,9 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("11 events linked to this lane");
     expect(markup).toContain("Next committee move");
     expect(markup).toContain("Keep the lane reusable for the next owner");
-    expect(markup).toContain("Selected lane handoff");
-    expect(markup).toContain("Review add committee handoff");
-    expect(markup).toContain("Open selected committee flow");
+    expect(markup).toContain("Broader committee workspace");
+    expect(markup).toContain("Add another committee");
+    expect(markup).toContain("Open committee workspace");
     expect(markup).toContain(
       "/chapter?view=committees&amp;committee=committee-events",
     );

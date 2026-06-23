@@ -1026,11 +1026,11 @@ function renderView(
                 <div className="mt-4 flex flex-col gap-3 rounded-[1rem] border border-white/80 bg-white/80 p-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
-                      Selected lane handoff
+                      Broader committee workspace
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Stay in this chapter review state until the owner, next event, and follow-up
-                      expectations feel clear. Then hand off into the broader committee flow.
+                      Keep the chair, next event, and next move visible here first. Once the
+                      chapter context feels clear, continue into the broader committee workspace.
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
@@ -1045,7 +1045,7 @@ function renderView(
                       })}
                       className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
                     >
-                      Review add committee handoff
+                      Add another committee
                     </Link>
                     <Link
                       href={buildChapterLeaderCommitteeFlowHref({
@@ -1057,7 +1057,7 @@ function renderView(
                       })}
                       className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                     >
-                      Open selected committee flow
+                      Open committee workspace
                     </Link>
                   </div>
                 </div>

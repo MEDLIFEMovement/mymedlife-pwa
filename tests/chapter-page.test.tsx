@@ -966,8 +966,8 @@ describe("chapter page", () => {
     expect(html).toContain("Chapter General Meeting");
     expect(html).toContain("Activity visible now");
     expect(html).toContain("Next committee move");
-    expect(html).toContain("Selected lane handoff");
-    expect(html).toContain("Open selected committee flow");
+    expect(html).toContain("Broader committee workspace");
+    expect(html).toContain("Open committee workspace");
     expect(html).toContain("Selected");
     expect(html).toContain("Needs Attention");
     expect(html).toContain("Inactive");
@@ -997,8 +997,8 @@ describe("chapter page", () => {
     expect(html).toContain("Action Committees");
     expect(html).toContain('href="/chapter?view=committees&amp;quickAction=add_committee"');
     expect(html).not.toContain("Committee in focus");
-    expect(html).not.toContain("Selected lane handoff");
-    expect(html).not.toContain("Open selected committee flow");
+    expect(html).not.toContain("Broader committee workspace");
+    expect(html).not.toContain("Open committee workspace");
     expect(html).toContain("Needs Attention");
     expect(html).toContain("Inactive");
   });
