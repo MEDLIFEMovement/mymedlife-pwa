@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { AppShell } from "@/components/app-shell";
 import { DatabaseSecurityDecisionPanel } from "@/components/database-security-decision-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
@@ -24,6 +25,7 @@ export default async function AdminDatabaseSecurityPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="database_security" />
 
       {!packet.canReadPacket ? (
         <RestrictedState

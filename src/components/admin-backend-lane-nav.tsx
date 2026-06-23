@@ -5,6 +5,9 @@ type AdminBackendLaneKey =
   | "permissions"
   | "committees"
   | "workflows"
+  | "integration_outbox"
+  | "database_security"
+  | "system_health"
   | "sop_library"
   | "master_data"
   | "sop_builder";
@@ -37,6 +40,21 @@ const baseLanes = [
     key: "workflows",
     label: "Workflows",
     href: "/admin/workflows",
+  },
+  {
+    key: "integration_outbox",
+    label: "Outbox",
+    href: "/admin/integration-outbox",
+  },
+  {
+    key: "database_security",
+    label: "Database Security",
+    href: "/admin/database-security",
+  },
+  {
+    key: "system_health",
+    label: "System Health",
+    href: "/admin/system-health",
   },
   {
     key: "sop_library",
@@ -150,6 +168,29 @@ function AdminLaneIcon({ lane }: { lane: AdminBackendLaneKey }) {
           <rect x="14" y="14" width="6" height="5" rx="1.2" />
           <path d="M10 7.5h4a2 2 0 0 1 2 2V14" />
           <path d="m12 12 4 4" />
+        </svg>
+      );
+    case "integration_outbox":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M5 6.5h14v11H5z" />
+          <path d="M5 10h14" />
+          <path d="M8 14h3" />
+        </svg>
+      );
+    case "database_security":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <ellipse cx="12" cy="6.5" rx="6.5" ry="2.5" />
+          <path d="M5.5 6.5v7c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5v-7" />
+          <path d="M5.5 10c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5" />
+        </svg>
+      );
+    case "system_health":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M5 12h3l2-5 4 10 2-5h3" />
+          <path d="M4 4.5h16v15H4z" />
         </svg>
       );
     case "sop_library":
