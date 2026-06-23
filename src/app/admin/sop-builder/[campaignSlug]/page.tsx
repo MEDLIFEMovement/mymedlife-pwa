@@ -670,6 +670,21 @@ function normalizeBuilderMode(requestedMode?: string): SopBuilderMode | null {
   }
 }
 
+function BuilderFilterLink(props: {
+  campaignSlug: string;
+  tab: SopBuilderTab;
+  focusId?: string;
+}) {
+  return (
+    <Link
+      href={buildSopBuilderHref(props.campaignSlug, props.tab, props.focusId, "filter")}
+      className="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
+    >
+      Filter
+    </Link>
+  );
+}
+
 function getBuilderModeNotice(
   definition: SopCampaignDefinition,
   selectedTab: SopBuilderTab,
@@ -1163,6 +1178,11 @@ function RoleMatrixSection(props: {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="role-matrix"
+              focusId={props.focusWorkspace.selected?.id}
+            />
             <Pill>{props.definition.roleActionRules.length} role rules</Pill>
             <Pill>{getDistinctRoles(props.definition)} canonical roles</Pill>
             <Pill>{getDistinctScopes(props.definition)} scopes</Pill>
@@ -1326,6 +1346,11 @@ function CompletionSection(props: {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="completion"
+              focusId={props.focusWorkspace.selected?.id}
+            />
             <Pill>{props.definition.completionRules.length} completion rules</Pill>
             <Pill>{props.definition.evidenceRules.length} evidence rules</Pill>
             <Pill>{props.definition.approvalRules.length} approval rules</Pill>
@@ -1504,6 +1529,11 @@ function PointsKpiSection(props: {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="points-kpi"
+              focusId={props.focusWorkspace.selected?.id}
+            />
             <Pill>{props.definition.pointsRules.length} points rules</Pill>
             <Pill>{props.definition.kpiRules.length} KPI rules</Pill>
             <Pill>{pointRoles.length} roles with points</Pill>
@@ -1594,6 +1624,11 @@ function CommsSection(props: {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="comms"
+              focusId={props.focusWorkspace.selected?.id}
+            />
             <Pill>
               {
                 props.definition.communicationRules.filter(
@@ -1742,6 +1777,11 @@ function RolePreviewSection(props: {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="preview"
+              focusId={props.focusWorkspace.selected?.id}
+            />
             <Pill>{props.definition.previewScenarios.length} preview scenarios</Pill>
             <Pill>{getDistinctRoles(props.definition)} role lanes in scope</Pill>
           </div>
@@ -1858,6 +1898,11 @@ function VersionReviewSection(props: {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="version"
+              focusId={props.focusWorkspace.selected?.id ?? "current-version"}
+            />
             <Link
               href={buildSopBuilderHref(
                 props.definition.slug,

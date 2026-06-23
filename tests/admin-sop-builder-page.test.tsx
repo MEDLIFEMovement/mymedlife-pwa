@@ -157,6 +157,9 @@ describe("admin SOP builder page", () => {
     expect(html).toContain("draft");
     expect(html).toContain('href="/admin/sop-builder/rush-month?tab=version&amp;focus=current-version"');
     expect(html).toContain(
+      'href="/admin/sop-builder/rush-month?tab=version&amp;focus=current-version&amp;mode=filter"',
+    );
+    expect(html).toContain(
       'href="/admin/sop-builder/rush-month?tab=version&amp;focus=current-version&amp;mode=publish"',
     );
     expect(html).toContain(
@@ -233,6 +236,9 @@ describe("admin SOP builder page", () => {
     expect(roleMatrixHtml).toContain("Role matrix");
     expect(roleMatrixHtml).toContain("Preview as student member");
     expect(roleMatrixHtml).toContain(
+      'href="/admin/sop-builder/rush-month?tab=role-matrix&amp;focus=student_member-own-%2Frush-month%2Factions&amp;mode=filter"',
+    );
+    expect(roleMatrixHtml).toContain(
       'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2Frush-month%2Factions"',
     );
 
@@ -250,6 +256,9 @@ describe("admin SOP builder page", () => {
     expect(completionHtml).toContain("Completion Type");
     expect(completionHtml).toContain("Evidence Type");
     expect(completionHtml).toContain("Audit Behavior");
+    expect(completionHtml).toContain(
+      'href="/admin/sop-builder/rush-month?tab=completion&amp;focus=rush-action-started&amp;mode=filter"',
+    );
     expect(completionHtml).toContain("Preview as president");
     expect(completionHtml).toContain(
       'href="/local-preview?selectedEmail=leader.a%40mymedlife.test&amp;returnTo=%2Frush-month%2Freview"',
@@ -257,6 +266,56 @@ describe("admin SOP builder page", () => {
     expect(completionHtml).toContain("Preview as department staff");
     expect(completionHtml).toContain(
       'href="/local-preview?selectedEmail=admin%40mymedlife.test&amp;returnTo=%2Fstaff%3Fview%3Dproof_ugc"',
+    );
+
+    const previewHtml = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "rush-month" }),
+        searchParams: Promise.resolve({
+          tab: "preview",
+        }),
+      }),
+    );
+
+    expect(previewHtml).toContain("Preview by role");
+    expect(previewHtml).toContain(
+      'href="/admin/sop-builder/rush-month?tab=preview&amp;focus=rush-member-loop&amp;mode=filter"',
+    );
+  });
+
+  it("opens the route-owned filter review state on the same builder screen", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP builder filter review state."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "rush-month" }),
+        searchParams: Promise.resolve({
+          tab: "role-matrix",
+          focus: "student_member-own-/rush-month/actions",
+          mode: "filter",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Filter review state");
+    expect(html).toContain(
+      "This route keeps the filter posture visible on the same builder tab before any editable filter presets or saved views exist.",
+    );
+    expect(html).toContain("No saved-view mutation or preference write runs from this review state.");
+    expect(html).toContain("Keep route state readable enough that a reviewer can share the exact filtered URL.");
+    expect(html).toContain(
+      'href="/admin/sop-builder/rush-month?tab=role-matrix&amp;focus=student_member-own-%2Frush-month%2Factions"',
     );
   });
 
