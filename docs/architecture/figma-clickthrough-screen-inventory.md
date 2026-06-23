@@ -1403,12 +1403,19 @@ Current parity note:
 - `/slt-prep/payments` now should lead with `Payment Status` and keep the
   traveler-specific context in supporting copy so the route reads like the
   packet label first and the selected traveler second
+- `/slt-prep/payments` should also preserve the visible first-viewport finance
+  hierarchy from the Make screen: `Payment Options`, `Payment History`, and
+  `Payment Information` should remain literal route headings instead of being
+  replaced by generic local support labels
 - `/slt-prep/meetings` now should lead with `Pre-Trip Meetings` and keep the
   traveler-specific context in supporting copy so the route reads like the
   packet label first and the selected traveler second
 - `/slt-prep/extensions` now should lead with `Extensions & Tours` and keep the
   traveler-specific context in supporting copy instead of naming the screen as
   a traveler-specific add-on summary
+- `/slt-prep/extensions` should keep the intro copy close to the Make tone:
+  optional Peru add-ons, lasting memories, and early booking pressure, without
+  reading like a detached purchasing tool
 - `/slt-prep/forms`, `/slt-prep/payments`, `/slt-prep/meetings`, and
   `/slt-prep/extensions` should stay inside that same traveler packet instead
   of dropping a selected traveler back to generic subpages

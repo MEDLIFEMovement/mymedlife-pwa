@@ -81,8 +81,9 @@ export default async function SltPrepExtensionsPage({
               Extensions & Tours
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-              Keep {workspace.traveler.firstName}'s optional travel choices readable,
-              budget-aware, and clearly separated from the required readiness path.
+              Add optional extensions and tours to {workspace.traveler.firstName}&apos;s trip.
+              These experiences let travelers explore more of Peru and create lasting memories.
+              Book early because spots are limited.
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
               <ExtensionsHeroStat label="Options" value={`${workspace.traveler.extensions.length}`} />

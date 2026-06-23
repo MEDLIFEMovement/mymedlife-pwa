@@ -49,7 +49,9 @@ Verified recent parity passes:
 - SLT traveler: forms now leads with `Required Forms Hub`, meetings now leads
   with `Pre-Trip Meetings`, payments now leads with `Payment Status`,
   extensions now leads with `Extensions & Tours`, and those traveler routes
-  keep the selected traveler context in their packet-safe handoffs
+  keep the selected traveler context in their packet-safe handoffs while
+  payments also restores the visible `Payment Options` and `Payment History`
+  hierarchy from the Make clickthrough
 - branch baseline: `pnpm test`, `pnpm lint`, `pnpm typecheck`, and
   `pnpm build` all passed on the current branch after these parity slices
 

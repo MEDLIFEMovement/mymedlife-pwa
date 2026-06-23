@@ -117,8 +117,9 @@ export default async function SltPrepPaymentsPage({
           Payment Status
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-          Keep {workspace.traveler.firstName}'s payment plan simple: what is already cleared,
-          what is due next, and what still needs finance follow-up before departure.
+          1-week Peru SLT. Keep {workspace.traveler.firstName}'s payment plan simple: what is
+          already cleared, what is due next, and what still needs finance follow-up before
+          departure.
         </p>
         <div className="mt-4 grid grid-cols-3 gap-3">
           <PaymentsHeroStat label="Trip total" value={formatCurrency(totalTripCost)} />
@@ -283,9 +284,9 @@ export default async function SltPrepPaymentsPage({
 
         <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
           <article className="app-surface rounded-[1.75rem] p-5">
-            <p className="app-eyebrow app-eyebrow-slate">Next support move</p>
+            <p className="app-eyebrow app-eyebrow-slate">Payment Options</p>
             <h2 className="mt-2 text-[1.72rem] font-semibold leading-tight text-slate-950">
-              Which finance handoff should the traveler see next?
+              Choose a payment option.
             </h2>
             <div className="mt-4 space-y-3">
               <ActionRow
@@ -316,14 +317,14 @@ export default async function SltPrepPaymentsPage({
           </article>
 
           <article className="app-surface rounded-[1.75rem] p-5">
-            <p className="app-eyebrow app-eyebrow-slate">Receipt and ledger posture</p>
+            <p className="app-eyebrow app-eyebrow-slate">Payment History</p>
             <h2 className="mt-2 text-[1.72rem] font-semibold leading-tight text-slate-950">
-              Reviewable now, live charge lane later
+              Payment Information
             </h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Shopify-backed charges, refunds, and edits stay off for now, but this route should
-              still show the receipt trail, the due milestone, and any scholarship review that
-              affects the traveler&apos;s final balance.
+              All payments are securely processed through Shopify. This route stays mock-safe for
+              now, but it should still show the receipt trail, the due milestone, and any
+              scholarship review that affects the traveler&apos;s final balance.
             </p>
             <div className="mt-4 space-y-3">
               <PaymentRow

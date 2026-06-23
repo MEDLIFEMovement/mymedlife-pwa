@@ -43,8 +43,14 @@ describe("slt prep payments page", () => {
     const html = renderToStaticMarkup(await SltPrepPaymentsPage({}));
 
     expect(html).toContain("Payment Status");
+    expect(html).toContain("1-week Peru SLT");
     expect(html).toContain("Current payment lane");
     expect(html).toContain("Current blocker");
+    expect(html).toContain("Payment Options");
+    expect(html).toContain("Choose a payment option.");
+    expect(html).toContain("Payment History");
+    expect(html).toContain("Payment Information");
+    expect(html).toContain("All payments are securely processed through Shopify.");
     expect(html).not.toContain("Mock-seeded review data");
   });
 
