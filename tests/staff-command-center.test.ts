@@ -1348,7 +1348,7 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain("HubSpot + Chapter Intelligence");
+    expect(html).toContain(">HubSpot + Chapter Intelligence</h1>");
     expect(html).toContain("Portfolio source");
     expect(html).toContain("Opened from the chapter portfolio");
     expect(html).toContain("Return to chapter portfolio");
@@ -1378,7 +1378,7 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain("Best Practices Library");
+    expect(html).toContain(">Best Practices Library</h1>");
     expect(html).toContain("5 verified best practices ready to share");
     expect(html).toContain("All Campaigns");
     expect(html).toContain("All Countries");

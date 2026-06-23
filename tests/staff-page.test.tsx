@@ -305,7 +305,7 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("HubSpot + Chapter Intelligence");
+    expect(html).toContain(">HubSpot + Chapter Intelligence</h1>");
     expect(html).toContain("HubSpot CRM Profile");
     expect(html).toContain("Conversion Funnel");
     expect(html).not.toContain("Visible chapters");
@@ -461,7 +461,7 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("Best Practices Library");
+    expect(html).toContain(">Best Practices Library</h1>");
     expect(html).toContain("Share to Feed");
     expect(html).toContain("Send to Coaches");
     expect(html).toContain("All Campaigns");

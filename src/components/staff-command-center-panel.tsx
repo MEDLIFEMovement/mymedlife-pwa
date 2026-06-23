@@ -1224,114 +1224,118 @@ function renderView(
       );
     case "hubspot":
       return (
-        <section className="grid gap-4 xl:grid-cols-[0.44fr_1.56fr] xl:items-start">
-          <SectionCard eyebrow="Chapter" title="Chapter">
-            <div className="grid gap-2">
-              {commandCenter.hubspotWorkspace.chapterOptions.map((option) => {
-                const selected =
-                  commandCenter.hubspotWorkspace.selectedChapterId === option.id;
-
-                return (
-                  <Link
-                    key={option.id}
-                    href={option.href}
-                    aria-current={selected ? "page" : undefined}
-                    className={[
-                      "rounded-[1rem] border px-3 py-3 transition",
-                      selected
-                        ? "border-[#2563eb] bg-[#1d4f91] text-white shadow-[0_18px_40px_rgba(37,99,235,0.18)]"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#f8fbff]",
-                    ].join(" ")}
-                  >
-                    <p className="text-sm font-semibold">{option.chapterLabel}</p>
-                    <p className={["mt-1 text-xs", selected ? "text-white/78" : "text-slate-500"].join(" ")}>
-                      {option.countryLabel}
-                    </p>
-                  </Link>
-                );
-              })}
-            </div>
-          </SectionCard>
-
-          <div className="grid gap-4">
-            <div className="app-surface rounded-[1.75rem] p-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="app-eyebrow app-eyebrow-slate">HubSpot + Chapter Intelligence</p>
-                  <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
-                    HubSpot + Chapter Intelligence
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    HubSpot CRM data matched to myMEDLIFE activity
-                  </p>
-                </div>
-                <p className="text-sm leading-6 text-slate-600">
-                  {commandCenter.hubspotWorkspace.timestampLabel}
+        <section className="grid gap-4">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  HubSpot
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  HubSpot + Chapter Intelligence
+                </h1>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  HubSpot CRM data matched to myMEDLIFE activity
                 </p>
               </div>
+              <p className="text-sm leading-6 text-slate-600">
+                {commandCenter.hubspotWorkspace.timestampLabel}
+              </p>
             </div>
 
-            {commandCenter.hubspotWorkspace.sourceContext ? (
-              <SectionCard
-                eyebrow={commandCenter.hubspotWorkspace.sourceContext.eyebrow}
-                title={commandCenter.hubspotWorkspace.sourceContext.title}
-              >
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <p className="text-sm leading-6 text-slate-600">
-                    {commandCenter.hubspotWorkspace.sourceContext.summary}
-                  </p>
-                  <Link
-                    href={commandCenter.hubspotWorkspace.sourceContext.actionHref}
-                    className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-white"
+            <div className="grid gap-4 xl:grid-cols-[0.44fr_1.56fr] xl:items-start">
+              <SectionCard eyebrow="Chapter" title="Chapter">
+                <div className="grid gap-2">
+                  {commandCenter.hubspotWorkspace.chapterOptions.map((option) => {
+                    const selected =
+                      commandCenter.hubspotWorkspace.selectedChapterId === option.id;
+
+                    return (
+                      <Link
+                        key={option.id}
+                        href={option.href}
+                        aria-current={selected ? "page" : undefined}
+                        className={[
+                          "rounded-[1rem] border px-3 py-3 transition",
+                          selected
+                            ? "border-[#2563eb] bg-[#1d4f91] text-white shadow-[0_18px_40px_rgba(37,99,235,0.18)]"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#f8fbff]",
+                        ].join(" ")}
+                      >
+                        <p className="text-sm font-semibold">{option.chapterLabel}</p>
+                        <p className={["mt-1 text-xs", selected ? "text-white/78" : "text-slate-500"].join(" ")}>
+                          {option.countryLabel}
+                        </p>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </SectionCard>
+
+              <div className="grid gap-4">
+                {commandCenter.hubspotWorkspace.sourceContext ? (
+                  <SectionCard
+                    eyebrow={commandCenter.hubspotWorkspace.sourceContext.eyebrow}
+                    title={commandCenter.hubspotWorkspace.sourceContext.title}
                   >
-                    {commandCenter.hubspotWorkspace.sourceContext.actionLabel}
-                  </Link>
-                </div>
-              </SectionCard>
-            ) : null}
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                      <p className="text-sm leading-6 text-slate-600">
+                        {commandCenter.hubspotWorkspace.sourceContext.summary}
+                      </p>
+                      <Link
+                        href={commandCenter.hubspotWorkspace.sourceContext.actionHref}
+                        className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-white"
+                      >
+                        {commandCenter.hubspotWorkspace.sourceContext.actionLabel}
+                      </Link>
+                    </div>
+                  </SectionCard>
+                ) : null}
 
-            {commandCenter.hubspotWorkspace.warningLabel ? (
-              <div className="rounded-[1rem] border border-[#f7d05e]/45 bg-[#fff8df] px-4 py-3">
-                <p className="text-sm font-semibold text-[#8a6700]">
-                  {commandCenter.hubspotWorkspace.warningLabel}
-                </p>
-              </div>
-            ) : null}
-
-            <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
-              <SectionCard eyebrow="HubSpot CRM profile" title="HubSpot CRM Profile">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {commandCenter.hubspotWorkspace.crmProfileMetrics.map((metric) => (
-                    <SupportDetail key={metric.label} label={metric.label} value={metric.value} />
-                  ))}
-                </div>
-              </SectionCard>
-
-              <SectionCard eyebrow="Matched myMEDLIFE activity" title="HubSpot CRM data matched to myMEDLIFE activity">
-                <div className="grid gap-4">
-                  {commandCenter.hubspotWorkspace.matchedActivityMetrics.map((metric) => (
-                    <HubSpotActivityBar key={metric.label} metric={metric} />
-                  ))}
-                </div>
-              </SectionCard>
-            </div>
-
-            <SectionCard
-              eyebrow="Conversion funnel"
-              title={`Conversion Funnel — ${commandCenter.hubspotWorkspace.selectedChapterLabel}`}
-            >
-              <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
-                {commandCenter.hubspotWorkspace.funnelSteps.map((step) => (
-                  <div key={step.label} className="px-2 py-4 text-center">
-                    <p className="text-2xl font-semibold text-slate-950">{step.value}</p>
-                    <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-500">
-                      {step.label}
+                {commandCenter.hubspotWorkspace.warningLabel ? (
+                  <div className="rounded-[1rem] border border-[#f7d05e]/45 bg-[#fff8df] px-4 py-3">
+                    <p className="text-sm font-semibold text-[#8a6700]">
+                      {commandCenter.hubspotWorkspace.warningLabel}
                     </p>
                   </div>
-                ))}
+                ) : null}
+
+                <div className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
+                  <SectionCard eyebrow="HubSpot CRM profile" title="HubSpot CRM Profile">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {commandCenter.hubspotWorkspace.crmProfileMetrics.map((metric) => (
+                        <SupportDetail key={metric.label} label={metric.label} value={metric.value} />
+                      ))}
+                    </div>
+                  </SectionCard>
+
+                  <SectionCard eyebrow="Matched myMEDLIFE activity" title="HubSpot CRM data matched to myMEDLIFE activity">
+                    <div className="grid gap-4">
+                      {commandCenter.hubspotWorkspace.matchedActivityMetrics.map((metric) => (
+                        <HubSpotActivityBar key={metric.label} metric={metric} />
+                      ))}
+                    </div>
+                  </SectionCard>
+                </div>
+
+                <SectionCard
+                  eyebrow="Conversion funnel"
+                  title={`Conversion Funnel — ${commandCenter.hubspotWorkspace.selectedChapterLabel}`}
+                >
+                  <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+                    {commandCenter.hubspotWorkspace.funnelSteps.map((step) => (
+                      <div key={step.label} className="px-2 py-4 text-center">
+                        <p className="text-2xl font-semibold text-slate-950">{step.value}</p>
+                        <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          {step.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </SectionCard>
               </div>
-            </SectionCard>
-          </div>
+            </div>
+          </section>
         </section>
       );
     case "best_practices":
@@ -1350,16 +1354,24 @@ function renderView(
 
       return (
         <section className="grid gap-4">
-          <SectionCard eyebrow="Best Practices Library" title="Best Practices Library">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm leading-6 text-slate-600">
-                {commandCenter.bestPracticeCards.length} verified best practice{commandCenter.bestPracticeCards.length === 1 ? "" : "s"} ready to share
-              </p>
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Best Practices
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Best Practices Library
+                </h1>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  {commandCenter.bestPracticeCards.length} verified best practice{commandCenter.bestPracticeCards.length === 1 ? "" : "s"} ready to share
+                </p>
+              </div>
               <p className="text-sm leading-6 text-slate-600">
                 {commandCenter.hubspotWorkspace.timestampLabel}
               </p>
             </div>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-3">
                 <FilterMenu
                   label={selectedPracticeCampaignLabel}
@@ -1376,7 +1388,7 @@ function renderView(
                 {commandCenter.bestPracticeCards.length} best practice{commandCenter.bestPracticeCards.length === 1 ? "" : "s"}
               </p>
             </div>
-          </SectionCard>
+          </section>
 
           {selectedBestPractice ? (
             <SectionCard eyebrow="Selected practice" title={selectedBestPractice.title}>
