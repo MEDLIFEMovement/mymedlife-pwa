@@ -117,7 +117,7 @@ export default async function SltPrepPaymentsPage({
           Payment Status
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-          1-week Peru SLT. Keep {workspace.traveler.firstName}'s payment plan simple: what is
+          1-week Peru SLT. Keep {workspace.traveler.firstName}&apos;s payment plan simple: what is
           already cleared, what is due next, and what still needs finance follow-up before
           departure.
         </p>
