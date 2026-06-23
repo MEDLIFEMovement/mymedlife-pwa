@@ -198,6 +198,13 @@ describe("admin control center", () => {
         nextAction: expect.stringContaining("write/readback drills"),
       }),
     );
+    expect(summary.areas.find((area) => area.key === "system_health")).toEqual(
+      expect.objectContaining({
+        status: "mock_only",
+        primaryMetric: "4 visible checks",
+        detail: expect.stringContaining("Read-only health checks cover data source"),
+      }),
+    );
     expect(summary.healthItems.find((item) => item.key === "external_writes")).toEqual(
       expect.objectContaining({
         status: "blocked",

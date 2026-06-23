@@ -145,6 +145,7 @@ export function getAdminControlCenterSummary(
     resolvedActors,
     roleCoverage,
   );
+  const healthItems = getAdminSystemHealthItems(data, resolvedActors, roleCoverage);
   const areas = [
     {
       key: "users",
@@ -214,9 +215,9 @@ export function getAdminControlCenterSummary(
       key: "system_health",
       title: "System health",
       status: "mock_only",
-      primaryMetric: "placeholders",
+      primaryMetric: `${healthItems.length} visible checks`,
       detail:
-        "The admin route now names health checks, but production monitors are not connected.",
+        "Read-only health checks cover data source, role coverage, write posture, and admin controls while production monitors remain disconnected.",
       nextAction:
         "Connect deployment, database, queue, and integration health after production environments exist.",
     },
@@ -237,7 +238,7 @@ export function getAdminControlCenterSummary(
     operatingResponsibilities,
     masterDataInventory,
     areas,
-    healthItems: getAdminSystemHealthItems(data, resolvedActors, roleCoverage),
+    healthItems,
   };
 }
 

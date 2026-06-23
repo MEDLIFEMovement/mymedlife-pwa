@@ -9,6 +9,8 @@ type AdminControlCenterPanelProps = {
 };
 
 export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProps) {
+  const blockedHealthCount = summary.healthItems.filter((item) => item.status === "blocked").length;
+
   return (
     <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
@@ -343,7 +345,18 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
       </div>
 
       <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-        <p className="text-sm font-semibold text-white">System health placeholders</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-white">System health signals</p>
+            <p className="mt-1 text-xs leading-5 text-white/56">
+              {summary.healthItems.length} local checks are visible here. {blockedHealthCount} stay
+              blocked until live approvals, auth, and production monitoring exist.
+            </p>
+          </div>
+          <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-semibold text-white/72">
+            Read-only
+          </span>
+        </div>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           {summary.healthItems.map((item) => (
             <article key={item.key} className="rounded-2xl bg-white/[0.05] p-3">

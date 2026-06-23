@@ -55,5 +55,8 @@ describe("admin page", () => {
     expect(html).toContain("Committee Registry");
     expect(html).toContain("Workflow Registry");
     expect(html).toContain("SOP Library");
+    expect(html).toContain("System health signals");
+    expect(html).toContain("4 local checks are visible here.");
+    expect(html).not.toContain("System health placeholders");
   });
 });
