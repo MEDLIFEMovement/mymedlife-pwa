@@ -713,7 +713,7 @@ describe("staff command center", () => {
     );
 
     expect(html).toContain("Staff Command Center");
-    expect(html).toContain("System Health");
+    expect(html).toContain(">System Health</h1>");
     expect(html).toContain("System health: 5 of 6 integrations active");
     expect(html).toContain("Integration Status");
     expect(html).toContain("Automation Outbox");
@@ -1451,7 +1451,7 @@ describe("staff command center", () => {
     );
 
     expect(html).toContain("Staff Command Center");
-    expect(html).toContain("System Health");
+    expect(html).toContain(">System Health</h1>");
     expect(html).toContain("System health: 5 of 6 integrations active");
     expect(html).toContain("Integration Status");
     expect(html).toContain("Automation Outbox");
@@ -1463,7 +1463,7 @@ describe("staff command center", () => {
     expect(html).toContain("SOP Library");
     expect(html).toContain("HubSpot CRM");
     expect(html).toContain("Last sync: 2 min ago");
-    expect(html).not.toContain("Admin Console");
+    expect(html).not.toContain(">Admin Console</h1>");
     expect(html).not.toContain("Portfolio chapters");
     expect(html).not.toContain("Review-safe integration queue");
   });

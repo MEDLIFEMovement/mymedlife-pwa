@@ -545,7 +545,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Member app handoff");
     expect(html).toContain("Platform Admin");
-    expect(html).toContain("Admin Console");
+    expect(html).toContain(">Admin Console</h1>");
     expect(html).toContain("Opened from UCLA MEDLIFE into Admin Console");
     expect(html).toContain("Switch View buttons");
     expect(html).toContain("View integration events");

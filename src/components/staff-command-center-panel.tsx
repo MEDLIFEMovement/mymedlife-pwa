@@ -1490,9 +1490,9 @@ function renderView(
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
                     {adminHeroEyebrow}
                   </p>
-                  <h2 className="mt-2 text-[2.25rem] font-semibold leading-none text-white sm:text-[2.6rem]">
+                  <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-white sm:text-[2.6rem]">
                     {adminHeroTitle}
-                  </h2>
+                  </h1>
                   <p className="mt-3 text-sm leading-6 text-white/78">
                     System health: {activeIntegrationCount} of{" "}
                     {commandCenter.adminWorkspace.integrationStatuses.length} integrations active
