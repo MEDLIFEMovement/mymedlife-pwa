@@ -1954,9 +1954,12 @@ function renderView(
             <SectionCard eyebrow="Candidate Pipeline" title="Candidate Pipeline">
               <div className="flex items-center justify-between gap-3">
                 <div />
-                <span className="rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("members")}
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#dbeafe]"
+                >
                   Full table
-                </span>
+                </Link>
               </div>
               <div className="mt-4 grid gap-3">
                 {commandCenter.successionCandidates.map((candidate) => (

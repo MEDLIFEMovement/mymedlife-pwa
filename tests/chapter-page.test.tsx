@@ -903,6 +903,7 @@ describe("chapter page", () => {
     expect(html).toContain("Leadership Gaps");
     expect(html).toContain("Candidate Pipeline");
     expect(html).toContain("Succession Timeline");
+    expect(html).toContain("href=\"/chapter?view=members\"");
   });
 
   it("opens the committees route with a selected committee inside the chapter surface", async () => {
@@ -999,6 +1000,7 @@ describe("chapter page", () => {
     expect(html).toContain("Reviewing Ivy Invite for succession");
     expect(html).toContain("Ivy Invite");
     expect(html).not.toContain("Jordan Kim");
+    expect(html).toContain("href=\"/chapter?view=members\"");
     expect(html).toContain("href=\"/chapter?view=succession&amp;member=member-ivy\"");
   });
 

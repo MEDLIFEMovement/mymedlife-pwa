@@ -895,8 +895,8 @@ Local alignment note:
 - keep the visible screen title as `Events`, not `Events & attendance`
 - keep the visible screen title as `Impact`, even when the surface expands into
   a fuller impact dashboard
-- keep the visible screen title as `Succession`, even when the surface expands
-  into leadership-gap and transition detail
+- keep the nav contract as `Succession`, while the local surface heading stays
+  `Leadership Succession` to match the Make clickthrough
 - keep the visible screen title as `Feed Analytics`, not `Feed & Engagement
   Analytics`
 - prefer `Re-engagement Targets` for the low-engagement follow-up section so
@@ -991,6 +991,9 @@ State rule:
   review state above the generic succession KPI strip so the route reads like
   a person-owned transition review before it broadens into chapter-wide
   leadership-gap and timeline context
+- the `Full table` control inside the candidate pipeline should hand off into
+  the generic member-pipeline route (`/chapter?view=members`) instead of
+  staying as a passive badge
 - keep the succession route structurally flat after that top review surface:
   the leadership-gap section, candidate pipeline, and transition timeline
   should read as sibling operating sections rather than cards nested inside a

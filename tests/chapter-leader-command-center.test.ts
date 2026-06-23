@@ -2291,6 +2291,7 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Selected now");
     expect(markup).toContain("Nominate Candidate");
     expect(markup).toContain("Start Transition Plan");
+    expect(markup).toContain("href=\"/chapter?view=members\"");
   });
 
   it("renders the succession route with the gap, pipeline, and timeline sections from the mockup", () => {
@@ -2312,6 +2313,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Selected now");
     expect(markup).toContain("Nominate Candidate");
     expect(markup).toContain("Start Transition Plan");
+    expect(markup).toContain("href=\"/chapter?view=members\"");
     expect(markup).toContain("href=\"/chapter?view=succession&amp;member=member-ivy\"");
     expect(markup.indexOf("Selected candidate")).toBeLessThan(
       markup.indexOf("E-Board Roles Filled"),
