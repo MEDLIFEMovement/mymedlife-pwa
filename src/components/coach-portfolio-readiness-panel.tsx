@@ -88,42 +88,35 @@ export function CoachPortfolioReadinessPanel({
           <HeroStat label="Evidence Queue" value={portfolio.evidenceQueueLabel} />
         </div>
 
-        <div className="mt-5 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
-                Assigned portfolio
-              </p>
-              <p className="mt-2 text-lg font-semibold text-white">
-                Keep urgent chapter support visible before deeper review routes.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <HeroInfoPill label={`${portfolio.counts.totalChapters} chapters assigned`} />
-                <HeroInfoPill label={`${portfolio.counts.intervene} intervene now`} />
-                <HeroInfoPill label={`${portfolio.counts.handoffsPending} handoffs pending`} />
-              </div>
-            </div>
+        <div className="mt-5 flex flex-col gap-4 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+              Assigned portfolio
+            </p>
+            <HeroInfoPill label={`${portfolio.counts.totalChapters} chapters assigned`} />
+            <HeroInfoPill label={`${portfolio.counts.intervene} intervene now`} />
+            <HeroInfoPill label={`${portfolio.counts.handoffsPending} handoffs pending`} />
+          </div>
 
-            <div className="grid gap-2 sm:min-w-[15rem]">
-              <Link
-                href={portfolio.chapterHref}
-                className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-center text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
-              >
-                Open chapter
-              </Link>
-              <Link
-                href={portfolio.notesHref}
-                className="rounded-full bg-[#f7d05e] px-4 py-2 text-center text-sm font-semibold text-[#08224c] transition hover:bg-[#f9d96c]"
-              >
-                Write coach note
-              </Link>
-              <Link
-                href={portfolio.riskReviewHref}
-                className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-center text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
-              >
-                Review risk reports
-              </Link>
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={portfolio.chapterHref}
+              className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-center text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+            >
+              Open chapter
+            </Link>
+            <Link
+              href={portfolio.notesHref}
+              className="rounded-full bg-[#f7d05e] px-4 py-2 text-center text-sm font-semibold text-[#08224c] transition hover:bg-[#f9d96c]"
+            >
+              Write coach note
+            </Link>
+            <Link
+              href={portfolio.riskReviewHref}
+              className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-center text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+            >
+              Review risk reports
+            </Link>
           </div>
         </div>
       </section>
