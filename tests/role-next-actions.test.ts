@@ -19,6 +19,22 @@ describe("role next actions", () => {
     expect(brief.safetyNote).toContain("read-only");
   });
 
+  it("maps committee members to member next actions and committee chairs to leader guidance", () => {
+    const committeeMember = getRoleNextActionBrief(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+      data,
+    );
+    const committeeChair = getRoleNextActionBrief(
+      getMockLocalActorContext("committee.chair@mymedlife.test"),
+      data,
+    );
+
+    expect(committeeMember.ownerLabel).toBe("General Member");
+    expect(committeeMember.primaryHref).toBe("/rush-month/actions/member-push");
+    expect(committeeChair.ownerLabel).toBe("Chapter Leader / E-Board");
+    expect(committeeChair.primaryHref).toBe("/rush-month/review");
+  });
+
   it("points President / VP to approval when proof needs a decision", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const brief = getRoleNextActionBrief(actor, data);
@@ -28,7 +44,7 @@ describe("role next actions", () => {
     expect(brief.primaryLabel).toBe("Open approval queue");
     expect(brief.secondaryHref).toBe("/rush-month/dashboard");
     expect(brief.signals.find((signal) => signal.label === "Needs decision")?.value).toBe(
-      "2",
+      "3",
     );
   });
 

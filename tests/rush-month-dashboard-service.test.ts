@@ -14,6 +14,8 @@ describe("rush month dashboard service", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
+    expect(dashboard.surfaceFamily).toBe("member");
+    expect(dashboard.roleLabel).toBe("General Member");
     expect(dashboard.canReadChapterTruth).toBe(true);
     expect(dashboard.phaseSummary.label).toBe("Week 1: Invite and prove the first push");
     expect(dashboard.phaseSummary.status).toBe("Invite and prove the first push");
@@ -24,17 +26,33 @@ describe("rush month dashboard service", () => {
       "Proof and points",
     ]);
     expect(dashboard.nextStep.href).toBe("/rush-month/actions/member-push");
-    expect(dashboard.visibleAssignments).toHaveLength(1);
-    expect(dashboard.eventPlans).toHaveLength(2);
+    expect(dashboard.visibleAssignments).toHaveLength(3);
+    expect(dashboard.eventPlans).toHaveLength(4);
     expect(dashboard.proofItems).toHaveLength(1);
     expect(dashboard.leaderboard).toHaveLength(5);
     expect(dashboard.metrics.map((metric) => metric.label)).toContain("Points earned");
+  });
+
+  it("keeps committee members on the member-owned Rush Month dashboard posture", () => {
+    const actor = getMockLocalActorContext("committee.member@mymedlife.test");
+    const dashboard = getRushMonthDashboardForActor(actor, data);
+
+    expect(dashboard.roleLabel).toBe("Action Committee Member");
+    expect(dashboard.phaseSummary.status).toBe("Invite and prove the first push");
+    expect(dashboard.nextStep.ctaLabel).toBe("Open my next action");
+    expect(dashboard.actionGroups.map((group) => group.label)).toEqual([
+      "Invite push",
+      "Rush event",
+      "Proof and points",
+    ]);
   });
 
   it("gives President / VP approval and role-coverage focus", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
+    expect(dashboard.surfaceFamily).toBe("leader");
+    expect(dashboard.roleLabel).toBe("President / VP");
     expect(dashboard.nextStep.href).toBe("/rush-month/review");
     expect(dashboard.nextStep.ctaLabel).toBe("Open approval queue");
     expect(dashboard.actionGroups.map((group) => group.href)).toEqual([
@@ -68,6 +86,7 @@ describe("rush month dashboard service", () => {
     const actor = getMockLocalActorContext("coach@mymedlife.test");
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
+    expect(dashboard.roleLabel).toBe("Coach");
     expect(dashboard.nextStep.href).toBe("/coach");
     expect(dashboard.metrics.map((metric) => metric.label)).toContain("Coach decision");
     expect(dashboard.integrationEvents).toEqual([]);
@@ -78,6 +97,8 @@ describe("rush month dashboard service", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
+    expect(dashboard.surfaceFamily).toBe("ds_admin");
+    expect(dashboard.roleLabel).toBe("DS Admin");
     expect(dashboard.canReadChapterTruth).toBe(false);
     expect(dashboard.visibleAssignments).toEqual([]);
     expect(dashboard.eventPlans).toEqual([]);
@@ -118,10 +139,10 @@ describe("rush month dashboard service", () => {
   it("counts assignment statuses for visible operating summaries", () => {
     expect(getAssignmentStatusCounts(data.assignments)).toEqual({
       approved: 1,
-      submitted: 1,
+      submitted: 2,
       inProgress: 1,
       changesRequested: 1,
-      notStarted: 1,
+      notStarted: 2,
     });
   });
 });

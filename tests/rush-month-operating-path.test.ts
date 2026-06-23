@@ -21,6 +21,21 @@ describe("rush month operating path", () => {
     expect(view.boundaryNote).toContain("Members");
   });
 
+  it("maps committee members to the student focus and committee chairs to leader focus", () => {
+    const committeeMember = getRushMonthOperatingPathView(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+      data,
+    );
+    const committeeChair = getRushMonthOperatingPathView(
+      getMockLocalActorContext("committee.chair@mymedlife.test"),
+      data,
+    );
+
+    expect(committeeMember.focusStepId).toBe("member-push");
+    expect(committeeChair.focusStepId).toBe("assign-eboard");
+    expect(committeeChair.title).toContain("Keep the outreach owners moving");
+  });
+
   it("moves President / VP focus to proof follow-up when chapter review is waiting", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const view = getRushMonthOperatingPathView(actor, data);
@@ -38,7 +53,7 @@ describe("rush month operating path", () => {
         status:
           assignment.id === "assign-eboard"
             ? "in_progress"
-            : assignment.id === "proof-pack"
+            : assignment.status === "submitted" || assignment.status === "changes_requested"
               ? "approved"
               : assignment.status,
       })),

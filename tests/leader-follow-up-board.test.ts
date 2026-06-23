@@ -12,17 +12,42 @@ describe("leader follow-up board", () => {
 
     expect(board.canReadBoard).toBe(true);
     expect(board.title).toBe("Leader follow-up board");
-    expect(board.counts.total).toBe(4);
-    expect(board.counts.needsFollowUp).toBe(3);
-    expect(board.counts.readyToReview).toBe(1);
+    expect(board.counts.total).toBe(6);
+    expect(board.counts.needsFollowUp).toBe(5);
+    expect(board.counts.readyToReview).toBe(2);
     expect(board.counts.remindersEnabled).toBe(0);
     expect(board.rows[0]?.status).toBe("submitted");
-    expect(board.rows[0]?.nextHref).toBe("/rush-month/review");
+    expect(
+      board.rows.some((row) => {
+        return (
+          row.status === "submitted" &&
+          row.nextHref.startsWith("/rush-month/review?assignmentId=")
+        );
+      }),
+    ).toBe(true);
+    expect(
+      board.rows.some((row) => {
+        return (
+          row.assignmentId === "share-rush-flyer" &&
+          row.nextHref ===
+            "/rush-month/actions?assignmentId=share-rush-flyer&source=leader_follow_up"
+        );
+      }),
+    ).toBe(true);
     expect(board.rows.every((row) => row.reminderPosture === "disabled")).toBe(true);
   });
 
   it("keeps general members out of the leader follow-up board", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const board = getLeaderFollowUpBoard(actor, data);
+
+    expect(board.canReadBoard).toBe(false);
+    expect(board.rows).toEqual([]);
+    expect(board.title).toContain("Members see their own actions");
+  });
+
+  it("treats committee members as part of the member-owned boundary", () => {
+    const actor = getMockLocalActorContext("committee.member@mymedlife.test");
     const board = getLeaderFollowUpBoard(actor, data);
 
     expect(board.canReadBoard).toBe(false);
@@ -47,6 +72,15 @@ describe("leader follow-up board", () => {
     expect(board.title).toBe("Coach-visible follow-up board");
     expect(board.rows.some((row) => row.assignmentId === "coach-summary")).toBe(true);
     expect(board.rows.every((row) => row.status !== "approved")).toBe(true);
+  });
+
+  it("treats committee chairs as part of the leader-owned follow-up surface", () => {
+    const actor = getMockLocalActorContext("committee.chair@mymedlife.test");
+    const board = getLeaderFollowUpBoard(actor, data);
+
+    expect(board.canReadBoard).toBe(true);
+    expect(board.title).toBe("Leader follow-up board");
+    expect(board.counts.total).toBe(6);
   });
 
   it("gives admins proof/support posture without enabling reminders", () => {

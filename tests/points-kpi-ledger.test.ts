@@ -18,12 +18,12 @@ describe("points and KPI ledger", () => {
 
     expect(ledger.pointsSummary).toEqual({
       earned: 10,
-      available: 95,
+      available: 135,
       approvedActions: 1,
     });
     expect(ledger.kpiSummary).toEqual({
       invitePushes: 2,
-      proofPending: 2,
+      proofPending: 3,
       eventsLinked: 1,
       coachDecision: "intervene",
     });
@@ -55,12 +55,12 @@ describe("points and KPI ledger", () => {
 
     expect(ledger.pointsSummary).toEqual({
       earned: 10,
-      available: 95,
+      available: 135,
       approvedActions: 1,
     });
     expect(ledger.kpiSummary).toEqual({
       invitePushes: 1,
-      proofPending: 2,
+      proofPending: 3,
       eventsLinked: 1,
       coachDecision: "intervene",
     });

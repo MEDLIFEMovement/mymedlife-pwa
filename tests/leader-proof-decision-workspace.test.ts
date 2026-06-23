@@ -15,17 +15,30 @@ describe("leader proof decision workspace", () => {
     );
 
     expect(workspace.canReadWorkspace).toBe(true);
-    expect(workspace.title).toBe("Leader proof decision workspace");
+    expect(workspace.title).toBe("Chapter proof decision board");
     expect(workspace.counts).toEqual({
-      total: 4,
-      readyForApproval: 1,
+      total: 6,
+      readyForApproval: 2,
       needsChanges: 1,
-      notReady: 1,
+      notReady: 2,
       alreadyApproved: 1,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
     });
     expect(workspace.finalPrompt).toContain("points ledger writes");
+  });
+
+  it("treats committee chairs as part of the leader-owned proof decision surface", () => {
+    const actor = getMockLocalActorContext("committee.chair@mymedlife.test");
+    const workspace = getLeaderProofDecisionWorkspace(
+      actor,
+      data.assignments,
+      data.evidenceItems,
+    );
+
+    expect(workspace.canReadWorkspace).toBe(true);
+    expect(workspace.title).toBe("Chapter proof decision board");
+    expect(workspace.counts.total).toBe(6);
   });
 
   it("shows approve, request changes, and reject controls as disabled options", () => {
@@ -116,9 +129,9 @@ describe("leader proof decision workspace", () => {
     );
 
     expect(admin.canReadWorkspace).toBe(true);
-    expect(admin.title).toBe("HQ proof decision support");
+    expect(admin.title).toBe("Chapter proof support desk");
     expect(superAdmin.canReadWorkspace).toBe(true);
-    expect(superAdmin.title).toBe("Full local proof decision workspace");
+    expect(superAdmin.title).toBe("Proof decision operations");
     expect(admin.counts.browserWritesEnabled).toBe(0);
   });
 
@@ -143,5 +156,17 @@ describe("leader proof decision workspace", () => {
     expect(coach.canReadWorkspace).toBe(false);
     expect(dsAdmin.canReadWorkspace).toBe(false);
     expect(dsAdmin.rows).toEqual([]);
+  });
+
+  it("treats committee members as part of the member-owned hidden proof decision boundary", () => {
+    const member = getLeaderProofDecisionWorkspace(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+      data.assignments,
+      data.evidenceItems,
+    );
+
+    expect(member.canReadWorkspace).toBe(false);
+    expect(member.title).toBe("Chapter proof decisions hidden for this role");
+    expect(member.rows).toEqual([]);
   });
 });
