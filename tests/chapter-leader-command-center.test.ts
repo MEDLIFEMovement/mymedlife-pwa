@@ -883,6 +883,7 @@ describe("chapter leader command center", () => {
     );
 
     expect(markup).toContain("Action Committees");
+    expect(markup).toContain("<h1");
     expect(markup).toContain("Monitor whether each committee is moving the chapter forward - not just existing.");
     expect(markup).toContain("Add Committee");
     expect(markup).toContain("Active Committees");

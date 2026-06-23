@@ -910,13 +910,16 @@ function renderView(
               </div>
             </SectionCard>
           ) : null}
-          <SectionCard
-            eyebrow="Committees"
-            title="Action Committees"
-          >
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="text-sm leading-6 text-slate-600">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Committees
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Action Committees
+                </h1>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
                   Monitor whether each committee is moving the chapter forward - not just existing.
                 </p>
               </div>
@@ -935,7 +938,7 @@ function renderView(
               </Link>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-3">
               <EventOpsStat
                 label="Active Committees"
                 value={commandCenter.committeesOverview.activeCommitteesLabel}
@@ -1083,7 +1086,7 @@ function renderView(
                 />
               ))}
             </div>
-          </SectionCard>
+          </section>
         </section>
       );
     case "events":
