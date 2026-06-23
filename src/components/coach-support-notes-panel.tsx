@@ -16,14 +16,14 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
   }
 
   return (
-    <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
+    <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
             Coach notes
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">{workspace.title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">{workspace.title}</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             {workspace.summary}
           </p>
         </div>
@@ -45,16 +45,16 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
         <MiniToken label="Sends" value={`${workspace.externalWritesEnabled}`} />
       </div>
 
-      <div className="mt-5 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-4">
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               Intervention checklist
             </p>
-            <h3 className="mt-2 text-xl font-semibold text-white">
+            <h3 className="mt-2 text-xl font-semibold text-slate-950">
               {workspace.interventionChecklist.title}
             </h3>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
               {workspace.interventionChecklist.summary}
             </p>
           </div>
@@ -99,7 +99,7 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
         ))}
       </div>
 
-      <p className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/58">
+      <p className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
         {workspace.finalPrompt}
       </p>
     </section>
@@ -112,29 +112,29 @@ function InterventionChecklistCard({
   item: CoachInterventionChecklistItem;
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <ChecklistStatusPill status={item.status} />
-          <h4 className="mt-3 text-base font-semibold text-white">{item.label}</h4>
+          <h4 className="mt-3 text-base font-semibold text-slate-950">{item.label}</h4>
         </div>
         <div className="flex flex-wrap gap-2">
           <MiniToken label="Writes" value={`${item.browserWritesExpected}`} />
           <MiniToken label="Sends" value={`${item.externalWritesExpected}`} />
         </div>
       </div>
-      <p className="mt-3 text-sm leading-6 text-white/72">{item.question}</p>
-      <p className="mt-2 text-xs leading-5 text-emerald-100/70">
+      <p className="mt-3 text-sm leading-6 text-slate-700">{item.question}</p>
+      <p className="mt-2 text-xs leading-5 text-[#2563eb]">
         Next: {item.action}
       </p>
-      <p className="mt-3 rounded-2xl bg-white/[0.05] p-3 text-xs leading-5 text-white/54">
+      <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
         Signal: {item.sourceSignal}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {item.routeEvidence.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-semibold text-white/58"
+            className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -146,17 +146,17 @@ function InterventionChecklistCard({
 
 function SupportNoteCard({ note }: { note: CoachSupportNote }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
             <StatusPill status={note.status} />
-            <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-500">
               {note.visibility.replaceAll("_", " ")}
             </span>
           </div>
-          <h3 className="mt-3 text-lg font-semibold text-white">{note.label}</h3>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+          <h3 className="mt-3 text-lg font-semibold text-slate-950">{note.label}</h3>
+          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
             {note.ownerLane}
           </p>
         </div>
@@ -166,18 +166,18 @@ function SupportNoteCard({ note }: { note: CoachSupportNote }) {
         </div>
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-white/66">{note.note}</p>
-      <p className="mt-3 text-xs leading-5 text-emerald-100/70">
+      <p className="mt-3 text-sm leading-6 text-slate-600">{note.note}</p>
+      <p className="mt-3 text-xs leading-5 text-[#2563eb]">
         Next: {note.nextStep}
       </p>
 
-      <div className="mt-3 rounded-2xl bg-white/[0.05] p-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+      <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
           Source signals
         </p>
         <ul className="mt-2 grid gap-2">
           {note.sourceSignals.map((signal) => (
-            <li key={`${note.key}-${signal}`} className="text-sm leading-6 text-white/62">
+            <li key={`${note.key}-${signal}`} className="text-sm leading-6 text-slate-600">
               {signal}
             </li>
           ))}
@@ -188,7 +188,7 @@ function SupportNoteCard({ note }: { note: CoachSupportNote }) {
         {note.routeEvidence.map((route) => (
           <span
             key={`${note.key}-${route}`}
-            className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-semibold text-white/58"
+            className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -201,10 +201,10 @@ function SupportNoteCard({ note }: { note: CoachSupportNote }) {
 function ChecklistStatusPill({ status }: { status: CoachInterventionChecklistStatus }) {
   const className =
     status === "ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : status === "watch"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-        : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : "border-rose-200 bg-rose-50 text-rose-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -215,18 +215,18 @@ function ChecklistStatusPill({ status }: { status: CoachInterventionChecklistSta
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
 
 function MiniToken({ label, value }: { label: string; value: string }) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58">
+    <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-500">
       {label} {value}
     </span>
   );
@@ -235,10 +235,10 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: CoachSupportNoteStatus }) {
   const className =
     status === "ready_for_check_in"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : status === "needs_follow_up"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-        : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : "border-rose-200 bg-rose-50 text-rose-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

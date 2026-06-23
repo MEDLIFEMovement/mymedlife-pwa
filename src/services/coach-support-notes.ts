@@ -1,6 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
-import { getVisibleAssignmentsForActor } from "@/services/role-visibility";
+import {
+  getActorSurfaceFamily,
+  getVisibleAssignmentsForActor,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { Assignment } from "@/shared/types/domain";
 import type { RiskFlagRow } from "@/shared/types/persistence";
 
@@ -80,15 +84,23 @@ export type CoachSupportNotesWorkspace = {
 export function getCoachSupportNotesWorkspace(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
+  options?: {
+    chapterName?: string;
+    decision?: ReadOnlyAppData["kpiSummary"]["coachDecision"];
+  },
 ): CoachSupportNotesWorkspace {
-  if (!canReadCoachSupportNotes(actor)) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+  const chapterName = options?.chapterName ?? data.chapter.name;
+  const decision = options?.decision ?? data.kpiSummary.coachDecision;
+
+  if (!canReadCoachSupportNotes(surfaceFamily)) {
     return {
       canReadWorkspace: false,
       title: "Coach support notes hidden for this role",
       summary:
         "Coach notes are visible to coaches and HQ support roles, not chapter members, chapter leaders, or DS Admin.",
-      chapterName: data.chapter.name,
-      decision: data.kpiSummary.coachDecision,
+      chapterName,
+      decision,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
       counts: emptyCounts(),
@@ -104,11 +116,11 @@ export function getCoachSupportNotesWorkspace(
 
   return {
     canReadWorkspace: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "A coach-readable note plan for the current chapter: decision rationale, pending proof, risk response, owner check-in, and escalation posture. Saving notes remains disabled until the approved write path is promoted.",
-    chapterName: data.chapter.name,
-    decision: data.kpiSummary.coachDecision,
+    chapterName,
+    decision,
     browserWritesEnabled: 0,
     externalWritesEnabled: 0,
     counts: {
@@ -123,15 +135,15 @@ export function getCoachSupportNotesWorkspace(
     interventionChecklist,
     notes,
     finalPrompt:
-      "Use these notes to prepare the next coach check-in. Do not save coach notes, send escalation packets, or notify external systems until auth, RLS, audit readback, and the coach decision write path are approved.",
+      "Use these notes to prepare the next coach check-in. Do not save coach notes, send escalation summaries, or notify external systems until auth, RLS, audit readback, and the coach decision write path are approved.",
   };
 }
 
-function canReadCoachSupportNotes(actor: LocalActorContext): boolean {
+function canReadCoachSupportNotes(surfaceFamily: ActorSurfaceFamily): boolean {
   return (
-    actor.audience === "coach" ||
-    actor.audience === "admin" ||
-    actor.audience === "super_admin"
+    surfaceFamily === "coach" ||
+    surfaceFamily === "staff" ||
+    surfaceFamily === "super_admin"
   );
 }
 
@@ -238,7 +250,7 @@ function buildSupportNotes(
     },
     {
       key: "escalation_packet",
-      label: "Escalation packet note",
+      label: "Escalation summary note",
       ownerLane: "Coach and HQ Operations",
       visibility: "hq_support",
       status:
@@ -248,7 +260,7 @@ function buildSupportNotes(
       note:
         data.kpiSummary.coachDecision === "intervene"
           ? "Prepare a private escalation summary for HQ, but keep n8n, email, SMS, and AI sends disabled."
-          : "No escalation packet should be sent from the app while the chapter is in local hold or advance posture.",
+          : "No escalation summary should be sent from the app while the chapter is in local hold or advance posture.",
       nextStep:
         "If intervention is needed, draft the blocker summary inside the approved coach decision flow before any future send is considered.",
       sourceSignals: [
@@ -371,7 +383,7 @@ function buildInterventionChecklist(
       "coach note save",
       "coach decision save",
       "member nudge",
-      "escalation packet send",
+      "escalation summary send",
       "external automation",
     ],
     counts: {
@@ -398,16 +410,16 @@ function pickTopRisk(risks: RiskFlagRow[]): RiskFlagRow | undefined {
     .sort((left, right) => priority[left.severity] - priority[right.severity])[0];
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
     case "coach":
       return "Coach support notes";
-    case "admin":
+    case "staff":
       return "HQ coach support notes";
     case "super_admin":
       return "Full coach support notes";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "ds_admin":
       return "Coach support notes hidden for this role";
   }

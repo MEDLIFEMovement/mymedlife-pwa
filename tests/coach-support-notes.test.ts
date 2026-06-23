@@ -48,6 +48,9 @@ describe("coach support notes workspace", () => {
       "owner_check_in",
       "escalation_packet",
     ]);
+    expect(
+      workspace.notes.find((note) => note.key === "escalation_packet")?.label,
+    ).toBe("Escalation summary note");
     expect(workspace.notes.find((note) => note.key === "decision_rationale")?.note).toContain(
       "intervene",
     );
@@ -96,7 +99,7 @@ describe("coach support notes workspace", () => {
       expect.arrayContaining([
         "coach note save",
         "coach decision save",
-        "escalation packet send",
+        "escalation summary send",
         "external automation",
       ]),
     );
@@ -145,6 +148,17 @@ describe("coach support notes workspace", () => {
     expect(superAdmin.title).toBe("Full coach support notes");
   });
 
+  it("can reflect a selected chapter and decision when the route narrows the coach note lane", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const workspace = getCoachSupportNotesWorkspace(actor, data, {
+      chapterName: "USC MEDLIFE",
+      decision: "hold",
+    });
+
+    expect(workspace.chapterName).toBe("USC MEDLIFE");
+    expect(workspace.decision).toBe("hold");
+  });
+
   it("hides coach notes from chapter members, chapter leaders, and DS Admin", () => {
     const member = getCoachSupportNotesWorkspace(
       getMockLocalActorContext("member.a@mymedlife.test"),
@@ -164,6 +178,22 @@ describe("coach support notes workspace", () => {
     expect(dsAdmin.canReadWorkspace).toBe(false);
     expect(dsAdmin.notes).toEqual([]);
     expect(dsAdmin.interventionChecklist.items).toEqual([]);
+  });
+
+  it("keeps committee members and chairs out of coach note ownership", () => {
+    const committeeMember = getCoachSupportNotesWorkspace(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+      data,
+    );
+    const committeeChair = getCoachSupportNotesWorkspace(
+      getMockLocalActorContext("committee.chair@mymedlife.test"),
+      data,
+    );
+
+    expect(committeeMember.canReadWorkspace).toBe(false);
+    expect(committeeChair.canReadWorkspace).toBe(false);
+    expect(committeeMember.notes).toEqual([]);
+    expect(committeeChair.notes).toEqual([]);
   });
 });
 
