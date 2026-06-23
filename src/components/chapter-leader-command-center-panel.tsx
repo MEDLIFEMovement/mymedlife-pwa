@@ -592,95 +592,91 @@ function renderView(
               </div>
             </SectionCard>
           ) : null}
-          <SectionCard
-            eyebrow="Member Pipeline"
-            title="Member Pipeline"
-          >
-            <div className="grid gap-3">
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-                <div className="max-w-3xl">
-                  <p className="text-sm leading-6 text-slate-600">
-                    Identify future leaders through action, consistency, and character - not popularity.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    href={buildChapterLeaderCommandCenterHref("members", {
-                      source: commandCenter.selectedSource,
-                      memberId: commandCenter.navigationMemberId,
-                      pipelineFilter: commandCenter.selectedPipelineFilter,
-                      searchQuery: commandCenter.pipelineSearchQuery,
-                      quickAction: "export_members",
-                    })}
-                    className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                  >
-                    Export
-                  </Link>
-                  <Link
-                    href={buildChapterLeaderCommandCenterHref("members", {
-                      source: commandCenter.selectedSource,
-                      memberId: commandCenter.navigationMemberId,
-                      pipelineFilter: commandCenter.selectedPipelineFilter,
-                      searchQuery: commandCenter.pipelineSearchQuery,
-                      quickAction: "add_member",
-                    })}
-                    className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    Add Member
-                  </Link>
-                </div>
+          <section className="grid gap-3 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Member Pipeline
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Member Pipeline
+                </h1>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Identify future leaders through action, consistency, and character - not popularity.
+                </p>
               </div>
-
-              <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50/90 p-3.5">
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="flex flex-col gap-3 xl:min-w-[34rem] xl:flex-1 xl:flex-row xl:items-center">
-                    <form action="/chapter" method="get" className="min-w-0 xl:flex-[1.15]">
-                      <input type="hidden" name="view" value="members" />
-                      <label className="sr-only" htmlFor="member-pipeline-search">
-                        Search members
-                      </label>
-                      <div className="rounded-full border border-slate-200 bg-white px-4 py-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-                        <input
-                          id="member-pipeline-search"
-                          name="q"
-                          type="search"
-                          defaultValue={commandCenter.pipelineSearchQuery}
-                          placeholder="Search members…"
-                          className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                        />
-                      </div>
-                      {commandCenter.selectedPipelineFilter !== "all" ? (
-                        <input
-                          type="hidden"
-                          name="pipeline"
-                          value={commandCenter.selectedPipelineFilter}
-                        />
-                      ) : null}
-                      {commandCenter.selectedSource ? (
-                        <input type="hidden" name="source" value={commandCenter.selectedSource} />
-                      ) : null}
-                      <button type="submit" className="sr-only">
-                        Apply search
-                      </button>
-                    </form>
-
-                    <ChapterLeaderPipelineFilterSelect
-                      options={commandCenter.pipelineFilterOptions}
-                      selectedKey={commandCenter.selectedPipelineFilter}
-                    />
-                  </div>
-
-                  <div className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-                    {commandCenter.pipelineRows.length} of {commandCenter.pipelineTotalCount} members
-                  </div>
-                </div>
-              </div>
-
-              <div className="overflow-hidden rounded-[1.3rem] border border-slate-200 bg-white">
-                <ChapterMemberPipelineTable rows={commandCenter.pipelineRows} />
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("members", {
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                    quickAction: "export_members",
+                  })}
+                  className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+                >
+                  Export
+                </Link>
+                <Link
+                  href={buildChapterLeaderCommandCenterHref("members", {
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                    quickAction: "add_member",
+                  })}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Add Member
+                </Link>
               </div>
             </div>
-          </SectionCard>
+
+            <div className="flex flex-col gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50/90 p-3.5 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-col gap-3 xl:min-w-[34rem] xl:flex-1 xl:flex-row xl:items-center">
+                <form action="/chapter" method="get" className="min-w-0 xl:flex-[1.15]">
+                  <input type="hidden" name="view" value="members" />
+                  <label className="sr-only" htmlFor="member-pipeline-search">
+                    Search members
+                  </label>
+                  <div className="rounded-full border border-slate-200 bg-white px-4 py-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                    <input
+                      id="member-pipeline-search"
+                      name="q"
+                      type="search"
+                      defaultValue={commandCenter.pipelineSearchQuery}
+                      placeholder="Search members…"
+                      className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                    />
+                  </div>
+                  {commandCenter.selectedPipelineFilter !== "all" ? (
+                    <input
+                      type="hidden"
+                      name="pipeline"
+                      value={commandCenter.selectedPipelineFilter}
+                    />
+                  ) : null}
+                  {commandCenter.selectedSource ? (
+                    <input type="hidden" name="source" value={commandCenter.selectedSource} />
+                  ) : null}
+                </form>
+
+                <ChapterLeaderPipelineFilterSelect
+                  options={commandCenter.pipelineFilterOptions}
+                  selectedKey={commandCenter.selectedPipelineFilter}
+                />
+              </div>
+
+              <div className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                {commandCenter.pipelineRows.length} of {commandCenter.pipelineTotalCount} members
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-[1.3rem] border border-slate-200 bg-white">
+              <ChapterMemberPipelineTable rows={commandCenter.pipelineRows} />
+            </div>
+          </section>
         </section>
       );
     case "member_profile":

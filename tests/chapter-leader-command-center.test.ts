@@ -347,6 +347,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("All Pipeline Levels");
     expect(markup).toContain("E-Board");
     expect(markup).toContain("Chair");
+    expect(markup).toContain("<h1");
     expect(markup).toContain('aria-label="Pipeline filter"');
     expect(markup).toContain("<select");
     expect(markup).toContain(`${commandCenter.pipelineRows.length} of ${commandCenter.pipelineTotalCount} members`);
@@ -366,6 +367,7 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Member detail");
     expect(markup).not.toContain("Pending joins");
     expect(markup).not.toContain("Select a member from the pipeline table");
+    expect(markup).not.toContain("Apply search");
     expect(markup).not.toContain("Ready Now");
     expect(markup).not.toContain("Emerging Leaders");
     expect(markup).not.toContain("Contributors");
