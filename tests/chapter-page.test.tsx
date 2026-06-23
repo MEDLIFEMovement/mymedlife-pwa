@@ -225,8 +225,7 @@ describe("chapter page", () => {
         }),
       }),
     );
-    expect(html).toContain("<p class=\"app-eyebrow app-eyebrow-slate\">Bridge Videos</p>");
-    expect(html).toContain("<h2 class=\"mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]\">Bridge Videos</h2>");
+    expect(html).toContain(">Bridge Video Hub</h1>");
     expect(html).toContain("Communications");
     expect(html).toContain("/chapter?view=feed_analytics");
     expect(html).not.toContain("Mock-seeded review data");

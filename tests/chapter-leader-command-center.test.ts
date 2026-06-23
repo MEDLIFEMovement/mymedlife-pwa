@@ -2147,8 +2147,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("<p class=\"app-eyebrow app-eyebrow-slate\">Bridge Videos</p>");
-    expect(markup).toContain("<h2 class=\"mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]\">Bridge Videos</h2>");
+    expect(markup).toContain(">Bridge Video Hub</h1>");
     expect(markup).toContain("&quot;MEDLIFE leaders build a bridge for the next generation.&quot;");
     expect(markup).toContain("Submit Bridge Video");
     expect(markup).toContain(
