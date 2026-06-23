@@ -9,6 +9,10 @@ import {
   localActorOptions,
   type LocalActorContext,
 } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { IntegrationEvent } from "@/shared/types/domain";
 
 export type AuthOnboardingStepRow = {
@@ -80,17 +84,18 @@ export type AuthOnboardingWorkspace = {
 export function getAuthOnboardingWorkspace(
   actor: LocalActorContext,
 ): AuthOnboardingWorkspace {
+  const surfaceFamily = getActorSurfaceFamily(actor);
   const plan = getAuthOnboardingPlan();
   const onboardingActor = getOnboardingActor(actor);
   const stepRows = authOnboardingSteps.map((step) =>
     toStepRow(step, onboardingActor),
   );
-  const launchPreflight = canReadLaunchPreflight(actor)
+  const launchPreflight = canReadLaunchPreflight(surfaceFamily)
     ? buildLaunchPreflight()
     : null;
 
   return {
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
       "This route makes the future sign-in, profile, join-request, membership approval, role assignment, coach assignment, and staff-role assignment path reviewable before any production auth or onboarding writes are enabled.",
     actorLabel: getOwnerLabel(onboardingActor),
@@ -154,11 +159,11 @@ function buildFutureEvents(steps: readonly OnboardingStep[]): IntegrationEvent[]
   }));
 }
 
-function canReadLaunchPreflight(actor: LocalActorContext): boolean {
+function canReadLaunchPreflight(surfaceFamily: ActorSurfaceFamily): boolean {
   return (
-    actor.audience === "admin" ||
-    actor.audience === "ds_admin" ||
-    actor.audience === "super_admin"
+    surfaceFamily === "staff" ||
+    surfaceFamily === "ds_admin" ||
+    surfaceFamily === "super_admin"
   );
 }
 
@@ -347,7 +352,9 @@ function getRequiredRoleCoverage() {
 }
 
 function getOnboardingActor(actor: LocalActorContext): OnboardingActor {
-  if (actor.audience === "chapter_member") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member") {
     return "student";
   }
 
@@ -358,12 +365,12 @@ function getOnboardingActor(actor: LocalActorContext): OnboardingActor {
     return "chapter_president_vp";
   }
 
-  switch (actor.audience) {
-    case "chapter_leader":
-      return "chapter_president_vp";
+  switch (surfaceFamily) {
+    case "leader":
+      return "student";
     case "coach":
       return "coach";
-    case "admin":
+    case "staff":
       return "admin";
     case "ds_admin":
       return "ds_admin";
@@ -373,15 +380,15 @@ function getOnboardingActor(actor: LocalActorContext): OnboardingActor {
 }
 
 function getNextStep(actor: LocalActorContext): AuthOnboardingWorkspace["nextStep"] {
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
       return {
         label: "Open local sign-in",
         href: "/login",
         detail:
           "Preview the fake local sign-in path, then return to Profile to verify role scope.",
       };
-    case "chapter_leader":
+    case "leader":
       return {
         label: "Review member roles",
         href: "/chapter/members",
@@ -395,7 +402,7 @@ function getNextStep(actor: LocalActorContext): AuthOnboardingWorkspace["nextSte
         detail:
           "Confirm coach portfolio scope and support boundaries before real coach assignments exist.",
       };
-    case "admin":
+    case "staff":
     case "ds_admin":
     case "super_admin":
       return {
@@ -407,15 +414,15 @@ function getNextStep(actor: LocalActorContext): AuthOnboardingWorkspace["nextSte
   }
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "member":
       return "Your future onboarding path";
-    case "chapter_leader":
+    case "leader":
       return "Chapter onboarding approval path";
     case "coach":
       return "Coach onboarding and portfolio path";
-    case "admin":
+    case "staff":
       return "Admin auth and onboarding readiness";
     case "ds_admin":
       return "DS Admin onboarding safety review";

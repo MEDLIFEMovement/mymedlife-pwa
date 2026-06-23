@@ -61,18 +61,18 @@ export function ActionProofHandoffPanel({
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
         <ProofHandoffList
-          title="Future structured records"
+          title="What gets tracked later"
           items={workspace.futureStructuredEvents}
         />
         <ProofHandoffList
-          title="Disabled outbox destinations"
+          title="Held follow-ups"
           items={workspace.disabledOutboxDestinations}
         />
       </div>
 
       <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
         <p className="text-sm font-semibold text-amber-100">
-          Still preview-only
+          What stays off here
         </p>
         <ul className="mt-3 grid gap-2 text-xs leading-5 text-amber-50/72">
           {workspace.safetyNotes.map((note) => (

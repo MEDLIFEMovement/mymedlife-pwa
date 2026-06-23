@@ -10,16 +10,29 @@ import {
   type EvidenceSubmissionWorkspace,
 } from "@/services/evidence-submission-workspace";
 import { getReviewQueueForActor } from "@/services/local-action-contracts";
+import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import {
+  buildMemberActionRouteHref,
+  type MemberActionRouteSource,
+} from "@/services/member-action-route-href";
 import { getMemberProofStatusWorkspace } from "@/services/member-proof-status";
-import { canReadAssignment } from "@/services/role-visibility";
+import { canReadAssignment, getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("rushMonthEvidence");
 export const dynamic = "force-dynamic";
 
-export default async function EvidencePage() {
+type EvidencePageProps = {
+  searchParams?: Promise<{
+    source?: string;
+  }>;
+};
+
+export default async function EvidencePage({ searchParams }: EvidencePageProps) {
+  const emptySearchParams: { source?: string } = {};
   const actor = await getLocalActorContext();
+  const search = await (searchParams ?? Promise.resolve(emptySearchParams));
   const visibleAssignmentIds = new Set(
     assignments
       .filter((assignment) => canReadAssignment(actor, assignment))
@@ -32,55 +45,478 @@ export default async function EvidencePage() {
       : evidenceItems.filter((item) => visibleAssignmentIds.has(item.assignmentId));
   const evidenceSubmissionWorkspace = getEvidenceSubmissionWorkspace(actor);
   const proofStatusWorkspace = getMemberProofStatusWorkspace(actor);
+  const isMemberEvidence = getActorSurfaceFamily(actor) === "member";
+  const evidenceSource = parseEvidenceSource(search.source);
+  const evidenceSourceContext = getEvidenceSourceContext(evidenceSource);
+  const actionHrefForEvidence = (assignmentId: string) => {
+    return isMemberEvidence
+      ? buildMemberActionRouteHref(assignmentId, {
+          source: "evidence",
+        })
+      : buildLeaderAssignmentRouteHref(assignmentId, {
+          source: "evidence_queue",
+        });
+  };
+  const actionHrefForProofStatus = (assignmentId: string) => {
+    return isMemberEvidence
+      ? `/rush-month/actions/${assignmentId}`
+      : buildLeaderAssignmentRouteHref(assignmentId, {
+          source: "proof_status",
+        });
+  };
 
   return (
-    <AppShell actor={actor}>
-      <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-          Evidence
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">Mock proof and testimonials</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
-          Proof is a testimonial, bridge video, event note, or other experience
-          artifact. HQ decides what should be shared broadly; chapter leaders can
-          track follow-up but do not own broad proof-sharing decisions.
-        </p>
-      </section>
-
-      <EvidenceSubmissionReadinessPanel workspace={evidenceSubmissionWorkspace} />
-      <MemberProofStatusPanel workspace={proofStatusWorkspace} />
-
-      {visibleEvidence.length > 0 ? (
-        <section className="grid gap-3">
-          {visibleEvidence.map((item) => (
-            <article key={item.id} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-mono text-xs text-emerald-100/70">{item.evidenceType}</p>
-                  <h2 className="mt-2 text-xl font-semibold text-white">{item.summary}</h2>
-                  <p className="mt-2 text-sm text-white/62">Submitted by {item.submittedBy}</p>
+    <AppShell
+      actor={actor}
+      hideTopHeader={isMemberEvidence}
+      showMobileQuickItemHelpers={!isMemberEvidence}
+      showDebugTools={!isMemberEvidence}
+    >
+      {isMemberEvidence ? (
+        <>
+          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(150deg,#2455a4_0%,#2f65ba_52%,#183666_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#dbe8ff]">
+              Proof
+            </p>
+            <h1 className="mt-3 text-[2.15rem] font-semibold leading-none text-white">
+              Turn your action into one believable story.
+            </h1>
+            <p className="mt-3 text-sm leading-6 text-white/78">
+              Proof should explain what happened, why it mattered, and what another
+              student would believe because of it. Keep it clean and simple.
+            </p>
+            {evidenceSourceContext ? (
+              <div className="mt-5 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="max-w-2xl">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+                      {evidenceSourceContext.eyebrow}
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {evidenceSourceContext.title}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-white/74">
+                      {evidenceSourceContext.detail}
+                    </p>
+                  </div>
+                  <Link
+                    href={evidenceSourceContext.href}
+                    className="inline-flex w-fit rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                  >
+                    {evidenceSourceContext.backLabel}
+                  </Link>
                 </div>
-                <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/70">
-                  {item.status}
-                </span>
               </div>
-              <Link
-                href={`/rush-month/actions/${item.assignmentId}`}
-                className="mt-4 inline-flex text-sm font-semibold text-emerald-100"
-              >
-                Open linked action
-              </Link>
-            </article>
-          ))}
-        </section>
+            ) : null}
+            {evidenceSubmissionWorkspace.nextSubmission ? (
+              <article className="mt-5 rounded-[1.7rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+                  Next proof item
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">
+                  {evidenceSubmissionWorkspace.nextSubmission.assignmentTitle}
+                </h2>
+                <p className="mt-2 text-sm text-white/74">
+                  {evidenceSubmissionWorkspace.nextSubmission.statusLabel}
+                </p>
+                <p className="mt-3 text-sm leading-6 text-white/76">
+                  {evidenceSubmissionWorkspace.nextSubmission.storyPrompt}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link
+                    href={evidenceSubmissionWorkspace.nextSubmission.proofIntakeHref}
+                    className="inline-flex rounded-full bg-[#f7d05e] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
+                  >
+                    {evidenceSubmissionWorkspace.nextSubmission.proofIntakeLabel}
+                  </Link>
+                  <Link
+                    href={evidenceSubmissionWorkspace.nextSubmission.actionHref}
+                    className="inline-flex rounded-full border border-white/14 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white"
+                  >
+                    Open linked action
+                  </Link>
+                </div>
+              </article>
+            ) : null}
+          </section>
+
+          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+            <section className="grid gap-3 sm:grid-cols-3">
+              <MemberEvidenceStat
+                label="Need proof"
+                value={`${proofStatusWorkspace.counts.proofNeeded}`}
+                note="Actions that need a testimonial, note, or context handoff."
+              />
+              <MemberEvidenceStat
+                label="HQ review"
+                value={`${proofStatusWorkspace.counts.waitingHqReview}`}
+                note="Proof is visible internally, but broader sharing still waits on HQ."
+              />
+              <MemberEvidenceStat
+                label="Needs context"
+                value={`${proofStatusWorkspace.counts.changesRequested}`}
+                note="Some proof ideas need a clearer story, consent, or hesitation answered."
+              />
+            </section>
+
+            <section className="app-surface rounded-[2rem] p-5">
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <p className="app-eyebrow app-eyebrow-blue">What good proof does</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                    Help the next student believe the chapter is real.
+                  </h2>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3">
+                <MemberEvidenceTip
+                  title="Say what happened"
+                  detail="Use plain English. What was the action, event, or conversation?"
+                />
+                <MemberEvidenceTip
+                  title="Say why it mattered"
+                  detail="Explain the outcome or feeling, not just that something occurred."
+                />
+                <MemberEvidenceTip
+                  title="Answer one hesitation"
+                  detail="A good proof note helps someone else picture why MEDLIFE is worth showing up for."
+                />
+              </div>
+            </section>
+
+            <section className="grid gap-4 lg:grid-cols-[0.98fr_1.02fr]">
+              <section className="app-surface-info rounded-[2rem] p-5">
+                <p className="app-eyebrow app-eyebrow-blue">Your proof queue</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  What should happen next for each action?
+                </h2>
+                <div className="mt-4 grid gap-3">
+                  {evidenceSubmissionWorkspace.rows.map((row) => (
+                    <article
+                      key={row.assignmentId}
+                      className="app-surface rounded-[1.25rem] p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="app-eyebrow app-eyebrow-blue">{row.statusLabel}</p>
+                          <h3 className="mt-2 text-lg font-semibold text-slate-950">
+                            {row.assignmentTitle}
+                          </h3>
+                        </div>
+                        {row.isRecommended ? (
+                          <span className="rounded-full border border-[#f7d05e]/35 bg-[#fff8df] px-3 py-1 text-xs font-semibold text-[#8a6700]">
+                            Start here
+                          </span>
+                        ) : null}
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {row.nextStep}
+                      </p>
+                      <p className="mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-sm leading-6 text-slate-700">
+                        {row.storyPrompt}
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Link
+                          href={row.proofIntakeHref}
+                          className="rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+                        >
+                          {row.proofIntakeLabel}
+                        </Link>
+                        <Link
+                          href={row.actionHref}
+                          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+                        >
+                          Open action
+                        </Link>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
+              <section className="app-surface rounded-[2rem] p-5">
+                <p className="app-eyebrow app-eyebrow-blue">What happens after you submit</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  Sharing stays human-reviewed.
+                </h2>
+                <div className="mt-4 grid gap-3">
+                  {proofStatusWorkspace.rows.map((row) => (
+                    <article
+                      key={row.id}
+                      className="app-surface-soft rounded-[1.2rem] p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="app-eyebrow app-eyebrow-slate">{row.statusLabel}</p>
+                          <h3 className="mt-2 text-lg font-semibold text-slate-950">
+                            {row.assignmentTitle}
+                          </h3>
+                        </div>
+                        <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                          {row.proofTypeLabel}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {row.plainEnglishStatus}
+                      </p>
+                      <p className="mt-3 text-sm font-medium text-slate-700">
+                        Next: {row.nextStep}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            </section>
+
+            <section className="grid gap-3 sm:grid-cols-3">
+              <MemberEvidenceLink
+                href="/rush-month/actions?source=evidence"
+                eyebrow="Actions"
+                title="Go back to the work"
+                detail="Proof should point back to the action, not replace it."
+              />
+              <MemberEvidenceLink
+                href="/rush-month/events"
+                eyebrow="Events"
+                title="Turn events into stories"
+                detail="Good event proof helps the next student picture the chapter in motion."
+              />
+              <MemberEvidenceLink
+                href="/rush-month/leaderboard"
+                eyebrow="Points"
+                title="See how effort is recognized"
+                detail="Recognition stays chapter-scoped and follows visible action."
+              />
+            </section>
+            {visibleEvidence.length > 0 ? (
+              <section className="app-surface-warm rounded-[2rem] p-5">
+                <p className="app-eyebrow app-eyebrow-warm">Existing proof examples</p>
+                <div className="mt-4 grid gap-3">
+                  {visibleEvidence.map((item) => (
+                    <article key={item.id} className="app-surface rounded-[1.2rem] p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="app-eyebrow app-eyebrow-slate">{item.evidenceType}</p>
+                          <h3 className="mt-2 text-lg font-semibold text-slate-950">
+                            {item.summary}
+                          </h3>
+                          <p className="mt-2 text-sm text-slate-600">
+                            Submitted by {item.submittedBy}
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                          {item.status}
+                        </span>
+                      </div>
+                      <Link
+                        href={actionHrefForEvidence(item.assignmentId)}
+                        className="mt-4 inline-flex text-sm font-semibold text-[#2563eb]"
+                      >
+                        Open linked action
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            <section className="app-surface-warm rounded-[2rem] p-5">
+              <p className="app-eyebrow app-eyebrow-warm">A few reminders</p>
+              <div className="mt-4 grid gap-3">
+                <MemberEvidenceTip
+                  title="Keep it specific"
+                  detail="One clear moment, quote, or screenshot is more useful than a long explanation."
+                />
+                <MemberEvidenceTip
+                  title="Keep it tied to the action"
+                  detail="The best proof shows what happened because of the event, outreach, or task you just completed."
+                />
+                <MemberEvidenceTip
+                  title="Keep it okay to share internally"
+                  detail="Right now, proof stays in chapter and review spaces, so make sure the note or image is appropriate for leaders and coaches."
+                />
+              </div>
+            </section>
+          </div>
+
+        </>
       ) : (
-        <RestrictedState
-          title="No proof rows are visible to this role."
-          message="DS Admin and unrelated local contexts should not see student proof/testimonials. Use the local role switcher to preview member, leader, coach, admin, or super admin views."
-        />
+        <>
+          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+              Evidence
+            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-white">Proof and testimonials</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/78">
+              Proof is a testimonial, bridge video, event note, or other experience
+              artifact. HQ decides what should be shared broadly; chapter leaders can
+              track follow-up but do not own broad proof-sharing decisions.
+            </p>
+          </section>
+
+          <EvidenceSubmissionReadinessPanel workspace={evidenceSubmissionWorkspace} />
+          <MemberProofStatusPanel
+            workspace={proofStatusWorkspace}
+            buildActionHref={actionHrefForProofStatus}
+          />
+
+          {visibleEvidence.length > 0 ? (
+            <section className="grid gap-3">
+              {visibleEvidence.map((item) => (
+                <article
+                  key={item.id}
+                  className="app-surface rounded-[1.7rem] p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="font-mono text-xs text-[#2563eb]">{item.evidenceType}</p>
+                      <h2 className="mt-2 text-xl font-semibold text-slate-950">{item.summary}</h2>
+                      <p className="mt-2 text-sm text-slate-600">Submitted by {item.submittedBy}</p>
+                    </div>
+                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                      {item.status}
+                    </span>
+                  </div>
+                  <Link
+                    href={actionHrefForEvidence(item.assignmentId)}
+                    className="mt-4 inline-flex text-sm font-semibold text-[#2563eb]"
+                  >
+                    Open linked action
+                  </Link>
+                </article>
+              ))}
+            </section>
+          ) : (
+            <RestrictedState
+              title="No proof rows are visible to this role."
+              message="DS Admin and unrelated local contexts should not see student proof/testimonials. Use the local role switcher to preview member, leader, coach, admin, or super admin views."
+            />
+          )}
+        </>
       )}
     </AppShell>
   );
+}
+
+function MemberEvidenceStat({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <article className="app-surface rounded-[1.35rem] p-4">
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-2 text-3xl font-semibold text-slate-950">{value}</p>
+      <p className="app-copy mt-2">{note}</p>
+    </article>
+  );
+}
+
+function MemberEvidenceTip({
+  title,
+  detail,
+}: {
+  title: string;
+  detail: string;
+}) {
+  return (
+    <article className="app-surface-soft rounded-[1.2rem] p-4">
+      <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{detail}</p>
+    </article>
+  );
+}
+
+function MemberEvidenceLink({
+  href,
+  eyebrow,
+  title,
+  detail,
+}: {
+  href: string;
+  eyebrow: string;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="app-surface rounded-[1.35rem] p-4 transition hover:border-[#f7d05e]/35 hover:bg-white"
+    >
+      <p className="app-eyebrow app-eyebrow-blue">{eyebrow}</p>
+      <h3 className="mt-2 text-lg font-semibold text-slate-950">{title}</h3>
+      <p className="app-copy mt-2">{detail}</p>
+    </Link>
+  );
+}
+
+function parseEvidenceSource(value?: string): MemberActionRouteSource | null {
+  switch (value) {
+    case "home":
+    case "campaigns":
+    case "events":
+    case "points":
+    case "profile":
+      return value;
+    default:
+      return null;
+  }
+}
+
+function getEvidenceSourceContext(source: MemberActionRouteSource | null) {
+  switch (source) {
+    case "home":
+      return {
+        eyebrow: "From home",
+        title: "This proof queue opened from your member home flow.",
+        detail:
+          "Home pushed you here because proof is part of the weekly loop. Review what still needs a believable story, then return without losing that member-home context.",
+        href: "/",
+        backLabel: "Back to home",
+      };
+    case "campaigns":
+      return {
+        eyebrow: "From campaigns",
+        title: "This proof queue opened from the Rush Month campaign route.",
+        detail:
+          "Campaign context explains why these stories matter. Keep the proof tied to that same campaign loop instead of letting it become a disconnected upload lane.",
+        href: "/campaigns",
+        backLabel: "Back to campaigns",
+      };
+    case "events":
+      return {
+        eyebrow: "From events",
+        title: "This proof queue opened from the events route.",
+        detail:
+          "Events can become real chapter stories only when the follow-up stays specific. Use the queue here, then return to the event context if that is still the clearest next step.",
+        href: "/rush-month/events",
+        backLabel: "Back to events",
+      };
+    case "points":
+      return {
+        eyebrow: "From points",
+        title: "This proof queue opened from points and recognition.",
+        detail:
+          "Recognition should stay tied to visible action and believable proof. Review what still needs context here, then jump back once the recognition loop makes sense.",
+        href: "/rush-month/leaderboard",
+        backLabel: "Back to points",
+      };
+    case "profile":
+      return {
+        eyebrow: "From profile",
+        title: "This proof queue opened from your profile route.",
+        detail:
+          "Profile surfaced proof as part of your member-owned next step. Keep the queue tied to that profile context instead of treating it like a separate admin-style review surface.",
+        href: "/profile",
+        backLabel: "Back to profile",
+      };
+    default:
+      return null;
+  }
 }
 
 function EvidenceSubmissionReadinessPanel({
@@ -93,18 +529,14 @@ function EvidenceSubmissionReadinessPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
+    <section className="app-surface-info rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
-            What should I submit next?
+          <p className="app-eyebrow app-eyebrow-blue">
+            What should happen next?
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            {workspace.title}
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/68">
-            {workspace.summary}
-          </p>
+          <h2 className="app-title mt-2">{workspace.title}</h2>
+          <p className="app-copy mt-2 max-w-3xl">{workspace.summary}</p>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
           <MiniStat label="Ready" value={`${workspace.counts.readyToSubmit}`} />
@@ -114,36 +546,36 @@ function EvidenceSubmissionReadinessPanel({
       </div>
 
       {workspace.nextSubmission ? (
-        <article className="mt-5 rounded-3xl border border-emerald-300/25 bg-black/25 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100/72">
+        <article className="app-surface mt-5 rounded-[1.7rem] p-4">
+          <p className="app-eyebrow app-eyebrow-slate">
             Next proof item
           </p>
           <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h3 className="text-xl font-semibold text-white">
+              <h3 className="text-xl font-semibold text-slate-950">
                 {workspace.nextSubmission.assignmentTitle}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-white/66">
+              <p className="mt-2 text-sm leading-6 text-slate-600">
                 {workspace.nextSubmission.nextStep}
               </p>
-              <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-sm leading-6 text-white/62">
+              <p className="app-surface-soft mt-3 rounded-[1.2rem] p-3 text-sm leading-6 text-slate-600">
                 {workspace.nextSubmission.storyPrompt}
               </p>
             </div>
             <Link
               href={workspace.nextSubmission.proofIntakeHref}
-              className="w-fit rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+              className="w-fit rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#10223f]"
             >
               {workspace.nextSubmission.proofIntakeLabel}
             </Link>
           </div>
         </article>
       ) : (
-        <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
-          <p className="text-sm font-semibold text-white">
+        <div className="app-surface mt-5 rounded-[1.7rem] p-4">
+          <p className="text-sm font-semibold text-slate-950">
             No proof item is ready to submit for this local role.
           </p>
-          <p className="mt-2 text-sm leading-6 text-white/62">
+          <p className="mt-2 text-sm leading-6 text-slate-600">
             Review the queue below or switch local actors to inspect a different
             role.
           </p>
@@ -165,12 +597,12 @@ function EvidenceSubmissionReadinessPanel({
           title="Future structured records"
           items={workspace.futureStructuredEvents.map((event) => event.eventType)}
         />
-        <TokenList title="Blocked writes" items={workspace.blockedWrites} />
+        <TokenList title="Held actions" items={workspace.blockedWrites} />
       </div>
 
       <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
         <p className="text-sm font-semibold text-amber-100">
-          Metadata only until approval
+          Sharing stays reviewed
         </p>
         <ul className="mt-3 grid gap-2 text-xs leading-5 text-amber-50/72">
           {workspace.safetyNotes.map((note) => (
@@ -188,19 +620,17 @@ function EvidenceSubmissionPacketPanel({
   packet: EvidenceSubmissionPacket;
 }) {
   return (
-    <section className="mt-5 rounded-3xl border border-sky-300/20 bg-sky-300/10 p-4">
+    <section className="app-surface mt-5 rounded-[1.7rem] p-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-100/78">
-            Proof packet
+          <p className="app-eyebrow app-eyebrow-blue">
+            Submission preview
           </p>
-          <h3 className="mt-2 text-xl font-semibold text-white">
-            {packet.title}
-          </h3>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
-            {packet.assignmentTitle} can be shaped for the local proof metadata
-            function while saves, uploads, nudges, publishing, and external sends
-            stay locked.
+          <h3 className="mt-2 text-xl font-semibold text-slate-950">{packet.title}</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            {packet.assignmentTitle} is the proof story currently in focus.
+            Review the summary, destination, and next-step posture before this
+            moves forward.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -210,12 +640,12 @@ function EvidenceSubmissionPacketPanel({
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-            Metadata payload
+        <div className="app-surface-soft rounded-[1.2rem] p-4">
+          <p className="app-eyebrow app-eyebrow-slate">
+            Story details
           </p>
           <div className="mt-3 grid gap-2 text-sm leading-6">
-            <PacketRow label="Function" value={packet.localFunction} />
+            <PacketRow label="Save path" value={packet.localFunction} />
             <PacketRow label="Evidence type" value={packet.payload.evidenceType} />
             <PacketRow label="Summary" value={packet.payload.summary} />
             <PacketRow label="Action route" value={packet.targetRoute} />
@@ -223,18 +653,18 @@ function EvidenceSubmissionPacketPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-            Result preview
+        <div className="app-surface-soft rounded-[1.2rem] p-4">
+          <p className="app-eyebrow app-eyebrow-slate">
+            Current proof path
           </p>
           <div className="mt-3 grid gap-2">
-            <p className="rounded-2xl bg-white/[0.05] p-3 text-sm leading-6 text-white/64">
+            <p className="rounded-[1.1rem] bg-white p-3 text-sm leading-6 text-slate-600 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
               Now: {packet.currentResultTitle}
             </p>
-            <p className="rounded-2xl bg-white/[0.05] p-3 text-sm leading-6 text-white/64">
+            <p className="rounded-[1.1rem] bg-white p-3 text-sm leading-6 text-slate-600 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
               If enabled: {packet.futureResultTitle}
             </p>
-            <p className="rounded-2xl bg-white/[0.05] p-3 text-xs leading-5 text-white/52">
+            <p className="rounded-[1.1rem] bg-white p-3 text-xs leading-5 text-slate-500 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
               {packet.readinessReason}
             </p>
           </div>
@@ -242,8 +672,8 @@ function EvidenceSubmissionPacketPanel({
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-sm font-semibold text-white">Readiness checks</p>
+        <div className="app-surface-soft rounded-[1.2rem] p-4">
+          <p className="text-sm font-semibold text-slate-950">Readiness checks</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {packet.readinessChecks.map((check) => (
               <span
@@ -260,8 +690,8 @@ function EvidenceSubmissionPacketPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-sm font-semibold text-white">Future records</p>
+        <div className="app-surface-soft rounded-[1.2rem] p-4">
+          <p className="text-sm font-semibold text-slate-950">Later handoffs</p>
           <div className="mt-3 grid gap-2">
             {packet.recordPreview.map((record) => (
               <PacketRow
@@ -278,9 +708,9 @@ function EvidenceSubmissionPacketPanel({
         {packet.blockedControls.map((control) => (
           <span
             key={control}
-            className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/58"
+            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
           >
-            Locked {control}
+            Hold {control}
           </span>
         ))}
       </div>
@@ -290,18 +720,16 @@ function EvidenceSubmissionPacketPanel({
 
 function PacketRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-white/[0.05] p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">
-        {label}
-      </p>
-      <p className="mt-1 break-words text-sm text-white/66">{value}</p>
+    <div className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 break-words text-sm text-slate-600">{value}</p>
     </div>
   );
 }
 
 function PacketToken({ label, value }: { label: string; value: string }) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/64">
+    <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
       {label}: {value}
     </span>
   );
@@ -310,76 +738,64 @@ function PacketToken({ label, value }: { label: string; value: string }) {
 function EvidenceSubmissionCard({ row }: { row: EvidenceSubmissionRow }) {
   return (
     <article
-      className={`rounded-2xl border bg-black/20 p-4 ${
-        row.isRecommended ? "border-emerald-300/30" : "border-white/10"
+      className={`app-surface rounded-[1.45rem] p-4 ${
+        row.isRecommended ? "border-[#f7d05e]/40 bg-[#fffdf5]" : ""
       }`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-semibold text-white/64">
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
               {row.statusLabel}
             </span>
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-semibold text-white/64">
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
               {row.ownerLabel}
             </span>
             {row.isRecommended ? (
-              <span className="rounded-full border border-emerald-300/30 bg-emerald-300/15 px-3 py-1 text-xs font-semibold text-emerald-100">
+              <span className="rounded-full border border-[#f7d05e]/40 bg-[#fff4c4] px-3 py-1 text-xs font-semibold text-[#a16207]">
                 next
               </span>
             ) : null}
           </div>
-          <h3 className="mt-3 text-lg font-semibold text-white">
-            {row.assignmentTitle}
-          </h3>
-          <p className="mt-2 text-sm leading-6 text-white/66">
-            {row.plainEnglishStatus}
-          </p>
+          <h3 className="mt-3 text-lg font-semibold text-slate-950">{row.assignmentTitle}</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-600">{row.plainEnglishStatus}</p>
         </div>
         <Link
           href={row.actionHref}
-          className="w-fit rounded-full border border-white/12 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white"
+          className="w-fit rounded-full border border-[#5d8ff6]/28 bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
         >
           Open action
         </Link>
       </div>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+        <div className="app-surface-soft rounded-[1.1rem] p-3">
+          <p className="app-eyebrow app-eyebrow-slate">
             Proof needed
           </p>
-          <p className="mt-2 text-sm leading-6 text-white/66">
-            {row.evidenceRequired}
-          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">{row.evidenceRequired}</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-            Write posture
+        <div className="app-surface-soft rounded-[1.1rem] p-3">
+          <p className="app-eyebrow app-eyebrow-slate">
+            Submission path
           </p>
-          <p className="mt-2 text-sm leading-6 text-white/66">
-            {row.disabledReason}
-          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">{row.disabledReason}</p>
         </div>
       </div>
 
       <div className="mt-3 grid gap-2 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+        <div className="app-surface-soft rounded-[1.1rem] p-3">
+          <p className="app-eyebrow app-eyebrow-slate">
             Story prompt
           </p>
-          <p className="mt-2 text-sm leading-6 text-white/66">
-            {row.storyPrompt}
-          </p>
-          <p className="mt-3 text-xs leading-5 text-white/44">
-            Review lane: {row.reviewLane}
-          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">{row.storyPrompt}</p>
+          <p className="mt-3 text-xs leading-5 text-slate-500">Review path: {row.reviewLane}</p>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+        <div className="app-surface-soft rounded-[1.1rem] p-3">
+          <p className="app-eyebrow app-eyebrow-slate">
             Prep checklist
           </p>
-          <ul className="mt-2 grid gap-2 text-sm leading-6 text-white/66">
+          <ul className="mt-2 grid gap-2 text-sm leading-6 text-slate-600">
             {row.preparationChecklist.map((item) => (
               <li key={item}>{item}</li>
             ))}
@@ -391,9 +807,9 @@ function EvidenceSubmissionCard({ row }: { row: EvidenceSubmissionRow }) {
         {row.disabledControls.map((control) => (
           <span
             key={`${row.assignmentId}-${control}`}
-            className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs text-white/56"
+            className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-500"
           >
-            {control} off
+            Hold {control}
           </span>
         ))}
       </div>
@@ -403,24 +819,22 @@ function EvidenceSubmissionCard({ row }: { row: EvidenceSubmissionRow }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-        {label}
-      </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+    <div className="app-surface rounded-[1.05rem] px-3 py-2">
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
 
 function TokenList({ items, title }: { items: string[]; title: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-      <p className="text-sm font-semibold text-white">{title}</p>
+    <div className="app-surface rounded-[1.3rem] p-4">
+      <p className="text-sm font-semibold text-slate-950">{title}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {items.map((item) => (
           <span
             key={item}
-            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white/64"
+            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500"
           >
             {item}
           </span>

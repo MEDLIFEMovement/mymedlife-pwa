@@ -22,18 +22,17 @@ export default async function RushMonthLoopPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-          Rush Month MVP loop
+      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+          Rush Month operating loop
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-white">
           One operating path, end to end.
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
-          This screen is a mock-safe local proof of the Rush Month operating
-          loop: leader assignment, member action, proof submission, completion
-          review, points/KPI movement, HQ sharing posture, coach decision,
-          structured events, disabled outbox rows, and audit logs.
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/78">
+          Follow the same chapter workflow from assignment through action,
+          proof, review, recognition, and coach support so every handoff stays
+          visible in one place.
         </p>
       </section>
 

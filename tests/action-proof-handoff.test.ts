@@ -8,7 +8,7 @@ describe("action proof handoff", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const workspace = getActionProofHandoffWorkspace(
       actor,
-      requireAssignment("member-push"),
+      requireAssignment("share-rush-flyer"),
     );
 
     expect(workspace.canReadHandoff).toBe(true);
@@ -16,8 +16,8 @@ describe("action proof handoff", () => {
     expect(workspace.phase).toBe("prepare_story");
     expect(workspace.title).toContain("useful testimonial");
     expect(workspace.nextBestAction).toEqual({
-      href: "/proof-library/upload",
-      label: "Preview proof intake",
+      href: "/rush-month/actions/share-rush-flyer?step=submit#submit-evidence",
+      label: "Open submit evidence",
     });
     expect(workspace.checklist).toEqual(
       expect.arrayContaining([

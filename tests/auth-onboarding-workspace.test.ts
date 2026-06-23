@@ -46,6 +46,26 @@ describe("auth onboarding workspace", () => {
     ).toBe(false);
   });
 
+  it("treats committee chairs as student leaders without overgranting President / VP onboarding ownership", () => {
+    const chair = getAuthOnboardingWorkspace(
+      getMockLocalActorContext("committee.chair@mymedlife.test"),
+    );
+    const member = getAuthOnboardingWorkspace(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+    );
+
+    expect(chair.title).toBe("Chapter onboarding approval path");
+    expect(chair.nextStep.href).toBe("/chapter/members");
+    expect(
+      chair.stepRows.find((step) => step.key === "membership_approved")?.actorCanOwn,
+    ).toBe(false);
+    expect(
+      chair.stepRows.find((step) => step.key === "chapter_role_assigned")?.actorCanOwn,
+    ).toBe(false);
+    expect(member.title).toBe("Your future onboarding path");
+    expect(member.nextStep.href).toBe("/login");
+  });
+
   it("lets DS Admin inspect safety without owning app-truth onboarding", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const workspace = getAuthOnboardingWorkspace(actor);

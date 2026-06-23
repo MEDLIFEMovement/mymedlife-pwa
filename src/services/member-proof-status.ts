@@ -1,6 +1,10 @@
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { canReadAssignment } from "@/services/role-visibility";
+import {
+  canReadAssignment,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { Assignment, EvidenceItem } from "@/shared/types/domain";
 
 export type MemberProofStatusKey =
@@ -52,7 +56,9 @@ export function getMemberProofStatusWorkspace(
   allAssignments: Assignment[] = assignments,
   allEvidence: EvidenceItem[] = evidenceItems,
 ): MemberProofStatusWorkspace {
-  if (actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "ds_admin") {
     return hiddenProofStatusWorkspace();
   }
 
@@ -65,9 +71,9 @@ export function getMemberProofStatusWorkspace(
 
   return {
     canReadWorkspace: true,
-    title: getWorkspaceTitle(actor),
+    title: getWorkspaceTitle(surfaceFamily),
     summary:
-      "This summarizes what happens after proof or a testimonial is prepared. It is a plain-English student view; HQ still controls broad sharing and public publishing stays off.",
+      "This summarizes what happens after proof is submitted. It shows whether something is ready, needs more context, or is being kept for internal learning.",
     rows,
     counts: {
       total: rows.length,
@@ -198,15 +204,15 @@ function getStatusCopy(
   }
 }
 
-function getWorkspaceTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
+function getWorkspaceTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "member":
       return "What is happening with my proof?";
-    case "chapter_leader":
+    case "leader":
       return "Proof follow-up status";
     case "coach":
       return "Proof status as a chapter-health signal";
-    case "admin":
+    case "staff":
       return "HQ proof status summary";
     case "super_admin":
       return "Full local proof status summary";

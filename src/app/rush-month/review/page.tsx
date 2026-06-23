@@ -34,6 +34,7 @@ import { getLeaderProofDecisionWriteReadiness } from "@/services/leader-proof-de
 import { getLeaderProofDecisionWorkspace } from "@/services/leader-proof-decision-workspace";
 import { getLeaderReviewFocus } from "@/services/leader-review-focus";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { prepareDisabledHqSharingDecisionWrite } from "@/services/write-readiness";
 
@@ -91,7 +92,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         leaderProofDecisionPreviewEvidence ?? null,
         {
           decision: leaderProofDecisionPreviewRow.recommendedDecision,
-          note: `Local preview only: ${leaderProofDecisionPreviewRow.leaderNextStep}`,
+          note: `Preview chapter outcome: ${leaderProofDecisionPreviewRow.leaderNextStep}`,
         },
       )
     : undefined;
@@ -116,7 +117,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const canDecideSharing = canMakeHqSharingDecision(actor);
   const sampleDecisionInput = {
     decision: "approved",
-    note: "Local preview only: useful proof to share with other chapters later.",
+    note: "Preview sharing posture: useful proof to share with other chapters later.",
   } as const;
   const firstDecisionPreview = reviewEvidence[0]
     ? createHqSharingDecisionMock(actor, reviewEvidence[0], sampleDecisionInput)
@@ -150,19 +151,22 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
     leaderProofDecisionPreviewAssignment?.id === selectedAssignmentId
       ? leaderProofDecisionResultCode
       : undefined;
+  const showHqQueue = canDecideSharing;
+  const showLeaderTechnicalPanels = getActorSurfaceFamily(actor) === "super_admin";
 
   return (
-    <AppShell actor={actor}>
+    <AppShell actor={actor} showDebugTools={false}>
       <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-          HQ proof-sharing review
+          {showHqQueue ? "HQ proof-sharing review" : "Leader proof review"}
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">Proof/testimonial queue</h1>
+        <h1 className="mt-3 text-3xl font-semibold text-white">
+          {showHqQueue ? "Proof sharing desk" : "Chapter proof follow-up"}
+        </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
-          This local queue reflects the MEDLIFE proof model: students submit
-          proof or testimonials, and MEDLIFE HQ decides what should be shared broadly.
-          Chapter leaders can track pending proof, but they do not own the
-          sharing decision.
+          {showHqQueue
+            ? "Review proof that may be useful beyond one chapter, keep publishing decisions separate from local follow-through, and hold every broader-sharing step inside the HQ lane."
+            : "Keep chapter proof accountable, coach owners toward clearer submissions, and hand off anything worth broader reuse to HQ without taking over the sharing decision."}
         </p>
       </section>
 
@@ -214,13 +218,16 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       <LeaderEvidenceFollowUpBoardPanel board={leaderEvidenceFollowUpBoard} />
       <LeaderProofDecisionWorkspacePanel workspace={leaderProofDecisionWorkspace} />
-      {leaderProofDecisionWorkspace.canReadWorkspace && leaderProofDecisionResultPreview ? (
+      {showLeaderTechnicalPanels &&
+      leaderProofDecisionWorkspace.canReadWorkspace &&
+      leaderProofDecisionResultPreview ? (
         <LeaderProofDecisionResultStatesPanel
           preview={leaderProofDecisionResultPreview}
           states={getLeaderProofDecisionResultStates()}
         />
       ) : null}
-      {leaderProofDecisionWorkspace.canReadWorkspace &&
+      {showLeaderTechnicalPanels &&
+      leaderProofDecisionWorkspace.canReadWorkspace &&
       leaderProofDecisionPreviewAssignment &&
       leaderProofDecisionPreviewEvidence &&
       leaderProofDecisionWriteReadiness &&
@@ -234,7 +241,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
         />
       ) : null}
 
-      {reviewEvidence.length > 0 ? (
+      {showHqQueue && reviewEvidence.length > 0 ? (
         <section className="grid gap-3">
           {reviewEvidence.map((evidence) => {
             const assignment = data.assignments.find((item) => {
@@ -260,7 +267,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                 </div>
                 {canDecideSharing ? (
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {["Approve for sharing", "Request better context", "Do not share"].map((label) => (
+                    {["Approve for later sharing", "Request better context", "Keep private"].map((label) => (
                       <button
                         key={label}
                         type="button"
@@ -273,34 +280,35 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                   </div>
                 ) : (
                   <p className="mt-4 text-sm leading-6 text-white/58">
-                    Read-only: this local role can track proof posture, but HQ
-                    Admin or Super Admin owns the sharing decision.
+                    This role can track proof posture here, but HQ Admin or
+                    Super Admin owns the broader-sharing decision.
                   </p>
                 )}
               </article>
             );
           })}
         </section>
-      ) : (
+      ) : showHqQueue ? (
         <RestrictedState
           title="No proof review rows are visible to this role."
           message="Members and DS Admin should not see the HQ proof-sharing queue. Use Admin or Super Admin to preview sharing decisions."
         />
-      )}
+      ) : null}
 
-      {firstDecisionPreview?.success ? (
+      {showHqQueue && firstDecisionPreview?.success ? (
         <>
           <section className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
-              Local decision contract
+              Sharing trail preview
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
-              HQ decision would create a recorded event and disabled outbox row.
+              HQ decision trail stays visible before broader sharing opens.
             </h2>
             <p className="mt-2 text-sm leading-6 text-white/66">
               Preview decision: {firstDecisionPreview.data.approval.decision}.
               Outbox status: {firstDecisionPreview.data.automationOutbox.status}.
-              No sharing, warehouse export, or automation happens in Goal 12.
+              Broader sharing, warehouse export, and automation stay off in
+              this review pass.
             </p>
           </section>
           {disabledDecisionWrite ? (

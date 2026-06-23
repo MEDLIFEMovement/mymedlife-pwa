@@ -22,7 +22,7 @@ describe("proof upload intake", () => {
     ]);
     expect(workspace.storagePacket).toEqual(
       expect.objectContaining({
-        title: "Goal 159 proof storage intake packet",
+        title: "Proof upload path preview",
         targetRoute: "/proof-library/upload",
         futureFunction: "app.prepare_proof_upload_intake",
         privateBucket: "proof-submissions-private",
@@ -60,6 +60,15 @@ describe("proof upload intake", () => {
         "Export raw proof to automation",
       ]),
     );
+  });
+
+  it("treats committee members as part of the member-owned proof upload surface", () => {
+    const actor = getMockLocalActorContext("committee.member@mymedlife.test");
+    const workspace = getProofUploadIntakeWorkspace(actor);
+
+    expect(workspace.canReadWorkspace).toBe(true);
+    expect(workspace.title).toBe("Prepare your proof upload");
+    expect(workspace.uploadsEnabled).toBe(false);
   });
 
   it("keeps DS Admin out of student proof content", () => {
@@ -132,7 +141,7 @@ describe("proof upload intake", () => {
     );
     expect(
       workspace.futureOutboxDestinations.every((destination) =>
-        destination.includes("disabled"),
+        destination.includes("paused"),
       ),
     ).toBe(true);
   });
@@ -175,9 +184,18 @@ describe("proof upload intake", () => {
     );
     expect(
       workspace.storagePacket?.futureRecords.find(
-        (record) => record.label === "Disabled outbox",
+        (record) => record.label === "Held handoffs",
       )?.value,
     ).toContain("AI summary");
+    expect(workspace.uploadsEnabled).toBe(false);
+  });
+
+  it("treats committee chairs as part of the leader-owned proof upload surface", () => {
+    const actor = getMockLocalActorContext("committee.chair@mymedlife.test");
+    const workspace = getProofUploadIntakeWorkspace(actor);
+
+    expect(workspace.canReadWorkspace).toBe(true);
+    expect(workspace.title).toBe("Leader proof prep");
     expect(workspace.uploadsEnabled).toBe(false);
   });
 });

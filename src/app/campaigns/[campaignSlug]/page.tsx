@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { ChapterEngagementCampaignPanel } from "@/components/chapter-engagement-campaign-panel";
 import { GrowTheMovementCampaignPanel } from "@/components/grow-the-movement-campaign-panel";
@@ -22,6 +22,7 @@ import {
 import { getGrowTheMovementCampaignPlan } from "@/services/grow-the-movement-campaign";
 import { getLeadershipTransitionCampaignPlan } from "@/services/leadership-transition-campaign";
 import { getMovingMountainsCampaignPlan } from "@/services/moving-mountains-campaign";
+import { getCampaignsRouteRedirectHref } from "@/services/owned-route-redirect";
 import { getPlanningGoalSettingCampaignPlan } from "@/services/planning-goal-setting-campaign";
 import { getSltPromotionCampaignPlan } from "@/services/slt-promotion-campaign";
 import { getStartAChapterCampaignPlan } from "@/services/start-a-chapter-campaign";
@@ -45,6 +46,14 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
 
   if (!campaign) {
     notFound();
+  }
+
+  const redirectHref = getCampaignsRouteRedirectHref(actor, {
+    campaignSlug: campaign.slug,
+  });
+
+  if (redirectHref) {
+    redirect(redirectHref);
   }
 
   const visibleCampaigns = getVisibleCampaignShellsForActor(actor);
@@ -88,19 +97,19 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-              {campaign.status} campaign shell
+          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+              {campaign.status} campaign
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">{campaign.name}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
               {campaign.summary}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {campaign.slug === "rush-month" ? (
                 <Link
                   href="/rush-month"
-                  className="rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+                  className="rounded-full bg-[#86efac] px-4 py-2 text-sm font-semibold text-[#14532d]"
                 >
                   Open active Rush Month loop
                 </Link>
@@ -120,141 +129,150 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
             </div>
           </section>
 
-          <section className="grid gap-3 sm:grid-cols-3">
-            <MetricCard
-              label="Action lanes"
-              value={`${campaign.actionCommitteeLanes.length}`}
-              note={campaign.actionCommitteeLanes.join(", ")}
-            />
-            <MetricCard
-              label="Event plans"
-              value={`${eventPlans.length}`}
-              note="Mock/local only"
-            />
-            <MetricCard
-              label="Proof items"
-              value={`${proofItems.length}`}
-              note="HQ sharing posture"
-            />
-          </section>
+          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+            <section className="grid gap-3 sm:grid-cols-3">
+              <MetricCard
+                label="Action lanes"
+                value={`${campaign.actionCommitteeLanes.length}`}
+                note={campaign.actionCommitteeLanes.join(", ")}
+              />
+              <MetricCard
+                label="Event plans"
+                value={`${eventPlans.length}`}
+                note="Chapter-ready examples"
+              />
+              <MetricCard
+                label="Proof items"
+                value={`${proofItems.length}`}
+                note="Story and proof follow-through"
+              />
+            </section>
 
-          <section className="grid gap-3 lg:grid-cols-2">
-            <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-              <h2 className="text-2xl font-semibold text-white">Why students care</h2>
-              <p className="mt-3 text-sm leading-6 text-white/68">
-                {campaign.studentPromise}
+            <section className="grid gap-3 lg:grid-cols-2">
+              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                <h2 className="text-2xl font-semibold text-slate-950">Why students care</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  {campaign.studentPromise}
+                </p>
+                <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Operating rhythm
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {campaign.operatingRhythm}
+                </p>
+              </article>
+
+              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                <h2 className="text-2xl font-semibold text-slate-950">Proof and coaching</h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{campaign.proofUse}</p>
+                <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Coach focus
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{campaign.coachFocus}</p>
+              </article>
+            </section>
+
+            {planningGoalSettingPlan ? (
+              <PlanningGoalSettingCampaignPanel plan={planningGoalSettingPlan} />
+            ) : null}
+
+            {chapterEngagementPlan ? (
+              <ChapterEngagementCampaignPanel plan={chapterEngagementPlan} />
+            ) : null}
+
+            {sltPromotionPlan ? (
+              <SltPromotionCampaignPanel plan={sltPromotionPlan} />
+            ) : null}
+
+            {movingMountainsPlan ? (
+              <MovingMountainsCampaignPanel plan={movingMountainsPlan} />
+            ) : null}
+
+            {leadershipTransitionPlan ? (
+              <LeadershipTransitionCampaignPanel plan={leadershipTransitionPlan} />
+            ) : null}
+
+            {growTheMovementPlan ? (
+              <GrowTheMovementCampaignPanel plan={growTheMovementPlan} />
+            ) : null}
+
+            {startAChapterPlan ? (
+              <StartAChapterCampaignPanel plan={startAChapterPlan} />
+            ) : null}
+
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <h2 className="text-2xl font-semibold text-slate-950">Primary KPIs</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {campaign.primaryKpis.map((kpi) => (
+                  <span
+                    key={kpi}
+                    className="rounded-full border border-[#f7d05e]/30 bg-[#fff8df] px-3 py-1 text-sm text-[#a16207]"
+                  >
+                    {kpi.replaceAll("_", " ")}
+                  </span>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <h2 className="text-2xl font-semibold text-slate-950">Chapter event examples</h2>
+              <div className="mt-4 grid gap-3">
+                {eventPlans.map((eventPlan) => (
+                  <article
+                    key={eventPlan.id}
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                      {eventPlan.eventType.replaceAll("_", " ")} / {eventPlan.lumaStatus.replaceAll("_", " ")}
+                    </p>
+                    <h3 className="mt-2 text-lg font-semibold text-slate-950">
+                      {eventPlan.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      {eventPlan.expectedStudentAction}
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">
+                      Proof prompt: {eventPlan.proofPrompt}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#eaf2ff] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                Ecosystem boundaries
               </p>
-              <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-white/42">
-                Operating rhythm
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-white/68">
-                {campaign.operatingRhythm}
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                Keep broader routing on hold for this campaign.
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {campaign.integrationPosture} Broader routing posture:{" "}
+                {integrationPosture.safeToSendExternally ? "open" : "held for later"}.
               </p>
-            </article>
-
-            <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-              <h2 className="text-2xl font-semibold text-white">Proof and coaching</h2>
-              <p className="mt-3 text-sm leading-6 text-white/68">{campaign.proofUse}</p>
-              <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-white/42">
-                Coach focus
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-white/68">{campaign.coachFocus}</p>
-            </article>
-          </section>
-
-          {planningGoalSettingPlan ? (
-            <PlanningGoalSettingCampaignPanel plan={planningGoalSettingPlan} />
-          ) : null}
-
-          {chapterEngagementPlan ? (
-            <ChapterEngagementCampaignPanel plan={chapterEngagementPlan} />
-          ) : null}
-
-          {sltPromotionPlan ? (
-            <SltPromotionCampaignPanel plan={sltPromotionPlan} />
-          ) : null}
-
-          {movingMountainsPlan ? (
-            <MovingMountainsCampaignPanel plan={movingMountainsPlan} />
-          ) : null}
-
-          {leadershipTransitionPlan ? (
-            <LeadershipTransitionCampaignPanel plan={leadershipTransitionPlan} />
-          ) : null}
-
-          {growTheMovementPlan ? (
-            <GrowTheMovementCampaignPanel plan={growTheMovementPlan} />
-          ) : null}
-
-          {startAChapterPlan ? (
-            <StartAChapterCampaignPanel plan={startAChapterPlan} />
-          ) : null}
-
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-            <h2 className="text-2xl font-semibold text-white">Primary KPIs</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {campaign.primaryKpis.map((kpi) => (
-                <span
-                  key={kpi}
-                  className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-sm text-emerald-100"
-                >
-                  {kpi.replaceAll("_", " ")}
-                </span>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-            <h2 className="text-2xl font-semibold text-white">Chapter event examples</h2>
-            <div className="mt-4 grid gap-3">
-              {eventPlans.map((eventPlan) => (
-                <article key={eventPlan.id} className="rounded-2xl bg-black/20 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100/70">
-                    {eventPlan.eventType.replaceAll("_", " ")} / {eventPlan.lumaStatus.replaceAll("_", " ")}
-                  </p>
-                  <h3 className="mt-2 text-lg font-semibold text-white">{eventPlan.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-white/64">
-                    {eventPlan.expectedStudentAction}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-white/54">
-                    Proof prompt: {eventPlan.proofPrompt}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
-              Integration safety
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
-              External sends are disabled for this campaign.
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-white/66">
-              {campaign.integrationPosture} Safe to send externally:
-              {" "}
-              {integrationPosture.safeToSendExternally ? "yes" : "no"}.
-            </p>
-            <div className="mt-4 grid gap-3">
-              {integrationPosture.events.slice(0, 4).map((event) => (
-                <article key={event.id} className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-white">{event.title}</p>
-                      <p className="mt-1 font-mono text-xs text-cyan-100/70">
-                        {event.eventType} / {event.destination}
-                      </p>
+              <div className="mt-4 grid gap-3">
+                {integrationPosture.events.slice(0, 4).map((event) => (
+                  <article
+                    key={event.id}
+                    className="rounded-2xl border border-slate-200 bg-white p-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-950">{event.title}</p>
+                        <p className="mt-1 font-mono text-xs text-[#0f766e]">
+                          {event.eventType} / {event.destination}
+                        </p>
+                      </div>
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600">
+                        {event.status}
+                      </span>
                     </div>
-                    <span className="rounded-full border border-white/10 px-2 py-1 text-xs text-white/64">
-                      {event.status}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-white/64">{event.detail}</p>
-                </article>
-              ))}
-            </div>
-          </section>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{event.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
         </>
       )}
     </AppShell>

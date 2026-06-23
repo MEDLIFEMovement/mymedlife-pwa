@@ -17,27 +17,23 @@ export function ProofUploadIntakePanel({
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
-          Proof upload readiness
+      <section className="app-surface-info rounded-[2rem] p-5">
+        <p className="app-eyebrow app-eyebrow-blue">
+          Proof preparation
         </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">
-          {workspace.title}
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
-          {workspace.summary}
-        </p>
+        <h1 className="mt-2 text-3xl font-semibold text-slate-950">{workspace.title}</h1>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">{workspace.summary}</p>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-3">
-        <MiniStat label="Uploads" value={workspace.uploadsEnabled ? "on" : "off"} />
+        <MiniStat label="Uploads" value={workspace.uploadsEnabled ? "open" : "later"} />
         <MiniStat
-          label="Publishing"
-          value={workspace.publicPublishingEnabled ? "on" : "off"}
+          label="Sharing"
+          value={workspace.publicPublishingEnabled ? "open" : "later"}
         />
         <MiniStat
-          label="External exports"
-          value={workspace.externalExportsEnabled ? "on" : "off"}
+          label="Handoffs"
+          value={workspace.externalExportsEnabled ? "open" : "later"}
         />
       </section>
 
@@ -46,12 +42,12 @@ export function ProofUploadIntakePanel({
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-        <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
+        <article className="app-surface rounded-[2rem] p-5">
+          <p className="app-eyebrow app-eyebrow-slate">
             Example proof file
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            File is checked, but not uploaded.
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+            File is prepared, but not saved yet.
           </h2>
           <div className="mt-4 grid gap-3">
             {workspace.checks.map((check) => (
@@ -60,18 +56,18 @@ export function ProofUploadIntakePanel({
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+        <article className="app-surface-info rounded-[2rem] p-5">
+          <p className="app-eyebrow app-eyebrow-blue">
             Consent and context
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
             Good proof answers a real hesitation.
           </h2>
           <ul className="mt-4 grid gap-3">
             {workspace.consentChecklist.map((item) => (
               <li
                 key={item}
-                className="rounded-2xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-white/66"
+                className="app-surface rounded-[1.05rem] p-3 text-sm leading-6 text-slate-600"
               >
                 {item}
               </li>
@@ -81,18 +77,18 @@ export function ProofUploadIntakePanel({
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
-            Disabled controls
+        <article className="app-surface-warm rounded-[2rem] p-5">
+          <p className="app-eyebrow app-eyebrow-warm">
+            Held actions
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            These actions are intentionally locked.
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+            Broader proof actions stay paused.
           </h2>
           <div className="mt-4 grid gap-3">
             {workspace.blockedControls.map((control) => (
-              <div key={control.label} className="rounded-2xl bg-black/20 p-3">
-                <p className="font-semibold text-white">{control.label}</p>
-                <p className="mt-1 text-sm leading-6 text-white/62">
+              <div key={control.label} className="app-surface rounded-[1.05rem] p-3">
+                <p className="font-semibold text-slate-950">{control.label}</p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
                   {control.reason}
                 </p>
               </div>
@@ -100,12 +96,12 @@ export function ProofUploadIntakePanel({
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
-            Future storage plan
+        <article className="app-surface rounded-[2rem] p-5">
+          <p className="app-eyebrow app-eyebrow-slate">
+            Future proof path
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            What would happen after approval?
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+            What gets added later?
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <MiniStat
@@ -117,31 +113,31 @@ export function ProofUploadIntakePanel({
               value={workspace.disabledAttempt.normalizedFileName}
             />
           </div>
-          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3">
-            <p className="text-sm font-semibold text-white">Allowed file types</p>
-            <p className="mt-2 text-sm leading-6 text-white/62">
+          <div className="app-surface-soft mt-4 rounded-[1.05rem] p-3">
+            <p className="text-sm font-semibold text-slate-950">Allowed file types</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
               {workspace.allowedMimeTypes.join(", ")}
             </p>
           </div>
-          <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3">
-            <p className="text-sm font-semibold text-white">Future writes</p>
-            <p className="mt-2 text-sm leading-6 text-white/62">
+          <div className="app-surface-soft mt-4 rounded-[1.05rem] p-3">
+            <p className="text-sm font-semibold text-slate-950">Future app records</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
               {workspace.disabledAttempt.wouldWriteTables.join(", ")}
             </p>
           </div>
         </article>
       </section>
 
-      <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
-          Automation-ready, still disabled
+      <section className="app-surface rounded-[2rem] p-5">
+        <p className="app-eyebrow app-eyebrow-slate">
+          Future handoffs stay paused
         </p>
-        <h2 className="mt-2 text-2xl font-semibold text-white">
-          Future events are clear before any upload exists.
+        <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+          The app trail is clear before uploads open.
         </h2>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
-          <EventList title="Structured events" items={workspace.futureStructuredEvents} />
-          <EventList title="Disabled outbox destinations" items={workspace.futureOutboxDestinations} />
+          <EventList title="Future app events" items={workspace.futureStructuredEvents} />
+          <EventList title="Held handoffs" items={workspace.futureOutboxDestinations} />
         </div>
       </section>
     </section>
@@ -154,16 +150,14 @@ function ProofUploadStoragePacketPanel({
   packet: ProofUploadStoragePacket;
 }) {
   return (
-    <section className="rounded-[2rem] border border-emerald-300/20 bg-[#06251f] p-5">
+    <section className="app-surface rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/78">
-            Storage packet
+          <p className="app-eyebrow app-eyebrow-blue">
+            Storage preview
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            {packet.title}
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">{packet.title}</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             {packet.readinessReason}
           </p>
         </div>
@@ -174,19 +168,19 @@ function ProofUploadStoragePacketPanel({
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-sm font-semibold text-white">Storage target</p>
+        <div className="app-surface-soft rounded-[1.25rem] p-4">
+          <p className="text-sm font-semibold text-slate-950">Storage path</p>
           <div className="mt-3 grid gap-3">
-            <PacketRow label="Function" value={packet.futureFunction} />
-            <PacketRow label="Private bucket" value={packet.privateBucket} />
-            <PacketRow label="Public bucket" value={packet.publicBucket} />
+            <PacketRow label="Save path" value={packet.futureFunction} />
+            <PacketRow label="Private storage" value={packet.privateBucket} />
+            <PacketRow label="Public library" value={packet.publicBucket} />
             <PacketRow label="Path" value={packet.storagePathPreview} />
             <PacketRow label="File" value={packet.normalizedFileName} />
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-          <p className="text-sm font-semibold text-white">Access boundary</p>
+        <div className="app-surface-soft rounded-[1.25rem] p-4">
+          <p className="text-sm font-semibold text-slate-950">Access and visibility</p>
           <div className="mt-3 grid gap-3">
             <PacketRow
               label="Raw readers"
@@ -206,27 +200,27 @@ function ProofUploadStoragePacketPanel({
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <PacketList
-          title="Readiness checks"
+          title="Before uploads open"
           items={packet.readinessChecks.map((check) =>
             `${check.passed ? "ready" : "blocked"} ${check.label}`,
           )}
         />
         <PacketList
-          title="Future records"
+          title="What updates later"
           items={packet.futureRecords.map((record) => `${record.label}: ${record.value}`)}
         />
         <PacketList title="Moderation queue" items={packet.moderationQueue} />
       </div>
 
-      <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
-        <p className="text-sm font-semibold text-white">Locked controls</p>
+      <div className="app-surface-warm mt-4 rounded-[1.25rem] p-4">
+        <p className="text-sm font-semibold text-slate-950">Held actions</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {packet.blockedControls.map((control) => (
             <span
               key={control}
-              className="rounded-full border border-amber-200/20 bg-black/24 px-3 py-1 text-xs font-semibold text-amber-50/82"
+              className="rounded-full border border-[#f7d05e]/28 bg-[#fff8df] px-3 py-1 text-xs font-semibold text-[#a16207]"
             >
-              Locked {control}
+              Held {control}
             </span>
           ))}
         </div>
@@ -237,32 +231,32 @@ function ProofUploadStoragePacketPanel({
 
 function ReadinessCheck({ check }: { check: ProofUploadIntakeCheck }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+    <div className="app-surface rounded-[1.05rem] p-3">
       <div className="flex items-center justify-between gap-3">
-        <p className="font-semibold text-white">{check.label}</p>
+        <p className="font-semibold text-slate-950">{check.label}</p>
         <span
           className={[
             "rounded-full border px-2.5 py-1 text-xs font-semibold",
             check.passed
-              ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
-              : "border-rose-300/30 bg-rose-300/15 text-rose-100",
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              : "border-rose-200 bg-rose-50 text-rose-700",
           ].join(" ")}
         >
           {check.passed ? "ready" : "blocked"}
         </span>
       </div>
-      <p className="mt-2 text-sm leading-6 text-white/62">{check.helpText}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{check.helpText}</p>
     </div>
   );
 }
 
 function PacketList({ items, title }: { items: string[]; title: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-      <p className="text-sm font-semibold text-white">{title}</p>
+    <div className="app-surface rounded-[1.05rem] p-3">
+      <p className="text-sm font-semibold text-slate-950">{title}</p>
       <ul className="mt-3 grid gap-2">
         {items.map((item) => (
-          <li key={item} className="text-sm leading-6 text-white/62">
+          <li key={item} className="text-sm leading-6 text-slate-600">
             {item}
           </li>
         ))}
@@ -274,21 +268,17 @@ function PacketList({ items, title }: { items: string[]; title: string }) {
 function PacketRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/38">
-        {label}
-      </p>
-      <p className="mt-1 break-words text-sm font-semibold text-white">{value}</p>
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 break-words text-sm font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
 
 function PacketToken({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/24 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-        {label}
-      </p>
-      <p className="mt-1 break-words text-sm font-semibold text-emerald-50">
+    <div className="app-surface-soft rounded-[1.05rem] px-3 py-2">
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 break-words text-sm font-semibold text-[#2563eb]">
         {value}
       </p>
     </div>
@@ -297,11 +287,11 @@ function PacketToken({ label, value }: { label: string; value: string }) {
 
 function EventList({ items, title }: { items: string[]; title: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-      <p className="text-sm font-semibold text-white">{title}</p>
+    <div className="app-surface rounded-[1.05rem] p-3">
+      <p className="text-sm font-semibold text-slate-950">{title}</p>
       <ul className="mt-3 grid gap-2">
         {items.map((item) => (
-          <li key={item} className="text-sm leading-6 text-white/62">
+          <li key={item} className="text-sm leading-6 text-slate-600">
             {item}
           </li>
         ))}
@@ -312,11 +302,9 @@ function EventList({ items, title }: { items: string[]; title: string }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-        {label}
-      </p>
-      <p className="mt-1 break-words text-lg font-semibold text-white">{value}</p>
+    <div className="app-surface rounded-[1.05rem] px-3 py-2">
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 break-words text-lg font-semibold text-slate-950">{value}</p>
     </div>
   );
 }

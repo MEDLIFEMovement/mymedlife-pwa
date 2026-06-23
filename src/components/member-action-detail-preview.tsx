@@ -8,7 +8,10 @@ type MemberActionDetailPreviewProps = {
     evidenceRequired: string;
     points: number;
   };
+  sectionId?: string;
 };
+
+type MemberEvidenceType = "screenshot" | "link" | "text";
 
 type MemberActionPreviewState = {
   canSubmit: boolean;
@@ -34,8 +37,10 @@ export function getMemberActionPreviewState(
 
 export function MemberActionDetailPreview({
   assignment,
+  sectionId = "submit-evidence",
 }: MemberActionDetailPreviewProps) {
   const defaultDraft = createDefaultMemberActionPreviewDraft(assignment);
+  const [evidenceType, setEvidenceType] = useState<MemberEvidenceType>("screenshot");
   const [draft, setDraft] = useState(defaultDraft);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [submittedDraft, setSubmittedDraft] = useState<string | null>(null);
@@ -54,54 +59,145 @@ export function MemberActionDetailPreview({
   }
 
   return (
-    <section className="rounded-[2rem] border border-[#f7d05e]/24 bg-[#f7d05e]/12 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f7d05e]">
-        Submit preview
-      </p>
-      <h2 className="mt-2 text-2xl font-semibold text-white">
-        Share what happened
-      </h2>
-      <p className="mt-2 text-sm leading-6 text-white/72">
-        This local form previews the student proof flow without saving a record,
-        changing points, or sending anything out of the app.
-      </p>
+    <section id={sectionId} className="grid gap-4">
+      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(180deg,#2455a4_0%,#2a5fb5_48%,#21457d_100%)] p-4 shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+          Submit
+        </p>
+        <h2 className="mt-2 text-[1.95rem] font-semibold leading-tight text-white sm:text-[2.2rem]">
+          Submit Evidence
+        </h2>
+        <p className="mt-2 text-sm leading-6 text-white/82">
+          Share one clear screenshot, link, or short note. Keep it specific
+          enough that a leader can review it quickly.
+        </p>
 
-      <form className="mt-4 grid gap-4" onSubmit={handleSubmit}>
-        <div className="rounded-[1.25rem] border border-white/10 bg-[#081d46]/55 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
-            Evidence requirement
+        <div className="mt-4 rounded-[1.45rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+            Submitting for
           </p>
-          <p className="mt-2 text-sm leading-6 text-white">
+          <h3 className="mt-2 text-xl font-semibold text-white">{assignment.title}</h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
+              Proof handoff
+            </span>
+            <span className="rounded-full border border-[#f7d05e]/28 bg-[#f7d05e]/12 px-3 py-1 text-xs font-semibold text-[#fde68a]">
+              {assignment.points} pts if approved
+            </span>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-white/78">
             {assignment.evidenceRequired}
           </p>
         </div>
+      </section>
+
+      <section className="app-surface rounded-[2rem] p-4">
+        <form className="grid gap-3.5" onSubmit={handleSubmit}>
+        <div>
+          <label className="text-sm font-semibold text-slate-950" htmlFor="member-proof-type">
+            Evidence type
+          </label>
+          <div
+            aria-label="Evidence type"
+            className="mt-2 grid grid-cols-3 gap-2 rounded-[1.25rem] border border-slate-200 bg-white p-1"
+            id="member-proof-type"
+            role="tablist"
+          >
+            {[
+              { value: "screenshot", label: "Screenshot" },
+              { value: "link", label: "Link" },
+              { value: "text", label: "Text" },
+            ].map((option) => {
+              const isActive = evidenceType === option.value;
+
+              return (
+                <button
+                  key={option.value}
+                  aria-selected={isActive}
+                  className={[
+                    "rounded-full px-3 py-2 text-sm font-semibold transition",
+                    isActive
+                      ? "bg-[#2b5fb4] text-white"
+                      : "bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                  ].join(" ")}
+                  onClick={() => setEvidenceType(option.value as MemberEvidenceType)}
+                  role="tab"
+                  type="button"
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {evidenceType === "screenshot" ? (
+          <div className="rounded-[1.4rem] border border-dashed border-slate-300 bg-[#f8fbff] px-4 py-4 text-center">
+            <p className="text-sm font-semibold text-slate-950">Tap to upload screenshot</p>
+            <p className="mt-2 text-sm text-slate-500">JPG, PNG up to 10MB</p>
+            <p className="mt-3 text-xs leading-5 text-slate-500">
+              Add one short note below so the screenshot still tells a clear
+              proof story.
+            </p>
+            <button
+              className="mt-4 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+              type="button"
+            >
+              Upload screenshot
+            </button>
+          </div>
+        ) : null}
 
         <div>
           <label
-            className="text-sm font-semibold text-white"
+            className="text-sm font-semibold text-slate-950"
             htmlFor="member-proof-preview"
           >
-            Evidence link or note
+            {evidenceType === "link" ? "Paste proof link" : "What should the reviewer know?"}
           </label>
-          <textarea
-            id="member-proof-preview"
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            className="mt-2 min-h-32 w-full rounded-[1.25rem] border border-white/12 bg-black/25 p-3 text-sm text-white outline-none placeholder:text-white/34 focus:border-[#5d8ff6]/40"
-            placeholder="Paste a message screenshot link, RSVP link, or short proof note."
-          />
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {evidenceType === "link"
+              ? "One clean link is enough if it clearly proves the action."
+              : "Write a short note that explains the action clearly enough for a leader to review."}
+          </p>
+          <div className="mt-2 rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm leading-6 text-slate-700">
+            <span className="font-semibold text-slate-950">Evidence requirement:</span>{" "}
+            {assignment.evidenceRequired}
+          </div>
+          {evidenceType === "link" ? (
+            <input
+              id="member-proof-preview"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              className="mt-2 w-full rounded-[1.25rem] border border-slate-200 bg-white p-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#5d8ff6]/40"
+              placeholder="Paste the RSVP confirmation or proof link."
+              type="url"
+            />
+          ) : (
+            <textarea
+              id="member-proof-preview"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              className="mt-2 min-h-24 w-full rounded-[1.25rem] border border-slate-200 bg-white p-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#5d8ff6]/40"
+              placeholder={
+                evidenceType === "screenshot"
+                  ? "Example: Screenshot shows two friends RSVP'd after I texted them the GBM link."
+                  : "Write a short proof note."
+              }
+            />
+          )}
         </div>
 
-        <label className="flex items-start gap-3 rounded-[1.25rem] border border-white/10 bg-black/20 p-4 text-sm leading-6 text-white/78">
+        <label className="flex items-start gap-3 rounded-[1.35rem] border border-amber-200 bg-[#fff8df] p-4 text-sm leading-6 text-slate-700">
           <input
             checked={isConfirmed}
             onChange={(event) => setIsConfirmed(event.target.checked)}
             type="checkbox"
-            className="mt-1 h-4 w-4 rounded border-white/20 bg-black/20 text-[#f7d05e] focus:ring-[#f7d05e]"
+            className="mt-1 h-4 w-4 rounded border-slate-300 bg-white text-[#f7d05e] focus:ring-[#f7d05e]"
           />
           <span>
-            I confirm this proof is accurate, belongs to this action, and is okay
-            to review locally before any real save or sharing path is approved.
+            I confirm this evidence is accurate and okay to share with chapter
+            leaders and coaches.
           </span>
         </label>
 
@@ -112,48 +208,49 @@ export function MemberActionDetailPreview({
             className={[
               "rounded-full px-4 py-2 text-sm font-semibold transition",
               canSubmit
-                ? "bg-[#f7d05e] text-[#08224c] hover:bg-[#f9dc7e]"
-                : "cursor-not-allowed bg-white/12 text-white/40",
+                ? "bg-[#2b5fb4] text-white hover:bg-[#2455a4]"
+                : "cursor-not-allowed bg-slate-200 text-slate-400",
             ].join(" ")}
           >
-            Preview submit
+            Submit for review
           </button>
-          <p className="text-xs leading-5 text-white/54">
-            Local confirmation only. This action is still worth{" "}
-            <span className="font-semibold text-[#f7d05e]">{assignment.points} points</span>{" "}
-            after review, but no points update happens here.
+          <p className="text-xs leading-5 text-slate-500">
+            This action is still worth{" "}
+            <span className="font-semibold text-[#a16207]">{assignment.points} points</span>{" "}
+            after review. Points move once the proof is approved.
           </p>
         </div>
-      </form>
+        </form>
 
-      {previewState.hasConfirmation ? (
-        <article
-          aria-live="polite"
-          className="mt-4 rounded-[1.4rem] border border-[#5d8ff6]/24 bg-[#0b2a5d]/72 p-4"
-          role="status"
-        >
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c9dcff]">
-            Confirmation
-          </p>
-          <h3 className="mt-2 text-lg font-semibold text-white">
-            Local proof preview captured
-          </h3>
-          <p className="mt-2 text-sm leading-6 text-white/74">
-            No proof row, points change, reminder, or automation send happened.
-            This confirmation is only here to show the student flow.
-          </p>
-          <div className="mt-3 rounded-[1.1rem] border border-white/10 bg-black/20 p-3 text-sm leading-6 text-white/82">
-            {submittedDraft}
-          </div>
-          <button
-            type="button"
-            onClick={() => setSubmittedDraft(null)}
-            className="mt-3 rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition hover:border-[#5d8ff6]/30 hover:bg-white/[0.1]"
+        {previewState.hasConfirmation ? (
+          <article
+            aria-live="polite"
+            className="mt-4 rounded-[1.4rem] border border-[#bfdbfe] bg-[#eff6ff] p-4"
+            role="status"
           >
-            Edit preview
-          </button>
-        </article>
-      ) : null}
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+              Confirmation
+            </p>
+            <h3 className="mt-2 text-lg font-semibold text-slate-950">
+              Submitted for review
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Your note is captured in this walkthrough state. You can still
+              revise it before the final review step.
+            </p>
+            <div className="mt-3 rounded-[1.1rem] border border-slate-200 bg-white p-3 text-sm leading-6 text-slate-700">
+              {submittedDraft}
+            </div>
+            <button
+              type="button"
+              onClick={() => setSubmittedDraft(null)}
+              className="mt-3 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#5d8ff6]/30 hover:bg-slate-50"
+            >
+              Edit submission
+            </button>
+          </article>
+        ) : null}
+      </section>
     </section>
   );
 }

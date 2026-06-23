@@ -4,13 +4,13 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getProofSharingReviewBoard } from "@/services/proof-sharing-review";
 
 describe("proof sharing review", () => {
-  it("gives admins an HQ proof-sharing review board with publishing disabled", () => {
+  it("gives admins a proof-sharing desk with publishing disabled", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const board = getProofSharingReviewBoard(actor, proofLibraryItems);
 
     expect(board.canReadBoard).toBe(true);
     expect(board.canDecideSharing).toBe(true);
-    expect(board.title).toBe("HQ proof-sharing review");
+    expect(board.title).toBe("Proof sharing desk");
     expect(board.counts.total).toBe(proofLibraryItems.length);
     expect(board.counts.publishActionsEnabled).toBe(0);
     expect(board.counts.externalExportsEnabled).toBe(0);
@@ -39,7 +39,7 @@ describe("proof sharing review", () => {
 
     expect(board.counts.internalLearning).toBe(1);
     expect(board.counts.futurePublicCandidates).toBe(1);
-    expect(board.title).toBe("Full local proof-sharing review");
+    expect(board.title).toBe("Proof sharing operations");
   });
 
   it("lets leaders and coaches read posture without deciding sharing", () => {
@@ -56,12 +56,19 @@ describe("proof sharing review", () => {
 
   it("hides HQ proof-sharing review from members and DS Admin", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const memberBoard = getProofSharingReviewBoard(member, proofLibraryItems);
+    const committeeMemberBoard = getProofSharingReviewBoard(
+      committeeMember,
+      proofLibraryItems,
+    );
     const dsAdminBoard = getProofSharingReviewBoard(dsAdmin, proofLibraryItems);
 
     expect(memberBoard.canReadBoard).toBe(false);
     expect(memberBoard.rows).toEqual([]);
+    expect(committeeMemberBoard.canReadBoard).toBe(false);
+    expect(committeeMemberBoard.rows).toEqual([]);
     expect(dsAdminBoard.canReadBoard).toBe(false);
     expect(dsAdminBoard.rows).toEqual([]);
   });

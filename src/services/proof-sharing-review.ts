@@ -1,5 +1,9 @@
 import { getProofLibraryItemsForActor } from "@/services/campaign-ops-service";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { ProofLibraryItem } from "@/shared/types/campaigns";
 
 export type ProofSharingReviewState =
@@ -43,7 +47,9 @@ export function getProofSharingReviewBoard(
   actor: LocalActorContext,
   items?: ProofLibraryItem[],
 ): ProofSharingReviewBoard {
-  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
     return {
       canReadBoard: false,
       canDecideSharing: false,
@@ -60,10 +66,10 @@ export function getProofSharingReviewBoard(
 
   return {
     canReadBoard: true,
-    canDecideSharing: actor.audience === "admin" || actor.audience === "super_admin",
-    title: getTitle(actor),
+    canDecideSharing: surfaceFamily === "staff" || surfaceFamily === "super_admin",
+    title: getTitle(surfaceFamily),
     summary:
-      "Proof is testimonial evidence used to break self-limiting beliefs. HQ decides future sharing; no proof is published or exported from this MVP shell.",
+      "Proof is belief-building evidence that can help chapters coach, recruit, and tell stronger stories. Broader sharing stays curated while this MVP keeps public publishing and exports paused.",
     rows: sortRows(rows),
     counts: {
       total: rows.length,
@@ -126,29 +132,29 @@ function getActionNeeded(
 ): string {
   switch (reviewState) {
     case "needs_consent_or_context":
-      return "HQ should confirm consent, context, and the hesitation this proof addresses before any future sharing decision.";
+      return "Confirm consent, context, and the hesitation this proof addresses before it moves into broader storytelling.";
     case "ready_for_hq_review":
-      return "HQ can decide whether this testimonial should become an internal example, future public candidate, or stay private.";
+      return "This proof is ready for a decision about whether it should stay private, support internal learning, or become a future story candidate.";
     case "internal_learning":
-      return "Use internally for playbooks, SOP examples, and coaching, but do not publish publicly from this app.";
+      return "Use this internally for playbooks, SOP examples, and coaching while broader sharing remains curated.";
     case "future_public_candidate":
-      return "Candidate for a future public proof surface after approval, consent, and publishing controls exist.";
+      return "Keep this queued as a future story candidate once approval, consent, and publishing controls are in place.";
     case "private_not_shared":
-      return `Keep ${item.sourceLabel} private unless HQ creates a new sharing decision later.`;
+      return `Keep ${item.sourceLabel} private unless the chapter and HQ decide to revisit it later.`;
   }
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_leader":
-      return "Leader-visible proof posture";
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "leader":
+      return "Chapter proof board";
     case "coach":
-      return "Coach proof posture";
-    case "admin":
-      return "HQ proof-sharing review";
+      return "Coach proof board";
+    case "staff":
+      return "Proof sharing desk";
     case "super_admin":
-      return "Full local proof-sharing review";
-    case "chapter_member":
+      return "Proof sharing operations";
+    case "member":
     case "ds_admin":
       return "HQ proof-sharing review hidden for this role";
   }

@@ -1,6 +1,6 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { canStartAssignmentAction } from "@/services/local-action-contracts";
 import { canReadAssignment } from "@/services/role-visibility";
-import { isActorAllowedForPlannedWrite } from "@/services/write-plan-matrix";
 import { getWriteReadinessSummary } from "@/services/write-readiness";
 import type { Assignment } from "@/shared/types/domain";
 
@@ -148,7 +148,7 @@ export function getFutureActionStartResultIfEnabled(
   }
 
   const actorCanRead = canReadAssignment(actor, assignment);
-  const actorCanWrite = isActorAllowedForPlannedWrite(actor.audience, "action_started");
+  const actorCanWrite = canStartAssignmentAction(actor, assignment);
 
   if (!actorCanRead || !actorCanWrite) {
     return getActionStartResultState("permission_denied");

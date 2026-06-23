@@ -14,14 +14,14 @@ export function ActionStartResultStatesPanel({
   states,
 }: ActionStartResultStatesPanelProps) {
   return (
-    <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+    <section className="app-surface-info rounded-[2rem] p-5">
+      <p className="app-eyebrow app-eyebrow-blue">
         Action-start result states
       </p>
-      <h2 className="mt-2 text-2xl font-semibold text-white">
+      <h2 className="app-title mt-2">
         Future save messages are defined before the save is enabled.
       </h2>
-      <p className="mt-2 text-sm leading-6 text-white/66">
+      <p className="app-copy mt-2">
         Today the browser still returns the disabled state. If Nick later
         approves action-start writes, the app should use these plain-English
         outcomes so students and staff know what happened.
@@ -35,14 +35,14 @@ export function ActionStartResultStatesPanel({
         />
       </div>
 
-      <div className="mt-4 rounded-2xl bg-black/20 p-3">
-        <p className="text-sm font-semibold text-white">Disabled server result shape</p>
-        <p className="mt-2 font-mono text-xs leading-5 text-sky-100/80">
+      <div className="app-surface rounded-[1.2rem] p-3">
+        <p className="text-sm font-semibold text-slate-950">Disabled server result shape</p>
+        <p className="mt-2 font-mono text-xs leading-5 text-[#2563eb]">
           success: {String(preview.serverResultShape.success)}, errorCode:{" "}
           {preview.serverResultShape.errorCode}, assignmentId:{" "}
           {preview.serverResultShape.assignmentId}
         </p>
-        <p className="mt-2 text-xs leading-5 text-white/58">
+        <p className="mt-2 text-xs leading-5 text-slate-500">
           {preview.serverResultShape.plainEnglishMessage}
         </p>
       </div>
@@ -66,23 +66,23 @@ function ResultCard({
   state: ActionStartResultState;
 }) {
   return (
-    <div className={`rounded-2xl bg-black/20 p-3 ${toneBorderClass(state.tone)}`}>
+    <div className={`app-surface rounded-[1.15rem] p-3 ${toneBorderClass(state.tone)}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
-            {label}
-          </p>
-          <p className="mt-2 text-sm font-semibold text-white">{state.title}</p>
+          <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+          <p className="mt-2 text-sm font-semibold text-slate-950">{state.title}</p>
         </div>
-        <span className={`rounded-full px-2.5 py-1 text-[0.68rem] font-semibold ${toneBadgeClass(state.tone)}`}>
+        <span
+          className={`rounded-full px-2.5 py-1 text-[0.68rem] font-semibold ${toneBadgeClass(state.tone)}`}
+        >
           {state.success ? "success" : "blocked"}
         </span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-white/58">{state.plainEnglishMessage}</p>
+      <p className="mt-2 text-xs leading-5 text-slate-600">{state.plainEnglishMessage}</p>
       {!compact ? (
-        <p className="mt-2 text-xs leading-5 text-white/48">Next: {state.nextStep}</p>
+        <p className="mt-2 text-xs leading-5 text-slate-500">Next: {state.nextStep}</p>
       ) : null}
-      <p className="mt-2 text-xs leading-5 text-white/44">
+      <p className="mt-2 text-xs leading-5 text-slate-500">
         Retry: {state.retryAllowed ? "yes" : "no"}. Creates event:{" "}
         {state.createsEvent ? "yes" : "no"}.
       </p>
@@ -93,25 +93,25 @@ function ResultCard({
 function toneBorderClass(tone: ActionStartResultTone): string {
   switch (tone) {
     case "success":
-      return "border border-emerald-300/20";
+      return "border-emerald-200";
     case "warning":
-      return "border border-amber-300/20";
+      return "border-amber-200";
     case "error":
-      return "border border-rose-300/20";
+      return "border-rose-200";
     case "info":
-      return "border border-sky-300/20";
+      return "border-[#bfdbfe]";
   }
 }
 
 function toneBadgeClass(tone: ActionStartResultTone): string {
   switch (tone) {
     case "success":
-      return "bg-emerald-300/20 text-emerald-100";
+      return "border border-emerald-200 bg-emerald-50 text-emerald-700";
     case "warning":
-      return "bg-amber-300/20 text-amber-100";
+      return "border border-amber-200 bg-amber-50 text-amber-700";
     case "error":
-      return "bg-rose-300/20 text-rose-100";
+      return "border border-rose-200 bg-rose-50 text-rose-700";
     case "info":
-      return "bg-sky-300/20 text-sky-100";
+      return "border border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]";
   }
 }

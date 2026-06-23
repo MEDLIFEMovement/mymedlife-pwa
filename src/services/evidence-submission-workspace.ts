@@ -1,17 +1,26 @@
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
-import { getActionProofHandoffWorkspace } from "@/services/action-proof-handoff";
+import {
+  getActionProofHandoffWorkspace,
+  type ActionProofHandoffPhase,
+} from "@/services/action-proof-handoff";
+import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import {
   canSubmitProofForAssignment,
   createProofSubmissionMock,
   type ProofSubmissionInput,
 } from "@/services/local-action-contracts";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { buildMemberActionRouteHref } from "@/services/member-action-route-href";
 import {
   getDisabledProofSubmissionResultPreview,
   type ProofSubmissionResultCode,
 } from "@/services/proof-submission-result-states";
 import { getProofSubmissionWriteReadiness } from "@/services/proof-submission-write";
-import { canReadAssignment } from "@/services/role-visibility";
+import {
+  canReadAssignment,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { Assignment, EvidenceItem, IntegrationEvent } from "@/shared/types/domain";
 
 export type EvidenceSubmissionStatus =
@@ -99,7 +108,9 @@ export function getEvidenceSubmissionWorkspace(
   allAssignments: Assignment[] = assignments,
   allEvidence: EvidenceItem[] = evidenceItems,
 ): EvidenceSubmissionWorkspace {
-  if (actor.audience === "ds_admin") {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (surfaceFamily === "ds_admin") {
     return hiddenWorkspace();
   }
 
@@ -125,27 +136,27 @@ export function getEvidenceSubmissionWorkspace(
 
   return {
     canReadWorkspace: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
-      "This route turns proof and testimonial work into a clear submission queue. Students and chapter operators can see what proof to prepare next while live uploads, public publishing, and external sends stay disabled.",
+      "This route turns proof and testimonial work into a clear follow-through queue. Students and chapter operators can see what to prepare next, what is waiting on review, and what still needs a stronger story.",
     nextSubmission: rows.find((row) => row.isRecommended) ?? null,
     submissionPacket,
     rows,
     futureStructuredEvents: buildFutureEvents(actor),
     blockedWrites: [
-      "production proof metadata saves",
+      "proof summary saves",
       "file uploads",
-      "public proof publishing",
-      "direct points ledger writes",
-      "KPI browser writes",
-      "member reminder sends",
+      "broader proof publishing",
+      "points updates",
+      "KPI updates",
+      "member reminders",
       "warehouse proof exports",
       "AI proof summaries",
     ],
     safetyNotes: [
-      "Use the linked action detail to preview the local-only proof metadata write gate.",
-      "Proof submission is metadata-only until storage, consent, RLS, audit, and rollback are approved.",
-      "No HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, or AI write runs from this route.",
+      "Use the linked action detail to keep the proof tied to the actual assignment.",
+      "Proof still starts as a simple summary and link until storage, consent, audit, and rollback approvals are in place.",
+      "No HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, or AI handoff runs from this route.",
     ],
     counts: {
       total: rows.length,
@@ -181,11 +192,11 @@ function buildSubmissionPacket(
   const readiness = getProofSubmissionWriteReadiness(actor, assignment, payload);
 
   return {
-    title: "Goal 158 proof submission packet",
+    title: "Proof submission path preview",
     assignmentId: row.assignmentId,
     assignmentTitle: row.assignmentTitle,
     localFunction: "app.submit_assignment_proof_metadata",
-    targetRoute: row.actionHref,
+    targetRoute: row.proofIntakeHref,
     reviewRoute: "/rush-month/review",
     payload,
     currentResultCode: resultPreview.currentResult.code,
@@ -209,7 +220,7 @@ function buildSubmissionPacket(
             value: preview.data.integrationEvent.eventType,
           },
           {
-            label: "Disabled outbox",
+            label: "Held handoff",
             value: `${preview.data.automationOutbox.destination} ${preview.data.automationOutbox.status}`,
           },
           {
@@ -224,11 +235,11 @@ function buildSubmissionPacket(
           },
         ],
     blockedControls: [
-      "proof metadata save",
+      "proof summary save",
       "file upload",
-      "public proof publish",
-      "member reminder send",
-      "external send",
+      "broader proof publish",
+      "member reminder",
+      "external handoff",
     ],
   };
 }
@@ -259,7 +270,7 @@ function toSubmissionRow(
     evidenceRequired: assignment.evidenceRequired,
     status,
     ...getStatusCopy(status, assignment),
-    actionHref: `/rush-month/actions/${assignment.id}`,
+    actionHref: getEvidenceActionHref(actor, assignment.id),
     canPrepareNow,
     canUseLocalWritePath: canPrepareNow,
     isRecommended: false,
@@ -267,13 +278,13 @@ function toSubmissionRow(
     storyPrompt: proofHandoff.storyPrompt,
     preparationChecklist: proofHandoff.checklist,
     reviewLane: getReviewLane(status, assignment),
-    proofIntakeHref: proofHandoff.nextBestAction.href,
+    proofIntakeHref: getEvidenceProofIntakeHref(actor, assignment.id, proofHandoff.phase, proofHandoff.nextBestAction.href),
     proofIntakeLabel: proofHandoff.nextBestAction.label,
     disabledControls: [
-      "proof metadata save",
+      "proof summary save",
       "file upload",
-      "public proof publish",
-      "external send",
+      "broader proof publish",
+      "external handoff",
     ],
   };
 }
@@ -357,7 +368,44 @@ function getDisabledReason(
     return "The browser write path still requires local auth, explicit write flags, RLS, and rollback approval.";
   }
 
-  return "No proof metadata save is expected for this status.";
+  return "No proof summary save is expected for this status.";
+}
+
+function getEvidenceActionHref(
+  actor: LocalActorContext,
+  assignmentId: string,
+): string {
+  if (getActorSurfaceFamily(actor) === "member") {
+    return buildMemberActionRouteHref(assignmentId, { source: "evidence" });
+  }
+
+  return buildLeaderAssignmentRouteHref(assignmentId, {
+    source: "evidence_queue",
+  });
+}
+
+function getEvidenceProofIntakeHref(
+  actor: LocalActorContext,
+  assignmentId: string,
+  phase: ActionProofHandoffPhase,
+  fallbackHref: string,
+): string {
+  if (getActorSurfaceFamily(actor) !== "member") {
+    return fallbackHref;
+  }
+
+  if (phase === "prepare_story" || phase === "revise_context") {
+    return buildMemberActionRouteHref(assignmentId, {
+      source: "evidence",
+      step: "submit",
+    });
+  }
+
+  if (phase === "start_first") {
+    return buildMemberActionRouteHref(assignmentId, { source: "evidence" });
+  }
+
+  return fallbackHref;
 }
 
 function getReviewLane(
@@ -440,18 +488,18 @@ function buildFutureEvents(actor: LocalActorContext): IntegrationEvent[] {
   ];
 }
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "chapter_member":
-      return "Submit proof for your next action";
-    case "chapter_leader":
-      return "Prepare and follow up proof";
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "member":
+      return "Proof for your next action";
+    case "leader":
+      return "Proof follow-up board";
     case "coach":
-      return "Evidence submission posture";
-    case "admin":
-      return "Evidence submission readiness";
+      return "Proof follow-up signal";
+    case "staff":
+      return "Proof submission overview";
     case "super_admin":
-      return "Full evidence submission readiness";
+      return "Proof submission operations";
     case "ds_admin":
       return "Evidence submission hidden for DS Admin";
   }

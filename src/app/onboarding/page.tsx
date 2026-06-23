@@ -8,6 +8,7 @@ import {
   type AuthOnboardingPreflightStatus,
 } from "@/services/auth-onboarding-workspace";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("onboarding");
@@ -16,24 +17,29 @@ export const dynamic = "force-dynamic";
 export default async function OnboardingPage() {
   const actor = await getLocalActorContext();
   const workspace = getAuthOnboardingWorkspace(actor);
+  const surfaceFamily = getActorSurfaceFamily(actor);
+  const showOperationalAudit =
+    surfaceFamily === "staff" ||
+    surfaceFamily === "ds_admin" ||
+    surfaceFamily === "super_admin";
 
   return (
     <AppShell actor={actor}>
-      <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
+      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
               Auth and onboarding
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">
               {workspace.title}
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
               {workspace.summary}
             </p>
           </div>
-          <div className="w-fit rounded-3xl border border-emerald-300/20 bg-emerald-300/10 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100/72">
+          <div className="w-fit rounded-[1.5rem] border border-white/12 bg-white/10 px-4 py-3 backdrop-blur-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/72">
               Local reviewer
             </p>
             <p className="mt-1 text-lg font-semibold text-white">
@@ -43,19 +49,17 @@ export default async function OnboardingPage() {
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
+      <section className="app-surface-info rounded-[2rem] p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
-              What should I do next?
+            <p className="app-eyebrow app-eyebrow-blue">
+              Next best step
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
-              {workspace.nextStep.detail}
-            </h2>
+            <h2 className="app-title mt-2">{workspace.nextStep.detail}</h2>
           </div>
           <Link
             href={workspace.nextStep.href}
-            className="w-fit rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+            className="w-fit rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#10223f]"
           >
             {workspace.nextStep.label}
           </Link>
@@ -73,30 +77,30 @@ export default async function OnboardingPage() {
         />
       </section>
 
-      <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
-          Future onboarding sequence
+      <section className="app-surface rounded-[2rem] p-5">
+        <p className="app-eyebrow app-eyebrow-slate">
+          Onboarding sequence
         </p>
         <div className="mt-4 grid gap-3">
           {workspace.stepRows.map((step, index) => (
-            <article key={step.key} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <article key={step.key} className="app-surface-soft rounded-[1.35rem] p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100/70">
+                  <p className="app-eyebrow app-eyebrow-blue">
                     Step {index + 1} / {step.ownerLabel}
                   </p>
-                  <h2 className="mt-2 text-xl font-semibold text-white">{step.label}</h2>
+                  <h2 className="mt-2 text-xl font-semibold text-slate-950">{step.label}</h2>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Pill tone={step.actorCanOwn ? "ready" : "muted"}>
                     {step.actorCanOwn ? "owned here" : "not this role"}
                   </Pill>
-                  <Pill tone="locked">browser off</Pill>
-                  <Pill tone="ready">event-ready</Pill>
+                  <Pill tone="locked">available later</Pill>
+                  <Pill tone="ready">tracked</Pill>
                 </div>
               </div>
-              <p className="mt-3 text-sm leading-6 text-white/64">{step.notes}</p>
-              <p className="mt-3 font-mono text-xs text-emerald-100/64">
+              <p className="mt-3 text-sm leading-6 text-slate-600">{step.notes}</p>
+              <p className="mt-3 font-mono text-xs text-[#2563eb]">
                 {step.futureEventType}
               </p>
             </article>
@@ -108,15 +112,15 @@ export default async function OnboardingPage() {
         <AuthLaunchPreflightPanel preflight={workspace.launchPreflight} />
       ) : null}
 
-      <section className="rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
-          Blocked until approval
+      <section className="app-surface-warm rounded-[2rem] p-5">
+        <p className="app-eyebrow app-eyebrow-warm">
+          Held for later
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           {workspace.blockedWrites.map((item) => (
             <span
               key={item}
-              className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/64"
+              className="rounded-full border border-[#f7d05e]/28 bg-[#fff8df] px-3 py-1 text-xs font-semibold text-[#a16207]"
             >
               {item}
             </span>
@@ -124,17 +128,19 @@ export default async function OnboardingPage() {
         </div>
       </section>
 
-      <EventOutboxLog events={workspace.futureStructuredEvents} outboxItems={[]} />
+      {showOperationalAudit ? (
+        <EventOutboxLog events={workspace.futureStructuredEvents} outboxItems={[]} />
+      ) : null}
 
-      <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/44">
+      <section className="app-surface rounded-[2rem] p-5">
+        <p className="app-eyebrow app-eyebrow-slate">
           Safety notes
         </p>
         <div className="mt-4 grid gap-2">
           {workspace.safetyNotes.map((note) => (
             <p
               key={note}
-              className="rounded-2xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-white/64"
+              className="app-surface-soft rounded-[1.1rem] p-3 text-sm leading-6 text-slate-600"
             >
               {note}
             </p>
@@ -151,18 +157,14 @@ function AuthLaunchPreflightPanel({
   preflight: AuthOnboardingLaunchPreflight;
 }) {
   return (
-    <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+    <section className="app-surface-info rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+          <p className="app-eyebrow app-eyebrow-blue">
             Staff auth preflight
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
-            {preflight.title}
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
-            {preflight.summary}
-          </p>
+          <h2 className="app-title mt-2">{preflight.title}</h2>
+          <p className="app-copy mt-2 max-w-3xl">{preflight.summary}</p>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center sm:grid-cols-6">
           <MiniStat label="Items" value={`${preflight.counts.total}`} />
@@ -190,9 +192,9 @@ function AuthLaunchPreflightPanel({
         {preflight.blockedControls.map((control) => (
           <span
             key={control}
-            className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/64"
+            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
           >
-            Locked {control}
+            Later: {control}
           </span>
         ))}
       </div>
@@ -202,12 +204,12 @@ function AuthLaunchPreflightPanel({
 
 function AuthPreflightCard({ item }: { item: AuthOnboardingPreflightItem }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <article className="app-surface rounded-[1.35rem] p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <AuthPreflightStatusPill status={item.status} />
-          <h3 className="mt-3 text-base font-semibold text-white">{item.label}</h3>
-          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+          <h3 className="mt-3 text-base font-semibold text-slate-950">{item.label}</h3>
+          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
             {item.ownerLane}
           </p>
         </div>
@@ -217,11 +219,11 @@ function AuthPreflightCard({ item }: { item: AuthOnboardingPreflightItem }) {
         </div>
       </div>
 
-      <p className="mt-3 text-sm leading-6 text-white/72">{item.question}</p>
-      <p className="mt-2 text-xs leading-5 text-sky-100/72">
+      <p className="mt-3 text-sm leading-6 text-slate-600">{item.question}</p>
+      <p className="mt-2 text-xs leading-5 text-[#2563eb]">
         Required: {item.requiredEvidence}
       </p>
-      <p className="mt-3 rounded-2xl bg-white/[0.05] p-3 text-xs leading-5 text-white/56">
+      <p className="app-surface-soft mt-3 rounded-[1.05rem] p-3 text-xs leading-5 text-slate-500">
         Current: {item.currentPosture}
       </p>
 
@@ -229,7 +231,7 @@ function AuthPreflightCard({ item }: { item: AuthOnboardingPreflightItem }) {
         {item.routeEvidence.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-xs font-semibold text-white/58"
+            className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -246,10 +248,10 @@ function AuthPreflightStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : status === "watch"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-        : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : "border-rose-200 bg-rose-50 text-rose-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -260,18 +262,16 @@ function AuthPreflightStatusPill({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
-        {label}
-      </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+    <div className="app-surface rounded-[1.05rem] px-3 py-2">
+      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
 
 function MiniToken({ label, value }: { label: string; value: string }) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58">
+    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500">
       {label} {value}
     </span>
   );
@@ -286,10 +286,10 @@ function Pill({
 }) {
   const className =
     tone === "ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : tone === "locked"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-        : "border-white/10 bg-white/[0.04] text-white/58";
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : "border-slate-200 bg-slate-50 text-slate-500";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

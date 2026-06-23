@@ -25,6 +25,7 @@ import {
   getAssignmentCreateWriteReadiness,
   type AssignmentCreateContext,
 } from "@/services/assignment-create-write";
+import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
 import {
   canCreateChapterAssignment,
   canApproveChapterMembership,
@@ -198,8 +199,8 @@ export function getActionStartBrowserWriteGate(
         label: "Actor is allowed by the planned write matrix",
         passed: actorAllowedByPlan,
         detail: actorAllowedByPlan
-          ? `${actor.audienceLabel} is allowed for action start in the write plan.`
-          : `${actor.audienceLabel} is blocked from action start in the write plan.`,
+          ? `${getActorPrimaryRoleLabel(actor)} is allowed for action start in the write plan.`
+          : `${getActorPrimaryRoleLabel(actor)} is blocked from action start in the write plan.`,
       },
       {
         key: "local_database_function_exists",
@@ -281,16 +282,16 @@ export function getMembershipApprovalBrowserWriteGate(
         label: "Current local actor can approve chapter membership",
         passed: actorCanApproveMembership,
         detail: actorCanApproveMembership
-          ? `${actor.audienceLabel} can shape membership approval writes in the local contract.`
-          : `${actor.audienceLabel} cannot approve chapter membership truth.`,
+          ? `${getActorPrimaryRoleLabel(actor)} can shape membership approval writes in the local contract.`
+          : `${getActorPrimaryRoleLabel(actor)} cannot approve chapter membership truth.`,
       },
       {
         key: "actor_allowed_by_write_plan",
         label: "Actor is allowed by the planned write matrix",
         passed: actorAllowedByPlan,
         detail: actorAllowedByPlan
-          ? `${actor.audienceLabel} is allowed for membership approval in the write plan.`
-          : `${actor.audienceLabel} is blocked from membership approval in the write plan.`,
+          ? `${getActorPrimaryRoleLabel(actor)} is allowed for membership approval in the write plan.`
+          : `${getActorPrimaryRoleLabel(actor)} is blocked from membership approval in the write plan.`,
       },
       {
         key: "local_database_function_exists",
@@ -439,16 +440,16 @@ export function getAssignmentCreateBrowserWriteGate(
         label: "Current local actor can create chapter assignments",
         passed: actorCanCreateAssignment,
         detail: actorCanCreateAssignment
-          ? `${actor.audienceLabel} can shape leader assignment writes in the local contract.`
-          : `${actor.audienceLabel} cannot create student/chapter assignment truth.`,
+          ? `${getActorPrimaryRoleLabel(actor)} can shape leader assignment writes in the local contract.`
+          : `${getActorPrimaryRoleLabel(actor)} cannot create student/chapter assignment truth.`,
       },
       {
         key: "actor_allowed_by_write_plan",
         label: "Actor is allowed by the planned write matrix",
         passed: actorAllowedByPlan,
         detail: actorAllowedByPlan
-          ? `${actor.audienceLabel} is allowed for assignment creation in the write plan.`
-          : `${actor.audienceLabel} is blocked from assignment creation in the write plan.`,
+          ? `${getActorPrimaryRoleLabel(actor)} is allowed for assignment creation in the write plan.`
+          : `${getActorPrimaryRoleLabel(actor)} is blocked from assignment creation in the write plan.`,
       },
       {
         key: "local_database_function_exists",
@@ -580,16 +581,16 @@ export function getProofSubmissionBrowserWriteGate(
         label: "Current local actor can submit proof for this assignment",
         passed: actorCanSubmitProof,
         detail: actorCanSubmitProof
-          ? `${actor.audienceLabel} can shape proof/testimonial submissions for this assignment.`
-          : `${actor.audienceLabel} cannot submit proof/testimonials for this assignment.`,
+          ? `${getActorPrimaryRoleLabel(actor)} can shape proof/testimonial submissions for this assignment.`
+          : `${getActorPrimaryRoleLabel(actor)} cannot submit proof/testimonials for this assignment.`,
       },
       {
         key: "actor_allowed_by_write_plan",
         label: "Actor is allowed by the planned write matrix",
         passed: actorAllowedByPlan,
         detail: actorAllowedByPlan
-          ? `${actor.audienceLabel} is allowed for proof submission in the write plan.`
-          : `${actor.audienceLabel} is blocked from proof submission in the write plan.`,
+          ? `${getActorPrimaryRoleLabel(actor)} is allowed for proof submission in the write plan.`
+          : `${getActorPrimaryRoleLabel(actor)} is blocked from proof submission in the write plan.`,
       },
       {
         key: "local_database_function_exists",
@@ -700,16 +701,16 @@ export function getHqSharingDecisionBrowserWriteGate(
         label: "Current local actor can make HQ sharing decisions",
         passed: actorCanMakeDecision,
         detail: actorCanMakeDecision
-          ? `${actor.audienceLabel} can shape HQ proof-sharing decisions in the local contract.`
-          : `${actor.audienceLabel} cannot decide whether proof is shared broadly.`,
+          ? `${getActorPrimaryRoleLabel(actor)} can shape HQ proof-sharing decisions in the local contract.`
+          : `${getActorPrimaryRoleLabel(actor)} cannot decide whether proof is shared broadly.`,
       },
       {
         key: "actor_allowed_by_write_plan",
         label: "Actor is allowed by the planned write matrix",
         passed: actorAllowedByPlan,
         detail: actorAllowedByPlan
-          ? `${actor.audienceLabel} is allowed for HQ sharing decisions in the write plan.`
-          : `${actor.audienceLabel} is blocked from HQ sharing decisions in the write plan.`,
+          ? `${getActorPrimaryRoleLabel(actor)} is allowed for HQ sharing decisions in the write plan.`
+          : `${getActorPrimaryRoleLabel(actor)} is blocked from HQ sharing decisions in the write plan.`,
       },
       {
         key: "local_database_function_exists",
@@ -825,16 +826,16 @@ export function getLeaderProofDecisionBrowserWriteGate(
         label: "Current local actor can record chapter proof decisions",
         passed: actorCanRecord,
         detail: actorCanRecord
-          ? `${actor.audienceLabel} can record chapter proof decisions.`
-          : `${actor.audienceLabel} cannot record chapter proof decisions.`,
+          ? `${getActorPrimaryRoleLabel(actor)} can record chapter proof decisions.`
+          : `${getActorPrimaryRoleLabel(actor)} cannot record chapter proof decisions.`,
       },
       {
         key: "actor_allowed_by_write_plan",
         label: "Actor is allowed by the planned write matrix",
         passed: actorAllowedByPlan,
         detail: actorAllowedByPlan
-          ? `${actor.audienceLabel} is allowed for leader proof decisions in the write plan.`
-          : `${actor.audienceLabel} is blocked from leader proof decisions in the write plan.`,
+          ? `${getActorPrimaryRoleLabel(actor)} is allowed for leader proof decisions in the write plan.`
+          : `${getActorPrimaryRoleLabel(actor)} is blocked from leader proof decisions in the write plan.`,
       },
       {
         key: "local_database_function_exists",
@@ -974,16 +975,16 @@ export function getCoachDecisionBrowserWriteGate(
         label: "Current local actor can log coach decisions",
         passed: actorCanLogDecision,
         detail: actorCanLogDecision
-          ? `${actor.audienceLabel} can shape coach decision writes in the local contract.`
-          : `${actor.audienceLabel} cannot log advance, hold, or intervene decisions.`,
+          ? `${getActorPrimaryRoleLabel(actor)} can shape coach decision writes in the local contract.`
+          : `${getActorPrimaryRoleLabel(actor)} cannot log advance, hold, or intervene decisions.`,
       },
       {
         key: "actor_allowed_by_write_plan",
         label: "Actor is allowed by the planned write matrix",
         passed: actorAllowedByPlan,
         detail: actorAllowedByPlan
-          ? `${actor.audienceLabel} is allowed for coach decisions in the write plan.`
-          : `${actor.audienceLabel} is blocked from coach decisions in the write plan.`,
+          ? `${getActorPrimaryRoleLabel(actor)} is allowed for coach decisions in the write plan.`
+          : `${getActorPrimaryRoleLabel(actor)} is blocked from coach decisions in the write plan.`,
       },
       {
         key: "local_database_function_exists",

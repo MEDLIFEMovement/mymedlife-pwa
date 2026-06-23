@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import {
+  MemberActionDetailPreview,
   createDefaultMemberActionPreviewDraft,
   getMemberActionPreviewState,
 } from "@/components/member-action-detail-preview";
@@ -57,5 +60,23 @@ describe("member action detail preview", () => {
       canSubmit: true,
       hasConfirmation: true,
     });
+  });
+
+  it("renders the mockup-aligned submit surface and review CTA", () => {
+    const html = renderToStaticMarkup(
+      createElement(MemberActionDetailPreview, {
+        assignment,
+        sectionId: "submit-evidence",
+      }),
+    );
+
+    expect(html).toContain("id=\"submit-evidence\"");
+    expect(html).toContain("Submit Evidence");
+    expect(html).toContain("Submitting for");
+    expect(html).toContain("Screenshot");
+    expect(html).toContain("Link");
+    expect(html).toContain("Text");
+    expect(html).toContain("Submit for review");
+    expect(html).toContain("I confirm this evidence is accurate");
   });
 });

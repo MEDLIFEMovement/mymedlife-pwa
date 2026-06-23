@@ -49,7 +49,7 @@ describe("action-start result states", () => {
 
   it("previews duplicate protection for an action that is already in progress", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
-    const assignment = requireAssignment("member-push");
+    const assignment = requireAssignment("share-rush-flyer");
 
     expect(getFutureActionStartResultIfEnabled(actor, assignment)).toEqual(
       expect.objectContaining({
@@ -61,8 +61,8 @@ describe("action-start result states", () => {
   });
 
   it("previews success only for a visible not-started action and approved role", () => {
-    const actor = getMockLocalActorContext("coach@mymedlife.test");
-    const assignment = requireAssignment("coach-summary");
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const assignment = requireAssignment("member-push");
 
     expect(getFutureActionStartResultIfEnabled(actor, assignment)).toEqual(
       expect.objectContaining({
