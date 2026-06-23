@@ -6,6 +6,7 @@ type AdminBackendLaneKey =
   | "committees"
   | "workflows"
   | "sop_library"
+  | "master_data"
   | "sop_builder";
 
 type AdminBackendLaneNavProps = {
@@ -41,6 +42,11 @@ const baseLanes = [
     key: "sop_library",
     label: "SOP Library",
     href: "/admin/sop-library",
+  },
+  {
+    key: "master_data",
+    label: "Master Data",
+    href: "/admin/master-data",
   },
 ] as const;
 
@@ -152,6 +158,14 @@ function AdminLaneIcon({ lane }: { lane: AdminBackendLaneKey }) {
           <path d="M6 5.5h10a2 2 0 0 1 2 2V19l-4-2-4 2-4-2V7.5a2 2 0 0 1 2-2Z" />
           <path d="M9 9h6" />
           <path d="M9 12h6" />
+        </svg>
+      );
+    case "master_data":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M6 6.5h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" />
+          <path d="M8 10h8" />
+          <path d="M8 13h5" />
         </svg>
       );
     case "sop_builder":

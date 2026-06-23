@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
@@ -21,6 +22,7 @@ export default async function AdminMasterDataPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <AdminBackendLaneNav current="master_data" />
 
       {!workspace.canReadWorkspace ? (
         <RestrictedState

@@ -449,6 +449,7 @@ SLT surfaces:
 - `/admin/workflows?section=lanes|onboarding|writes`
 - `/admin/workflows?section=...&focus=...`
 - `/admin/sop-library`
+- `/admin/master-data`
 - `/admin/sop-library?query=...&status=...`
 - `/admin/sop-builder/[campaignSlug]?tab=steps|role-matrix|completion|points-kpi|comms|preview|version`
 - `/admin/sop-builder/[campaignSlug]?tab=...&focus=...`
@@ -465,6 +466,7 @@ Inventory rule:
   `/admin/permissions`
 - keep committee-registry section state and selected-record state on
   `/admin/committees`
+- keep master-data inventory state on `/admin/master-data`
 - treat the SOP builder as workflow-logic inventory first:
   - library
   - builder tabs

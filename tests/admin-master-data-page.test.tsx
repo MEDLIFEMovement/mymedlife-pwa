@@ -5,7 +5,7 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/admin",
+  usePathname: () => "/admin/master-data",
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -27,8 +27,8 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
   };
 });
 
-describe("admin page", () => {
-  it("keeps the backend overview inside the same owned admin route family", async () => {
+describe("admin master data page", () => {
+  it("keeps master data inside the same owned admin backend route family", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -36,28 +36,24 @@ describe("admin page", () => {
       getMockLocalActorContext("admin@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing admin overview page."),
+      getMockReadOnlyAppData("Testing admin master data page."),
     );
 
-    const { default: AdminPage } = await import("@/app/admin/page");
-    const html = renderToStaticMarkup(await AdminPage());
+    const { default: AdminMasterDataPage } = await import("@/app/admin/master-data/page");
+    const html = renderToStaticMarkup(await AdminMasterDataPage());
 
     expect(html).toContain("Backend route family");
-    expect(html).toContain('href="/admin"');
+    expect(html).toContain('href="/admin/master-data"');
     expect(html).toContain('href="/admin/permissions"');
     expect(html).toContain('href="/admin/committees"');
     expect(html).toContain('href="/admin/workflows"');
     expect(html).toContain('href="/admin/sop-library"');
-    expect(html).toContain('href="/admin/master-data"');
-    expect(html).toContain(">Overview<");
-    expect(html).toContain("Staff context is role-aware and read-only.");
-    expect(html).toContain("What this admin surface actually owns");
-    expect(html).toContain("Permission Registry");
-    expect(html).toContain("Committee Registry");
-    expect(html).toContain("Workflow Registry");
-    expect(html).toContain("SOP Library");
-    expect(html).toContain("System health signals");
-    expect(html).toContain("4 local checks are visible here.");
-    expect(html).not.toContain("System health placeholders");
+    expect(html).toContain("Admin master data");
+    expect(html).toContain("Admin master data inventory");
+    expect(html).toContain("Fake users");
+    expect(html).toContain("Named roles");
+    expect(html).toContain("Chapters");
+    expect(html).toContain("Campaign templates");
+    expect(html).toContain("Blocked until approval");
   });
 });
