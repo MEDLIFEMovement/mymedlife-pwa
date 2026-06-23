@@ -585,6 +585,13 @@ Recommended local ownership:
   `/coach?view=best_practices` is opened as a handoff route, render the actual
   requested shared command-center screen on the coach route instead of a
   generic coach placeholder panel
+- verified local route proof:
+  - `/coach?view=chapter_detail&chapter=...` now renders the selected chapter
+    as the route-level page title, with `Current support posture` below it
+    instead of flattening the route into a staff-style drawer heading
+  - `/coach?view=support_notes` now leads with `Support Notes` as the visible
+    route title while keeping the chapter-specific note context lower in the
+    page
 - local parity note: once a chapter is selected, the route should read like a
   focused coach review state first and a chapter-switch surface second; avoid
   repeating the chapter name as two competing hero headings or leaving the full
@@ -903,6 +910,10 @@ Local alignment note:
   a fuller impact dashboard
 - keep the nav contract as `Succession`, while the local surface heading stays
   `Leadership Succession` to match the Make clickthrough
+- verified local route proof:
+  - `/chapter?view=events` now renders `Events` as the visible route title
+    while keeping the deeper attendance and proof operations below the
+    first-viewport contract
 - keep the visible screen title as `Feed Analytics`, not `Feed & Engagement
   Analytics`
 - prefer `Re-engagement Targets` for the low-engagement follow-up section so
@@ -1126,12 +1137,16 @@ Verified local route proof:
 - `/staff?view=feed_analytics` opens the overview-first `Feed Analytics`
   surface with the post-performance table visible as the primary command-center
   state, without review-data chrome in the readable shell
-- `/staff?view=campaigns` should open directly into `Campaign Operations`
+- `/staff?view=campaigns` opens directly into `Campaign Operations`
   without the generic staff hero, metric strip, or portfolio snapshot stack
   taking over the first viewport
-- `/staff?view=best_practices` should open directly into `Best Practices Library`
+- `/staff?view=best_practices` opens directly into `Best Practices Library`
   so the library header, filters, and share actions land before generic
   command-center scaffolding
+- `/staff?view=hubspot` opens directly into `HubSpot + Chapter Intelligence`
+  as a route-level page heading instead of an inner panel title
+- `/staff?view=admin` opens `System Health` as the default admin route title,
+  while the member-home handoff still lands as `Admin Console`
 - `/staff?view=best_practices&bestPractice=...` should preserve the selected
   practice state in the live route, with the explicit `Selected practice`
   block visible before the library card grid

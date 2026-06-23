@@ -32,29 +32,34 @@ As of `2026-06-23`, the local repo clears the main implementation gates:
 That makes the current matrix useful as a parity and product-truth checklist,
 not just as a future roadmap.
 
-Current strongest verified surface family:
+Current strongest verified surface families:
 
 - chapter leader command center routes under `/chapter`
+- cross-role command-center route-title hierarchy across coach and staff
+- SLT traveler and staff route families clearing the current local goal gates
 
-Verified recent parity passes inside that family:
+Verified recent parity passes:
 
-- home / overview framing
-- member pipeline
-- member profile
-- committees
-- events
-- impact
-- bridge-video hub
-- succession
-- feed analytics
+- chapter leader: home / overview framing, member pipeline, member profile,
+  committees, events, impact, bridge-video hub, succession, and feed analytics
+- coach: campaign route hierarchy, chapter-detail route heading, and
+  support-notes route heading
+- staff: campaigns, proof queue, feed studio, feed analytics, hubspot,
+  best-practices, and admin/system-health route headings
+- branch baseline: `pnpm test`, `pnpm lint`, `pnpm typecheck`, and
+  `pnpm build` all passed on the current branch after these parity slices
 
 What this implies for the next implementation slices:
 
 - prefer remaining cross-role gaps over re-polishing already-verified chapter
   leader screens unless a new mismatch is found
 - the member route family also clears its focused route suite, so next member
-  passes should prioritize deeper state parity or visible hierarchy alignment
+  passes should prioritize first-viewport hierarchy and route-identity cleanup
   over proving the existence of the top-level routes again
+- the next SLT passes should focus on traveler packet naming and route-context
+  parity where the packet is still more explicit than the current headings
+- SOP builder remains its own backend-lane parity track and should stay
+  separated from the command-center route-title cleanup work
 - when a remaining gap is discovered inside a verified family, keep the next
   pass bounded and evidence-backed, the same way the recent chapter leader
   passes were handled
