@@ -1270,7 +1270,7 @@ function getCoachChapterFocusItems(selectedChapter: CoachPortfolioChapter) {
   return [
     selectedChapter.nextStep,
     `${selectedChapter.openFollowUps} follow-ups still need coach attention before the next push.`,
-    `${selectedChapter.proofPending} proof item(s) remain in a review-safe queue.`,
+    `${selectedChapter.proofPending} proof item(s) remain in the chapter proof queue.`,
   ];
 }
 

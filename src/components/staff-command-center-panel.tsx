@@ -261,7 +261,7 @@ export function StaffCommandCenterPanel({
       {
         label: "Audit rows",
         value: `${commandCenter.adminWorkspace.auditRows.length}`,
-        note: "Most recent review-safe audit records",
+        note: "Most recent audit records visible in this console",
       },
     ]
     : isBestPracticesView
@@ -1419,7 +1419,7 @@ function renderView(
             {
               label: "Audit rows",
               value: `${commandCenter.adminWorkspace.auditRows.length}`,
-              note: "Most recent review-safe audit records",
+              note: "Most recent audit records visible in this console",
             },
           ];
       const adminStudentViewAction =
