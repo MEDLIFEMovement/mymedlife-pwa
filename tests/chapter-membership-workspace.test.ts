@@ -11,13 +11,13 @@ describe("chapter membership workspace", () => {
     const workspace = getChapterMembershipWorkspace(actor, data);
 
     expect(workspace.canReadWorkspace).toBe(true);
-    expect(workspace.title).toContain("member workspace");
+    expect(workspace.title).toContain("roster and join requests");
     expect(workspace.counts.activeMembers).toBe(5);
     expect(workspace.counts.pendingRequests).toBe(2);
     expect(workspace.counts.enabledControls).toBe(0);
     expect(workspace.membershipApprovalPacket).toEqual(
       expect.objectContaining({
-        title: "Goal 160 membership approval packet",
+        title: "First join approval preview",
         targetRoute: "/chapter/members",
         futureFunction: "app.approve_chapter_membership",
         joinRequestId: "join-avery",
@@ -35,7 +35,7 @@ describe("chapter membership workspace", () => {
         requestedCommitteeLane: "Recruitment",
         source: "rush_event",
         approvedByActorEmail: "leader.a@mymedlife.test",
-        auditReason: "Approve local Rush Month join request for chapter review.",
+        auditReason: "Approve this Rush Month join request for chapter roster follow-through.",
       }),
     );
     expect(workspace.membershipApprovalPacket?.resultPreview.currentResult.code).toBe(
@@ -70,10 +70,29 @@ describe("chapter membership workspace", () => {
     const workspace = getChapterMembershipWorkspace(actor, data);
 
     expect(workspace.canReadWorkspace).toBe(true);
-    expect(workspace.title).toContain("coach roster readout");
+    expect(workspace.title).toContain("coaching roster view");
     expect(workspace.joinRequests).toEqual([]);
     expect(workspace.membershipApprovalPacket).toBeNull();
-    expect(workspace.summary).toContain("without owning membership approvals");
+    expect(workspace.summary).toContain("without owning join approvals");
+  });
+
+  it("lets committee chairs read the chapter roster but keeps committee members out", () => {
+    const committeeChair = getChapterMembershipWorkspace(
+      getMockLocalActorContext("committee.chair@mymedlife.test"),
+      data,
+    );
+    const committeeMember = getChapterMembershipWorkspace(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+      data,
+    );
+
+    expect(committeeChair.canReadWorkspace).toBe(true);
+    expect(committeeChair.title).toContain("roster and join requests");
+    expect(committeeChair.membershipApprovalPacket?.payload.approvedByActorEmail).toBe(
+      "committee.chair@mymedlife.test",
+    );
+    expect(committeeMember.canReadWorkspace).toBe(false);
+    expect(committeeMember.members).toEqual([]);
   });
 
   it("keeps DS Admin and general members out of member-management truth", () => {
@@ -102,8 +121,8 @@ describe("chapter membership workspace", () => {
     expect(
       workspace.disabledControls.every((control) => control.reason.length > 20),
     ).toBe(true);
-    expect(workspace.auditPreview.join(" ")).toContain("membership_approved");
-    expect(workspace.outboxPreview.join(" ")).toContain("disabled");
+    expect(workspace.auditPreview.join(" ")).toContain("audit trail");
+    expect(workspace.outboxPreview.join(" ")).toContain("paused");
     expect(workspace.membershipApprovalPacket?.futureRecords).toEqual(
       expect.arrayContaining([
         {
@@ -119,7 +138,7 @@ describe("chapter membership workspace", () => {
     expect(workspace.membershipApprovalPacket?.blockedControls).toEqual(
       expect.arrayContaining([
         "Approve join request",
-        "Create membership row",
+        "Add member to chapter roster",
         "Send welcome message",
         "Sync CRM contact",
       ]),

@@ -21,12 +21,12 @@ describe("chapter member role focus", () => {
     expect(focus.roleLabel).toBe("President / VP");
     expect(focus.primaryHref).toBe("/chapter/members");
     expect(focus.secondaryHref).toBe("/rush-month/review");
-    expect(focus.title).toContain("role coverage");
-    expect(focus.safetyNote).toContain("join approvals");
+    expect(focus.title).toContain("chapter coverage");
+    expect(focus.safetyNote).toContain("roster approvals");
     expect(focus.items.map((item) => item.label)).toEqual([
       "Join requests",
       "Thin roles",
-      "Enabled controls",
+      "Open approvals",
     ]);
   });
 

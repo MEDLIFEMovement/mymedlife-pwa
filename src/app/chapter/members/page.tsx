@@ -7,9 +7,11 @@ import { MembershipApprovalServerActionPanel } from "@/components/membership-app
 import { RestrictedState } from "@/components/restricted-state";
 import { getChapterMemberRoleFocus } from "@/services/chapter-member-role-focus";
 import { getChapterMembershipWorkspace } from "@/services/chapter-membership-workspace";
+import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import type { MembershipApprovalResultCode } from "@/services/membership-approval-result-states";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("chapterMembers");
@@ -36,6 +38,7 @@ export default async function ChapterMembersPage({
   ]);
   const workspace = getChapterMembershipWorkspace(actor, data);
   const memberRoleFocus = getChapterMemberRoleFocus(actor, workspace);
+  const surfaceFamily = getActorSurfaceFamily(actor);
   const membershipApprovalResultCode = parseMembershipApprovalResultCode(
     search.membershipApprovalResult,
   );
@@ -43,6 +46,17 @@ export default async function ChapterMembersPage({
     workspace.membershipApprovalPacket?.joinRequestId === search.joinRequestId
       ? membershipApprovalResultCode
       : membershipApprovalResultCode;
+  const restrictedNextHref = getLandingRouteForActor(actor);
+  const restrictedNextLabel =
+    surfaceFamily === "ds_admin"
+      ? "Open integration safety"
+      : surfaceFamily === "leader"
+        ? "Open chapter home"
+        : surfaceFamily === "member"
+          ? "Open student home"
+          : surfaceFamily === "coach"
+            ? "Open coach dashboard"
+            : "Open your owned surface";
 
   return (
     <AppShell actor={actor}>
@@ -113,12 +127,8 @@ export default async function ChapterMembersPage({
         <RestrictedState
           title={workspace.title}
           message={workspace.summary}
-          nextHref={actor.audience === "ds_admin" ? "/admin" : "/rush-month/dashboard"}
-          nextLabel={
-            actor.audience === "ds_admin"
-              ? "Open integration safety"
-              : "Open your student dashboard"
-          }
+          nextHref={restrictedNextHref}
+          nextLabel={restrictedNextLabel}
         />
       )}
     </AppShell>

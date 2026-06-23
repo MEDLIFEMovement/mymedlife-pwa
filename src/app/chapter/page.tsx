@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { ChapterLeaderCommandCenterPanel } from "@/components/chapter-leader-command-center-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { RoleNextActionPanel } from "@/components/role-next-action-panel";
+import {
+  getActorPrimaryRoleLabel,
+  getActorSurfaceLabel,
+} from "@/services/actor-role-display";
 import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
+import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
@@ -20,15 +26,45 @@ export const dynamic = "force-dynamic";
 
 type ChapterPageProps = {
   searchParams?: Promise<{
+    source?: string;
     view?: string;
     member?: string;
+    committee?: string;
+    eventCommittee?: string;
+    event?: string;
+    leaderboardMetric?: string;
+    region?: string;
+    benchmark?: string;
+    impactStory?: string;
+    pipeline?: string;
+    q?: string;
+    bridge?: string;
+    bridgeFilter?: string;
+    bridgeVideo?: string;
+    feedPost?: string;
+    quickAction?: string;
   }>;
 };
 
 export default async function ChapterPage({ searchParams }: ChapterPageProps) {
   const emptySearchParams: {
+    source?: string;
     view?: string;
     member?: string;
+    committee?: string;
+    eventCommittee?: string;
+    event?: string;
+    leaderboardMetric?: string;
+    region?: string;
+    benchmark?: string;
+    impactStory?: string;
+    pipeline?: string;
+    q?: string;
+    bridge?: string;
+    bridgeFilter?: string;
+    bridgeVideo?: string;
+    feedPost?: string;
+    quickAction?: string;
   } = {};
   const [data, actor, search] = await Promise.all([
     getReadOnlyAppData(),
@@ -38,38 +74,64 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
   const progress = getProgressCounts(visibleAssignments);
   const nextActionBrief = getRoleNextActionBrief(actor, data);
+  const landingRoute = getLandingRouteForActor(actor);
   const leaderCommandCenter = getChapterLeaderCommandCenter(actor, data, {
+    source: search.source,
     view: search.view,
     memberId: search.member,
+    committeeId: search.committee,
+    eventCommittee: search.eventCommittee,
+    eventId: search.event,
+    leaderboardMetric: search.leaderboardMetric,
+    leaderboardRegion: search.region,
+    bestPracticeChapterId: search.benchmark,
+    impactStory: search.impactStory,
+    pipeline: search.pipeline,
+    search: search.q,
+    bridgeFilter: search.bridgeFilter ?? search.bridge,
+    bridgeVideoId: search.bridgeVideo,
+    feedPostId: search.feedPost,
+    quickAction: search.quickAction,
   });
 
-  return (
-    <AppShell actor={actor}>
-      <DataSourceNotice source={data.source} />
+  if (!leaderCommandCenter.canReadCommandCenter && canReadChapterData(actor)) {
+    redirect(landingRoute);
+  }
 
+  return (
+    <AppShell
+      actor={actor}
+      hideTopHeader={leaderCommandCenter.canReadCommandCenter}
+      showDebugTools={false}
+    >
       {leaderCommandCenter.canReadCommandCenter ? (
         <ChapterLeaderCommandCenterPanel commandCenter={leaderCommandCenter} />
       ) : !canReadChapterData(actor) ? (
-        <RestrictedState
-          title="DS Admin does not own chapter truth."
-          message="This local role can inspect integration and outbox posture, but it should not read member assignments, points, or chapter operating KPIs."
-          nextHref="/admin"
-          nextLabel="Open integration outbox"
-        />
+        <>
+          <DataSourceNotice source={data.source} />
+          <RestrictedState
+            title="DS Admin does not own chapter truth."
+            message="This local role can inspect integration and outbox posture, but it should not read member assignments, points, or chapter operating KPIs."
+            nextHref="/admin"
+            nextLabel="Open integration outbox"
+          />
+        </>
       ) : (
         <>
+          <DataSourceNotice source={data.source} />
           <RoleNextActionPanel brief={nextActionBrief} />
 
-          <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
-              Chapter home
+          <section className="rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+              Chapter snapshot
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">{data.chapter.name}</h1>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
               {data.chapter.campus} in the {data.chapter.region} region. Coach:
               {" "}
-              {data.chapter.coachName}. This read-only page shows the chapter
-              context allowed for {actor.audienceLabel.toLowerCase()}.
+              {data.chapter.coachName}. This chapter snapshot keeps the current
+              campaign, member progress, and committee context visible for{" "}
+              {getActorSurfaceLabel(actor).toLowerCase()}.
             </p>
           </section>
 
@@ -78,25 +140,25 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
             <MetricCard
               label="Visible progress"
               value={`${progress.approved}/${progress.total}`}
-              note={`${actor.audienceLabel} assignment view`}
+              note={`${getActorPrimaryRoleLabel(actor)} assignment view`}
             />
             <MetricCard
               label="Visible points"
               value={`${visibleAssignments.reduce((total, assignment) => total + assignment.points, 0)}`}
-              note="Read-only points available in this role view"
+              note="Points currently visible in this chapter snapshot"
             />
           </section>
 
-          <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
-            <h2 className="text-2xl font-semibold text-white">Start here</h2>
-            <p className="mt-2 text-sm leading-6 text-white/66">
+          <section className="app-surface-info rounded-[2rem] p-5">
+            <h2 className="text-2xl font-semibold text-slate-950">Start here</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
               Rush Month is active. Members see their own next actions,
               leaders see team follow-up, coaches read readiness, and HQ staff
-              see support context without turning on app writes.
+              keep support context connected to the chapter.
             </p>
             <Link
               href="/rush-month"
-              className="mt-4 inline-flex rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+              className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
             >
               Open Rush Month
             </Link>
@@ -107,7 +169,7 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
               {
                 href: "/chapter/members",
                 title: "Members and roles",
-                copy: "Review roster health, join requests, role coverage, and disabled approval controls.",
+                copy: "Review roster health, join requests, and role coverage before leadership follow-up.",
               },
               {
                 href: "/campaigns",
@@ -128,10 +190,10 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-3xl border border-white/10 bg-white/[0.05] p-4 transition hover:border-emerald-300/30 hover:bg-emerald-300/10"
+                className="app-surface rounded-3xl p-4 transition hover:border-[#f7d05e]/35 hover:bg-[#fffdf6]"
               >
-                <h2 className="text-lg font-semibold text-white">{item.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-white/64">{item.copy}</p>
+                <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.copy}</p>
               </Link>
             ))}
           </section>

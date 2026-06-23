@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
+import { ChapterLeaderCommandCenterPanel } from "@/components/chapter-leader-command-center-panel";
 import {
+  buildChapterLeaderAssignmentFlowHref,
+  buildChapterLeaderCommitteeFlowHref,
   buildChapterLeaderCommandCenterHref,
+  buildChapterLeaderEventFlowHref,
   getChapterLeaderCommandCenter,
 } from "@/services/chapter-leader-command-center";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
@@ -10,6 +16,14 @@ import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 const data = getMockReadOnlyAppData("Testing chapter leader command center.");
 
 describe("chapter leader command center", () => {
+  it("keeps action committee chairs inside the leader-owned chapter surface", () => {
+    const actor = getMockLocalActorContext("committee.chair@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+
+    expect(commandCenter.canReadCommandCenter).toBe(true);
+    expect(commandCenter.selectedView).toBe("overview");
+  });
+
   it("gives President / VP a Boston College sample leadership surface", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
@@ -24,9 +38,45 @@ describe("chapter leader command center", () => {
       "Assign Action",
       "Review Members",
       "Promote Emerging Leader",
+      "Share Bridge Video",
     ]);
+    expect(commandCenter.quickActions.find((action) => action.label === "Create Event")?.href).toBe(
+      "/chapter?view=events&quickAction=create_event",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Assign Action")?.href).toBe(
+      "/chapter?view=members&pipeline=follow_up&quickAction=assign_action",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Review Members")?.href).toBe(
+      "/chapter?view=members&quickAction=review_members",
+    );
+    expect(
+      commandCenter.quickActions.find((action) => action.label === "Promote Emerging Leader")?.href,
+    ).toBe("/chapter?view=succession&quickAction=promote_emerging_leader");
+    expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video")?.href).toBe(
+      "/chapter?view=bridge_videos&quickAction=share_bridge_video",
+    );
+    expect(commandCenter.activeCampaignLabel).toBe("Moving Mountains 🏔");
+    expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
+      "Chapter",
+      "Members",
+      "Operations",
+      "Impact & Culture",
+      "Leadership",
+    ]);
+    expect(commandCenter.chapterPointsTrend).toHaveLength(10);
+    expect(commandCenter.chapterPointsTrend[0]).toMatchObject({
+      label: "Apr W1",
+      value: 920,
+    });
+    expect(commandCenter.committeesOverview).toMatchObject({
+      activeCommitteesLabel: "5 / 7",
+      totalOpenActionsLabel: "29",
+      committeesWithoutChairsLabel: "2",
+    });
     expect(commandCenter.selectedMember?.displayName).toBe("Zara Events");
-    expect(commandCenter.weeklyPriority?.title).toContain("proof and role gaps");
+    expect(commandCenter.weeklyPriority?.title).toBe(
+      "Activate Member Engagement committee, collect bridge videos from all chairs, and push the SLT sign-up campaign.",
+    );
     expect(commandCenter.leadershipRoles.map((role) => role.label)).toEqual([
       "President / VP",
       "Recruitment lead",
@@ -37,9 +87,157 @@ describe("chapter leader command center", () => {
     expect(commandCenter.riskAlerts[0]).toEqual(
       expect.objectContaining({
         severity: "high",
-        href: "/chapter?view=succession",
+        title: "Member Engagement committee has no chair — inactive for 3 weeks",
+        href: "/chapter?view=committees&committee=committee-member-engagement",
       }),
     );
+    expect(commandCenter.riskAlerts[1]).toEqual(
+      expect.objectContaining({
+        title: "Fundraising committee has low activity — only 9 actions completed this month",
+        href: "/chapter?view=committees&committee=committee-fundraising",
+      }),
+    );
+    expect(commandCenter.riskAlerts[2]).toEqual(
+      expect.objectContaining({
+        title: "No bridge videos submitted this month from 3 of 7 committees",
+        href: "/chapter?view=bridge_videos",
+      }),
+    );
+    expect(commandCenter.riskAlerts[3]).toEqual(
+      expect.objectContaining({
+        title: "Follow-up overdue after 'Tabling: Quad Recruitment' (Jun 15)",
+        href: "/chapter?view=events&eventCommittee=recruitment&event=bc-event-quad-tabling",
+      }),
+    );
+  });
+
+  it("renders the overview hero with the chapter-home framing from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.metrics.find((metric) => metric.label === "Bridge Videos")).toMatchObject({
+      value: "1,480",
+      note: "+11% vs last week",
+    });
+    expect(commandCenter.metrics.find((metric) => metric.label === "Points This Week")).toMatchObject({
+      value: "9",
+      note: "Submitted this month",
+    });
+
+    expect(markup).toContain("Chapter Leadership Home");
+    expect(markup).toContain("Leadership Center");
+    expect(markup).toContain("Chapter Dashboard · Jun 2025");
+    expect(markup).toContain("Sofia Reyes, President · New England Region");
+    expect(markup).toContain("3rd in New England · top 15% globally");
+    expect(markup).toContain("Create Event");
+    expect(markup).toContain("Assign Action");
+    expect(markup).toContain("Review Members");
+    expect(markup).toContain("Promote Emerging Leader");
+    expect(markup).toContain("Share Bridge Video");
+    expect(markup).toContain("Chapter Metrics — June 2025");
+    expect(markup).toContain("E-Board roles");
+    expect(markup).toContain("Health Score");
+    expect(markup).toContain("Active Members");
+    expect(markup).toContain("Events Created");
+    expect(markup).toContain("Attendance Rate");
+    expect(markup).toContain("Actions Completed");
+    expect(markup).toContain("Evidence Submitted");
+    expect(markup).toContain("Bridge Videos");
+    expect(markup).toContain("Points This Week");
+    expect(markup).toContain("Funds Raised");
+    expect(markup).toContain("SLT Participants");
+    expect(markup).toContain("Volunteer Hours");
+    expect(markup).toContain("Clinic Patients");
+    expect(markup).toContain("Meals Served");
+    expect(markup).toContain("This Week&#x27;s Priority");
+    expect(markup).toContain(
+      "Activate Member Engagement committee, collect bridge videos from all chairs, and push the SLT sign-up campaign.",
+    );
+    expect(markup).toContain("Quick Actions");
+    expect(markup).toContain("Risk Alerts");
+    expect(markup).toContain("Member Engagement committee has no chair — inactive for 3 weeks");
+    expect(markup).toContain(
+      "Fundraising committee has low activity — only 9 actions completed this month",
+    );
+    expect(markup).toContain("No bridge videos submitted this month from 3 of 7 committees");
+    expect(markup).toContain("Follow-up overdue after &#x27;Tabling: Quad Recruitment&#x27; (Jun 15)");
+    expect(markup).toContain("Weekly Points Trend");
+    expect(markup).toContain("Role coverage");
+    expect(markup).toContain("4 active");
+    expect(markup).not.toContain("Review mode");
+    expect(markup).not.toContain("Member follow-up queue");
+    expect(markup).not.toContain("Who needs a human touch right now?");
+    expect(markup).not.toContain("Member detail");
+    expect(markup).not.toContain("Committee operations");
+    expect(markup).not.toContain("Event momentum");
+    expect(markup).not.toContain("Impact signals");
+    expect(markup).not.toContain("Leadership pipeline");
+    expect(markup).not.toContain("Bridge stories");
+    expect(markup.match(/>Create Event</g)?.length).toBe(2);
+    expect(markup.match(/>Assign Action</g)?.length).toBe(2);
+    expect(markup.indexOf("Create Event")).toBeLessThan(markup.indexOf("Chapter Metrics"));
+    expect(markup.indexOf("Assign Action")).toBeLessThan(markup.indexOf("Chapter Metrics"));
+    expect(markup.indexOf("Chapter Metrics")).toBeLessThan(markup.indexOf("Risk Alerts"));
+    expect(markup.indexOf("Active Members")).toBeGreaterThan(markup.indexOf("Chapter Metrics"));
+    expect(markup.indexOf("Risk Alerts")).toBeLessThan(markup.indexOf("This Week&#x27;s Priority"));
+    expect(markup.indexOf("This Week&#x27;s Priority")).toBeLessThan(markup.indexOf("Quick Actions"));
+    expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Review Members"));
+    expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Assign Action"));
+    expect(markup.indexOf("Quick Actions")).toBeLessThan(
+      markup.lastIndexOf("Promote Emerging Leader"),
+    );
+    expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Create Event"));
+    expect(markup.indexOf("Quick Actions")).toBeLessThan(
+      markup.lastIndexOf("Share Bridge Video"),
+    );
+    expect(markup.indexOf("Risk Alerts")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
+    expect(markup.indexOf("Chapter Metrics")).toBeLessThan(markup.indexOf("Meals Served"));
+    expect(markup.indexOf("Meals Served")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
+    expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
+    expect(markup.indexOf("Weekly Points Trend")).toBeLessThan(markup.indexOf("Role coverage"));
+    expect(markup).not.toContain(`Chapter health score ${commandCenter.healthScore} out of 100`);
+    expect(markup).not.toContain("/ 100");
+    expect(markup).not.toContain("Chapter Pulse");
+    expect(markup).not.toContain("Impact Snapshot");
+  });
+
+  it("keeps the desktop rail compact so navigation stays in the operating frame", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Active Campaign");
+    expect(markup).toContain("Sofia Reyes");
+    expect(markup).toContain("President");
+    expect(markup).not.toContain("Navigation");
+    expect(markup).not.toContain("Views");
+    expect(markup).not.toContain(">Chapter Lead<");
+    expect(markup.indexOf("Active Campaign")).toBeLessThan(markup.indexOf("Chapter Home"));
+    expect(markup.indexOf("Feed Analytics")).toBeLessThan(markup.indexOf("Sofia Reyes"));
+    expect(markup).not.toContain("3 shortcuts");
+    expect(markup).not.toContain("4 active alerts");
+    expect(markup).not.toContain("Quick tools");
+    expect(markup).not.toContain("Watch closely");
+    expect(markup).not.toContain("Above the fold");
+    expect(markup).not.toContain("Boston College sample surface");
+    expect(markup).not.toContain(commandCenter.summary);
+  });
+
+  it("keeps the weekly-priority section compact instead of adding extra explainer callouts", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("This Week&#x27;s Priority");
+    expect(markup).not.toContain("Why this week matters");
+    expect(markup).not.toContain("Review posture");
   });
 
   it("falls back to a safe default view and selected member when search params are invalid", () => {
@@ -52,7 +250,13 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedView).toBe("overview");
     expect(commandCenter.selectedMember?.id).toBe("member-zara");
     expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
-      "/chapter?view=members&member=member-zara",
+      "/chapter?view=members",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
+      "/chapter?view=leaderboard",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")?.href).toBe(
+      "/chapter?view=member_profile",
     );
   });
 
@@ -68,10 +272,2161 @@ describe("chapter leader command center", () => {
     expect(commandCenter.weeklyPriority?.primaryHref).toBe("/rush-month/actions");
     expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
     expect(commandCenter.quickActions.find((action) => action.label === "Promote Emerging Leader")?.href).toBe(
-      "/chapter?view=succession&member=member-ivy",
+      "/chapter?view=succession&member=member-ivy&quickAction=promote_emerging_leader",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Review Members")?.href).toBe(
+      "/chapter?view=members&member=member-ivy&quickAction=review_members",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Create Event")?.href).toBe(
+      "/chapter?view=events&member=member-ivy&quickAction=create_event",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Assign Action")?.href).toBe(
+      "/chapter?view=members&member=member-ivy&pipeline=follow_up&quickAction=assign_action",
     );
     expect(commandCenter.pipelineItems.map((item) => item.displayName)).toEqual(
       expect.arrayContaining(["Avery New", "Sam Service", "Ivy Invite", "Zara Events"]),
+    );
+  });
+
+  it("filters the member pipeline through URL state and keeps drill-in links scoped to that filter", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+
+    expect(commandCenter.selectedView).toBe("members");
+    expect(commandCenter.selectedPipelineFilter).toBe("follow_up");
+    expect(commandCenter.pipelineSearchQuery).toBe("Ivy");
+    expect(commandCenter.pipelineRows.map((row) => row.displayName)).toEqual(["Ivy Invite"]);
+    expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
+    expect(commandCenter.pipelineRows[0]?.href).toBe(
+      "/chapter?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
+    );
+    expect(commandCenter.pipelineRows[0]?.profileHref).toBe(
+      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Review Members")?.href).toBe(
+      "/chapter?view=members&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=review_members",
+    );
+    expect(
+      commandCenter.quickActions.find((action) => action.label === "Promote Emerging Leader")
+        ?.href,
+    ).toBe(
+      "/chapter?view=succession&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=promote_emerging_leader",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video")?.href).toBe(
+      "/chapter?view=bridge_videos&member=member-ivy&quickAction=share_bridge_video",
+    );
+    expect(commandCenter.pipelineFilterOptions.map((option) => option.label)).toEqual([
+      "All Pipeline Levels",
+      "E-Board",
+      "Chair",
+      "Chair candidate",
+      "Active contributor",
+      "General member",
+      "Needs Follow-Up",
+    ]);
+  });
+
+  it("renders the members route as a dedicated pipeline table instead of a split detail workbench", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      memberId: "member-ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Member Pipeline");
+    expect(markup).toContain(">Export<");
+    expect(markup).toContain(">Add Member<");
+    expect(markup).toContain("Search members…");
+    expect(markup).toContain("All Pipeline Levels");
+    expect(markup).toContain("E-Board");
+    expect(markup).toContain("Chair");
+    expect(markup).toContain('aria-label="Pipeline filter"');
+    expect(markup).toContain("<select");
+    expect(markup).toContain(`${commandCenter.pipelineRows.length} of ${commandCenter.pipelineTotalCount} members`);
+    expect(markup).toContain('href="/chapter?view=members&amp;member=member-ivy&amp;quickAction=export_members"');
+    expect(markup).toContain('href="/chapter?view=members&amp;member=member-ivy&amp;quickAction=add_member"');
+    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=export_members"');
+    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=add_member"');
+    expect(markup).toContain("12 of 12 members");
+    expect(markup).toContain("Sofia Reyes");
+    expect(markup).toContain("Marcus Chen");
+    expect(markup).toContain("VP of Events · Today");
+    expect(markup).toContain("Chair candidate");
+    expect(markup).toContain("$1,200");
+    expect(markup).toContain('href="/chapter?view=member_profile&amp;member=member-nina"');
+    expect(markup).toContain('href="/chapter?view=member_profile&amp;member=member-ivy"');
+    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-nina"');
+    expect(markup).not.toContain("Member detail");
+    expect(markup).not.toContain("Pending joins");
+    expect(markup).not.toContain("Select a member from the pipeline table");
+    expect(markup).not.toContain("Ready Now");
+    expect(markup).not.toContain("Emerging Leaders");
+    expect(markup).not.toContain("Contributors");
+  });
+
+  it("keeps the plain member-pipeline route generic until a leader selects a person", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain('href="/chapter?view=members&amp;quickAction=export_members"');
+    expect(markup).toContain('href="/chapter?view=members&amp;quickAction=add_member"');
+    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=export_members"');
+    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=add_member"');
+    expect(markup).toContain('href="/chapter?view=member_profile&amp;member=member-zara"');
+    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara">Zara Events<');
+    expect(markup).toContain("General member");
+    expect(markup).not.toContain("Needs Follow-Up");
+  });
+
+  it("treats the member-pipeline export and intake buttons as chapter-owned quick-action states", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=export_members",
+    );
+    expect(markup).toContain(
+      "/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_member",
+    );
+  });
+
+  it("opens assign action as a chapter-owned member-pipeline state before the broader assignment lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "assign_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("assign_action");
+    expect(markup).toContain("Assign Action");
+    expect(markup).toContain("Start from the member pipeline, then open the assignment lane.");
+    expect(markup).toContain("Open assignment flow");
+    expect(markup).toContain(
+      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fchapter%3Fview%3Dmembers%26member%3Dmember-ivy%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
+    );
+  });
+
+  it("opens review members as a chapter-owned member-pipeline state before the person-level review", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "review_members",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("review_members");
+    expect(markup).toContain("Review Members");
+    expect(markup).toContain("Start from the member pipeline, then open the right member review.");
+    expect(markup).toContain("Open member review");
+    expect(markup).toContain(
+      "href=\"/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+  });
+
+  it("opens export members as a chapter-owned member-pipeline state before the broader membership lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "export_members",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("export_members");
+    expect(markup).toContain("Export Members");
+    expect(markup).toContain("Start from the member pipeline, then open the roster export lane.");
+    expect(markup).toContain("Open roster export");
+    expect(markup).toContain("href=\"/chapter/members\"");
+  });
+
+  it("opens add member as a chapter-owned member-pipeline state before the broader membership lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "add_member",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("add_member");
+    expect(markup).toContain("Add Member");
+    expect(markup).toContain("Start from the member pipeline, then open the intake lane.");
+    expect(markup).toContain("Open member intake");
+    expect(markup).toContain("href=\"/chapter/members\"");
+  });
+
+  it("builds a route-driven member profile workbench with leadership actions and timeline context", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+
+    expect(commandCenter.selectedView).toBe("member_profile");
+    expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
+    expect(commandCenter.selectedMember?.backToPipelineHref).toBe(
+      "/chapter?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
+    );
+    expect(commandCenter.selectedMember?.badgeLabel).toBe(
+      "Needs follow-up before promotion",
+    );
+    expect(commandCenter.selectedMember?.leadershipActions[0]?.href).toBe(
+      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=promote_to_chair",
+    );
+    expect(commandCenter.selectedMember?.leadershipActions[1]?.href).toBe(
+      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=schedule_values_interview",
+    );
+    expect(commandCenter.selectedMember?.leadershipActions[1]).toMatchObject({
+      label: "Schedule Values Interview",
+      tone: "primary",
+    });
+    expect(commandCenter.selectedMember?.leadershipActions[2]?.href).toBe(
+      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=assign_leadership_action",
+    );
+    expect(commandCenter.selectedMember?.leadershipActions[3]?.href).toBe(
+      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=nominate_for_eboard",
+    );
+    expect(commandCenter.selectedMember?.reviewContext).toMatchObject({
+      eyebrow: "Follow-up review",
+      title: "Re-engagement context is active",
+      actionLabel: "Open follow-up queue",
+      actionHref: "/chapter?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
+    });
+    expect(commandCenter.selectedMember?.valuesAlignment[1]?.label).toBe(
+      "Needs consistency proof",
+    );
+    expect(commandCenter.selectedMember?.activityTimeline[0]?.dateLabel).toBe("Jun 13");
+    expect(commandCenter.selectedMember?.leaderNotes[0]?.authorLabel).toBe(
+      "Sofia Reyes (President)",
+    );
+  });
+
+  it("renders the follow-up member profile as a distinct re-engagement review state", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Follow-up review");
+    expect(markup).toContain("Re-engagement context is active");
+    expect(markup).toContain("Open follow-up queue");
+    expect(markup).toContain("Leadership Actions");
+    expect(markup).toContain("Points History — Weekly");
+    expect(markup).toContain("Values Alignment");
+    expect(markup).toContain("Activity Timeline");
+    expect(markup).toContain("Coach &amp; Leader Notes");
+    expect(markup).toContain("Promote to Chair");
+    expect(markup).toContain("Schedule Values Interview");
+    expect(markup).toContain("Assign Leadership Action");
+    expect(markup).toContain("Nominate for E-Board");
+    expect(markup).toContain("Add Note");
+    expect(markup.match(/Add Note/g)?.length).toBe(1);
+    expect(markup).toContain("Leadership Actions");
+    expect(markup.match(/Leadership Actions/g)?.length).toBe(1);
+    expect(markup.indexOf("Leadership Actions")).toBeLessThan(markup.indexOf("Points History"));
+    expect(markup).toContain("/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy");
+  });
+
+  it("keeps the member-profile header compact so the person workbench leads the viewport", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Member Profile");
+    expect(markup).toContain("Back to Member Pipeline");
+    expect(markup).not.toContain(
+      "Keep the selected person context and next leadership move visible before handing off into succession, assignment, or notes.",
+    );
+    expect(markup.match(/Add Note/g)?.length).toBe(1);
+    expect(markup.match(/Leadership Actions/g)?.length).toBe(1);
+    expect(markup.indexOf("Back to Member Pipeline")).toBeLessThan(
+      markup.indexOf("Leadership Actions"),
+    );
+    expect(markup.indexOf("Leadership Actions")).toBeLessThan(
+      markup.indexOf("Points History"),
+    );
+  });
+
+  it("treats member-profile action buttons as profile-owned review states first", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=promote_to_chair",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=schedule_values_interview",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_leadership_action",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=nominate_for_eboard",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_leader_note",
+    );
+  });
+
+  it("opens promote-to-chair as a member-profile-owned state before the succession lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "promote_to_chair",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("promote_to_chair");
+    expect(markup).toContain("Promote to Chair");
+    expect(markup).toContain("Start from this member profile, then open chair-readiness review.");
+    expect(markup).toContain("Open chair review");
+    expect(markup).toContain(
+      "href=\"/chapter?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+  });
+
+  it("opens add-note as a member-profile-owned review state", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "add_leader_note",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("add_leader_note");
+    expect(markup).toContain("Add Note");
+    expect(markup).toContain("Keep this profile in focus while you decide what the next leader should inherit.");
+    expect(markup).toContain("Focus on specific examples, what changed over time");
+    expect(markup).not.toContain("mock-safe");
+    expect(markup).toContain("Return to profile");
+  });
+
+  it("hands assign-leadership-action off to the broader assignment flow with member context preserved", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+      quickAction: "assign_leadership_action",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("assign_leadership_action");
+    expect(markup).toContain("Assign Leadership Action");
+    expect(markup).toContain(
+      "Start from this member profile, then open the action-assignment lane.",
+    );
+    expect(markup).toContain("Open leadership action flow");
+    expect(markup).toContain(
+      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fchapter%3Fview%3Dmembers%26member%3Dmember-ivy%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
+    );
+  });
+
+  it("preserves the feed-analytics handoff across the re-engagement member-review flow", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "feed_analytics",
+      memberId: "member-ivy",
+      pipeline: "follow_up",
+      search: "Ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedSource).toBe("feed_analytics");
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Feed analytics handoff",
+      title: "Opened from a re-engagement workflow",
+      actions: [
+        {
+          label: "Back to re-engagement queue",
+          href: "/chapter?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+        },
+      ],
+    });
+    expect(commandCenter.selectedMember?.backToPipelineHref).toBe(
+      "/chapter?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+    );
+    expect(commandCenter.selectedMember?.reviewContext).toMatchObject({
+      eyebrow: "Feed analytics follow-up",
+      actionLabel: "Back to re-engagement queue",
+      actionHref:
+        "/chapter?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+    });
+    expect(markup).toContain("Feed analytics handoff");
+    expect(markup).toContain("Feed analytics follow-up");
+    expect(markup).toContain("Back to re-engagement queue");
+    expect(markup).toContain(
+      "/chapter?view=members&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/chapter?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
+      "/chapter?view=bridge_videos&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+    );
+  });
+
+  it("keeps the selected feed post attached to member review opened from that post", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      source: "feed_analytics",
+      feedPostId: "feed-post-slt-recap",
+      search: "Sofia",
+      memberId: "member-maya",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedFeedPost?.id).toBe("feed-post-slt-recap");
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Feed analytics handoff",
+      title: "Opened from a selected feed post",
+      actions: [
+        {
+          label: "Back to selected post",
+          href: "/chapter?view=feed_analytics&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
+        },
+        {
+          label: "Open member pipeline",
+          href: "/chapter?view=members&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
+        },
+      ],
+    });
+    expect(markup).toContain("Opened from a selected feed post");
+    expect(markup).toContain("SLT info meeting recap - 18 signed up!");
+    expect(markup).toContain("Post in focus");
+    expect(markup).toContain("DeShawn Williams · Jun 13");
+    expect(markup).toContain("Actions After");
+    expect(markup).toContain(
+      "Review Sofia Alvarez&#x27;s next move against this content signal first so the follow-up stays anchored to the actual post that surfaced them.",
+    );
+    expect(markup).toContain("Back to selected post");
+    expect(markup).toContain("Sofia Alvarez");
+    expect(markup).toContain(
+      "/chapter?view=feed_analytics&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=promote_to_chair",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=schedule_values_interview",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;pipeline=follow_up&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=assign_leadership_action",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=nominate_for_eboard",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=add_leader_note",
+    );
+  });
+
+  it("maps the committees view to the richer operating model shown in the leadership mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+    });
+
+    expect(commandCenter.selectedView).toBe("committees");
+    expect(commandCenter.committeesOverview.activeCommitteesLabel).toBe("5 / 7");
+    expect(commandCenter.committees[0]).toMatchObject({
+      name: "Recruitment",
+      ownerLabel: "Jordan",
+      memberCountLabel: "12 members",
+      actionsDoneLabel: "14 actions done",
+      eventsCountLabel: "5 events",
+      kpiLabel: "82%",
+      operatingStatusLabel: "Strong",
+    });
+    expect(commandCenter.committees.at(-1)).toMatchObject({
+      name: "Member Engagement",
+      ownerLabel: "No chair assigned",
+      operatingStatusLabel: "Inactive",
+    });
+    expect(commandCenter.selectedCommitteeId).toBeNull();
+    expect(commandCenter.selectedCommittee).toBeNull();
+    expect(commandCenter.eventsOverview.monthLabel).toBe("June 2025");
+  });
+
+  it("keeps committee selection inside the chapter route and marks the selected lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      committeeId: "committee-events",
+    });
+
+    expect(commandCenter.selectedCommitteeId).toBe("committee-events");
+    expect(commandCenter.selectedCommittee?.name).toBe("Events");
+    expect(
+      commandCenter.committees.find((committee) => committee.id === "committee-events")?.href,
+    ).toBe("/chapter?view=committees&committee=committee-events");
+    expect(commandCenter.viewOptions.find((item) => item.key === "committees")?.href).toBe(
+      "/chapter?view=committees&committee=committee-events",
+    );
+  });
+
+  it("renders the committees route as the compact operating board from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Action Committees");
+    expect(markup).toContain("Monitor whether each committee is moving the chapter forward - not just existing.");
+    expect(markup).toContain("Add Committee");
+    expect(markup).toContain("Active Committees");
+    expect(markup).toContain("Total Open Actions");
+    expect(markup).toContain("Committees Without Chairs");
+    expect(markup).not.toContain("Committee in focus");
+    expect(markup).not.toContain("Selected lane handoff");
+    expect(markup).not.toContain("Review add committee handoff");
+    expect(markup).not.toContain("Open selected committee flow");
+    expect(markup).toContain(
+      "/chapter?view=committees&amp;quickAction=add_committee",
+    );
+    expect(markup).not.toContain(
+      "/chapter?view=committees&amp;committee=committee-recruitment&amp;quickAction=add_committee",
+    );
+    expect(markup).toContain("Needs Attention");
+    expect(markup).toContain("Inactive");
+    expect(markup).toContain("Marcus");
+    expect(markup).toContain("Elena");
+    expect(markup).not.toContain("Marcus + Elena");
+    expect(markup).toContain("No chair assigned");
+    expect(markup).not.toContain("Selected Committee");
+    expect(markup).not.toContain("Open committee workspace");
+  });
+
+  it("renders the selected committee as an explicit chapter-owned detail state", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      committeeId: "committee-events",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Committee in focus");
+    expect(markup).toContain("Events committee");
+    expect(markup).toContain("Next event");
+    expect(markup).toContain("Chapter General Meeting");
+    expect(markup).toContain("Operating posture");
+    expect(markup).toContain("94% healthy");
+    expect(markup).toContain("Activity visible now");
+    expect(markup).toContain("18 actions done");
+    expect(markup).toContain("11 events linked to this lane");
+    expect(markup).toContain("Next committee move");
+    expect(markup).toContain("Keep the lane reusable for the next owner");
+    expect(markup).toContain("Selected lane handoff");
+    expect(markup).toContain("Review add committee handoff");
+    expect(markup).toContain("Open selected committee flow");
+    expect(markup).toContain(
+      "/chapter?view=committees&amp;committee=committee-events",
+    );
+    expect(markup).toContain(
+      "/chapter?view=committees&amp;committee=committee-events&amp;quickAction=add_committee",
+    );
+    expect(markup).toContain(
+      "href=\"/action-committees?source=chapter_add_committee&amp;returnTo=%2Fchapter%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee\"",
+    );
+    expect(markup).toContain("Selected");
+  });
+
+  it("maps the events view to the attendance table and social recruiting panel from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+    });
+
+    expect(commandCenter.selectedView).toBe("events");
+    expect(commandCenter.eventsOverview).toMatchObject({
+      monthLabel: "June 2025",
+      totalEventsThisMonth: 12,
+      attendanceRateLabel: "67%",
+      attendanceDeltaLabel: "-4% vs last month",
+      rsvpConversionLabel: "79%",
+      eventsWithProofLabel: "8/12",
+      followUpsOverdue: 2,
+      socialRecruitingLabel: "Chapter tracked",
+      socialRecruitingNote:
+        "Use these signals to judge whether chapter publishing and event promotion are turning into real student interest.",
+    });
+    expect(commandCenter.events[0]).toMatchObject({
+      title: "Moving Mountains Kickoff",
+      dateLabel: "Jun 10",
+      lane: "Events",
+      rsvpCount: 48,
+      attendedCount: 39,
+      attendanceRateLabel: "81%",
+      eventStatusLabel: "Past",
+      followUpStatusLabel: "Done",
+      creatorLabel: "Marcus Chen",
+      href: "/chapter?view=events&event=bc-event-moving-mountains-kickoff",
+      eventFlowHref: "/rush-month/events/event-rush-social-001",
+    });
+    expect(commandCenter.events.at(-1)).toMatchObject({
+      title: "Bridge Video Workshop",
+      lane: "Comms",
+      eventStatusLabel: "Upcoming",
+      creatorLabel: "Priya Sharma",
+      lumaStatusLabel: "Manual check-in",
+    });
+    expect(commandCenter.selectedEventCommitteeFilter).toBe("all");
+    expect(commandCenter.eventCommitteeFilters.map((filter) => filter.label)).toEqual([
+      "All Committees",
+      "Events",
+      "SLT Promotion",
+      "Recruitment",
+      "Fundraising",
+      "Service",
+      "Comms",
+    ]);
+    expect(commandCenter.socialRecruitingMetrics).toEqual([
+      { label: "Posts Published", value: "24" },
+      { label: "Followers", value: "1,240" },
+      { label: "Avg Engagement", value: "4.8%" },
+      { label: "Clicks to Join", value: "84" },
+      { label: "Leads Generated", value: "18" },
+      { label: "Best Post Reach", value: "2,180" },
+    ]);
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toBe(
+      "/chapter?view=events",
+    );
+  });
+
+  it("treats the event committee combobox as route-owned state and filters event rows", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      eventCommittee: "recruitment",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedEventCommitteeFilter).toBe("recruitment");
+    expect(commandCenter.events).toHaveLength(1);
+    expect(commandCenter.events[0]).toMatchObject({
+      title: "Tabling: Quad Recruitment",
+      lane: "Recruitment",
+    });
+    expect(commandCenter.eventCommitteeFilters.find((filter) => filter.key === "recruitment")).toMatchObject({
+      isActive: true,
+      href: "/chapter?view=events&eventCommittee=recruitment",
+    });
+    expect(markup).toContain('aria-label="Committee filter"');
+    expect(markup).toContain('id="chapter-events-committee-filter"');
+    expect(markup).toContain("value=\"recruitment\"");
+    expect(markup).toContain("Tabling: Quad Recruitment");
+    expect(markup).not.toContain("Moving Mountains Kickoff");
+    expect(markup).not.toContain(">Apply<");
+  });
+
+  it("opens create event as a chapter-owned events state before the broader event flow", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      quickAction: "create_event",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("create_event");
+    expect(markup).toContain("Create Event");
+    expect(markup).toContain("Open the chapter event lane with ownership and follow-up in mind.");
+    expect(markup).toContain("Open event flow");
+    expect(markup).toContain(
+      "href=\"/rush-month/events?source=chapter_create_event&amp;returnTo=%2Fchapter%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26quickAction%3Dcreate_event\"",
+    );
+    expect(markup).toContain(
+      "/chapter?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event",
+    );
+  });
+
+  it("keeps event drill-in inside the chapter events surface before the broader event flow", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+      memberId: "member-ivy",
+      eventCommittee: "events",
+      eventId: "bc-event-moving-mountains-kickoff",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedEventId).toBe("bc-event-moving-mountains-kickoff");
+    expect(commandCenter.selectedEvent?.title).toBe("Moving Mountains Kickoff");
+    expect(commandCenter.events[0]?.href).toBe(
+      "/chapter?view=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
+    );
+    expect(markup).toContain("Events &amp; Attendance");
+    expect(markup).toContain("Event Detail");
+    expect(markup).toContain(
+      "Keep the selected event in chapter context before you leave this surface.",
+    );
+    expect(markup).toContain(
+      "href=\"/chapter?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
+    );
+    expect(markup).toContain("Open broader event flow");
+    expect(markup).toContain(
+      "href=\"/rush-month/events/bc-event-moving-mountains-kickoff?source=chapter_event_review&amp;returnTo=%2Fchapter%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff\"",
+    );
+    expect(markup).toContain("Events This Month");
+    expect(markup).toContain("RSVP vs. Actual Attendance");
+    expect(markup).toContain("Social Recruiting Data");
+    expect(markup).toContain("Manual update");
+    expect(markup).toContain(
+      "Recruiting momentum is being summarized from chapter recaps for now, so use this as a directional signal while you plan the next push.",
+    );
+    expect(markup).not.toContain("Hootsuite / API integration pending");
+    expect(markup).not.toContain("Placeholder data shown");
+    expect(markup.indexOf("Events This Month")).toBeLessThan(
+      markup.indexOf("All Events — June 2025"),
+    );
+    expect(markup.indexOf("All Events — June 2025")).toBeLessThan(
+      markup.indexOf("Event Detail"),
+    );
+    expect(markup.indexOf("Event Detail")).toBeGreaterThan(
+      markup.indexOf("Events This Month"),
+    );
+    expect(markup.indexOf("Event Detail")).toBeLessThan(markup.indexOf("RSVP vs. Actual Attendance"));
+  });
+
+  it("maps the leaderboard view to the cross-chapter comparison layout from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "leaderboard",
+    });
+
+    expect(commandCenter.selectedView).toBe("leaderboard");
+    expect(commandCenter.leaderboardRegionLabel).toBe("All Regions");
+    expect(commandCenter.leaderboardRegionOptions.map((option) => option.label)).toEqual([
+      "All Regions",
+      "Current Region",
+      "United States",
+      "Canada",
+    ]);
+    expect(commandCenter.leaderboardFilters.map((filter) => filter.label)).toEqual([
+      "Chapter Health",
+      "Events Created",
+      "Active Members",
+      "Attendance %",
+      "Evidence",
+      "Bridge Videos",
+      "Funds Raised",
+      "SLT Participants",
+    ]);
+    expect(commandCenter.leaderboardFilters[0]).toMatchObject({
+      label: "Chapter Health",
+      isActive: true,
+      href: "/chapter?view=leaderboard",
+    });
+    expect(commandCenter.leaderboardIdeaNote).toContain(
+      "UCLA runs weekly SLT testimonial posts",
+    );
+    expect(commandCenter.leaderboardChapters[0]).toMatchObject({
+      chapterName: "UCLA MEDLIFE",
+      healthLabel: "Health 96",
+    });
+    expect(commandCenter.leaderboardChapters[2]).toMatchObject({
+      chapterName: "Boston College MEDLIFE",
+      badgeLabel: "Your Chapter",
+      healthLabel: "Health 87",
+    });
+    expect(commandCenter.leaderboardChapters[0]?.bestPracticesHref).toBe(
+      "/chapter?view=feed_analytics&source=leaderboard&benchmark=leaderboard-ucla",
+    );
+  });
+
+  it("treats leaderboard metric pills and region filtering as route-owned comparison state", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "leaderboard",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedLeaderboardMetric).toBe("attendance");
+    expect(commandCenter.selectedLeaderboardRegion).toBe("canada");
+    expect(commandCenter.leaderboardRegionLabel).toBe("Canada");
+    expect(commandCenter.leaderboardRegionOptions.find((option) => option.key === "canada")).toMatchObject({
+      href: "/chapter?view=leaderboard&leaderboardMetric=attendance&region=canada",
+    });
+    expect(commandCenter.leaderboardChapters).toHaveLength(1);
+    expect(commandCenter.leaderboardChapters[0]?.chapterName).toBe("McGill MEDLIFE");
+    expect(commandCenter.leaderboardFilters.find((filter) => filter.key === "attendance")).toMatchObject({
+      isActive: true,
+      href: "/chapter?view=leaderboard&leaderboardMetric=attendance&region=canada",
+    });
+    expect(commandCenter.leaderboardFilters.find((filter) => filter.key === "chapter_health")).toMatchObject({
+      isActive: false,
+      href: "/chapter?view=leaderboard&region=canada",
+    });
+    expect(commandCenter.leaderboardIdeaNote).toContain("attendance stay high");
+    expect(markup).toContain('aria-label="Leaderboard region filter"');
+    expect(markup).toContain('id="chapter-leaderboard-region-filter"');
+    expect(markup).toContain(">Canada</option>");
+    expect(markup).toContain("Leaderboard");
+    expect(markup).not.toContain("Chapter Leaderboard");
+    expect(markup).toContain("Ideas to try");
+    expect(markup).toContain("Learn from top chapters. Find ideas to try. Rise together.");
+    expect(markup).not.toContain(">Apply<");
+    expect(markup).toContain(
+      "/chapter?view=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada",
+    );
+  });
+
+  it("opens best practices as a leaderboard-owned handoff into feed analytics", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+      source: "leaderboard",
+      bestPracticeChapterId: "leaderboard-ucla",
+      leaderboardMetric: "attendance",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedSource).toBe("leaderboard");
+    expect(commandCenter.selectedBestPracticeChapterId).toBe("leaderboard-ucla");
+    expect(commandCenter.selectedBestPracticeChapter?.chapterName).toBe("UCLA MEDLIFE");
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Leaderboard handoff",
+      title: "Opened from UCLA MEDLIFE best practices",
+    });
+    expect(commandCenter.sourceContext?.actions?.[0]).toMatchObject({
+      label: "Back to leaderboard",
+      href: "/chapter?view=leaderboard&leaderboardMetric=attendance",
+    });
+    expect(commandCenter.sourceContext?.actions?.[0]?.href).toBe(
+      "/chapter?view=leaderboard&leaderboardMetric=attendance",
+    );
+    expect(markup).toContain("Leaderboard handoff");
+    expect(markup).toContain("Opened from UCLA MEDLIFE best practices");
+    expect(markup).toContain("Benchmark chapter in focus");
+    expect(markup).toContain("Health 96");
+    expect(markup).toContain("Weekly SLT testimonial posts doubled sign-up rate");
+    expect(markup).toContain("Back to leaderboard");
+    expect(markup).toContain(
+      "/chapter?view=leaderboard&amp;leaderboardMetric=attendance",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
+      "/chapter?view=bridge_videos&source=leaderboard&leaderboardMetric=attendance&benchmark=leaderboard-ucla",
+    );
+  });
+
+  it("keeps leaderboard region context attached to best-practice handoffs", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "leaderboard",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+    });
+
+    expect(commandCenter.leaderboardChapters[0]?.bestPracticesHref).toBe(
+      "/chapter?view=feed_analytics&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+    );
+  });
+
+  it("keeps leaderboard comparison context attached across command-center nav after a best-practice handoff", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+      source: "leaderboard",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+    });
+
+    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
+      "/chapter?view=bridge_videos&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
+      "/chapter?view=members&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
+      "/chapter?view=overview&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+    );
+  });
+
+  it("keeps leaderboard best-practice context attached when a feed post is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+      source: "leaderboard",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      feedPostId: "feed-post-info-night",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedSource).toBe("leaderboard");
+    expect(commandCenter.selectedBestPracticeChapterId).toBe("leaderboard-mcgill");
+    expect(commandCenter.selectedBestPracticeChapter?.chapterName).toBe("McGill MEDLIFE");
+    expect(commandCenter.feedPostRows[0]).toMatchObject({
+      href:
+        "/chapter?view=feed_analytics&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&feedPost=feed-post-info-night",
+    });
+    expect(commandCenter.sourceContext).toMatchObject({
+      title: "Opened from McGill MEDLIFE best practices",
+    });
+    expect(markup).toContain("Opened from McGill MEDLIFE best practices");
+    expect(markup).toContain("Benchmark chapter in focus");
+    expect(markup).toContain("McGill MEDLIFE");
+    expect(markup).toContain("Back to recent posts");
+    expect(markup).toContain(
+      "/chapter?view=feed_analytics&amp;source=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill",
+    );
+  });
+
+  it("keeps leaderboard best-practice context attached to feed follow-up CTAs after a feed post is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+      source: "leaderboard",
+      bestPracticeChapterId: "leaderboard-mcgill",
+      leaderboardMetric: "attendance",
+      leaderboardRegion: "canada",
+      feedPostId: "feed-post-info-night",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedFeedPost?.nextActionHref).toBe(
+      "/chapter?view=member_profile&source=feed_analytics&member=member-ivy&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&feedPost=feed-post-info-night",
+    );
+    expect(commandCenter.leastEngagedMembers[0]?.actionHref).toBe(
+      "/chapter?view=member_profile&source=feed_analytics&member=member-ivy&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&feedPost=feed-post-info-night",
+    );
+    expect(markup).toContain(
+      "/chapter?view=bridge_videos&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;feedPost=feed-post-info-night&amp;quickAction=share_to_feed",
+    );
+    expect(markup).toContain(
+      "/chapter?view=members&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;feedPost=feed-post-info-night&amp;quickAction=ask_members_to_respond",
+    );
+  });
+
+  it("maps the impact view to the impact dashboard stories and campaign sections from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "impact",
+    });
+
+    expect(commandCenter.selectedView).toBe("impact");
+    expect(commandCenter.selectedImpactHighlightId).toBeNull();
+    expect(commandCenter.selectedImpactHighlight).toBeNull();
+    expect(commandCenter.impactHighlights[0]).toMatchObject({
+      icon: "🍽️",
+      value: "1,840",
+      label: "meals served",
+      actionLabel: "Share this story",
+      href: "/chapter?view=impact&impactStory=impact-local-meals&quickAction=share_impact_story",
+      tone: "blue",
+    });
+    expect(commandCenter.impactHighlights[2]).toMatchObject({
+      icon: "💛",
+      value: "#3",
+      label: "network rank",
+      tone: "amber",
+    });
+    expect(commandCenter.localImpactStats).toEqual([
+      { label: "Meals Served", value: "1,840" },
+      { label: "People Supported", value: "420" },
+      { label: "Volunteer Hours", value: "284" },
+      { label: "Local Partners", value: "4" },
+    ]);
+    expect(commandCenter.globalImpactStats[0]).toMatchObject({
+      label: "SLT Participants",
+      value: "18",
+    });
+    expect(commandCenter.campaignImpactOverview).toMatchObject({
+      title: "Moving Mountains",
+      raisedLabel: "$8,400",
+      goalLabel: "$12,000",
+      progressLabel: "70% of goal",
+      donorsLabel: "94",
+      rankLabel: "#3 in network",
+    });
+  });
+
+  it("renders the impact route with the story-first header and impact sections from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "impact",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Impact Dashboard");
+    expect(markup).toContain("This is why we do this. Real people. Real change.");
+    expect(markup).toContain("Share Impact Story");
+    expect(markup).toContain("Create Bridge Video");
+    expect(markup).toContain(
+      "/chapter?view=impact&amp;quickAction=share_impact_story",
+    );
+    expect(markup).not.toContain("Story in focus");
+    expect(markup.indexOf("1,840")).toBeLessThan(markup.indexOf("Local Community Impact"));
+    expect(markup).toContain("#3");
+    expect(markup).toContain("network rank");
+    expect(markup).toContain("Moving Mountains");
+    expect(markup).toContain("$8,400");
+    expect(markup).toContain("70% of goal");
+    expect(markup).toContain("Local Community Impact");
+    expect(markup).toContain("MEDLIFE Global Impact");
+    expect(markup).not.toContain("Impact focus");
+  });
+
+  it("keeps the selected member visible when impact is opened from a member-specific route", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "impact",
+      memberId: "member-ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
+    expect(commandCenter.impactHighlights[0]?.href).toBe(
+      "/chapter?view=impact&member=member-ivy&impactStory=impact-local-meals&quickAction=share_impact_story",
+    );
+    expect(markup).not.toContain("Impact focus");
+    expect(markup).not.toContain("Keep Ivy Invite anchored to the story");
+  });
+
+  it("surfaces a route-owned impact story state when a highlight is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "impact",
+      impactStory: "impact-moving-mountains",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedImpactHighlight?.id).toBe("impact-moving-mountains");
+    expect(markup).toContain("Story in focus");
+    expect(markup).toContain("#3 network rank");
+    expect(markup).toContain("Your Moving Mountains campaign ranks #3 globally");
+    expect(markup.indexOf("Story in focus")).toBeLessThan(markup.indexOf("1,840"));
+    expect(markup.indexOf("Story in focus")).toBeLessThan(
+      markup.indexOf("Local Community Impact"),
+    );
+    expect(markup.indexOf("Story in focus")).toBeLessThan(
+      markup.indexOf("Campaign Rank"),
+    );
+    expect(markup.match(/#3 network rank/g)?.length).toBe(1);
+    expect(markup).not.toContain("Impact focus");
+  });
+
+  it("opens impact storytelling as an impact-owned review state before the bridge-video library", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "impact",
+      memberId: "member-ivy",
+      impactStory: "impact-moving-mountains",
+      quickAction: "share_impact_story",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("share_impact_story");
+    expect(commandCenter.selectedImpactHighlight?.id).toBe("impact-moving-mountains");
+    expect(markup).toContain("Share Impact Story");
+    expect(markup).toContain("Story in focus: #3 network rank");
+    expect(markup).toContain("Open story library");
+    expect(markup).toContain(
+      "href=\"/chapter?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains\"",
+    );
+  });
+
+  it("keeps the selected impact story attached to the Share Bridge Video quick action", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "impact",
+      memberId: "member-ivy",
+      impactStory: "impact-moving-mountains",
+    });
+
+    expect(commandCenter.selectedImpactHighlight?.id).toBe("impact-moving-mountains");
+    expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video"))
+      .toMatchObject({
+        href: "/chapter?view=bridge_videos&source=impact&member=member-ivy&impactStory=impact-moving-mountains&quickAction=share_bridge_video",
+      });
+  });
+
+  it("keeps the impact handoff visible when bridge videos open from storytelling work", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      source: "impact",
+      memberId: "member-ivy",
+      impactStory: "impact-moving-mountains",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Impact handoff",
+      title: "Opened from impact storytelling",
+      actions: [
+        {
+          label: "Back to impact",
+          href: "/chapter?view=impact&member=member-ivy&impactStory=impact-moving-mountains",
+        },
+      ],
+    });
+    expect(commandCenter.selectedImpactHighlight?.id).toBe("impact-moving-mountains");
+    expect(markup).toContain("Impact handoff");
+    expect(markup).toContain("Opened from impact storytelling");
+    expect(markup).toContain("Back to impact");
+    expect(markup).toContain("Impact story in focus");
+    expect(markup).toContain("#3 network rank");
+    expect(markup).toContain("Back to story");
+    expect(markup.indexOf("Impact story in focus")).toBeLessThan(
+      markup.indexOf("Videos Submitted"),
+    );
+  });
+
+  it("keeps both the impact-story handoff and selected-video review ahead of bridge metrics", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      source: "impact",
+      memberId: "member-ivy",
+      impactStory: "impact-moving-mountains",
+      bridgeVideoId: "bridge-social-strategy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedImpactHighlight?.id).toBe("impact-moving-mountains");
+    expect(commandCenter.selectedBridgeVideo?.id).toBe("bridge-social-strategy");
+    expect(markup).toContain("Impact story in focus");
+    expect(markup).toContain("Selected video");
+    expect(markup).toContain("Social Media Posting Strategy for MEDLIFE");
+    expect(markup).toContain("Back to story");
+    expect(markup).toContain("Back to bridge library");
+    expect(markup.indexOf("Impact story in focus")).toBeLessThan(
+      markup.indexOf("Selected video"),
+    );
+    expect(markup.indexOf("Selected video")).toBeLessThan(
+      markup.indexOf("Videos Submitted"),
+    );
+    expect(markup.match(/Social Media Posting Strategy for MEDLIFE/g)?.length).toBe(1);
+  });
+
+  it("keeps the member-home handoff attached to the first leader review actions", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "overview",
+      source: "member_home",
+    });
+
+    expect(commandCenter.selectedSource).toBe("member_home");
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Member app handoff",
+      title: "Opened from UCLA MEDLIFE into Leader Hub",
+    });
+    expect(commandCenter.sourceContext?.preview).toMatchObject({
+      heading: "Leader Hub",
+      chapterLabel: "UCLA MEDLIFE",
+    });
+    expect(commandCenter.sourceContext?.preview?.stats.map((stat) => stat.label)).toEqual([
+      "Members active",
+      "Tasks assigned",
+      "Tasks overdue",
+      "Evidence pending",
+    ]);
+    expect(commandCenter.sourceContext?.preview?.sections.map((section) => section.title)).toEqual([
+      "Rush Month Progress",
+      "Risk Alerts",
+      "Member Status",
+      "Evidence Queue",
+    ]);
+    expect(commandCenter.sourceContext?.actions?.[0]).toMatchObject({
+      label: "Review all 7",
+      href: "/chapter?view=members&source=member_home&quickAction=review_members",
+    });
+    expect(commandCenter.sourceContext?.actions?.[1]).toMatchObject({
+      label: "Assign action",
+      href: "/chapter?view=members&source=member_home&pipeline=follow_up&quickAction=assign_action",
+    });
+    expect(commandCenter.quickActions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Create Event",
+          href: "/chapter?view=events&source=member_home&quickAction=create_event",
+        }),
+        expect.objectContaining({
+          label: "Assign Action",
+          href: "/chapter?view=members&source=member_home&pipeline=follow_up&quickAction=assign_action",
+        }),
+        expect.objectContaining({
+          label: "Review Members",
+          href: "/chapter?view=members&source=member_home&quickAction=review_members",
+        }),
+        expect.objectContaining({
+          label: "Promote Emerging Leader",
+          href: "/chapter?view=succession&source=member_home&quickAction=promote_emerging_leader",
+        }),
+      ]),
+    );
+  });
+
+  it("maps the feed analytics view to the action-driven engagement dashboard from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+    });
+
+    expect(commandCenter.selectedView).toBe("feed_analytics");
+    expect(commandCenter.feedMetrics).toEqual([
+      { label: "Posts Published", value: "5" },
+      { label: "Total Views", value: "1120" },
+      { label: "Total Likes", value: "194" },
+      { label: "Actions After View", value: "24" },
+      { label: "RSVPs From Feed", value: "31" },
+    ]);
+    expect(commandCenter.feedChartRows[0]).toMatchObject({
+      label: "How to Run a S...",
+      likes: 41,
+      comments: 12,
+      actionsAfter: 6,
+    });
+    expect(commandCenter.feedPostRows[0]).toMatchObject({
+      title: "How to Run a Successful Info Night",
+      typeLabel: "Bridge Video",
+      authorLabel: "Sofia Reyes",
+      viewsLabel: "284",
+      rsvpsLabel: "11",
+      isSelected: true,
+      href: "/chapter?view=feed_analytics&feedPost=feed-post-info-night",
+    });
+    expect(commandCenter.mostEngagedMembers[0]).toMatchObject({
+      displayName: "Sofia Reyes",
+      scoreLabel: "94 %",
+    });
+    expect(commandCenter.leastEngagedMembers[0]).toMatchObject({
+      displayName: "Ivy Invite",
+      actionLabel: "Re-engage",
+      actionHref:
+        "/chapter?view=member_profile&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+    });
+    expect(commandCenter.leastEngagedMembers.slice(1)).toEqual([
+      expect.objectContaining({
+        displayName: "Omar Outreach",
+        actionHref:
+          "/chapter?view=member_profile&source=feed_analytics&member=member-omar&pipeline=follow_up&q=Omar",
+      }),
+      expect.objectContaining({
+        displayName: "Zara Events",
+        actionHref:
+          "/chapter?view=member_profile&source=feed_analytics&member=member-zara&pipeline=follow_up&q=Zara",
+      }),
+      expect.objectContaining({
+        displayName: "Sofia Alvarez",
+        actionHref:
+          "/chapter?view=member_profile&source=feed_analytics&member=member-maya&pipeline=follow_up&q=Sofia",
+      }),
+    ]);
+  });
+
+  it("renders the feed analytics route with the action-driven dashboard sections from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Feed Analytics");
+    expect(markup).toContain("Feed &amp; Engagement Analytics");
+    expect(markup).toContain("Understand what content drives real action");
+    expect(markup).toContain("Share to Feed");
+    expect(markup).toContain("Ask Members to Respond");
+    expect(markup).toContain("Content Engagement — Actions Driven");
+    expect(markup).toContain("Likes");
+    expect(markup).toContain("Comments");
+    expect(markup).toContain("Actions After");
+    expect(markup).toContain(
+      "/chapter?view=bridge_videos&amp;source=feed_analytics&amp;quickAction=share_to_feed",
+    );
+    expect(markup).toContain(
+      "/chapter?view=members&amp;source=feed_analytics&amp;pipeline=follow_up&amp;quickAction=ask_members_to_respond",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-omar&amp;pipeline=follow_up&amp;q=Omar",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-zara&amp;pipeline=follow_up&amp;q=Zara",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;pipeline=follow_up&amp;q=Sofia",
+    );
+    expect(markup).toContain("Recent Posts");
+    expect(markup).not.toContain("Selected post");
+    expect(markup).toContain("Most Engaged Members");
+    expect(markup).toContain("Least Engaged — Re-engage");
+    expect(markup).toContain("Sofia Reyes");
+    expect(markup).toContain("94 %");
+    expect(markup).not.toContain("Open member follow-up");
+    expect(markup.indexOf("Most Engaged Members")).toBeLessThan(
+      markup.indexOf("Least Engaged — Re-engage"),
+    );
+  });
+
+  it("surfaces a route-owned selected post state inside feed analytics", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+      feedPostId: "feed-post-slt-recap",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedFeedPost?.id).toBe("feed-post-slt-recap");
+    expect(commandCenter.feedPostRows.find((row) => row.id === "feed-post-slt-recap")).toMatchObject({
+      isSelected: true,
+      href: "/chapter?view=feed_analytics&feedPost=feed-post-slt-recap",
+    });
+    expect(markup).toContain("Impact Analysis");
+    expect(markup).toContain("Back to recent posts");
+    expect(markup).toContain("SLT info meeting recap - 18 signed up!");
+    expect(markup).toContain("Open member review");
+    expect(markup).toContain(
+      "/chapter?view=bridge_videos&amp;source=feed_analytics&amp;feedPost=feed-post-slt-recap&amp;quickAction=share_to_feed",
+    );
+    expect(markup).toContain(
+      "/chapter?view=members&amp;source=feed_analytics&amp;pipeline=follow_up&amp;feedPost=feed-post-slt-recap&amp;quickAction=ask_members_to_respond",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
+    );
+    expect(markup.indexOf("Impact Analysis")).toBeLessThan(
+      markup.indexOf("Posts Published"),
+    );
+    expect(markup.indexOf("Impact Analysis")).toBeLessThan(
+      markup.indexOf("Recent Posts"),
+    );
+    expect(markup.indexOf("Impact Analysis")).toBeLessThan(
+      markup.indexOf("Most Engaged Members"),
+    );
+    expect(markup.indexOf("Impact Analysis")).toBeLessThan(
+      markup.indexOf("Least Engaged — Re-engage"),
+    );
+  });
+
+  it("keeps subviews focused on their own mockup content instead of repeating the home dashboard", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Feed Analytics");
+    expect(markup).not.toContain("Chapter Dashboard · JUN 2025");
+    expect(markup).not.toContain("How is chapter momentum moving week to week?");
+    expect(markup).not.toContain("What could slow the chapter down?");
+  });
+
+  it("keeps the events table ahead of the secondary event reporting blocks", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "events",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Events &amp; Attendance");
+    expect(markup).toContain("All Events — June 2025");
+    expect(markup).toContain("Events This Month");
+    expect(markup).toContain("RSVP vs. Actual Attendance");
+    expect(markup.indexOf("Events This Month")).toBeLessThan(
+      markup.indexOf("All Events — June 2025"),
+    );
+    expect(markup.indexOf("All Events — June 2025")).toBeLessThan(
+      markup.indexOf("RSVP vs. Actual Attendance"),
+    );
+  });
+
+  it("opens share-to-feed as a feed-owned bridge-library state before the broader sharing flow", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      source: "feed_analytics",
+      quickAction: "share_to_feed",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("share_to_feed");
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Feed analytics handoff",
+      title: "Opened from feed planning into bridge-video review",
+      actions: [
+        {
+          label: "Back to feed analytics",
+          href: "/chapter?view=feed_analytics&source=feed_analytics",
+        },
+        {
+          label: "Open re-engagement queue",
+          href: "/chapter?view=members&source=feed_analytics",
+        },
+      ],
+    });
+    expect(markup).toContain("Share to Feed");
+    expect(markup).toContain("Opened from feed planning into bridge-video review");
+    expect(markup).toContain(
+      "Start from the bridge-video library, then choose what should travel back into feed planning.",
+    );
+    expect(markup).toContain("Share Bridge Video");
+    expect(markup).toContain("Back to feed analytics");
+    expect(markup).toContain("Open re-engagement queue");
+    expect(markup).toContain(
+      "href=\"/chapter?view=feed_analytics&amp;source=bridge_videos&amp;bridge=recruitment\"",
+    );
+    expect(markup).toContain(
+      "href=\"/chapter?view=feed_analytics&amp;source=feed_analytics\"",
+    );
+  });
+
+  it("keeps selected-post context attached when share-to-feed opens from feed analytics", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      source: "feed_analytics",
+      feedPostId: "feed-post-slt-recap",
+      quickAction: "share_to_feed",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.sourceContext).toMatchObject({
+      title: "Opened from a selected feed post into bridge-video review",
+      actions: [
+        {
+          label: "Back to selected post",
+          href: "/chapter?view=feed_analytics&source=feed_analytics&feedPost=feed-post-slt-recap",
+        },
+        {
+          label: "Open re-engagement queue",
+          href: "/chapter?view=members&source=feed_analytics&feedPost=feed-post-slt-recap",
+        },
+      ],
+    });
+    expect(markup).toContain("Post in focus: SLT info meeting recap - 18 signed up!");
+    expect(markup).toContain("Back to selected post");
+    expect(markup).toContain(
+      "href=\"/chapter?view=feed_analytics&amp;source=bridge_videos&amp;feedPost=feed-post-slt-recap&amp;bridge=recruitment\"",
+    );
+  });
+
+  it("keeps the selected feed post visible inside the bridge-video route opened from feed analytics", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      source: "feed_analytics",
+      memberId: "member-maya",
+      search: "Sofia",
+      feedPostId: "feed-post-slt-recap",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedFeedPost?.id).toBe("feed-post-slt-recap");
+    expect(commandCenter.sourceContext).toMatchObject({
+      title: "Opened from a selected feed post into bridge-video review",
+    });
+    expect(markup).toContain("Post in focus");
+    expect(markup).toContain("SLT info meeting recap - 18 signed up!");
+    expect(markup).toContain("DeShawn Williams · Jun 13");
+    expect(markup).toContain("Actions After");
+    expect(markup).toContain(
+      "Keep this feed signal visible while reviewing bridge assets so the library stays anchored to the real post that needs reinforcement, follow-up, or a better story handoff.",
+    );
+    expect(markup).toContain(
+      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
+    );
+    expect(markup.indexOf("Post in focus")).toBeLessThan(
+      markup.indexOf("Videos Submitted"),
+    );
+  });
+
+  it("opens ask-members-to-respond as a feed-owned member-review state before the broader pipeline workbench", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "feed_analytics",
+      pipeline: "follow_up",
+      search: "Ivy",
+      memberId: "member-ivy",
+      quickAction: "ask_members_to_respond",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("ask_members_to_respond");
+    expect(markup).toContain("Ask Members to Respond");
+    expect(markup).toContain("Start from the re-engagement queue, then open a member review.");
+    expect(markup).toContain("Open member review");
+    expect(markup).toContain(
+      "href=\"/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+    );
+  });
+
+  it("keeps selected-post context attached when ask-members-to-respond opens from feed analytics", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "members",
+      source: "feed_analytics",
+      pipeline: "follow_up",
+      search: "Ivy",
+      memberId: "member-ivy",
+      feedPostId: "feed-post-slt-recap",
+      quickAction: "ask_members_to_respond",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Post in focus: SLT info meeting recap - 18 signed up!");
+    expect(markup).toContain("Back to selected post");
+    expect(markup).toContain(
+      "href=\"/chapter?view=feed_analytics&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;feedPost=feed-post-slt-recap\"",
+    );
+    expect(markup).toContain(
+      "href=\"/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;feedPost=feed-post-slt-recap\"",
+    );
+  });
+
+  it("keeps selected-post context attached when share-to-feed changes bridge-video categories", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      source: "feed_analytics",
+      feedPostId: "feed-post-slt-recap",
+      quickAction: "share_to_feed",
+      bridgeFilter: "comms",
+    });
+
+    expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "comms")).toMatchObject({
+      isActive: true,
+      href:
+        "/chapter?view=bridge_videos&source=feed_analytics&feedPost=feed-post-slt-recap&bridge=comms&quickAction=share_to_feed",
+    });
+    expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "recruitment")).toMatchObject({
+      href:
+        "/chapter?view=bridge_videos&source=feed_analytics&feedPost=feed-post-slt-recap&bridge=recruitment&quickAction=share_to_feed",
+    });
+  });
+
+  it("keeps feed-post context attached to bridge-owned quick actions inside bridge-video review", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      source: "feed_analytics",
+      memberId: "member-ivy",
+      feedPostId: "feed-post-slt-recap",
+      bridgeFilter: "comms",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video")).toMatchObject({
+      href:
+        "/chapter?view=bridge_videos&source=feed_analytics&member=member-ivy&feedPost=feed-post-slt-recap&bridge=comms&quickAction=share_bridge_video",
+    });
+    expect(commandCenter.bridgeVideoEntries[0]?.featureHref).toBe(
+      "/chapter?view=bridge_videos&source=feed_analytics&member=member-ivy&feedPost=feed-post-slt-recap&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
+    );
+    expect(markup).toContain(
+      "href=\"/chapter?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms&amp;quickAction=submit_bridge_video\"",
+    );
+  });
+
+  it("keeps feed-post context attached to the selected-video panel inside bridge-video review", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      source: "feed_analytics",
+      memberId: "member-ivy",
+      feedPostId: "feed-post-slt-recap",
+      bridgeFilter: "comms",
+      bridgeVideoId: "bridge-social-strategy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "href=\"/chapter?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms\"",
+    );
+    expect(markup).toContain(
+      "href=\"/chapter?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms&amp;bridgeVideo=bridge-social-strategy&amp;quickAction=feature_bridge_video\"",
+    );
+  });
+
+  it("maps the bridge videos view to the hub-style asset library from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+    });
+
+    expect(commandCenter.selectedView).toBe("bridge_videos");
+    expect(commandCenter.bridgeVideoMetrics).toEqual([
+      { label: "Videos Submitted", value: "5" },
+      { label: "Total Views", value: "899" },
+      { label: "Total Likes", value: "143" },
+      { label: "Chapters Using", value: "20" },
+    ]);
+    expect(commandCenter.bridgeVideoFilters.map((filter) => filter.label)).toEqual([
+      "All",
+      "Recruitment",
+      "Fundraising",
+      "SLT Promotion",
+      "Leadership Transition",
+      "Communications",
+    ]);
+    expect(commandCenter.bridgeVideoEntries[0]).toMatchObject({
+      title: "How to Run a Successful Info Night",
+      badgeLabel: "Featured",
+      categoryLabel: "Recruitment",
+      authorLabel: "Sofia Reyes",
+      chaptersUsingLabel: "6 chapters using",
+    });
+    expect(commandCenter.bridgeVideoEntries.at(-1)).toMatchObject({
+      title: "Social Media Posting Strategy for MEDLIFE",
+      categoryLabel: "Communications",
+      chaptersUsingLabel: "2 chapters using",
+    });
+    expect(commandCenter.bridgeVideoCultureNote).toContain(
+      "Every leader who submits a bridge video",
+    );
+  });
+
+  it("treats bridge video category pills as route state and filters the visible library", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      bridgeFilter: "comms",
+    });
+
+    expect(commandCenter.selectedView).toBe("bridge_videos");
+    expect(commandCenter.selectedBridgeVideoFilter).toBe("comms");
+    expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "comms")).toMatchObject({
+      isActive: true,
+      href: "/chapter?view=bridge_videos&bridge=comms",
+    });
+    expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "all")).toMatchObject({
+      isActive: false,
+      href: "/chapter?view=bridge_videos",
+    });
+    expect(commandCenter.bridgeVideoEntries).toHaveLength(1);
+    expect(commandCenter.bridgeVideoEntries[0]?.categoryLabel).toBe("Communications");
+    expect(commandCenter.bridgeVideoEntries[0]?.title).toBe(
+      "Social Media Posting Strategy for MEDLIFE",
+    );
+    expect(commandCenter.bridgeVideoEntries[0]?.featureHref).toBe(
+      "/chapter?view=bridge_videos&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
+    );
+    expect(commandCenter.bridgeVideoEntries[0]?.shareHref).toBe(
+      "/chapter?view=feed_analytics&source=bridge_videos&bridge=comms",
+    );
+    expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video")?.href).toBe(
+      "/chapter?view=bridge_videos&bridge=comms&quickAction=share_bridge_video",
+    );
+  });
+
+  it("treats the bridge-video feature button as a selected-video review state first", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      bridgeFilter: "comms",
+      bridgeVideoId: "bridge-social-strategy",
+      quickAction: "feature_bridge_video",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("feature_bridge_video");
+    expect(commandCenter.selectedBridgeVideoId).toBe("bridge-social-strategy");
+    expect(commandCenter.selectedBridgeVideo?.title).toBe(
+      "Social Media Posting Strategy for MEDLIFE",
+    );
+    expect(markup).toContain("Feature Bridge Video");
+    expect(markup).toContain(
+      "Start from the bridge-video library, then review what should stay featured.",
+    );
+    expect(markup).toContain("Review selected video");
+    expect(markup).toContain(
+      "href=\"/chapter?view=bridge_videos&amp;bridge=comms&amp;bridgeVideo=bridge-social-strategy\"",
+    );
+    expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "all")).toMatchObject({
+      href:
+        "/chapter?view=bridge_videos&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
+    });
+    expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "comms")).toMatchObject({
+      href:
+        "/chapter?view=bridge_videos&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
+    });
+    expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "recruitment")).toMatchObject({
+      href: "/chapter?view=bridge_videos&bridge=recruitment",
+    });
+  });
+
+  it("renders the bridge video route as the hub-style library from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      bridgeFilter: "comms",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("<p class=\"app-eyebrow app-eyebrow-slate\">Bridge Video Hub</p>");
+    expect(markup).toContain("<h2 class=\"mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]\">Bridge Video Hub</h2>");
+    expect(markup).toContain("&quot;MEDLIFE leaders build a bridge for the next generation.&quot;");
+    expect(markup).toContain("Submit Bridge Video");
+    expect(markup).toContain(
+      "/chapter?view=bridge_videos&amp;bridge=comms&amp;quickAction=submit_bridge_video",
+    );
+    expect(markup).toContain("Videos Submitted");
+    expect(markup).toContain("Communications");
+    expect(markup).toContain("Bridge Culture Reminder");
+    expect(markup).toContain("/chapter?view=bridge_videos&amp;bridge=comms");
+    expect(markup).toContain("/chapter?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms");
+  });
+
+  it("surfaces a route-owned selected video state when a bridge video is selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      bridgeFilter: "comms",
+      bridgeVideoId: "bridge-social-strategy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedBridgeVideo?.id).toBe("bridge-social-strategy");
+    expect(markup).toContain("Selected video");
+    expect(markup).toContain("Back to bridge library");
+    expect(markup).toContain("Social Media Posting Strategy for MEDLIFE");
+    expect(markup).toContain("Review selected video");
+    expect(markup).toContain("No other bridge videos in this filter");
+    expect(markup).toContain("Communications only has the selected video right now.");
+    expect(markup.indexOf("Selected video")).toBeLessThan(
+      markup.indexOf("Videos Submitted"),
+    );
+    expect(markup.match(/Social Media Posting Strategy for MEDLIFE/g)?.length).toBe(1);
+    expect(markup.indexOf("Selected video")).toBeLessThan(
+      markup.indexOf("Bridge Culture Reminder"),
+    );
+    expect(markup.indexOf("No other bridge videos in this filter")).toBeLessThan(
+      markup.indexOf("Bridge Culture Reminder"),
+    );
+  });
+
+  it("keeps the selected member visible when bridge videos are opened from a member-specific route", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      memberId: "member-ivy",
+      bridgeFilter: "comms",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
+    expect(markup).toContain("Story owner context");
+    expect(markup).toContain("Reviewing bridge content with Ivy Invite in focus");
+    expect(markup).toContain("General Member");
+    expect(markup).toContain("Recruitment");
+    expect(markup).toContain("Follow-up now");
+    expect(markup).toContain("/chapter?view=member_profile&amp;member=member-ivy");
+  });
+
+  it("keeps bridge-video category context when a leader opens feed analytics from the library", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+      source: "bridge_videos",
+      bridgeFilter: "comms",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.sourceContext).toMatchObject({
+      eyebrow: "Bridge video handoff",
+      title: "Opened from bridge-video review into feed planning",
+      actions: [
+        {
+          label: "Back to bridge videos",
+          href: "/chapter?view=bridge_videos&source=bridge_videos&bridge=comms",
+        },
+      ],
+    });
+    expect(commandCenter.feedAnalyticsBridgeContext).toMatchObject({
+      label: "Communications bridge videos",
+      backHref: "/chapter?view=bridge_videos&bridge=comms",
+    });
+    expect(commandCenter.viewOptions.find((item) => item.key === "feed_analytics")?.href).toBe(
+      "/chapter?view=feed_analytics&source=bridge_videos",
+    );
+    expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
+      "/chapter?view=bridge_videos&source=bridge_videos&bridge=comms",
+    );
+    expect(markup).toContain("Opened from bridge-video review into feed planning");
+    expect(markup).toContain("Back to bridge videos");
+    expect(markup).toContain("Bridge Video Context");
+    expect(markup).toContain("Reviewing Communications bridge videos");
+    expect(markup).toContain("/chapter?view=bridge_videos&amp;source=bridge_videos&amp;bridge=comms");
+  });
+
+  it("keeps the selected-post review block ahead of bridge-video context when both states are present", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "feed_analytics",
+      source: "bridge_videos",
+      bridgeFilter: "comms",
+      feedPostId: "feed-post-slt-recap",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedFeedPost?.id).toBe("feed-post-slt-recap");
+    expect(commandCenter.feedAnalyticsBridgeContext).toMatchObject({
+      label: "Communications bridge videos",
+    });
+    expect(markup).toContain("Impact Analysis");
+    expect(markup).toContain("Bridge Video Context");
+    expect(markup).toContain("Back to recent posts");
+    expect(markup).toContain("Back to bridge library");
+    expect(markup.indexOf("Impact Analysis")).toBeLessThan(
+      markup.indexOf("Bridge Video Context"),
+    );
+    expect(markup.indexOf("Bridge Video Context")).toBeLessThan(
+      markup.indexOf("Posts Published"),
+    );
+  });
+
+  it("maps the succession view to the leadership gaps, candidate pipeline, and transition timeline from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "succession",
+      memberId: "member-ivy",
+    });
+
+    expect(commandCenter.selectedView).toBe("succession");
+    expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
+    expect(commandCenter.successionOverview).toMatchObject({
+      eboardRolesFilledLabel: "6 / 7",
+      activeCommitteesLabel: "5 / 7",
+      candidatesIdentifiedLabel: "4",
+      transitionReadinessLabel: "62%",
+      transitionReadinessNote: "needs improvement",
+    });
+    expect(commandCenter.successionGaps[0]).toMatchObject({
+      severity: "high",
+      title: "Member Engagement has no chair - inactive 3+ weeks",
+    });
+    expect(commandCenter.successionCandidates[0]).toMatchObject({
+      displayName: "Priya President",
+      pointsLabel: "1,240 pts",
+      badgeLabel: "E-Board",
+    });
+    expect(commandCenter.successionCandidates.find((candidate) => candidate.displayName === "Ivy Invite")).toMatchObject({
+      isSelected: true,
+      href: "/chapter?view=succession&member=member-ivy",
+    });
+    expect(commandCenter.successionCandidates.at(-1)).toMatchObject({
+      displayName: "Omar Outreach",
+      badgeLabel: "Chair candidate",
+    });
+    expect(commandCenter.successionTimeline[0]).toMatchObject({
+      dateLabel: "Jun 2025",
+      title: "Appoint Member Engagement chair",
+    });
+  });
+
+  it("keeps the plain succession route in dashboard mode until a candidate is explicitly selected", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "succession",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.hasExplicitMemberSelection).toBe(false);
+    expect(commandCenter.successionCandidates.some((candidate) => candidate.isSelected)).toBe(false);
+    expect(markup).toContain("Leadership Succession");
+    expect(markup).toContain("Succession Planning");
+    expect(markup).not.toContain("Selected candidate");
+    expect(markup).not.toContain("Selected now");
+    expect(markup).toContain("Nominate Candidate");
+    expect(markup).toContain("Start Transition Plan");
+  });
+
+  it("renders the succession route with the gap, pipeline, and timeline sections from the mockup", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "succession",
+      memberId: "member-ivy",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Leadership Succession");
+    expect(markup).toContain("Succession Planning");
+    expect(markup).toContain("Ensure the chapter can survive and grow beyond any single leader.");
+    expect(markup).toContain("Selected candidate");
+    expect(markup).toContain("Reviewing Ivy Invite for succession");
+    expect(markup).toContain("Open member profile");
+    expect(markup).toContain("Selected now");
+    expect(markup).toContain("Nominate Candidate");
+    expect(markup).toContain("Start Transition Plan");
+    expect(markup).toContain("href=\"/chapter?view=succession&amp;member=member-ivy\"");
+    expect(markup.indexOf("Selected candidate")).toBeLessThan(
+      markup.indexOf("E-Board Roles Filled"),
+    );
+    expect(markup).toContain("Leadership Gaps");
+    expect(markup).toContain("Candidate Pipeline");
+    expect(markup).toContain("Succession Timeline");
+  });
+
+  it("opens promote emerging leader as a succession-owned quick-action state before nomination decisions", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "succession",
+      memberId: "member-ivy",
+      quickAction: "promote_emerging_leader",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("promote_emerging_leader");
+    expect(markup).toContain("Promote Emerging Leader");
+    expect(markup).toContain("Start from succession planning, then open the candidate lane.");
+    expect(markup).toContain("Open candidate review");
+    expect(markup).toContain("href=\"/chapter?view=succession&amp;member=member-ivy\"");
+  });
+
+  it("opens add committee as a chapter-owned committees state before the broader committee lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "committees",
+      committeeId: "committee-events",
+      quickAction: "add_committee",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("add_committee");
+    expect(markup).toContain("Add Committee");
+    expect(markup).toContain("Open the committee lane with ownership and operating health in mind.");
+    expect(markup).toContain("Open committee flow");
+    expect(markup).toContain(
+      "href=\"/action-committees?source=chapter_add_committee&amp;returnTo=%2Fchapter%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee\"",
+    );
+  });
+
+  it("opens share bridge video as a bridge-library-owned quick-action state before feed handoff", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      bridgeFilter: "comms",
+      quickAction: "share_bridge_video",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("share_bridge_video");
+    expect(markup).toContain("Share Bridge Video");
+    expect(markup).toContain("Start from the bridge-video library, then open the sharing lane.");
+    expect(markup).toContain("Share Bridge Video");
+    expect(markup).toContain(
+      "href=\"/chapter?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms\"",
+    );
+  });
+
+  it("opens share bridge video from the selected bridge video instead of the first library card", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      bridgeVideoId: "bridge-social-strategy",
+      quickAction: "share_bridge_video",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedBridgeVideo?.id).toBe("bridge-social-strategy");
+    expect(markup).toMatch(
+      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms"[^>]*>Share Bridge Video<\/a>/,
+    );
+  });
+
+  it("opens share bridge video without inventing a selected card when the library is still on all videos", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      quickAction: "share_bridge_video",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.selectedBridgeVideo).toBeNull();
+    expect(markup).toMatch(
+      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos"[^>]*>Share Bridge Video<\/a>/,
+    );
+    expect(markup).not.toMatch(
+      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=recruitment"[^>]*>Share Bridge Video<\/a>/,
+    );
+  });
+
+  it("opens submit bridge video as a bridge-library-owned quick-action state before the proof lane", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "bridge_videos",
+      bridgeFilter: "comms",
+      quickAction: "submit_bridge_video",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("submit_bridge_video");
+    expect(markup).toContain("Submit Bridge Video");
+    expect(markup).toContain("Start from the bridge-video library, then open the proof lane.");
+    expect(markup).toContain("Open proof lane");
+    expect(markup).toContain(
+      "href=\"/proof-library/upload?source=chapter_bridge_video&amp;returnTo=%2Fchapter%3Fview%3Dbridge_videos%26bridge%3Dcomms\"",
     );
   });
 
@@ -87,9 +2442,153 @@ describe("chapter leader command center", () => {
 
 describe("chapter leader command center href", () => {
   it("builds a clean overview href without unnecessary query params", () => {
-    expect(buildChapterLeaderCommandCenterHref("overview")).toBe("/chapter");
-    expect(buildChapterLeaderCommandCenterHref("overview", "member-zara")).toBe(
-      "/chapter?member=member-zara",
+    expect(buildChapterLeaderCommandCenterHref("overview")).toBe("/chapter?view=overview");
+    expect(buildChapterLeaderCommandCenterHref("overview", { memberId: "member-zara" })).toBe(
+      "/chapter?view=overview&member=member-zara",
     );
+  });
+
+  it("preserves member-pipeline search and filter state in command-center hrefs", () => {
+    expect(
+      buildChapterLeaderCommandCenterHref("members", {
+        memberId: "member-zara",
+        pipelineFilter: "follow_up",
+        searchQuery: "Ivy",
+      }),
+    ).toBe("/chapter?view=members&member=member-zara&pipeline=follow_up&q=Ivy");
+  });
+
+  it("builds the broader assignment lane href with chapter return context preserved", () => {
+    expect(
+      buildChapterLeaderAssignmentFlowHref({
+        memberId: "member-zara",
+        pipelineFilter: "follow_up",
+        searchQuery: "Ivy",
+      }),
+    ).toBe(
+      "/rush-month/actions?source=chapter_assign_action&returnTo=%2Fchapter%3Fview%3Dmembers%26member%3Dmember-zara%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&member=member-zara",
+    );
+  });
+
+  it("builds the broader event lane href with chapter return context preserved", () => {
+    expect(
+      buildChapterLeaderEventFlowHref({
+        memberId: "member-zara",
+        eventCommitteeFilter: "events",
+        quickAction: "create_event",
+      }),
+    ).toBe(
+      "/rush-month/events?source=chapter_create_event&returnTo=%2Fchapter%3Fview%3Devents%26member%3Dmember-zara%26eventCommittee%3Devents%26quickAction%3Dcreate_event",
+    );
+    expect(
+      buildChapterLeaderEventFlowHref({
+        memberId: "member-zara",
+        eventCommitteeFilter: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+      }),
+    ).toBe(
+      "/rush-month/events/bc-event-moving-mountains-kickoff?source=chapter_event_review&returnTo=%2Fchapter%3Fview%3Devents%26member%3Dmember-zara%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff",
+    );
+  });
+
+  it("builds the broader committee lane href with chapter return context preserved", () => {
+    expect(
+      buildChapterLeaderCommitteeFlowHref({
+        committeeId: "committee-events",
+      }),
+    ).toBe(
+      "/action-committees?source=chapter_add_committee&returnTo=%2Fchapter%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee",
+    );
+  });
+
+  it("uses query state for bridge-video category filters only on the bridge hub route", () => {
+    expect(
+      buildChapterLeaderCommandCenterHref("bridge_videos", {
+        bridgeVideoFilter: "comms",
+      }),
+    ).toBe("/chapter?view=bridge_videos&bridge=comms");
+    expect(
+      buildChapterLeaderCommandCenterHref("bridge_videos", {
+        bridgeVideoFilter: "all",
+      }),
+    ).toBe("/chapter?view=bridge_videos");
+    expect(
+      buildChapterLeaderCommandCenterHref("feed_analytics", {
+        bridgeVideoFilter: "comms",
+      }),
+    ).toBe("/chapter?view=feed_analytics&bridge=comms");
+    expect(
+      buildChapterLeaderCommandCenterHref("feed_analytics", {
+        source: "bridge_videos",
+        bridgeVideoFilter: "comms",
+      }),
+    ).toBe("/chapter?view=feed_analytics&source=bridge_videos&bridge=comms");
+    expect(
+      buildChapterLeaderCommandCenterHref("bridge_videos", {
+        source: "impact",
+        memberId: "member-ivy",
+        impactStoryId: "impact-moving-mountains",
+      }),
+    ).toBe(
+      "/chapter?view=bridge_videos&source=impact&member=member-ivy&impactStory=impact-moving-mountains",
+    );
+  });
+
+  it("uses query state for selected committees only on the committees route", () => {
+    expect(
+      buildChapterLeaderCommandCenterHref("committees", {
+        committeeId: "committee-events",
+      }),
+    ).toBe("/chapter?view=committees&committee=committee-events");
+    expect(
+      buildChapterLeaderCommandCenterHref("events", {
+        committeeId: "committee-events",
+      }),
+    ).toBe("/chapter?view=events");
+  });
+
+  it("uses query state for event committee filters only on the events route", () => {
+    expect(
+      buildChapterLeaderCommandCenterHref("events", {
+        eventCommitteeFilter: "recruitment",
+      }),
+    ).toBe("/chapter?view=events&eventCommittee=recruitment");
+    expect(
+      buildChapterLeaderCommandCenterHref("committees", {
+        eventCommitteeFilter: "recruitment",
+      }),
+    ).toBe("/chapter?view=committees");
+    expect(
+      buildChapterLeaderCommandCenterHref("events", {
+        eventCommitteeFilter: "events",
+        eventId: "bc-event-moving-mountains-kickoff",
+      }),
+    ).toBe(
+      "/chapter?view=events&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
+    );
+    expect(
+      buildChapterLeaderCommandCenterHref("committees", {
+        eventId: "bc-event-moving-mountains-kickoff",
+      }),
+    ).toBe("/chapter?view=committees");
+  });
+
+  it("uses query state for leaderboard metric filters and benchmark handoffs", () => {
+    expect(
+      buildChapterLeaderCommandCenterHref("leaderboard", {
+        leaderboardMetric: "attendance",
+      }),
+    ).toBe("/chapter?view=leaderboard&leaderboardMetric=attendance");
+    expect(
+      buildChapterLeaderCommandCenterHref("leaderboard", {
+        leaderboardMetric: "chapter_health",
+      }),
+    ).toBe("/chapter?view=leaderboard");
+    expect(
+      buildChapterLeaderCommandCenterHref("feed_analytics", {
+        source: "leaderboard",
+        bestPracticeChapterId: "leaderboard-ucla",
+      }),
+    ).toBe("/chapter?view=feed_analytics&source=leaderboard&benchmark=leaderboard-ucla");
   });
 });

@@ -1,5 +1,7 @@
+import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
 import type { ChapterMembershipWorkspace } from "@/services/chapter-membership-workspace";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 
 export type ChapterMemberRoleFocusItem = {
   label: string;
@@ -27,7 +29,7 @@ export function getChapterMemberRoleFocus(
   if (!canReadRoleFocus(actor, workspace)) {
     return {
       canReadFocus: false,
-      roleLabel: actor.audienceLabel,
+      roleLabel: getActorPrimaryRoleLabel(actor),
       title: "Member role focus hidden for this role",
       summary:
         "Only chapter-leader preview personas see role coverage and execution guidance here.",
@@ -49,30 +51,30 @@ export function getChapterMemberRoleFocus(
     return {
       canReadFocus: true,
       roleLabel: "President / VP",
-      title: "Keep role coverage clear before membership approvals move.",
+      title: "Keep chapter coverage clear before the next growth push.",
       summary:
-        "Use this roster to check pending joins, thin leadership coverage, and permission-changing controls before the chapter takes on more Rush Month work.",
+        "Use this roster to check pending joins, thin leadership coverage, and chapter access decisions before the chapter takes on more Rush Month work.",
       primaryHref: "/chapter/members",
       primaryLabel: "Review role coverage",
       secondaryHref: "/rush-month/review",
       secondaryLabel: "Check proof accountability",
       safetyNote:
-        "President / VP can inspect membership readiness, but join approvals, role changes, committee moves, member deactivation, reminders, and external writes remain disabled.",
+        "President / VP can inspect join readiness, but roster approvals, role changes, committee moves, member deactivation, reminders, and external sends remain paused.",
       items: [
         {
           label: "Join requests",
           value: `${workspace.counts.pendingRequests}`,
-          note: "Visible for readiness review only; approval writes are still locked.",
+          note: "Visible for planning only while chapter access changes stay gated.",
         },
         {
           label: "Thin roles",
           value: `${thinCoverageCount}`,
-          note: "Roles below the recommended local review minimum.",
+          note: "Roles below the recommended chapter coverage target.",
         },
         {
-          label: "Enabled controls",
+          label: "Open approvals",
           value: `${workspace.counts.enabledControls}`,
-          note: "No membership or role mutation control is active.",
+          note: "No roster-changing approval is active yet.",
         },
       ],
     };
@@ -114,9 +116,9 @@ export function getChapterMemberRoleFocus(
   return {
     canReadFocus: true,
     roleLabel: "Chapter Leader",
-    title: "Use the roster to separate coverage needs from locked permissions.",
+    title: "Use the roster to separate coverage needs from held approvals.",
     summary:
-      "This read-only workspace helps chapter leaders inspect role coverage, member follow-up, and disabled membership controls without changing access.",
+      "This read-only workspace helps chapter leaders inspect role coverage, member follow-up, and held roster actions without changing access.",
     primaryHref: "/chapter/members",
     primaryLabel: "Review roster",
     secondaryHref: "/rush-month/actions",
@@ -151,12 +153,9 @@ function canReadRoleFocus(
     return false;
   }
 
-  if (actor.audience === "chapter_leader") {
-    return true;
-  }
-
-  return actor.chapterRoles.includes("E-Board Member");
+  return getActorSurfaceFamily(actor) === "leader";
 }
+
 function hasChapterRole(actor: LocalActorContext, role: string): boolean {
   return actor.chapterRoles.includes(role);
 }
