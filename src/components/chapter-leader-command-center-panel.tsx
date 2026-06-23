@@ -1351,14 +1351,16 @@ function renderView(
               </div>
             </SectionCard>
           ) : null}
-          <div className="grid gap-4 app-surface rounded-[1.75rem] p-4">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="app-eyebrow app-eyebrow-slate">Impact</p>
-                <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
-                  Impact
-                </h2>
-                <p className="text-base font-medium text-slate-700">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Impact Dashboard
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Impact Dashboard
+                </h1>
+                <p className="mt-2 text-base font-medium text-slate-700">
                   This is why we do this. Real people. Real change.
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -1434,7 +1436,7 @@ function renderView(
                 <ImpactHighlightCard key={highlight.id} highlight={highlight} />
               ))}
             </div>
-          </div>
+          </section>
 
           <div
             className={`grid gap-4 ${commandCenter.campaignImpactOverview ? "xl:grid-cols-3" : "xl:grid-cols-2"}`}
@@ -3615,7 +3617,7 @@ function ImpactDataPanel({
 }) {
   return (
     <section className="app-surface rounded-[1.6rem] p-5">
-      <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
+      <h2 className="text-lg font-semibold text-slate-950">{title}</h2>
       <div className="mt-4">{children}</div>
     </section>
   );

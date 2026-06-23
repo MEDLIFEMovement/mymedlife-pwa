@@ -733,8 +733,7 @@ describe("chapter page", () => {
         }),
       }),
     );
-    expect(html).toContain("Impact");
-    expect(html).not.toContain("Impact Dashboard");
+    expect(html).toContain(">Impact Dashboard</h1>");
     expect(html).toContain("Share Bridge Video");
     expect(html).not.toContain("Story in focus");
     expect(html).toContain("/chapter?view=impact&amp;quickAction=share_impact_story");

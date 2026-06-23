@@ -1383,8 +1383,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("Impact");
-    expect(markup).not.toContain("Impact Dashboard");
+    expect(markup).toContain(">Impact Dashboard</h1>");
     expect(markup).toContain("This is why we do this. Real people. Real change.");
     expect(markup).toContain("Share Impact Story");
     expect(markup).toContain("Share Bridge Video");
