@@ -818,7 +818,7 @@ const staffProofQueueSeeds: Array<{
       "A powerful story about why healthcare access matters in rural communities.",
     recommendedUse: "Use this in selected chapter onboarding and mission-belief moments.",
     engagementLabel: "high potential",
-    availableApprovalTiers: ["chapter_only", "selected", "all_chapters"],
+    availableApprovalTiers: ["chapter_only", "selected"],
   },
   {
     id: "proof-florida-event-recap",
@@ -4339,14 +4339,19 @@ function approvalTierReason(
             return "This stays closest to the original chapter context while still respecting the current consent posture.";
           case "selected":
             return "Selected-chapter consent directly covers narrow onboarding and coaching use.";
-          case "all_chapters":
-            return "This is still internal chapter sharing, but it must remain off public channels.";
           case "global_public":
             break;
         }
       }
 
-      return "Public storytelling needs broader consent than selected-chapter reuse.";
+      switch (tier) {
+        case "all_chapters":
+          return "Network-wide sharing needs broader consent than selected-chapter reuse.";
+        case "global_public":
+          return "Public storytelling needs broader consent than selected-chapter reuse.";
+        default:
+          return "This story has not been cleared beyond selected-chapter reuse.";
+      }
     case "Chapter only":
       if (enabled) {
         if (tier === "chapter_only") {

@@ -1116,6 +1116,10 @@ describe("staff command center", () => {
     expect(html).toContain(
       "Selected-chapter consent directly covers narrow onboarding and coaching use.",
     );
+    expect(html).toContain("All chapters");
+    expect(html).toContain(
+      "Network-wide sharing needs broader consent than selected-chapter reuse.",
+    );
     expect(html).toContain("Keep the story inside the originating chapter.");
     expect(html).toContain("Use it for broader public-facing storytelling if consent supports it.");
     expect(html).toContain("Blocked right now");
