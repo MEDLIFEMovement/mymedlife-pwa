@@ -42,7 +42,7 @@ describe("slt prep payments page", () => {
     const { default: SltPrepPaymentsPage } = await import("@/app/slt-prep/payments/page");
     const html = renderToStaticMarkup(await SltPrepPaymentsPage({}));
 
-    expect(html).toContain("Payments hub for Sofia");
+    expect(html).toContain("Payment Status");
     expect(html).toContain("Current payment lane");
     expect(html).toContain("Current blocker");
     expect(html).not.toContain("Mock-seeded review data");

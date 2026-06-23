@@ -1400,9 +1400,15 @@ Current parity note:
 - `/slt-prep/forms` now should lead with `Required Forms Hub` and keep the
   traveler-specific context in supporting copy instead of putting the traveler
   name into the route title itself
+- `/slt-prep/payments` now should lead with `Payment Status` and keep the
+  traveler-specific context in supporting copy so the route reads like the
+  packet label first and the selected traveler second
 - `/slt-prep/meetings` now should lead with `Pre-Trip Meetings` and keep the
   traveler-specific context in supporting copy so the route reads like the
   packet label first and the selected traveler second
+- `/slt-prep/extensions` now should lead with `Extensions & Tours` and keep the
+  traveler-specific context in supporting copy instead of naming the screen as
+  a traveler-specific add-on summary
 - `/slt-prep/forms`, `/slt-prep/payments`, `/slt-prep/meetings`, and
   `/slt-prep/extensions` should stay inside that same traveler packet instead
   of dropping a selected traveler back to generic subpages

@@ -78,11 +78,11 @@ export default async function SltPrepExtensionsPage({
               Extensions and tours
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">
-              Optional add-ons for {workspace.traveler.firstName}
+              Extensions & Tours
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-              Keep optional travel choices readable, budget-aware, and clearly separated from the
-              required readiness path.
+              Keep {workspace.traveler.firstName}'s optional travel choices readable,
+              budget-aware, and clearly separated from the required readiness path.
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
               <ExtensionsHeroStat label="Options" value={`${workspace.traveler.extensions.length}`} />

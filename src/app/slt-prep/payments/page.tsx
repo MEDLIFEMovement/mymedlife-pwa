@@ -114,11 +114,11 @@ export default async function SltPrepPaymentsPage({
           Travel payments
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-white">
-          Payments hub for {workspace.traveler.firstName}
+          Payment Status
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-          Keep the traveler payment plan simple: what is already cleared, what is due next, and
-          what still needs finance follow-up before departure.
+          Keep {workspace.traveler.firstName}'s payment plan simple: what is already cleared,
+          what is due next, and what still needs finance follow-up before departure.
         </p>
         <div className="mt-4 grid grid-cols-3 gap-3">
           <PaymentsHeroStat label="Trip total" value={formatCurrency(totalTripCost)} />

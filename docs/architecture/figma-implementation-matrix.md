@@ -47,8 +47,9 @@ Verified recent parity passes:
 - staff: campaigns, proof queue, feed studio, feed analytics, hubspot,
   best-practices, and admin/system-health route headings
 - SLT traveler: forms now leads with `Required Forms Hub`, meetings now leads
-  with `Pre-Trip Meetings`, and both routes keep the selected traveler context
-  in their packet-safe handoffs
+  with `Pre-Trip Meetings`, payments now leads with `Payment Status`,
+  extensions now leads with `Extensions & Tours`, and those traveler routes
+  keep the selected traveler context in their packet-safe handoffs
 - branch baseline: `pnpm test`, `pnpm lint`, `pnpm typecheck`, and
   `pnpm build` all passed on the current branch after these parity slices
 
@@ -61,8 +62,8 @@ What this implies for the next implementation slices:
   over proving the existence of the top-level routes again
 - the next SLT passes should focus on the remaining traveler packet routes
   where the packet is still more explicit than the current local wording,
-  especially payments, extensions, and any selected-traveler handoff copy that
-  still reads generically
+  especially any selected-traveler handoff copy or route-support copy that
+  still reads generically now that the packet-facing route titles are aligned
 - SOP builder remains its own backend-lane parity track and should stay
   separated from the command-center route-title cleanup work
 - when a remaining gap is discovered inside a verified family, keep the next

@@ -42,7 +42,7 @@ describe("slt prep extensions page", () => {
     const { default: SltPrepExtensionsPage } = await import("@/app/slt-prep/extensions/page");
     const html = renderToStaticMarkup(await SltPrepExtensionsPage({}));
 
-    expect(html).toContain("Optional add-ons for Sofia");
+    expect(html).toContain("Extensions &amp; Tours");
     expect(html).toContain("Selected option");
     expect(html).toContain("Optional add-on posture");
     expect(html).toContain("Current blocker");
@@ -73,7 +73,7 @@ describe("slt prep extensions page", () => {
       }),
     );
 
-    expect(html).toContain("Optional add-ons for Daniel");
+    expect(html).toContain("Extensions &amp; Tours");
     expect(html).toContain("/slt-prep/forms?traveler=daniel-kim");
     expect(html).toContain("/slt-prep/checklist/extension-choice?source=extensions&amp;traveler=daniel-kim");
     expect(html).toContain("/slt-prep/payments?traveler=daniel-kim");
