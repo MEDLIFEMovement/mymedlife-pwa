@@ -7,7 +7,7 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getRushMonthEventReadinessWorkspace } from "@/services/rush-month-event-readiness";
 
 describe("member rush month events panel", () => {
-  it("renders the student mobile events screen with this-week and coming-up sections from the mockup", () => {
+  it("renders the student mobile events screen as one coming-up list from the mockup", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const workspace = getRushMonthEventReadinessWorkspace(actor);
     const html = renderToStaticMarkup(
@@ -16,7 +16,6 @@ describe("member rush month events panel", () => {
 
     expect(html).toContain("UCLA MEDLIFE");
     expect(html).toContain("Events");
-    expect(html).toContain("This Week");
     expect(html).toContain("Coming Up");
     expect(html).toContain("Tabling at Bruin Walk");
     expect(html).toContain("Intro GBM");
@@ -29,6 +28,9 @@ describe("member rush month events panel", () => {
     expect(html).toContain("Engineering VI 289");
     expect(html).toContain("/rush-month/events/event-rush-social-001?source=events");
     expect(html).toContain("/rush-month/events/event-rush-med-talk-001?source=events");
+    expect(html).not.toContain("This Week: 2");
+    expect(html).not.toContain("RSVP Open: 3");
+    expect(html).not.toContain("RSVP&#x27;d: 1");
   });
 
   it("preserves a home-origin handoff when the member events list was opened from home", () => {

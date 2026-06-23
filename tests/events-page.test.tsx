@@ -33,15 +33,14 @@ describe("events page", () => {
 
     expect(html).toContain("Events");
     expect(html).toContain("Show up where your chapter is active");
-    expect(html).toContain("This Week: 2");
-    expect(html).toContain("Coming Up: 2");
-    expect(html).toContain("RSVP Open: 3");
-    expect(html).toContain("This Week");
     expect(html).toContain("Coming Up");
     expect(html).toContain("Tabling at Bruin Walk");
     expect(html).toContain("Intro GBM");
     expect(html).toContain("/rush-month/events/event-rush-social-001?source=events");
     expect(html).toContain("/rush-month/events/event-rush-med-talk-001?source=events");
+    expect(html).not.toContain("This Week: 2");
+    expect(html).not.toContain("RSVP Open: 3");
+    expect(html).not.toContain("RSVP&#x27;d: 1");
     expect(html).not.toContain("Mock-seeded review data");
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain("Review only");
