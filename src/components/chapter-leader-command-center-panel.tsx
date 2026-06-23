@@ -1607,7 +1607,7 @@ function renderView(
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
-                  Review selected video
+                  Feature selected video
                 </Link>
               </div>
             </SectionCard>
@@ -1774,7 +1774,7 @@ function renderView(
                       })}
                       className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
                     >
-                      Review selected video
+                      Feature selected video
                     </Link>
                   </div>
                 </div>

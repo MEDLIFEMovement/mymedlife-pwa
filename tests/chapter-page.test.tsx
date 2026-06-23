@@ -255,7 +255,7 @@ describe("chapter page", () => {
       }),
     );
     expect(html).toContain("Feature Bridge Video");
-    expect(html).toContain("Review selected video");
+    expect(html).toContain("Feature selected video");
     expect(html).toContain("Use this step to confirm the story still feels specific");
     expect(html).not.toContain("mock-safe");
   });
@@ -284,7 +284,7 @@ describe("chapter page", () => {
     expect(html).toContain("Selected video");
     expect(html).toContain("Back to bridge library");
     expect(html).toContain("Social Media Posting Strategy for MEDLIFE");
-    expect(html).toContain("Review selected video");
+    expect(html).toContain("Feature selected video");
     expect(html).not.toContain("Mock-seeded review data");
   });
 
@@ -312,7 +312,7 @@ describe("chapter page", () => {
     expect(html).toContain("Selected video");
     expect(html).toContain("Social Media Posting Strategy for MEDLIFE");
     expect(html).toContain("Communications");
-    expect(html).toContain("Review selected video");
+    expect(html).toContain("Feature selected video");
   });
 
   it("opens the feed analytics route with the engagement chart from the Figma screen map", async () => {

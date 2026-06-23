@@ -2100,7 +2100,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(
       "Start from the bridge-video library, then review what should stay featured.",
     );
-    expect(markup).toContain("Review selected video");
+    expect(markup).toContain("Feature selected video");
     expect(markup).toContain(
       "href=\"/chapter?view=bridge_videos&amp;bridge=comms&amp;bridgeVideo=bridge-social-strategy\"",
     );
@@ -2156,7 +2156,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Selected video");
     expect(markup).toContain("Back to bridge library");
     expect(markup).toContain("Social Media Posting Strategy for MEDLIFE");
-    expect(markup).toContain("Review selected video");
+    expect(markup).toContain("Feature selected video");
     expect(markup).toContain("No other bridge videos in this filter");
     expect(markup).toContain("Communications only has the selected video right now.");
     expect(markup.indexOf("Selected video")).toBeLessThan(
