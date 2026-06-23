@@ -76,10 +76,6 @@ export default async function Home() {
                 ? `Rush Month · Due ${featuredAction.dueLabel} · ${featuredAction.points} pts`
                 : workspace.startNextAction.detail}
             </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <HeroMetaPill label={workspace.campaign.weekLabel} />
-              <HeroMetaPill label={workspace.points.rankDetail} />
-            </div>
             <Link
               href={featuredAction?.href ?? workspace.startNextAction.href}
               className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
@@ -263,14 +259,6 @@ export default async function Home() {
         </div>
       </section>
     </AppShell>
-  );
-}
-
-function HeroMetaPill({ label }: { label: string }) {
-  return (
-    <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80">
-      {label}
-    </span>
   );
 }
 
