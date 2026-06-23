@@ -56,9 +56,12 @@ Implementation note:
 - the local admin backend lane now includes `/admin/permissions`,
   `/admin/committees`, `/admin/workflows`, `/admin/sop-library`, and
   `/admin/sop-builder/[campaignSlug]`
-- the live SOP inspection now proves the library first viewport and the Rush
-  Month builder first viewport, so the remaining backend gap is narrower:
-  follow-up parity for non-steps tabs and any deeper builder mutation states
+- the live SOP inspection now proves the library first viewport plus the Rush
+  Month builder steps, role-matrix, completion, points/KPI, comms, preview,
+  and version tabs as route-backed backend lanes
+- the remaining backend gap is now the intentionally blocked mutation layer:
+  reorder, create, persist, archive, schedule, rollback, and publish still
+  stop at mock-safe review states instead of saving changes
 
 Build rule:
 
@@ -503,9 +506,9 @@ Current repo mismatch:
     and explicit integration boundaries visible together
   - preview now shows role-by-role screen changes, action appearance, proof,
     approval, points, KPI, and communication impact in one table
-- the remaining builder gap is now narrower: the mutable-action review states
-  exist locally, but real reorder/create/persist/archive/publish mutations are
-  still intentionally blocked
+- the remaining builder gap is now the intentional mutation stop line: the
+  mutable-action review states exist locally, but real
+  reorder/create/persist/archive/publish mutations are still blocked
 
 ### Leader Hub Jump
 

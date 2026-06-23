@@ -342,9 +342,9 @@ Primary roles:
 - the admin review packet is still stronger than the builder/configuration UX
 - the builder routes and typed workflow rules now exist locally in mock-safe
   form
-- the remaining backend gap is now narrower: the route-owned review states for
-  mutable actions exist, but actual reorder/create/persist/archive/publish
-  behavior is still intentionally blocked
+- the remaining backend gap is now the intentional mutation stop line: the
+  route-owned review states for mutable actions exist, but actual
+  reorder/create/persist/archive/publish behavior is still blocked
 - the chapter leader overview hero now restores the large visible health dial
   from the Make command-center first viewport, so the command surface leads
   with chapter posture before the metrics grid

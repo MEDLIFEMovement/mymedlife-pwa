@@ -659,9 +659,12 @@ Repo mismatch note:
 - the current repo already has strong review/safety routes under `/admin/*`
 - the packet's additional read-only inspector lanes now exist locally under
   `/admin/*`
-- live SOP Creation inspection now confirms the library first viewport and
-  steps-builder first viewport, so the remaining backend gap is narrower:
-  deeper parity for non-steps tabs and later mutable states
+- live SOP Creation inspection now confirms the library first viewport plus the
+  steps, role-matrix, completion, points/KPI, comms, preview, and version
+  builder tabs as route-backed backend surfaces
+- the remaining backend gap is now the intentional mutation stop line:
+  reorder/create/persist/archive/schedule/rollback/publish actions still stop
+  at review states instead of saving changes
 
 ### 7. Campaign SOP Builder
 
