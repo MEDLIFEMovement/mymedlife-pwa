@@ -53,6 +53,8 @@ describe("admin page", () => {
     expect(html).toContain('href="/admin/launch-gate"');
     expect(html).toContain('href="/admin/audit-log"');
     expect(html).toContain('href="/admin/operations"');
+    expect(html).toContain('href="/admin/design-qa"');
+    expect(html).toContain('href="/admin/pilot-scope"');
     expect(html).toContain('href="/admin/sop-library"');
     expect(html).toContain('href="/admin/master-data"');
     expect(html).toContain(">Overview<");
@@ -67,6 +69,8 @@ describe("admin page", () => {
     expect(html).toContain("Production Launch Gate");
     expect(html).toContain("Audit Log");
     expect(html).toContain("Production Operations");
+    expect(html).toContain("Design QA");
+    expect(html).toContain("Pilot Scope");
     expect(html).toContain("SOP Library");
     expect(html).toContain("System health signals");
     expect(html).toContain("4 local checks are visible here.");

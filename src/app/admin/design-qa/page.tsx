@@ -22,7 +22,7 @@ export default async function AdminDesignQaPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="system_health" />
+      <AdminBackendLaneNav current="design_qa" />
 
       {!readiness.canReadReadiness ? (
         <RestrictedState

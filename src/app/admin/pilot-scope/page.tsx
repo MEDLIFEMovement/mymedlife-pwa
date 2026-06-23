@@ -21,7 +21,7 @@ export default async function PilotScopePage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="overview" />
+      <AdminBackendLaneNav current="pilot_scope" />
       {planner.canReadPlanner ? (
         <PilotScopePlannerPanel planner={planner} />
       ) : (

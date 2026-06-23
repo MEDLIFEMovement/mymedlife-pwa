@@ -22,7 +22,7 @@ export default async function AdminReviewPathPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="overview" />
+      <AdminBackendLaneNav current="review_path" />
 
       {!plan.canReadPlan ? (
         <RestrictedState

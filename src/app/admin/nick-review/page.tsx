@@ -22,7 +22,7 @@ export default async function AdminNickReviewPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="overview" />
+      <AdminBackendLaneNav current="nick_review" />
 
       {!packet.canReadPacket ? (
         <RestrictedState

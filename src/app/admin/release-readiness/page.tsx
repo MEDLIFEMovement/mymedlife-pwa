@@ -28,7 +28,7 @@ export default async function AdminReleaseReadinessPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="overview" />
+      <AdminBackendLaneNav current="release_readiness" />
 
       {!summary.canReadSummary ? (
         <RestrictedState

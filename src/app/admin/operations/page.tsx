@@ -25,7 +25,7 @@ export default async function AdminOperationsPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="system_health" />
+      <AdminBackendLaneNav current="operations" />
 
       {!runbook.canReadRunbook ? (
         <RestrictedState

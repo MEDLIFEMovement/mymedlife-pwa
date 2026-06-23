@@ -62,6 +62,14 @@ describe("admin backend review pages", () => {
       expect(html).toContain('href="/admin/system-health"');
       expect(html).toContain('href="/admin/sop-library"');
       expect(html).toContain('href="/admin/master-data"');
+      expect(html).toContain('href="/admin/review-path"');
+      expect(html).toContain('href="/admin/nick-review"');
+      expect(html).toContain('href="/admin/release-readiness"');
+      expect(html).toContain('href="/admin/launch-gate"');
+      expect(html).toContain('href="/admin/audit-log"');
+      expect(html).toContain('href="/admin/operations"');
+      expect(html).toContain('href="/admin/design-qa"');
+      expect(html).toContain('href="/admin/pilot-scope"');
       expect(html).toContain(heading);
     }
   });

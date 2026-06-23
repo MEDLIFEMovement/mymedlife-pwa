@@ -10,7 +10,15 @@ type AdminBackendLaneKey =
   | "system_health"
   | "sop_library"
   | "master_data"
-  | "sop_builder";
+  | "sop_builder"
+  | "review_path"
+  | "nick_review"
+  | "release_readiness"
+  | "launch_gate"
+  | "audit_log"
+  | "operations"
+  | "design_qa"
+  | "pilot_scope";
 
 type AdminBackendLaneNavProps = {
   current: AdminBackendLaneKey;
@@ -68,6 +76,49 @@ const baseLanes = [
   },
 ] as const;
 
+const reviewPacketLanes = [
+  {
+    key: "review_path",
+    label: "Review Path",
+    href: "/admin/review-path",
+  },
+  {
+    key: "nick_review",
+    label: "Nick Review",
+    href: "/admin/nick-review",
+  },
+  {
+    key: "release_readiness",
+    label: "Release Readiness",
+    href: "/admin/release-readiness",
+  },
+  {
+    key: "launch_gate",
+    label: "Launch Gate",
+    href: "/admin/launch-gate",
+  },
+  {
+    key: "audit_log",
+    label: "Audit Log",
+    href: "/admin/audit-log",
+  },
+  {
+    key: "operations",
+    label: "Operations",
+    href: "/admin/operations",
+  },
+  {
+    key: "design_qa",
+    label: "Design QA",
+    href: "/admin/design-qa",
+  },
+  {
+    key: "pilot_scope",
+    label: "Pilot Scope",
+    href: "/admin/pilot-scope",
+  },
+] as const;
+
 export function AdminBackendLaneNav({
   current,
   builderLink,
@@ -93,9 +144,10 @@ export function AdminBackendLaneNav({
             Keep internal tooling inside one owned admin lane
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Permissions, committees, workflows, and SOP tooling should stay visibly
-            connected so reviewers can move across backend routes without falling
-            back into the broader staff command-center surface.
+            Permissions, committees, workflows, SOP tooling, and approval packets
+            should stay visibly connected so reviewers can move across backend
+            routes without falling back into the broader staff command-center
+            surface.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -125,6 +177,32 @@ export function AdminBackendLaneNav({
                   {lane.label}
                 </Link>
               </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-4 border-t border-slate-200/80 pt-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          Review packets
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {reviewPacketLanes.map((lane) => {
+            const selected = lane.key === current;
+
+            return (
+              <Link
+                key={lane.key}
+                href={lane.href}
+                aria-current={selected ? "page" : undefined}
+                className={
+                  selected
+                    ? "rounded-full bg-sky-950 px-3 py-1.5 text-xs font-semibold text-white"
+                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                }
+              >
+                {lane.label}
+              </Link>
             );
           })}
         </div>

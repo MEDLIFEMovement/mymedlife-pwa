@@ -25,7 +25,7 @@ export default async function AdminAuditLogPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="integration_outbox" />
+      <AdminBackendLaneNav current="audit_log" />
 
       {!review.canReadReview ? (
         <RestrictedState

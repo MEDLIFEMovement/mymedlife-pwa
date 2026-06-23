@@ -318,6 +318,20 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
       summary:
         "Incident, rollback, backup, support, and recovery runbook for the live MVP posture.",
     },
+    {
+      href: "/admin/design-qa",
+      eyebrow: "QA",
+      title: "Design QA",
+      summary:
+        "Mobile, accessibility, and visual smoke checks for the Figma-backed review path.",
+    },
+    {
+      href: "/admin/pilot-scope",
+      eyebrow: "Pilot",
+      title: "Pilot Scope",
+      summary:
+        "One chapter, named owners, and approved launch posture for the narrow live pilot.",
+    },
   ];
 
   if (surfaceFamily === "ds_admin") {

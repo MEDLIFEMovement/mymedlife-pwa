@@ -25,7 +25,7 @@ export default async function AdminLaunchGatePage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="overview" />
+      <AdminBackendLaneNav current="launch_gate" />
 
       {!gate.canReadGate ? (
         <RestrictedState
