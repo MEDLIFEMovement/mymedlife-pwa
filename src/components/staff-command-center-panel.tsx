@@ -39,6 +39,13 @@ export function StaffCommandCenterPanel({
   const isHubSpotView = commandCenter.selectedView === "hubspot";
   const isProofReviewView = commandCenter.selectedView === "proof_ugc";
   const isCoachSurface = commandCenter.routeBase === "/coach";
+  const isCoachSharedCommandView =
+    isCoachSurface &&
+    (isBestPracticesView ||
+      isFeedStudioView ||
+      isFeedAnalyticsView ||
+      isHubSpotView ||
+      isProofReviewView);
   const isStaffChapterOverview =
     !isAdminView && !isCoachSurface && commandCenter.selectedView === "chapters";
   const useDenseStaffSurface =
@@ -429,7 +436,11 @@ export function StaffCommandCenterPanel({
   const heroSummary = isStaffChapterOverview
     ? "Scan chapter health, open the drawer, and move support where risk is rising."
     : prioritySummary;
-  const showOverviewHero = !isAdminView && !isStaffChapterOverview && !useDenseStaffSurface;
+  const showOverviewHero =
+    !isAdminView &&
+    !isStaffChapterOverview &&
+    !useDenseStaffSurface &&
+    !isCoachSharedCommandView;
   const topStripPills = isBestPracticesView
     ? [
       selectedViewLabel,
@@ -843,7 +854,10 @@ export function StaffCommandCenterPanel({
             </section>
           ) : null}
 
-          {!isAdminView && !isStaffChapterOverview && !useDenseStaffSurface ? (
+          {!isAdminView &&
+          !isStaffChapterOverview &&
+          !useDenseStaffSurface &&
+          !isCoachSharedCommandView ? (
             <section className="grid gap-4 xl:grid-cols-[0.82fr_1.18fr]">
               <SectionCard eyebrow={priorityEyebrow} title={priorityTitle}>
                 <p className="text-sm leading-6 text-slate-600">{prioritySummary}</p>

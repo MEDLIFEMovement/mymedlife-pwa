@@ -365,6 +365,34 @@ describe("coach page", () => {
     expect(html).not.toContain('action="/staff"');
   });
 
+  it("opens feed analytics as the shared analytics surface instead of stacking the generic coach overview first", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("coach@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing coach feed analytics surface."),
+    );
+
+    const { default: CoachPage } = await import("@/app/coach/page");
+    const html = renderToStaticMarkup(
+      await CoachPage({
+        searchParams: Promise.resolve({
+          view: "feed_analytics",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Coach views");
+    expect(html).toContain("Feed Analytics");
+    expect(html).toContain("Post Performance");
+    expect(html).not.toContain("Which support signals are moving across assigned chapters?");
+    expect(html).not.toContain("Current coach posture");
+    expect(html).not.toContain('action="/staff"');
+  });
+
   it("renders the best-practices route as a real coach-owned fallback screen with selected state preserved", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
