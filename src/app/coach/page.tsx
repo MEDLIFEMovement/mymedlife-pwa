@@ -340,9 +340,9 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
           ) : showCoachSupportNotes ? (
             <section className="app-surface rounded-[1.8rem] p-5">
               <p className="app-eyebrow app-eyebrow-blue">Coach note lane</p>
-              <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                Prepare the next chapter check-in.
-              </h2>
+              <h1 className="mt-2 text-2xl font-semibold text-slate-950">
+                Support Notes
+              </h1>
               <p className="app-copy mt-3">
                 Keep this coach-owned state focused on follow-up posture, intervention
                 readiness, and the notes that should guide the next conversation.
@@ -627,9 +627,9 @@ function CoachChapterDetailPanel({
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
           Coach chapter detail
         </p>
-        <h2 className="mt-3 text-3xl font-semibold text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-white">
           {selectedChapter?.chapterName ?? "Assigned chapter detail"}
-        </h2>
+        </h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
           Use the filtered chapter list to inspect risk posture, recent signals, and
           the next support move one chapter at a time.

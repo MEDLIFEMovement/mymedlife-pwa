@@ -210,7 +210,7 @@ describe("coach page", () => {
     );
 
     expect(html).toContain("Coach views");
-    expect(html).toContain("Support Notes");
+    expect(html).toContain(">Support Notes</h1>");
     expect(html).toContain("Coach note lane");
     expect(html).toContain("Coach notes");
     expect(html).toContain("Coach support notes");
@@ -248,7 +248,7 @@ describe("coach page", () => {
       }),
     );
 
-    expect(html).toContain("Support Notes");
+    expect(html).toContain(">Support Notes</h1>");
     expect(html).toContain("Notes focus");
     expect(html).toContain("Reviewing UCSD MEDLIFE");
     expect(html).toContain("Chapter UCSD MEDLIFE");
@@ -456,7 +456,7 @@ describe("coach page", () => {
     );
 
     expect(html).toContain("Coach chapter detail");
-    expect(html).toContain("UCSD MEDLIFE");
+    expect(html).toContain(">UCSD MEDLIFE</h1>");
     expect(html).toContain("Assigned portfolio");
     expect(html).toContain("Write coach note");
     expect(html).toContain("Review risk reports");
@@ -498,7 +498,7 @@ describe("coach page", () => {
     );
 
     expect(html).toContain("Coach chapter detail");
-    expect(html).toContain("UCSD");
+    expect(html).toContain(">UCSD MEDLIFE</h1>");
     expect(html).toContain("Feed analytics source");
     expect(html).toContain("Opened from a feed-engagement review");
     expect(html).toContain("Return to feed analytics");
