@@ -893,7 +893,7 @@ const staffProofQueueSeeds: Array<{
     summary: "Rush table at the faculty of medicine.",
     recommendedUse: "Keep it local to the chapter while the story is still narrow and tactical.",
     engagementLabel: "medium potential",
-    availableApprovalTiers: ["chapter_only", "selected"],
+    availableApprovalTiers: ["chapter_only"],
   },
   {
     id: "proof-makerere-consent-pending",

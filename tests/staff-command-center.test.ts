@@ -1149,6 +1149,29 @@ describe("staff command center", () => {
     );
   });
 
+  it("keeps chapter-only proof approval scoped to the originating chapter", () => {
+    const admin = getMockLocalActorContext("admin@mymedlife.test");
+    const commandCenter = getStaffCommandCenter(admin, data, {
+      view: "proof_ugc",
+      proofQueue: "chapter_only",
+      proofType: "proof_video",
+      proof: "proof-pucp-chapter-only",
+    });
+
+    const html = renderToStaticMarkup(
+      createElement(StaffCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(html).toContain("Chapter Only");
+    expect(html).toContain(
+      "This stays fully inside the originating chapter, which matches the current consent posture.",
+    );
+    expect(html).toContain(
+      "This story has not been cleared for wider chapter distribution or public reuse.",
+    );
+    expect(html).toContain("Blocked right now");
+  });
+
   it("renders the feed studio with the mockup-aligned page heading and compact targeting copy", () => {
     const admin = getMockLocalActorContext("admin@mymedlife.test");
     const commandCenter = getStaffCommandCenter(admin, data, {
