@@ -400,6 +400,10 @@ function renderView(
     feedPostId: string | null;
   },
 ) {
+  const selectedMemberAddNoteAction = commandCenter.selectedMember?.leadershipActions.find(
+    (action) => action.label === "Add Note",
+  );
+
   switch (commandCenter.selectedView) {
     case "leaderboard":
       return (
@@ -839,9 +843,19 @@ function renderView(
                 </section>
 
                 <SectionCard eyebrow="Notes" title="Coach & Leader Notes">
-                  <p className="text-sm leading-6 text-slate-600">
-                    Keep notes concrete, useful, and about growth, not popularity.
-                  </p>
+                  <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                    <p className="text-sm leading-6 text-slate-600">
+                      Keep notes concrete, useful, and about growth, not popularity.
+                    </p>
+                    {selectedMemberAddNoteAction ? (
+                      <Link
+                        href={selectedMemberAddNoteAction.href}
+                        className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+                      >
+                        Add Note
+                      </Link>
+                    ) : null}
+                  </div>
                   <div className="mt-4 grid gap-3">
                     {commandCenter.selectedMember.leaderNotes.map((note) => (
                       <div
@@ -2770,6 +2784,7 @@ function MemberLeadershipActionsCard({
 }: {
   member: ChapterLeaderCommandCenterMemberProfile;
 }) {
+  const visibleActions = member.leadershipActions.filter((action) => action.label !== "Add Note");
   return (
     <section className="app-surface rounded-[1.75rem] p-4">
       <div className="grid gap-3">
@@ -2780,20 +2795,20 @@ function MemberLeadershipActionsCard({
           </h2>
         </div>
         <div className="grid gap-2">
-        {member.leadershipActions.map((action) => (
-          <Link
-            key={action.label}
-            href={action.href}
-            className={[
-              "rounded-[1rem] px-4 py-3 text-sm font-semibold transition",
-              action.tone === "primary"
-                ? "bg-[#2563eb] text-white hover:bg-[#2d6cf4]"
-                : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff]",
-            ].join(" ")}
-          >
-            {action.label}
-          </Link>
-        ))}
+          {visibleActions.map((action) => (
+            <Link
+              key={action.label}
+              href={action.href}
+              className={[
+                "rounded-[1rem] px-4 py-3 text-sm font-semibold transition",
+                action.tone === "primary"
+                  ? "bg-[#2563eb] text-white hover:bg-[#2d6cf4]"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff]",
+              ].join(" ")}
+            >
+              {action.label}
+            </Link>
+          ))}
         </div>
       </div>
     </section>

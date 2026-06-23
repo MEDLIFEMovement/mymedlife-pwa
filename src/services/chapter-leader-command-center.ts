@@ -969,6 +969,65 @@ const memberProfileDetailById: Record<string, Omit<
   | "profileHref"
   | "backToPipelineHref"
 >> = {
+  "member-sofia-president": {
+    weeklyPointsDeltaLabel: "+85 this week",
+    eventsCreatedLabel: "8 this semester",
+    bridgeVideosLabel: "3 submitted",
+    badgeLabel: "Strong E-Board candidate",
+    lastActiveLabel: "Today",
+    sltInterestLabel: "Yes — signed up",
+    volunteerHoursLabel: "12 hrs",
+    fundraisingLabel: "$1,200",
+    engagementLabel: "94%",
+    valuesAlignment: [
+      {
+        label: "Impeccable Character",
+        summary: "Reliable, accountable, shows up consistently. Well-regarded by peers across the chapter.",
+      },
+      {
+        label: "Fire / Agency",
+        summary: "Proactively creates events and recruits members without prompting. High initiative.",
+      },
+      {
+        label: "Growth",
+        summary: "Actively seeks coaching, reflection, and feedback. Embraces hard conversations.",
+      },
+    ],
+    pointsHistory: [
+      { label: "Apr W1", value: 920 },
+      { label: "Apr W2", value: 980 },
+      { label: "Apr W3", value: 1015 },
+      { label: "Apr W4", value: 1080 },
+      { label: "May W1", value: 1125 },
+      { label: "May W2", value: 1160 },
+      { label: "May W3", value: 1185 },
+      { label: "May W4", value: 1205 },
+      { label: "Jun W1", value: 1220 },
+      { label: "Jun W2", value: 1240 },
+    ],
+    activityTimeline: [
+      { dateLabel: "Jun 12", detail: "Attended SLT Interest Meeting" },
+      { dateLabel: "Jun 10", detail: "Created Moving Mountains Kickoff event" },
+      { dateLabel: "Jun 8", detail: "Submitted evidence for 3 actions" },
+      { dateLabel: "Jun 3", detail: "Completed fundraising action — $420 raised" },
+      { dateLabel: "May 29", detail: "Promoted to committee co-lead" },
+      { dateLabel: "May 22", detail: "Submitted bridge video: Info Night Guide" },
+    ],
+    leaderNotes: [
+      {
+        dateLabel: "Jun 8, 2025",
+        authorLabel: "Sofia Reyes (President)",
+        body: "Sofia Reyes is consistently one of the most dependable members of this chapter. Shows up, follows through, and brings others along. Values interview recommended before end of June. Strong candidate for a larger role next semester.",
+      },
+    ],
+    leadershipActions: [
+      { label: "Promote to Chair", href: "/chapter?view=succession&member=member-sofia-president", tone: "primary" },
+      { label: "Schedule Values Interview", href: "/chapter?view=member_profile&member=member-sofia-president&quickAction=schedule_values_interview", tone: "secondary" },
+      { label: "Assign Leadership Action", href: "/chapter?view=member_profile&member=member-sofia-president&quickAction=assign_leadership_action", tone: "secondary" },
+      { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-sofia-president", tone: "secondary" },
+      { label: "Add Note", href: "/chapter?view=member_profile&member=member-sofia-president&quickAction=add_leader_note", tone: "secondary" },
+    ],
+  },
   "member-zara": {
     weeklyPointsDeltaLabel: "+18 this week",
     eventsCreatedLabel: "3 this semester",

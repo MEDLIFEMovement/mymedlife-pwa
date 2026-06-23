@@ -576,7 +576,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Leadership Actions");
     expect(markup.match(/Leadership Actions/g)?.length).toBe(1);
     expect(markup.indexOf("Leadership Actions")).toBeLessThan(markup.indexOf("Points History"));
-    expect(markup.indexOf("Add Note")).toBeLessThan(markup.indexOf("Coach &amp; Leader Notes"));
+    expect(markup.indexOf("Coach &amp; Leader Notes")).toBeLessThan(markup.indexOf("Add Note"));
     expect(markup).toContain("/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy");
   });
 
@@ -602,10 +602,30 @@ describe("chapter leader command center", () => {
     expect(markup.indexOf("Back to Member Pipeline")).toBeLessThan(
       markup.indexOf("Leadership Actions"),
     );
-    expect(markup.indexOf("Add Note")).toBeLessThan(markup.indexOf("Coach &amp; Leader Notes"));
+    expect(markup.indexOf("Coach &amp; Leader Notes")).toBeLessThan(markup.indexOf("Add Note"));
     expect(markup.indexOf("Leadership Actions")).toBeLessThan(
       markup.indexOf("Points History"),
     );
+  });
+
+  it("keeps the Sofia profile aligned with the command-center Figma sample data", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "member_profile",
+      memberId: "member-sofia-president",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("Sofia Reyes");
+    expect(markup).toContain("Yes — signed up");
+    expect(markup).toContain("12 hrs");
+    expect(markup).toContain("$1,200");
+    expect(markup).toContain("94%");
+    expect(markup).toContain("Impeccable Character");
+    expect(markup).toContain("Attended SLT Interest Meeting");
+    expect(markup).toContain("Strong candidate for a larger role next semester.");
   });
 
   it("treats member-profile action buttons as profile-owned review states first", () => {
