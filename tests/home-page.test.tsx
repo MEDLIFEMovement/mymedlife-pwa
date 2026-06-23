@@ -97,8 +97,8 @@ describe("home page", () => {
     expect(html).not.toContain(">Admin Console<");
     expect(html).not.toContain("Preview only");
     expect(html).not.toContain("Chapter leaderboard</p><p");
-    expect(html.indexOf("Active campaign")).toBeLessThan(html.indexOf("Coach message"));
-    expect(html.indexOf("Coach message")).toBeLessThan(html.indexOf("Switch view"));
+    expect(html.indexOf("Active Campaign")).toBeLessThan(html.indexOf("Coach message"));
+    expect(html.indexOf("Coach message")).toBeLessThan(html.indexOf("Switch View"));
     expect(html).not.toContain("Data source status");
     expect(html).not.toContain("Mock-seeded review data");
     expect(html).not.toContain("See your chapter campaigns");
