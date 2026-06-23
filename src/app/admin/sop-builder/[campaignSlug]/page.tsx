@@ -685,6 +685,27 @@ function BuilderFilterLink(props: {
   );
 }
 
+function BuilderFocusLink(props: {
+  campaignSlug: string;
+  tab: SopBuilderTab;
+  focusId: string;
+  selected: boolean;
+}) {
+  return (
+    <Link
+      href={buildSopBuilderHref(props.campaignSlug, props.tab, props.focusId)}
+      aria-current={props.selected ? "page" : undefined}
+      className={
+        props.selected
+          ? "inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+          : "inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
+      }
+    >
+      {props.selected ? "Selected" : "Open in workspace"}
+    </Link>
+  );
+}
+
 function getBuilderModeNotice(
   definition: SopCampaignDefinition,
   selectedTab: SopBuilderTab,
@@ -1663,11 +1684,15 @@ function CommsSection(props: {
                 <th className="px-4 py-3">Approval Needed</th>
                 <th className="px-4 py-3">Mock / Live Status</th>
                 <th className="px-4 py-3">Workflow Reference</th>
+                <th className="px-4 py-3">Workspace State</th>
               </tr>
             </thead>
             <tbody>
-              {props.definition.communicationRules.map((rule) => (
-                <tr key={rule.id}>
+              {props.definition.communicationRules.map((rule) => {
+                const isSelected = props.focusWorkspace.selected?.id === rule.id;
+
+                return (
+                <tr key={rule.id} className={isSelected ? "bg-amber-200/10" : "bg-transparent"}>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
                     {rule.deliveryMode === "disabled" ? "No" : "Yes"}
                   </td>
@@ -1695,8 +1720,16 @@ function CommsSection(props: {
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
                     {props.definition.name} workflow
                   </td>
+                  <td className="border-t border-white/10 px-4 py-4 align-top">
+                    <BuilderFocusLink
+                      campaignSlug={props.definition.slug}
+                      tab="comms"
+                      focusId={rule.id}
+                      selected={isSelected}
+                    />
+                  </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
@@ -1706,7 +1739,12 @@ function CommsSection(props: {
         {props.definition.integrationBoundaries.map((boundary) => (
           <article
             key={boundary.system}
-            className="rounded-[1.5rem] border border-white/10 bg-[#071d1a]/90 p-5"
+            className={[
+              "rounded-[1.5rem] border p-5",
+              props.focusWorkspace.selected?.id === getIntegrationBoundaryFocusId(boundary.system)
+                ? "border-amber-200/28 bg-amber-200/10"
+                : "border-white/10 bg-[#071d1a]/90",
+            ].join(" ")}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -1718,6 +1756,17 @@ function CommsSection(props: {
               <Pill>{boundary.mode.replaceAll("_", " ")}</Pill>
             </div>
             <p className="mt-3 text-sm leading-6 text-white/68">{boundary.note}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <BuilderFocusLink
+                campaignSlug={props.definition.slug}
+                tab="comms"
+                focusId={getIntegrationBoundaryFocusId(boundary.system)}
+                selected={
+                  props.focusWorkspace.selected?.id ===
+                  getIntegrationBoundaryFocusId(boundary.system)
+                }
+              />
+            </div>
           </article>
         ))}
       </section>
@@ -1801,11 +1850,15 @@ function RolePreviewSection(props: {
                 <th className="px-4 py-3">Points Earned</th>
                 <th className="px-4 py-3">KPI Changes</th>
                 <th className="px-4 py-3">Communication Trigger Generated</th>
+                <th className="px-4 py-3">Workspace State</th>
               </tr>
             </thead>
             <tbody>
-              {scenarioRows.map((row) => (
-                <tr key={row.scenario.id}>
+              {scenarioRows.map((row) => {
+                const isSelected = props.focusWorkspace.selected?.id === row.scenario.id;
+
+                return (
+                <tr key={row.scenario.id} className={isSelected ? "bg-amber-200/10" : "bg-transparent"}>
                   <td className="border-t border-white/10 px-4 py-4 align-top">
                     <div className="flex flex-col gap-2">
                       <div>
@@ -1856,8 +1909,16 @@ function RolePreviewSection(props: {
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
                     {row.communicationTrigger}
                   </td>
+                  <td className="border-t border-white/10 px-4 py-4 align-top">
+                    <BuilderFocusLink
+                      campaignSlug={props.definition.slug}
+                      tab="preview"
+                      focusId={row.scenario.id}
+                      selected={isSelected}
+                    />
+                  </td>
                 </tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
@@ -1994,10 +2055,15 @@ function VersionReviewSection(props: {
           Change log
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
-          {props.definition.version.history.map((entry) => (
+          {props.definition.version.history.map((entry, index) => (
             <article
               key={entry.label}
-              className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4"
+              className={[
+                "rounded-[1.35rem] border p-4",
+                props.focusWorkspace.selected?.id === `version-${index}`
+                  ? "border-amber-200/28 bg-amber-200/10"
+                  : "border-white/10 bg-black/20",
+              ].join(" ")}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -2009,6 +2075,14 @@ function VersionReviewSection(props: {
                 <Pill>{entry.updatedLabel}</Pill>
               </div>
               <p className="mt-3 text-sm leading-6 text-white/68">{entry.summary}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <BuilderFocusLink
+                  campaignSlug={props.definition.slug}
+                  tab="version"
+                  focusId={`version-${index}`}
+                  selected={props.focusWorkspace.selected?.id === `version-${index}`}
+                />
+              </div>
             </article>
           ))}
         </div>
@@ -2029,6 +2103,10 @@ function getDistinctRoles(definition: SopCampaignDefinition) {
 
 function getDistinctScopes(definition: SopCampaignDefinition) {
   return new Set(definition.roleActionRules.map((rule) => rule.scope)).size;
+}
+
+function getIntegrationBoundaryFocusId(system: string) {
+  return `boundary-${system.toLowerCase().replaceAll(" ", "-")}`;
 }
 
 function getRolesWithPoints(definition: SopCampaignDefinition) {

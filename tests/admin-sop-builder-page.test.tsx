@@ -281,6 +281,9 @@ describe("admin SOP builder page", () => {
     expect(previewHtml).toContain(
       'href="/admin/sop-builder/rush-month?tab=preview&amp;focus=rush-member-loop&amp;mode=filter"',
     );
+    expect(previewHtml).toContain(
+      'href="/admin/sop-builder/rush-month?tab=preview&amp;focus=rush-member-loop"',
+    );
   });
 
   it("opens the route-owned filter review state on the same builder screen", async () => {
@@ -379,6 +382,75 @@ describe("admin SOP builder page", () => {
     expect(html).toContain("Mock / Live Status");
     expect(html).toContain("Integration boundary");
     expect(html).toContain("HubSpot");
+    expect(html).toContain(
+      'href="/admin/sop-builder/rush-month?tab=comms&amp;focus=rush-month-internal"',
+    );
+    expect(html).toContain(
+      'href="/admin/sop-builder/rush-month?tab=comms&amp;focus=boundary-hubspot"',
+    );
+  });
+
+  it("lets visible preview, comms, and version records drive same-route focus", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP builder direct visible-record focus."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+
+    const previewHtml = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "rush-month" }),
+        searchParams: Promise.resolve({
+          tab: "preview",
+          focus: "rush-member-loop",
+        }),
+      }),
+    );
+
+    expect(previewHtml).toContain('aria-current="page"');
+    expect(previewHtml).toContain(
+      'href="/admin/sop-builder/rush-month?tab=preview&amp;focus=rush-member-loop"',
+    );
+    expect(previewHtml).toContain("Selected preview scenario");
+
+    const commsHtml = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "rush-month" }),
+        searchParams: Promise.resolve({
+          tab: "comms",
+          focus: "boundary-hubspot",
+        }),
+      }),
+    );
+
+    expect(commsHtml).toContain(
+      'href="/admin/sop-builder/rush-month?tab=comms&amp;focus=boundary-hubspot"',
+    );
+    expect(commsHtml).toContain("Selected communication trigger");
+    expect(commsHtml).toContain("Mode: disabled");
+
+    const versionHtml = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "rush-month" }),
+        searchParams: Promise.resolve({
+          tab: "version",
+          focus: "version-0",
+        }),
+      }),
+    );
+
+    expect(versionHtml).toContain(
+      'href="/admin/sop-builder/rush-month?tab=version&amp;focus=version-0"',
+    );
+    expect(versionHtml).toContain("Selected version detail");
   });
 
   it("turns visible builder controls into route-owned mock-safe action states", async () => {
