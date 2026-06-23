@@ -288,12 +288,26 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
         summary:
           "Read-only event, outbox, and blocked-send posture for DS review.",
       },
+      {
+        href: "/admin/master-data",
+        eyebrow: "Catalog",
+        title: "Master Data",
+        summary:
+          "Fake users, named roles, chapter inventory, and campaign templates in one read-only admin inventory.",
+      },
     ];
   }
 
   if (surfaceFamily === "staff" || surfaceFamily === "super_admin") {
     return [
       ...shared,
+      {
+        href: "/admin/master-data",
+        eyebrow: "Catalog",
+        title: "Master Data",
+        summary:
+          "Fake users, named roles, chapter inventory, and campaign templates in one read-only admin inventory.",
+      },
       {
         href: "/admin/committees",
         eyebrow: "Owners",

@@ -641,8 +641,9 @@ Expected interaction model:
 
 - keep the current launch/review packet routes intact
 - `/admin` should behave as the overview lane for the internal backend family,
-  with visible routes back into permissions, committees, workflows, and SOP
-  tooling instead of leaving the overview as a disconnected audit packet
+  with visible routes back into permissions, master data, committees,
+  workflows, and SOP tooling instead of leaving the overview as a disconnected
+  audit packet
 - add the backend lanes the full send package requires instead of replacing the
   current safety-review routes
 - admin configuration routes should live under `/admin/*`, not as extra

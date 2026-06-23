@@ -460,6 +460,9 @@ Inventory rule:
 - keep the current `/admin/*` review and safety packet routes
 - add the backend configuration/library/builder lanes as dedicated admin
   surfaces, not as extra `view=` states on `/staff`
+- keep the admin overview lane linked to permissions, master data,
+  committees, workflows, and SOP tooling so `/admin` reads like the owned
+  backend entry point rather than a disconnected packet
 - keep workflow-registry section state and selected-record state on
   `/admin/workflows`
 - keep permissions-registry section state and selected-record state on
