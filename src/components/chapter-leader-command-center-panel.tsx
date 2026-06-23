@@ -843,24 +843,9 @@ function renderView(
                 </section>
 
                 <SectionCard eyebrow="Notes" title="Coach & Leader Notes">
-                  <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                    <p className="text-sm leading-6 text-slate-600">
-                      Keep notes concrete, useful, and about growth, not popularity.
-                    </p>
-                    <Link
-                      href={buildChapterLeaderCommandCenterHref("member_profile", {
-                        source: commandCenter.selectedSource,
-                        memberId: commandCenter.selectedMember.id,
-                        feedPostId: commandCenter.selectedFeedPostId,
-                        pipelineFilter: commandCenter.selectedPipelineFilter,
-                        searchQuery: commandCenter.pipelineSearchQuery,
-                        quickAction: "add_leader_note",
-                      })}
-                      className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
-                    >
-                      Add Note
-                    </Link>
-                  </div>
+                  <p className="text-sm leading-6 text-slate-600">
+                    Keep notes concrete, useful, and about growth, not popularity.
+                  </p>
                   <div className="mt-4 grid gap-3">
                     {commandCenter.selectedMember.leaderNotes.map((note) => (
                       <div

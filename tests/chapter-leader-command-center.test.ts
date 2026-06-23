@@ -527,6 +527,9 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedMember?.leadershipActions[3]?.href).toBe(
       "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=nominate_for_eboard",
     );
+    expect(commandCenter.selectedMember?.leadershipActions[4]?.href).toBe(
+      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=add_leader_note",
+    );
     expect(commandCenter.selectedMember?.reviewContext).toMatchObject({
       eyebrow: "Follow-up review",
       title: "Re-engagement context is active",
@@ -571,6 +574,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Leadership Actions");
     expect(markup.match(/Leadership Actions/g)?.length).toBe(1);
     expect(markup.indexOf("Leadership Actions")).toBeLessThan(markup.indexOf("Points History"));
+    expect(markup.indexOf("Add Note")).toBeLessThan(markup.indexOf("Coach &amp; Leader Notes"));
     expect(markup).toContain("/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy");
   });
 
@@ -596,6 +600,7 @@ describe("chapter leader command center", () => {
     expect(markup.indexOf("Back to Member Pipeline")).toBeLessThan(
       markup.indexOf("Leadership Actions"),
     );
+    expect(markup.indexOf("Add Note")).toBeLessThan(markup.indexOf("Coach &amp; Leader Notes"));
     expect(markup.indexOf("Leadership Actions")).toBeLessThan(
       markup.indexOf("Points History"),
     );

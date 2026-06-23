@@ -1023,6 +1023,7 @@ const memberProfileDetailById: Record<string, Omit<
       { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-zara", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "secondary" },
       { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-zara", tone: "secondary" },
+      { label: "Add Note", href: "/chapter?view=member_profile&member=member-zara&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-ivy": {
@@ -1079,6 +1080,7 @@ const memberProfileDetailById: Record<string, Omit<
       { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-ivy&pipeline=follow_up", tone: "primary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "secondary" },
       { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-ivy", tone: "secondary" },
+      { label: "Add Note", href: "/chapter?view=member_profile&member=member-ivy&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-maya": {
@@ -1125,6 +1127,7 @@ const memberProfileDetailById: Record<string, Omit<
       { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-maya", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
       { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-maya", tone: "secondary" },
+      { label: "Add Note", href: "/chapter?view=member_profile&member=member-maya&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-leo": {
@@ -1171,6 +1174,7 @@ const memberProfileDetailById: Record<string, Omit<
       { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-leo", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
       { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-leo", tone: "primary" },
+      { label: "Add Note", href: "/chapter?view=member_profile&member=member-leo&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-nina": {
@@ -1217,6 +1221,7 @@ const memberProfileDetailById: Record<string, Omit<
       { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-nina", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
       { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-nina", tone: "secondary" },
+      { label: "Add Note", href: "/chapter?view=member_profile&member=member-nina&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-omar": {
@@ -1263,6 +1268,7 @@ const memberProfileDetailById: Record<string, Omit<
       { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-omar", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
       { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-omar", tone: "secondary" },
+      { label: "Add Note", href: "/chapter?view=member_profile&member=member-omar&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
 };
@@ -3629,6 +3635,11 @@ function getMockLeaderProfile(context: {
         href: buildLeaderProfileHref("nominate_for_eboard"),
         tone: "secondary",
       },
+      {
+        label: "Add Note",
+        href: buildLeaderProfileHref("add_leader_note"),
+        tone: "secondary",
+      },
     ],
     reviewContext: null,
     backToPipelineHref,
@@ -3736,6 +3747,15 @@ function getMemberLeadershipActionHref(
         pipelineFilter: context.filter !== "all" ? context.filter : "follow_up",
         searchQuery: context.searchQuery,
         quickAction: "assign_leadership_action",
+      });
+    case "Add Note":
+      return buildChapterLeaderCommandCenterHref("member_profile", {
+        memberId,
+        source: context.source,
+        feedPostId: context.feedPostId,
+        pipelineFilter: context.filter,
+        searchQuery: context.searchQuery,
+        quickAction: "add_leader_note",
       });
     default:
       return action.href;
