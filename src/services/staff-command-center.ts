@@ -5426,6 +5426,41 @@ function getAdminWorkspace(
         "Check replay posture, failed jobs, and integration safety without enabling live sends.",
       href: "/admin/integration-outbox",
     },
+    {
+      eyebrow: "Review",
+      title: "Stakeholder Review Path",
+      summary:
+        "Walk through the no-code reviewer packet before anyone asks for a live change.",
+      href: "/admin/review-path",
+    },
+    {
+      eyebrow: "Decision",
+      title: "Nick Review Packet",
+      summary:
+        "Hold the final launch packet in one place so the pilot decision stays visible.",
+      href: "/admin/nick-review",
+    },
+    {
+      eyebrow: "Ready",
+      title: "Release Readiness",
+      summary:
+        "Keep the release-readiness summary in view before any live approval moves forward.",
+      href: "/admin/release-readiness",
+    },
+    {
+      eyebrow: "Gate",
+      title: "Production Launch Gate",
+      summary:
+        "Show the hosted launch gate, rollback owner, and live pilot posture together.",
+      href: "/admin/launch-gate",
+    },
+    {
+      eyebrow: "Ops",
+      title: "Production Operations",
+      summary:
+        "Keep incident, rollback, and support ownership visible for the live MVP posture.",
+      href: "/admin/operations",
+    },
   ];
 
   return {
@@ -5463,6 +5498,20 @@ function getAdminWorkspace(
         summary:
           "Campaign workflow definitions with builder tabs for steps, role matrix, completion, KPI, and version history.",
         href: "/admin/sop-library",
+      },
+      {
+        eyebrow: "QA",
+        title: "Design QA",
+        summary:
+          "Track the Figma-backed mobile, accessibility, and visual smoke checks before launch.",
+        href: "/admin/design-qa",
+      },
+      {
+        eyebrow: "Pilot",
+        title: "Pilot Scope",
+        summary:
+          "Keep the one-chapter pilot shape and named owners visible from the admin handoff.",
+        href: "/admin/pilot-scope",
       },
     ],
     handoffSummaryCards,

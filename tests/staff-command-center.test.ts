@@ -590,6 +590,11 @@ describe("staff command center", () => {
       "Campaign Templates",
       "Audit Logs",
       "Automation Outbox (n8n)",
+      "Stakeholder Review Path",
+      "Nick Review Packet",
+      "Release Readiness",
+      "Production Launch Gate",
+      "Production Operations",
     ]);
     expect(commandCenter.viewOptions.find((item) => item.key === "admin")?.href).toContain(
       "source=member_home",
@@ -687,6 +692,8 @@ describe("staff command center", () => {
       "Workflow Registry",
       "Committee Registry",
       "SOP Library",
+      "Design QA",
+      "Pilot Scope",
     ]);
     expect(commandCenter.adminWorkspace.outboxRows[2]).toMatchObject({
       eventLabel: "evidence.approved",
@@ -1461,6 +1468,8 @@ describe("staff command center", () => {
     expect(html).toContain("Workflow Registry");
     expect(html).toContain("Committee Registry");
     expect(html).toContain("SOP Library");
+    expect(html).toContain("Design QA");
+    expect(html).toContain("Pilot Scope");
     expect(html).toContain("HubSpot CRM");
     expect(html).toContain("Last sync: 2 min ago");
     expect(html).not.toContain(">Admin Console</h1>");

@@ -1467,6 +1467,15 @@ function renderView(
         commandCenter.sourceContext?.actions?.filter(
           (action) => action.label !== "Student view",
         ) ?? [];
+      const adminLanes = isMemberHomeAdminHandoff
+        ? commandCenter.adminWorkspace.handoffConsoleCards
+        : commandCenter.adminWorkspace.backendLanes;
+      const adminCoreLanes = isMemberHomeAdminHandoff
+        ? adminLanes.slice(0, 5)
+        : adminLanes.slice(0, 4);
+      const adminReviewLanes = isMemberHomeAdminHandoff
+        ? adminLanes.slice(5)
+        : adminLanes.slice(4);
       const activeIntegrationCount = commandCenter.adminWorkspace.integrationStatuses.filter(
         (status) => status.status !== "mock",
       ).length;
@@ -1556,10 +1565,7 @@ function renderView(
               isMemberHomeAdminHandoff ? "md:grid-cols-2 xl:grid-cols-3" : "md:grid-cols-2 xl:grid-cols-4",
             ].join(" ")}
           >
-            {(isMemberHomeAdminHandoff
-              ? commandCenter.adminWorkspace.handoffConsoleCards
-              : commandCenter.adminWorkspace.backendLanes
-            ).map((lane) => (
+            {adminCoreLanes.map((lane) => (
               <Link
                 key={lane.href}
                 href={lane.href}
@@ -1577,6 +1583,28 @@ function renderView(
               </Link>
             ))}
           </section>
+
+          {adminReviewLanes.length > 0 ? (
+            <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {adminReviewLanes.map((lane) => (
+                <Link
+                  key={lane.href}
+                  href={lane.href}
+                  className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.06)] transition hover:border-[#bfdbfe] hover:bg-[#f8fbff]"
+                >
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    {lane.eyebrow}
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-slate-950">
+                    {lane.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {lane.summary}
+                  </p>
+                </Link>
+              ))}
+            </section>
+          ) : null}
 
           <section className="grid gap-4 xl:grid-cols-[0.72fr_1.28fr]">
             <div id="integration-status">
