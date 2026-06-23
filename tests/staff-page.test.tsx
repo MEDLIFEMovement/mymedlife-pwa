@@ -162,7 +162,7 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("Proof / UGC Review Queue");
+    expect(html).toContain(">Proof / UGC Review Queue</h1>");
     expect(html).toContain("UNAM Mexico City");
     expect(html).toContain("Selected review state");
     expect(html).toContain("Approve for");

@@ -1026,7 +1026,29 @@ function renderView(
 
       return (
         <section className="grid gap-4 xl:grid-cols-[1.45fr_0.55fr] xl:items-start">
-          <SectionCard eyebrow="Proof queue" title="Proof / UGC Review Queue">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Proof queue
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Proof / UGC Review Queue
+                </h1>
+              </div>
+              <div className="flex items-center gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  {commandCenter.campaignOperations.timestampLabel}
+                </p>
+                <FilterMenu
+                  label={commandCenter.proofTypeFilters.find(
+                    (filter) => filter.key === commandCenter.proofTypeFilter,
+                  )?.label ?? "All Types"}
+                  options={commandCenter.proofTypeFilters}
+                  selectedKey={commandCenter.proofTypeFilter}
+                />
+              </div>
+            </div>
             {selectedProofReview ? (
               <div className="rounded-[1.1rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
@@ -1050,18 +1072,6 @@ function renderView(
               <p className="text-sm leading-6 text-slate-600">
                 {proofQueueSummary}
               </p>
-              <div className="flex items-center gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                  {commandCenter.campaignOperations.timestampLabel}
-                </p>
-                <FilterMenu
-                  label={commandCenter.proofTypeFilters.find(
-                    (filter) => filter.key === commandCenter.proofTypeFilter,
-                  )?.label ?? "All Types"}
-                  options={commandCenter.proofTypeFilters}
-                  selectedKey={commandCenter.proofTypeFilter}
-                />
-              </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {commandCenter.proofQueueFilters.map((filter) => (
@@ -1098,7 +1108,7 @@ function renderView(
                 </p>
               </div>
             ) : null}
-          </SectionCard>
+          </section>
           <ProofReviewPanelCard panel={commandCenter.selectedProofReview} />
         </section>
       );

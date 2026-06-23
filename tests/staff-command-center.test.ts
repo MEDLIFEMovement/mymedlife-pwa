@@ -1118,7 +1118,7 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain("Proof / UGC Review Queue");
+    expect(html).toContain(">Proof / UGC Review Queue</h1>");
     expect(html).toContain("5 items pending review");
     expect(html).toContain("All Types");
     expect(html).toContain("Select a content card to review");
