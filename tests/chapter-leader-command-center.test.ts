@@ -1076,8 +1076,7 @@ describe("chapter leader command center", () => {
     expect(commandCenter.events[0]?.href).toBe(
       "/chapter?view=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
     );
-    expect(markup).toContain("Events");
-    expect(markup).not.toContain("Events &amp; Attendance");
+    expect(markup).toContain(">Events &amp; Attendance</h1>");
     expect(markup).toContain("Event Detail");
     expect(markup).toContain(
       "Keep the selected event in chapter context before you leave this surface.",
@@ -1796,8 +1795,7 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain("Events");
-    expect(markup).not.toContain("Events &amp; Attendance");
+    expect(markup).toContain(">Events &amp; Attendance</h1>");
     expect(markup).toContain("All Events — June 2025");
     expect(markup).toContain("Events This Month");
     expect(markup).toContain("RSVP vs. Actual Attendance");

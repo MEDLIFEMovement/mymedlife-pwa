@@ -1119,14 +1119,16 @@ function renderView(
               </div>
             </SectionCard>
           ) : null}
-          <div className="grid gap-4 app-surface rounded-[1.75rem] p-4">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
-                <p className="app-eyebrow app-eyebrow-slate">Events</p>
-                <h2 className="mt-2 text-[1.38rem] font-semibold leading-tight text-slate-950 sm:text-[1.5rem]">
-                  Events
-                </h2>
-                <p className="text-sm leading-6 text-slate-600">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  Events &amp; Attendance
+                </p>
+                <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
+                  Events &amp; Attendance
+                </h1>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
                   Track event execution, proof submission, and follow-up across the chapter.
                 </p>
               </div>
@@ -1177,9 +1179,9 @@ function renderView(
               <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
                 <div>
                   <p className="app-eyebrow app-eyebrow-slate">All events</p>
-                  <h3 className="mt-1 text-lg font-semibold text-slate-950">
+                  <h2 className="mt-1 text-lg font-semibold text-slate-950">
                     All Events — {commandCenter.eventsOverview.monthLabel}
-                  </h3>
+                  </h2>
                 </div>
                 <ChapterLeaderEventCommitteeFilterSelect
                   options={commandCenter.eventCommitteeFilters}
@@ -1272,7 +1274,7 @@ function renderView(
                 </div>
               </div>
             </SectionCard>
-          </div>
+          </section>
         </section>
       );
     case "impact":
