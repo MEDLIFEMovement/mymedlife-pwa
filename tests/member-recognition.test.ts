@@ -14,16 +14,61 @@ describe("member recognition", () => {
     expect(recognition.canReadRecognition).toBe(true);
     expect(recognition.title).toBe("Your recognition");
     expect(recognition.selectedMember?.displayName).toBe("Sofia Alvarez");
-    expect(recognition.selectedMember?.rank).toBe(1);
-    expect(recognition.selectedMember?.points).toBe(42);
+    expect(recognition.selectedMember?.rank).toBe(3);
+    expect(recognition.selectedMember?.points).toBe(145);
     expect(recognition.impacts.map((impact) => impact.label)).toEqual([
       "Chapter points",
       "Invite pushes",
       "Events linked",
     ]);
+    expect(recognition.topStats.map((stat) => stat.label)).toEqual([
+      "Total Points",
+      "This Week",
+      "Chapter Rank",
+    ]);
+    expect(recognition.campaignPoints.map((item) => item.label)).toEqual([
+      "Rush Month",
+      "Spring Showcase (prev.)",
+      "Community Health Fair",
+    ]);
+    expect(recognition.campaignPoints.map((item) => item.id)).toEqual([
+      "rush-month",
+      "spring-showcase",
+      "community-health-fair",
+    ]);
+    expect(recognition.badges.map((badge) => badge.label)).toContain("Rush Starter");
+    expect(recognition.recentApprovedActions.length).toBeGreaterThan(0);
+    expect(recognition.recentApprovedActions.map((action) => action.title)).toEqual([
+      "Welcome one new student at tabling",
+    ]);
+    expect(recognition.recentApprovedActions.map((action) => action.detail)).toEqual([
+      "Tabling welcome completed · Due Nov 14",
+    ]);
+    expect(
+      recognition.recentApprovedActions.every((action) => {
+        return action.href.startsWith("/rush-month/actions/") && action.href.endsWith("?source=points");
+      }),
+    ).toBe(true);
+    expect(
+      recognition.recentApprovedActions.some((action) => {
+        return (
+          action.title.includes("align the leader team") ||
+          action.title.includes("Assign Rush Month outreach owners")
+        );
+      }),
+    ).toBe(false);
+    expect(recognition.explainer.title).toBe("How points work");
+    expect(recognition.explainer.ctaHref).toBe("/rush-month/actions/member-push?source=points");
     expect(recognition.impacts[0]?.note).toContain("points event rows");
     expect(recognition.impacts[1]?.note).toContain("KPI event rows");
     expect(recognition.pointsLedgerPosture).toBe("mock_read_only");
+    expect(recognition.leaderboard.map((row) => row.displayName)).toEqual([
+      "Aisha N.",
+      "Marcus T.",
+      "Sofia Alvarez",
+      "James L.",
+      "Nina Chair",
+    ]);
   });
 
   it("sorts visible leaderboard rows by points and completed actions", () => {
@@ -59,6 +104,22 @@ describe("member recognition", () => {
     expect(recognition.leaderboard).toHaveLength(rushMonthLeaderboard.length);
   });
 
+  it("maps committee members to member recognition and committee chairs to leader recognition", () => {
+    const committeeMember = getMemberRecognitionSummary(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+      data,
+    );
+    const committeeChair = getMemberRecognitionSummary(
+      getMockLocalActorContext("committee.chair@mymedlife.test"),
+      data,
+    );
+
+    expect(committeeMember.canReadRecognition).toBe(true);
+    expect(committeeMember.title).toBe("Your recognition");
+    expect(committeeChair.canReadRecognition).toBe(true);
+    expect(committeeChair.title).toBe("Member recognition");
+  });
+
   it("keeps DS Admin out of recognition and points truth", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const recognition = getMemberRecognitionSummary(actor, data);
@@ -66,6 +127,8 @@ describe("member recognition", () => {
     expect(recognition.canReadRecognition).toBe(false);
     expect(recognition.leaderboard).toEqual([]);
     expect(recognition.impacts).toEqual([]);
+    expect(recognition.topStats).toEqual([]);
+    expect(recognition.campaignPoints).toEqual([]);
     expect(recognition.summary).toContain("student points and recognition");
   });
 
