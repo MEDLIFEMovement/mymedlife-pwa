@@ -62,6 +62,19 @@ export default async function Home() {
                 {workspace.chapterMeta}
               </p>
             </div>
+            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/12 bg-white/10 text-white/78 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5"
+                aria-hidden="true"
+              >
+                <path d="M15.6 17H8.4c-1.2 0-2-.9-1.8-2l.6-2.7a5 5 0 0 0 .1-1V9.8a4.7 4.7 0 1 1 9.4 0v1.5a5 5 0 0 0 .1 1l.6 2.7c.2 1.1-.6 2-1.8 2Z" />
+                <path d="M10 19a2 2 0 0 0 4 0" />
+              </svg>
+            </span>
           </div>
 
           <article className="mt-4 rounded-[1.5rem] border border-white/12 bg-white/10 p-3.5 backdrop-blur-sm sm:p-4">
@@ -100,7 +113,7 @@ export default async function Home() {
                   Active
                 </span>
                 <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#2563eb]">
-                  {workspace.campaign.weekLabel}
+                  {workspace.campaign.stageLabel}
                 </span>
               </div>
               <h2 className="mt-4 text-2xl font-semibold text-slate-950">
@@ -269,6 +282,8 @@ function ActionRow({
   action: StudentHomeActionCard;
   featured?: boolean;
 }) {
+  const isSelected = action.status === "in_progress" || action.status === "submitted";
+
   return (
     <Link
       href={action.href}
@@ -280,11 +295,29 @@ function ActionRow({
       ].join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="text-base font-semibold leading-6 text-slate-950">{action.title}</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            Due {action.dueLabel} · {action.points} pts
-          </p>
+        <div className="flex min-w-0 items-start gap-3">
+          <span
+            aria-hidden="true"
+            className={[
+              "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition",
+              isSelected
+                ? "border-[#2b5fb4] bg-white text-[#2b5fb4]"
+                : "border-slate-300 bg-slate-50 text-transparent",
+            ].join(" ")}
+          >
+            <span
+              className={[
+                "h-2.5 w-2.5 rounded-full transition",
+                isSelected ? "bg-[#2b5fb4]" : "bg-transparent",
+              ].join(" ")}
+            />
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold leading-6 text-slate-950">{action.title}</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Due {action.dueLabel} · {action.points} pts
+            </p>
+          </div>
         </div>
         <StatusBadge status={action.status} />
       </div>

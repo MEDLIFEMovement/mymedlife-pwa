@@ -47,6 +47,7 @@ export type StudentHomeWorkspace = {
     href: string;
     campaignsHref: string;
     weekLabel: string;
+    stageLabel: string;
     progressPercent: number;
     progressLabel: string;
     progressCountLabel: string;
@@ -133,6 +134,7 @@ export function getStudentHomeWorkspace(
       href: "/campaigns?source=home",
       campaignsHref: "/campaigns",
       weekLabel: data.campaign.weekLabel,
+      stageLabel: getCampaignStageLabel(data.campaign.weekLabel),
       progressPercent: progress.percent,
       progressLabel: progress.label,
       progressCountLabel: `${progress.completedCount} / ${progress.visibleCount} actions done`,
@@ -299,4 +301,24 @@ function sectionPriority(section: "this_week" | "coming_up") {
 
 function rsvpPriority(state: "registered" | "open") {
   return state === "open" ? 0 : 1;
+}
+
+function getCampaignStageLabel(weekLabel: string) {
+  if (weekLabel.startsWith("Week 1")) {
+    return "Week 1 of 4";
+  }
+
+  if (weekLabel.startsWith("Week 2")) {
+    return "Week 2 of 4";
+  }
+
+  if (weekLabel.startsWith("Week 3")) {
+    return "Week 3 of 4";
+  }
+
+  if (weekLabel.startsWith("Week 4")) {
+    return "Week 4 of 4";
+  }
+
+  return weekLabel;
 }

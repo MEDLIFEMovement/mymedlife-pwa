@@ -19,6 +19,7 @@ describe("student home workspace", () => {
     expect(workspace.startNextAction.label).toBe("Start next action");
     expect(workspace.campaign.href).toBe("/campaigns?source=home");
     expect(workspace.campaign.campaignsHref).toBe("/campaigns");
+    expect(workspace.campaign.stageLabel).toBe("Week 1 of 4");
     expect(workspace.campaign.activeMemberCount).toBe(22);
     expect(workspace.campaign.totalMemberCount).toBe(34);
     expect(workspace.upcomingEvents.map((event) => event.href)).toEqual([

@@ -46,6 +46,7 @@ describe("home page", () => {
     expect(html).toContain("Hi, Sofia");
     expect(html).not.toContain("Hi, Sofia 👋");
     expect(html).toContain("This Week&#x27;s Priority");
+    expect(html).toContain("Week 1 of 4");
     expect(html).toContain("Full board");
     expect(html).toContain("/rush-month/leaderboard");
     expect(html).toContain("Leader Hub");
