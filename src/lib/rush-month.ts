@@ -48,7 +48,7 @@ export function statusLabel(status: DisplayStatus): string {
     case "in_progress":
       return "In progress";
     case "submitted":
-      return "Proof submitted";
+      return "Submitted";
     case "pending_review":
       return "Pending HQ review";
     case "approved":
@@ -63,16 +63,16 @@ export function statusLabel(status: DisplayStatus): string {
 export function statusClassName(status: DisplayStatus): string {
   switch (status) {
     case "approved":
-      return "border-emerald-300/30 bg-emerald-300/15 text-emerald-100";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "submitted":
     case "pending_review":
-      return "border-sky-300/30 bg-sky-300/15 text-sky-100";
+      return "border-sky-200 bg-sky-50 text-sky-700";
     case "in_progress":
-      return "border-amber-300/30 bg-amber-300/15 text-amber-100";
+      return "border-amber-200 bg-amber-50 text-amber-700";
     case "changes_requested":
     case "rejected":
-      return "border-rose-300/30 bg-rose-300/15 text-rose-100";
+      return "border-rose-200 bg-rose-50 text-rose-700";
     case "not_started":
-      return "border-white/10 bg-white/10 text-white/70";
+      return "border-slate-200 bg-slate-50 text-slate-600";
   }
 }

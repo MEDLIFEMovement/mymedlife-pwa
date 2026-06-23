@@ -10,22 +10,40 @@ describe("member proof status", () => {
 
     expect(workspace.canReadWorkspace).toBe(true);
     expect(workspace.title).toBe("What is happening with my proof?");
-    expect(workspace.rows.map((row) => row.assignmentId)).toEqual(["member-push"]);
+    expect(workspace.rows.map((row) => [row.assignmentId, row.status])).toEqual([
+      ["member-push", "action_not_ready"],
+      ["share-rush-flyer", "proof_needed"],
+      ["welcome-table", "waiting_hq_review"],
+    ]);
     expect(workspace.rows[0]).toEqual(
       expect.objectContaining({
-        status: "proof_needed",
-        statusLabel: "Proof needed",
+        status: "action_not_ready",
+        statusLabel: "Start action first",
         externalPosture: "disabled",
       }),
     );
     expect(workspace.counts).toEqual(
       expect.objectContaining({
+        actionNotReady: 1,
         proofNeeded: 1,
-        waitingHqReview: 0,
+        waitingHqReview: 1,
         publicPublishesEnabled: 0,
         externalExportsEnabled: 0,
       }),
     );
+  });
+
+  it("keeps committee members on the same member-owned proof status surface", () => {
+    const actor = getMockLocalActorContext("committee.member@mymedlife.test");
+    const workspace = getMemberProofStatusWorkspace(actor);
+
+    expect(workspace.canReadWorkspace).toBe(true);
+    expect(workspace.title).toBe("What is happening with my proof?");
+    expect(workspace.rows.map((row) => [row.assignmentId, row.status])).toEqual([
+      ["member-push", "action_not_ready"],
+      ["share-rush-flyer", "proof_needed"],
+      ["welcome-table", "waiting_hq_review"],
+    ]);
   });
 
   it("summarizes leader-visible pending and changes-requested proof", () => {
@@ -35,13 +53,16 @@ describe("member proof status", () => {
     expect(workspace.rows.map((row) => [row.assignmentId, row.status])).toEqual([
       ["open-home", "proof_needed"],
       ["assign-eboard", "waiting_hq_review"],
-      ["member-push", "proof_needed"],
+      ["member-push", "action_not_ready"],
+      ["share-rush-flyer", "proof_needed"],
+      ["welcome-table", "waiting_hq_review"],
       ["proof-pack", "changes_requested"],
     ]);
     expect(workspace.counts).toEqual(
       expect.objectContaining({
+        actionNotReady: 1,
         proofNeeded: 2,
-        waitingHqReview: 1,
+        waitingHqReview: 2,
         changesRequested: 1,
       }),
     );

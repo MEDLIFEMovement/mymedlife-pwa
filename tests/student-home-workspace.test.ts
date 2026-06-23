@@ -43,12 +43,12 @@ describe("student home workspace", () => {
     expect(workspace.assignedActions.map((action) => action.title)).toEqual([
       "Invite 3 friends to the Intro GBM",
       "Share Rush Week flyer on Instagram",
-      "Welcome one new student at tabling",
+      "Add 5 leads",
     ]);
     expect(workspace.assignedActions.map((action) => action.status)).toEqual([
       "not_started",
       "in_progress",
-      "approved",
+      "submitted",
     ]);
     expect(workspace.points.href).toBe("/rush-month/leaderboard");
     expect(workspace.points.total).toBe(145);

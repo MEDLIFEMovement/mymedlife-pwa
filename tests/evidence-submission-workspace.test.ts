@@ -8,21 +8,22 @@ describe("evidence submission workspace", () => {
     const workspace = getEvidenceSubmissionWorkspace(actor);
 
     expect(workspace.canReadWorkspace).toBe(true);
-    expect(workspace.title).toBe("Submit proof for your next action");
+    expect(workspace.title).toBe("Proof for your next action");
     expect(workspace.nextSubmission).toEqual(
       expect.objectContaining({
-        assignmentId: "member-push",
+        assignmentId: "share-rush-flyer",
         status: "ready_to_submit",
         canPrepareNow: true,
         canUseLocalWritePath: true,
         isRecommended: true,
-        actionHref: "/rush-month/actions/member-push",
-        proofIntakeHref: "/proof-library/upload",
-        proofIntakeLabel: "Preview proof intake",
+        actionHref: "/rush-month/actions/share-rush-flyer?source=evidence",
+        proofIntakeHref:
+          "/rush-month/actions/share-rush-flyer?step=submit&source=evidence#submit-evidence",
+        proofIntakeLabel: "Open submit evidence",
       }),
     );
     expect(workspace.nextSubmission?.storyPrompt).toContain(
-      "Message screenshot, invite list, or event RSVP link",
+      "Story screenshot or post link with chapter branding visible.",
     );
     expect(workspace.nextSubmission?.preparationChecklist).toEqual(
       expect.arrayContaining([
@@ -38,10 +39,11 @@ describe("evidence submission workspace", () => {
     expect(workspace.counts.submissionPackets).toBe(1);
     expect(workspace.submissionPacket).toEqual(
       expect.objectContaining({
-        title: "Goal 158 proof submission packet",
-        assignmentId: "member-push",
+        title: "Proof submission path preview",
+        assignmentId: "share-rush-flyer",
         localFunction: "app.submit_assignment_proof_metadata",
-        targetRoute: "/rush-month/actions/member-push",
+        targetRoute:
+          "/rush-month/actions/share-rush-flyer?step=submit&source=evidence#submit-evidence",
         reviewRoute: "/rush-month/review",
         currentResultCode: "write_disabled",
         futureResultCode: "proof_submitted",
@@ -53,7 +55,7 @@ describe("evidence submission workspace", () => {
       }),
     );
     expect(workspace.submissionPacket?.payload.summary).toContain(
-      "Message screenshot, invite list, or event RSVP link",
+      "Story screenshot or post link with chapter branding visible.",
     );
     expect(workspace.submissionPacket?.readinessChecks).toEqual(
       expect.arrayContaining([
@@ -78,7 +80,7 @@ describe("evidence submission workspace", () => {
           value: "evidence_submitted",
         }),
         expect.objectContaining({
-          label: "Disabled outbox",
+          label: "Held handoff",
           value: "n8n disabled",
         }),
         expect.objectContaining({
@@ -89,10 +91,26 @@ describe("evidence submission workspace", () => {
     );
     expect(workspace.submissionPacket?.blockedControls).toEqual(
       expect.arrayContaining([
-        "proof metadata save",
+        "proof summary save",
         "file upload",
-        "external send",
+        "external handoff",
       ]),
+    );
+  });
+
+  it("keeps committee members on the same member-owned proof submission surface", () => {
+    const actor = getMockLocalActorContext("committee.member@mymedlife.test");
+    const workspace = getEvidenceSubmissionWorkspace(actor);
+
+    expect(workspace.canReadWorkspace).toBe(true);
+    expect(workspace.title).toBe("Proof for your next action");
+    expect(workspace.nextSubmission).toEqual(
+      expect.objectContaining({
+        assignmentId: "share-rush-flyer",
+        actionHref: "/rush-month/actions/share-rush-flyer?source=evidence",
+        proofIntakeHref:
+          "/rush-month/actions/share-rush-flyer?step=submit&source=evidence#submit-evidence",
+      }),
     );
   });
 
@@ -100,7 +118,7 @@ describe("evidence submission workspace", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const workspace = getEvidenceSubmissionWorkspace(actor);
 
-    expect(workspace.title).toBe("Prepare and follow up proof");
+    expect(workspace.title).toBe("Proof follow-up board");
     expect(workspace.nextSubmission).toEqual(
       expect.objectContaining({
         assignmentId: "proof-pack",
@@ -119,7 +137,9 @@ describe("evidence submission workspace", () => {
     ).toEqual([
       ["open-home", "approved_internal"],
       ["assign-eboard", "waiting_review"],
-      ["member-push", "ready_to_submit"],
+      ["member-push", "action_not_ready"],
+      ["share-rush-flyer", "ready_to_submit"],
+      ["welcome-table", "waiting_review"],
       ["proof-pack", "changes_requested"],
     ]);
   });
@@ -128,7 +148,7 @@ describe("evidence submission workspace", () => {
     const actor = getMockLocalActorContext("coach@mymedlife.test");
     const workspace = getEvidenceSubmissionWorkspace(actor);
 
-    expect(workspace.title).toBe("Evidence submission posture");
+    expect(workspace.title).toBe("Proof follow-up signal");
     expect(workspace.nextSubmission).toBeNull();
     expect(
       workspace.rows.find((row) => row.assignmentId === "coach-summary"),
@@ -140,9 +160,9 @@ describe("evidence submission workspace", () => {
         disabledReason:
           "This local role can inspect the row but cannot submit proof for it.",
         disabledControls: expect.arrayContaining([
-          "proof metadata save",
+          "proof summary save",
           "file upload",
-          "external send",
+          "external handoff",
         ]),
       }),
     );
@@ -177,13 +197,15 @@ describe("evidence submission workspace", () => {
     ).toBe(true);
     expect(workspace.blockedWrites).toEqual(
       expect.arrayContaining([
-        "production proof metadata saves",
+        "proof summary saves",
         "file uploads",
-        "public proof publishing",
+        "broader proof publishing",
         "warehouse proof exports",
         "AI proof summaries",
       ]),
     );
-    expect(workspace.safetyNotes.join(" ")).toContain("metadata-only");
+    expect(workspace.safetyNotes.join(" ")).toContain(
+      "simple summary and link until storage, consent, audit, and rollback approvals are in place",
+    );
   });
 });
