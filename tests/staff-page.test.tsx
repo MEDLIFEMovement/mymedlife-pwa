@@ -551,6 +551,15 @@ describe("staff page", () => {
     expect(html).toContain("View integration events");
     expect(html).toContain("Open workflow registry");
     expect(html).toContain("Student view");
+    expect(html).toContain("Total Chapters");
+    expect(html).toContain("Active Users");
+    expect(html).toContain("Campaigns Running");
+    expect(html).toContain("Automation Jobs");
+    expect(html).toContain("User &amp; Role Management");
+    expect(html).toContain("Chapter Management");
+    expect(html).toContain("Campaign Templates");
+    expect(html).toContain("Audit Logs");
+    expect(html).toContain("Automation Outbox (n8n)");
     expect(html.indexOf("Student view")).toBeLessThan(html.indexOf("Admin Console"));
     expect(html).toContain("System health: 5 of 6 integrations active");
     expect(html.indexOf("Admin Console")).toBeLessThan(html.indexOf("Staff Command Center"));
@@ -561,6 +570,7 @@ describe("staff page", () => {
     expect(html).toContain('id="integration-status"');
     expect(html).not.toContain("Portfolio chapters");
     expect(html).not.toContain("Portfolio Overview");
+    expect(html).not.toContain("Permission Registry");
     expect(html).toContain(
       'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2F"',
     );

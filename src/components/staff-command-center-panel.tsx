@@ -1395,23 +1395,27 @@ function renderView(
         </section>
       );
     case "admin":
-      const adminSummaryCards = [
-        {
-          label: "Integrations",
-          value: `${commandCenter.adminWorkspace.integrationStatuses.length}`,
-          note: "Visible sync and system health checks",
-        },
-        {
-          label: "Failed jobs",
-          value: `${commandCenter.adminWorkspace.failedCount}`,
-          note: "Automation outbox rows needing review",
-        },
-        {
-          label: "Audit rows",
-          value: `${commandCenter.adminWorkspace.auditRows.length}`,
-          note: "Most recent review-safe audit records",
-        },
-      ];
+      const isMemberHomeAdminHandoff =
+        commandCenter.sourceContext?.eyebrow === "Member app handoff";
+      const adminSummaryCards = isMemberHomeAdminHandoff
+        ? commandCenter.adminWorkspace.handoffSummaryCards
+        : [
+            {
+              label: "Integrations",
+              value: `${commandCenter.adminWorkspace.integrationStatuses.length}`,
+              note: "Visible sync and system health checks",
+            },
+            {
+              label: "Failed jobs",
+              value: `${commandCenter.adminWorkspace.failedCount}`,
+              note: "Automation outbox rows needing review",
+            },
+            {
+              label: "Audit rows",
+              value: `${commandCenter.adminWorkspace.auditRows.length}`,
+              note: "Most recent review-safe audit records",
+            },
+          ];
       const adminStudentViewAction =
         commandCenter.sourceContext?.actions?.find((action) => action.label === "Student view") ??
         null;
@@ -1482,7 +1486,12 @@ function renderView(
                 </div>
               ) : null}
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div
+                className={[
+                  "grid gap-3",
+                  isMemberHomeAdminHandoff ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3",
+                ].join(" ")}
+              >
                 {adminSummaryCards.map((stat) => (
                   <ToplineMetricCard
                     key={stat.label}
@@ -1497,8 +1506,16 @@ function renderView(
 
           {options.adminPostHeroStrip ?? null}
 
-          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {commandCenter.adminWorkspace.backendLanes.map((lane) => (
+          <section
+            className={[
+              "grid gap-3",
+              isMemberHomeAdminHandoff ? "md:grid-cols-2 xl:grid-cols-3" : "md:grid-cols-2 xl:grid-cols-4",
+            ].join(" ")}
+          >
+            {(isMemberHomeAdminHandoff
+              ? commandCenter.adminWorkspace.handoffConsoleCards
+              : commandCenter.adminWorkspace.backendLanes
+            ).map((lane) => (
               <Link
                 key={lane.href}
                 href={lane.href}
@@ -1528,7 +1545,10 @@ function renderView(
             </SectionCard>
             </div>
 
-            <SectionCard eyebrow="Automation outbox" title="Automation Outbox">
+            <SectionCard
+              eyebrow="Automation outbox"
+              title={isMemberHomeAdminHandoff ? "Automation Outbox (n8n)" : "Automation Outbox"}
+            >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Pill
                   tone={
@@ -1555,7 +1575,10 @@ function renderView(
             </SectionCard>
           </section>
 
-          <SectionCard eyebrow="Audit log" title="Audit Log">
+          <SectionCard
+            eyebrow={isMemberHomeAdminHandoff ? "Audit logs" : "Audit log"}
+            title={isMemberHomeAdminHandoff ? "Audit Logs" : "Audit Log"}
+          >
             <div className="overflow-x-auto">
               <AdminDataTable
                 columns={["Actor", "Role", "Action", "Object", "Chapter", "Timestamp"]}

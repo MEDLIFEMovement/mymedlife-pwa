@@ -593,6 +593,12 @@ export type StaffAdminBackendLane = {
   href: string;
 };
 
+export type StaffAdminSummaryCard = {
+  label: string;
+  value: string;
+  note: string;
+};
+
 export type StaffOutboxSummary = {
   total: number;
   disabled: number;
@@ -608,6 +614,8 @@ export type StaffAdminWorkspace = {
   subtitle: string;
   timestampLabel: string;
   backendLanes: StaffAdminBackendLane[];
+  handoffSummaryCards: StaffAdminSummaryCard[];
+  handoffConsoleCards: StaffAdminBackendLane[];
   integrationStatuses: StaffAdminIntegrationStatus[];
   retryFailedHref: string;
   failedCount: number;
@@ -2173,7 +2181,7 @@ export function getStaffCommandCenter(
   const recognitionSummary = getMemberRecognitionSummary(actor, data);
   const adminSummary = getAdminControlCenterSummary(data);
   const outboxSummary = summarizeOutbox(data.outboxItems);
-  const adminWorkspace = getAdminWorkspace(data);
+  const adminWorkspace = getAdminWorkspace(data, adminSummary, outboxSummary);
   const preservedPortfolioFeedDraftId = feedAnalytics.selectedPostId
     ? selectedFeedDraftId
     : null;
@@ -5179,7 +5187,11 @@ function getAdminSignals(
   ];
 }
 
-function getAdminWorkspace(data: ReadOnlyAppData): StaffAdminWorkspace {
+function getAdminWorkspace(
+  data: ReadOnlyAppData,
+  adminSummary: ReturnType<typeof getAdminControlCenterSummary>,
+  outboxSummary: StaffOutboxSummary,
+): StaffAdminWorkspace {
   const fallbackIntegrationStatuses: StaffAdminIntegrationStatus[] = [
     {
       title: "HubSpot CRM",
@@ -5356,6 +5368,65 @@ function getAdminWorkspace(data: ReadOnlyAppData): StaffAdminWorkspace {
       timestampLabel: formatAdminTimestamp(row.created_at),
     }))
     : fallbackAuditRows;
+  const handoffSummaryCards: StaffAdminSummaryCard[] = [
+    {
+      label: "Total Chapters",
+      value: `${adminSummary.chapterCount}`,
+      note: "Current chapter scope visible to the admin handoff.",
+    },
+    {
+      label: "Active Users",
+      value: `${adminSummary.userCount}`,
+      note: "Named review personas available in this safe preview.",
+    },
+    {
+      label: "Campaigns Running",
+      value: `${data.campaign.status === "active" ? 1 : 0}`,
+      note: "Read-only live campaign context visible from the member jump.",
+    },
+    {
+      label: "Automation Jobs",
+      value: `${outboxSummary.total}`,
+      note: "Queued jobs stay reviewable while external sends remain off.",
+    },
+  ];
+  const handoffConsoleCards: StaffAdminBackendLane[] = [
+    {
+      eyebrow: "Access",
+      title: "User & Role Management",
+      summary:
+        "Review role coverage, landing routes, and safe actor switching before approving broader access changes.",
+      href: "/admin/permissions",
+    },
+    {
+      eyebrow: "Operations",
+      title: "Chapter Management",
+      summary:
+        "Inspect chapter inventory, ownership, and launch posture without opening write paths.",
+      href: "/admin/master-data",
+    },
+    {
+      eyebrow: "Campaigns",
+      title: "Campaign Templates",
+      summary:
+        "Open reusable campaign shells, SOP versions, and mock-safe workflow structure for current chapter operations.",
+      href: "/admin/sop-library",
+    },
+    {
+      eyebrow: "Governance",
+      title: "Audit Logs",
+      summary:
+        "Trace who reviewed what, when it changed, and which evidence remains visible for launch readiness.",
+      href: "/admin/audit-log",
+    },
+    {
+      eyebrow: "Automation",
+      title: "Automation Outbox (n8n)",
+      summary:
+        "Check replay posture, failed jobs, and integration safety without enabling live sends.",
+      href: "/admin/integration-outbox",
+    },
+  ];
 
   return {
     title: "System Health",
@@ -5394,6 +5465,8 @@ function getAdminWorkspace(data: ReadOnlyAppData): StaffAdminWorkspace {
         href: "/admin/sop-library",
       },
     ],
+    handoffSummaryCards,
+    handoffConsoleCards,
     integrationStatuses: fallbackIntegrationStatuses,
     retryFailedHref: "/admin/integration-outbox",
     failedCount: outboxRows.filter((row) => row.status === "failed").length,
@@ -6681,6 +6754,8 @@ function emptyStaffCommandCenter(): StaffCommandCenter {
       subtitle: "No admin review is visible for this role.",
       timestampLabel: "No admin review visible",
       backendLanes: [],
+      handoffSummaryCards: [],
+      handoffConsoleCards: [],
       integrationStatuses: [],
       retryFailedHref: "/admin/integration-outbox",
       failedCount: 0,

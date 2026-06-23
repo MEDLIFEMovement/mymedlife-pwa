@@ -578,6 +578,19 @@ describe("staff command center", () => {
       label: "View integration events",
       href: "/staff?view=admin&source=member_home#integration-status",
     });
+    expect(commandCenter.adminWorkspace.handoffSummaryCards.map((card) => card.label)).toEqual([
+      "Total Chapters",
+      "Active Users",
+      "Campaigns Running",
+      "Automation Jobs",
+    ]);
+    expect(commandCenter.adminWorkspace.handoffConsoleCards.map((lane) => lane.title)).toEqual([
+      "User & Role Management",
+      "Chapter Management",
+      "Campaign Templates",
+      "Audit Logs",
+      "Automation Outbox (n8n)",
+    ]);
     expect(commandCenter.viewOptions.find((item) => item.key === "admin")?.href).toContain(
       "source=member_home",
     );
@@ -710,6 +723,31 @@ describe("staff command center", () => {
     expect(html).not.toContain("Why this admin surface is still safe to review");
     expect(html).not.toContain("What is healthy, degraded, or mock-safe?");
     expect(html).not.toContain("What is reviewable before writes are approved?");
+  });
+
+  it("renders the member-home admin handoff with the figma-aligned admin console cards", () => {
+    const admin = getMockLocalActorContext("admin@mymedlife.test");
+    const commandCenter = getStaffCommandCenter(admin, data, {
+      view: "admin",
+      source: "member_home",
+    });
+
+    const html = renderToStaticMarkup(
+      createElement(StaffCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(html).toContain("Total Chapters");
+    expect(html).toContain("Active Users");
+    expect(html).toContain("Campaigns Running");
+    expect(html).toContain("Automation Jobs");
+    expect(html).toContain("User &amp; Role Management");
+    expect(html).toContain("Chapter Management");
+    expect(html).toContain("Campaign Templates");
+    expect(html).toContain("Audit Logs");
+    expect(html).toContain("Automation Outbox (n8n)");
+    expect(html).toContain("Integration Status");
+    expect(html).not.toContain("Permission Registry");
+    expect(html).not.toContain("Committee Registry");
   });
 
   it("renders the chapters view with no drawer by default and an overlay drawer when selected", () => {
