@@ -1306,7 +1306,7 @@ function renderView(
           ) : null}
           {commandCenter.activeQuickAction === "create_impact_bridge_video" ? (
             <SectionCard
-              eyebrow="Create Bridge Video"
+              eyebrow="Share Bridge Video"
               title="Start from the impact dashboard, then open the bridge-video lane."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -1369,7 +1369,7 @@ function renderView(
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
                 >
-                  Create Bridge Video
+                  Share Bridge Video
                 </Link>
               </div>
             </div>
@@ -1407,7 +1407,7 @@ function renderView(
                       })}
                       className="inline-flex rounded-full border border-[#93c5fd] bg-white px-4 py-2 text-sm font-semibold text-[#0b5fc4]"
                     >
-                      Create Bridge Video
+                      Share Bridge Video
                     </Link>
                   </div>
                 </div>

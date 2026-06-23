@@ -1365,7 +1365,7 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Impact Dashboard");
     expect(markup).toContain("This is why we do this. Real people. Real change.");
     expect(markup).toContain("Share Impact Story");
-    expect(markup).toContain("Create Bridge Video");
+    expect(markup).toContain("Share Bridge Video");
     expect(markup).toContain(
       "/chapter?view=impact&amp;quickAction=share_impact_story",
     );
@@ -1444,6 +1444,24 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(
       "href=\"/chapter?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains\"",
     );
+  });
+
+  it("keeps the impact-owned bridge-video handoff labeled as Share Bridge Video", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "impact",
+      memberId: "member-ivy",
+      impactStory: "impact-moving-mountains",
+      quickAction: "create_impact_bridge_video",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(commandCenter.activeQuickAction).toBe("create_impact_bridge_video");
+    expect(markup).toContain("Share Bridge Video");
+    expect(markup).not.toContain("Create Bridge Video");
+    expect(markup).toContain("Open bridge-video lane");
   });
 
   it("keeps the selected impact story attached to the Share Bridge Video quick action", () => {

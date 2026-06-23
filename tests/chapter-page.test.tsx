@@ -735,7 +735,7 @@ describe("chapter page", () => {
     );
     expect(html).toContain("Impact");
     expect(html).not.toContain("Impact Dashboard");
-    expect(html).toContain("Create Bridge Video");
+    expect(html).toContain("Share Bridge Video");
     expect(html).not.toContain("Story in focus");
     expect(html).toContain("/chapter?view=impact&amp;quickAction=share_impact_story");
     expect(html).toContain("Local Community Impact");
@@ -774,6 +774,34 @@ describe("chapter page", () => {
       "/chapter?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains",
     );
     expect(html).not.toContain("Mock-seeded review data");
+  });
+
+  it("keeps the impact-owned bridge-video handoff labeled as Share Bridge Video", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing chapter impact bridge-video handoff label."),
+    );
+
+    const { default: ChapterPage } = await import("@/app/chapter/page");
+    const html = renderToStaticMarkup(
+      await ChapterPage({
+        searchParams: Promise.resolve({
+          view: "impact",
+          member: "member-ivy",
+          impactStory: "impact-moving-mountains",
+          quickAction: "create_impact_bridge_video",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Share Bridge Video");
+    expect(html).not.toContain("Create Bridge Video");
+    expect(html).toContain("Open bridge-video lane");
   });
 
   it("lets the create-event quick action open as an events-owned chapter state", async () => {
