@@ -46,6 +46,9 @@ Verified recent parity passes:
   support-notes route heading
 - staff: campaigns, proof queue, feed studio, feed analytics, hubspot,
   best-practices, and admin/system-health route headings
+- SLT traveler: forms now leads with `Required Forms Hub`, meetings now leads
+  with `Pre-Trip Meetings`, and both routes keep the selected traveler context
+  in their packet-safe handoffs
 - branch baseline: `pnpm test`, `pnpm lint`, `pnpm typecheck`, and
   `pnpm build` all passed on the current branch after these parity slices
 
@@ -56,8 +59,10 @@ What this implies for the next implementation slices:
 - the member route family also clears its focused route suite, so next member
   passes should prioritize first-viewport hierarchy and route-identity cleanup
   over proving the existence of the top-level routes again
-- the next SLT passes should focus on traveler packet naming and route-context
-  parity where the packet is still more explicit than the current headings
+- the next SLT passes should focus on the remaining traveler packet routes
+  where the packet is still more explicit than the current local wording,
+  especially payments, extensions, and any selected-traveler handoff copy that
+  still reads generically
 - SOP builder remains its own backend-lane parity track and should stay
   separated from the command-center route-title cleanup work
 - when a remaining gap is discovered inside a verified family, keep the next

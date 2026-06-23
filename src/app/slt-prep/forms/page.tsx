@@ -79,11 +79,11 @@ export default async function SltPrepFormsPage({
               Required forms
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">
-              Forms hub for {workspace.traveler.firstName}
+              Required Forms Hub
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-              Keep forms simple: what is done, what is waiting for review, and what still needs
-              a human signature before departure.
+              Keep {workspace.traveler.firstName}'s forms simple: what is done, what is waiting
+              for review, and what still needs a human signature before departure.
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
               <FormsHeroStat label="Forms" value={`${workspace.traveler.forms.length}`} />

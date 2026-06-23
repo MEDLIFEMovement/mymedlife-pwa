@@ -42,7 +42,7 @@ describe("slt prep forms page", () => {
     const { default: SltPrepFormsPage } = await import("@/app/slt-prep/forms/page");
     const html = renderToStaticMarkup(await SltPrepFormsPage({}));
 
-    expect(html).toContain("Forms hub for Sofia");
+    expect(html).toContain("Required Forms Hub");
     expect(html).toContain("Review queue");
     expect(html).toContain("Submitted and review-ready forms");
     expect(html).toContain("Current blocker");
@@ -77,7 +77,7 @@ describe("slt prep forms page", () => {
       }),
     );
 
-    expect(html).toContain("Forms hub for Daniel");
+    expect(html).toContain("Required Forms Hub");
     expect(html).toContain("/slt-prep/checklist?traveler=daniel-kim");
     expect(html).toContain("/slt-prep/staff?traveler=daniel-kim");
     expect(html).toContain("/slt-prep/checklist/medical-clearance?source=forms&amp;traveler=daniel-kim");

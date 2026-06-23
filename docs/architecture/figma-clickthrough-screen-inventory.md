@@ -1397,6 +1397,12 @@ Current parity note:
 - `/slt-prep/notifications` should lead with `Notifications`,
   `Recent Notifications`, and `Communication Preferences` rather than
   review-only explainer cards
+- `/slt-prep/forms` now should lead with `Required Forms Hub` and keep the
+  traveler-specific context in supporting copy instead of putting the traveler
+  name into the route title itself
+- `/slt-prep/meetings` now should lead with `Pre-Trip Meetings` and keep the
+  traveler-specific context in supporting copy so the route reads like the
+  packet label first and the selected traveler second
 - `/slt-prep/forms`, `/slt-prep/payments`, `/slt-prep/meetings`, and
   `/slt-prep/extensions` should stay inside that same traveler packet instead
   of dropping a selected traveler back to generic subpages

@@ -79,11 +79,11 @@ export default async function SltPrepMeetingsPage({
               Pre-trip meetings
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">
-              Meeting plan for {workspace.traveler.firstName}
+              Pre-Trip Meetings
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-              Keep the traveler clear on what they already attended, what is coming next, and what
-              would eventually sync from Luma after approval.
+              Keep {workspace.traveler.firstName} clear on what they already attended, what is
+              coming next, and what would eventually sync from Luma after approval.
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
               <MeetingsHeroStat label="Meetings" value={`${workspace.traveler.meetings.length}`} />

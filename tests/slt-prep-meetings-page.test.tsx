@@ -42,7 +42,7 @@ describe("slt prep meetings page", () => {
     const { default: SltPrepMeetingsPage } = await import("@/app/slt-prep/meetings/page");
     const html = renderToStaticMarkup(await SltPrepMeetingsPage({}));
 
-    expect(html).toContain("Meeting plan for Sofia");
+    expect(html).toContain("Pre-Trip Meetings");
     expect(html).toContain("Meeting status");
     expect(html).toContain("Attended and upcoming sessions");
     expect(html).toContain("Current blocker");
@@ -72,7 +72,7 @@ describe("slt prep meetings page", () => {
       }),
     );
 
-    expect(html).toContain("Meeting plan for Daniel");
+    expect(html).toContain("Pre-Trip Meetings");
     expect(html).toContain("/slt-prep/profile?traveler=daniel-kim");
     expect(html).toContain("/slt-prep/checklist/orientation-rsvp?source=meetings&amp;traveler=daniel-kim");
   });
