@@ -1,12 +1,18 @@
 import { campaignShells } from "@/data/mock-campaigns";
 import { mockChapter } from "@/data/mock-rush-month";
+import type { CanonicalRole } from "@/services/canonical-role-scope";
 import {
   getMockLocalActorContext,
   localActorOptions,
+  type LocalActorContext,
   type LocalActorOption,
 } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import type { ActorAudience } from "@/services/local-actor-context";
+import {
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import { getWriteSequencePlanner } from "@/services/write-sequence-planner";
 import type { CampaignShellStatus } from "@/shared/types/campaigns";
 
@@ -40,6 +46,8 @@ export type AdminSystemHealthItem = {
 export type AdminRoleCoverageItem = {
   role: string;
   audience: ActorAudience;
+  surfaceFamily: ActorSurfaceFamily;
+  primaryCanonicalRole: CanonicalRole;
   localActorEmail: string | null;
   status: AdminControlStatus;
   detail: string;
@@ -59,6 +67,8 @@ export type AdminUserInventoryItem = {
   email: string;
   displayName: string;
   audience: ActorAudience;
+  surfaceFamily: ActorSurfaceFamily;
+  primaryCanonicalRole: CanonicalRole;
   chapterRoles: readonly string[];
   staffRoles: readonly string[];
   chapterNames: readonly string[];
@@ -119,23 +129,30 @@ export function getAdminControlCenterSummary(
   data: ReadOnlyAppData,
   actors: readonly LocalActorOption[] = localActorOptions,
 ): AdminControlCenterSummary {
-  const roleAudienceCount = new Set(actors.map((actor) => actor.audience)).size;
-  const roleCoverage = getRequiredRoleCoverage(actors);
+  const resolvedActors = getResolvedLocalActors(actors);
+  const roleAudienceCount = new Set(
+    resolvedActors.map((actor) => getActorSurfaceFamily(actor)),
+  ).size;
+  const roleCoverage = getRequiredRoleCoverage(resolvedActors);
   const namedRoleCount = roleCoverage.filter((item) => item.status !== "blocked").length;
   const disabledOutboxCount = data.outboxItems.filter((item) => {
     return item.status === "disabled";
   }).length;
   const auditLogCount = data.auditLogs.length;
   const operatingResponsibilities = getAdminOperatingResponsibilities(data);
-  const masterDataInventory = getAdminMasterDataInventory(data, actors, roleCoverage);
+  const masterDataInventory = getAdminMasterDataInventory(
+    data,
+    resolvedActors,
+    roleCoverage,
+  );
   const areas = [
     {
       key: "users",
       title: "Users",
       status: "mock_only",
-      primaryMetric: `${actors.length} fake users`,
+      primaryMetric: `${resolvedActors.length} fake users`,
       detail:
-        "Local actor switching covers member, action committee, leader, coach, admin, DS admin, and super admin personas.",
+        "Local actor switching covers member, traveler, chapter leadership, coach, sales, admin, DS admin, and super admin personas.",
       nextAction:
         "Replace fake users with Supabase Auth profiles only after live auth approval.",
     },
@@ -209,7 +226,7 @@ export function getAdminControlCenterSummary(
     canWriteAdminChanges: false,
     productionAuthEnabled: false,
     externalWritesEnabled: false,
-    userCount: actors.length,
+    userCount: resolvedActors.length,
     chapterCount: 1,
     campaignTemplateCount: campaignShells.length,
     roleAudienceCount,
@@ -220,20 +237,22 @@ export function getAdminControlCenterSummary(
     operatingResponsibilities,
     masterDataInventory,
     areas,
-    healthItems: getAdminSystemHealthItems(data, actors, roleCoverage),
+    healthItems: getAdminSystemHealthItems(data, resolvedActors, roleCoverage),
   };
 }
 
 function getAdminMasterDataInventory(
   data: ReadOnlyAppData,
-  actors: readonly LocalActorOption[],
+  actors: readonly LocalActorContext[],
   roleCoverage: readonly AdminRoleCoverageItem[],
 ): AdminMasterDataInventory {
   return {
     users: actors.map((actor) => ({
-      email: actor.email,
-      displayName: actor.displayName,
+      email: actor.selectedEmail,
+      displayName: actor.user.displayName,
       audience: actor.audience,
+      surfaceFamily: getActorSurfaceFamily(actor),
+      primaryCanonicalRole: actor.primaryCanonicalRole,
       chapterRoles: actor.chapterRoles,
       staffRoles: actor.staffRoles,
       chapterNames: actor.chapterNames,
@@ -296,12 +315,14 @@ function getAdminOperatingResponsibilities(
 export function getAudienceLabels(
   actors: readonly LocalActorOption[] = localActorOptions,
 ): ActorAudience[] {
-  return Array.from(new Set(actors.map((actor) => actor.audience)));
+  return Array.from(
+    new Set(getResolvedLocalActors(actors).map((actor) => actor.audience)),
+  );
 }
 
 function getAdminSystemHealthItems(
   data: ReadOnlyAppData,
-  actors: readonly LocalActorOption[],
+  actors: readonly LocalActorContext[],
   roleCoverage: readonly AdminRoleCoverageItem[],
 ): AdminSystemHealthItem[] {
   const hasRequiredRoleCoverage = roleCoverage.every((item) => item.status !== "blocked");
@@ -340,23 +361,28 @@ function getAdminSystemHealthItems(
 }
 
 function getRequiredRoleCoverage(
-  actors: readonly LocalActorOption[],
+  actors: readonly LocalActorContext[],
 ): AdminRoleCoverageItem[] {
   return requiredRoleDefinitions.map((definition) => {
     const actor = actors.find((item) => {
       return (
         item.audience === definition.audience &&
-        [...item.chapterRoles, ...item.staffRoles].includes(definition.role)
+        (
+          [...item.chapterRoles, ...item.staffRoles].includes(definition.role) ||
+          item.primaryCanonicalRole === definition.primaryCanonicalRole
+        )
       );
     });
 
     return {
       role: definition.role,
       audience: definition.audience,
-      localActorEmail: actor?.email ?? null,
+      surfaceFamily: actor ? getActorSurfaceFamily(actor) : definition.surfaceFamily,
+      primaryCanonicalRole: definition.primaryCanonicalRole,
+      localActorEmail: actor?.selectedEmail ?? null,
       status: actor ? "ready_readonly" : "blocked",
       detail: actor
-        ? `${actor.displayName} previews ${definition.role} permissions locally.`
+        ? `${actor.user.displayName} previews ${definition.role} permissions locally.`
         : `No local actor previews ${definition.role} yet.`,
     };
   });
@@ -366,37 +392,95 @@ const requiredRoleDefinitions = [
   {
     role: "General Member",
     audience: "chapter_member",
+    surfaceFamily: "member",
+    primaryCanonicalRole: "student_member",
+  },
+  {
+    role: "Traveler",
+    audience: "chapter_member",
+    surfaceFamily: "member",
+    primaryCanonicalRole: "traveler",
   },
   {
     role: "Action Committee Member",
     audience: "chapter_member",
+    surfaceFamily: "member",
+    primaryCanonicalRole: "committee_member",
   },
   {
     role: "Action Committee Chair",
     audience: "chapter_leader",
+    surfaceFamily: "leader",
+    primaryCanonicalRole: "committee_chair",
   },
   {
     role: "E-Board Member",
     audience: "chapter_leader",
+    surfaceFamily: "leader",
+    primaryCanonicalRole: "eboard_officer",
   },
   {
     role: "President / VP",
     audience: "chapter_leader",
+    surfaceFamily: "leader",
+    primaryCanonicalRole: "president",
+  },
+  {
+    role: "Vice President",
+    audience: "chapter_leader",
+    surfaceFamily: "leader",
+    primaryCanonicalRole: "vice_president",
   },
   {
     role: "Coach",
     audience: "coach",
+    surfaceFamily: "coach",
+    primaryCanonicalRole: "coach",
+  },
+  {
+    role: "Sales Coach",
+    audience: "coach",
+    surfaceFamily: "coach",
+    primaryCanonicalRole: "sales_coach",
   },
   {
     role: "Admin",
     audience: "admin",
+    surfaceFamily: "staff",
+    primaryCanonicalRole: "department_staff",
+  },
+  {
+    role: "Sales Admin",
+    audience: "admin",
+    surfaceFamily: "staff",
+    primaryCanonicalRole: "sales_admin",
   },
   {
     role: "DS Admin",
     audience: "ds_admin",
+    surfaceFamily: "ds_admin",
+    primaryCanonicalRole: "ds_admin",
   },
   {
     role: "Super Admin",
     audience: "super_admin",
+    surfaceFamily: "super_admin",
+    primaryCanonicalRole: "super_admin",
   },
-] as const satisfies readonly { role: string; audience: ActorAudience }[];
+] as const satisfies readonly {
+  role: string;
+  audience: ActorAudience;
+  surfaceFamily: ActorSurfaceFamily;
+  primaryCanonicalRole: CanonicalRole;
+}[];
+
+function getResolvedLocalActors(
+  actors: readonly LocalActorOption[],
+): readonly LocalActorContext[] {
+  return actors.map((actor) => {
+    return getMockLocalActorContext(
+      actor.email,
+      "Admin control center resolved mock actor context.",
+    );
+  });
+}

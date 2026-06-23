@@ -1,7 +1,13 @@
 import { campaignShells } from "@/data/mock-campaigns";
+import type { CanonicalRole } from "@/services/canonical-role-scope";
 import type { LocalActorContext, LocalActorOption } from "@/services/local-actor-context";
-import { localActorOptions } from "@/services/local-actor-context";
+import { getMockLocalActorContext, localActorOptions } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { ActorAudience } from "@/services/local-actor-context";
 import type { CampaignShellStatus } from "@/shared/types/campaigns";
 
@@ -11,6 +17,8 @@ export type AdminUserInventoryItem = {
   email: string;
   displayName: string;
   audience: ActorAudience;
+  surfaceFamily: ActorSurfaceFamily;
+  primaryCanonicalRole: CanonicalRole;
   chapterRoles: readonly string[];
   staffRoles: readonly string[];
   chapterNames: readonly string[];
@@ -22,6 +30,8 @@ export type AdminUserInventoryItem = {
 export type AdminRoleCoverageItem = {
   role: string;
   audience: ActorAudience;
+  surfaceFamily: ActorSurfaceFamily;
+  primaryCanonicalRole: CanonicalRole;
   localActorEmail: string | null;
   status: AdminControlStatus;
   detail: string;
@@ -129,10 +139,12 @@ export function getAdminMasterDataWorkspace(
 function getUserInventory(
   actors: readonly LocalActorOption[],
 ): readonly AdminUserInventoryItem[] {
-  return actors.map((actor) => ({
-    email: actor.email,
-    displayName: actor.displayName,
+  return getResolvedLocalActors(actors).map((actor) => ({
+    email: actor.selectedEmail,
+    displayName: actor.user.displayName,
     audience: actor.audience,
+    surfaceFamily: getActorSurfaceFamily(actor),
+    primaryCanonicalRole: actor.primaryCanonicalRole,
     chapterRoles: actor.chapterRoles,
     staffRoles: actor.staffRoles,
     chapterNames: actor.chapterNames,
@@ -179,51 +191,54 @@ function getCampaignTemplateInventory(): readonly AdminCampaignTemplateInventory
 function getRequiredRoleCoverage(
   actors: readonly LocalActorOption[],
 ): readonly AdminRoleCoverageItem[] {
+  const resolvedActors = getResolvedLocalActors(actors);
+
   return requiredRoleDefinitions.map((definition) => {
-    const actor = actors.find((item) => {
+    const actor = resolvedActors.find((item) => {
       return (
         item.audience === definition.audience &&
-        [...item.chapterRoles, ...item.staffRoles].includes(definition.role)
+        (
+          [...item.chapterRoles, ...item.staffRoles].includes(definition.role) ||
+          item.primaryCanonicalRole === definition.primaryCanonicalRole
+        )
       );
     });
 
     return {
       role: definition.role,
       audience: definition.audience,
-      localActorEmail: actor?.email ?? null,
+      surfaceFamily: actor ? getActorSurfaceFamily(actor) : definition.surfaceFamily,
+      primaryCanonicalRole: definition.primaryCanonicalRole,
+      localActorEmail: actor?.selectedEmail ?? null,
       status: actor ? "ready_readonly" : "blocked",
       detail: actor
-        ? `${actor.displayName} previews ${definition.role} permissions locally.`
+        ? `${actor.user.displayName} previews ${definition.role} permissions locally.`
         : `No local actor previews ${definition.role} yet.`,
     };
   });
 }
 
 function canReadAdminMasterData(actor: LocalActorContext): boolean {
-  return (
-    actor.audience === "admin" ||
-    actor.audience === "ds_admin" ||
-    actor.audience === "super_admin"
-  );
+  return canReadAdminReviewSurface(actor);
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+  switch (getActorSurfaceFamily(actor)) {
+    case "staff":
       return "Admin master data inventory";
     case "ds_admin":
       return "DS Admin master data safety inventory";
     case "super_admin":
       return "Full master data inventory";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Master data hidden for this role";
   }
 }
 
 function getNextStep(actor: LocalActorContext): AdminMasterDataWorkspace["nextStep"] {
-  if (actor.audience === "ds_admin") {
+  if (getActorSurfaceFamily(actor) === "ds_admin") {
     return {
       label: "Open admin safety",
       href: "/admin",
@@ -273,37 +288,95 @@ const requiredRoleDefinitions = [
   {
     role: "General Member",
     audience: "chapter_member",
+    surfaceFamily: "member",
+    primaryCanonicalRole: "student_member",
+  },
+  {
+    role: "Traveler",
+    audience: "chapter_member",
+    surfaceFamily: "member",
+    primaryCanonicalRole: "traveler",
   },
   {
     role: "Action Committee Member",
     audience: "chapter_member",
+    surfaceFamily: "member",
+    primaryCanonicalRole: "committee_member",
   },
   {
     role: "Action Committee Chair",
     audience: "chapter_leader",
+    surfaceFamily: "leader",
+    primaryCanonicalRole: "committee_chair",
   },
   {
     role: "E-Board Member",
     audience: "chapter_leader",
+    surfaceFamily: "leader",
+    primaryCanonicalRole: "eboard_officer",
   },
   {
     role: "President / VP",
     audience: "chapter_leader",
+    surfaceFamily: "leader",
+    primaryCanonicalRole: "president",
+  },
+  {
+    role: "Vice President",
+    audience: "chapter_leader",
+    surfaceFamily: "leader",
+    primaryCanonicalRole: "vice_president",
   },
   {
     role: "Coach",
     audience: "coach",
+    surfaceFamily: "coach",
+    primaryCanonicalRole: "coach",
+  },
+  {
+    role: "Sales Coach",
+    audience: "coach",
+    surfaceFamily: "coach",
+    primaryCanonicalRole: "sales_coach",
   },
   {
     role: "Admin",
     audience: "admin",
+    surfaceFamily: "staff",
+    primaryCanonicalRole: "department_staff",
+  },
+  {
+    role: "Sales Admin",
+    audience: "admin",
+    surfaceFamily: "staff",
+    primaryCanonicalRole: "sales_admin",
   },
   {
     role: "DS Admin",
     audience: "ds_admin",
+    surfaceFamily: "ds_admin",
+    primaryCanonicalRole: "ds_admin",
   },
   {
     role: "Super Admin",
     audience: "super_admin",
+    surfaceFamily: "super_admin",
+    primaryCanonicalRole: "super_admin",
   },
-] as const satisfies readonly { role: string; audience: ActorAudience }[];
+] as const satisfies readonly {
+  role: string;
+  audience: ActorAudience;
+  surfaceFamily: ActorSurfaceFamily;
+  primaryCanonicalRole: CanonicalRole;
+}[];
+
+function getResolvedLocalActors(
+  actors: readonly LocalActorOption[],
+): readonly LocalActorContext[] {
+  return actors.map((actor) => {
+    return getMockLocalActorContext(
+      actor.email,
+      "Admin master data resolved mock actor context.",
+    );
+  });
+}

@@ -1,0 +1,85 @@
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+
+import { getMockLocalActorContext } from "@/services/local-actor-context";
+import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/admin/sop-library",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("@/services/local-actor-context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services/local-actor-context")>();
+
+  return {
+    ...actual,
+    getLocalActorContext: vi.fn(),
+  };
+});
+
+vi.mock("@/services/read-only-app-data", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services/read-only-app-data")>();
+
+  return {
+    ...actual,
+    getReadOnlyAppData: vi.fn(),
+  };
+});
+
+describe("admin SOP library page", () => {
+  it("renders route-owned search and filter controls for the library", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP library page."),
+    );
+
+    const { default: AdminSopLibraryPage } = await import("@/app/admin/sop-library/page");
+    const html = renderToStaticMarkup(
+      await AdminSopLibraryPage({
+        searchParams: Promise.resolve({
+          focus: "rush-month",
+          query: "rush",
+          status: "draft",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Backend route family");
+    expect(html).toContain('href="/admin/permissions"');
+    expect(html).toContain('href="/admin/committees"');
+    expect(html).toContain('href="/admin/workflows"');
+    expect(html).toContain('href="/admin/sop-library"');
+    expect(html).toContain("Campaign SOP Library");
+    expect(html).toContain("New Campaign SOP");
+    expect(html).toContain("Current library focus");
+    expect(html).toContain("Total SOPs");
+    expect(html).toContain("In Draft / Scheduled");
+    expect(html).toContain("modeled rules");
+    expect(html).toContain("Search and filter campaign definitions");
+    expect(html).toContain("Apply search");
+    expect(html).toContain("Active result set");
+    expect(html).toContain("Showing 1 of");
+    expect(html).toContain("Search query: rush");
+    expect(html).toContain("Status filters");
+    expect(html).toContain(">Draft<");
+    expect(html).toContain("Rush Month");
+    expect(html).toContain("Selected in library");
+    expect(html).toContain('href="/admin/sop-library?focus=rush-month&amp;query=rush&amp;status=draft"');
+    expect(html).toContain("Selected</a>");
+    expect(html).toContain("Builder entry points");
+    expect(html).toContain('href="/admin/sop-builder/rush-month?tab=steps"');
+    expect(html).toContain('href="/admin/sop-builder/rush-month?tab=role-matrix"');
+    expect(html).toContain('href="/admin/sop-builder/rush-month?tab=preview"');
+    expect(html).toContain('href="/admin/sop-builder/rush-month?tab=version"');
+    expect(html).not.toContain("Leadership Transition");
+    expect(html).toContain("Last Edited By");
+    expect(html).toContain("Last Published");
+    expect(html).toContain('/admin/sop-library?focus=rush-month&amp;query=rush&amp;status=draft');
+  });
+});

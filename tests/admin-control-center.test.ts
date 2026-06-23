@@ -34,7 +34,7 @@ describe("admin control center", () => {
 
     expect(summary.userCount).toBe(localActorOptions.length);
     expect(summary.roleAudienceCount).toBe(6);
-    expect(summary.namedRoleCount).toBe(9);
+    expect(summary.namedRoleCount).toBe(13);
     expect(summary.campaignTemplateCount).toBe(campaignShells.length);
     expect(summary.disabledOutboxCount).toBe(
       data.outboxItems.filter((item) => item.status === "disabled").length,
@@ -74,6 +74,8 @@ describe("admin control center", () => {
       expect.objectContaining({
         displayName: "Priya President",
         audience: "chapter_leader",
+        surfaceFamily: "leader",
+        primaryCanonicalRole: "president",
         chapterRoles: ["President / VP"],
         status: "mock_only",
       }),
@@ -87,12 +89,16 @@ describe("admin control center", () => {
 
     expect(summary.roleCoverage.map((item) => item.role)).toEqual([
       "General Member",
+      "Traveler",
       "Action Committee Member",
       "Action Committee Chair",
       "E-Board Member",
       "President / VP",
+      "Vice President",
       "Coach",
+      "Sales Coach",
       "Admin",
+      "Sales Admin",
       "DS Admin",
       "Super Admin",
     ]);
@@ -104,6 +110,8 @@ describe("admin control center", () => {
     ).toEqual(
       expect.objectContaining({
         audience: "chapter_member",
+        surfaceFamily: "member",
+        primaryCanonicalRole: "committee_member",
         localActorEmail: "committee.member@mymedlife.test",
       }),
     );
@@ -112,18 +120,24 @@ describe("admin control center", () => {
     ).toEqual(
       expect.objectContaining({
         audience: "chapter_leader",
+        surfaceFamily: "leader",
+        primaryCanonicalRole: "committee_chair",
         localActorEmail: "committee.chair@mymedlife.test",
       }),
     );
     expect(summary.roleCoverage.find((item) => item.role === "E-Board Member")).toEqual(
       expect.objectContaining({
         audience: "chapter_leader",
+        surfaceFamily: "leader",
+        primaryCanonicalRole: "eboard_officer",
         localActorEmail: "eboard.a@mymedlife.test",
       }),
     );
     expect(summary.roleCoverage.find((item) => item.role === "President / VP")).toEqual(
       expect.objectContaining({
         audience: "chapter_leader",
+        surfaceFamily: "leader",
+        primaryCanonicalRole: "president",
         localActorEmail: "leader.a@mymedlife.test",
       }),
     );

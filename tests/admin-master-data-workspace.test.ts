@@ -15,8 +15,8 @@ describe("admin master data workspace", () => {
     expect(workspace.title).toBe("Admin master data inventory");
     expect(workspace.nextStep.href).toBe("/onboarding");
     expect(workspace.counts).toEqual({
-      users: 9,
-      roles: 9,
+      users: 13,
+      roles: 13,
       chapters: 1,
       campaignTemplates: campaignShells.length,
       mutationControlsEnabled: 0,
@@ -26,19 +26,41 @@ describe("admin master data workspace", () => {
     expect(workspace.users.map((user) => user.email)).toContain(
       "leader.a@mymedlife.test",
     );
+    expect(
+      workspace.users.find((user) => user.email === "leader.a@mymedlife.test"),
+    ).toEqual(
+      expect.objectContaining({
+        displayName: "Priya President",
+        audience: "chapter_leader",
+        surfaceFamily: "leader",
+        primaryCanonicalRole: "president",
+      }),
+    );
     expect(workspace.roles.map((role) => role.role)).toEqual([
       "General Member",
+      "Traveler",
       "Action Committee Member",
       "Action Committee Chair",
       "E-Board Member",
       "President / VP",
+      "Vice President",
       "Coach",
+      "Sales Coach",
       "Admin",
+      "Sales Admin",
       "DS Admin",
       "Super Admin",
     ]);
     expect(workspace.campaignTemplates.map((template) => template.slug)).toContain(
       "rush-month",
+    );
+    expect(workspace.roles.find((role) => role.role === "Admin")).toEqual(
+      expect.objectContaining({
+        audience: "admin",
+        surfaceFamily: "staff",
+        primaryCanonicalRole: "department_staff",
+        localActorEmail: "admin@mymedlife.test",
+      }),
     );
   });
 
@@ -61,10 +83,14 @@ describe("admin master data workspace", () => {
 
   it("hides master data from chapter and coach operating roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getAdminMasterDataWorkspace(member, data).canReadWorkspace).toBe(false);
+    expect(getAdminMasterDataWorkspace(committeeMember, data).canReadWorkspace).toBe(false);
+    expect(getAdminMasterDataWorkspace(committeeChair, data).canReadWorkspace).toBe(false);
     expect(getAdminMasterDataWorkspace(leader, data).canReadWorkspace).toBe(false);
     expect(getAdminMasterDataWorkspace(coach, data).canReadWorkspace).toBe(false);
   });
