@@ -89,10 +89,14 @@ as inert buttons.
 
 Latest local verification on this branch:
 
-- `pnpm test`: `178` test files passed, `1104` tests passed
+- `pnpm test`: `179` test files passed, `1106` tests passed
 - `pnpm typecheck`: passed
 - `pnpm lint`: passed
 - `pnpm build`: passed
+
+Browser spot-checks on 2026-06-23 also confirmed the member profile,
+submit-evidence, points, events, and chapter leadership surfaces in their live
+local routes.
 
 This matters because the branch started this packet-parity pass with broad test
 drift across shared assignment, proof, points/KPI, and shell expectations.
