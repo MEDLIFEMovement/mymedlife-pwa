@@ -168,6 +168,15 @@ describe("admin SOP builder page", () => {
     expect(html).toContain(
       'href="/admin/sop-builder/rush-month?tab=version&amp;focus=current-version&amp;mode=rollback"',
     );
+    expect(html).toContain("Current draft");
+    expect(html).toContain("Current live version");
+    expect(
+      (
+        html.match(
+          /href="\/admin\/sop-builder\/rush-month\?tab=version&amp;focus=current-version"/g,
+        ) ?? []
+      ).length,
+    ).toBeGreaterThanOrEqual(3);
   });
 
   it("opens preview scenarios through role-correct local preview handoffs", async () => {

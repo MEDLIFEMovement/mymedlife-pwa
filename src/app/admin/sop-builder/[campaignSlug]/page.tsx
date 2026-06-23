@@ -1940,6 +1940,7 @@ function VersionReviewSection(props: {
   const liveVersion =
     props.definition.version.history.find((entry) => entry.state === "approved_template") ??
     null;
+  const currentVersionSelected = props.focusWorkspace.selected?.id === "current-version";
 
   return (
     <section className="grid gap-4">
@@ -2017,6 +2018,14 @@ function VersionReviewSection(props: {
             <Pill>{props.definition.builderStatus.replaceAll("_", " ")}</Pill>
             <Pill>{props.definition.lastEditedBy}</Pill>
           </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <BuilderFocusLink
+              campaignSlug={props.definition.slug}
+              tab="version"
+              focusId="current-version"
+              selected={currentVersionSelected}
+            />
+          </div>
         </article>
 
         <article className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
@@ -2033,6 +2042,14 @@ function VersionReviewSection(props: {
           <div className="mt-3 flex flex-wrap gap-2">
             <Pill>{liveVersion ? "approved template" : "draft only"}</Pill>
             <Pill>{props.definition.lastPublishedDate ?? "not published"}</Pill>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <BuilderFocusLink
+              campaignSlug={props.definition.slug}
+              tab="version"
+              focusId="current-version"
+              selected={currentVersionSelected}
+            />
           </div>
         </article>
       </section>
