@@ -294,6 +294,8 @@ describe("coach page", () => {
     expect(html).toContain("Coach views");
     expect(html).toContain("Campaigns");
     expect(html).toContain("Campaign Operations");
+    expect(html).toContain(">Rush Month</h1>");
+    expect(html).toContain(">Rush Month - Chapter Execution</h2>");
     expect(html).toContain("Rush Month - Chapter Execution");
     expect(html).toContain("What should the coach move first this week?");
     expect(html).not.toContain('action="/staff"');

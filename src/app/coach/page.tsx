@@ -924,9 +924,9 @@ function CoachCampaignOperationsPanel({
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
           Campaign focus
         </p>
-        <h2 className="mt-3 text-3xl font-semibold text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-white">
           {overview.selectedCampaignName}
-        </h2>
+        </h1>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
           Keep campaign interventions attached to coach-owned chapter support so the
           selected risk lane and return path stay narrower than the HQ command center.
@@ -958,9 +958,9 @@ function CoachCampaignOperationsPanel({
 
       <section className="app-surface rounded-[1.8rem] p-5">
         <p className="app-eyebrow app-eyebrow-blue">Campaign Operations</p>
-        <h3 className="mt-2 text-2xl font-semibold text-slate-950">
+        <h2 className="mt-2 text-2xl font-semibold text-slate-950">
           {overview.selectedCampaignName} - Chapter Execution
-        </h3>
+        </h2>
         <div className="mt-4 grid gap-3 xl:grid-cols-5">
           {overview.riskCards.map((card) => (
             <Link
