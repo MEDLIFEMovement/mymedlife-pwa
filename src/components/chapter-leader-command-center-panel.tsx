@@ -1123,10 +1123,10 @@ function renderView(
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Events &amp; Attendance
+                  Events
                 </p>
                 <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
-                  Events &amp; Attendance
+                  Events
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   Track event execution, proof submission, and follow-up across the chapter.

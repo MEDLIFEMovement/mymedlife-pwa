@@ -878,7 +878,7 @@ describe("chapter page", () => {
         }),
       }),
     );
-    expect(html).toContain(">Events &amp; Attendance</h1>");
+    expect(html).toContain(">Events</h1>");
     expect(html).toContain('aria-label="Committee filter"');
     expect(html).toContain('id="chapter-events-committee-filter"');
     expect(html).toContain("Tabling: Quad Recruitment");
