@@ -11,7 +11,7 @@ export function buildMemberActionRouteHref(
   options: {
     eventId?: string;
     source?: MemberActionRouteSource;
-    step?: "submit";
+    step?: "submit" | "submitted";
   } = {},
 ) {
   const searchParams = new URLSearchParams();
@@ -29,7 +29,10 @@ export function buildMemberActionRouteHref(
   }
 
   const query = searchParams.toString();
-  const hash = options.step === "submit" ? "#submit-evidence" : "";
+  const hash =
+    options.step === "submit" || options.step === "submitted"
+      ? "#submit-evidence"
+      : "";
 
   return query.length > 0
     ? `/rush-month/actions/${assignmentId}?${query}${hash}`

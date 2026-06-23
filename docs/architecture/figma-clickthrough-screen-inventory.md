@@ -310,6 +310,9 @@ Recommended app mapping:
 - stay inside `/rush-month/actions/[assignmentId]` for the primary form flow
 - a query-param-backed submit state on that same route is a valid local match
   for the Make clickthrough
+- keep the submitted / pending-review confirmation on that same assignment
+  route too (for example, a second query-param-backed state) instead of
+  bouncing the member into a disconnected proof surface
 - member proof-queue CTAs should deep-link into that same submit state instead
   of a disconnected intake surface
 - keep `/rush-month/evidence` as the broader queue / history surface

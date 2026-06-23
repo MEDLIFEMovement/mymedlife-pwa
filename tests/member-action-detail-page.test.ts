@@ -139,11 +139,12 @@ describe("member action detail page", () => {
     expect(html).toContain("Submit Evidence");
     expect(html).toContain("Back to action details");
     expect(html).toContain('id="submit-evidence"');
-    expect(html).toContain('href="/rush-month/actions/member-push"');
+    expect(html).toContain(
+      'action="/rush-month/actions/member-push?step=submitted#submit-evidence"',
+    );
     expect(html).not.toContain("Action Detail");
     expect(html).not.toContain("Why This Matters");
     expect(html).not.toContain("After you submit");
-    expect(html).not.toContain("See your proof queue");
     expect(html).not.toContain("This mirrors the prototype clickthrough");
     expect(html).toContain("Share one clear screenshot, link, or short note.");
     expect(html).toContain(
@@ -153,6 +154,42 @@ describe("member action detail page", () => {
     expect(html).toContain("Points move once the proof is approved.");
     expect(html).not.toContain("Upload stays mock-only here.");
     expect(html).not.toContain("Local confirmation only.");
+  });
+
+  it("opens a route-backed submitted state on the same member action route after submit", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member action submitted state."),
+    );
+
+    const { default: ActionDetailPage } = await import(
+      "@/app/rush-month/actions/[assignmentId]/page"
+    );
+    const html = renderToStaticMarkup(
+      await ActionDetailPage({
+        params: Promise.resolve({ assignmentId: "member-push" }),
+        searchParams: Promise.resolve({ step: "submitted" }),
+      }),
+    );
+
+    expect(html).toContain("Submitted for Review");
+    expect(html).toContain("Submitted for review");
+    expect(html).toContain("See your proof queue");
+    expect(html).toContain("Edit evidence");
+    expect(html).toContain("Back to action details");
+    expect(html).toContain('href="/rush-month/evidence"');
+    expect(html).toContain(
+      'href="/rush-month/actions/member-push?step=submit#submit-evidence"',
+    );
+    expect(html).toContain('href="/rush-month/actions/member-push"');
+    expect(html).not.toContain("Action Detail");
+    expect(html).not.toContain("Why This Matters");
+    expect(html).not.toContain("Submit for review");
   });
 
   it("preserves event context when the member action route is opened from event detail", async () => {

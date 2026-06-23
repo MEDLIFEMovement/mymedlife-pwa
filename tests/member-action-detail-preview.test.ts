@@ -79,4 +79,23 @@ describe("member action detail preview", () => {
     expect(html).toContain("Submit for review");
     expect(html).toContain("I confirm this evidence is accurate");
   });
+
+  it("renders a route-backed confirmation state after submit", () => {
+    const html = renderToStaticMarkup(
+      createElement(MemberActionDetailPreview, {
+        assignment,
+        actionDetailHref: "/rush-month/actions/member-push",
+        editHref: "/rush-month/actions/member-push?step=submit#submit-evidence",
+        queueHref: "/rush-month/evidence",
+        mode: "submitted",
+        sectionId: "submit-evidence",
+      }),
+    );
+
+    expect(html).toContain("Submitted for Review");
+    expect(html).toContain("Pending leader review");
+    expect(html).toContain("Edit evidence");
+    expect(html).toContain("See your proof queue");
+    expect(html).toContain("Back to action details");
+  });
 });

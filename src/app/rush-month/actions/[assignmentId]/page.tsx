@@ -200,14 +200,21 @@ export default async function ActionDetailPage({
       source: effectiveMemberActionSource ?? undefined,
       step: "submit",
     });
+    const submittedEvidenceHref = buildMemberActionRouteHref(assignment.id, {
+      eventId: relatedEvent?.id,
+      source: effectiveMemberActionSource ?? undefined,
+      step: "submitted",
+    });
     const showSubmitStep = memberActionStep === "submit" && canSubmitProof;
+    const showSubmittedStep = memberActionStep === "submitted" && canSubmitProof;
+    const showMemberSubmitState = showSubmitStep || showSubmittedStep;
     const memberActionOrigin = relatedEvent
       ? null
       : getMemberActionOrigin(effectiveMemberActionSource);
     const memberActionSourceContext = relatedEvent
       ? {
           eyebrow: "From event",
-          detail: showSubmitStep
+          detail: showMemberSubmitState
             ? "You are submitting proof from this event handoff. Keep the story or evidence tied to the event moment so the chapter can reuse it later."
             : "This action was opened from the event detail route. Keep the task and proof connected to the event moment you are helping create.",
           href: getRelatedEventBackHref(relatedEvent.id, effectiveMemberActionSource),
@@ -216,7 +223,7 @@ export default async function ActionDetailPage({
       : memberActionOrigin
         ? {
             eyebrow: memberActionOrigin.eyebrow,
-            detail: showSubmitStep
+            detail: showMemberSubmitState
               ? memberActionOrigin.submitDetail
               : memberActionOrigin.detail,
             href: memberActionOrigin.href,
@@ -232,7 +239,7 @@ export default async function ActionDetailPage({
         showDebugTools={false}
       >
         <section className="grid gap-4">
-          {showSubmitStep && memberActionSourceContext ? (
+          {showMemberSubmitState && memberActionSourceContext ? (
             <section className="app-surface rounded-[1.8rem] p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-2xl">
@@ -270,11 +277,26 @@ export default async function ActionDetailPage({
           {showSubmitStep ? (
             <MemberActionDetailPreview
               assignment={memberWorkspace.previewAssignment}
+              editHref={submitEvidenceHref}
+              actionDetailHref={defaultActionHref}
+              queueHref={buildMemberEvidenceRouteHref(effectiveMemberActionSource)}
+              sectionId="submit-evidence"
+              submittedHref={submittedEvidenceHref}
+            />
+          ) : null}
+
+          {showSubmittedStep ? (
+            <MemberActionDetailPreview
+              assignment={memberWorkspace.previewAssignment}
+              actionDetailHref={defaultActionHref}
+              editHref={submitEvidenceHref}
+              queueHref={buildMemberEvidenceRouteHref(effectiveMemberActionSource)}
+              mode="submitted"
               sectionId="submit-evidence"
             />
           ) : null}
 
-          {!showSubmitStep ? (
+          {!showMemberSubmitState ? (
             <MemberActionDetailPanel
               workspace={memberWorkspace}
               actionHref={submitEvidenceHref}
@@ -529,8 +551,14 @@ export default async function ActionDetailPage({
   );
 }
 
-function parseMemberActionStep(value: string | undefined): "details" | "submit" {
-  return value === "submit" ? "submit" : "details";
+function parseMemberActionStep(
+  value: string | undefined,
+): "details" | "submit" | "submitted" {
+  if (value === "submit" || value === "submitted") {
+    return value;
+  }
+
+  return "details";
 }
 
 function parseMemberActionSource(value: string | undefined): MemberActionRouteSource | null {
@@ -618,6 +646,14 @@ function getMemberActionOrigin(source: MemberActionRouteSource | null) {
     default:
       return null;
   }
+}
+
+function buildMemberEvidenceRouteHref(source: MemberActionRouteSource | null) {
+  if (!source || source === "evidence") {
+    return "/rush-month/evidence";
+  }
+
+  return `/rush-month/evidence?source=${source}`;
 }
 
 function getRelatedEventBackHref(
