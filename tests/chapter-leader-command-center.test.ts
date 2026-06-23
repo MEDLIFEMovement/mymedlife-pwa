@@ -119,12 +119,12 @@ describe("chapter leader command center", () => {
     );
 
     expect(commandCenter.metrics.find((metric) => metric.label === "Bridge Videos")).toMatchObject({
-      value: "1,480",
-      note: "+11% vs last week",
-    });
-    expect(commandCenter.metrics.find((metric) => metric.label === "Points This Week")).toMatchObject({
       value: "9",
       note: "Submitted this month",
+    });
+    expect(commandCenter.metrics.find((metric) => metric.label === "Points This Week")).toMatchObject({
+      value: "1,480",
+      note: "+11% vs last week",
     });
 
     expect(markup).toContain("Chapter Leadership Home");
