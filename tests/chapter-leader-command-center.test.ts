@@ -576,7 +576,8 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Leadership Actions");
     expect(markup.match(/Leadership Actions/g)?.length).toBe(1);
     expect(markup.indexOf("Leadership Actions")).toBeLessThan(markup.indexOf("Points History"));
-    expect(markup.indexOf("Coach &amp; Leader Notes")).toBeLessThan(markup.indexOf("Add Note"));
+    expect(markup.indexOf("Leadership Actions")).toBeLessThan(markup.indexOf("Add Note"));
+    expect(markup.indexOf("Add Note")).toBeLessThan(markup.indexOf("Coach &amp; Leader Notes"));
     expect(markup).toContain("/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy");
   });
 
@@ -602,7 +603,8 @@ describe("chapter leader command center", () => {
     expect(markup.indexOf("Back to Member Pipeline")).toBeLessThan(
       markup.indexOf("Leadership Actions"),
     );
-    expect(markup.indexOf("Coach &amp; Leader Notes")).toBeLessThan(markup.indexOf("Add Note"));
+    expect(markup.indexOf("Leadership Actions")).toBeLessThan(markup.indexOf("Add Note"));
+    expect(markup.indexOf("Add Note")).toBeLessThan(markup.indexOf("Coach &amp; Leader Notes"));
     expect(markup.indexOf("Leadership Actions")).toBeLessThan(
       markup.indexOf("Points History"),
     );

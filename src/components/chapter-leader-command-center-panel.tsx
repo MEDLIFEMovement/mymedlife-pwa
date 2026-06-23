@@ -783,7 +783,10 @@ function renderView(
             <section className="grid gap-4 xl:grid-cols-[0.72fr_1.28fr] xl:items-start">
               <div className="grid gap-4">
                 <MemberProfileSummaryCard member={commandCenter.selectedMember} />
-                <MemberLeadershipActionsCard member={commandCenter.selectedMember} />
+                <MemberLeadershipActionsCard
+                  member={commandCenter.selectedMember}
+                  noteAction={selectedMemberAddNoteAction}
+                />
               </div>
 
               <div className="grid gap-4">
@@ -845,16 +848,9 @@ function renderView(
                 <SectionCard eyebrow="Notes" title="Coach & Leader Notes">
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                     <p className="text-sm leading-6 text-slate-600">
-                      Keep notes concrete, useful, and about growth, not popularity.
+                      Keep notes concrete, useful, and about growth, not popularity. The action
+                      cluster above is the place to add the next note.
                     </p>
-                    {selectedMemberAddNoteAction ? (
-                      <Link
-                        href={selectedMemberAddNoteAction.href}
-                        className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
-                      >
-                        Add Note
-                      </Link>
-                    ) : null}
                   </div>
                   <div className="mt-4 grid gap-3">
                     {commandCenter.selectedMember.leaderNotes.map((note) => (
@@ -2794,8 +2790,10 @@ function MemberProfileSummaryCard({
 
 function MemberLeadershipActionsCard({
   member,
+  noteAction,
 }: {
   member: ChapterLeaderCommandCenterMemberProfile;
+  noteAction?: ChapterLeaderCommandCenterMemberProfile["leadershipActions"][number];
 }) {
   const visibleActions = member.leadershipActions.filter((action) => action.label !== "Add Note");
   return (
@@ -2822,6 +2820,14 @@ function MemberLeadershipActionsCard({
               {action.label}
             </Link>
           ))}
+          {noteAction ? (
+            <Link
+              href={noteAction.href}
+              className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+            >
+              {noteAction.label}
+            </Link>
+          ) : null}
         </div>
       </div>
     </section>

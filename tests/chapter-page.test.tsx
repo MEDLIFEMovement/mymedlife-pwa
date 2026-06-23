@@ -707,7 +707,8 @@ describe("chapter page", () => {
     expect(html).toContain("Schedule Values Interview");
     expect(html).toContain("Add Note");
     expect(html.match(/Add Note/g)?.length).toBe(1);
-    expect(html.indexOf("Coach &amp; Leader Notes")).toBeLessThan(html.indexOf("Add Note"));
+    expect(html.indexOf("Leadership Actions")).toBeLessThan(html.indexOf("Add Note"));
+    expect(html.indexOf("Add Note")).toBeLessThan(html.indexOf("Coach &amp; Leader Notes"));
     expect(html).not.toContain("Mock-seeded review data");
   });
 
