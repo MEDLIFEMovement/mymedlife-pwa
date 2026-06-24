@@ -4,6 +4,7 @@ import {
   getProofSubmissionWriteReadiness,
 } from "@/services/proof-submission-write";
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
+import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadAdminReviewSurface,
@@ -89,6 +90,27 @@ export type ProofMetadataPacket = {
   checks: ProofMetadataPacketCheck[];
   readbackEvidence: ProofMetadataReadbackItem[];
   verificationPacket: ProofMetadataVerificationPacket;
+  hostedCloseout: {
+    title: string;
+    stagingTarget: string;
+    recommendedProofLoop: string;
+    hostedDecision: string;
+    requiredReadback: string[];
+    reviewSurfaces: string[];
+    namedOwnersStillNeeded: Array<{
+      key: string;
+      label: string;
+      recommendedDefault: string;
+    }>;
+    recordedOwnerAnswers: Array<{
+      key: string;
+      label: string;
+      value: string;
+    }>;
+    approvalReplyBlock: string[];
+    blockedScope: string[];
+    externalHoldPosture: string;
+  };
   proofToCollect: string[];
   counts: {
     checks: number;
@@ -123,6 +145,7 @@ export function getProofMetadataPacket(
       checks: [],
       readbackEvidence: [],
       verificationPacket: buildHiddenVerificationPacket(),
+      hostedCloseout: buildHostedCloseout(),
       proofToCollect: [],
       counts: emptyCounts(),
     };
@@ -173,18 +196,20 @@ export function getProofMetadataPacket(
     title: getTitle(actor),
     status,
     plainEnglishSummary:
-      "This packet prepares the second local Rush Month write: one fake member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled n8n outbox row, and audit log without uploading files or sharing proof publicly.",
+      "This packet prepares the second Rush Month write: one approved pilot member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled outbox row, and audit log without uploading files or sharing proof publicly. For Phase 2 hosted closeout, the leader review route should be able to read that proof back while leader decision writes remain blocked.",
     candidateAssignment: candidate,
     defaultInput: defaultProofInput,
     checks,
     readbackEvidence,
     verificationPacket,
+    hostedCloseout: buildHostedCloseout(env),
     proofToCollect: [
       "Screenshot of `/admin/proof-write` before the test showing the packet is ready.",
       "Screenshot of the target action detail route with the proof form enabled.",
       "Screenshot after submit showing the `proof_submitted` result state.",
       "Readback proof that assignment status moved to `submitted`.",
       "Evidence that an evidence item, internal event, integration event, disabled outbox row, and audit log were created.",
+      "Evidence that `/rush-month/review` shows the submitted item for chapter leader review without opening leader decision writes.",
       "Evidence that file uploads, public proof sharing, and external sends stayed at zero.",
     ],
     counts: {
@@ -739,6 +764,96 @@ function buildHiddenVerificationPacket(): ProofMetadataVerificationPacket {
     },
     operatorSequence: [],
     safetyStops: [],
+  };
+}
+
+function buildHostedCloseout(
+  env: EnvSource = process.env,
+): ProofMetadataPacket["hostedCloseout"] {
+  const pilotRegistry = getPhase2PilotRegistry(env);
+  const proofLoop = pilotRegistry.defaults.find(
+    (item) => item.key === "proof_review_loop",
+  );
+  const chapterLeaderOwner = pilotRegistry.owners.find(
+    (item) => item.key === "chapter_leader_owner",
+  );
+  const hqOwner = pilotRegistry.owners.find(
+    (item) => item.key === "hq_admin_owner",
+  );
+  const dsOwner = pilotRegistry.owners.find((item) => item.key === "ds_owner");
+  const supportChannel = pilotRegistry.owners.find(
+    (item) => item.key === "support_pause_channel",
+  );
+  const rollbackOwner = pilotRegistry.owners.find(
+    (item) => item.key === "rollback_owner",
+  );
+
+  const relevantOwners = [
+    chapterLeaderOwner,
+    hqOwner,
+    dsOwner,
+    supportChannel,
+    rollbackOwner,
+  ].filter(Boolean);
+
+  return {
+    title: "Phase 2 hosted proof loop closeout",
+    stagingTarget: "staging.mymedlife.org",
+    recommendedProofLoop:
+      proofLoop?.value ?? "proof metadata submission plus leader review only",
+    hostedDecision:
+      proofLoop?.status === "recorded_final"
+        ? `Recorded Phase 2 proof loop: ${proofLoop.value}. Hosted proof metadata can be proven on staging with leader review readback visible, but leader decision writes, HQ proof decisions, uploads, and public sharing must stay blocked until later approval.`
+        : "Recommended Phase 2 proof loop: proof metadata submission plus leader review only. Hosted proof metadata can be proven on staging with leader review readback visible, but leader decision writes, HQ proof decisions, uploads, and public sharing stay blocked.",
+    requiredReadback: [
+      "Student route shows a successful `proof_submitted` result without file upload.",
+      "Assignment status reads back as `submitted`.",
+      "Evidence item row exists with pending review posture.",
+      "Internal `evidence_submitted` event row exists.",
+      "Integration event row exists.",
+      "Disabled outbox row exists and no external sends occur.",
+      "Audit log row exists.",
+      "Leader review route shows the submitted item for review without enabling hosted leader decision writes.",
+      "Staff proof review surface can see the item in the proof queue.",
+    ],
+    reviewSurfaces: [
+      "/rush-month/actions/[assignmentId]",
+      "/rush-month/review",
+      "/staff?view=proof_ugc",
+      "/admin/proof-write",
+      "/admin/audit-log",
+      "/admin/integration-outbox",
+    ],
+    namedOwnersStillNeeded: relevantOwners
+      .filter((owner) => owner?.status === "pending_named_owner")
+      .map((owner) => ({
+        key: owner!.key,
+        label: owner!.label,
+        recommendedDefault: owner!.value,
+      })),
+    recordedOwnerAnswers: relevantOwners
+      .filter((owner) => owner?.status === "recorded_owner")
+      .map((owner) => ({
+        key: owner!.key,
+        label: owner!.label,
+        value: owner!.value,
+      })),
+    approvalReplyBlock: pilotRegistry.approvalReplyBlock,
+    blockedScope: [
+      "leader proof decision writes",
+      "HQ proof decisions",
+      "proof uploads",
+      "public proof sharing",
+      "member nudges",
+      "points or KPI writes from leader review",
+      "HubSpot writes",
+      "Luma writes",
+      "n8n writes",
+      "warehouse / Power BI writes",
+      "SMS / email / AI actions",
+    ],
+    externalHoldPosture:
+      "HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes remain disabled during the hosted proof loop.",
   };
 }
 

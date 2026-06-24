@@ -128,6 +128,43 @@ describe("proof metadata verification packet", () => {
         }),
       ]),
     );
+    expect(packet.hostedCloseout.recommendedProofLoop).toBe(
+      "proof metadata submission plus leader review only",
+    );
+    expect(packet.hostedCloseout.blockedScope).toEqual(
+      expect.arrayContaining(["leader proof decision writes", "proof uploads"]),
+    );
+    expect(packet.hostedCloseout.reviewSurfaces).toEqual(
+      expect.arrayContaining(["/rush-month/review", "/admin/proof-write"]),
+    );
+  });
+
+  it("reflects recorded proof-loop and owner answers in the hosted closeout", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const packet = getProofMetadataPacket(actor, withFirstWriteReadback(), {
+      MYMEDLIFE_PILOT_PROOF_REVIEW_LOOP:
+        "proof metadata submission plus leader review only",
+      MYMEDLIFE_PILOT_CHAPTER_LEADER_OWNER: "Jordan Chapter",
+      MYMEDLIFE_PILOT_HQ_ADMIN_OWNER: "Maya HQ",
+      MYMEDLIFE_PILOT_DS_OWNER: "Renato DS",
+      MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-watch",
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Kiomi Matsukawa",
+    });
+
+    expect(packet.hostedCloseout.hostedDecision).toContain("Recorded Phase 2 proof loop");
+    expect(packet.hostedCloseout.recordedOwnerAnswers).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ label: "Chapter leader owner", value: "Jordan Chapter" }),
+        expect.objectContaining({ label: "HQ/admin owner", value: "Maya HQ" }),
+        expect.objectContaining({ label: "DS owner", value: "Renato DS" }),
+        expect.objectContaining({
+          label: "Support and pause channel",
+          value: "#mymedlife-pilot-watch",
+        }),
+        expect.objectContaining({ label: "Rollback owner", value: "Kiomi Matsukawa" }),
+      ]),
+    );
+    expect(packet.hostedCloseout.namedOwnersStillNeeded).toEqual([]);
   });
 
   it("shows observed proof metadata readback after the local records exist", () => {

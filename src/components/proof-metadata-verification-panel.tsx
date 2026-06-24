@@ -234,6 +234,97 @@ export function ProofMetadataVerificationPanel({
           ))}
         </div>
       </section>
+
+      <section className="mt-5 rounded-[2rem] border border-fuchsia-300/20 bg-fuchsia-300/10 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-fuchsia-100/80">
+              Phase 2 closeout
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              {packet.hostedCloseout.title}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+              {packet.hostedCloseout.hostedDecision}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-2 text-sm text-white/72 sm:grid-cols-2">
+            <MiniStat label="Target" value={packet.hostedCloseout.stagingTarget} />
+            <MiniStat
+              label="Proof loop"
+              value={packet.hostedCloseout.recommendedProofLoop}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+            <p className="text-sm font-semibold text-white">Required hosted readback</p>
+            <ul className="mt-3 grid gap-2">
+              {packet.hostedCloseout.requiredReadback.map((item) => (
+                <li key={item} className="text-xs leading-5 text-white/62">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+            <p className="text-sm font-semibold text-white">Review surfaces</p>
+            <div className="mt-3 grid gap-2">
+              {packet.hostedCloseout.reviewSurfaces.map((route) => (
+                <Link
+                  key={route}
+                  href={route}
+                  className="rounded-2xl border border-white/10 bg-[#071d1a]/78 px-3 py-2 font-mono text-xs text-sky-100/80"
+                >
+                  {route}
+                </Link>
+              ))}
+            </div>
+          </article>
+        </div>
+
+        {packet.hostedCloseout.recordedOwnerAnswers.length > 0 ? (
+          <article className="mt-4 rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-4">
+            <p className="text-sm font-semibold text-white">Recorded owner answers</p>
+            <ul className="mt-3 grid gap-2">
+              {packet.hostedCloseout.recordedOwnerAnswers.map((owner) => (
+                <li key={owner.key} className="text-xs leading-5 text-white/68">
+                  {owner.label}: {owner.value}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ) : null}
+
+        {packet.hostedCloseout.namedOwnersStillNeeded.length > 0 ? (
+          <article className="mt-4 rounded-3xl border border-amber-300/20 bg-amber-300/10 p-4">
+            <p className="text-sm font-semibold text-white">Still needs named owners</p>
+            <ul className="mt-3 grid gap-2">
+              {packet.hostedCloseout.namedOwnersStillNeeded.map((owner) => (
+                <li key={owner.key} className="text-xs leading-5 text-white/68">
+                  {owner.label}: {owner.recommendedDefault}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ) : null}
+
+        <article className="mt-4 rounded-3xl border border-orange-300/20 bg-orange-300/10 p-4">
+          <p className="text-sm font-semibold text-white">Still blocked in this loop</p>
+          <ul className="mt-3 grid gap-2">
+            {packet.hostedCloseout.blockedScope.map((item) => (
+              <li key={item} className="text-xs leading-5 text-white/62">
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs leading-5 text-white/58">
+            {packet.hostedCloseout.externalHoldPosture}
+          </p>
+        </article>
+      </section>
     </section>
   );
 }
