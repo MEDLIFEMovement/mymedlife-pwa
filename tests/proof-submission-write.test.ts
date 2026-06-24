@@ -43,18 +43,39 @@ describe("proof-submission write readiness", () => {
   });
 
   it("supports an explicitly approved staging proof-metadata gate without enabling uploads or sends", () => {
-    expect(
-      getProofSubmissionWriteConfig({
-        MYMEDLIFE_AUTH_MODE: "staging_supabase",
-        MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE: "true",
-        MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
-      }),
-    ).toMatchObject({
+    const config = getProofSubmissionWriteConfig({
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE: "true",
+      MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+    });
+
+    expect(config).toMatchObject({
       enabled: true,
       isLocalOnly: false,
       externalWritesEnabled: false,
       uploadsEnabled: false,
     });
+
+    const readiness = getProofSubmissionWriteReadiness(
+      getMockLocalActorContext(
+        "member.a@mymedlife.test",
+        "Signed in through the approved staging lane.",
+        "mock_fallback",
+        "local_auth_session",
+        "signed_in",
+      ),
+      makeProofReadyAssignment(),
+      makeProofInput(),
+      {
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+      },
+    );
+
+    expect(
+      readiness.checks.find((check) => check.key === "local_auth_session")?.label,
+    ).toBe("Signed-in staging Supabase Auth session inside the approved staging access path");
   });
 
   it("blocks metadata writes when proof uploads are requested", () => {

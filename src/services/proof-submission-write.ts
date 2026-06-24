@@ -203,7 +203,7 @@ export function getProofSubmissionWriteReadiness(
       key: "local_auth_session",
       label: config.isLocalOnly
         ? "Signed-in local Supabase Auth session"
-        : "Signed-in staging Supabase Auth session",
+        : "Signed-in staging Supabase Auth session inside the approved staging access path",
       passed: hasLocalAuthSession,
     },
     {
