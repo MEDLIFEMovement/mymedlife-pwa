@@ -9,6 +9,7 @@ import {
   localActorOptions,
   type LocalActorContext,
 } from "@/services/local-actor-context";
+import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
@@ -83,6 +84,7 @@ export type AuthOnboardingWorkspace = {
 
 export function getAuthOnboardingWorkspace(
   actor: LocalActorContext,
+  env: Record<string, string | undefined> = process.env,
 ): AuthOnboardingWorkspace {
   const surfaceFamily = getActorSurfaceFamily(actor);
   const plan = getAuthOnboardingPlan();
@@ -91,7 +93,7 @@ export function getAuthOnboardingWorkspace(
     toStepRow(step, onboardingActor),
   );
   const launchPreflight = canReadLaunchPreflight(surfaceFamily)
-    ? buildLaunchPreflight()
+    ? buildLaunchPreflight(env)
     : null;
 
   return {
@@ -167,8 +169,35 @@ function canReadLaunchPreflight(surfaceFamily: ActorSurfaceFamily): boolean {
   );
 }
 
-function buildLaunchPreflight(): AuthOnboardingLaunchPreflight {
+function buildLaunchPreflight(
+  env: Record<string, string | undefined>,
+): AuthOnboardingLaunchPreflight {
   const roleCoverage = getRequiredRoleCoverage();
+  const pilotRegistry = getPhase2PilotRegistry(env);
+  const pilotChapter = pilotRegistry.defaults.find(
+    (item) => item.key === "pilot_chapter",
+  );
+  const cohortSize = pilotRegistry.defaults.find(
+    (item) => item.key === "cohort_size",
+  );
+  const campaignScope = pilotRegistry.defaults.find(
+    (item) => item.key === "campaign_scope",
+  );
+  const coachOwner = pilotRegistry.owners.find((item) => item.key === "coach_owner");
+  const supportChannel = pilotRegistry.owners.find(
+    (item) => item.key === "support_pause_channel",
+  );
+  const rollbackOwner = pilotRegistry.owners.find(
+    (item) => item.key === "rollback_owner",
+  );
+  const pilotDefaultsRecorded =
+    pilotChapter?.status === "recorded_final" &&
+    cohortSize?.status === "recorded_final" &&
+    campaignScope?.status === "recorded_final";
+  const supportOwnersRecorded =
+    supportChannel?.status === "recorded_owner" &&
+    rollbackOwner?.status === "recorded_owner";
+
   const items: AuthOnboardingPreflightItem[] = [
     {
       key: "callback_url_plan",
@@ -215,6 +244,22 @@ function buildLaunchPreflight(): AuthOnboardingLaunchPreflight {
       externalWritesExpected: 0,
     },
     {
+      key: "pilot_cohort_provisioning",
+      label: "Choose the first hosted cohort path",
+      ownerLane: "Launch and HQ Operations",
+      status: pilotDefaultsRecorded ? "ready" : "watch",
+      question: "How will the first 5-10 pilot users get access without opening broad onboarding writes?",
+      requiredEvidence:
+        "The team should name the first cohort and confirm whether staging pilot users are pre-provisioned manually or invited through a later approved join/onboarding path.",
+      currentPosture:
+        pilotDefaultsRecorded
+          ? `Recorded pilot default: pre-provision ${cohortSize?.value} for ${pilotChapter?.value} with ${campaignScope?.value} in staging and keep self-serve join requests disabled until the pilot proves the narrow loop safely.`
+          : "Recommended default: pre-provision the first pilot cohort manually in staging and keep self-serve join requests disabled until the pilot proves the narrow loop safely.",
+      routeEvidence: ["/login", "/onboarding", "/admin/pilot-scope"],
+      browserWritesExpected: 0,
+      externalWritesExpected: 0,
+    },
+    {
       key: "join_membership_approval",
       label: "Keep join approval explicit",
       ownerLane: "Chapter Operations",
@@ -252,7 +297,9 @@ function buildLaunchPreflight(): AuthOnboardingLaunchPreflight {
       requiredEvidence:
         "Coach assignment rules, portfolio read scope, reassignment owner, and support escalation path must be approved.",
       currentPosture:
-        "Coach portfolio preview exists locally; production coach assignment writes and reassignment controls remain disabled.",
+        coachOwner?.status === "recorded_owner"
+          ? `Coach portfolio preview exists locally; ${coachOwner.value} is the recorded coach owner, but production coach assignment writes and reassignment controls remain disabled.`
+          : "Coach portfolio preview exists locally; production coach assignment writes and reassignment controls remain disabled.",
       routeEvidence: ["/coach", "/profile", "/admin/operations"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -289,12 +336,14 @@ function buildLaunchPreflight(): AuthOnboardingLaunchPreflight {
       key: "support_rollback",
       label: "Name support and rollback owner",
       ownerLane: "Launch and HQ Operations",
-      status: "watch",
+      status: supportOwnersRecorded ? "ready" : "watch",
       question: "If a real user lands in the wrong role, who fixes it and how?",
       requiredEvidence:
         "Pilot support owner, wrong-role correction path, rollback process, and student communication fallback must be named.",
       currentPosture:
-        "Operations and pilot-scope surfaces describe support needs, but owner sign-off is still missing before pilot.",
+        supportOwnersRecorded
+          ? `Recorded pilot owners: support/pause channel is ${supportChannel?.value} and rollback owner is ${rollbackOwner?.value}. Operations and pilot-scope surfaces still need the wrong-role correction path and student communication fallback recorded alongside those owners.`
+          : "Operations and pilot-scope surfaces describe support needs, but owner sign-off is still missing before pilot.",
       routeEvidence: ["/admin/pilot-scope", "/admin/operations", "/admin/launch-gate"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -312,6 +361,7 @@ function buildLaunchPreflight(): AuthOnboardingLaunchPreflight {
       "assign chapter roles",
       "assign coach portfolios",
       "assign staff roles",
+      "open self-serve staging sign-up",
       "send onboarding automations",
       "enable external writes",
     ],

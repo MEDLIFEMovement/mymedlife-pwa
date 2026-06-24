@@ -1,4 +1,5 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
@@ -66,6 +67,7 @@ export type ProductionLaunchGate = {
 
 export function getProductionLaunchGate(
   actor: LocalActorContext,
+  env: Record<string, string | undefined> = process.env,
 ): ProductionLaunchGate {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
@@ -91,8 +93,9 @@ export function getProductionLaunchGate(
     };
   }
 
-  const items = productionLaunchGateItems;
-  const launchEvidenceChecks = getProductionLaunchEvidenceChecks();
+  const pilotRegistry = getPhase2PilotRegistry(env);
+  const items = getProductionLaunchGateItems(pilotRegistry);
+  const launchEvidenceChecks = getProductionLaunchEvidenceChecks(pilotRegistry);
 
   return {
     canReadGate: true,
@@ -118,7 +121,19 @@ export function getProductionLaunchGate(
   };
 }
 
-export function getProductionLaunchEvidenceChecks(): ProductionLaunchEvidenceCheck[] {
+export function getProductionLaunchEvidenceChecks(
+  pilotRegistry = getPhase2PilotRegistry(),
+): ProductionLaunchEvidenceCheck[] {
+  const pilotChapter = pilotRegistry.defaults.find(
+    (item) => item.key === "pilot_chapter",
+  );
+  const supportChannel = pilotRegistry.owners.find(
+    (item) => item.key === "support_pause_channel",
+  );
+  const rollbackOwner = pilotRegistry.owners.find(
+    (item) => item.key === "rollback_owner",
+  );
+
   return [
     {
       key: "staging_url",
@@ -222,7 +237,11 @@ export function getProductionLaunchEvidenceChecks(): ProductionLaunchEvidenceChe
       ownerLane: "Launch and HQ Operations",
       status: "missing_before_pilot",
       requiredEvidence:
-        "Named pilot group, day-one support owner, coach support lane, stop conditions, and student communication plan.",
+        pilotChapter?.status === "recorded_final" ||
+        supportChannel?.status === "recorded_owner" ||
+        rollbackOwner?.status === "recorded_owner"
+          ? `Recorded pilot defaults now need final launch evidence: pilot group ${pilotChapter?.value ?? "still pending"}, support/pause channel ${supportChannel?.value ?? "still pending"}, rollback owner ${rollbackOwner?.value ?? "still pending"}, plus coach support lane, stop conditions, and student communication plan.`
+          : "Named pilot group, day-one support owner, coach support lane, stop conditions, and student communication plan.",
       reviewRoute: "/admin/pilot-scope",
       acceptanceSignal:
         "Nick/HQ can name the exact pilot group, support owner, rollback/stop rule, and communication path before invitations.",
@@ -231,8 +250,25 @@ export function getProductionLaunchEvidenceChecks(): ProductionLaunchEvidenceChe
   ];
 }
 
-const productionLaunchGateItems: ProductionLaunchGateItem[] = [
-  {
+function getProductionLaunchGateItems(
+  pilotRegistry = getPhase2PilotRegistry(),
+): ProductionLaunchGateItem[] {
+  const firstHostedWrite = pilotRegistry.defaults.find(
+    (item) => item.key === "first_hosted_write",
+  );
+  const pilotChapter = pilotRegistry.defaults.find(
+    (item) => item.key === "pilot_chapter",
+  );
+  const supportChannel = pilotRegistry.owners.find(
+    (item) => item.key === "support_pause_channel",
+  );
+  const rollbackOwner = pilotRegistry.owners.find(
+    (item) => item.key === "rollback_owner",
+  );
+  const coachOwner = pilotRegistry.owners.find((item) => item.key === "coach_owner");
+
+  return [
+    {
     key: "production_auth",
     label: "Production auth and onboarding",
     ownerLane: "Security and Student Access",
@@ -288,7 +324,10 @@ const productionLaunchGateItems: ProductionLaunchGateItem[] = [
     localEvidence:
       "Seven localhost-only write candidates are modeled with result states, audit intent, disabled outbox posture, and role-specific review packets.",
     missingLiveEvidence: [
-      "Choose the first production write path and rollback owner.",
+      firstHostedWrite?.status === "recorded_final" &&
+      rollbackOwner?.status === "recorded_owner"
+        ? `Run hosted staging proof for ${firstHostedWrite.value} and confirm ${rollbackOwner.value} owns rollback for the first live drill.`
+        : "Choose the first production write path and rollback owner.",
       "Confirm success, error, and duplicate-submission states in staging.",
       "Promote one write at a time after auth/RLS proof is current.",
     ],
@@ -359,7 +398,9 @@ const productionLaunchGateItems: ProductionLaunchGateItem[] = [
     missingLiveEvidence: [
       "n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, and AI contracts approved.",
       "Retry, idempotency, dead-letter, and manual recovery rules documented.",
-      "First production app loop proves app truth before any external write consumes it.",
+      firstHostedWrite?.status === "recorded_final"
+        ? `First staged app loop proves ${firstHostedWrite.value} as app truth before any external write consumes it.`
+        : "First production app loop proves app truth before any external write consumes it.",
     ],
     reviewRoutes: [
       "/admin/launch-gate",
@@ -383,7 +424,9 @@ const productionLaunchGateItems: ProductionLaunchGateItem[] = [
     missingLiveEvidence: [
       "Every approved write path proves persisted actor, target, before/after value, reason, and timestamp readback in staging.",
       "System health review is updated with staging and production monitor owners.",
-      "Rollback and incident contacts are recorded alongside the launch packet.",
+      rollbackOwner?.status === "recorded_owner"
+        ? `Rollback and incident contacts are recorded alongside the launch packet, with ${rollbackOwner.value} as the current rollback owner.`
+        : "Rollback and incident contacts are recorded alongside the launch packet.",
     ],
     reviewRoutes: [
       "/admin/launch-gate",
@@ -402,9 +445,17 @@ const productionLaunchGateItems: ProductionLaunchGateItem[] = [
     ownerLane: "Launch and HQ Operations",
     status: "blocked_before_live",
     localEvidence:
-      "Pilot scope route, stakeholder review plan, review-path docs, and the production operations runbook exist locally.",
+      pilotChapter?.status === "recorded_final" ||
+      supportChannel?.status === "recorded_owner" ||
+      coachOwner?.status === "recorded_owner"
+        ? `Pilot scope route, stakeholder review plan, review-path docs, and the production operations runbook exist locally. Recorded pilot answers currently name ${pilotChapter?.value ?? "the pilot chapter as pending"}, ${supportChannel?.value ?? "the support channel as pending"}, and ${coachOwner?.value ?? "the coach owner as pending"}.`
+        : "Pilot scope route, stakeholder review plan, review-path docs, and the production operations runbook exist locally.",
     missingLiveEvidence: [
-      "Exact pilot group, launch day owner, support channel, and coach escalation flow named.",
+      pilotChapter?.status === "recorded_final" &&
+      supportChannel?.status === "recorded_owner" &&
+      coachOwner?.status === "recorded_owner"
+        ? `Final launch evidence still needs the exact pilot group invite list for ${pilotChapter.value}, day-one owner confirmation, and the rehearsed coach escalation flow owned by ${coachOwner.value}.`
+        : "Exact pilot group, launch day owner, support channel, and coach escalation flow named.",
       "Student comms, support hours, and stop conditions approved.",
       "Issue triage and rollback path rehearsed against staging.",
     ],
@@ -419,7 +470,8 @@ const productionLaunchGateItems: ProductionLaunchGateItem[] = [
     browserWritesExpected: 0,
     externalWritesExpected: 0,
   },
-];
+  ];
+}
 
 function getTitle(surfaceFamily: ActorSurfaceFamily): string {
   switch (surfaceFamily) {

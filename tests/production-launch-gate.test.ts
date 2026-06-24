@@ -161,6 +161,42 @@ describe("production launch gate", () => {
     ).toBe("/admin/pilot-scope");
   });
 
+  it("surfaces recorded pilot answers in the launch gate without claiming approval", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PILOT_CHAPTER: "UCLA MEDLIFE",
+      MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE: "`action_started`",
+      MYMEDLIFE_PILOT_COACH_OWNER: "Coach Ana",
+      MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Kiomi Matsukawa",
+    });
+
+    expect(
+      gate.items.find((item) => item.key === "write_promotion")?.missingLiveEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("`action_started`"),
+        expect.stringContaining("Kiomi Matsukawa"),
+      ]),
+    );
+    expect(
+      gate.items.find((item) => item.key === "audit_observability")
+        ?.missingLiveEvidence,
+    ).toEqual(
+      expect.arrayContaining([expect.stringContaining("Kiomi Matsukawa")]),
+    );
+    expect(
+      gate.items.find((item) => item.key === "pilot_operations")?.localEvidence,
+    ).toContain("UCLA MEDLIFE");
+    expect(
+      gate.items.find((item) => item.key === "pilot_operations")?.localEvidence,
+    ).toContain("#mymedlife-pilot-support");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "pilot_support_owner")
+        ?.requiredEvidence,
+    ).toContain("UCLA MEDLIFE");
+  });
+
   it("keeps every gate write-safe and approval-bound", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const gate = getProductionLaunchGate(actor);

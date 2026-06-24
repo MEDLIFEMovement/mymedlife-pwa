@@ -74,12 +74,17 @@ describe("auth onboarding workspace", () => {
     expect(workspace.nextStep.href).toBe("/admin");
     expect(workspace.counts.actorOwnedSteps).toBe(0);
     expect(workspace.stepRows.every((step) => !step.actorCanOwn)).toBe(true);
-    expect(workspace.launchPreflight?.items).toHaveLength(9);
+    expect(workspace.launchPreflight?.items).toHaveLength(10);
     expect(
       workspace.launchPreflight?.items.find(
         (item) => item.key === "event_audit_outbox_boundary",
       )?.currentPosture,
     ).toContain("external sends remain at 0");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "pilot_cohort_provisioning",
+      )?.currentPosture,
+    ).toContain("pre-provision the first pilot cohort manually");
     expect(workspace.safetyNotes.join(" ")).toContain(
       "DS Admin can inspect safety posture",
     );
@@ -93,9 +98,9 @@ describe("auth onboarding workspace", () => {
       "Production auth preflight checklist",
     );
     expect(workspace.launchPreflight?.counts).toEqual({
-      total: 9,
+      total: 10,
       ready: 2,
-      watch: 6,
+      watch: 7,
       blocked: 1,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
@@ -105,6 +110,7 @@ describe("auth onboarding workspace", () => {
       "callback_url_plan",
       "role_coverage_matrix",
       "auth_profile_mapping",
+      "pilot_cohort_provisioning",
       "join_membership_approval",
       "chapter_role_assignment",
       "coach_assignment",
@@ -126,9 +132,53 @@ describe("auth onboarding workspace", () => {
       expect.arrayContaining([
         "create production users",
         "assign staff roles",
+        "open self-serve staging sign-up",
         "enable external writes",
       ]),
     );
+  });
+
+  it("reflects recorded pilot defaults and owners in the auth preflight when present", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const workspace = getAuthOnboardingWorkspace(actor, {
+      MYMEDLIFE_PILOT_CHAPTER: "Boston College MEDLIFE",
+      MYMEDLIFE_PILOT_CAMPAIGN_SCOPE: "Rush Month only",
+      MYMEDLIFE_PILOT_COHORT_SIZE: "8 students",
+      MYMEDLIFE_PILOT_COACH_OWNER: "Coach Renee",
+      MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Kiomi Matsukawa",
+    });
+
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "pilot_cohort_provisioning",
+      )?.status,
+    ).toBe("ready");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "pilot_cohort_provisioning",
+      )?.currentPosture,
+    ).toContain("Boston College MEDLIFE");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "coach_assignment",
+      )?.currentPosture,
+    ).toContain("Coach Renee");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "support_rollback",
+      )?.status,
+    ).toBe("ready");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "support_rollback",
+      )?.currentPosture,
+    ).toContain("#mymedlife-pilot-support");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "support_rollback",
+      )?.currentPosture,
+    ).toContain("Kiomi Matsukawa");
   });
 
   it("names every future structured event while keeping all events disabled", () => {
