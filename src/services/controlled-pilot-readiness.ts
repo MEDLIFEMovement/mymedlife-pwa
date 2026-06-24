@@ -1,4 +1,5 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
@@ -75,8 +76,9 @@ export function getControlledPilotReadiness(
     };
   }
 
-  const stages = getPilotStages();
-  const gates = getPilotGates();
+  const pilotRegistry = getPhase2PilotRegistry();
+  const stages = getPilotStages(pilotRegistry);
+  const gates = getPilotGates(pilotRegistry);
   const statuses = [...stages, ...gates].map((item) => item.status);
 
   return {
@@ -86,7 +88,10 @@ export function getControlledPilotReadiness(
     plainEnglishVerdict:
       "The app is ready for a staff dry run of the Rush Month operating loop, but it is not ready to invite real students until pilot scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership are approved.",
     recommendedNextMove:
-      "Run a staff dry run with fake users, pick one pilot chapter or internal test group, then approve staging/auth/write gates before any student invitations.",
+      pilotRegistry.counts.ownersRecorded > 0 ||
+      pilotRegistry.counts.defaultsRecorded > 0
+        ? "Use `/admin/phase-2`, `/admin/pilot-scope`, and `/admin/first-write` to confirm the recorded pilot answers, then approve staging/auth/write gates before any student invitations."
+        : "Run a staff dry run with fake users, pick one pilot chapter or internal test group, then approve staging/auth/write gates before any student invitations.",
     stages,
     gates,
     counts: {
@@ -107,7 +112,13 @@ export function getControlledPilotReadiness(
   };
 }
 
-function getPilotStages(): PilotReadinessStage[] {
+function getPilotStages(
+  pilotRegistry: ReturnType<typeof getPhase2PilotRegistry>,
+): PilotReadinessStage[] {
+  const pilotChapter = pilotRegistry.defaults.find(
+    (item) => item.key === "pilot_chapter",
+  );
+
   return [
     {
       key: "local_stakeholder_review",
@@ -150,9 +161,13 @@ function getPilotStages(): PilotReadinessStage[] {
       label: "First student pilot",
       status: "blocked_before_pilot",
       plainEnglish:
-        "A real pilot should wait until pilot scope, auth, write gates, proof consent/storage, and support ownership are approved.",
+        pilotChapter?.status === "recorded_final"
+          ? `A real pilot should wait until auth, write gates, proof consent/storage, and support ownership are approved for ${pilotChapter.value}.`
+          : "A real pilot should wait until pilot scope, auth, write gates, proof consent/storage, and support ownership are approved.",
       requiredProof: [
-        "Pilot chapter or internal group is named.",
+        pilotChapter?.status === "recorded_final"
+          ? `Pilot chapter or internal group is named as ${pilotChapter.value}.`
+          : "Pilot chapter or internal group is named.",
         "Open `/admin/pilot-scope` and confirm the selected scope is the smallest safe pilot.",
         "Auth/onboarding is approved.",
         "First write path and rollback plan are approved.",
@@ -175,17 +190,32 @@ function getPilotStages(): PilotReadinessStage[] {
   ];
 }
 
-function getPilotGates(): PilotReadinessGate[] {
+function getPilotGates(
+  pilotRegistry: ReturnType<typeof getPhase2PilotRegistry>,
+): PilotReadinessGate[] {
+  const pilotChapter = pilotRegistry.defaults.find(
+    (item) => item.key === "pilot_chapter",
+  );
+  const eventNpsPosture = pilotRegistry.defaults.find(
+    (item) => item.key === "event_nps_posture",
+  );
+  const coachOwner = pilotRegistry.owners.find((item) => item.key === "coach_owner");
+
   return [
     {
       key: "pilot_scope",
       label: "Pilot chapter or internal group",
       owner: "Nick/team",
-      status: "needs_decision",
+      status:
+        pilotChapter?.status === "recorded_final" ? "ready_now" : "needs_decision",
       plainEnglish:
-        "The first real pilot still needs a named chapter, internal cohort, or staff-only test group.",
+        pilotChapter?.status === "recorded_final"
+          ? `The first real pilot now names ${pilotChapter.value} as the current pilot chapter or internal group.`
+          : "The first real pilot still needs a named chapter, internal cohort, or staff-only test group.",
       nextStep:
-        "Open `/admin/pilot-scope`, choose the smallest safe pilot group, and document who is allowed in.",
+        pilotChapter?.status === "recorded_final"
+          ? "Use `/admin/pilot-scope` and `/admin/phase-2` to confirm the recorded pilot chapter still matches the smallest safe pilot."
+          : "Open `/admin/pilot-scope`, choose the smallest safe pilot group, and document who is allowed in.",
     },
     {
       key: "staging_environment",
@@ -231,20 +261,31 @@ function getPilotGates(): PilotReadinessGate[] {
       key: "event_nps_path",
       label: "Event attendance and NPS path",
       owner: "HQ ops",
-      status: "needs_decision",
+      status:
+        eventNpsPosture?.status === "recorded_final" ? "ready_now" : "needs_decision",
       plainEnglish:
-        "The first pilot must decide whether event attendance/NPS starts manually or through Luma integration.",
+        eventNpsPosture?.status === "recorded_final"
+          ? `The first pilot currently records ${eventNpsPosture.value} for event attendance and NPS posture.`
+          : "The first pilot must decide whether event attendance/NPS starts manually or through Luma integration.",
       nextStep:
-        "Choose manual import first or approve a narrow Luma read/import plan.",
+        eventNpsPosture?.status === "recorded_final"
+          ? "Keep the recorded event/NPS posture unless the team explicitly replaces it during pilot approval."
+          : "Choose manual import first or approve a narrow Luma read/import plan.",
     },
     {
       key: "coach_support",
       label: "Coach support ownership",
       owner: "Coach lead",
-      status: "needs_decision",
+      status:
+        coachOwner?.status === "recorded_owner" ? "ready_now" : "needs_decision",
       plainEnglish:
-        "The pilot needs a named coach/support owner for chapter risk, questions, and intervention decisions.",
-      nextStep: "Assign the coach/support owner before inviting pilot users.",
+        coachOwner?.status === "recorded_owner"
+          ? `The pilot now records ${coachOwner.value} as the current coach/support owner.`
+          : "The pilot needs a named coach/support owner for chapter risk, questions, and intervention decisions.",
+      nextStep:
+        coachOwner?.status === "recorded_owner"
+          ? "Confirm the recorded coach/support owner still matches the launch plan before inviting pilot users."
+          : "Assign the coach/support owner before inviting pilot users.",
     },
     {
       key: "external_integrations",

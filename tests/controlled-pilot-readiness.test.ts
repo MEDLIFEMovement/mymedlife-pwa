@@ -76,6 +76,41 @@ describe("controlled pilot readiness", () => {
     expect(externalIntegrations?.plainEnglish).toContain("should stay disabled");
   });
 
+  it("marks recorded pilot chapter, event posture, and coach owner as ready-now gates", () => {
+    const originalChapter = process.env.MYMEDLIFE_PILOT_CHAPTER;
+    const originalEventNps = process.env.MYMEDLIFE_PILOT_EVENT_NPS_POSTURE;
+    const originalCoach = process.env.MYMEDLIFE_PILOT_COACH_OWNER;
+
+    process.env.MYMEDLIFE_PILOT_CHAPTER = "Boston College MEDLIFE";
+    process.env.MYMEDLIFE_PILOT_EVENT_NPS_POSTURE = "manual-first";
+    process.env.MYMEDLIFE_PILOT_COACH_OWNER = "Priya Coach";
+
+    try {
+      const readiness = getControlledPilotReadiness(
+        getMockLocalActorContext("admin@mymedlife.test"),
+      );
+
+      expect(
+        readiness.gates.find((gate) => gate.key === "pilot_scope")?.status,
+      ).toBe("ready_now");
+      expect(
+        readiness.gates.find((gate) => gate.key === "event_nps_path")?.status,
+      ).toBe("ready_now");
+      expect(
+        readiness.gates.find((gate) => gate.key === "coach_support")?.status,
+      ).toBe("ready_now");
+      expect(readiness.recommendedNextMove).toContain("/admin/phase-2");
+      expect(
+        readiness.stages.find((stage) => stage.key === "first_student_pilot")
+          ?.requiredProof[0],
+      ).toContain("Boston College MEDLIFE");
+    } finally {
+      restoreEnv("MYMEDLIFE_PILOT_CHAPTER", originalChapter);
+      restoreEnv("MYMEDLIFE_PILOT_EVENT_NPS_POSTURE", originalEventNps);
+      restoreEnv("MYMEDLIFE_PILOT_COACH_OWNER", originalCoach);
+    }
+  });
+
   it("hides pilot readiness from operating roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
@@ -90,3 +125,12 @@ describe("controlled pilot readiness", () => {
     expect(getControlledPilotReadiness(coach).canReadReadiness).toBe(false);
   });
 });
+
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
+}
