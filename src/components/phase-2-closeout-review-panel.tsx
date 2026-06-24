@@ -73,6 +73,21 @@ export function Phase2CloseoutReviewPanel({
           items={review.blockedScope}
         />
       </div>
+
+      {review.recordedAnswers.length > 0 ? (
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+          <ChecklistCard
+            title="Recorded answers"
+            items={review.recordedAnswers}
+          />
+          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+            <h3 className="text-lg font-semibold text-white">Copy-paste approval reply</h3>
+            <pre className="mt-4 whitespace-pre-wrap text-sm leading-6 text-sky-50/82">
+              {review.approvalReplyBlock.join("\n")}
+            </pre>
+          </article>
+        </div>
+      ) : null}
     </section>
   );
 }

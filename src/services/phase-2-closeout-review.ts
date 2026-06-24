@@ -35,6 +35,8 @@ export type Phase2CloseoutReview = {
   packetPath: string;
   reviewerAction: string;
   approvalReplyHint: string;
+  recordedAnswers: string[];
+  approvalReplyBlock: string[];
   lanes: Phase2CloseoutLane[];
   requiredHumanDecisions: string[];
   blockedScope: string[];
@@ -63,6 +65,8 @@ export function getPhase2CloseoutReview(
       packetPath: "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
       reviewerAction: "Use the student, leader, or coach operating routes instead.",
       approvalReplyHint: "",
+      recordedAnswers: [],
+      approvalReplyBlock: [],
       lanes: [],
       requiredHumanDecisions: [],
       blockedScope: [],
@@ -81,6 +85,32 @@ export function getPhase2CloseoutReview(
   const packetPath =
     releaseReadiness.phase2Closeout?.packetPath ??
     "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md";
+  const recordedAnswers = [
+    ...pilotRegistry.defaults
+      .filter((item) => item.status === "recorded_final")
+      .map((item) => `${item.label}: ${item.value}`),
+    ...pilotRegistry.owners
+      .filter((item) => item.status === "recorded_owner")
+      .map((item) => `${item.label}: ${item.value}`),
+  ];
+  const requiredHumanDecisions = [
+    "Confirm the intended staging review target and reviewer access path.",
+    "Confirm the staff dry-run pass and note any confusing copy that should stay visible in the packet.",
+    "Complete one human device and accessibility smoke pass before pilot approval.",
+    ...(pilotRegistry.counts.ownersPending > 0
+      ? [
+          "Name the pilot chapter owners, DS owner, support/pause channel, and rollback owner.",
+        ]
+      : []),
+    ...(firstWrite.hostedCloseout.namedOwnersStillNeeded.some(
+      (item) => item.key === "hosted_write_approver",
+    )
+      ? [
+          "Approve `action_started` as the first hosted write, or replace it with a narrower approved lane.",
+        ]
+      : []),
+    "Confirm that HubSpot, Luma, n8n, warehouse / Power BI, SMS/email, and AI actions stay off for the pilot.",
+  ];
 
   const lanes: Phase2CloseoutLane[] = [
     {
@@ -193,6 +223,7 @@ export function getPhase2CloseoutReview(
       evidence: [
         `${pilotReadiness.counts.readyNow} pilot stages are ready for local review now.`,
         `${pilotReadiness.counts.blockedBeforePilot} stages or gates are still blocked before pilot use.`,
+        `${recordedAnswers.length} approval answers are already recorded across the Phase 2 registry.`,
         "External systems stay off unless separately approved.",
         firstWrite.hostedCloseout.externalHoldPosture,
       ],
@@ -209,15 +240,10 @@ export function getPhase2CloseoutReview(
       "Reviewers should start here, open only the linked routes that need attention, and either reply `approved as written` or replace only the fields they want changed.",
     approvalReplyHint:
       "Recommended defaults are already filled in where the repo has evidence. Human approval is still required for naming owners, staging reviewer posture, accessibility signoff, first hosted write ownership, and the external-systems hold.",
+    recordedAnswers,
+    approvalReplyBlock: pilotRegistry.approvalReplyBlock,
     lanes,
-    requiredHumanDecisions: [
-      "Confirm the intended staging review target and reviewer access path.",
-      "Confirm the staff dry-run pass and note any confusing copy that should stay visible in the packet.",
-      "Complete one human device and accessibility smoke pass before pilot approval.",
-      "Name the pilot chapter owners, DS owner, support/pause channel, and rollback owner.",
-      "Approve `action_started` as the first hosted write, or replace it with a narrower approved lane.",
-      "Confirm that HubSpot, Luma, n8n, warehouse / Power BI, SMS/email, and AI actions stay off for the pilot.",
-    ],
+    requiredHumanDecisions,
     blockedScope: firstWrite.hostedCloseout.blockedScope,
     counts: {
       lanes: lanes.length,
