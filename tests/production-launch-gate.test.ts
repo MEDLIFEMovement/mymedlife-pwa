@@ -153,8 +153,16 @@ describe("production launch gate", () => {
     ).toContain("Goal 157 auth preflight");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
+        ?.requiredEvidence,
+    ).toContain("Vercel-SSO-gated staging access path");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
         ?.reviewRoute,
     ).toBe("/onboarding");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_url")
+        ?.requiredEvidence,
+    ).toContain("approved reviewer access path");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "pilot_support_owner")
         ?.reviewRoute,

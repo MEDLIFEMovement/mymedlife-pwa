@@ -141,11 +141,11 @@ export function getProductionLaunchEvidenceChecks(
       ownerLane: "Engineering",
       status: "missing_before_pilot",
       requiredEvidence:
-        "A stable staging URL for the release branch that Nick, HQ, DS, and security can open.",
+        "A stable staging URL for the release branch that Nick, HQ, DS, and security can open, plus an approved reviewer access path if the hostname is still gated.",
       reviewRoute: "/admin/launch-gate",
       acceptanceSignal:
-        "The staging URL renders `/admin`, `/admin/design-qa`, `/admin/nick-review`, `/rush-month`, and `/offline` with the expected local-review posture.",
-      blockedUntil: "Staging URL and release branch ownership are approved.",
+        "The staging URL renders `/admin`, `/admin/design-qa`, `/admin/nick-review`, `/rush-month`, and `/offline` with the expected local-review posture, and reviewers know how to pass the current staging gate.",
+      blockedUntil: "Staging URL, reviewer access path, and release branch ownership are approved.",
     },
     {
       key: "staging_supabase",
@@ -165,11 +165,11 @@ export function getProductionLaunchEvidenceChecks(
       ownerLane: "Security and Student Access",
       status: "missing_before_pilot",
       requiredEvidence:
-        "Approved callback URLs, invite flow, profile creation flow, role assignment rules, Goal 157 auth preflight sign-off, and restricted-state review.",
+        "Approved callback URLs, invite flow, profile creation flow, role assignment rules, Goal 157 auth preflight sign-off, restricted-state review, and an explicit decision on the current Vercel-SSO-gated staging access path.",
       reviewRoute: "/onboarding",
       acceptanceSignal:
-        "A staging actor signs in through approved auth, lands in the correct role-scoped view without local preview email, and matches the preflight evidence.",
-      blockedUntil: "Production auth and role routing are approved.",
+        "A staging actor passes the approved staging access path, signs in through approved auth, lands in the correct role-scoped view without local preview email, and matches the preflight evidence.",
+      blockedUntil: "Production auth, role routing, and the staging access path are approved.",
     },
     {
       key: "rls_ci",

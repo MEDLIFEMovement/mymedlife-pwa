@@ -206,9 +206,9 @@ function buildLaunchPreflight(
       status: "blocked",
       question: "Can a real user sign in and return to the correct myMEDLIFE route?",
       requiredEvidence:
-        "Production and staging callback URLs, invite redirect URLs, and restricted-state fallback routes must be approved before live auth.",
+        "Production and staging callback URLs, invite redirect URLs, restricted-state fallback routes, and the approved staging reviewer access path must be confirmed before live auth.",
       currentPosture:
-        "Local preview still uses fake actor email selection; production callbacks are not enabled.",
+        "Local preview still uses fake actor email selection; production callbacks are not enabled. On 2026-06-24, anonymous staging requests redirected through Vercel SSO before app login.",
       routeEvidence: ["/login", "/onboarding", "/admin/launch-gate"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -238,7 +238,7 @@ function buildLaunchPreflight(
       requiredEvidence:
         "Supabase Auth user id, profile row, membership row, and staff/coach assignment reads must agree before real users are invited.",
       currentPosture:
-        "Local auth-derived actor context exists, but production Auth/profile mapping still needs staging proof.",
+        "Local auth-derived actor context exists, but production Auth/profile mapping still needs staging proof and an explicitly approved reviewer access path through the current staging gate.",
       routeEvidence: ["/profile", "/onboarding", "/admin/system-health"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -353,7 +353,7 @@ function buildLaunchPreflight(
   return {
     title: "Production auth preflight checklist",
     summary:
-      "Use this before inviting real users to confirm callbacks, role coverage, profile mapping, join approval, role assignment, coach scope, staff scope, audit/outbox posture, and rollback ownership.",
+      "Use this before inviting real users to confirm callbacks, staging reviewer access path, role coverage, profile mapping, join approval, role assignment, coach scope, staff scope, audit/outbox posture, and rollback ownership.",
     items,
     blockedControls: [
       "create production users",

@@ -121,6 +121,11 @@ describe("auth onboarding workspace", () => {
     expect(
       workspace.launchPreflight?.items.find(
         (item) => item.key === "callback_url_plan",
+      )?.currentPosture,
+    ).toContain("Vercel SSO");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "callback_url_plan",
       )?.status,
     ).toBe("blocked");
     expect(
@@ -135,6 +140,9 @@ describe("auth onboarding workspace", () => {
         "open self-serve staging sign-up",
         "enable external writes",
       ]),
+    );
+    expect(workspace.launchPreflight?.summary).toContain(
+      "staging reviewer access path",
     );
   });
 
