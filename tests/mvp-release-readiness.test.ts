@@ -428,6 +428,9 @@ describe("mvp release readiness", () => {
           "Support and pause channel: #mymedlife-pilot-watch",
         ]),
       );
+      expect(summary.phase2Closeout?.provenNow.join(" ")).toContain(
+        "proof metadata packet now frames the smallest hosted proof loop",
+      );
       expect(summary.phase2Closeout?.namedOwnersStillNeeded).not.toContain(
         "rollback owner",
       );

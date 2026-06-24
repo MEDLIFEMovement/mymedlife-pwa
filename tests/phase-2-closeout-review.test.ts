@@ -15,7 +15,7 @@ describe("phase 2 closeout review", () => {
     expect(review.packetPath).toBe(
       "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
     );
-    expect(review.counts.lanes).toBe(7);
+    expect(review.counts.lanes).toBe(8);
     expect(review.counts.reviewNow).toBeGreaterThan(0);
     expect(review.counts.awaitingHumanConfirmation).toBeGreaterThan(0);
     expect(review.counts.blockedBeforePilot).toBeGreaterThan(0);
@@ -35,6 +35,7 @@ describe("phase 2 closeout review", () => {
         "/onboarding",
         "/admin/pilot-scope",
         "/admin/first-write",
+        "/admin/proof-write",
         "/admin",
       ]),
     );
@@ -48,6 +49,12 @@ describe("phase 2 closeout review", () => {
     expect(
       review.lanes.find((lane) => lane.key === "first_hosted_write")?.summary,
     ).toContain("action_started");
+    expect(
+      review.lanes.find((lane) => lane.key === "hosted_proof_loop")?.summary,
+    ).toContain("proof metadata");
+    expect(
+      review.lanes.find((lane) => lane.key === "hosted_proof_loop")?.evidence.join(" "),
+    ).toContain("Leader review readback");
     expect(review.reviewerAction).toContain("approved as written");
   });
 

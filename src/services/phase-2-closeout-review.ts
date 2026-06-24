@@ -6,6 +6,7 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
 import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import { getPilotScopePlanner } from "@/services/pilot-scope-planner";
+import { getProofMetadataPacket } from "@/services/proof-metadata-verification-packet";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadAdminReviewSurface,
@@ -81,6 +82,7 @@ export function getPhase2CloseoutReview(
   const onboarding = getAuthOnboardingWorkspace(actor);
   const dryRun = getStaffDryRunGuide(actor, data);
   const firstWrite = getFirstWriteActivationDrill(actor, data);
+  const proofLoop = getProofMetadataPacket(actor, data);
   const designQa = getDesignQaReadiness(actor);
   const packetPath =
     releaseReadiness.phase2Closeout?.packetPath ??
@@ -109,6 +111,7 @@ export function getPhase2CloseoutReview(
           "Approve `action_started` as the first hosted write, or replace it with a narrower approved lane.",
         ]
       : []),
+    "Confirm the smallest hosted proof/review loop is limited to proof metadata submission plus leader review readback, while leader decision writes, uploads, and public proof stay blocked.",
     "Confirm that HubSpot, Luma, n8n, warehouse / Power BI, SMS/email, and AI actions stay off for the pilot.",
   ];
 
@@ -215,6 +218,19 @@ export function getPhase2CloseoutReview(
       ],
     },
     {
+      key: "hosted_proof_loop",
+      label: "Hosted proof loop closeout",
+      href: "/admin/proof-write",
+      status: "blocked_before_pilot",
+      summary: proofLoop.hostedCloseout.hostedDecision,
+      evidence: [
+        `Recommended proof loop: ${proofLoop.hostedCloseout.recommendedProofLoop}.`,
+        `${proofLoop.hostedCloseout.requiredReadback.length} hosted readback checks must be captured before proof-loop approval is honest.`,
+        `${proofLoop.hostedCloseout.namedOwnersStillNeeded.length} owner slots still affect the hosted proof loop.`,
+        "Leader review readback is in scope for this loop, but leader decision writes remain blocked.",
+      ],
+    },
+    {
       key: "controlled_pilot_gate",
       label: "Pilot gate and integration hold",
       href: "/admin",
@@ -234,7 +250,7 @@ export function getPhase2CloseoutReview(
     canReadReview: true,
     title: getTitle(surfaceFamily),
     summary:
-      "This route is the clean review starting point for Phase 2. It turns the current closeout packet, dry-run proof, onboarding preflight, pilot scope, first hosted write, and integration hold into one reviewer path without claiming the pilot is approved.",
+      "This route is the clean review starting point for Phase 2. It turns the current closeout packet, dry-run proof, onboarding preflight, pilot scope, first hosted write, hosted proof loop, and integration hold into one reviewer path without claiming the pilot is approved.",
     packetPath,
     reviewerAction:
       "Reviewers should start here, open only the linked routes that need attention, and either reply `approved as written` or replace only the fields they want changed.",
@@ -244,7 +260,12 @@ export function getPhase2CloseoutReview(
     approvalReplyBlock: pilotRegistry.approvalReplyBlock,
     lanes,
     requiredHumanDecisions,
-    blockedScope: firstWrite.hostedCloseout.blockedScope,
+    blockedScope: Array.from(
+      new Set([
+        ...firstWrite.hostedCloseout.blockedScope,
+        ...proofLoop.hostedCloseout.blockedScope,
+      ]),
+    ),
     counts: {
       lanes: lanes.length,
       reviewNow: lanes.filter((lane) => lane.status === "review_now").length,
