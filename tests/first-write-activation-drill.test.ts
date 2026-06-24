@@ -24,6 +24,8 @@ describe("first-write activation drill", () => {
     expect(drill.verificationPacket.plainEnglishDecision).toContain(
       "Do not run",
     );
+    expect(drill.hostedCloseout.recommendedHostedWrite).toBe("`action_started`");
+    expect(drill.hostedCloseout.stagingTarget).toBe("staging.mymedlife.org");
   });
 
   it("marks the drill ready only with local Supabase data, auth mode, flags, and UUID assignment", () => {
@@ -64,6 +66,9 @@ describe("first-write activation drill", () => {
     expect(drill.candidateAssignment?.route).toBe(
       "/rush-month/actions?assignmentId=00000000-0000-4000-8000-000000000101&source=first_write_packet",
     );
+    expect(drill.hostedCloseout.requiredReadback).toContain(
+      "Assignment status changes to `in_progress`.",
+    );
   });
 
   it("keeps local Supabase UUID data blocked until write flags are explicitly enabled", () => {
@@ -85,6 +90,43 @@ describe("first-write activation drill", () => {
     ).toBe(false);
   });
 
+  it("recognizes an explicitly approved staging review path for the first hosted write", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const drill = getFirstWriteActivationDrill(
+      actor,
+      withSupabaseUuidAssignment(mockData),
+      {
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
+        MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE: "true",
+      },
+    );
+
+    expect(drill.status).toBe("ready_for_local_action_start");
+    expect(
+      drill.checks.find((check) => check.key === "local_auth_mode")?.label,
+    ).toBe("Hosted staging Supabase Auth mode is selected");
+    expect(
+      drill.checks.find((check) => check.key === "local_write_flag")?.detail,
+    ).toContain("hosted staging action-start write flag");
+    expect(drill.verificationPacket.envSettings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "MYMEDLIFE_AUTH_MODE",
+          value: "staging_supabase",
+        }),
+        expect.objectContaining({
+          key: "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
+          value: "true",
+        }),
+        expect.objectContaining({
+          key: "MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE",
+          value: "true",
+        }),
+      ]),
+    );
+  });
+
   it("names the local action-start sequence and proof expected from staff", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const drill = getFirstWriteActivationDrill(actor, mockData, {});
@@ -102,6 +144,8 @@ describe("first-write activation drill", () => {
     ).toContain("action_started");
     expect(drill.proofToCollect.join(" ")).toContain("audit log");
     expect(drill.proofToCollect.join(" ")).toContain("external writes stayed at zero");
+    expect(drill.hostedCloseout.reviewSurfaces).toContain("/admin/audit-log");
+    expect(drill.hostedCloseout.namedOwnersStillNeeded).toHaveLength(3);
   });
 
   it("shows observed readback evidence after the local action-start records exist", () => {

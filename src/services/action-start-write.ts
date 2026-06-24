@@ -9,13 +9,13 @@ type EnvSource = Record<string, string | undefined>;
 export type ActionStartWriteConfig =
   | {
       enabled: true;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       reason: string;
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       reason: string;
     };
@@ -76,6 +76,26 @@ export type ActionStartReadbackState = {
 export function getActionStartWriteConfig(
   env: EnvSource = process.env,
 ): ActionStartWriteConfig {
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") {
+    if (env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE !== "true") {
+      return {
+        enabled: false,
+        isLocalOnly: false,
+        externalWritesEnabled: false,
+        reason:
+          "Hosted staging action-start writes remain disabled. Set MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE=true only after staging auth, pilot scope, and rollback ownership are approved.",
+      };
+    }
+
+    return {
+      enabled: true,
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      reason:
+        "Hosted staging action-start writes are enabled for the narrow pilot review lane. External sends remain disabled.",
+    };
+  }
+
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
     return {
       enabled: false,
@@ -112,8 +132,12 @@ export function getActionStartWriteReadiness(
 ): ActionStartWriteReadiness {
   const config = getActionStartWriteConfig(env);
   const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const stagingWriteRequested =
+    env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE === "true";
+  const writeScopeRequested = localWritesRequested || stagingWriteRequested;
   const actionStartWriteApproved =
-    env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true";
+    env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" ||
+    stagingWriteRequested;
   const hasLocalAuthSession =
     actor.identitySource === "local_auth_session" &&
     actor.authSessionStatus === "signed_in";
@@ -126,8 +150,8 @@ export function getActionStartWriteReadiness(
   const checks: ActionStartWriteReadiness["checks"] = [
     {
       key: "local_writes_requested",
-      label: "Local write switch is on",
-      passed: localWritesRequested,
+      label: config.isLocalOnly ? "Local write switch is on" : "Staging write scope is on",
+      passed: writeScopeRequested,
     },
     {
       key: "action_start_write_approved",
@@ -136,7 +160,9 @@ export function getActionStartWriteReadiness(
     },
     {
       key: "local_auth_session",
-      label: "Signed-in local Supabase Auth session",
+      label: config.isLocalOnly
+        ? "Signed-in local Supabase Auth session"
+        : "Signed-in staging Supabase Auth session",
       passed: hasLocalAuthSession,
     },
     {

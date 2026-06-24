@@ -13,14 +13,14 @@ type EnvSource = Record<string, string | undefined>;
 export type ProofSubmissionWriteConfig =
   | {
       enabled: true;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       uploadsEnabled: false;
       reason: string;
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       uploadsEnabled: false;
       reason: string;
@@ -105,6 +105,28 @@ export function getProofSubmissionWriteConfig(
     };
   }
 
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") {
+    if (env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE !== "true") {
+      return {
+        enabled: false,
+        isLocalOnly: false,
+        externalWritesEnabled: false,
+        uploadsEnabled: false,
+        reason:
+          "Hosted staging proof-submission writes remain disabled. Set MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE=true only after staging auth, first-write proof, and rollback ownership are approved.",
+      };
+    }
+
+    return {
+      enabled: true,
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      uploadsEnabled: false,
+      reason:
+        "Hosted staging proof/testimonial metadata writes are enabled for the narrow pilot review lane. Uploads and external sends remain disabled.",
+    };
+  }
+
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
     return {
       enabled: false,
@@ -145,8 +167,12 @@ export function getProofSubmissionWriteReadiness(
 ): ProofSubmissionWriteReadiness {
   const config = getProofSubmissionWriteConfig(env);
   const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const stagingWriteRequested =
+    env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE === "true";
+  const writeScopeRequested = localWritesRequested || stagingWriteRequested;
   const proofSubmissionWriteApproved =
-    env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true";
+    env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true" ||
+    stagingWriteRequested;
   const hasLocalAuthSession =
     actor.identitySource === "local_auth_session" &&
     actor.authSessionStatus === "signed_in";
@@ -165,8 +191,8 @@ export function getProofSubmissionWriteReadiness(
   const checks: ProofSubmissionWriteReadiness["checks"] = [
     {
       key: "local_writes_requested",
-      label: "Local write switch is on",
-      passed: localWritesRequested,
+      label: config.isLocalOnly ? "Local write switch is on" : "Staging write scope is on",
+      passed: writeScopeRequested,
     },
     {
       key: "proof_submission_write_approved",
@@ -175,7 +201,9 @@ export function getProofSubmissionWriteReadiness(
     },
     {
       key: "local_auth_session",
-      label: "Signed-in local Supabase Auth session",
+      label: config.isLocalOnly
+        ? "Signed-in local Supabase Auth session"
+        : "Signed-in staging Supabase Auth session",
       passed: hasLocalAuthSession,
     },
     {

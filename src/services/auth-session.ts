@@ -27,7 +27,7 @@ export type AuthReader = {
 
 export type AuthSessionState = {
   status: AuthSessionStatus;
-  isLocalOnly: true;
+  isLocalOnly: boolean;
   message: string;
   user:
     | {
@@ -43,7 +43,7 @@ export function getDisabledAuthSessionState(
 ): AuthSessionState {
   return {
     status: "disabled",
-    isLocalOnly: true,
+    isLocalOnly: config.isLocalOnly,
     message: config.reason,
     user: null,
   };
@@ -51,23 +51,31 @@ export function getDisabledAuthSessionState(
 
 export async function getAuthSessionState(
   authReader: AuthReader,
+  options: {
+    isLocalOnly?: boolean;
+    sessionLabel?: string;
+  } = {},
 ): Promise<AuthSessionState> {
+  const isLocalOnly = options.isLocalOnly ?? true;
+  const sessionLabel =
+    options.sessionLabel ??
+    (isLocalOnly ? "local Supabase Auth" : "hosted staging Supabase Auth");
   const result = await authReader.auth.getUser();
 
   if (result.error) {
     if (isMissingSessionError(result.error)) {
       return {
         status: "signed_out",
-        isLocalOnly: true,
-        message: "No local Supabase Auth session is active.",
+        isLocalOnly,
+        message: `No ${sessionLabel} session is active.`,
         user: null,
       };
     }
 
     return {
       status: "error",
-      isLocalOnly: true,
-      message: `Local Supabase Auth session check failed: ${result.error.message}`,
+      isLocalOnly,
+      message: `${sessionLabel} session check failed: ${result.error.message}`,
       user: null,
     };
   }
@@ -75,16 +83,16 @@ export async function getAuthSessionState(
   if (!result.data.user?.email) {
     return {
       status: "signed_out",
-      isLocalOnly: true,
-      message: "No local Supabase Auth session is active.",
+      isLocalOnly,
+      message: `No ${sessionLabel} session is active.`,
       user: null,
     };
   }
 
   return {
     status: "signed_in",
-    isLocalOnly: true,
-    message: "Local Supabase Auth session is active.",
+    isLocalOnly,
+    message: `${sessionLabel} session is active.`,
     user: {
       id: result.data.user.id,
       email: result.data.user.email,

@@ -7,6 +7,7 @@ describe("environment safety summary", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const summary = getEnvironmentSafetySummary(actor, {
       MYMEDLIFE_DATA_SOURCE: "mock",
+      MYMEDLIFE_AUTH_MODE: "disabled",
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS: "false",
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "false",
       MYMEDLIFE_ENABLE_ACTION_START_WRITE: "false",
@@ -19,7 +20,7 @@ describe("environment safety summary", () => {
     });
 
     expect(summary.canReadSummary).toBe(true);
-    expect(summary.items).toHaveLength(11);
+    expect(summary.items).toHaveLength(12);
     expect(summary.counts.secretsShown).toBe(0);
     expect(summary.counts.browserWritesEnabled).toBe(0);
     expect(summary.counts.externalWritesEnabled).toBe(0);
@@ -62,6 +63,23 @@ describe("environment safety summary", () => {
     expect(
       summary.items.filter((item) => item.status === "watch").map((item) => item.label),
     ).toEqual(["Local Supabase writes", "Action-start write"]);
+  });
+
+  it("shows hosted staging review auth and the staging action-start gate without enabling external sends", () => {
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    const summary = getEnvironmentSafetySummary(actor, {
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
+      MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE: "true",
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "staging-anon-key",
+    });
+
+    expect(summary.counts.browserWritesEnabled).toBe(1);
+    expect(summary.counts.externalWritesEnabled).toBe(0);
+    expect(
+      summary.items.filter((item) => item.status === "watch").map((item) => item.label),
+    ).toEqual(["Supabase review auth", "Action-start write"]);
   });
 
   it("counts approved local proof metadata writes without enabling uploads or external sends", () => {

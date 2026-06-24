@@ -4,14 +4,19 @@ import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getSupabaseAuthConfig } from "@/services/supabase-auth-config";
 
 export type EnvironmentSafetyInput = {
   MYMEDLIFE_DATA_SOURCE?: string;
+  MYMEDLIFE_AUTH_MODE?: string;
+  MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH?: string;
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS?: string;
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES?: string;
   MYMEDLIFE_ENABLE_ACTION_START_WRITE?: string;
+  MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE?: string;
   MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE?: string;
   MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE?: string;
+  MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE?: string;
   MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE?: string;
   MYMEDLIFE_ENABLE_COACH_DECISION_WRITE?: string;
   MYMEDLIFE_ALLOW_PROOF_UPLOADS?: string;
@@ -56,6 +61,7 @@ export function getEnvironmentSafetySummary(
     };
   }
 
+  const authConfig = getSupabaseAuthConfig(env);
   const items: EnvironmentSafetyItem[] = [
     {
       label: "Data source",
@@ -66,6 +72,12 @@ export function getEnvironmentSafetySummary(
         env.MYMEDLIFE_DATA_SOURCE === "supabase"
           ? "Local Supabase reads may be active, but production Supabase remains out of scope."
           : "Mock data is the safest review mode.",
+    },
+    {
+      label: "Supabase review auth",
+      value: env.MYMEDLIFE_AUTH_MODE || "disabled",
+      status: authConfig.enabled ? "watch" : isAuthModeRequested(env) ? "blocked" : "safe",
+      explanation: authConfig.reason,
     },
     {
       label: "Local Supabase reads",
@@ -162,16 +174,23 @@ export function getEnvironmentSafetySummary(
 function readEnvironmentSafetyInput(): EnvironmentSafetyInput {
   return {
     MYMEDLIFE_DATA_SOURCE: process.env.MYMEDLIFE_DATA_SOURCE,
+    MYMEDLIFE_AUTH_MODE: process.env.MYMEDLIFE_AUTH_MODE,
+    MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH:
+      process.env.MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH,
     MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS:
       process.env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS,
     MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES:
       process.env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES,
     MYMEDLIFE_ENABLE_ACTION_START_WRITE:
       process.env.MYMEDLIFE_ENABLE_ACTION_START_WRITE,
+    MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE:
+      process.env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE,
     MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE:
       process.env.MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE,
     MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE:
       process.env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE,
+    MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE:
+      process.env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE,
     MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE:
       process.env.MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE,
     MYMEDLIFE_ENABLE_COACH_DECISION_WRITE:
@@ -184,8 +203,15 @@ function readEnvironmentSafetyInput(): EnvironmentSafetyInput {
 function getActionStartWriteStatus(
   env: EnvironmentSafetyInput,
 ): EnvironmentSafetyItem["status"] {
-  if (env.MYMEDLIFE_ENABLE_ACTION_START_WRITE !== "true") {
+  if (
+    env.MYMEDLIFE_ENABLE_ACTION_START_WRITE !== "true" &&
+    env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE !== "true"
+  ) {
     return "safe";
+  }
+
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") {
+    return env.MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH === "true" ? "watch" : "blocked";
   }
 
   return env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true" ? "watch" : "blocked";
@@ -194,8 +220,19 @@ function getActionStartWriteStatus(
 function getProofSubmissionWriteStatus(
   env: EnvironmentSafetyInput,
 ): EnvironmentSafetyItem["status"] {
-  if (env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE !== "true") {
+  if (
+    env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE !== "true" &&
+    env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE !== "true"
+  ) {
     return "safe";
+  }
+
+  if (env.MYMEDLIFE_AUTH_MODE === "staging_supabase") {
+    if (env.MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH !== "true") {
+      return "blocked";
+    }
+
+    return env.MYMEDLIFE_ALLOW_PROOF_UPLOADS === "true" ? "blocked" : "watch";
   }
 
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
@@ -236,16 +273,26 @@ function getCoachDecisionWriteStatus(
 }
 
 function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
-  if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
+  const localWriteMasterEnabled =
+    env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const stagingReviewEnabled =
+    env.MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH === "true" &&
+    env.MYMEDLIFE_AUTH_MODE === "staging_supabase";
+
+  if (!localWriteMasterEnabled && !stagingReviewEnabled) {
     return 0;
   }
 
   const actionStartEnabled =
-    env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" ? 1 : 0;
+    env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" ||
+    env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE === "true"
+      ? 1
+      : 0;
   const assignmentCreateEnabled =
     env.MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE === "true" ? 1 : 0;
   const proofSubmissionEnabled =
-    env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true" &&
+    (env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true" ||
+      env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE === "true") &&
     env.MYMEDLIFE_ALLOW_PROOF_UPLOADS !== "true"
       ? 1
       : 0;
@@ -260,6 +307,13 @@ function getEnabledLocalWriteCount(env: EnvironmentSafetyInput): number {
     proofSubmissionEnabled +
     hqProofDecisionEnabled +
     coachDecisionEnabled
+  );
+}
+
+function isAuthModeRequested(env: EnvironmentSafetyInput): boolean {
+  return (
+    env.MYMEDLIFE_AUTH_MODE === "local_supabase" ||
+    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
   );
 }
 

@@ -40,6 +40,19 @@ describe("action-start write readiness", () => {
     });
   });
 
+  it("supports an explicitly approved staging action-start gate without enabling external sends", () => {
+    expect(
+      getActionStartWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+    });
+  });
+
   it("keeps the write locked without auth-derived actor context", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const readiness = getActionStartWriteReadiness(actor, makeStartableAssignment(), {

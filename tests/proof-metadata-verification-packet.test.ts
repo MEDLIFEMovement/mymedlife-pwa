@@ -96,6 +96,40 @@ describe("proof metadata verification packet", () => {
     ).toBe(false);
   });
 
+  it("recognizes an explicitly approved staging review path for hosted proof metadata", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const packet = getProofMetadataPacket(actor, withFirstWriteReadback(), {
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
+      MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE: "true",
+      MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+    });
+
+    expect(packet.status).toBe("ready_for_local_proof_metadata");
+    expect(packet.checks.find((check) => check.key === "auth_mode")?.label).toBe(
+      "Hosted staging Supabase Auth mode is selected",
+    );
+    expect(
+      packet.checks.find((check) => check.key === "proof_submission_flag")?.detail,
+    ).toContain("MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE=true");
+    expect(packet.verificationPacket.envSettings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "MYMEDLIFE_AUTH_MODE",
+          value: "staging_supabase",
+        }),
+        expect.objectContaining({
+          key: "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
+          value: "true",
+        }),
+        expect.objectContaining({
+          key: "MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE",
+          value: "true",
+        }),
+      ]),
+    );
+  });
+
   it("shows observed proof metadata readback after the local records exist", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const packet = getProofMetadataPacket(actor, withProofMetadataReadback(), {

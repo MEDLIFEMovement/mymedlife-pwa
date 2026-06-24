@@ -9,6 +9,7 @@ import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { isReviewSupabaseAuthMode } from "@/services/supabase-auth-config";
 import type { ProofSubmissionInput } from "@/services/local-action-contracts";
 import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import type { Assignment } from "@/shared/types/domain";
@@ -128,12 +129,13 @@ export function getProofMetadataPacket(
   }
 
   const candidateAssignment = findCandidateAssignment(data.assignments);
+  const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const targetActor = getMockLocalActorContext(
     "member.a@mymedlife.test",
     "Target pilot member for proof/testimonial metadata testing.",
     data.source.status,
     "local_auth_session",
-    env.MYMEDLIFE_AUTH_MODE === "local_supabase" ? "signed_in" : "signed_out",
+    reviewAuthModeEnabled ? "signed_in" : "signed_out",
   );
   const writeConfig = getProofSubmissionWriteConfig(env);
   const readiness = candidateAssignment
@@ -163,6 +165,7 @@ export function getProofMetadataPacket(
     status,
     candidate,
     readbackEvidence,
+    env,
   );
 
   return {
@@ -249,10 +252,25 @@ function buildChecks(
   env: EnvSource,
 ): ProofMetadataPacketCheck[] {
   const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const stagingProofEnabled =
+    env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE === "true";
   const proofSubmissionEnabled =
-    env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true";
-  const localAuthMode = env.MYMEDLIFE_AUTH_MODE === "local_supabase";
+    env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE === "true" || stagingProofEnabled;
+  const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
+  const writeScopeEnabled = localWritesRequested || stagingProofEnabled;
   const uploadsDisabled = env.MYMEDLIFE_ALLOW_PROOF_UPLOADS !== "true";
+  const authModeLabel =
+    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+      ? "Hosted staging Supabase Auth mode is selected"
+      : "Local Supabase Auth mode is selected";
+  const authModeDetail =
+    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+      ? reviewAuthModeEnabled
+        ? "Hosted staging auth can open the pilot member path."
+        : "Set MYMEDLIFE_AUTH_MODE=staging_supabase only after staging review auth is approved."
+      : reviewAuthModeEnabled
+        ? "Local sign-in can create a fake seed user session."
+        : "Set MYMEDLIFE_AUTH_MODE=local_supabase for the local proof metadata test.";
 
   return [
     {
@@ -300,26 +318,28 @@ function buildChecks(
     },
     {
       key: "auth_mode",
-      label: "Local Supabase Auth mode is selected",
-      passed: localAuthMode,
-      detail: localAuthMode
-        ? "Local sign-in can create a fake seed user session."
-        : "Set MYMEDLIFE_AUTH_MODE=local_supabase for the local proof metadata test.",
+      label: authModeLabel,
+      passed: reviewAuthModeEnabled,
+      detail: authModeDetail,
     },
     {
       key: "local_write_flag",
-      label: "Local write switch is on",
-      passed: localWritesRequested,
-      detail: localWritesRequested
-        ? "Local Supabase writes are explicitly allowed for localhost testing."
-        : "Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for local testing.",
+      label: "Approved write scope is on",
+      passed: writeScopeEnabled,
+      detail: writeScopeEnabled
+        ? stagingProofEnabled
+          ? "The hosted staging proof-submission flag is enabled for the narrow pilot lane."
+          : "Local Supabase writes are explicitly allowed for localhost testing."
+        : "Set the narrow write scope only when staff is ready to collect proof metadata evidence.",
     },
     {
       key: "proof_submission_flag",
       label: "Proof metadata write switch is on",
       passed: proofSubmissionEnabled,
       detail: proofSubmissionEnabled
-        ? "Only the proof metadata write gate is allowed to open."
+        ? stagingProofEnabled
+          ? "MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE=true is set for the hosted pilot lane."
+          : "Only the proof metadata write gate is allowed to open."
         : "Set MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true only after first-write readback is proven.",
     },
     {
@@ -333,7 +353,9 @@ function buildChecks(
         readiness?.checks.find((check) => check.key === "local_auth_session")
           ?.passed
           ? "The target fake member has a local Supabase Auth session."
-          : "Sign in as member.a@mymedlife.test before submitting proof metadata.",
+          : env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+            ? "Sign in as an approved staging pilot member before submitting proof metadata."
+            : "Sign in as member.a@mymedlife.test before submitting proof metadata.",
     },
     {
       key: "summary_long_enough",
@@ -524,6 +546,7 @@ function buildVerificationPacket(
   status: ProofMetadataPacketStatus,
   candidate: ProofMetadataCandidate | null,
   readbackEvidence: ProofMetadataReadbackItem[],
+  env: EnvSource = process.env,
 ): ProofMetadataVerificationPacket {
   const evidenceObserved = isProofReadbackObserved(readbackEvidence);
   const auditNeedsManualCheck = isProofCoreObservedWithoutAudit(readbackEvidence);
@@ -533,33 +556,62 @@ function buildVerificationPacket(
     canPromoteToStagingReview: evidenceObserved,
     title: "Proof metadata operator packet",
     plainEnglishDecision: getPlainEnglishDecision(status, evidenceObserved, auditNeedsManualCheck),
-    envSettings: [
-      {
-        key: "MYMEDLIFE_AUTH_MODE",
-        value: "local_supabase",
-        reason: "Use local fake seed users only.",
-      },
-      {
-        key: "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES",
-        value: "true",
-        reason: "Allow localhost Supabase writes for this controlled test only.",
-      },
-      {
-        key: "MYMEDLIFE_ENABLE_ACTION_START_WRITE",
-        value: "false",
-        reason: "Action-start should already be proven before testing proof metadata.",
-      },
-      {
-        key: "MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE",
-        value: "true",
-        reason: "Open only the proof/testimonial metadata write gate.",
-      },
-      {
-        key: "MYMEDLIFE_ALLOW_PROOF_UPLOADS",
-        value: "false",
-        reason: "This packet is metadata-only. No file uploads or storage writes.",
-      },
-    ],
+    envSettings:
+      env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+        ? [
+            {
+              key: "MYMEDLIFE_AUTH_MODE",
+              value: "staging_supabase",
+              reason: "Use the approved staging pilot account path only.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
+              value: "true",
+              reason: "Hosted staging auth must be explicitly approved before proof metadata opens.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE",
+              value: "false",
+              reason: "Action-start should already be proven before testing hosted proof metadata.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE",
+              value: "true",
+              reason: "Open only the hosted proof/testimonial metadata write gate.",
+            },
+            {
+              key: "MYMEDLIFE_ALLOW_PROOF_UPLOADS",
+              value: "false",
+              reason: "This packet is metadata-only. No file uploads or storage writes.",
+            },
+          ]
+        : [
+            {
+              key: "MYMEDLIFE_AUTH_MODE",
+              value: "local_supabase",
+              reason: "Use local fake seed users only.",
+            },
+            {
+              key: "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES",
+              value: "true",
+              reason: "Allow localhost Supabase writes for this controlled test only.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_ACTION_START_WRITE",
+              value: "false",
+              reason: "Action-start should already be proven before testing proof metadata.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE",
+              value: "true",
+              reason: "Open only the proof/testimonial metadata write gate.",
+            },
+            {
+              key: "MYMEDLIFE_ALLOW_PROOF_UPLOADS",
+              value: "false",
+              reason: "This packet is metadata-only. No file uploads or storage writes.",
+            },
+          ],
     fakeMemberCredential: {
       email: "member.a@mymedlife.test",
       passwordLabel: "password",
@@ -576,7 +628,9 @@ function buildVerificationPacket(
         label: "Sign in as the fake member",
         route: "/login",
         expectedProof:
-          "The app shows a local Supabase Auth session for member.a@mymedlife.test.",
+          env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+            ? "The app shows a staging Supabase Auth session for the approved pilot member."
+            : "The app shows a local Supabase Auth session for member.a@mymedlife.test.",
       },
       {
         label: "Open the target action",
@@ -603,7 +657,11 @@ function buildVerificationPacket(
       "Stop if the target assignment is not a Supabase UUID.",
       "Stop if proof upload controls appear enabled.",
       "Stop if any external send, public proof publish, AI summary, or warehouse export appears enabled.",
-      "Stop if the operator is not using a fake local seed user.",
+      `Stop if the operator is not using ${
+        env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+          ? "an approved staging pilot user."
+          : "a fake local seed user."
+      }`,
     ],
   };
 }

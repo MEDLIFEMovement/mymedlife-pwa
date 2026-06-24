@@ -42,6 +42,21 @@ describe("proof-submission write readiness", () => {
     });
   });
 
+  it("supports an explicitly approved staging proof-metadata gate without enabling uploads or sends", () => {
+    expect(
+      getProofSubmissionWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      uploadsEnabled: false,
+    });
+  });
+
   it("blocks metadata writes when proof uploads are requested", () => {
     expect(
       getProofSubmissionWriteConfig({

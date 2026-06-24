@@ -11,6 +11,7 @@ import {
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
 import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
+import { isReviewSupabaseAuthMode } from "@/services/supabase-auth-config";
 import type { Assignment } from "@/shared/types/domain";
 
 type EnvSource = Record<string, string | undefined>;
@@ -83,6 +84,22 @@ export type FirstWriteVerificationPacket = {
   safetyStops: string[];
 };
 
+export type FirstWriteHostedCloseout = {
+  title: string;
+  stagingTarget: string;
+  recommendedHostedWrite: string;
+  hostedDecision: string;
+  requiredReadback: string[];
+  reviewSurfaces: string[];
+  namedOwnersStillNeeded: Array<{
+    key: string;
+    label: string;
+    recommendedDefault: string;
+  }>;
+  blockedScope: string[];
+  externalHoldPosture: string;
+};
+
 export type FirstWriteActivationDrill = {
   canReadDrill: boolean;
   title: string;
@@ -101,6 +118,7 @@ export type FirstWriteActivationDrill = {
   steps: FirstWriteDrillStep[];
   readbackEvidence: FirstWriteReadbackEvidenceItem[];
   verificationPacket: FirstWriteVerificationPacket;
+  hostedCloseout: FirstWriteHostedCloseout;
   proofToCollect: string[];
   counts: {
     checks: number;
@@ -130,18 +148,20 @@ export function getFirstWriteActivationDrill(
       steps: [],
       readbackEvidence: [],
       verificationPacket: buildHiddenVerificationPacket(),
+      hostedCloseout: buildHostedCloseout(),
       proofToCollect: [],
       counts: emptyCounts(),
     };
   }
 
   const candidateAssignment = findCandidateAssignment(data.assignments);
+  const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const targetActor = getMockLocalActorContext(
     "member.a@mymedlife.test",
     "Target pilot member for the first action-start write drill.",
     data.source.status,
     "local_auth_session",
-    env.MYMEDLIFE_AUTH_MODE === "local_supabase" ? "signed_in" : "signed_out",
+    reviewAuthModeEnabled ? "signed_in" : "signed_out",
   );
   const writeConfig = getActionStartWriteConfig(env);
   const readiness = candidateAssignment
@@ -158,6 +178,7 @@ export function getFirstWriteActivationDrill(
     candidate,
     checks,
     readbackEvidence,
+    env,
   );
 
   return {
@@ -171,6 +192,7 @@ export function getFirstWriteActivationDrill(
     steps: buildSteps(candidate),
     readbackEvidence,
     verificationPacket,
+    hostedCloseout: buildHostedCloseout(),
     proofToCollect: [
       "Screenshot of `/admin/first-write` before the test showing every required check green.",
       "Screenshot of the selected action detail route before clicking Start this action.",
@@ -247,8 +269,24 @@ function buildChecks(
   env: EnvSource,
 ): FirstWriteDrillCheck[] {
   const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
-  const actionStartEnabled = env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true";
-  const localAuthMode = env.MYMEDLIFE_AUTH_MODE === "local_supabase";
+  const stagingActionStartEnabled =
+    env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE === "true";
+  const actionStartEnabled =
+    env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" || stagingActionStartEnabled;
+  const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
+  const writeScopeEnabled = localWritesRequested || stagingActionStartEnabled;
+  const authModeLabel =
+    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+      ? "Hosted staging Supabase Auth mode is selected"
+      : "Local Supabase Auth mode is selected";
+  const authModeDetail =
+    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+      ? reviewAuthModeEnabled
+        ? "MYMEDLIFE_AUTH_MODE=staging_supabase is set for hosted review."
+        : "Set MYMEDLIFE_AUTH_MODE=staging_supabase only after staging review auth is approved."
+      : reviewAuthModeEnabled
+        ? "MYMEDLIFE_AUTH_MODE=local_supabase is set."
+        : "Set MYMEDLIFE_AUTH_MODE=local_supabase and sign in with a fake seed user.";
 
   return [
     {
@@ -279,26 +317,28 @@ function buildChecks(
     },
     {
       key: "local_auth_mode",
-      label: "Local Supabase Auth mode is selected",
-      passed: localAuthMode,
-      detail: localAuthMode
-        ? "MYMEDLIFE_AUTH_MODE=local_supabase is set."
-        : "Set MYMEDLIFE_AUTH_MODE=local_supabase and sign in with a fake seed user.",
+      label: authModeLabel,
+      passed: reviewAuthModeEnabled,
+      detail: authModeDetail,
     },
     {
       key: "local_write_flag",
-      label: "Local write master switch is on",
-      passed: localWritesRequested,
-      detail: localWritesRequested
-        ? "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true is set for local testing."
-        : "Keep this off until staff deliberately runs the first-write drill.",
+      label: "Approved write scope is on",
+      passed: writeScopeEnabled,
+      detail: writeScopeEnabled
+        ? stagingActionStartEnabled
+          ? "The hosted staging action-start write flag is enabled for the narrow pilot lane."
+          : "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true is set for local testing."
+        : "Keep every write flag off until staff deliberately runs the first-write drill.",
     },
     {
       key: "action_start_flag",
       label: "Action-start write switch is on",
       passed: actionStartEnabled,
       detail: actionStartEnabled
-        ? "MYMEDLIFE_ENABLE_ACTION_START_WRITE=true is set for this narrow write."
+        ? stagingActionStartEnabled
+          ? "MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE=true is set for the hosted pilot lane."
+          : "MYMEDLIFE_ENABLE_ACTION_START_WRITE=true is set for this narrow write."
         : "This write remains locked until the action-start switch is explicitly enabled.",
     },
     {
@@ -526,6 +566,7 @@ function buildVerificationPacket(
   candidate: FirstWriteActivationDrill["candidateAssignment"],
   checks: FirstWriteDrillCheck[],
   readbackEvidence: FirstWriteReadbackEvidenceItem[],
+  env: EnvSource = process.env,
 ): FirstWriteVerificationPacket {
   const evidenceStatuses = Object.fromEntries(
     readbackEvidence.map((item) => [item.key, item.status]),
@@ -560,51 +601,82 @@ function buildVerificationPacket(
     plainEnglishDecision: getVerificationDecision(packetStatus, checks),
     canPromoteToStagingReview: packetStatus === "evidence_observed",
     envSettings: [
-      {
-        key: "MYMEDLIFE_DATA_SOURCE",
-        value: "supabase",
-        reason: "The drill must target local UUID-backed seed data, not mock fallback rows.",
-      },
-      {
-        key: "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS",
-        value: "true",
-        reason: "The app must read local assignment, event, integration, outbox, and audit evidence.",
-      },
-      {
-        key: "MYMEDLIFE_AUTH_MODE",
-        value: "local_supabase",
-        reason: "The write must use a server-derived local auth session.",
-      },
-      {
-        key: "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES",
-        value: "true",
-        reason: "The local write master switch must be deliberate for this drill.",
-      },
-      {
-        key: "MYMEDLIFE_ENABLE_ACTION_START_WRITE",
-        value: "true",
-        reason: "Only the action-start write is enabled for the first drill.",
-      },
-      {
-        key: "MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE",
-        value: "false",
-        reason: "Proof saves stay locked during the first action-start drill.",
-      },
-      {
-        key: "MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE",
-        value: "false",
-        reason: "Leader assignment creation stays locked during the first action-start drill.",
-      },
-      {
-        key: "MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE",
-        value: "false",
-        reason: "HQ proof decisions stay locked during the first action-start drill.",
-      },
-      {
-        key: "MYMEDLIFE_ENABLE_COACH_DECISION_WRITE",
-        value: "false",
-        reason: "Coach decisions stay locked during the first action-start drill.",
-      },
+      ...(env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+        ? [
+            {
+              key: "MYMEDLIFE_DATA_SOURCE",
+              value: "supabase",
+              reason:
+                "The hosted drill must still target UUID-backed staging data, not mock fallback rows.",
+            },
+            {
+              key: "MYMEDLIFE_AUTH_MODE",
+              value: "staging_supabase",
+              reason: "The write must use a server-derived staging auth session.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
+              value: "true",
+              reason: "Hosted review auth must be explicitly approved before this drill opens.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE",
+              value: "true",
+              reason: "Only the narrow hosted action-start write is enabled for the pilot lane.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE",
+              value: "false",
+              reason: "Proof writes stay locked until action-start proof is captured on staging.",
+            },
+          ]
+        : [
+            {
+              key: "MYMEDLIFE_DATA_SOURCE",
+              value: "supabase",
+              reason: "The drill must target local UUID-backed seed data, not mock fallback rows.",
+            },
+            {
+              key: "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS",
+              value: "true",
+              reason: "The app must read local assignment, event, integration, outbox, and audit evidence.",
+            },
+            {
+              key: "MYMEDLIFE_AUTH_MODE",
+              value: "local_supabase",
+              reason: "The write must use a server-derived local auth session.",
+            },
+            {
+              key: "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES",
+              value: "true",
+              reason: "The local write master switch must be deliberate for this drill.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_ACTION_START_WRITE",
+              value: "true",
+              reason: "Only the action-start write is enabled for the first drill.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE",
+              value: "false",
+              reason: "Proof saves stay locked during the first action-start drill.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE",
+              value: "false",
+              reason: "Leader assignment creation stays locked during the first action-start drill.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE",
+              value: "false",
+              reason: "HQ proof decisions stay locked during the first action-start drill.",
+            },
+            {
+              key: "MYMEDLIFE_ENABLE_COACH_DECISION_WRITE",
+              value: "false",
+              reason: "Coach decisions stay locked during the first action-start drill.",
+            },
+          ]),
     ],
     fakeMemberCredential: {
       email: "member.a@mymedlife.test",
@@ -622,7 +694,9 @@ function buildVerificationPacket(
         label: "Sign in as the fake member",
         route: "/login",
         expectedProof:
-          "The app actor context uses local_auth_session for member.a@mymedlife.test.",
+          env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+            ? "The app actor context uses a signed-in staging auth session for the approved pilot member."
+            : "The app actor context uses local_auth_session for member.a@mymedlife.test.",
       },
       {
         label: "Start the candidate action",
@@ -640,7 +714,11 @@ function buildVerificationPacket(
     safetyStops: [
       "Stop if the app is reading mock fallback data.",
       "Stop if the candidate action does not use a Supabase UUID.",
-      "Stop if the signed-in user is not a fake local seed member.",
+      `Stop if the signed-in user is not ${
+        env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+          ? "an approved staging pilot member."
+          : "a fake local seed member."
+      }`,
       "Stop if any non-action-start write flag is enabled.",
       "Stop if any HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, AI, upload, or public proof control is live.",
     ],
@@ -685,6 +763,64 @@ function buildHiddenVerificationPacket(): FirstWriteVerificationPacket {
     },
     operatorSequence: [],
     safetyStops: [],
+  };
+}
+
+function buildHostedCloseout(): FirstWriteHostedCloseout {
+  return {
+    title: "Hosted staging closeout",
+    stagingTarget: "staging.mymedlife.org",
+    recommendedHostedWrite: "`action_started`",
+    hostedDecision:
+      "If the team approves one hosted write first, it should be action_started on staging only. That proves real auth identity, assignment status change, internal event, integration event, audit row, and zero external sends before any broader proof or workflow write opens.",
+    requiredReadback: [
+      "Before-and-after route evidence from the signed-in student path.",
+      "Assignment status changes to `in_progress`.",
+      "One internal `action_started` event row exists.",
+      "One internal integration event row exists.",
+      "One audit log row exists.",
+      "Zero automation outbox sends exist.",
+      "Zero external writes occur.",
+    ],
+    reviewSurfaces: [
+      "/rush-month/actions/[assignmentId]",
+      "/chapter?view=members",
+      "/staff?view=chapters",
+      "/admin/audit-log",
+      "/admin/integration-outbox",
+      "/admin/pilot-scope",
+    ],
+    namedOwnersStillNeeded: [
+      {
+        key: "hosted_write_approver",
+        label: "Hosted write approver",
+        recommendedDefault: "pending Kiomi/Nick",
+      },
+      {
+        key: "rollback_owner",
+        label: "Rollback owner",
+        recommendedDefault: "pending Kiomi",
+      },
+      {
+        key: "support_pause_channel",
+        label: "Support and pause channel",
+        recommendedDefault: "pending HQ ops",
+      },
+    ],
+    blockedScope: [
+      "proof uploads",
+      "public proof sharing",
+      "assignment creation",
+      "HQ proof decisions",
+      "coach decisions",
+      "HubSpot writes",
+      "Luma writes",
+      "n8n writes",
+      "warehouse and Power BI writes",
+      "SMS, email, and AI actions",
+    ],
+    externalHoldPosture:
+      "All external integrations stay off for the first hosted write proof. The outbox may record review-safe internal evidence only.",
   };
 }
 

@@ -39,6 +39,7 @@ describe("auth session service", () => {
 
     expect(state).toMatchObject({
       status: "signed_in",
+      message: "local Supabase Auth session is active.",
       user: {
         id: "user-1",
         email: "member.a@mymedlife.test",
@@ -86,6 +87,27 @@ describe("auth session service", () => {
     expect(getAuthDisplayName({ id: "user-1", email: "coach@mymedlife.test" })).toBe(
       "coach",
     );
+  });
+
+  it("can describe hosted staging auth sessions separately from local review auth", async () => {
+    const state = await getAuthSessionState(
+      createFakeAuthReader({
+        data: {
+          user: {
+            id: "user-2",
+            email: "pilot.student@mymedlife.test",
+          },
+        },
+        error: null,
+      }),
+      {
+        isLocalOnly: false,
+        sessionLabel: "hosted staging Supabase Auth",
+      },
+    );
+
+    expect(state.message).toBe("hosted staging Supabase Auth session is active.");
+    expect(state.isLocalOnly).toBe(false);
   });
 });
 

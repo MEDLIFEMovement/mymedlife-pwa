@@ -15,7 +15,13 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage() {
   const { client, config } = await createLocalSupabaseServerClient();
   const session = client
-    ? await getAuthSessionState(client)
+    ? await getAuthSessionState(client, {
+        isLocalOnly: config.isLocalOnly,
+        sessionLabel:
+          config.reviewEnvironment === "staging"
+            ? "hosted staging Supabase Auth"
+            : "local Supabase Auth",
+      })
     : getDisabledAuthSessionState(config);
 
   return (
@@ -30,8 +36,9 @@ export default async function LoginPage() {
               Sign in to continue into your myMEDLIFE role.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
-              Use a seeded account to open the matching member, leader, coach,
-              or staff experience with a real session-backed route.
+              Use a seeded review account or approved pilot account to open the
+              matching member, leader, coach, or staff experience with a real
+              session-backed route.
             </p>
           </div>
           <div className="rounded-[1.75rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
