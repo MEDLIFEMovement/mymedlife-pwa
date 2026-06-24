@@ -422,6 +422,12 @@ describe("mvp release readiness", () => {
         getMockLocalActorContext("admin@mymedlife.test"),
       );
 
+      expect(summary.phase2Closeout?.recordedOwnerAnswers).toEqual(
+        expect.arrayContaining([
+          "Rollback owner: Kiomi Matsukawa",
+          "Support and pause channel: #mymedlife-pilot-watch",
+        ]),
+      );
       expect(summary.phase2Closeout?.namedOwnersStillNeeded).not.toContain(
         "rollback owner",
       );

@@ -39,6 +39,7 @@ export type Phase2CloseoutSnapshot = {
   provenNow: string[];
   stillBlocked: string[];
   namedOwnersStillNeeded: string[];
+  recordedOwnerAnswers: string[];
   nextDecision: string;
 };
 
@@ -643,6 +644,9 @@ function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
       "Explicit external-integration hold signoff",
     ],
     namedOwnersStillNeeded: pendingOwnerLabels,
+    recordedOwnerAnswers: pilotRegistry.owners
+      .filter((item) => item.status === "recorded_owner")
+      .map((item) => `${item.label}: ${item.value}`),
     nextDecision:
       "Approve the closeout packet as written or replace only the chapter, owner slots, cohort size, event/NPS posture, support channel, or rollback owner.",
   };

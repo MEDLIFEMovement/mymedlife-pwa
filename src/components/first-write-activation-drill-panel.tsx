@@ -302,6 +302,112 @@ export function FirstWriteActivationDrillPanel({
           ))}
         </ul>
       </section>
+
+      <section className="mt-5 rounded-[2rem] border border-violet-300/20 bg-violet-300/10 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-100/80">
+              Phase 2 closeout
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              {drill.hostedCloseout.title}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/64">
+              {drill.hostedCloseout.hostedDecision}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-center">
+            <MiniStat label="Target" value={drill.hostedCloseout.stagingTarget} />
+            <MiniStat label="Write" value={drill.hostedCloseout.recommendedHostedWrite} />
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+            <p className="text-sm font-semibold text-white">Required hosted readback</p>
+            <ul className="mt-3 grid gap-2">
+              {drill.hostedCloseout.requiredReadback.map((item) => (
+                <li key={item} className="text-sm leading-6 text-white/62">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+            <p className="text-sm font-semibold text-white">Review surfaces</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {drill.hostedCloseout.reviewSurfaces.map((route) => (
+                <span
+                  key={route}
+                  className="rounded-full border border-violet-200/15 bg-violet-200/10 px-3 py-1 font-mono text-[0.68rem] text-violet-100/80"
+                >
+                  {route}
+                </span>
+              ))}
+            </div>
+            <p className="mt-3 text-xs leading-5 text-white/54">
+              {drill.hostedCloseout.externalHoldPosture}
+            </p>
+          </article>
+        </div>
+
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {drill.hostedCloseout.namedOwnersStillNeeded.map((item) => (
+            <article
+              key={item.key}
+              className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-100/72">
+                {item.label}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-white">
+                {item.recommendedDefault}
+              </p>
+            </article>
+          ))}
+        </div>
+
+        {drill.hostedCloseout.recordedOwnerAnswers.length > 0 ? (
+          <article className="mt-4 rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-4">
+            <p className="text-sm font-semibold text-white">Recorded approval answers</p>
+            <div className="mt-3 grid gap-3 lg:grid-cols-2">
+              {drill.hostedCloseout.recordedOwnerAnswers.map((item) => (
+                <div
+                  key={item.key}
+                  className="rounded-2xl border border-white/10 bg-black/20 p-3"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100/72">
+                    {item.label}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-white">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+        ) : null}
+
+        <article className="mt-4 rounded-3xl border border-white/10 bg-black/20 p-4">
+          <p className="text-sm font-semibold text-white">Copy-paste approval reply</p>
+          <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-violet-100/82">
+            {drill.hostedCloseout.approvalReplyBlock.join("\n")}
+          </pre>
+        </article>
+
+        <article className="mt-4 rounded-3xl border border-orange-300/20 bg-orange-300/10 p-4">
+          <p className="text-sm font-semibold text-white">Still blocked in this step</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {drill.hostedCloseout.blockedScope.map((item) => (
+              <span
+                key={item}
+                className="rounded-full border border-orange-200/15 bg-orange-200/10 px-3 py-1 text-xs font-semibold text-orange-100/80"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </article>
+      </section>
     </section>
   );
 }

@@ -97,6 +97,12 @@ export type FirstWriteHostedCloseout = {
     label: string;
     recommendedDefault: string;
   }>;
+  recordedOwnerAnswers: Array<{
+    key: string;
+    label: string;
+    value: string;
+  }>;
+  approvalReplyBlock: string[];
   blockedScope: string[];
   externalHoldPosture: string;
 };
@@ -802,6 +808,14 @@ function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedClos
     });
   }
 
+  const recordedOwnerAnswers = pilotRegistry.owners
+    .filter((item) => item.status === "recorded_owner")
+    .map((item) => ({
+      key: item.key,
+      label: item.label,
+      value: item.value,
+    }));
+
   return {
     title: "Hosted staging closeout",
     stagingTarget: "staging.mymedlife.org",
@@ -826,6 +840,8 @@ function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedClos
       "/admin/pilot-scope",
     ],
     namedOwnersStillNeeded,
+    recordedOwnerAnswers,
+    approvalReplyBlock: pilotRegistry.approvalReplyBlock,
     blockedScope: [
       "proof uploads",
       "public proof sharing",

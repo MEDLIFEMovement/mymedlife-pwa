@@ -165,6 +165,21 @@ describe("first-write activation drill", () => {
       );
 
       expect(drill.hostedCloseout.recommendedHostedWrite).toBe("`action_started`");
+      expect(drill.hostedCloseout.recordedOwnerAnswers).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            key: "rollback_owner",
+            value: "Kiomi Matsukawa",
+          }),
+          expect.objectContaining({
+            key: "support_pause_channel",
+            value: "#mymedlife-pilot-watch",
+          }),
+        ]),
+      );
+      expect(drill.hostedCloseout.approvalReplyBlock.join("\n")).toContain(
+        "Rollback owner: Kiomi Matsukawa",
+      );
       expect(drill.hostedCloseout.namedOwnersStillNeeded).toEqual([
         expect.objectContaining({
           key: "hosted_write_approver",
