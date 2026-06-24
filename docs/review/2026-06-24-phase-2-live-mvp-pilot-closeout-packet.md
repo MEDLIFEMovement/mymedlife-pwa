@@ -40,6 +40,29 @@ These are recommended defaults, not final approvals.
 
 The `/admin/pilot-scope` route now mirrors these defaults in a registry-backed approval block so recorded final answers can replace the proposed defaults cleanly when reviewers respond.
 
+## Where recorded answers live
+
+Once Nick / Kiomi / DS approve the final pilot defaults and named owners, record
+them through the Phase 2 pilot registry env keys so every closeout surface reads
+the same answers:
+
+- `MYMEDLIFE_PILOT_CHAPTER`
+- `MYMEDLIFE_PILOT_CAMPAIGN_SCOPE`
+- `MYMEDLIFE_PILOT_COHORT_SIZE`
+- `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE`
+- `MYMEDLIFE_PILOT_PROOF_REVIEW_LOOP`
+- `MYMEDLIFE_PILOT_EVENT_NPS_POSTURE`
+- `MYMEDLIFE_PILOT_INTEGRATION_HOLD`
+- `MYMEDLIFE_PILOT_CHAPTER_LEADER_OWNER`
+- `MYMEDLIFE_PILOT_COACH_OWNER`
+- `MYMEDLIFE_PILOT_HQ_ADMIN_OWNER`
+- `MYMEDLIFE_PILOT_DS_OWNER`
+- `MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL`
+- `MYMEDLIFE_PILOT_ROLLBACK_OWNER`
+
+Until those values are set, the app should keep showing recommended defaults and
+pending owner slots rather than implying final approval.
+
 ## Human-owned blanks still required
 
 - Chapter leader owner: pending Nick/team
