@@ -52,6 +52,7 @@ export type Phase2CloseoutReview = {
   approvalReplyBlock: string[];
   lanes: Phase2CloseoutLane[];
   doneCriteria: Phase2DoneCriterion[];
+  hostedEvidenceChecklist: string[];
   requiredHumanDecisions: string[];
   blockedScope: string[];
   counts: {
@@ -86,6 +87,7 @@ export function getPhase2CloseoutReview(
       approvalReplyBlock: [],
       lanes: [],
       doneCriteria: [],
+      hostedEvidenceChecklist: [],
       requiredHumanDecisions: [],
       blockedScope: [],
       counts: emptyCounts(),
@@ -216,6 +218,15 @@ export function getPhase2CloseoutReview(
         "No product-surface change in this lane claims broad rollout or production activation.",
       ],
     },
+  ];
+
+  const hostedEvidenceChecklist = [
+    "Capture the approved staging reviewer path, including the real access gate reviewers are expected to use before app login.",
+    "Capture proof that the pilot user can sign in through that staging path and lands in the correct role-scoped app surface.",
+    "Capture before/after evidence for the hosted `action_started` write from the signed-in student route.",
+    "Capture assignment status, internal event, integration event, and audit-log readback for hosted `action_started`, while external sends remain at zero.",
+    "Capture the smallest hosted proof loop: metadata submission, leader review readback, staff readback, DS/admin readback, audit readback, and outbox readback.",
+    "Capture explicit evidence that uploads, public proof sharing, HQ proof decisions, coach decisions, and all external integrations remain disabled during the hosted rehearsal.",
   ];
 
   const lanes: Phase2CloseoutLane[] = [
@@ -369,6 +380,7 @@ export function getPhase2CloseoutReview(
     approvalReplyBlock: pilotRegistry.approvalReplyBlock,
     lanes,
     doneCriteria,
+    hostedEvidenceChecklist,
     requiredHumanDecisions,
     blockedScope: Array.from(
       new Set([

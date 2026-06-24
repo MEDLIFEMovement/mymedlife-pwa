@@ -28,6 +28,7 @@ describe("phase 2 closeout review", () => {
       "Pilot chapter: UCLA MEDLIFE",
     );
     expect(review.doneCriteria).toHaveLength(8);
+    expect(review.hostedEvidenceChecklist).toHaveLength(6);
 
     const laneHrefs = review.lanes.map((lane) => lane.href);
     expect(laneHrefs).toEqual(
@@ -76,6 +77,12 @@ describe("phase 2 closeout review", () => {
       review.doneCriteria.find((criterion) => criterion.key === "named_owners")
         ?.status,
     ).toBe("awaiting_human_confirmation");
+    expect(review.hostedEvidenceChecklist.join(" ")).toContain(
+      "approved staging reviewer path",
+    );
+    expect(review.hostedEvidenceChecklist.join(" ")).toContain(
+      "hosted `action_started` write",
+    );
     expect(review.reviewerAction).toContain("approved as written");
   });
 

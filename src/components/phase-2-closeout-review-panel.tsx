@@ -97,9 +97,16 @@ export function Phase2CloseoutReviewPanel({
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         <ChecklistCard
+          title="Hosted evidence to collect next"
+          items={review.hostedEvidenceChecklist}
+        />
+        <ChecklistCard
           title="Human decisions still needed"
           items={review.requiredHumanDecisions}
         />
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-2">
         <ChecklistCard
           title="Blocked scope stays off"
           items={review.blockedScope}

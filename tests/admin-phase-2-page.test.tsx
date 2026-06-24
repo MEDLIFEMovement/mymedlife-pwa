@@ -45,6 +45,7 @@ describe("admin phase 2 page", () => {
     expect(html).toContain("Backend route family");
     expect(html).toContain("Phase 2 closeout");
     expect(html).toContain("Definition of done audit");
+    expect(html).toContain("Hosted evidence to collect next");
     expect(html).toContain("repo ready");
     expect(html).toContain("need signoff");
     expect(html).toContain("need hosted proof");
@@ -65,5 +66,7 @@ describe("admin phase 2 page", () => {
     expect(html).toContain(
       "The result is controlled live pilot readiness, not full production launch",
     );
+    expect(html).toContain("Capture the approved staging reviewer path");
+    expect(html).toContain("Capture before/after evidence for the hosted `action_started` write");
   });
 });
