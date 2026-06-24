@@ -141,10 +141,10 @@ export function getProductionLaunchEvidenceChecks(
       ownerLane: "Engineering",
       status: "missing_before_pilot",
       requiredEvidence:
-        "A stable staging URL for the release branch that Nick, HQ, DS, and security can open, plus an approved reviewer access path if the hostname is still gated.",
+        "A stable staging URL for the release branch that Nick, HQ, DS, and security can open, plus an approved reviewer access path if the hostname currently redirects through Vercel SSO into `/login?next=/sso-api...`.",
       reviewRoute: "/admin/launch-gate",
       acceptanceSignal:
-        "The staging URL renders `/admin`, `/admin/design-qa`, `/admin/nick-review`, `/rush-month`, and `/offline` with the expected local-review posture, and reviewers know how to pass the current staging gate.",
+        "The staging URL renders `/admin`, `/admin/design-qa`, `/admin/nick-review`, `/rush-month`, and `/offline` with the expected local-review posture, and reviewers know how to pass the current Vercel-SSO-to-login staging gate.",
       blockedUntil: "Staging URL, reviewer access path, and release branch ownership are approved.",
     },
     {

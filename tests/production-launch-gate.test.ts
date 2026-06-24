@@ -156,6 +156,14 @@ describe("production launch gate", () => {
         ?.requiredEvidence,
     ).toContain("Vercel-SSO-gated staging access path");
     expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_url")
+        ?.requiredEvidence,
+    ).toContain("/login?next=/sso-api");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_url")
+        ?.acceptanceSignal,
+    ).toContain("Vercel-SSO-to-login staging gate");
+    expect(
       gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
         ?.reviewRoute,
     ).toBe("/onboarding");

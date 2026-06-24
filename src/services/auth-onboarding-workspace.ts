@@ -208,7 +208,7 @@ function buildLaunchPreflight(
       requiredEvidence:
         "Production and staging callback URLs, invite redirect URLs, restricted-state fallback routes, and the approved staging reviewer access path must be confirmed before live auth.",
       currentPosture:
-        "Local preview still uses fake actor email selection; production callbacks are not enabled. On 2026-06-24, anonymous staging requests redirected through Vercel SSO before app login.",
+        "Local preview still uses fake actor email selection; production callbacks are not enabled. On 2026-06-24, anonymous staging requests redirected to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path before the app, and direct `/login` requests were intercepted by the same gate.",
       routeEvidence: ["/login", "/onboarding", "/admin/launch-gate"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -238,7 +238,7 @@ function buildLaunchPreflight(
       requiredEvidence:
         "Supabase Auth user id, profile row, membership row, and staff/coach assignment reads must agree before real users are invited.",
       currentPosture:
-        "Local auth-derived actor context exists, but production Auth/profile mapping still needs staging proof and an explicitly approved reviewer access path through the current staging gate.",
+        "Local auth-derived actor context exists, but production Auth/profile mapping still needs staging proof and an explicitly approved reviewer access path through the current Vercel-SSO-gated `/login?next=/sso-api...` handoff.",
       routeEvidence: ["/profile", "/onboarding", "/admin/system-health"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,

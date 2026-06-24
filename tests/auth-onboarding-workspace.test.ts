@@ -126,6 +126,11 @@ describe("auth onboarding workspace", () => {
     expect(
       workspace.launchPreflight?.items.find(
         (item) => item.key === "callback_url_plan",
+      )?.currentPosture,
+    ).toContain("/login?next=/sso-api");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "callback_url_plan",
       )?.status,
     ).toBe("blocked");
     expect(
