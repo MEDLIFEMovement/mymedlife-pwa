@@ -1,4 +1,5 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
@@ -31,6 +32,16 @@ export type RoleModelReviewCheckpoint = {
   finalDecisionPrompt: string;
 };
 
+export type Phase2CloseoutSnapshot = {
+  title: string;
+  summary: string;
+  packetPath: string;
+  provenNow: string[];
+  stillBlocked: string[];
+  namedOwnersStillNeeded: string[];
+  nextDecision: string;
+};
+
 export type MvpReleaseReadinessSummary = {
   canReadSummary: boolean;
   title: string;
@@ -43,6 +54,7 @@ export type MvpReleaseReadinessSummary = {
   achievements: ReleaseReadinessItem[];
   blockers: ReleaseReadinessItem[];
   roleModelReviewCheckpoint: RoleModelReviewCheckpoint | null;
+  phase2Closeout: Phase2CloseoutSnapshot | null;
   nextApprovals: string[];
 };
 
@@ -65,6 +77,7 @@ export function getMvpReleaseReadinessSummary(
       achievements: [],
       blockers: [],
       roleModelReviewCheckpoint: null,
+      phase2Closeout: null,
       nextApprovals: [],
     };
   }
@@ -453,10 +466,16 @@ export function getMvpReleaseReadinessSummary(
           "HQ staff can compare safe pilot sizes and see which approvals are still required before inviting real students.",
       },
       {
+        label: "Phase 2 live MVP closeout packet",
+        status: "ready_for_local_review",
+        plainEnglish:
+          "Reviewers can use the new Phase 2 closeout packet and the updated pilot planner to separate recommended defaults from final human approval before any hosted student pilot begins.",
+      },
+      {
         label: "First-write activation drill",
         status: "ready_for_local_review",
         plainEnglish:
-          "HQ staff can inspect the local action-start write drill before the first localhost-only save is tested.",
+          "HQ staff can inspect the local action-start write drill plus the hosted staging `action_started` closeout proof that should be approved first.",
       },
       {
         label: "Write sequence planner",
@@ -494,13 +513,13 @@ export function getMvpReleaseReadinessSummary(
         label: "Live auth and real users",
         status: "blocked_for_live_launch",
         plainEnglish:
-          "The app still uses local actors and fake seed/mock data. Production sign-in is not enabled.",
+          "The app still uses local actors and fake seed/mock data. Hosted auth for the first pilot cohort is not yet approved and the recommended default is still manual pre-provisioning in staging.",
       },
       {
         label: "Browser writes",
         status: "blocked_for_live_launch",
         plainEnglish:
-          "Production assignment, proof, membership approval, leader proof decision, HQ decision, coach decision, and admin mutation writes remain disabled; localhost rehearsals require explicit local flags.",
+          "Hosted `action_started` is the recommended first narrow write, but no hosted write is approved yet. Production assignment, proof, membership approval, leader proof decision, HQ decision, coach decision, and admin mutation writes remain disabled; localhost rehearsals still require explicit local flags.",
       },
       {
         label: "Proof uploads and public proof sharing",
@@ -515,6 +534,12 @@ export function getMvpReleaseReadinessSummary(
           "HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes remain disabled.",
       },
       {
+        label: "Named pilot owners and rollback",
+        status: "blocked_for_live_launch",
+        plainEnglish:
+          "The pilot still needs named chapter, coach, HQ/admin, DS, support/pause, and rollback owners before it can honestly be called controlled live MVP readiness.",
+      },
+      {
         label: "Production environment and visual QA",
         status: "blocked_for_live_launch",
         plainEnglish:
@@ -522,7 +547,12 @@ export function getMvpReleaseReadinessSummary(
       },
     ],
     roleModelReviewCheckpoint: getRoleModelReviewCheckpoint(),
+    phase2Closeout: getPhase2CloseoutSnapshot(),
     nextApprovals: [
+      "Review `docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md` and either approve it as written or replace only the chapter, cohort size, owner slots, event/NPS posture, support channel, or rollback owner.",
+      "Use `/admin/pilot-scope` to name the pilot chapter, chapter leader owner, coach owner, HQ/admin owner, DS owner, support/pause channel, and rollback owner before calling Phase 2 complete.",
+      "Use `/onboarding` to confirm the manually pre-provisioned staging cohort posture before opening any broader join or onboarding writes.",
+      "Use `/admin/first-write` to approve the hosted `action_started` proof as the first staging write before any broader hosted write path opens.",
       "Review the Goal 150 `/admin/launch-gate` launch evidence checklist before approving staging, pilot scope, live launch, browser writes, proof uploads, external sends, or real student invitations.",
       "Review the Goal 149 `/admin/design-qa` device/PWA smoke matrix before approving pilot scope, live launch, browser writes, proof uploads, external sends, or real student invitations.",
       "Review the Goal 148 `/admin/design-qa` accessibility smoke plan before approving pilot scope, live launch, browser writes, proof uploads, external sends, or real student invitations.",
@@ -578,6 +608,43 @@ export function getMvpReleaseReadinessSummary(
       "Approve first pilot chapter or internal test group from `/admin/pilot-scope`.",
       "Approve any real n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, or AI integration.",
     ],
+  };
+}
+
+function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
+  const pilotRegistry = getPhase2PilotRegistry();
+  const pendingOwnerLabels = pilotRegistry.owners
+    .filter((item) => item.status === "pending_named_owner")
+    .map((item) => item.label.toLowerCase());
+  const firstHostedWrite =
+    pilotRegistry.defaults.find((item) => item.key === "first_hosted_write")?.value ??
+    "`action_started`";
+
+  return {
+    title: "Phase 2 live MVP pilot closeout",
+    summary:
+      "Phase 2 should now be read as a controlled hosted pilot closeout, not just local MVP review. The repo has the default packet, pilot planner, onboarding preflight, and first-write closeout framing, but the hosted pilot is still waiting on named owners and one approved staging write proof.",
+    packetPath:
+      "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+    provenNow: [
+      "Pilot scope defaults are visible in `/admin/pilot-scope`.",
+      "Named owner slots are visible and explicitly still pending in `/admin/pilot-scope`.",
+      "Onboarding preflight now recommends manual pre-provisioning for the first hosted cohort.",
+      `The first hosted write recommendation is explicitly ${firstHostedWrite}.`,
+      "Leader, staff, DS/admin, audit, and outbox review surfaces are named for the hosted proof loop.",
+      "External integrations remain explicitly disabled for the first pilot.",
+    ],
+    stillBlocked: [
+      "Named pilot owners and rollback owner",
+      "Hosted auth approval for the pilot cohort",
+      "Hosted `action_started` proof on staging",
+      "Smallest hosted proof/review loop approval and evidence",
+      "Final support/pause channel confirmation",
+      "Explicit external-integration hold signoff",
+    ],
+    namedOwnersStillNeeded: pendingOwnerLabels,
+    nextDecision:
+      "Approve the closeout packet as written or replace only the chapter, owner slots, cohort size, event/NPS posture, support channel, or rollback owner.",
   };
 }
 

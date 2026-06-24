@@ -24,6 +24,9 @@ describe("mvp release readiness", () => {
     ).toContain("First pilot scope planner");
     expect(
       summary.achievements.map((achievement) => achievement.label),
+    ).toContain("Phase 2 live MVP closeout packet");
+    expect(
+      summary.achievements.map((achievement) => achievement.label),
     ).toContain("Goal 90-97 role model checkpoint");
     expect(
       summary.achievements.map((achievement) => achievement.label),
@@ -264,6 +267,19 @@ describe("mvp release readiness", () => {
       summary.blockers.find((blocker) => blocker.label === "Browser writes")
         ?.plainEnglish,
     ).toContain("membership approval");
+    expect(blockerLabels).toContain("Named pilot owners and rollback");
+    expect(summary.phase2Closeout?.packetPath).toBe(
+      "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+    );
+    expect(summary.phase2Closeout?.provenNow.join(" ")).toContain(
+      "action_started",
+    );
+    expect(summary.phase2Closeout?.stillBlocked).toContain(
+      "Hosted `action_started` proof on staging",
+    );
+    expect(summary.phase2Closeout?.namedOwnersStillNeeded).toContain(
+      "rollback owner",
+    );
   });
 
   it("keeps DS Admin on the same conservative release-readiness summary", () => {
@@ -321,6 +337,11 @@ describe("mvp release readiness", () => {
     expect(summary.nextApprovals.join(" ")).toContain("Goal 122");
     expect(summary.nextApprovals.join(" ")).toContain("Goal 157");
     expect(summary.nextApprovals.join(" ")).toContain("production auth preflight");
+    expect(summary.nextApprovals.join(" ")).toContain(
+      "2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+    );
+    expect(summary.nextApprovals.join(" ")).toContain("/admin/pilot-scope");
+    expect(summary.nextApprovals.join(" ")).toContain("/admin/first-write");
     expect(summary.nextApprovals.join(" ")).toContain("Goal 160");
     expect(summary.nextApprovals.join(" ")).toContain("membership approval packet");
     expect(summary.nextApprovals.join(" ")).toContain("Goal 161");
@@ -389,6 +410,30 @@ describe("mvp release readiness", () => {
     expect(checkpoint?.finalDecisionPrompt).toContain("auth/onboarding approval");
   });
 
+  it("reflects recorded Phase 2 owner answers in the closeout snapshot", () => {
+    const originalRollback = process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER;
+    const originalSupport = process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL;
+
+    process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER = "Kiomi Matsukawa";
+    process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL = "#mymedlife-pilot-watch";
+
+    try {
+      const summary = getMvpReleaseReadinessSummary(
+        getMockLocalActorContext("admin@mymedlife.test"),
+      );
+
+      expect(summary.phase2Closeout?.namedOwnersStillNeeded).not.toContain(
+        "rollback owner",
+      );
+      expect(summary.phase2Closeout?.namedOwnersStillNeeded).not.toContain(
+        "support and pause channel",
+      );
+    } finally {
+      restoreEnv("MYMEDLIFE_PILOT_ROLLBACK_OWNER", originalRollback);
+      restoreEnv("MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL", originalSupport);
+    }
+  });
+
   it("hides release readiness from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
@@ -404,3 +449,12 @@ describe("mvp release readiness", () => {
     expect(getMvpReleaseReadinessSummary(member).roleModelReviewCheckpoint).toBeNull();
   });
 });
+
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
+}

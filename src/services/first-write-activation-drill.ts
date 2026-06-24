@@ -10,6 +10,7 @@ import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import { isReviewSupabaseAuthMode } from "@/services/supabase-auth-config";
 import type { Assignment } from "@/shared/types/domain";
@@ -192,7 +193,7 @@ export function getFirstWriteActivationDrill(
     steps: buildSteps(candidate),
     readbackEvidence,
     verificationPacket,
-    hostedCloseout: buildHostedCloseout(),
+    hostedCloseout: buildHostedCloseout(env),
     proofToCollect: [
       "Screenshot of `/admin/first-write` before the test showing every required check green.",
       "Screenshot of the selected action detail route before clicking Start this action.",
@@ -766,13 +767,47 @@ function buildHiddenVerificationPacket(): FirstWriteVerificationPacket {
   };
 }
 
-function buildHostedCloseout(): FirstWriteHostedCloseout {
+function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedCloseout {
+  const pilotRegistry = getPhase2PilotRegistry(env);
+  const firstHostedWrite =
+    pilotRegistry.defaults.find((item) => item.key === "first_hosted_write")?.value ??
+    "`action_started`";
+  const supportPauseOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_pause_channel",
+  );
+  const rollbackOwner = pilotRegistry.owners.find(
+    (item) => item.key === "rollback_owner",
+  );
+  const namedOwnersStillNeeded: FirstWriteHostedCloseout["namedOwnersStillNeeded"] = [
+    {
+      key: "hosted_write_approver",
+      label: "Hosted write approver",
+      recommendedDefault: "pending Kiomi/Nick",
+    },
+  ];
+
+  if (rollbackOwner?.status !== "recorded_owner") {
+    namedOwnersStillNeeded.push({
+      key: "rollback_owner",
+      label: "Rollback owner",
+      recommendedDefault: rollbackOwner?.value ?? "pending Kiomi",
+    });
+  }
+
+  if (supportPauseOwner?.status !== "recorded_owner") {
+    namedOwnersStillNeeded.push({
+      key: "support_pause_channel",
+      label: "Support and pause channel",
+      recommendedDefault: supportPauseOwner?.value ?? "pending HQ ops",
+    });
+  }
+
   return {
     title: "Hosted staging closeout",
     stagingTarget: "staging.mymedlife.org",
-    recommendedHostedWrite: "`action_started`",
+    recommendedHostedWrite: firstHostedWrite,
     hostedDecision:
-      "If the team approves one hosted write first, it should be action_started on staging only. That proves real auth identity, assignment status change, internal event, integration event, audit row, and zero external sends before any broader proof or workflow write opens.",
+      `If the team approves one hosted write first, it should be ${firstHostedWrite} on staging only. That proves real auth identity, assignment status change, internal event, integration event, audit row, and zero external sends before any broader proof or workflow write opens.`,
     requiredReadback: [
       "Before-and-after route evidence from the signed-in student path.",
       "Assignment status changes to `in_progress`.",
@@ -790,23 +825,7 @@ function buildHostedCloseout(): FirstWriteHostedCloseout {
       "/admin/integration-outbox",
       "/admin/pilot-scope",
     ],
-    namedOwnersStillNeeded: [
-      {
-        key: "hosted_write_approver",
-        label: "Hosted write approver",
-        recommendedDefault: "pending Kiomi/Nick",
-      },
-      {
-        key: "rollback_owner",
-        label: "Rollback owner",
-        recommendedDefault: "pending Kiomi",
-      },
-      {
-        key: "support_pause_channel",
-        label: "Support and pause channel",
-        recommendedDefault: "pending HQ ops",
-      },
-    ],
+    namedOwnersStillNeeded,
     blockedScope: [
       "proof uploads",
       "public proof sharing",

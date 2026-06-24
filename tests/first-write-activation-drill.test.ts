@@ -148,6 +148,35 @@ describe("first-write activation drill", () => {
     expect(drill.hostedCloseout.namedOwnersStillNeeded).toHaveLength(3);
   });
 
+  it("uses recorded pilot approvals to shrink the hosted-write owner gap", () => {
+    const originalWrite = process.env.MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE;
+    const originalRollback = process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER;
+    const originalSupport = process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL;
+
+    process.env.MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE = "`action_started`";
+    process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER = "Kiomi Matsukawa";
+    process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL = "#mymedlife-pilot-watch";
+
+    try {
+      const drill = getFirstWriteActivationDrill(
+        getMockLocalActorContext("admin@mymedlife.test"),
+        mockData,
+        process.env,
+      );
+
+      expect(drill.hostedCloseout.recommendedHostedWrite).toBe("`action_started`");
+      expect(drill.hostedCloseout.namedOwnersStillNeeded).toEqual([
+        expect.objectContaining({
+          key: "hosted_write_approver",
+        }),
+      ]);
+    } finally {
+      restoreEnv("MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE", originalWrite);
+      restoreEnv("MYMEDLIFE_PILOT_ROLLBACK_OWNER", originalRollback);
+      restoreEnv("MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL", originalSupport);
+    }
+  });
+
   it("shows observed readback evidence after the local action-start records exist", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const drill = getFirstWriteActivationDrill(
@@ -241,6 +270,15 @@ function withSupabaseUuidAssignment(data: ReadOnlyAppData): ReadOnlyAppData {
       ...data.assignments.slice(1),
     ],
   };
+}
+
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
 }
 
 function withFirstWriteReadback(data: ReadOnlyAppData): ReadOnlyAppData {
