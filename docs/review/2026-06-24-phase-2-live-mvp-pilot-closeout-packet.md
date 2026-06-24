@@ -148,6 +148,31 @@ Or replace only these fields:
 - support/pause channel
 - rollback owner
 
+## Current criterion-by-criterion audit
+
+As of 2026-06-24, the closeout criteria separate into three buckets:
+
+### Review-ready in repo, but not yet hosted-proof complete
+
+- first hosted write is explicitly narrowed to `action_started`
+- the smallest hosted proof loop is explicitly narrowed to `proof metadata submission + leader review`
+- leader, staff, DS/admin, audit, and outbox review surfaces are named for the hosted proof loop
+- all external integrations remain explicitly disabled in the pilot framing
+
+### Awaiting human recording or signoff
+
+- final named pilot owners are not all recorded yet
+- final support/pause channel is not fully confirmed yet
+- final rollback owner is not fully confirmed yet
+- final staging reviewer access posture is not yet confirmed
+
+### Awaiting hosted staging proof
+
+- hosted auth does not yet have approved reviewer-path evidence
+- hosted `action_started` does not yet have before/after staging proof
+- the hosted proof/review loop does not yet have end-to-end staging evidence
+- leader, staff, DS/admin, audit, and outbox readback do not yet have hosted proof captured from staging
+
 ## What Phase 2 completion means
 
 Phase 2 is complete when:
@@ -163,3 +188,8 @@ Phase 2 completion does **not** mean:
 - broad student rollout
 - public proof sharing
 - live downstream integrations
+
+Current honest reading:
+- Phase 2 is review-ready and tightly framed
+- Phase 2 is not yet complete
+- the remaining gap is real hosted proof plus named human approvals, not more product-surface expansion

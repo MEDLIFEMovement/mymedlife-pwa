@@ -128,6 +128,11 @@ export function getPhase2CloseoutReview(
         `Packet: ${packetPath}`,
         `${releaseReadiness.achievements.length} items are already review-ready locally.`,
         `${releaseReadiness.blockers.length} live-launch blockers are still open.`,
+        `${
+          releaseReadiness.phase2Closeout?.provenNow.length ?? 0
+        } Phase 2 closeout criteria are review-ready in repo, while ${
+          releaseReadiness.phase2Closeout?.stillBlocked.length ?? 0
+        } still need hosted proof or human signoff.`,
         "Status remains: staging reviewable, live pilot not yet approved.",
       ],
     },

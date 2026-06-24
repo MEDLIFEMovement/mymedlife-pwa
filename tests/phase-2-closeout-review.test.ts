@@ -47,6 +47,9 @@ describe("phase 2 closeout review", () => {
       review.lanes.find((lane) => lane.key === "pilot_scope")?.evidence.join(" "),
     ).toContain("owner slots");
     expect(
+      review.lanes.find((lane) => lane.key === "closeout_packet")?.evidence.join(" "),
+    ).toContain("Phase 2 closeout criteria are review-ready in repo");
+    expect(
       review.lanes.find((lane) => lane.key === "auth_onboarding")?.evidence.join(" "),
     ).toContain("Vercel SSO");
     expect(
