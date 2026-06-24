@@ -2,9 +2,17 @@ import Link from "next/link";
 
 type AdminBackendLaneKey =
   | "overview"
+  | "phase_2"
+  | "integrations"
   | "permissions"
   | "committees"
   | "workflows"
+  | "first_write"
+  | "write_sequence"
+  | "proof_write"
+  | "hq_proof_write"
+  | "assignment_write"
+  | "coach_write"
   | "integration_outbox"
   | "database_security"
   | "system_health"
@@ -18,6 +26,7 @@ type AdminBackendLaneKey =
   | "audit_log"
   | "operations"
   | "design_qa"
+  | "staff_dry_run"
   | "pilot_scope";
 
 type AdminBackendLaneNavProps = {
@@ -26,6 +35,7 @@ type AdminBackendLaneNavProps = {
     href: string;
     label: string;
   };
+  showIntegrations?: boolean;
 };
 
 const baseLanes = [
@@ -33,6 +43,11 @@ const baseLanes = [
     key: "overview",
     label: "Overview",
     href: "/admin",
+  },
+  {
+    key: "integrations",
+    label: "Integrations",
+    href: "/admin/integrations",
   },
   {
     key: "permissions",
@@ -78,6 +93,11 @@ const baseLanes = [
 
 const reviewPacketLanes = [
   {
+    key: "phase_2",
+    label: "Phase 2",
+    href: "/admin/phase-2",
+  },
+  {
     key: "review_path",
     label: "Review Path",
     href: "/admin/review-path",
@@ -113,27 +133,69 @@ const reviewPacketLanes = [
     href: "/admin/design-qa",
   },
   {
+    key: "staff_dry_run",
+    label: "Staff Dry Run",
+    href: "/admin/staff-dry-run",
+  },
+  {
     key: "pilot_scope",
     label: "Pilot Scope",
     href: "/admin/pilot-scope",
   },
 ] as const;
 
+const writePacketLanes = [
+  {
+    key: "first_write",
+    label: "First Write",
+    href: "/admin/first-write",
+  },
+  {
+    key: "write_sequence",
+    label: "Write Sequence",
+    href: "/admin/write-sequence",
+  },
+  {
+    key: "proof_write",
+    label: "Proof Packet",
+    href: "/admin/proof-write",
+  },
+  {
+    key: "hq_proof_write",
+    label: "HQ Proof",
+    href: "/admin/hq-proof-write",
+  },
+  {
+    key: "assignment_write",
+    label: "Assignment",
+    href: "/admin/assignment-write",
+  },
+  {
+    key: "coach_write",
+    label: "Coach Decision",
+    href: "/admin/coach-write",
+  },
+] as const;
+
 export function AdminBackendLaneNav({
   current,
   builderLink,
+  showIntegrations = false,
 }: AdminBackendLaneNavProps) {
-  const lanes =
-    builderLink
-      ? [
-          ...baseLanes,
-          {
-            key: "sop_builder" as const,
-            label: builderLink.label,
-            href: builderLink.href,
-          },
-        ]
-      : baseLanes;
+  const resolvedBuilderLink =
+    builderLink ??
+    ({
+      href: "/admin/sop-builder/rush-month?tab=steps",
+      label: "SOP Builder",
+    } as const);
+  const lanes = [
+    ...baseLanes.filter((lane) => showIntegrations || lane.key !== "integrations"),
+    {
+      key: "sop_builder" as const,
+      label: resolvedBuilderLink.label,
+      href: resolvedBuilderLink.href,
+    },
+  ];
 
   return (
     <section className="app-surface rounded-[1.6rem] p-4">
@@ -207,6 +269,32 @@ export function AdminBackendLaneNav({
           })}
         </div>
       </div>
+
+      <div className="mt-4 border-t border-slate-200/80 pt-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          Write packets
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {writePacketLanes.map((lane) => {
+            const selected = lane.key === current;
+
+            return (
+              <Link
+                key={lane.key}
+                href={lane.href}
+                aria-current={selected ? "page" : undefined}
+                className={
+                  selected
+                    ? "rounded-full bg-emerald-950 px-3 py-1.5 text-xs font-semibold text-white"
+                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bbf7d0] hover:bg-[#f0fdf4] hover:text-slate-950"
+                }
+              >
+                {lane.label}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
     </section>
   );
 }
@@ -248,6 +336,17 @@ function AdminLaneIcon({ lane }: { lane: AdminBackendLaneKey }) {
           <path d="m12 12 4 4" />
         </svg>
       );
+    case "integrations":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M7 7.5h10v9H7z" />
+          <path d="M10 10.5h4" />
+          <path d="M12 7.5V5" />
+          <path d="M12 19v-2.5" />
+          <path d="M7 12H4.5" />
+          <path d="M19.5 12H17" />
+        </svg>
+      );
     case "integration_outbox":
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
@@ -256,6 +355,12 @@ function AdminLaneIcon({ lane }: { lane: AdminBackendLaneKey }) {
           <path d="M8 14h3" />
         </svg>
       );
+    case "first_write":
+    case "write_sequence":
+    case "proof_write":
+    case "hq_proof_write":
+    case "assignment_write":
+    case "coach_write":
     case "database_security":
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
@@ -292,6 +397,15 @@ function AdminLaneIcon({ lane }: { lane: AdminBackendLaneKey }) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
           <path d="M5 18h4l9-9-4-4-9 9v4Z" />
           <path d="m12.5 6.5 4 4" />
+        </svg>
+      );
+    case "staff_dry_run":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <rect x="4.5" y="4.5" width="15" height="15" rx="2" />
+          <path d="M8 9h8" />
+          <path d="M8 12h8" />
+          <path d="m8.5 15 1.8 1.8L15.5 11" />
         </svg>
       );
   }

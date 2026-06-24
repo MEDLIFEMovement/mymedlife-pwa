@@ -40,10 +40,12 @@ describe("admin backend review pages", () => {
     );
 
     const pages = [
+      ["@/app/admin/phase-2/page", "Phase 2 closeout"],
       ["@/app/admin/review-path/page", "Stakeholder review path"],
       ["@/app/admin/release-readiness/page", "Release readiness"],
       ["@/app/admin/launch-gate/page", "Production launch gate"],
       ["@/app/admin/operations/page", "Production operations"],
+      ["@/app/admin/master-data/page", "Admin master data"],
       ["@/app/admin/staff-dry-run/page", "Staff dry run"],
       ["@/app/admin/write-sequence/page", "Write sequence"],
     ] as const;
@@ -54,6 +56,7 @@ describe("admin backend review pages", () => {
 
       expect(html).toContain("Backend route family");
       expect(html).toContain('href="/admin"');
+      expect(html).toContain('href="/admin/phase-2"');
       expect(html).toContain('href="/admin/permissions"');
       expect(html).toContain('href="/admin/committees"');
       expect(html).toContain('href="/admin/workflows"');
@@ -69,7 +72,16 @@ describe("admin backend review pages", () => {
       expect(html).toContain('href="/admin/audit-log"');
       expect(html).toContain('href="/admin/operations"');
       expect(html).toContain('href="/admin/design-qa"');
+      expect(html).toContain('href="/admin/master-data"');
+      expect(html).toContain('href="/admin/staff-dry-run"');
       expect(html).toContain('href="/admin/pilot-scope"');
+      expect(html).toContain('href="/admin/first-write"');
+      expect(html).toContain('href="/admin/write-sequence"');
+      expect(html).toContain('href="/admin/proof-write"');
+      expect(html).toContain('href="/admin/hq-proof-write"');
+      expect(html).toContain('href="/admin/assignment-write"');
+      expect(html).toContain('href="/admin/coach-write"');
+      expect(html).toContain('href="/admin/sop-builder/rush-month?tab=steps"');
       expect(html).toContain(heading);
     }
   });

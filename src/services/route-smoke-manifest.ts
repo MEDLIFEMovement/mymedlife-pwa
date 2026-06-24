@@ -359,6 +359,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
     safetyAssertion: "Admin mutations, production auth, and external writes remain disabled.",
   },
   {
+    path: "/admin/phase-2",
+    label: "Admin Phase 2 closeout review",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin reviewers see one clean starting route for the Phase 2 closeout packet, staff dry run, onboarding preflight, design QA, pilot scope, first hosted write, and integration hold.",
+    safetyAssertion:
+      "Phase 2 closeout review must not approve live pilot access, enable production auth, enable browser writes, enable uploads, or turn on external systems.",
+  },
+  {
     path: "/admin/review-path",
     label: "Admin stakeholder review path",
     priority: "critical",

@@ -46,6 +46,7 @@ import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRouteCoverageSummary } from "@/services/route-coverage-summary";
 import { getRouteSmokeManifest } from "@/services/route-smoke-manifest";
 import {
+  canReadAdminIntegrationsSecurity,
   canReadIntegrationOutbox,
   getActorSurfaceFamily,
   getVisibleAdminPanelsForActor,
@@ -93,7 +94,14 @@ export default async function AdminPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="overview" />
+      <AdminBackendLaneNav
+        current="overview"
+        builderLink={{
+          href: "/admin/sop-builder/rush-month?tab=steps",
+          label: "SOP Builder",
+        }}
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
 
       <section className="rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
@@ -263,6 +271,13 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
   const surfaceFamily = getActorSurfaceFamily(actor);
   const shared = [
     {
+      href: "/admin/phase-2",
+      eyebrow: "Phase 2",
+      title: "Live MVP Closeout",
+      summary:
+        "Single review entry for the closeout packet, dry run, onboarding, pilot scope, design QA, and first hosted write decision.",
+    },
+    {
       href: "/admin/permissions",
       eyebrow: "Roles",
       title: "Permission Registry",
@@ -275,6 +290,55 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
       title: "Workflow Registry",
       summary:
         "Backend map of onboarding, writes, proof review, SLT readiness, coach intervention, and SOP tooling.",
+    },
+    {
+      href: "/admin/sop-builder/rush-month?tab=steps",
+      eyebrow: "Builder",
+      title: "SOP Builder",
+      summary:
+        "Open the Rush Month builder workspace with steps, role matrix, completion, points/KPI, comms, preview, and version tabs.",
+    },
+    {
+      href: "/admin/first-write",
+      eyebrow: "Write",
+      title: "First Write Drill",
+      summary:
+        "Smallest localhost-only action-start rehearsal before any wider write lane is approved.",
+    },
+    {
+      href: "/admin/write-sequence",
+      eyebrow: "Write",
+      title: "Write Sequence",
+      summary:
+        "Promotion order, owner role, and rollback boundary for each guarded local write packet.",
+    },
+    {
+      href: "/admin/proof-write",
+      eyebrow: "Proof",
+      title: "Proof Packet",
+      summary:
+        "Member proof metadata rehearsal with consent posture, audit readback, and zero external sends.",
+    },
+    {
+      href: "/admin/hq-proof-write",
+      eyebrow: "HQ",
+      title: "HQ Proof Packet",
+      summary:
+        "HQ proof-sharing decision rehearsal that stays mock-safe and keeps public sharing locked.",
+    },
+    {
+      href: "/admin/assignment-write",
+      eyebrow: "Leader",
+      title: "Assignment Packet",
+      summary:
+        "Leader assignment rehearsal with owner handoff, audit posture, and reminder sends still blocked.",
+    },
+    {
+      href: "/admin/coach-write",
+      eyebrow: "Coach",
+      title: "Coach Decision Packet",
+      summary:
+        "Coach intervention rehearsal with decision ownership, escalation boundaries, and zero sends.",
     },
     {
       href: "/admin/review-path",
@@ -326,6 +390,13 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
         "Mobile, accessibility, and visual smoke checks for the Figma-backed review path.",
     },
     {
+      href: "/admin/staff-dry-run",
+      eyebrow: "Rehearsal",
+      title: "Staff Dry Run",
+      summary:
+        "Fake-user rehearsal path for the Rush Month loop before staging, live writes, or pilot approval.",
+    },
+    {
       href: "/admin/pilot-scope",
       eyebrow: "Pilot",
       title: "Pilot Scope",
@@ -337,6 +408,13 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
   if (surfaceFamily === "ds_admin") {
     return [
       ...shared,
+      {
+        href: "/admin/integrations",
+        eyebrow: "Keys",
+        title: "Integrations & API Keys",
+        summary:
+          "Secure DS-only provider configuration lane with write-only credential posture, masked metadata, and audit review.",
+      },
       {
         href: "/admin/integration-outbox",
         eyebrow: "Safety",
@@ -368,7 +446,7 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
     ];
   }
 
-  if (surfaceFamily === "staff" || surfaceFamily === "super_admin") {
+  if (surfaceFamily === "staff") {
     return [
       ...shared,
       {
@@ -386,18 +464,38 @@ function getBackendLaneLinks(actor: Awaited<ReturnType<typeof getLocalActorConte
           "Action committee lanes, owner roles, and campaign links in one backend lane.",
       },
       {
-        href: "/admin/design-qa",
-        eyebrow: "QA",
-        title: "Design QA",
+        href: "/admin/sop-library",
+        eyebrow: "Builder",
+        title: "SOP Library",
         summary:
-          "Mobile, accessibility, and visual smoke checks for the Figma-backed review path.",
+          "Campaign workflow definitions with steps, role matrix, completion, KPI, and version tabs.",
+      },
+    ];
+  }
+
+  if (surfaceFamily === "super_admin") {
+    return [
+      ...shared,
+      {
+        href: "/admin/integrations",
+        eyebrow: "Keys",
+        title: "Integrations & API Keys",
+        summary:
+          "Secure DS-only provider configuration lane with write-only credential posture, masked metadata, and audit review.",
       },
       {
-        href: "/admin/pilot-scope",
-        eyebrow: "Pilot",
-        title: "Pilot Scope",
+        href: "/admin/master-data",
+        eyebrow: "Catalog",
+        title: "Master Data",
         summary:
-          "One chapter, named owners, and approved launch posture for the narrow live pilot.",
+          "Fake users, named roles, chapter inventory, and campaign templates in one read-only admin inventory.",
+      },
+      {
+        href: "/admin/committees",
+        eyebrow: "Owners",
+        title: "Committee Registry",
+        summary:
+          "Action committee lanes, owner roles, and campaign links in one backend lane.",
       },
       {
         href: "/admin/sop-library",

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { assignments } from "@/data/mock-rush-month";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
+  canReadAdminIntegrationsSecurity,
   canReadChapterData,
   canReadIntegrationOutbox,
   getActorSurfaceFamily,
@@ -61,6 +62,7 @@ describe("role visibility service", () => {
     expect(getVisibleAssignmentsForActor(actor, assignments)).toEqual([]);
     expect(getVisibleRiskFlagsForActor(actor, fakeRisks)).toEqual([]);
     expect(canReadIntegrationOutbox(actor)).toBe(true);
+    expect(canReadAdminIntegrationsSecurity(actor)).toBe(true);
     expect(getVisibleAdminPanelsForActor(actor).map((panel) => panel.key)).toEqual([
       "integration_outbox",
     ]);
@@ -81,6 +83,7 @@ describe("role visibility service", () => {
 
     expect(canReadChapterData(actor)).toBe(true);
     expect(canReadIntegrationOutbox(actor)).toBe(false);
+    expect(canReadAdminIntegrationsSecurity(actor)).toBe(false);
     expect(getVisibleAdminPanelsForActor(actor).map((panel) => panel.key)).toEqual([
       "support_context",
       "proof_sharing",
@@ -93,6 +96,7 @@ describe("role visibility service", () => {
     expect(getVisibleAssignmentsForActor(actor, assignments)).toHaveLength(assignments.length);
     expect(getVisibleRiskFlagsForActor(actor, fakeRisks)).toHaveLength(fakeRisks.length);
     expect(canReadIntegrationOutbox(actor)).toBe(true);
+    expect(canReadAdminIntegrationsSecurity(actor)).toBe(true);
     expect(getVisibleAdminPanelsForActor(actor).map((panel) => panel.key)).toEqual([
       "support_context",
       "proof_sharing",
@@ -155,9 +159,11 @@ describe("role visibility service", () => {
     ]);
     expect(getNavigationForActor(superAdmin).map((item) => item.label)).toEqual([
       "Admin Home",
+      "Phase 2",
       "Permissions",
       "Committees",
       "Workflows",
+      "Integrations",
       "Review Path",
       "Nick Review",
       "Release Readiness",
@@ -165,6 +171,10 @@ describe("role visibility service", () => {
       "Audit Log",
       "Operations",
       "Design QA",
+      "Staff Dry Run",
+      "Outbox",
+      "Database Security",
+      "System Health",
       "Pilot Scope",
       "SOP Library",
       "Master Data",
@@ -172,9 +182,13 @@ describe("role visibility service", () => {
     ]);
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Admin Home" },
+      { href: "/admin/phase-2", label: "Phase 2" },
+      { href: "/admin/integrations", label: "Integrations" },
       { href: "/admin/permissions", label: "Permissions" },
       { href: "/admin/workflows", label: "Workflows" },
+      { href: "/admin/staff-dry-run", label: "Staff Dry Run" },
       { href: "/admin/integration-outbox", label: "Outbox" },
+      { href: "/admin/database-security", label: "Database Security" },
       { href: "/admin/system-health", label: "System Health" },
       { href: "/profile", label: "Profile" },
     ]);
@@ -247,7 +261,7 @@ describe("role visibility service", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
-      { href: "/admin", label: "Outbox", helper: "Safety" },
+      { href: "/admin/integrations", label: "Keys", helper: "Lock" },
       { href: "/admin/permissions", label: "Roles", helper: "Scope" },
       { href: "/admin/workflows", label: "Flows", helper: "Map" },
       { href: "/admin/integration-outbox", label: "Queue", helper: "Off" },

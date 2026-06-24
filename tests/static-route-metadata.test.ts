@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(60);
+    expect(entries).toHaveLength(64);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -20,6 +20,9 @@ describe("static route metadata", () => {
   it("keeps safety-sensitive reviewer routes named clearly", () => {
     expect(getStaticRouteMetadata("admin")).toMatchObject({
       title: "Admin",
+    });
+    expect(getStaticRouteMetadata("adminPhase2")).toMatchObject({
+      title: "Admin Phase 2",
     });
     expect(getStaticRouteMetadata("adminReviewPath")).toMatchObject({
       title: "Admin Review Path",

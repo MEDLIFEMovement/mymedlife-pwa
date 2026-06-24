@@ -79,9 +79,11 @@ const staffNavigation: NavigationItem[] = [
 
 const adminBackendNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
+  { href: "/admin/phase-2", label: "Phase 2" },
   { href: "/admin/permissions", label: "Permissions" },
   { href: "/admin/committees", label: "Committees" },
   { href: "/admin/workflows", label: "Workflows" },
+  { href: "/admin/integrations", label: "Integrations" },
   { href: "/admin/review-path", label: "Review Path" },
   { href: "/admin/nick-review", label: "Nick Review" },
   { href: "/admin/release-readiness", label: "Release Readiness" },
@@ -89,6 +91,10 @@ const adminBackendNavigation: NavigationItem[] = [
   { href: "/admin/audit-log", label: "Audit Log" },
   { href: "/admin/operations", label: "Operations" },
   { href: "/admin/design-qa", label: "Design QA" },
+  { href: "/admin/staff-dry-run", label: "Staff Dry Run" },
+  { href: "/admin/integration-outbox", label: "Outbox" },
+  { href: "/admin/database-security", label: "Database Security" },
+  { href: "/admin/system-health", label: "System Health" },
   { href: "/admin/pilot-scope", label: "Pilot Scope" },
   { href: "/admin/sop-library", label: "SOP Library" },
   { href: "/admin/master-data", label: "Master Data" },
@@ -97,9 +103,13 @@ const adminBackendNavigation: NavigationItem[] = [
 
 const dsAdminNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
+  { href: "/admin/phase-2", label: "Phase 2" },
+  { href: "/admin/integrations", label: "Integrations" },
   { href: "/admin/permissions", label: "Permissions" },
   { href: "/admin/workflows", label: "Workflows" },
+  { href: "/admin/staff-dry-run", label: "Staff Dry Run" },
   { href: "/admin/integration-outbox", label: "Outbox" },
+  { href: "/admin/database-security", label: "Database Security" },
   { href: "/admin/system-health", label: "System Health" },
   { href: "/profile", label: "Profile" },
 ];
@@ -145,6 +155,14 @@ export function canReadCoachRisk(
 }
 
 export function canReadIntegrationOutbox(actor: LocalActorContext): boolean {
+  const family = getActorSurfaceFamily(actor);
+
+  return family === "ds_admin" || family === "super_admin";
+}
+
+export function canReadAdminIntegrationsSecurity(
+  actor: LocalActorContext,
+): boolean {
   const family = getActorSurfaceFamily(actor);
 
   return family === "ds_admin" || family === "super_admin";
@@ -271,7 +289,7 @@ export function getMobileQuickNavigationForActor(
       ];
     case "ds_admin":
       return [
-        { href: "/admin", label: "Outbox", helper: "Safety" },
+        { href: "/admin/integrations", label: "Keys", helper: "Lock" },
         { href: "/admin/permissions", label: "Roles", helper: "Scope" },
         { href: "/admin/workflows", label: "Flows", helper: "Map" },
         { href: "/admin/integration-outbox", label: "Queue", helper: "Off" },

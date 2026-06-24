@@ -64,6 +64,7 @@ describe("app route registry", () => {
       true,
     );
     expect(isKnownAppRouteHref("/staff")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/phase-2")).toBe(true);
     expect(isKnownAppRouteHref("/admin/review-path")).toBe(true);
     expect(isKnownAppRouteHref("/admin/nick-review")).toBe(true);
     expect(isKnownAppRouteHref("/admin/release-readiness")).toBe(true);

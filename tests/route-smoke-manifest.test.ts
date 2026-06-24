@@ -9,7 +9,7 @@ describe("route smoke manifest", () => {
 
     expect(manifest.canReadManifest).toBe(true);
     expect(manifest.title).toBe("Admin route smoke manifest");
-    expect(manifest.counts.totalRoutes).toBe(47);
+    expect(manifest.counts.totalRoutes).toBe(48);
     expect(manifest.counts.criticalRoutes).toBeGreaterThan(0);
     expect(manifest.counts.mobileVisualChecks).toBe(8);
     expect(manifest.counts.browserWritesExpected).toBe(0);
@@ -43,6 +43,7 @@ describe("route smoke manifest", () => {
         "/rush-month/loop",
         "/coach",
         "/admin",
+        "/admin/phase-2",
         "/admin/review-path",
         "/admin/nick-review",
         "/admin/release-readiness",
@@ -172,6 +173,14 @@ describe("route smoke manifest", () => {
     expect(
       manifest.routes.find((route) => route.path === "/coach")?.safetyAssertion,
     ).toContain("external automation");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/phase-2")
+        ?.expectedResult,
+    ).toContain("Phase 2 closeout packet");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/phase-2")
+        ?.safetyAssertion,
+    ).toContain("Phase 2 closeout review");
     expect(
       manifest.routes.find((route) => route.path === "/admin/review-path")
         ?.expectedResult,

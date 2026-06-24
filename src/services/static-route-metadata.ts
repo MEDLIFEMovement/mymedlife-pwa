@@ -37,11 +37,15 @@ export type StaticRouteMetadataKey =
   | "coach"
   | "staff"
   | "admin"
+  | "adminPhase2"
   | "adminReviewPath"
   | "adminNickReview"
   | "adminReleaseReadiness"
   | "adminLaunchGate"
   | "adminAuditLog"
+  | "adminIntegrations"
+  | "adminIntegrationProvider"
+  | "adminIntegrationAudit"
   | "adminIntegrationOutbox"
   | "adminMasterData"
   | "adminPermissions"
@@ -231,6 +235,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Admin",
     description: "Admin review, smoke checks, write readiness, outbox, and launch posture.",
   },
+  adminPhase2: {
+    title: "Admin Phase 2",
+    description:
+      "Read-only Phase 2 closeout review packet that brings together release posture, dry run, onboarding, pilot scope, design QA, and the first hosted write decision.",
+  },
   adminReviewPath: {
     title: "Admin Review Path",
     description:
@@ -255,6 +264,21 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Admin Audit Log",
     description:
       "Read-only audit-log posture with admin readback, DS safety review, and writes disabled.",
+  },
+  adminIntegrations: {
+    title: "Admin Integrations",
+    description:
+      "DS-only secure provider configuration with write-only credential posture, masked metadata, and audited server-only actions.",
+  },
+  adminIntegrationProvider: {
+    title: "Provider Configuration",
+    description:
+      "DS-only provider detail with environment-separated metadata, write-only credential entry, safe tests, and audit history.",
+  },
+  adminIntegrationAudit: {
+    title: "Integrations Security Audit",
+    description:
+      "DS-only audit history for secure provider access, step-up, credential changes, connection tests, and disable actions.",
   },
   adminIntegrationOutbox: {
     title: "Admin Integration Outbox",
