@@ -77,6 +77,14 @@ pending owner slots rather than implying final approval.
 Recommended default:
 - pre-provision the first pilot cohort manually in staging
 
+Observed staging access on 2026-06-24:
+- anonymous requests to `https://staging.mymedlife.org` redirected to Vercel SSO first
+- that flow then redirected to a Vercel-hosted `/login` page before reaching the app
+- this means the reviewer access path is still not self-evident from the staging hostname alone and needs explicit owner confirmation
+
+Implication:
+- hosted auth proof is still blocked until the team confirms the intended reviewer access path, whether that stays Vercel-SSO-gated, becomes a named approved reviewer session flow, or moves to a different approved staging access posture
+
 Reason:
 - this keeps Phase 2 from depending on broad self-serve join and onboarding writes
 - it narrows the first real test to role routing, sign-in, and the action loop

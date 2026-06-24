@@ -96,7 +96,7 @@ export function getPhase2CloseoutReview(
       .map((item) => `${item.label}: ${item.value}`),
   ];
   const requiredHumanDecisions = [
-    "Confirm the intended staging review target and reviewer access path.",
+    "Confirm the intended staging review target and reviewer access path; anonymous requests currently redirect through Vercel SSO before app login.",
     "Confirm the staff dry-run pass and note any confusing copy that should stay visible in the packet.",
     "Complete one human device and accessibility smoke pass before pilot approval.",
     ...(pilotRegistry.counts.ownersPending > 0
@@ -177,6 +177,7 @@ export function getPhase2CloseoutReview(
           onboarding.launchPreflight?.counts.blocked ?? 0
         } preflight items are still blocked.`,
         "Recommended default: manually pre-provision the first hosted pilot cohort.",
+        "Observed 2026-06-24: anonymous staging requests redirect through Vercel SSO before the app login route.",
         "Live auth, production users, and onboarding writes remain disabled.",
       ],
     },
