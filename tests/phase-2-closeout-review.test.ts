@@ -19,12 +19,15 @@ describe("phase 2 closeout review", () => {
     expect(review.counts.reviewNow).toBeGreaterThan(0);
     expect(review.counts.awaitingHumanConfirmation).toBeGreaterThan(0);
     expect(review.counts.blockedBeforePilot).toBeGreaterThan(0);
+    expect(review.counts.criteriaReviewReadyInRepo).toBeGreaterThan(0);
+    expect(review.counts.criteriaAwaitingHostedProof).toBeGreaterThan(0);
     expect(review.counts.browserWritesExpected).toBe(0);
     expect(review.counts.externalWritesExpected).toBe(0);
     expect(review.approvalReplyHint).toContain("Human approval is still required");
     expect(review.approvalReplyBlock.join("\n")).toContain(
       "Pilot chapter: UCLA MEDLIFE",
     );
+    expect(review.doneCriteria).toHaveLength(8);
 
     const laneHrefs = review.lanes.map((lane) => lane.href);
     expect(laneHrefs).toEqual(
@@ -61,6 +64,18 @@ describe("phase 2 closeout review", () => {
     expect(
       review.lanes.find((lane) => lane.key === "hosted_proof_loop")?.evidence.join(" "),
     ).toContain("Leader review readback");
+    expect(
+      review.doneCriteria.find((criterion) => criterion.key === "evidence_separation")
+        ?.status,
+    ).toBe("review_ready_in_repo");
+    expect(
+      review.doneCriteria.find((criterion) => criterion.key === "hosted_auth")
+        ?.status,
+    ).toBe("awaiting_hosted_proof");
+    expect(
+      review.doneCriteria.find((criterion) => criterion.key === "named_owners")
+        ?.status,
+    ).toBe("awaiting_human_confirmation");
     expect(review.reviewerAction).toContain("approved as written");
   });
 

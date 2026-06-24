@@ -29,6 +29,18 @@ export type Phase2CloseoutLane = {
   evidence: string[];
 };
 
+export type Phase2DoneCriterionStatus =
+  | "review_ready_in_repo"
+  | "awaiting_human_confirmation"
+  | "awaiting_hosted_proof";
+
+export type Phase2DoneCriterion = {
+  key: string;
+  label: string;
+  status: Phase2DoneCriterionStatus;
+  evidence: string[];
+};
+
 export type Phase2CloseoutReview = {
   canReadReview: boolean;
   title: string;
@@ -39,6 +51,7 @@ export type Phase2CloseoutReview = {
   recordedAnswers: string[];
   approvalReplyBlock: string[];
   lanes: Phase2CloseoutLane[];
+  doneCriteria: Phase2DoneCriterion[];
   requiredHumanDecisions: string[];
   blockedScope: string[];
   counts: {
@@ -46,6 +59,9 @@ export type Phase2CloseoutReview = {
     reviewNow: number;
     awaitingHumanConfirmation: number;
     blockedBeforePilot: number;
+    criteriaReviewReadyInRepo: number;
+    criteriaAwaitingHumanConfirmation: number;
+    criteriaAwaitingHostedProof: number;
     browserWritesExpected: 0;
     externalWritesExpected: 0;
   };
@@ -69,6 +85,7 @@ export function getPhase2CloseoutReview(
       recordedAnswers: [],
       approvalReplyBlock: [],
       lanes: [],
+      doneCriteria: [],
       requiredHumanDecisions: [],
       blockedScope: [],
       counts: emptyCounts(),
@@ -113,6 +130,92 @@ export function getPhase2CloseoutReview(
       : []),
     "Confirm the smallest hosted proof/review loop is limited to proof metadata submission plus leader review readback, while leader decision writes, uploads, and public proof stay blocked.",
     "Confirm that HubSpot, Luma, n8n, warehouse / Power BI, SMS/email, and AI actions stay off for the pilot.",
+  ];
+
+  const doneCriteria: Phase2DoneCriterion[] = [
+    {
+      key: "named_owners",
+      label: "Named pilot owners, rollback owner, and support/pause channel are recorded",
+      status:
+        pilotRegistry.counts.ownersPending === 0
+          ? "review_ready_in_repo"
+          : "awaiting_human_confirmation",
+      evidence: [
+        `${pilotRegistry.counts.ownersRecorded} owner slots are recorded in the Phase 2 registry.`,
+        `${pilotRegistry.counts.ownersPending} owner slots still need a named human owner.`,
+        "The review packet and `/admin/pilot-scope` now show pending slots separately from recorded answers.",
+      ],
+    },
+    {
+      key: "hosted_auth",
+      label: "Hosted auth works for the pilot cohort",
+      status: "awaiting_hosted_proof",
+      evidence: [
+        "Repo support exists for staging review auth and manual pre-provisioning of the first cohort.",
+        "Observed on 2026-06-24: anonymous staging requests redirect through Vercel SSO before app login.",
+        "Hosted reviewer-path approval and real signed-in staging proof are still missing.",
+      ],
+    },
+    {
+      key: "first_hosted_write",
+      label: "The first hosted write lane `action_started` is enabled and proven in staging",
+      status: "awaiting_hosted_proof",
+      evidence: [
+        `Recommended first hosted write remains ${firstWrite.hostedCloseout.recommendedHostedWrite}.`,
+        `${firstWrite.hostedCloseout.requiredReadback.length} hosted readback checks are already defined.`,
+        "The hosted write packet is framed, but no real staging proof is recorded yet.",
+      ],
+    },
+    {
+      key: "proof_loop",
+      label: "The smallest hosted proof/review loop is proven end to end",
+      status: "awaiting_hosted_proof",
+      evidence: [
+        `Recommended proof loop remains ${proofLoop.hostedCloseout.recommendedProofLoop}.`,
+        "Leader review readback is in scope; leader decision writes, uploads, and public proof stay blocked.",
+        "The loop is review-framed in repo, but no hosted end-to-end proof is recorded yet.",
+      ],
+    },
+    {
+      key: "readback_surfaces",
+      label: "Leader, staff, DS/admin, and audit/outbox views show the correct readback",
+      status: "awaiting_hosted_proof",
+      evidence: [
+        "Leader, staff, DS/admin, audit, and outbox review surfaces are explicitly named in the hosted closeout packets.",
+        "Those routes are reviewable locally and mapped in the Phase 2 packet.",
+        "Hosted staging readback screenshots and route evidence are still missing.",
+      ],
+    },
+    {
+      key: "integration_hold",
+      label: "All external integrations remain disabled",
+      status: "review_ready_in_repo",
+      evidence: [
+        "The closeout packet, first-write packet, and proof-loop packet all keep external writes out of scope.",
+        "Current review surfaces still expect zero external sends.",
+        "DS still needs to confirm that this hold posture remains the pilot rule.",
+      ],
+    },
+    {
+      key: "evidence_separation",
+      label: "Staging evidence, approval notes, and launch packet separate proven behavior from still-blocked scope",
+      status: "review_ready_in_repo",
+      evidence: [
+        "The dated closeout packet now includes a criterion-by-criterion audit section.",
+        "The `/admin/phase-2` lane now reports review-ready repo criteria separately from hosted-proof blockers.",
+        "GitHub PR and Linear checkpoints have been kept in sync with the same truth line.",
+      ],
+    },
+    {
+      key: "controlled_pilot_not_production",
+      label: "The result is controlled live pilot readiness, not full production launch",
+      status: "review_ready_in_repo",
+      evidence: [
+        "The closeout packet explicitly says production launch is out of scope.",
+        "The launch framing keeps staging as the rehearsal environment and the pilot as one chapter plus one campaign.",
+        "No product-surface change in this lane claims broad rollout or production activation.",
+      ],
+    },
   ];
 
   const lanes: Phase2CloseoutLane[] = [
@@ -265,6 +368,7 @@ export function getPhase2CloseoutReview(
     recordedAnswers,
     approvalReplyBlock: pilotRegistry.approvalReplyBlock,
     lanes,
+    doneCriteria,
     requiredHumanDecisions,
     blockedScope: Array.from(
       new Set([
@@ -280,6 +384,15 @@ export function getPhase2CloseoutReview(
       ).length,
       blockedBeforePilot: lanes.filter(
         (lane) => lane.status === "blocked_before_pilot",
+      ).length,
+      criteriaReviewReadyInRepo: doneCriteria.filter(
+        (item) => item.status === "review_ready_in_repo",
+      ).length,
+      criteriaAwaitingHumanConfirmation: doneCriteria.filter(
+        (item) => item.status === "awaiting_human_confirmation",
+      ).length,
+      criteriaAwaitingHostedProof: doneCriteria.filter(
+        (item) => item.status === "awaiting_hosted_proof",
       ).length,
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -308,6 +421,9 @@ function emptyCounts(): Phase2CloseoutReview["counts"] {
     reviewNow: 0,
     awaitingHumanConfirmation: 0,
     blockedBeforePilot: 0,
+    criteriaReviewReadyInRepo: 0,
+    criteriaAwaitingHumanConfirmation: 0,
+    criteriaAwaitingHostedProof: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
   };

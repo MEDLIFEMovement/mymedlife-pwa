@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type {
+  Phase2DoneCriterion,
+  Phase2DoneCriterionStatus,
   Phase2CloseoutLane,
   Phase2CloseoutLaneStatus,
   Phase2CloseoutReview,
@@ -57,6 +59,36 @@ export function Phase2CloseoutReviewPanel({
         </p>
       </div>
 
+      <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Definition of done audit</h3>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/62">
+              These are the actual Phase 2 finish conditions, split between what is already review-ready in repo, what still needs human signoff, and what still needs hosted staging proof.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <MiniStat
+              label="Repo ready"
+              value={`${review.counts.criteriaReviewReadyInRepo}`}
+            />
+            <MiniStat
+              label="Need signoff"
+              value={`${review.counts.criteriaAwaitingHumanConfirmation}`}
+            />
+            <MiniStat
+              label="Need proof"
+              value={`${review.counts.criteriaAwaitingHostedProof}`}
+            />
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {review.doneCriteria.map((criterion) => (
+            <DoneCriterionCard key={criterion.key} criterion={criterion} />
+          ))}
+        </div>
+      </div>
+
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {review.lanes.map((lane) => (
           <LaneCard key={lane.key} lane={lane} />
@@ -89,6 +121,26 @@ export function Phase2CloseoutReviewPanel({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function DoneCriterionCard({ criterion }: { criterion: Phase2DoneCriterion }) {
+  return (
+    <article className="rounded-3xl border border-white/10 bg-[#07121d]/80 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <h4 className="max-w-2xl text-sm font-semibold leading-6 text-white">
+          {criterion.label}
+        </h4>
+        <CriterionStatusPill status={criterion.status} />
+      </div>
+      <ul className="mt-4 grid gap-2">
+        {criterion.evidence.map((item) => (
+          <li key={`${criterion.key}-${item}`} className="text-sm leading-6 text-white/58">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }
 
@@ -148,6 +200,27 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       </p>
       <p className="mt-1 text-xl font-semibold text-white">{value}</p>
     </div>
+  );
+}
+
+function CriterionStatusPill({ status }: { status: Phase2DoneCriterionStatus }) {
+  const className =
+    status === "review_ready_in_repo"
+      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      : status === "awaiting_human_confirmation"
+        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
+        : "border-amber-300/30 bg-amber-300/15 text-amber-100";
+  const label =
+    status === "review_ready_in_repo"
+      ? "repo ready"
+      : status === "awaiting_human_confirmation"
+        ? "need signoff"
+        : "need hosted proof";
+
+  return (
+    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
+      {label}
+    </span>
   );
 }
 
