@@ -121,12 +121,23 @@ describe("proof metadata verification packet", () => {
         expect.objectContaining({
           key: "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
           value: "true",
+          reason: expect.stringContaining("Vercel gate"),
         }),
         expect.objectContaining({
           key: "MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE",
           value: "true",
         }),
       ]),
+    );
+    expect(
+      packet.verificationPacket.operatorSequence.find((step) => step.route === "/login")
+        ?.expectedProof,
+    ).toContain("clears the approved staging access path");
+    expect(
+      packet.checks.find((check) => check.key === "auth_mode")?.detail,
+    ).toContain("protected staging access path");
+    expect(packet.verificationPacket.safetyStops.join(" ")).toContain(
+      "approved staging access path",
     );
     expect(packet.hostedCloseout.recommendedProofLoop).toBe(
       "proof metadata submission plus leader review only",

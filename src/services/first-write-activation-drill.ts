@@ -289,8 +289,8 @@ function buildChecks(
   const authModeDetail =
     env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
       ? reviewAuthModeEnabled
-        ? "MYMEDLIFE_AUTH_MODE=staging_supabase is set for hosted review."
-        : "Set MYMEDLIFE_AUTH_MODE=staging_supabase only after staging review auth is approved."
+        ? "MYMEDLIFE_AUTH_MODE=staging_supabase is set for the hosted review lane after the staging access path is approved."
+        : "Set MYMEDLIFE_AUTH_MODE=staging_supabase only after the staging reviewer access path and review auth are approved."
       : reviewAuthModeEnabled
         ? "MYMEDLIFE_AUTH_MODE=local_supabase is set."
         : "Set MYMEDLIFE_AUTH_MODE=local_supabase and sign in with a fake seed user.";
@@ -619,12 +619,12 @@ function buildVerificationPacket(
             {
               key: "MYMEDLIFE_AUTH_MODE",
               value: "staging_supabase",
-              reason: "The write must use a server-derived staging auth session.",
+              reason: "The write must use the protected staging access path first, then a server-derived staging auth session inside the app.",
             },
             {
               key: "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
               value: "true",
-              reason: "Hosted review auth must be explicitly approved before this drill opens.",
+              reason: "Hosted review auth opens only after the staging reviewer access path and Vercel gate are explicitly approved.",
             },
             {
               key: "MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE",
@@ -702,7 +702,7 @@ function buildVerificationPacket(
         route: "/login",
         expectedProof:
           env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
-            ? "The app actor context uses a signed-in staging auth session for the approved pilot member."
+            ? "The reviewer first clears the approved staging access path, then the app actor context uses a signed-in staging auth session for the approved pilot member."
             : "The app actor context uses local_auth_session for member.a@mymedlife.test.",
       },
       {
@@ -723,7 +723,7 @@ function buildVerificationPacket(
       "Stop if the candidate action does not use a Supabase UUID.",
       `Stop if the signed-in user is not ${
         env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
-          ? "an approved staging pilot member."
+          ? "the approved staging pilot member inside the approved staging access path."
           : "a fake local seed member."
       }`,
       "Stop if any non-action-start write flag is enabled.",

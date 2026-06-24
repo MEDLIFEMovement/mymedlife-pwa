@@ -114,16 +114,25 @@ describe("first-write activation drill", () => {
         expect.objectContaining({
           key: "MYMEDLIFE_AUTH_MODE",
           value: "staging_supabase",
+          reason: expect.stringContaining("protected staging access path"),
         }),
         expect.objectContaining({
           key: "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
           value: "true",
+          reason: expect.stringContaining("Vercel gate"),
         }),
         expect.objectContaining({
           key: "MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE",
           value: "true",
         }),
       ]),
+    );
+    expect(
+      drill.verificationPacket.operatorSequence.find((step) => step.route === "/login")
+        ?.expectedProof,
+    ).toContain("clears the approved staging access path");
+    expect(drill.verificationPacket.safetyStops.join(" ")).toContain(
+      "approved staging access path",
     );
   });
 

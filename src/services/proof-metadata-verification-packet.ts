@@ -291,8 +291,8 @@ function buildChecks(
   const authModeDetail =
     env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
       ? reviewAuthModeEnabled
-        ? "Hosted staging auth can open the pilot member path."
-        : "Set MYMEDLIFE_AUTH_MODE=staging_supabase only after staging review auth is approved."
+        ? "Hosted staging auth can open the pilot member path after the protected staging access path is approved."
+        : "Set MYMEDLIFE_AUTH_MODE=staging_supabase only after the staging reviewer access path and review auth are approved."
       : reviewAuthModeEnabled
         ? "Local sign-in can create a fake seed user session."
         : "Set MYMEDLIFE_AUTH_MODE=local_supabase for the local proof metadata test.";
@@ -379,7 +379,7 @@ function buildChecks(
           ?.passed
           ? "The target fake member has a local Supabase Auth session."
           : env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
-            ? "Sign in as an approved staging pilot member before submitting proof metadata."
+            ? "Clear the approved staging access path, then sign in as the approved staging pilot member before submitting proof metadata."
             : "Sign in as member.a@mymedlife.test before submitting proof metadata.",
     },
     {
@@ -592,7 +592,7 @@ function buildVerificationPacket(
             {
               key: "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
               value: "true",
-              reason: "Hosted staging auth must be explicitly approved before proof metadata opens.",
+              reason: "Hosted staging auth opens only after the staging reviewer access path and Vercel gate are explicitly approved.",
             },
             {
               key: "MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE",
@@ -654,7 +654,7 @@ function buildVerificationPacket(
         route: "/login",
         expectedProof:
           env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
-            ? "The app shows a staging Supabase Auth session for the approved pilot member."
+            ? "The reviewer first clears the approved staging access path, then the app shows a staging Supabase Auth session for the approved pilot member."
             : "The app shows a local Supabase Auth session for member.a@mymedlife.test.",
       },
       {
@@ -684,7 +684,7 @@ function buildVerificationPacket(
       "Stop if any external send, public proof publish, AI summary, or warehouse export appears enabled.",
       `Stop if the operator is not using ${
         env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
-          ? "an approved staging pilot user."
+          ? "the approved staging pilot user inside the approved staging access path."
           : "a fake local seed user."
       }`,
     ],
