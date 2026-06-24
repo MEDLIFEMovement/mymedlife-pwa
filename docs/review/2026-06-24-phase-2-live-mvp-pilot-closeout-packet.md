@@ -79,7 +79,8 @@ Recommended default:
 
 Observed staging access on 2026-06-24:
 - anonymous requests to `https://staging.mymedlife.org` redirected to Vercel SSO first
-- that flow then redirected to a Vercel-hosted `/login` page before reaching the app
+- that Vercel SSO request then redirected to a Vercel-hosted `/login?next=/sso-api...` path before reaching the app
+- direct anonymous requests to `https://staging.mymedlife.org/login` were also intercepted by the same Vercel SSO gate
 - this means the reviewer access path is still not self-evident from the staging hostname alone and needs explicit owner confirmation
 
 Implication:

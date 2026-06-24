@@ -57,6 +57,9 @@ describe("phase 2 closeout review", () => {
       review.lanes.find((lane) => lane.key === "auth_onboarding")?.evidence.join(" "),
     ).toContain("Vercel SSO");
     expect(
+      review.lanes.find((lane) => lane.key === "auth_onboarding")?.evidence.join(" "),
+    ).toContain("/login?next=/sso-api");
+    expect(
       review.lanes.find((lane) => lane.key === "first_hosted_write")?.summary,
     ).toContain("action_started");
     expect(
@@ -79,6 +82,9 @@ describe("phase 2 closeout review", () => {
     ).toBe("awaiting_human_confirmation");
     expect(review.hostedEvidenceChecklist.join(" ")).toContain(
       "approved staging reviewer path",
+    );
+    expect(review.hostedEvidenceChecklist.join(" ")).toContain(
+      "/login?next=/sso-api",
     );
     expect(review.hostedEvidenceChecklist.join(" ")).toContain(
       "hosted `action_started` write",

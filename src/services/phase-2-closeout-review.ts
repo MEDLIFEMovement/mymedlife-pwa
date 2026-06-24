@@ -115,7 +115,7 @@ export function getPhase2CloseoutReview(
       .map((item) => `${item.label}: ${item.value}`),
   ];
   const requiredHumanDecisions = [
-    "Confirm the intended staging review target and reviewer access path; anonymous requests currently redirect through Vercel SSO before app login.",
+    "Confirm the intended staging review target and reviewer access path; anonymous requests currently redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path before the app.",
     "Confirm the staff dry-run pass and note any confusing copy that should stay visible in the packet.",
     "Complete one human device and accessibility smoke pass before pilot approval.",
     ...(pilotRegistry.counts.ownersPending > 0
@@ -154,7 +154,8 @@ export function getPhase2CloseoutReview(
       status: "awaiting_hosted_proof",
       evidence: [
         "Repo support exists for staging review auth and manual pre-provisioning of the first cohort.",
-        "Observed on 2026-06-24: anonymous staging requests redirect through Vercel SSO before app login.",
+        "Observed on 2026-06-24: anonymous staging requests redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path.",
+        "Direct anonymous requests to `/login` are also intercepted by the same Vercel SSO gate.",
         "Hosted reviewer-path approval and real signed-in staging proof are still missing.",
       ],
     },
@@ -221,7 +222,7 @@ export function getPhase2CloseoutReview(
   ];
 
   const hostedEvidenceChecklist = [
-    "Capture the approved staging reviewer path, including the real access gate reviewers are expected to use before app login.",
+    "Capture the approved staging reviewer path, including the real access gate reviewers are expected to use before the Vercel-hosted `/login?next=/sso-api...` handoff.",
     "Capture proof that the pilot user can sign in through that staging path and lands in the correct role-scoped app surface.",
     "Capture before/after evidence for the hosted `action_started` write from the signed-in student route.",
     "Capture assignment status, internal event, integration event, and audit-log readback for hosted `action_started`, while external sends remain at zero.",
@@ -296,7 +297,7 @@ export function getPhase2CloseoutReview(
           onboarding.launchPreflight?.counts.blocked ?? 0
         } preflight items are still blocked.`,
         "Recommended default: manually pre-provision the first hosted pilot cohort.",
-        "Observed 2026-06-24: anonymous staging requests redirect through Vercel SSO before the app login route.",
+        "Observed 2026-06-24: anonymous staging requests redirect to Vercel SSO and then to `/login?next=/sso-api...` before the app.",
         "Live auth, production users, and onboarding writes remain disabled.",
       ],
     },
