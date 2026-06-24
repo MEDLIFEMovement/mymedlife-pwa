@@ -1,5 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
+  getPhase2PilotRegistry,
+  type Phase2PilotDefaultStatus,
+  type Phase2PilotOwnerStatus,
+} from "@/services/phase-2-pilot-registry";
+import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
@@ -49,12 +54,33 @@ export type PilotScopeDecision = {
   whyItMatters: string;
 };
 
+export type PilotCloseoutOwnerSlot = {
+  key: string;
+  label: string;
+  status: Phase2PilotOwnerStatus;
+  recommendedDefault: string;
+  confirmationNeededFrom: "Nick/team" | "Kiomi" | "HQ ops" | "Coach lead" | "Data solutions";
+  whyItMatters: string;
+};
+
+export type PilotCloseoutDefault = {
+  key: string;
+  label: string;
+  status: Phase2PilotDefaultStatus;
+  recommendedDefault: string;
+  whyThisIsDefault: string;
+};
+
 export type PilotScopePlanner = {
   canReadPlanner: boolean;
   title: string;
   verdict: "pilot_scope_not_approved";
   plainEnglishSummary: string;
   recommendedScope: string;
+  closeoutDefaults: PilotCloseoutDefault[];
+  ownerSlots: PilotCloseoutOwnerSlot[];
+  approvalReplyGuide: string[];
+  approvalReplyBlock: string[];
   candidates: PilotScopeCandidate[];
   minimumPilotPath: MinimumPilotPath[];
   decisions: PilotScopeDecision[];
@@ -64,6 +90,7 @@ export type PilotScopePlanner = {
     recommendedCandidates: number;
     decisionsNeeded: number;
     blockedDecisions: number;
+    pendingNamedOwners: number;
     browserWritesExpected: 0;
     externalWritesExpected: 0;
   };
@@ -80,6 +107,10 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
       plainEnglishSummary:
         "Pilot planning is an HQ review surface, not a student or chapter operating view.",
       recommendedScope: "Use the student, leader, or coach operating routes instead.",
+      closeoutDefaults: [],
+      ownerSlots: [],
+      approvalReplyGuide: [],
+      approvalReplyBlock: [],
       candidates: [],
       minimumPilotPath: [],
       decisions: [],
@@ -90,15 +121,39 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
 
   const candidates = getPilotCandidates();
   const decisions = getPilotDecisions();
+  const registry = getPhase2PilotRegistry();
+  const closeoutDefaults = registry.defaults.map((item) => ({
+    key: item.key,
+    label: item.label,
+    status: item.status,
+    recommendedDefault: item.value,
+    whyThisIsDefault: item.whyThisIsDefault,
+  }));
+  const ownerSlots = registry.owners.map((item) => ({
+    key: item.key,
+    label: item.label,
+    status: item.status,
+    recommendedDefault: item.value,
+    confirmationNeededFrom: item.confirmationNeededFrom,
+    whyItMatters: item.whyItMatters,
+  }));
 
   return {
     canReadPlanner: true,
     title: getTitle(surfaceFamily),
     verdict: "pilot_scope_not_approved",
     plainEnglishSummary:
-      "Use this planner to choose the smallest safe first pilot before real students, production auth, browser writes, uploads, or integrations are activated.",
+      "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
     recommendedScope:
-      "Recommended first real pilot: one chapter or one internal staff-plus-chapter rehearsal group, Rush Month only, with action-start as the first possible write and every external integration kept manual or disabled.",
+      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-10 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one support/pause channel, and `action_started` as the first hosted write while every external integration stays manual or disabled.",
+    closeoutDefaults,
+    ownerSlots,
+    approvalReplyGuide: [
+      "Reply `approved as written` if the defaults below are acceptable for the first pilot.",
+      "If anything needs to change, replace only the chapter, owner slots, cohort size, event/NPS posture, or support/rollback lines.",
+      "Do not open broader writes, uploads, or external sends in the same approval step.",
+    ],
+    approvalReplyBlock: registry.approvalReplyBlock,
     candidates,
     minimumPilotPath: getMinimumPilotPath(),
     decisions,
@@ -119,6 +174,9 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
       ).length,
       blockedDecisions: decisions.filter(
         (decision) => decision.status === "blocked_before_pilot",
+      ).length,
+      pendingNamedOwners: ownerSlots.filter(
+        (slot) => slot.status === "pending_named_owner",
       ).length,
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -408,6 +466,7 @@ function emptyCounts(): PilotScopePlanner["counts"] {
     recommendedCandidates: 0,
     decisionsNeeded: 0,
     blockedDecisions: 0,
+    pendingNamedOwners: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
   };

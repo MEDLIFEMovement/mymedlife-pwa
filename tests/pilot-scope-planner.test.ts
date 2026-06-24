@@ -12,9 +12,21 @@ describe("pilot scope planner", () => {
     expect(planner.verdict).toBe("pilot_scope_not_approved");
     expect(planner.counts.candidates).toBe(4);
     expect(planner.counts.recommendedCandidates).toBe(1);
+    expect(planner.counts.pendingNamedOwners).toBe(6);
     expect(planner.counts.browserWritesExpected).toBe(0);
     expect(planner.counts.externalWritesExpected).toBe(0);
     expect(planner.recommendedScope).toContain("one chapter");
+    expect(
+      planner.closeoutDefaults.find((item) => item.key === "first_hosted_write")
+        ?.recommendedDefault,
+    ).toBe("`action_started`");
+    expect(
+      planner.ownerSlots.find((slot) => slot.key === "rollback_owner")
+        ?.recommendedDefault,
+    ).toContain("Kiomi");
+    expect(planner.approvalReplyBlock.join("\n")).toContain(
+      "Pilot chapter: UCLA MEDLIFE",
+    );
   });
 
   it("recommends one chapter after gates and rejects broad launch as the first move", () => {
@@ -70,6 +82,7 @@ describe("pilot scope planner", () => {
       planner.decisions.find((decision) => decision.key === "external_writes")
         ?.recommendation,
     ).toContain("do not send");
+    expect(planner.approvalReplyGuide[0]).toContain("approved as written");
   });
 
   it("keeps DS Admin eligible and operating roles hidden", () => {
@@ -90,4 +103,44 @@ describe("pilot scope planner", () => {
     expect(getPilotScopePlanner(leader).canReadPlanner).toBe(false);
     expect(getPilotScopePlanner(coach).canReadPlanner).toBe(false);
   });
+
+  it("shows recorded pilot answers when explicit Phase 2 registry values are present", () => {
+    const originalChapter = process.env.MYMEDLIFE_PILOT_CHAPTER;
+    const originalRollback = process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER;
+
+    process.env.MYMEDLIFE_PILOT_CHAPTER = "Boston College MEDLIFE";
+    process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER = "Kiomi Matsukawa";
+
+    try {
+      const planner = getPilotScopePlanner(
+        getMockLocalActorContext("admin@mymedlife.test"),
+      );
+
+      expect(
+        planner.closeoutDefaults.find((item) => item.key === "pilot_chapter")?.status,
+      ).toBe("recorded_final");
+      expect(
+        planner.closeoutDefaults.find((item) => item.key === "pilot_chapter")
+          ?.recommendedDefault,
+      ).toBe("Boston College MEDLIFE");
+      expect(
+        planner.ownerSlots.find((slot) => slot.key === "rollback_owner")?.status,
+      ).toBe("recorded_owner");
+      expect(planner.approvalReplyBlock.join("\n")).toContain(
+        "Rollback owner: Kiomi Matsukawa",
+      );
+    } finally {
+      restoreEnv("MYMEDLIFE_PILOT_CHAPTER", originalChapter);
+      restoreEnv("MYMEDLIFE_PILOT_ROLLBACK_OWNER", originalRollback);
+    }
+  });
 });
+
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
+}

@@ -38,6 +38,8 @@ Close Phase 2 at the smallest safe real pilot:
 
 These are recommended defaults, not final approvals.
 
+The `/admin/pilot-scope` route now mirrors these defaults in a registry-backed approval block so recorded final answers can replace the proposed defaults cleanly when reviewers respond.
+
 ## Human-owned blanks still required
 
 - Chapter leader owner: pending Nick/team
