@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { DiscourseBakeoffPanel } from "@/components/discourse-bakeoff-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
@@ -10,7 +10,10 @@ import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { getActorSurfaceFamily } from "@/services/role-visibility";
+import {
+  canReadAdminIntegrationsSecurity,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminReleaseReadiness");
@@ -26,9 +29,12 @@ export default async function AdminReleaseReadinessPage() {
   const nextStep = getNextStep(actor);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="release_readiness" />
+      <AdminBackendLaneNav
+        current="release_readiness"
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
 
       {!summary.canReadSummary ? (
         <RestrictedState
@@ -39,16 +45,16 @@ export default async function AdminReleaseReadinessPage() {
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-rose-100">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
                   Release readiness
                 </p>
-                <h1 className="mt-3 text-3xl font-semibold text-white">
+                <h1 className="mt-3 text-3xl font-semibold text-slate-950">
                   {summary.title}
                 </h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                   Review what is ready for local stakeholder review, what still
                   blocks a live student launch, and which approvals should happen
                   next. This route keeps the launch posture plain before deeper
@@ -57,7 +63,7 @@ export default async function AdminReleaseReadinessPage() {
               </div>
               <Link
                 href={nextStep.href}
-                className="w-fit rounded-full bg-rose-300 px-4 py-2 text-sm font-semibold text-[#2a0911]"
+                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
               >
                 {nextStep.label}
               </Link>
@@ -82,7 +88,7 @@ export default async function AdminReleaseReadinessPage() {
           <DiscourseBakeoffPanel evaluation={bakeoff} />
         </>
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }
 
@@ -102,11 +108,11 @@ function getNextStep(actor: LocalActorContext) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }

@@ -16,6 +16,7 @@ describe("member rush month events panel", () => {
 
     expect(html).toContain("UCLA MEDLIFE");
     expect(html).toContain("Events");
+    expect(html).toContain("Event loop");
     expect(html).toContain("Coming Up");
     expect(html).toContain("Tabling at Bruin Walk");
     expect(html).toContain("Intro GBM");
@@ -26,6 +27,7 @@ describe("member rush month events panel", () => {
     expect(html).toContain("20 pts for attending");
     expect(html).toContain("Bruin Walk Table 7");
     expect(html).toContain("Engineering VI 289");
+    expect(html).toContain("RSVP → attendance → points → leaderboard");
     expect(html).toContain("/rush-month/events/event-rush-social-001?source=events");
     expect(html).toContain("/rush-month/events/event-rush-med-talk-001?source=events");
     expect(html).not.toContain("This Week: 2");

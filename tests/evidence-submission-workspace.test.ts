@@ -37,6 +37,7 @@ describe("evidence submission workspace", () => {
     expect(workspace.counts.uploadsEnabled).toBe(0);
     expect(workspace.counts.externalSendsEnabled).toBe(0);
     expect(workspace.counts.submissionPackets).toBe(1);
+    expect(workspace.summary).toContain("Current phase exit signal:");
     expect(workspace.submissionPacket).toEqual(
       expect.objectContaining({
         title: "Proof submission path preview",
@@ -187,9 +188,12 @@ describe("evidence submission workspace", () => {
     expect(workspace.futureStructuredEvents.map((event) => event.eventType)).toEqual(
       [
         "proof_submission_queue_viewed",
+        "luma_event_linked",
+        "luma_attendance_import_mocked",
+        "kpi_event_recorded",
         "evidence_submitted",
-        "automation_outbox_recorded",
         "audit_log_recorded",
+        "hubspot_handoff_mocked",
       ],
     );
     expect(
@@ -207,5 +211,6 @@ describe("evidence submission workspace", () => {
     expect(workspace.safetyNotes.join(" ")).toContain(
       "simple summary and link until storage, consent, audit, and rollback approvals are in place",
     );
+    expect(workspace.safetyNotes.join(" ")).toContain("Current phase objective:");
   });
 });

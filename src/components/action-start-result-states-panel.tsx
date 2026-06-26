@@ -93,11 +93,11 @@ function ResultCard({
 function toneBorderClass(tone: ActionStartResultTone): string {
   switch (tone) {
     case "success":
-      return "border-emerald-200";
+      return "border-blue-200";
     case "warning":
-      return "border-amber-200";
+      return "border-blue-200";
     case "error":
-      return "border-rose-200";
+      return "border-blue-200";
     case "info":
       return "border-[#bfdbfe]";
   }
@@ -106,11 +106,11 @@ function toneBorderClass(tone: ActionStartResultTone): string {
 function toneBadgeClass(tone: ActionStartResultTone): string {
   switch (tone) {
     case "success":
-      return "border border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "border border-blue-200 bg-blue-50 text-blue-700";
     case "warning":
-      return "border border-amber-200 bg-amber-50 text-amber-700";
+      return "border border-blue-200 bg-blue-50 text-blue-700";
     case "error":
-      return "border border-rose-200 bg-rose-50 text-rose-700";
+      return "border border-blue-200 bg-blue-50 text-blue-700";
     case "info":
       return "border border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]";
   }

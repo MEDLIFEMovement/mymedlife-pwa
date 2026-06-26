@@ -46,6 +46,8 @@ describe("campaigns page", () => {
     const html = renderToStaticMarkup(await CampaignsPage({}));
 
     expect(html).toContain("Rush Month");
+    expect(html).toContain("Event loop");
+    expect(html).toContain("Luma, RSVP, attendance, and points stay visible together.");
     expect(html).toContain("Current Phase");
     expect(html).toContain("Campaign KPIs");
     expect(html).toContain("Assigned Actions by Role");
@@ -60,15 +62,27 @@ describe("campaigns page", () => {
     expect(html.indexOf("Current Phase")).toBeLessThan(html.indexOf("Campaign KPIs"));
     expect(html.indexOf("Campaign KPIs")).toBeLessThan(html.indexOf("Assigned Actions by Role"));
     expect(html.indexOf("Assigned Actions by Role")).toBeLessThan(
+      html.indexOf("What Good Looks Like"),
+    );
+    expect(html.indexOf("What Good Looks Like")).toBeLessThan(
+      html.indexOf("23 RSVPs so far"),
+    );
+    expect(html.indexOf("23 RSVPs so far")).toBeLessThan(
       html.indexOf("Why this campaign matters"),
     );
     expect(html.indexOf("Why this campaign matters")).toBeLessThan(
       html.indexOf("Campaign actions"),
     );
-    expect(html).not.toContain("What Good Looks Like");
-    expect(html).not.toContain("Open event");
-    expect(html).not.toContain("23 RSVPs so far");
-    expect(html).not.toContain("/rush-month/events/event-rush-med-talk-001?source=campaigns");
+    expect(html).toContain("What Good Looks Like");
+    expect(html).toContain("Assignment can move to in progress");
+    expect(html).toContain("Proof requirements are visible before submission");
+    expect(html).toContain("Points surface stays in the same loop");
+    expect(html).toContain("Story or outcome proof stays metadata-first");
+    expect(html).toContain("Leader review confirms chapter completion");
+    expect(html).toContain("Intro GBM");
+    expect(html).toContain(">Luma<");
+    expect(html).toContain("23 RSVPs so far");
+    expect(html).toContain("/rush-month/events/event-rush-med-talk-001?source=campaigns");
     expect(html).not.toContain("Campaign operating system");
     expect(html).not.toContain("Campaigns turn SOPs into student action.");
     expect(html).not.toContain("Local preview tools");
@@ -95,7 +109,9 @@ describe("campaigns page", () => {
 
     expect(html).toContain("Role focus");
     expect(html).toContain("General Members");
-    expect(html).toContain("General members move Rush Month through visible invites");
+    expect(html).toContain(
+      "Start the next assigned action and submit proof metadata after the task is clearly in progress.",
+    );
     expect(html).toContain("/campaigns?role=general-members#role-focus");
   });
 
@@ -150,7 +166,7 @@ describe("campaigns page", () => {
       "Home surfaced this as the next campaign to understand. Keep that same weekly thread while you review it here.",
     );
     expect(html).toContain("Back to home");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html).toContain("/campaigns?role=general-members&amp;source=home#role-focus");
     expect(html.indexOf("Rush Month")).toBeLessThan(html.indexOf("From home"));
   });
@@ -168,7 +184,7 @@ describe("campaigns page", () => {
 
     const { default: CampaignsPage } = await import("@/app/campaigns/page");
 
-    await expect(CampaignsPage({})).rejects.toThrow("NEXT_REDIRECT:/coach?view=campaigns");
+    await expect(CampaignsPage({})).rejects.toThrow("NEXT_REDIRECT:/staff?view=campaigns");
   });
 
   it("gives chapter leaders a product-facing campaign library instead of review-shell copy", async () => {
@@ -197,6 +213,8 @@ describe("campaigns page", () => {
     expect(html).toContain("Connected to campaign plans");
     expect(html).toContain("Proof for review");
     expect(html).toContain("Ready for sharing review");
+    expect(html).toContain("Current workflow state");
+    expect(html).toContain("v0 reviewed");
     expect(html).toContain("Held handoffs");
     expect(html).toContain("Broader ecosystem stays paused");
     expect(html).not.toContain("Campaign operating system");

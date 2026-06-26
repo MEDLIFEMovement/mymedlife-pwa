@@ -18,7 +18,7 @@ describe("coach portfolio readiness panel", () => {
     );
 
     expect(html).toContain("MEDLIFE National");
-    expect(html).toContain("Coach Dashboard");
+    expect(html).toContain("Staff Command Center");
     expect(html).toContain("Hi, Coach David Kim");
     expect(html).toContain("Avg Health");
     expect(html).toContain("Total Overdue");

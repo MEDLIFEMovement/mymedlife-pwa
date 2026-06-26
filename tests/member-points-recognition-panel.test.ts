@@ -8,7 +8,7 @@ import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 describe("member points recognition panel", () => {
-  it("renders the mobile points route with the full leaderboard, recent approvals, and explainer sections visible in the Figma prototype", () => {
+  it("renders the mobile points route with a single active campaign focus, recent approvals, and explainer sections visible in the Figma prototype", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing member points recognition.");
     const recognition = getMemberRecognitionSummary(actor, data);
@@ -19,28 +19,34 @@ describe("member points recognition panel", () => {
     expect(html).toContain("UCLA MEDLIFE");
     expect(html).toContain("Points &amp; Recognition");
     expect(html).toContain("Points come from meaningful action.");
+    expect(html).toContain("Events");
+    expect(html).toContain("Show up first");
+    expect(html).toContain("Leaderboard");
+    expect(html).toContain("Event loop");
+    expect(html).toContain("Events create attendance, attendance creates points.");
     expect(html).toContain("Total Points");
     expect(html).toContain("Points by Campaign");
     expect(html).toContain("Rush Month");
-    expect(html).toContain("Spring Showcase (prev.)");
+    expect(html).not.toContain("Spring Showcase (prev.)");
     expect(html).toContain("Badges Earned");
     expect(html).toContain("Rush Starter");
     expect(html).toContain("Complete first Rush Month action");
     expect(html).toContain("Top 3 on leaderboard for 2 weeks");
+    expect(html).toContain("Campaign focus");
+    expect(html).toContain("Recognition on this campaign should reward the real invite");
     expect(html).toContain("Chapter Leaderboard — Rush Month");
     expect(html).toContain("Recent Approved Actions");
     expect(html).toContain("How points work");
     expect(html).toContain("See how to earn more points");
     expect(html).toContain("/rush-month/actions/member-push?source=points");
     expect(html).toContain("/rush-month/leaderboard?campaign=rush-month#campaign-focus");
-    expect(html).toContain("/rush-month/leaderboard?campaign=spring-showcase#campaign-focus");
     expect(html).toContain("Welcome one new student at tabling");
     expect(html).toContain("href=\"/rush-month/actions/welcome-table?source=points\"");
     expect(html).not.toContain("Open the chapter home and align the leader team");
     expect(html).not.toContain("Assign Rush Month outreach owners");
   });
 
-  it("can render a same-route campaign focus state inside the points surface", () => {
+  it("keeps the same-route campaign focus state on the active campaign card", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing member points campaign focus.");
     const recognition = getMemberRecognitionSummary(actor, data);
@@ -55,6 +61,7 @@ describe("member points recognition panel", () => {
     expect(html).toContain("Recognition on this campaign should reward the real invite");
     expect(html).toContain("See how to earn more points");
     expect(html).toContain("aria-current=\"page\"");
+    expect(html).not.toContain("Spring Showcase (prev.)");
   });
 
   it("preserves a home-origin back path while staying on the points route", () => {
@@ -74,7 +81,6 @@ describe("member points recognition panel", () => {
     );
     expect(html).toContain("Back to home");
     expect(html).toContain("/rush-month/leaderboard?campaign=rush-month&amp;source=home#campaign-focus");
-    expect(html).toContain("/rush-month/leaderboard?campaign=spring-showcase&amp;source=home#campaign-focus");
     expect(html).toContain("/rush-month/actions/member-push?source=points");
     expect(html.indexOf("Points &amp; Recognition")).toBeLessThan(html.indexOf("From home"));
   });

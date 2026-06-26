@@ -1,5 +1,5 @@
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { Phase2CloseoutReviewPanel } from "@/components/phase-2-closeout-review-panel";
 import { RestrictedState } from "@/components/restricted-state";
@@ -20,7 +20,7 @@ export default async function AdminPhase2Page() {
   const review = getPhase2CloseoutReview(actor, data);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
       <AdminBackendLaneNav
         current="phase_2"
@@ -36,6 +36,6 @@ export default async function AdminPhase2Page() {
           nextLabel="Back to Rush Month"
         />
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }

@@ -21,7 +21,7 @@ describe("owned route redirect service", () => {
     ).toBeNull();
     expect(
       getCampaignsRouteRedirectHref(getMockLocalActorContext("coach@mymedlife.test")),
-    ).toBe("/coach?view=campaigns");
+    ).toBe("/staff?view=campaigns");
     expect(
       getCampaignsRouteRedirectHref(getMockLocalActorContext("admin@mymedlife.test")),
     ).toBe("/staff?view=campaigns");
@@ -38,7 +38,7 @@ describe("owned route redirect service", () => {
       getCampaignsRouteRedirectHref(getMockLocalActorContext("coach@mymedlife.test"), {
         campaignSlug: "rush-month",
       }),
-    ).toBe("/coach?view=campaigns&campaign=rush-month");
+    ).toBe("/staff?view=campaigns&campaign=rush-month");
     expect(
       getCampaignsRouteRedirectHref(getMockLocalActorContext("admin@mymedlife.test"), {
         campaignSlug: "rush-month",
@@ -55,7 +55,7 @@ describe("owned route redirect service", () => {
     ).toBeNull();
     expect(
       getProofLibraryRouteRedirectHref(getMockLocalActorContext("coach@mymedlife.test")),
-    ).toBe("/coach?view=support_notes#support-notes");
+    ).toBe("/staff?view=support_notes#support-notes");
     expect(
       getProofLibraryRouteRedirectHref(getMockLocalActorContext("admin@mymedlife.test")),
     ).toBe("/staff?view=proof_ugc");
@@ -78,7 +78,7 @@ describe("owned route redirect service", () => {
     ).toBe("/chapter?view=events");
     expect(
       getRushMonthEventsRouteRedirectHref(getMockLocalActorContext("coach@mymedlife.test")),
-    ).toBe("/coach?view=campaigns&campaign=rush-month");
+    ).toBe("/staff?view=campaigns&campaign=rush-month");
     expect(
       getRushMonthEventsRouteRedirectHref(getMockLocalActorContext("admin@mymedlife.test")),
     ).toBe("/staff?view=campaigns&campaign=rush-month");
@@ -100,7 +100,7 @@ describe("owned route redirect service", () => {
       getRushMonthEventsRouteRedirectHref(getMockLocalActorContext("coach@mymedlife.test"), {
         eventId: "event-rush-social-001",
       }),
-    ).toBe("/coach?view=campaigns&campaign=rush-month&event=event-rush-social-001");
+    ).toBe("/staff?view=campaigns&campaign=rush-month&event=event-rush-social-001");
     expect(
       getRushMonthEventsRouteRedirectHref(getMockLocalActorContext("admin@mymedlife.test"), {
         eventId: "event-rush-social-001",
@@ -147,7 +147,7 @@ describe("owned route redirect service", () => {
       getRushMonthActionDetailRouteRedirectHref(
         getMockLocalActorContext("admin@mymedlife.test"),
       ),
-    ).toBe("/rush-month/actions");
+    ).toBe("/staff?view=campaigns&campaign=rush-month");
     expect(
       getRushMonthActionDetailRouteRedirectHref(
         getMockLocalActorContext("traveler.a@mymedlife.test"),

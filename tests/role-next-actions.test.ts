@@ -91,7 +91,7 @@ describe("role next actions", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const brief = getRoleNextActionBrief(actor, data);
 
-    expect(brief.ownerLabel).toBe("Admin");
+    expect(brief.ownerLabel).toBe("Staff");
     expect(brief.primaryHref).toBe("/rush-month/review");
     expect(brief.secondaryHref).toBe("/admin");
     expect(brief.safetyNote).toContain("public proof sharing");

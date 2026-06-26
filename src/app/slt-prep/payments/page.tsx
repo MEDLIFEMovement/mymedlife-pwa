@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import { SltPrepRouteHandoffCard } from "@/components/slt-prep-route-handoff-card";
 import {
   SltPrepSectionCard,
@@ -48,7 +48,7 @@ export default async function SltPrepPaymentsPage({
 
   if (!workspace.canReadWorkspace || !workspace.traveler) {
     return (
-      <AppShell
+      <SltPrepShell
         actor={actor}
         mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
           source: routeSource ?? undefined,
@@ -70,7 +70,7 @@ export default async function SltPrepPaymentsPage({
           nextHref={buildSltTripPrepRouteHref("/slt-prep", { travelerId: search.traveler })}
           nextLabel="Back to trip prep"
         />
-      </AppShell>
+      </SltPrepShell>
     );
   }
 
@@ -96,7 +96,7 @@ export default async function SltPrepPaymentsPage({
   });
 
   return (
-    <AppShell
+    <SltPrepShell
       actor={actor}
       mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
         source: routeSource ?? undefined,
@@ -113,14 +113,14 @@ export default async function SltPrepPaymentsPage({
         })}
       />
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#083f8f_0%,#0b4f9b_52%,#081b3c_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f7d05e]">
+      <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
           Travel payments
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-slate-950">
           Payment Status
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
           1-week Peru SLT. Keep {workspace.traveler.firstName}&apos;s payment plan simple: what is
           already cleared, what is due next, and what still needs finance follow-up before
           departure.
@@ -136,7 +136,7 @@ export default async function SltPrepPaymentsPage({
         {actionState ? (
           <section
             id="payment-action"
-            className="rounded-[1.75rem] border border-[#bfdbfe] bg-[#eaf2ff] p-4"
+            className="rounded-[1.75rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-2xl">
@@ -350,7 +350,7 @@ export default async function SltPrepPaymentsPage({
           </article>
         </section>
       </div>
-    </AppShell>
+    </SltPrepShell>
   );
 }
 
@@ -384,7 +384,7 @@ function PaymentRow({
   tone: "red" | "yellow" | "green";
 }) {
   return (
-    <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3 py-3">
+    <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-slate-950">{title}</p>
@@ -460,7 +460,7 @@ function ActionRow({
   href: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[1rem] border border-slate-200 bg-slate-50 px-3 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
       <div>
         <p className="text-sm font-semibold text-slate-950">{title}</p>
         <p className="mt-1 text-sm text-slate-500">{detail}</p>

@@ -19,10 +19,10 @@ export function Phase2CloseoutReviewPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
             Phase 2 closeout
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{review.title}</h2>
@@ -51,15 +51,15 @@ export function Phase2CloseoutReviewPanel({
         </div>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="mt-4 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
         <p className="text-sm font-semibold text-white">How to use this packet</p>
         <p className="mt-2 text-sm leading-6 text-white/62">{review.reviewerAction}</p>
-        <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/54">
+        <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
           {review.approvalReplyHint}
         </p>
       </div>
 
-      <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
+      <div className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h3 className="text-lg font-semibold text-white">Definition of done audit</h3>
@@ -111,9 +111,9 @@ export function Phase2CloseoutReviewPanel({
           title="Blocked scope stays off"
           items={review.blockedScope}
         />
-        <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+        <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
           <h3 className="text-lg font-semibold text-white">Copy-paste approval reply</h3>
-          <pre className="mt-4 whitespace-pre-wrap text-sm leading-6 text-sky-50/82">
+          <pre className="mt-4 whitespace-pre-wrap text-sm leading-6 text-blue-50/82">
             {review.approvalReplyBlock.join("\n")}
           </pre>
         </article>
@@ -133,7 +133,7 @@ export function Phase2CloseoutReviewPanel({
 
 function DoneCriterionCard({ criterion }: { criterion: Phase2DoneCriterion }) {
   return (
-    <article className="rounded-3xl border border-white/10 bg-[#07121d]/80 p-4">
+    <article className="rounded-3xl border border-white/10 bg-[#0b66cc]/80 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <h4 className="max-w-2xl text-sm font-semibold leading-6 text-white">
           {criterion.label}
@@ -153,7 +153,7 @@ function DoneCriterionCard({ criterion }: { criterion: Phase2DoneCriterion }) {
 
 function LaneCard({ lane }: { lane: Phase2CloseoutLane }) {
   return (
-    <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+    <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <StatusPill status={lane.status} />
@@ -186,7 +186,7 @@ function ChecklistCard({
   items: string[];
 }) {
   return (
-    <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+    <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
       <h3 className="text-lg font-semibold text-white">{title}</h3>
       <ul className="mt-4 grid gap-2">
         {items.map((item) => (
@@ -201,7 +201,7 @@ function ChecklistCard({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -213,10 +213,10 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function CriterionStatusPill({ status }: { status: Phase2DoneCriterionStatus }) {
   const className =
     status === "review_ready_in_repo"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "awaiting_human_confirmation"
-        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
-        : "border-amber-300/30 bg-amber-300/15 text-amber-100";
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
   const label =
     status === "review_ready_in_repo"
       ? "repo ready"
@@ -234,10 +234,10 @@ function CriterionStatusPill({ status }: { status: Phase2DoneCriterionStatus }) 
 function StatusPill({ status }: { status: Phase2CloseoutLaneStatus }) {
   const className =
     status === "review_now"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "awaiting_human_confirmation"
-        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
-        : "border-amber-300/30 bg-amber-300/15 text-amber-100";
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

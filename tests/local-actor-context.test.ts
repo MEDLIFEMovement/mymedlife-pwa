@@ -60,6 +60,7 @@ describe("local actor context service", () => {
   it("keeps separate mock personas for sales coach and sales admin roles", () => {
     const salesCoach = getMockLocalActorContext("sales.coach@mymedlife.test");
     const salesAdmin = getMockLocalActorContext("sales.admin@mymedlife.test");
+    const generalStaff = getMockLocalActorContext("general.staff@mymedlife.test");
 
     expect(salesCoach.audience).toBe("coach");
     expect(salesCoach.staffRoles).toEqual(["Sales Coach"]);
@@ -68,6 +69,9 @@ describe("local actor context service", () => {
     expect(salesAdmin.audience).toBe("admin");
     expect(salesAdmin.staffRoles).toEqual(["Sales Admin"]);
     expect(salesAdmin.primaryCanonicalRole).toBe("sales_admin");
+    expect(generalStaff.audience).toBe("admin");
+    expect(generalStaff.staffRoles).toEqual(["General Staff"]);
+    expect(generalStaff.primaryCanonicalRole).toBe("department_staff");
   });
 
   it("reads every Goal 9 actor context table", async () => {
@@ -115,7 +119,7 @@ describe("local actor context service", () => {
       "E-Board Member",
     ]);
     await expectAudience("coach@mymedlife.test", "coach", ["Coach"]);
-    await expectAudience("admin@mymedlife.test", "admin", ["Admin"]);
+    await expectAudience("admin@mymedlife.test", "admin", ["Staff"]);
     await expectAudience("ds.admin@mymedlife.test", "ds_admin", ["DS Admin"]);
     await expectAudience("super.admin@mymedlife.test", "super_admin", ["Super Admin"]);
   });

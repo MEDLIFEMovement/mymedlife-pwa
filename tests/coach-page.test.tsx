@@ -43,7 +43,7 @@ describe("coach page", () => {
     const html = renderToStaticMarkup(await CoachPage({}));
 
     expect(html).toContain("This coach command center is not visible to this role.");
-    expect(html).toContain('href="/chapter?view=overview"');
+    expect(html).toContain('href="/leader?view=overview"');
     expect(html).toContain(">Open chapter home<");
   });
 
@@ -79,7 +79,7 @@ describe("coach page", () => {
     const { default: CoachPage } = await import("@/app/coach/page");
     const html = renderToStaticMarkup(await CoachPage({}));
 
-    expect(html).toContain("Coach Dashboard");
+    expect(html).toContain("Staff Command Center");
     expect(html).toContain("Assigned portfolio");
     expect(html).toContain("AI Weekly Summary");
     expect(html).toContain("Chapter Portfolio");
@@ -93,9 +93,9 @@ describe("coach page", () => {
     expect(html).toContain("Campus");
     expect(html).toContain("Campaign");
     expect(html).toContain("Ownership");
-    expect(html).toContain("Coach views");
+    expect(html).toContain("Staff views");
     expect(html).not.toContain("Mock-seeded review data");
-    expect(html.indexOf("Coach Dashboard")).toBeLessThan(html.indexOf("Coach views"));
+    expect(html.indexOf("Staff Command Center")).toBeLessThan(html.indexOf("Staff views"));
     expect(html.indexOf("AI Weekly Summary")).toBeLessThan(html.indexOf("Portfolio Overview"));
     expect(html.indexOf("Portfolio Overview")).toBeLessThan(
       html.indexOf("Coaching Priorities"),
@@ -132,25 +132,25 @@ describe("coach page", () => {
     );
 
     expect(html).toContain("Member app handoff");
-    expect(html).toContain("Opened from UCLA MEDLIFE into Coach Dashboard");
-    expect(html).toContain("Switch View buttons");
+    expect(html).toContain("Opened from UCLA MEDLIFE into Staff Command Center");
+    expect(html).toContain("member-home role handoff");
     expect(html).toContain("AI Weekly Summary");
     expect(html).toContain("Chapter Portfolio");
     expect(html).toContain("Open chapter");
     expect(html).toContain("Write coach note");
     expect(html).toContain("Review risk reports");
     expect(html).toContain("Student view");
-    expect(html.indexOf("Student view")).toBeLessThan(html.indexOf("Coach Dashboard"));
-    expect(html.indexOf("Opened from UCLA MEDLIFE into Coach Dashboard")).toBeLessThan(
+    expect(html.indexOf("Student view")).toBeLessThan(html.indexOf("Staff Command Center"));
+    expect(html.indexOf("Opened from UCLA MEDLIFE into Staff Command Center")).toBeLessThan(
       html.indexOf("Avg Health"),
     );
     expect(html.indexOf("AI Weekly Summary")).toBeLessThan(html.indexOf("Portfolio Overview"));
-    expect(html.indexOf("Coach Dashboard")).toBeLessThan(html.indexOf("Coach views"));
-    expect(html).toContain("/coach?view=chapter_detail&amp;source=member_home&amp;chapter=chapter-northview");
-    expect(html).toContain("/coach?view=support_notes&amp;source=member_home#support-notes");
-    expect(html).toContain("/coach?view=chapters&amp;source=member_home&amp;risk=high");
+    expect(html.indexOf("Staff Command Center")).toBeLessThan(html.indexOf("Staff views"));
+    expect(html).toContain("/staff?view=chapter_detail&amp;source=member_home&amp;chapter=chapter-northview");
+    expect(html).toContain("/staff?view=support_notes&amp;source=member_home#support-notes");
+    expect(html).toContain("/staff?view=chapters&amp;source=member_home&amp;risk=high");
     expect(html).toContain(
-      'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2F"',
+      'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2Fapp"',
     );
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain("Review only");
@@ -209,9 +209,9 @@ describe("coach page", () => {
       }),
     );
 
-    expect(html).toContain("Coach views");
+    expect(html).toContain("Staff views");
     expect(html).toContain(">Support Notes</h1>");
-    expect(html).toContain("Coach note lane");
+    expect(html).toContain("Staff note lane");
     expect(html).toContain("Coach notes");
     expect(html).toContain("Coach support notes");
     expect(html).not.toContain('action="/staff"');
@@ -291,7 +291,7 @@ describe("coach page", () => {
       }),
     );
 
-    expect(html).toContain("Coach views");
+    expect(html).toContain("Staff views");
     expect(html).toContain("Campaigns");
     expect(html).toContain("Campaign Operations");
     expect(html).toContain(">Rush Month</h1>");
@@ -360,7 +360,7 @@ describe("coach page", () => {
       }),
     );
 
-    expect(html).toContain("Coach views");
+    expect(html).toContain("Staff views");
     expect(html).toContain("Feed Curation Studio");
     expect(html).toContain("Best practice source");
     expect(html).toContain("Opened from the best-practice library");
@@ -391,7 +391,7 @@ describe("coach page", () => {
       }),
     );
 
-    expect(html).toContain("Coach views");
+    expect(html).toContain("Staff views");
     expect(html).toContain("Feed Analytics");
     expect(html).toContain("Post Performance");
     expect(html).not.toContain("Which support signals are moving across assigned chapters?");
@@ -422,7 +422,7 @@ describe("coach page", () => {
       }),
     );
 
-    expect(html).toContain("Coach views");
+    expect(html).toContain("Staff views");
     expect(html).toContain("Best Practices Library");
     expect(html).toContain("Selected practice");
     expect(html).toContain("Selected for sharing");
@@ -455,7 +455,7 @@ describe("coach page", () => {
       }),
     );
 
-    expect(html).toContain("Coach chapter detail");
+    expect(html).toContain("Staff chapter detail");
     expect(html).toContain(">UCSD MEDLIFE</h1>");
     expect(html).toContain("Assigned portfolio");
     expect(html).toContain("Write coach note");
@@ -497,7 +497,7 @@ describe("coach page", () => {
       }),
     );
 
-    expect(html).toContain("Coach chapter detail");
+    expect(html).toContain("Staff chapter detail");
     expect(html).toContain(">UCSD MEDLIFE</h1>");
     expect(html).toContain("Feed analytics source");
     expect(html).toContain("Opened from a feed-engagement review");

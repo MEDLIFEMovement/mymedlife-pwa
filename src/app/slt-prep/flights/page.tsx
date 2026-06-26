@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import { SltPrepRouteHandoffCard } from "@/components/slt-prep-route-handoff-card";
 import {
   SltPrepSectionCard,
@@ -47,7 +47,7 @@ export default async function SltPrepFlightsPage({
 
   if (!workspace.canReadWorkspace || !workspace.traveler) {
     return (
-      <AppShell
+      <SltPrepShell
         actor={actor}
         mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
           source: routeSource ?? undefined,
@@ -69,7 +69,7 @@ export default async function SltPrepFlightsPage({
           nextHref={buildSltTripPrepRouteHref("/slt-prep", { travelerId: search.traveler })}
           nextLabel="Back to trip prep"
         />
-      </AppShell>
+      </SltPrepShell>
     );
   }
 
@@ -86,7 +86,7 @@ export default async function SltPrepFlightsPage({
     workspace.traveler.alerts.find((alert) => alert.href.includes("/slt-prep/flights"));
 
   return (
-    <AppShell
+    <SltPrepShell
       actor={actor}
       mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
         source: routeSource ?? undefined,
@@ -104,7 +104,7 @@ export default async function SltPrepFlightsPage({
       />
 
       <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#083f8f_0%,#0b4f9b_52%,#081b3c_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f7d05e]">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
           Flight plan
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-white">
@@ -288,7 +288,7 @@ export default async function SltPrepFlightsPage({
           </article>
         </section>
       </div>
-    </AppShell>
+    </SltPrepShell>
   );
 }
 

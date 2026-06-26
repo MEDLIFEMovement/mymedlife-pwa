@@ -83,7 +83,7 @@ export function AdminAuditLogReviewPanel({
           {review.auditPreflight.blockedControls.map((control) => (
             <span
               key={control}
-              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
+              className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500"
             >
               Locked {control}
             </span>
@@ -151,7 +151,7 @@ function AuditPreflightCard({ item }: { item: AdminAuditPreflightItem }) {
         {item.routeEvidence.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -190,7 +190,7 @@ function AuditRowCard({ row }: { row: AdminAuditLogReviewRow }) {
 
 function MiniToken({ label, value }: { label: string; value: string }) {
   return (
-    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500">
+    <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500">
       {label} {value}
     </span>
   );
@@ -221,10 +221,10 @@ function AuditPreflightStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "watch"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-rose-200 bg-rose-50 text-rose-700";
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -236,10 +236,10 @@ function AuditPreflightStatusPill({
 function StatusPill({ posture }: { posture: AdminAuditLogPosture }) {
   const className =
     posture === "persisted_readback_visible"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : posture === "mock_intent_only"
         ? "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]"
-        : "border-amber-200 bg-amber-50 text-amber-700";
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(64);
+    expect(entries).toHaveLength(66);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -99,6 +99,12 @@ describe("static route metadata", () => {
     expect(getStaticRouteMetadata("profile")).toMatchObject({
       title: "Profile",
     });
+    expect(getStaticRouteMetadata("app")).toMatchObject({
+      title: "Member App",
+    });
+    expect(getStaticRouteMetadata("leader")).toMatchObject({
+      title: "Leader Command Center",
+    });
     expect(getStaticRouteMetadata("onboarding")).toMatchObject({
       title: "Onboarding",
     });
@@ -135,7 +141,7 @@ describe("static route metadata", () => {
       description: expect.stringContaining("proof prep checklist"),
     });
     expect(getStaticRouteMetadata("coach")).toMatchObject({
-      title: "Coach Dashboard",
+      title: "Staff Command Center",
     });
     expect(getStaticRouteMetadata("chapter")).toMatchObject({
       title: "Student Leadership Command Center",

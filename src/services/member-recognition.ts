@@ -175,7 +175,7 @@ export function getMemberRecognitionSummary(
     badges: [
       { label: "Rush Starter", tone: "gold" },
       { label: "Connector", tone: "blue" },
-      { label: "Evidence Pro", tone: "green" },
+      { label: "Evidence Pro", tone: "blue" },
       { label: "Chapter MVP", tone: "slate" },
     ],
     recentApprovedActions: buildRecentApprovedActions(actor, data),

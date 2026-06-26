@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import { SltPrepTonePill } from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
@@ -51,7 +51,7 @@ export default async function SltPrepChecklistPage({
 
   if (!workspace.canReadChecklist || !workspace.traveler) {
     return (
-      <AppShell
+      <SltPrepShell
         actor={actor}
         mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
           source: routeSource ?? undefined,
@@ -73,14 +73,14 @@ export default async function SltPrepChecklistPage({
           nextHref={buildSltTripPrepRouteHref("/slt-prep", { travelerId: search.traveler })}
           nextLabel="Back to trip prep"
         />
-      </AppShell>
+      </SltPrepShell>
     );
   }
 
   const groupedItems = groupChecklistItems(workspace.items);
 
   return (
-    <AppShell
+    <SltPrepShell
       actor={actor}
       mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
         source: routeSource ?? undefined,
@@ -97,15 +97,15 @@ export default async function SltPrepChecklistPage({
         })}
       />
 
-      <section className="overflow-hidden rounded-[1.8rem] border border-[#1565c0]/12 bg-white shadow-[0_18px_55px_rgba(8,34,76,0.08)]">
-        <div className="bg-[#0b66cc] px-5 pb-5 pt-4 text-white">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/72">
+      <section className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white shadow-[0_18px_55px_rgba(8,34,76,0.08)]">
+        <div className="bg-[#eff6ff] px-5 pb-5 pt-4 text-slate-950">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
             Trip Prep
           </p>
-          <h1 className="mt-2 text-[1.9rem] font-semibold tracking-tight">
+          <h1 className="mt-2 text-[1.9rem] font-semibold tracking-tight text-slate-950">
             Readiness Checklist
           </h1>
-          <p className="mt-2 text-sm text-white/80">
+          <p className="mt-2 text-sm text-slate-600">
             Open the red items first, then clear the soon items before departure week.
           </p>
         </div>
@@ -131,8 +131,8 @@ export default async function SltPrepChecklistPage({
                   className={[
                     "rounded-full border px-4 py-2 text-sm font-semibold transition",
                     isActive
-                      ? "border-[#0b66cc] bg-[#e8f1ff] text-[#0b66cc]"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-[#bfd8ff] hover:text-slate-950",
+                    ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb]"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-[#bfd8ff] hover:text-slate-950",
                   ].join(" ")}
                 >
                   {option.label}
@@ -143,10 +143,7 @@ export default async function SltPrepChecklistPage({
 
           <div className="space-y-4">
             {groupedItems.map(([category, items]) => (
-              <section
-                key={category}
-                className="rounded-[1.5rem] border border-slate-200 bg-[#fbfdff] p-4"
-              >
+              <section key={category} className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
                 <div className="mb-3 flex items-end justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-semibold text-slate-950">{category}</h2>
@@ -165,7 +162,7 @@ export default async function SltPrepChecklistPage({
                         travelerId: search.traveler,
                       })}
                       className={[
-                        "block rounded-[1.2rem] border bg-white p-4 transition hover:bg-slate-50",
+                        "block rounded-[1.2rem] border bg-white p-4 transition hover:bg-[#eff6ff]",
                         getChecklistAccentClassName(item.status),
                       ].join(" ")}
                     >
@@ -181,10 +178,10 @@ export default async function SltPrepChecklistPage({
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                        <span className="rounded-full border border-slate-200 bg-[#eff6ff] px-3 py-1">
                           {item.dueLabel}
                         </span>
-                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+                        <span className="rounded-full border border-slate-200 bg-[#eff6ff] px-3 py-1">
                           {item.mockSource}
                         </span>
                       </div>
@@ -196,7 +193,7 @@ export default async function SltPrepChecklistPage({
           </div>
         </div>
       </section>
-    </AppShell>
+    </SltPrepShell>
   );
 }
 
@@ -254,19 +251,19 @@ function getChecklistLabel(status: TripPrepChecklistItem["status"]) {
 
 function getChecklistAccentClassName(status: TripPrepChecklistItem["status"]) {
   if (status === "needs_attention") {
-    return "border-l-[6px] border-l-rose-500 border-t-slate-200 border-r-slate-200 border-b-slate-200";
+    return "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200";
   }
 
   if (status === "in_review" || status === "upcoming") {
-    return "border-l-[6px] border-l-amber-400 border-t-slate-200 border-r-slate-200 border-b-slate-200";
+    return "border-l-[6px] border-l-blue-400 border-t-slate-200 border-r-slate-200 border-b-slate-200";
   }
 
-  return "border-l-[6px] border-l-emerald-500 border-t-slate-200 border-r-slate-200 border-b-slate-200";
+  return "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200";
 }
 
 function ChecklistStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3 py-3">
+    <div className="rounded-[1.15rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
         {label}
       </p>

@@ -11,6 +11,7 @@ import {
   getMobileQuickNavigationForActor,
   getNavigationForActor,
 } from "@/services/role-visibility";
+import { getWorkflowInventorySnapshot } from "@/services/sop-rollout-inventory";
 
 export type AdminPermissionsWorkspace = {
   canReadWorkspace: boolean;
@@ -26,6 +27,8 @@ export type AdminPermissionsWorkspace = {
   selectedSection: PermissionRegistrySection;
   sectionOptions: readonly PermissionSectionOption[];
   focusedSection: PermissionFocusedSection;
+  workflowPermissionInventory: ReturnType<typeof getWorkflowInventorySnapshot>["permissions"];
+  permissionConfigState: PermissionConfigState | null;
   guardrails: readonly string[];
   counts: {
     personas: number;
@@ -87,6 +90,20 @@ export type PermissionFocusedSection = {
   cards: readonly PermissionFocusCard[];
 };
 
+export type PermissionConfigState = {
+  title: string;
+  summary: string;
+  rows: readonly {
+    label: string;
+    value: string;
+    note: string;
+  }[];
+  guardrails: readonly string[];
+  returnHref: string;
+  builderHref: string;
+  proposalHref: string;
+};
+
 const backendRouteFamily: PermissionRouteFamily = {
   key: "admin_backend",
   label: "Admin review and tooling",
@@ -95,6 +112,7 @@ const backendRouteFamily: PermissionRouteFamily = {
   entryHref: "/admin",
   routes: [
     "/admin",
+    "/admin/phase-2",
     "/admin/review-path",
     "/admin/nick-review",
     "/admin/release-readiness",
@@ -113,6 +131,7 @@ const backendRouteFamily: PermissionRouteFamily = {
     "/admin/assignment-write",
     "/admin/coach-write",
     "/admin/pilot-scope",
+    "/admin/staff-dry-run",
     "/admin/permissions",
     "/admin/committees",
     "/admin/workflows",
@@ -127,6 +146,7 @@ export function getAdminPermissionsWorkspace(
   search?: {
     focus?: string;
     section?: string;
+    permission?: string;
   },
 ): AdminPermissionsWorkspace {
   if (!canReadAdminReviewSurface(actor)) {
@@ -145,12 +165,15 @@ export function getAdminPermissionsWorkspace(
       selectedSection: "routes",
       sectionOptions: [],
       focusedSection: emptyFocusedSection(),
+      workflowPermissionInventory: [],
+      permissionConfigState: null,
       guardrails: [],
       counts: emptyCounts(),
     };
   }
 
   const personaRows = actors.map(toPermissionPersonaRow);
+  const workflowPermissionInventory = getWorkflowInventorySnapshot().permissions;
   const canonicalRoles = new Set(personaRows.flatMap((row) => row.canonicalRoles));
   const routeFamilies: readonly PermissionRouteFamily[] = [
     {
@@ -183,7 +206,7 @@ export function getAdminPermissionsWorkspace(
     },
     {
       key: "coach_command_center",
-      label: "Coach command center",
+      label: "Staff command center",
       ownerSummary: "Portfolio support, chapter detail, campaigns, and support notes.",
       entryHref: "/coach?view=chapters",
       routes: [
@@ -230,6 +253,12 @@ export function getAdminPermissionsWorkspace(
     routeFamilies,
     personaRows,
   );
+  const permissionConfigState = buildPermissionConfigState(
+    workflowPermissionInventory,
+    search?.permission,
+    selectedSection,
+    focusedSection.selectedKey,
+  );
 
   return {
     canReadWorkspace: true,
@@ -242,6 +271,8 @@ export function getAdminPermissionsWorkspace(
     selectedSection,
     sectionOptions,
     focusedSection,
+    workflowPermissionInventory,
+    permissionConfigState,
     guardrails: [
       "Canonical roles translate at the app boundary first. Hosted schema and RLS naming stay compatible until separately approved.",
       "DS Admin can inspect blocked integration posture but does not own membership approval, staff role assignment, or campaign configuration writes.",
@@ -370,6 +401,68 @@ function buildFocusedSection(
 
 function buildFocusHref(section: PermissionRegistrySection, focus: string) {
   return `/admin/permissions?section=${section}&focus=${encodeURIComponent(focus)}`;
+}
+
+function buildPermissionConfigState(
+  permissions: ReturnType<typeof getWorkflowInventorySnapshot>["permissions"],
+  permissionKey: string | undefined,
+  selectedSection: PermissionRegistrySection,
+  selectedFocus: string | null,
+): PermissionConfigState | null {
+  if (!permissionKey) {
+    return null;
+  }
+
+  const permission = permissions.find((entry) => entry.key === permissionKey);
+
+  if (!permission) {
+    return null;
+  }
+
+  const sectionHref = selectedFocus
+    ? buildFocusHref(selectedSection, selectedFocus)
+    : `/admin/permissions?section=${selectedSection}`;
+
+  return {
+    title: "Mock-safe workflow permission config",
+    summary:
+      "Review how this operation should stay bound to roles, scopes, and approval posture before any persisted permission-matrix change or builder publish lane is approved.",
+    rows: [
+      {
+        label: "Workflow",
+        value: `${permission.workflowName} (${permission.versionLabel})`,
+        note: "Imported workflow/version record currently carrying this operation permission.",
+      },
+      {
+        label: "Operation",
+        value: permission.operation.replaceAll("_", " "),
+        note: "Workflow action being constrained at the backend configuration layer.",
+      },
+      {
+        label: "Allowed roles",
+        value: permission.allowedRoles.join(", ").replaceAll("_", " "),
+        note: "Canonical product roles currently allowed to perform this operation.",
+      },
+      {
+        label: "Allowed scopes",
+        value: permission.allowedScopes.join(", ").replaceAll("_", " "),
+        note: "Scope boundaries that keep this permission from becoming generic or global by accident.",
+      },
+      {
+        label: "Authority status",
+        value: permission.authorityStatus.replaceAll("_", " "),
+        note: permission.note,
+      },
+    ],
+    guardrails: [
+      "This state does not edit the permissions matrix or persist a role-policy change.",
+      "Final authority still belongs to the permissions matrix, not this local review route.",
+      "No auth, RLS, storage, external-send, or workflow publish change runs from here.",
+    ],
+    returnHref: sectionHref,
+    builderHref: `/admin/sop-builder/${permission.workflowSlug}?tab=role-matrix`,
+    proposalHref: `/admin/sop-builder/${permission.workflowSlug}?tab=version&focus=proposal-permission-${encodeURIComponent(permission.key)}`,
+  };
 }
 
 function emptyFocusedSection(): PermissionFocusedSection {

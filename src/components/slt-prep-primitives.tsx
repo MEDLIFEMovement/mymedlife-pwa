@@ -24,7 +24,7 @@ export function SltPrepTonePill({
   tone,
   label,
 }: {
-  tone: "red" | "yellow" | "green";
+  tone: "red" | "yellow" | "blue" | "green";
   label: string;
 }) {
   return (
@@ -58,13 +58,14 @@ export function SltPrepSectionCard({
   );
 }
 
-export function getToneClassName(tone: "red" | "yellow" | "green") {
+export function getToneClassName(tone: "red" | "yellow" | "blue" | "green") {
   switch (tone) {
     case "red":
-      return "border-rose-200 bg-rose-50 text-rose-700";
+      return "border-blue-200 bg-blue-50 text-blue-700";
     case "yellow":
-      return "border-[#f7d05e]/30 bg-[#fff8df] text-[#a16207]";
+      return "border-[#2563eb]/30 bg-[#dbeafe] text-[#1d4ed8]";
+    case "blue":
     case "green":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "border-blue-200 bg-blue-50 text-blue-700";
   }
 }

@@ -9,12 +9,18 @@ type AuthSessionPanelProps = {
 export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
   if (session.status !== "signed_in" || !session.user) {
     return (
-      <section className="app-surface-warm rounded-[2rem] p-5">
-        <p className="app-eyebrow app-eyebrow-warm">
-          Auth status
+      <section className="app-surface-info rounded-[2rem] p-5">
+        <p className="app-eyebrow app-eyebrow-blue">
+          Workspace access
         </p>
         <h2 className="app-title mt-2">No signed-in account yet</h2>
-        <p className="app-copy mt-2">{session.message}</p>
+        <p className="app-copy mt-2">
+          Choose a workspace card, then use a seeded account to enter the matching role-based
+          experience.
+        </p>
+        <p className="app-copy mt-3 text-xs text-slate-500">
+          {session.message}
+        </p>
       </section>
     );
   }
@@ -22,18 +28,17 @@ export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
   return (
     <section className="app-surface-info rounded-[2rem] p-5">
       <p className="app-eyebrow app-eyebrow-blue">
-        Current session
+        Current workspace
       </p>
       <h2 className="app-title mt-2">{session.user.displayName}</h2>
       <p className="app-copy mt-2">{session.user.email}</p>
       <p className="app-copy mt-3">
-        This account now controls the role-aware routes in this review
-        environment.
+        This account is ready to continue into the role-based workspace.
       </p>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/"
-          className="rounded-full bg-[#f7d05e] px-4 py-2 text-center text-sm font-semibold text-[#10223f]"
+          className="rounded-full bg-[#2563eb] px-4 py-2 text-center text-sm font-semibold text-[#10223f]"
         >
           Continue into myMEDLIFE
         </Link>

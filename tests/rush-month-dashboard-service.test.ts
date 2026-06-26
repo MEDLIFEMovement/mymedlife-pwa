@@ -17,15 +17,21 @@ describe("rush month dashboard service", () => {
     expect(dashboard.surfaceFamily).toBe("member");
     expect(dashboard.roleLabel).toBe("General Member");
     expect(dashboard.canReadChapterTruth).toBe(true);
-    expect(dashboard.phaseSummary.label).toBe("Week 1: Invite and prove the first push");
-    expect(dashboard.phaseSummary.status).toBe("Invite and prove the first push");
-    expect(dashboard.whyItMatters).toContain("Why it matters:");
+    expect(dashboard.phaseSummary.label).toBe("Week 1: Make MEDLIFE visible on campus");
+    expect(dashboard.phaseSummary.status).toBe("Planning");
+    expect(dashboard.phaseSummary.note).toContain(
+      "Turn early campaign planning into visible campus energy",
+    );
+    expect(dashboard.whyItMatters).toContain(
+      "Current phase objective:",
+    );
     expect(dashboard.actionGroups.map((group) => group.label)).toEqual([
       "Invite push",
       "Rush event",
       "Proof and points",
     ]);
     expect(dashboard.nextStep.href).toBe("/rush-month/actions/member-push");
+    expect(dashboard.nextStep.summary).toContain("prepare proof for:");
     expect(dashboard.visibleAssignments).toHaveLength(3);
     expect(dashboard.eventPlans).toHaveLength(4);
     expect(dashboard.proofItems).toHaveLength(1);
@@ -38,7 +44,7 @@ describe("rush month dashboard service", () => {
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
     expect(dashboard.roleLabel).toBe("Action Committee Member");
-    expect(dashboard.phaseSummary.status).toBe("Invite and prove the first push");
+    expect(dashboard.phaseSummary.status).toBe("Planning");
     expect(dashboard.nextStep.ctaLabel).toBe("Open my next action");
     expect(dashboard.actionGroups.map((group) => group.label)).toEqual([
       "Invite push",
@@ -87,6 +93,8 @@ describe("rush month dashboard service", () => {
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
     expect(dashboard.roleLabel).toBe("Coach");
+    expect(dashboard.phaseSummary.label).toBe("Week 1: Make MEDLIFE visible on campus");
+    expect(dashboard.phaseSummary.status).toBe("Planning");
     expect(dashboard.nextStep.href).toBe("/coach");
     expect(dashboard.metrics.map((metric) => metric.label)).toContain("Coach decision");
     expect(dashboard.integrationEvents).toEqual([]);

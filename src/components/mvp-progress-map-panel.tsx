@@ -14,10 +14,10 @@ export function MvpProgressMapPanel({ progressMap }: MvpProgressMapPanelProps) {
   }
 
   return (
-    <section className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
+    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
             MVP progress map
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -42,7 +42,7 @@ export function MvpProgressMapPanel({ progressMap }: MvpProgressMapPanelProps) {
         {progressMap.subprojects.map((subproject) => (
           <article
             key={subproject.key}
-            className="rounded-3xl border border-white/10 bg-black/20 p-4"
+            className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -72,20 +72,20 @@ export function MvpProgressMapPanel({ progressMap }: MvpProgressMapPanelProps) {
             <p className="mt-4 text-sm leading-6 text-white/66">
               {subproject.plainEnglish}
             </p>
-            <p className="mt-3 text-xs leading-5 text-cyan-100/70">
+            <p className="mt-3 text-xs leading-5 text-blue-100/70">
               Tech evidence: {subproject.technicalEvidence}
             </p>
             <p className="mt-3 text-sm leading-6 text-white/56">
               Remaining: {subproject.remainingWork}
             </p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/54">
+            <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
               Next review step: {subproject.nextReviewStep}
             </p>
           </article>
         ))}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+      <div className="mt-4 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
         <p className="text-sm font-semibold text-white">Best next steps</p>
         <ul className="mt-3 grid gap-2">
           {progressMap.nextBestSteps.map((step) => (
@@ -101,7 +101,7 @@ export function MvpProgressMapPanel({ progressMap }: MvpProgressMapPanelProps) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -113,12 +113,12 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: MvpProgressStatus }) {
   const className =
     status === "local_review_ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "partially_ready"
-        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
         : status === "needs_approval"
-          ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-          : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+          ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+          : "border-blue-300/30 bg-blue-300/15 text-blue-100";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -130,10 +130,10 @@ function StatusPill({ status }: { status: MvpProgressStatus }) {
 function RiskPill({ risk }: { risk: MvpProgressRisk }) {
   const className =
     risk === "low"
-      ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-100"
+      ? "border-blue-300/20 bg-blue-300/10 text-blue-100"
       : risk === "medium"
-        ? "border-amber-300/20 bg-amber-300/10 text-amber-100"
-        : "border-rose-300/20 bg-rose-300/10 text-rose-100";
+        ? "border-blue-300/20 bg-blue-300/10 text-blue-100"
+        : "border-blue-300/20 bg-blue-300/10 text-blue-100";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

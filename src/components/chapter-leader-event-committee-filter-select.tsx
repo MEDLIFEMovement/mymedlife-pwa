@@ -29,7 +29,7 @@ export function ChapterLeaderEventCommitteeFilterSelect({
         aria-label="Committee filter"
         value={selectedKey}
         onChange={handleChange}
-        className="min-w-[14rem] appearance-none rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 pr-10 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 focus:border-[#5d8ff6]"
+        className="min-w-[14rem] appearance-none rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-2.5 pr-10 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 focus:border-[#5d8ff6]"
       >
         {options.map((option) => (
           <option key={option.key} value={option.key}>

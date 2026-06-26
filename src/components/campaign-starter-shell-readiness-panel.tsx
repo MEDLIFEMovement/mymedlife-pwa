@@ -19,18 +19,19 @@ export function CampaignStarterShellReadinessPanel({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
-            Required starter shells
+            Required campaign lanes
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">{readiness.title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             {readiness.summary}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
           <MiniStat label="Present" value={`${readiness.presentCount}/${readiness.requiredCount}`} />
+          <MiniStat label="Workflow-backed" value={`${readiness.workflowBackedCount}`} />
+          <MiniStat label="Shell-only" value={`${readiness.shellOnlyCount}`} />
           <MiniStat label="Missing" value={`${readiness.missingCount}`} />
-          <MiniStat label="Writes" value={`${readiness.browserWritesExpected}`} />
-          <MiniStat label="Sends" value={`${readiness.externalWritesExpected}`} />
+          <MiniStat label="Writes / Sends" value={`${readiness.browserWritesExpected}/${readiness.externalWritesExpected}`} />
         </div>
       </div>
 
@@ -38,7 +39,7 @@ export function CampaignStarterShellReadinessPanel({
         {readiness.items.map((item) => (
           <article
             key={item.slug}
-            className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+            className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -47,9 +48,14 @@ export function CampaignStarterShellReadinessPanel({
                   <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
                     {item.templateStatus?.replaceAll("_", " ") ?? "missing"}
                   </span>
+                  {item.workflowVersionLabel ? (
+                    <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                      {item.workflowVersionLabel}
+                    </span>
+                  ) : null}
                 </div>
                 <h3 className="mt-3 text-lg font-semibold text-slate-950">{item.name}</h3>
-                <p className="mt-1 break-words font-mono text-xs text-[#0f766e]">
+                <p className="mt-1 break-words font-mono text-xs text-[#1d4ed8]">
                   {item.route}
                 </p>
               </div>
@@ -68,6 +74,30 @@ export function CampaignStarterShellReadinessPanel({
               <ReadinessFlag label="Operating rhythm" ready={item.hasOperatingRhythm} />
             </div>
 
+            {item.currentPhaseLabel && item.currentPhaseObjective ? (
+              <div className="mt-3 rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+                  Current workflow state
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-[#bfdbfe] bg-white px-2.5 py-1 text-xs font-semibold text-[#2563eb]">
+                    source {item.workflowSource.replaceAll("_", " ")}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm font-semibold text-slate-950">
+                  {item.currentPhaseLabel}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {item.currentPhaseObjective}
+                </p>
+                {item.currentPhaseExitSignal ? (
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    Exit signal: {item.currentPhaseExitSignal}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Next build step: {item.nextBuildStep}
             </p>
@@ -84,7 +114,7 @@ export function CampaignStarterShellReadinessPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+    <div className="rounded-2xl border border-slate-200 bg-[#dbeafe] px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
@@ -95,9 +125,11 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function StatusPill({ status }: { status: CampaignStarterShellReadinessStatus }) {
   const className =
-    status === "shell_ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
-      : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+    status === "workflow_backed_draft"
+      ? "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]"
+      : status === "shell_ready"
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

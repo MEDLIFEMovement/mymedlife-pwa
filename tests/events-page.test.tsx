@@ -92,7 +92,7 @@ describe("events page", () => {
       "Home surfaced this events list as the next place to show up. Keep that chapter moment tied to the weekly loop you came from.",
     );
     expect(html).toContain("Back to home");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html).toContain("/rush-month/events/event-rush-social-001?source=home");
     expect(html).toContain("/rush-month/events/event-rush-med-talk-001?source=home");
     expect(html.indexOf("Events")).toBeLessThan(html.indexOf("From home"));

@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { ProofUploadIntakePanel } from "@/components/proof-upload-intake-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -27,7 +27,7 @@ export default async function ProofUploadPage({
   );
 
   return (
-    <AppShell actor={actor}>
+    <StudentAppShell actor={actor}>
       {workspace.canReadWorkspace ? (
         <>
           {sourceContext ? (
@@ -57,7 +57,7 @@ export default async function ProofUploadPage({
           nextLabel="Open integration safety"
         />
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 

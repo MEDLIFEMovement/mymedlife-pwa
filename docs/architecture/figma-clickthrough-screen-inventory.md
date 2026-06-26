@@ -60,9 +60,9 @@ Implementation note:
   `/admin/database-security`, `/admin/system-health`, `/admin/design-qa`,
   `/admin/operations`, `/admin/first-write`, `/admin/write-sequence`,
   `/admin/proof-write`, `/admin/hq-proof-write`, `/admin/assignment-write`,
-  `/admin/coach-write`, `/admin/pilot-scope`, `/admin/permissions`,
-  `/admin/committees`, `/admin/workflows`, `/admin/sop-library`, and
-  `/admin/sop-builder/[campaignSlug]`
+  `/admin/coach-write`, `/admin/pilot-scope`, `/admin/staff-dry-run`,
+  `/admin/permissions`, `/admin/committees`, `/admin/workflows`,
+  `/admin/sop-library`, and `/admin/sop-builder/[campaignSlug]`
 - the live SOP inspection now proves the library first viewport plus the Rush
   Month builder steps, role-matrix, completion, points/KPI, comms, preview,
   and version tabs as route-backed backend lanes
@@ -248,6 +248,10 @@ Notes:
 
 - In the current Make render, `Why this campaign matters` behaves more like an
   expandable section than a separate route.
+- refreshed local parity on `2026-06-23` now restores the visible `What Good
+  Looks Like` checklist and the featured `Intro GBM` event summary with `Luma`
+  posture and `23 RSVPs so far`, instead of collapsing the campaign route down
+  to role-group summaries and CTA buttons only
 
 ### Action Detail
 
@@ -303,6 +307,10 @@ Clickthrough note:
   assignment-scoped submit form
 - do not mirror that inconsistency in the app; keep submit evidence attached
   to the current assignment route
+- refreshed live comparison on `2026-06-23` confirmed the Make route uses a
+  secondary `Action Detail` heading signal above the task title, so the local
+  route should keep that route label readable and semantically distinct instead
+  of flattening it into generic body copy
 
 ### Submit Evidence
 
@@ -429,6 +437,8 @@ Build rule:
   dashboard by default
 - avoid duplicating points/rank dashboard stats in the profile hero; recognition
   belongs lower on the route as its own owned surface
+- keep the recognition surface compact and plainly labeled so the profile reads
+  like identity plus next step, not a second points dashboard
 - avoid review-only safety panels on the member profile surface; identity,
   recognition, next step, and chapter access should carry the route
 
@@ -455,6 +465,7 @@ SLT surfaces:
 - `/admin/workflows`
 - `/admin/workflows?section=lanes|onboarding|writes`
 - `/admin/workflows?section=...&focus=...`
+- `/admin/staff-dry-run`
 - `/admin/sop-library`
 - `/admin/master-data`
 - `/admin/sop-library?query=...&status=...`
@@ -477,6 +488,9 @@ Inventory rule:
 - keep committee-registry section state and selected-record state on
   `/admin/committees`
 - keep master-data inventory state on `/admin/master-data`
+- keep the master-data page's SOP tooling handoff visible so reviewers can move
+  from inventory into `/admin/sop-builder/[campaignSlug]` without losing the
+  route that owns the data they just inspected
 - treat the SOP builder as workflow-logic inventory first:
   - library
   - builder tabs
@@ -614,6 +628,9 @@ Recommended local ownership:
   assigned-chapter list expanded as the main follow-on surface
 - keep review-data badges out of the readable coach shell; source-status
   framing belongs in blocked states or admin/review routes instead
+- when a coach selects a chapter, keep the source-context handoff band above the
+  current support posture card so the selected chapter reads like the active
+  review state before the broader chapter-switch surface
 
 ### Admin Jump
 

@@ -6,6 +6,9 @@ export type AppRouteRegistryItem = {
 
 const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/", label: "Home", routeType: "exact" },
+  { href: "/app", label: "Member app", routeType: "exact" },
+  { href: "/app/slt-prep", label: "Member SLT prep", routeType: "exact" },
+  { href: "/leader", label: "Leader app", routeType: "exact" },
   { href: "/profile", label: "Profile", routeType: "exact" },
   { href: "/onboarding", label: "Onboarding", routeType: "exact" },
   { href: "/offline", label: "Offline fallback", routeType: "exact" },

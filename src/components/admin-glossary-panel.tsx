@@ -21,17 +21,17 @@ export function AdminGlossaryPanel({ glossary }: AdminGlossaryPanelProps) {
             {glossary.summary}
           </p>
         </div>
-        <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/62">
+        <span className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1 text-xs font-semibold text-white/62">
           {glossary.terms.length} terms
         </span>
       </div>
 
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         {glossary.terms.map((item) => (
-          <article key={item.term} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <article key={item.term} className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
             <h3 className="text-lg font-semibold text-white">{item.term}</h3>
             <p className="mt-2 text-sm leading-6 text-white/68">{item.plainEnglish}</p>
-            <p className="mt-3 rounded-xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/52">
+            <p className="mt-3 rounded-xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/52">
               Why it matters: {item.whyItMatters}
             </p>
           </article>

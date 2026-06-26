@@ -26,16 +26,45 @@ vi.mock("@/services/auth-session", () => ({
     message: "Seeded sign-in is not configured for this test run.",
     user: null,
   })),
+  normalizeLoginRedirect: vi.fn((value: FormDataEntryValue | null | undefined) => {
+    if (typeof value !== "string") {
+      return "/";
+    }
+
+    const trimmed = value.trim();
+
+    if (!trimmed.startsWith("/") || trimmed.startsWith("//")) {
+      return "/";
+    }
+
+    if (trimmed.includes("\n") || trimmed.includes("\r")) {
+      return "/";
+    }
+
+    if (trimmed === "/login") {
+      return "/";
+    }
+
+    return trimmed;
+  }),
 }));
 
 describe("login page", () => {
-  it("renders a product-facing seeded sign-in surface instead of an internal milestone page", async () => {
+  it("renders a workspace-oriented login surface instead of an internal milestone page", async () => {
     const { default: LoginPage } = await import("@/app/login/page");
-    const html = renderToStaticMarkup(await LoginPage());
+    const html = renderToStaticMarkup(await LoginPage({}));
 
     expect(html).toContain("Sign in");
-    expect(html).toContain("Sign in to continue into your myMEDLIFE role.");
+    expect(html).toContain("Choose your myMEDLIFE workspace.");
+    expect(html).toContain("Eligible travelers also see SLT Prep");
+    expect(html).toContain("General Member");
+    expect(html).toContain("Student Leader");
+    expect(html).toContain("Sales Coach / Sales Staff");
+    expect(html).toContain("Staff");
+    expect(html).toContain("Data Solutions / Admin");
+    expect(html).toContain("general.staff@mymedlife.test");
     expect(html).toContain("Current access boundaries");
+    expect(html).toContain("actual role and permission");
     expect(html).toContain("See onboarding flow");
     expect(html).toContain("Use a seeded account");
     expect(html).toContain("Sign in with a seeded account");
@@ -48,5 +77,17 @@ describe("login page", () => {
     expect(html).not.toContain("Local Supabase Auth");
     expect(html).not.toContain("Sign in to the local MVP");
     expect(html).not.toContain("Sign in locally");
+    expect(html).toContain("/staff");
+  });
+
+  it("keeps a nested workspace redirect such as SLT Prep intact", async () => {
+    const { default: LoginPage } = await import("@/app/login/page");
+    const html = renderToStaticMarkup(
+      await LoginPage({
+        searchParams: Promise.resolve({ redirectTo: "/app/slt-prep" }),
+      }),
+    );
+
+    expect(html).toContain('value="/app/slt-prep"');
   });
 });

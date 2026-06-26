@@ -19,8 +19,15 @@ describe("member rush month campaign panel", () => {
     expect(html).toContain("UCLA MEDLIFE");
     expect(html).toContain("Rush Month");
     expect(html).toContain("Week 1 of 4");
+    expect(html).toContain("Event loop");
+    expect(html).toContain("Luma, RSVP, attendance, and points stay visible together.");
+    expect(html).toContain("Source of truth for the event");
+    expect(html).toContain("Leaderboard moves after review");
     expect(html).toContain("Current Phase");
-    expect(html).toContain("Week 1: Visibility + Lead Capture");
+    expect(html).toContain("Planning: Make MEDLIFE visible on campus");
+    expect(html).toContain(
+      "Exit signal: Members can see the campaign phase, KPI strip, and the first concrete action inside the app.",
+    );
     expect(html).toContain("Why this campaign matters");
     expect(html).toContain("Campaign KPIs");
     expect(html).toContain("Assigned Actions by Role");
@@ -47,7 +54,9 @@ describe("member rush month campaign panel", () => {
 
     expect(html).toContain("Role focus");
     expect(html).toContain("General Members");
-    expect(html).toContain("General members move Rush Month through visible invites");
+    expect(html).toContain(
+      "Start the next assigned action and submit proof metadata after the task is clearly in progress.",
+    );
     expect(html).toContain("aria-current=\"page\"");
   });
 

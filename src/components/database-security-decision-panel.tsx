@@ -84,8 +84,8 @@ function ComparisonCard({ item }: { item: DatabasePlatformComparison }) {
 function ControlCard({ item }: { item: DatabaseSecurityControl }) {
   const statusClass =
     item.status === "local_evidence_ready"
-      ? "border-sky-300/60 bg-sky-50 text-sky-700"
-      : "border-amber-300/60 bg-amber-50 text-amber-700";
+      ? "border-blue-300/60 bg-blue-50 text-blue-700"
+      : "border-blue-300/60 bg-blue-50 text-blue-700";
 
   return (
     <article className="app-surface rounded-2xl p-4">
@@ -101,7 +101,7 @@ function ControlCard({ item }: { item: DatabaseSecurityControl }) {
         </span>
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-600">{item.localEvidence}</p>
-      <p className="mt-3 text-xs leading-5 text-[#a16207]">
+      <p className="mt-3 text-xs leading-5 text-[#1d4ed8]">
         Required: {item.requiredBeforeLive}
       </p>
     </article>
@@ -130,10 +130,10 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function DecisionPill({ status }: { status: DatabaseDecisionStatus }) {
   const className =
     status === "preferred_for_mvp"
-      ? "border-emerald-300/60 bg-emerald-50 text-emerald-700"
+      ? "border-blue-300/60 bg-blue-50 text-blue-700"
       : status === "reviewed_tradeoff"
-        ? "border-sky-300/60 bg-sky-50 text-sky-700"
-        : "border-amber-300/60 bg-amber-50 text-amber-700";
+        ? "border-blue-300/60 bg-blue-50 text-blue-700"
+        : "border-blue-300/60 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

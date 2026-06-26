@@ -264,7 +264,7 @@ function getAdminBrief(data: ReadOnlyAppData): RoleNextActionBrief {
     title: "Review proof-sharing posture without publishing anything",
     summary:
       "HQ decides whether submitted testimonials or bridge videos should be shared broadly later. The MVP still keeps publishing and external syncs off.",
-    ownerLabel: "Admin",
+    ownerLabel: "Staff",
     primaryHref: "/rush-month/review",
     primaryLabel: "Open HQ review",
     secondaryHref: "/admin",

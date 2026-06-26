@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 
 export type StaticRouteMetadataKey =
   | "home"
+  | "app"
   | "profile"
   | "onboarding"
   | "login"
   | "chapter"
+  | "leader"
   | "chapterMembers"
   | "campaigns"
   | "campaignDetail"
@@ -72,6 +74,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     description:
       "Member-first myMEDLIFE home with the current campaign, next action, events, points, and profile routing.",
   },
+  app: {
+    title: "Member App",
+    description:
+      "General member myMEDLIFE app with Rush Month actions, events, proof, points, leaderboard, and profile routing.",
+  },
   profile: {
     title: "Profile",
     description:
@@ -91,6 +98,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Student Leadership Command Center",
     description:
       "Chapter leadership home, member pipeline, committees, events, impact, succession, and feed analytics for the student leader surface.",
+  },
+  leader: {
+    title: "Leader Command Center",
+    description:
+      "Student leader command center with chapter overview, member pipeline, committees, events, impact, succession, and feed analytics.",
   },
   chapterMembers: {
     title: "Chapter Members",
@@ -223,8 +235,8 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
       "Mock-safe proof and bridge-video upload intake requirements with uploads disabled.",
   },
   coach: {
-    title: "Coach Dashboard",
-    description: "Coach portfolio readiness, risks, KPI movement, and disabled decisions.",
+    title: "Staff Command Center",
+    description: "Staff-supported chapter readiness, risks, KPI movement, and disabled decisions.",
   },
   staff: {
     title: "Staff Command Center",

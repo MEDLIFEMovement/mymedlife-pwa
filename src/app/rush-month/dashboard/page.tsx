@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { AssignmentCard } from "@/components/assignment-card";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
@@ -33,7 +33,7 @@ export default async function RushMonthDashboardPage() {
     : null;
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
       hideTopHeader={isMemberDashboard}
       showMobileQuickItemHelpers={!isMemberDashboard}
@@ -41,12 +41,12 @@ export default async function RushMonthDashboardPage() {
     >
       {!dashboard.canReadChapterTruth ? (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               {dashboard.eyebrow}
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{dashboard.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">{dashboard.title}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               {dashboard.summary}
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
@@ -97,12 +97,12 @@ export default async function RushMonthDashboardPage() {
         </>
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               {dashboard.eyebrow}
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{dashboard.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">{dashboard.title}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               {dashboard.summary}
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
@@ -180,7 +180,7 @@ export default async function RushMonthDashboardPage() {
               </p>
               <Link
                 href={dashboard.nextStep.href}
-                className="mt-4 inline-flex rounded-full bg-[#86efac] px-4 py-2 text-sm font-semibold text-[#14532d]"
+                className="mt-4 inline-flex rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
               >
                 {dashboard.nextStep.ctaLabel}
               </Link>
@@ -197,7 +197,7 @@ export default async function RushMonthDashboardPage() {
                 {dashboard.actionGroups.map((group) => (
                   <article
                     key={group.label}
-                    className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4"
+                    className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-4"
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                       {group.label}
@@ -207,7 +207,7 @@ export default async function RushMonthDashboardPage() {
                     </p>
                     <Link
                       href={group.href}
-                      className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+                      className="mt-4 inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
                     >
                       {group.linkLabel}
                     </Link>
@@ -235,14 +235,14 @@ export default async function RushMonthDashboardPage() {
                   <div className="flex flex-wrap gap-2">
                     <Link
                       href={dashboard.roleFocus.primaryHref}
-                      className="rounded-full bg-[#86efac] px-4 py-2 text-sm font-semibold text-[#14532d]"
+                      className="rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
                     >
                       {dashboard.roleFocus.primaryLabel}
                     </Link>
                     {dashboard.roleFocus.secondaryHref ? (
                       <Link
                         href={dashboard.roleFocus.secondaryHref}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700"
+                        className="rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-slate-700"
                       >
                         {dashboard.roleFocus.secondaryLabel}
                       </Link>
@@ -253,7 +253,7 @@ export default async function RushMonthDashboardPage() {
                   {dashboard.roleFocus.items.map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                      className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                         {item.label}
@@ -263,7 +263,7 @@ export default async function RushMonthDashboardPage() {
                     </div>
                   ))}
                 </div>
-                <p className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+                <p className="mt-4 rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 text-sm leading-6 text-slate-600">
                   {dashboard.roleFocus.safetyNote}
                 </p>
               </section>
@@ -310,7 +310,7 @@ export default async function RushMonthDashboardPage() {
                   {dashboard.eventPlans.map((eventPlan) => (
                     <div
                       key={eventPlan.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                      className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
                         {eventPlan.timing} / {eventPlan.lumaStatus.replaceAll("_", " ")}
@@ -335,7 +335,7 @@ export default async function RushMonthDashboardPage() {
                   {dashboard.proofItems.map((proofItem) => (
                     <div
                       key={proofItem.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                      className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
                         {proofItem.proofType.replaceAll("_", " ")} / {proofItem.sharingStatus.replaceAll("_", " ")}
@@ -352,15 +352,15 @@ export default async function RushMonthDashboardPage() {
               </article>
             </section>
 
-            <section className="rounded-[2rem] border border-[#f7d05e]/30 bg-[#fff8df] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a16207]">
+            <section className="rounded-[2rem] border border-[#2563eb]/30 bg-[#dbeafe] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1d4ed8]">
                 Watchouts
               </p>
               <div className="mt-4 grid gap-3">
                 {dashboard.alerts.map((alert) => (
                   <p
                     key={alert}
-                    className="rounded-2xl border border-[#f7d05e]/20 bg-white/70 p-3 text-sm leading-6 text-slate-700"
+                    className="rounded-2xl border border-[#2563eb]/20 bg-white/70 p-3 text-sm leading-6 text-slate-700"
                   >
                     {alert}
                   </p>
@@ -369,15 +369,15 @@ export default async function RushMonthDashboardPage() {
             </section>
 
             {dashboard.risks.length > 0 ? (
-              <section className="rounded-[2rem] border border-rose-200 bg-rose-50/95 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <section className="rounded-[2rem] border border-blue-200 bg-blue-50/95 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
                 <h2 className="text-2xl font-semibold text-slate-950">Visible risk signals</h2>
                 <div className="mt-4 grid gap-3">
                   {dashboard.risks.slice(0, 3).map((risk) => (
                     <article
                       key={risk.id}
-                      className="rounded-2xl border border-rose-200 bg-white/80 p-4"
+                      className="rounded-2xl border border-blue-200 bg-white/80 p-4"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-700">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
                         {risk.severity} / {risk.visibility.replaceAll("_", " ")}
                       </p>
                       <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -401,7 +401,7 @@ export default async function RushMonthDashboardPage() {
           </div>
         </>
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 

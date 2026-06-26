@@ -1,5 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
+  getPreferredCampaignVersion,
+  getSopTemplateBySlug,
+} from "@/services/sop-template-registry";
+import { getSopWorkflowRuntime } from "@/services/sop-workflow-runtime";
+import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
@@ -29,6 +34,13 @@ export type MovingMountainsCampaignPlan = {
   canReadPlan: boolean;
   title: string;
   summary: string;
+  workflowSource: "builder_definition" | "template_version" | "missing" | "hidden";
+  workflowName: string;
+  workflowVersionLabel: string;
+  importStatus: string;
+  currentPhaseLabel: string;
+  currentPhaseObjective: string;
+  currentPhaseExitSignal: string;
   route: "/campaigns/moving-mountains";
   browserWritesExpected: 0;
   externalWritesExpected: 0;
@@ -48,6 +60,13 @@ export function getMovingMountainsCampaignPlan(
       title: "Moving Mountains hidden for this role",
       summary:
         "Members should see simple movement actions and DS Admin should stay in integration safety views.",
+      workflowSource: "hidden",
+      workflowName: "Moving Mountains",
+      workflowVersionLabel: "unknown",
+      importStatus: "hidden",
+      currentPhaseLabel: "hidden",
+      currentPhaseObjective: "hidden",
+      currentPhaseExitSignal: "hidden",
       route: "/campaigns/moving-mountains",
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -57,11 +76,30 @@ export function getMovingMountainsCampaignPlan(
     };
   }
 
+  const template = getSopTemplateBySlug("moving-mountains");
+  const preferredVersion = template
+    ? getPreferredCampaignVersion(template)
+    : null;
+  const runtime = getSopWorkflowRuntime("moving-mountains");
+
   return {
     canReadPlan: true,
     title: getTitle(surfaceFamily),
-    summary:
-      "This deepens the Moving Mountains starter shell into a mock-safe operating plan: leaders choose a mission story, run advocacy and fundraising actions, follow up with new supporters, and bring participation proof into coach review before any payment, message, CRM, or reporting write is enabled.",
+    summary: buildMovingMountainsSummary(runtime, preferredVersion),
+    workflowSource: runtime?.sourceKind ?? "missing",
+    workflowName:
+      preferredVersion?.workflowName ??
+      runtime?.operatingRhythm ??
+      "Chapter Fundraising Activation Workflow",
+    workflowVersionLabel: runtime?.sourceVersionLabel ?? preferredVersion?.label ?? "fallback",
+    importStatus: preferredVersion?.status ?? "repo_only_placeholder",
+    currentPhaseLabel: runtime?.currentPhase?.label ?? "Movement phase",
+    currentPhaseObjective:
+      runtime?.currentPhase?.objective ??
+      "Keep the current mission and fundraising phase visible before live supporter writes exist.",
+    currentPhaseExitSignal:
+      runtime?.currentPhase?.exitCriteria[0] ??
+      "Current movement exit criteria stay visible before launch review.",
     route: "/campaigns/moving-mountains",
     browserWritesExpected: 0,
     externalWritesExpected: 0,
@@ -79,6 +117,30 @@ export function getMovingMountainsCampaignPlan(
       "Live fundraising, supporter, and proof writes still require auth, RLS, audit, rollback, consent, and explicit approval.",
     ],
   };
+}
+
+function buildMovingMountainsSummary(
+  runtime: ReturnType<typeof getSopWorkflowRuntime>,
+  preferredVersion: ReturnType<typeof getPreferredCampaignVersion>,
+) {
+  if (runtime?.currentPhase) {
+    const parts = [
+      `This route now reads its operating phases from the ${runtime.sourceKind === "template_version" ? "structured" : "builder-backed"} ${runtime.sourceVersionLabel} Moving Mountains workflow runtime.`,
+      `Current phase objective: ${runtime.currentPhase.objective}`,
+    ];
+
+    if (runtime.currentPhase.exitCriteria[0]) {
+      parts.push(`Exit signal: ${runtime.currentPhase.exitCriteria[0]}`);
+    }
+
+    return parts.join(" ");
+  }
+
+  if (preferredVersion) {
+    return `This route now reads its operating phases from the structured ${preferredVersion.label} Moving Mountains template, so mission storytelling, fundraising posture, supporter follow-up, and coach review stay inside the current app without enabling real writes.`;
+  }
+
+  return "This deepens the Moving Mountains starter shell into a mock-safe operating plan: leaders choose a mission story, run advocacy and fundraising actions, follow up with new supporters, and bring participation proof into coach review before any payment, message, CRM, or reporting write is enabled.";
 }
 
 const movingMountainsPhases: MovingMountainsPhase[] = [

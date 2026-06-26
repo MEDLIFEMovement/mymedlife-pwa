@@ -123,7 +123,7 @@ describe("actions page", () => {
     expect(html).toContain("From home");
     expect(html).toContain("These actions came from your member home priority.");
     expect(html).toContain("Back to home");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html).toContain('href="/rush-month/actions/member-push?source=home"');
     expect(html).toContain('href="/campaigns?source=home"');
     expect(html).toContain('href="/rush-month/events?source=home"');

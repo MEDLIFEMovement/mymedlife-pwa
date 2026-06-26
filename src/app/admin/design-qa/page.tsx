@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { DesignQaReadinessPanel } from "@/components/design-qa-readiness-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { getDesignQaReadiness } from "@/services/design-qa-readiness";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminDesignQa");
@@ -20,9 +21,12 @@ export default async function AdminDesignQaPage() {
   const readiness = getDesignQaReadiness(actor);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="design_qa" />
+      <AdminBackendLaneNav
+        current="design_qa"
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
 
       {!readiness.canReadReadiness ? (
         <RestrictedState
@@ -33,16 +37,16 @@ export default async function AdminDesignQaPage() {
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
+          <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-lime-100">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
                   Figma and mobile QA
                 </p>
-                <h1 className="mt-3 text-3xl font-semibold text-white">
+                <h1 className="mt-3 text-3xl font-semibold text-slate-950">
                   {readiness.title}
                 </h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                   Compare the local app to the Figma direction, phone viewport,
                   accessibility baseline, role complexity, and pilot-safety copy
                   before anyone calls the PWA launch-ready.
@@ -50,7 +54,7 @@ export default async function AdminDesignQaPage() {
               </div>
               <Link
                 href="/admin/system-health"
-                className="w-fit rounded-full bg-lime-300 px-4 py-2 text-sm font-semibold text-[#13230b]"
+                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
               >
                 Open system health
               </Link>
@@ -92,17 +96,17 @@ export default async function AdminDesignQaPage() {
           <DesignQaReadinessPanel readiness={readiness} />
         </>
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="rounded-2xl border border-[#bfdbfe] bg-white px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }

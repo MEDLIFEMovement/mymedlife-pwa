@@ -1,8 +1,8 @@
-import Link from "next/link";
-
+import { EventLoopStrip } from "@/components/event-loop-strip";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
 import type { StudentHomeWorkspace } from "@/services/student-home-workspace";
+import { PanelButton, SurfacePanel, StatCard } from "@/components/visual-primitives";
 
 type MemberProfilePanelProps = {
   chapterName: string;
@@ -21,93 +21,186 @@ export function MemberProfilePanel({
 }: MemberProfilePanelProps) {
   const firstName = displayName.split(" ")[0] ?? displayName;
   const visibleBadges = recognition.badges.slice(0, 4);
+  const featuredHomeAction = studentHome.assignedActions[0];
+  const featuredHomeEvent = studentHome.upcomingEvents[0] ?? null;
+  const nextStepTitle = featuredHomeAction?.title ?? workspace.nextStep.detail;
+  const nextStepHref = workspace.nextStep.href;
 
   return (
     <section className="grid gap-4">
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(180deg,#2455a4_0%,#2a5fb5_48%,#21457d_100%)] shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] shadow-[0_24px_80px_rgba(2,14,38,0.12)]">
         <div className="p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                 {chapterName}
               </p>
-              <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-white sm:text-[2.6rem]">
+              <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
                 Hi, {firstName}
               </h1>
-              <p className="mt-2 text-sm text-white/78">
-                Keep your chapter role, progress, and next step close at hand.
+              <p className="mt-2 text-sm text-slate-600">
+                Keep your identity, role, and next step close at hand.
               </p>
             </div>
-            <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/78">
+            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
               {workspace.profileLabel}
             </span>
           </div>
 
-          <article className="mt-5 rounded-[1.6rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
+          <SurfacePanel tone="info" className="mt-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                   Profile snapshot
                 </p>
-                <h2 className="mt-2 text-xl font-semibold leading-tight text-white">
+                <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950">
                   {displayName}
                 </h2>
-                <p className="mt-2 text-sm text-white/74">
+                <p className="mt-2 text-sm text-slate-600">
                   {workspace.profileLabel} · {chapterName}
                 </p>
               </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl font-semibold text-white">
-                {firstName.slice(0, 1)}
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#bfdbfe] bg-white text-xl font-semibold text-[#2563eb]">
+              {firstName.slice(0, 1)}
               </div>
             </div>
-            <p className="mt-4 text-sm leading-6 text-white/74">
+            <p className="mt-4 text-sm leading-6 text-slate-600">
               Keep this surface centered on identity, role, and the next step. Recognition
               and points stay visible lower on the route instead of turning profile into a
-              second dashboard.
+              second dashboard, so profile can hand you back to the event-and-points loop
+              when you are ready to move again.
             </p>
-          </article>
+          </SurfacePanel>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <ProfileHeroCard
+              label="Next event"
+              title={featuredHomeEvent?.title ?? "Open events"}
+              detail={featuredHomeEvent?.timing ?? "See the next chapter moment"}
+            />
+            <ProfileHeroCard
+              label="Points"
+              title={`${studentHome.points.total} pts`}
+              detail={studentHome.points.rankDetail}
+            />
+            <ProfileHeroCard
+              label="Leaderboard"
+              title={studentHome.points.rankLabel}
+              detail="Open the chapter board from profile"
+            />
+          </div>
+
+          <SurfacePanel tone="info" className="mt-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                  Event loop
+                </p>
+                <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950">
+                  RSVP, attendance, and points should stay in view here too.
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Profile works best when it can hand you back to the next event, the next
+                  point move, and the next chapter moment without making you hunt for them.
+                </p>
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2 lg:w-[26rem]">
+                <ProfilePulseCard label="Next event" value={featuredHomeEvent?.title ?? "Open events"} />
+                <ProfilePulseCard label="RSVP" value={featuredHomeEvent?.rsvpLabel ?? "Open"} />
+                <ProfilePulseCard
+                  label="Attendance"
+                  value={studentHome.points.weeklyMomentumLabel}
+                />
+                <ProfilePulseCard
+                  label="Points"
+                  value={`${studentHome.points.total} pts`}
+                />
+              </div>
+            </div>
+          </SurfacePanel>
         </div>
       </section>
 
-      <section className="app-surface-info rounded-[1.8rem] p-4 sm:p-5">
+      <SurfacePanel tone="info">
+        <p className="app-eyebrow app-eyebrow-blue">Event loop</p>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+          Keep events and points one tap away from profile.
+        </h2>
+        <p className="mt-3 text-sm leading-7 text-slate-700">
+          Profile should help you jump back into the chapter moment: open an
+          event, check attendance, and see how the chapter leaderboard changes
+          when work is approved.
+        </p>
+        <EventLoopStrip
+          className="mt-4"
+          items={[
+            {
+              label: "Next event",
+              detail: featuredHomeEvent?.title ?? "Open events",
+              tone: "blue",
+            },
+            {
+              label: "RSVP",
+              detail: featuredHomeEvent?.rsvpLabel ?? "Open",
+              tone: "blue",
+            },
+            {
+              label: "Attendance",
+              detail: studentHome.points.weeklyMomentumLabel,
+              tone: "gold",
+            },
+            {
+              label: "Points",
+              detail: `${studentHome.points.total} pts`,
+              tone: "yellow",
+            },
+          ]}
+        />
+        <div className="mt-4 flex flex-wrap gap-2">
+          <PanelButton href="/rush-month/events?source=profile" variant="secondary">
+            Open events
+          </PanelButton>
+          <PanelButton href="/rush-month/leaderboard?source=profile">Open leaderboard</PanelButton>
+        </div>
+      </SurfacePanel>
+
+      <SurfacePanel tone="info">
         <p className="app-eyebrow app-eyebrow-blue">Next step</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-          {workspace.nextStep.detail}
+          Finish: {nextStepTitle}
         </h2>
         <p className="mt-3 text-sm leading-7 text-slate-700">
           Pick up the next step that matters most without losing your place in the
           member experience.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href={workspace.nextStep.href}
-            className="inline-flex rounded-full bg-[#f7d05e] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
-          >
+          <PanelButton href={nextStepHref}>
             {workspace.nextStep.label}
-          </Link>
-          <Link
+          </PanelButton>
+          <PanelButton
             href={`${studentHome.campaign.campaignsHref}?source=profile`}
-            className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
+            variant="secondary"
+            className="bg-white text-slate-700"
           >
             Open campaign
-          </Link>
+          </PanelButton>
         </div>
-      </section>
+      </SurfacePanel>
 
       <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-        <section className="app-surface rounded-[2rem] p-5">
+        <SurfacePanel>
           <p className="app-eyebrow app-eyebrow-blue">About you</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-            The basics your chapter sees.
+            Keep identity easy to trust.
           </h2>
           <div className="mt-4 grid gap-3">
             {workspace.identityRows.map((row) => (
               <ProfileRowCard key={row.label} row={row} />
             ))}
           </div>
-        </section>
+        </SurfacePanel>
 
-        <section className="app-surface rounded-[2rem] p-5">
+        <SurfacePanel>
           <p className="app-eyebrow app-eyebrow-blue">Chapter access</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">
             Where you fit in right now.
@@ -117,21 +210,22 @@ export function MemberProfilePanel({
               <ProfileRowCard key={row.label} row={row} />
             ))}
           </div>
-        </section>
+        </SurfacePanel>
       </section>
 
-      <section className="app-surface rounded-[1.8rem] p-4 sm:p-5">
+      <SurfacePanel>
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="app-eyebrow app-eyebrow-blue">Recognition</p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Recognition and momentum.</h2>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Recognition</h2>
           </div>
-          <Link
+          <PanelButton
             href="/rush-month/leaderboard?source=profile"
-            className="text-sm font-semibold text-[#2563eb]"
+            variant="secondary"
+            className="px-3 py-2 text-xs"
           >
-            Open points
-          </Link>
+            Open points and recognition
+          </PanelButton>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {visibleBadges.map((badge) => (
@@ -141,7 +235,7 @@ export function MemberProfilePanel({
           ))}
         </div>
         <p className="mt-4 text-sm leading-6 text-slate-600">{studentHome.points.recognition}</p>
-      </section>
+      </SurfacePanel>
     </section>
   );
 }
@@ -152,12 +246,43 @@ function ProfileRowCard({
   row: ProfileWorkspace["identityRows"][number];
 }) {
   return (
-    <article className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
+    <SurfacePanel className="p-3.5">
       <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {row.label}
       </p>
       <p className="mt-2 text-base font-semibold text-slate-950">{row.value}</p>
       <p className="mt-2 text-sm leading-6 text-slate-600">{row.detail}</p>
+    </SurfacePanel>
+  );
+}
+
+function ProfileHeroCard({
+  label,
+  title,
+  detail,
+}: {
+  label: string;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <StatCard
+      label={label}
+      value={title}
+      tone="highlight"
+      note={<p>{detail}</p>}
+      className="rounded-[1.35rem] border-white/12 bg-white/10 backdrop-blur-sm px-3.5 py-3 text-white"
+    />
+  );
+}
+
+function ProfilePulseCard({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="rounded-[1.2rem] border border-white/12 bg-white/12 px-4 py-3">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
     </article>
   );
 }
@@ -165,12 +290,12 @@ function ProfileRowCard({
 function getBadgeClassName(tone: MemberRecognitionSummary["badges"][number]["tone"]) {
   switch (tone) {
     case "gold":
-      return "rounded-full border border-[#f7d05e]/40 bg-[#fff8df] px-3 py-1.5 text-sm font-semibold text-[#a16207]";
+      return "rounded-full border border-[#2563eb]/40 bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]";
     case "blue":
       return "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-sm font-semibold text-[#2563eb]";
     case "green":
-      return "rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700";
+      return "rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700";
     case "slate":
-      return "rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-700";
+      return "rounded-full border border-slate-200 bg-[#eff6ff] px-3 py-1.5 text-sm font-semibold text-slate-700";
   }
 }

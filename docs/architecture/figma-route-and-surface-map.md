@@ -155,6 +155,69 @@ Do not reduce the Make references to:
 
 We are trying to mirror the screen families, not just the art direction.
 
+## 0. Role-Based Login Workspace
+
+Reference mockup:
+
+- `Role-Based App Shells + Workspace Login`
+
+Primary role:
+
+- authenticated user selecting a workspace entry point
+
+### Route map
+
+- `/login`
+
+### First-viewport contract
+
+- workspace-oriented sign-in copy
+- six workspace entry cards
+- access-boundary summary
+- seeded account sign-in panel
+- role-aware redirect selection
+
+### Required clickthroughs
+
+- General Member card -> `/login?redirectTo=/app`
+- Student Leader card -> `/login?redirectTo=/leader`
+- Sales Coach / Sales Staff card -> `/login?redirectTo=/staff`
+- Staff card -> `/login?redirectTo=/staff`
+- Data Solutions / Admin card -> `/login?redirectTo=/admin`
+- Super Admin card -> `/login?redirectTo=/admin`
+- seeded account sign-in -> role-specific shell after auth
+
+### Required states
+
+- default sign-in
+- workspace card selected
+- seeded account ready
+- signed-in session summary
+- disabled-auth / review-mode state
+- unsafe redirect rejected
+
+### Data domains
+
+- workspace entries
+- seeded review accounts
+- auth session state
+- redirect target
+- current access boundaries
+
+### Component families
+
+- workspace intro hero
+- workspace entry cards
+- seeded account form
+- access-boundary panel
+- session status panel
+
+### Boundaries
+
+- the selected workspace card is only an entry point, not the access rule
+- actual post-auth landing still comes from the authenticated role and permission set
+- nested owned destinations like SLT Prep should remain selectable when present in the redirect target
+
 ## Implementation Dimensions
 
 Every parity pass should explicitly account for each of these dimensions:
@@ -249,9 +312,11 @@ Current verified route-family checkpoint:
   `/admin/database-security`, `/admin/system-health`, `/admin/design-qa`,
   `/admin/operations`, `/admin/first-write`, `/admin/write-sequence`,
   `/admin/proof-write`, `/admin/hq-proof-write`, `/admin/assignment-write`,
-  `/admin/coach-write`, `/admin/pilot-scope`, `/admin/permissions`,
-  `/admin/committees`, `/admin/workflows`, `/admin/sop-library`, and
-  `/admin/sop-builder/[campaignSlug]`
+  `/admin/coach-write`, `/admin/pilot-scope`, `/admin/staff-dry-run`,
+  `/admin/permissions`, `/admin/committees`, `/admin/workflows`,
+  `/admin/sop-library`, and `/admin/sop-builder/[campaignSlug]`
+- `/admin/master-data` now also acts as a direct SOP builder ingress so the
+  inventory route and the workflow lane stay visibly connected for reviewers
 
 Most recently tightened from live Figma/browser comparison:
 

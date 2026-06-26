@@ -41,7 +41,7 @@ export default function OfflinePage() {
           ))}
         </div>
 
-        <p className="mt-8 rounded-[1.15rem] border border-[#f7d05e]/26 bg-[#fff8df] p-3 text-xs leading-5 text-slate-600">
+        <p className="mt-8 rounded-[1.15rem] border border-[#2563eb]/26 bg-[#dbeafe] p-3 text-xs leading-5 text-slate-600">
           Offline mode does not submit assignments, upload proof, update points,
           send nudges, or run external automation.
         </p>

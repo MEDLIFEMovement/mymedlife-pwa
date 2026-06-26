@@ -16,8 +16,8 @@ export function RestrictedState({
   nextLabel,
 }: RestrictedStateProps) {
   return (
-    <section className="app-surface-warm rounded-[2rem] p-5">
-      <p className="app-eyebrow app-eyebrow-warm">{eyebrow}</p>
+    <section className="app-surface-info rounded-[2rem] p-5">
+      <p className="app-eyebrow app-eyebrow-blue">{eyebrow}</p>
       <h2 className="mt-3 text-2xl font-semibold text-slate-950">{title}</h2>
       <p className="app-copy mt-2 max-w-2xl">{message}</p>
       {nextHref && nextLabel ? (

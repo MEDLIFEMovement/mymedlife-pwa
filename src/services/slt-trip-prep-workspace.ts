@@ -304,25 +304,25 @@ export function getSltTripPrepWorkspace(
         helper: `${traveler.forms.length} form states`,
         tone: traveler.forms.some((item) => item.status === "needs_signature")
           ? "yellow"
-          : "green",
+          : "blue",
       },
       {
         href: "/slt-prep/payments",
         label: "Payment status",
         helper: `${traveler.payments.length} payment milestones`,
-        tone: traveler.payments.some((item) => item.status === "due") ? "red" : "green",
+        tone: traveler.payments.some((item) => item.status === "due") ? "red" : "blue",
       },
       {
         href: "/slt-prep/flights",
         label: "Flight details",
         helper: `${traveler.flights.length} itinerary segments`,
-        tone: traveler.flights.some((item) => item.status !== "confirmed") ? "red" : "green",
+        tone: traveler.flights.some((item) => item.status !== "confirmed") ? "red" : "blue",
       },
       {
         href: "/slt-prep/meetings",
         label: "Pre-trip meetings",
         helper: `${traveler.meetings.length} meeting touchpoints`,
-        tone: meetingsRemaining > 0 ? "yellow" : "green",
+        tone: meetingsRemaining > 0 ? "yellow" : "blue",
       },
       {
         href: "/slt-prep/extensions",
@@ -330,25 +330,25 @@ export function getSltTripPrepWorkspace(
         helper: `${traveler.extensions.length} optional choices`,
         tone: traveler.extensions.some((item) => item.status === "considering")
           ? "yellow"
-          : "green",
+          : "blue",
       },
       {
         href: "/slt-prep/timeline",
         label: "Trip timeline",
         helper: `${traveler.timeline.length} milestones to departure`,
-        tone: "green",
+        tone: "blue",
       },
       {
         href: "/slt-prep/notifications",
         label: "Notifications",
         helper: `${traveler.notifications.length} recent updates`,
-        tone: traveler.notifications.some((item) => item.tone === "urgent") ? "red" : "green",
+        tone: traveler.notifications.some((item) => item.tone === "urgent") ? "red" : "blue",
       },
       {
         href: "/slt-prep/profile",
         label: "Profile & alerts",
         helper: "Passport, contact, flights, and notifications",
-        tone: "green",
+        tone: "blue",
       },
     ],
     notificationActions: getNotificationActions(traveler),
@@ -383,7 +383,7 @@ function getNotificationActions(traveler: TripPrepTraveler): SltTripPrepSectionL
         unresolvedFlights.length > 0
           ? `${unresolvedFlights.length} itinerary item still needs review`
           : "Flight details are already confirmed",
-      tone: unresolvedFlights.length > 0 ? "red" : "green",
+      tone: unresolvedFlights.length > 0 ? "red" : "blue",
     },
     {
       href: "/slt-prep/meetings",
@@ -396,7 +396,7 @@ function getNotificationActions(traveler: TripPrepTraveler): SltTripPrepSectionL
         ? "red"
         : meetingAttention.length > 0
           ? "yellow"
-          : "green",
+          : "blue",
     },
     {
       href: "/slt-prep/payments",
@@ -409,7 +409,7 @@ function getNotificationActions(traveler: TripPrepTraveler): SltTripPrepSectionL
         ? "red"
         : duePayments.length > 0
           ? "yellow"
-          : "green",
+          : "blue",
     },
     {
       href: "/slt-prep/extensions",
@@ -418,7 +418,7 @@ function getNotificationActions(traveler: TripPrepTraveler): SltTripPrepSectionL
         extensionChoices.length > 0
           ? `${extensionChoices.length} optional choice is still undecided`
           : "Extension decisions are already set",
-      tone: extensionChoices.length > 0 ? "yellow" : "green",
+      tone: extensionChoices.length > 0 ? "yellow" : "blue",
     },
   ];
 }
@@ -650,7 +650,7 @@ function getReadinessTone(score: number, riskLevel: TripPrepRiskLevel): TripPrep
     return "yellow";
   }
 
-  return "green";
+  return "blue";
 }
 
 function buildCountdownLabel(departureDateIso: string): string {

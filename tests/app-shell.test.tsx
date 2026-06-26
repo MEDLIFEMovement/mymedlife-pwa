@@ -17,7 +17,9 @@ describe("app shell", () => {
 
     expect(html).toContain("Leadership command center");
     expect(html).toContain("Student Leadership Command Center");
-    expect(html).toContain("Role-aware");
+    expect(html).toContain("Leader shell");
+    expect(html).toContain("Leader navigation");
+    expect(html).toContain("/leader?view=overview");
     expect(html).toContain("Chapter surface");
   });
 
@@ -32,7 +34,7 @@ describe("app shell", () => {
 
     expect(html).not.toContain("Leadership command center");
     expect(html).not.toContain("Student Leadership Command Center");
-    expect(html).not.toContain("Role-aware");
+    expect(html).not.toContain("Leader shell");
     expect(html).toContain("Chapter surface");
     expect(html).toContain("Preview role");
     expect(html).toContain("Browser only");
@@ -61,7 +63,7 @@ describe("app shell", () => {
       </AppShell>,
     );
 
-    expect(html).not.toContain("Student member view");
+    expect(html).not.toContain("General member app");
     expect(html).not.toContain("Pilot-safe");
     expect(html).not.toContain("Rush Month live");
     expect(html).toContain("Member surface");
@@ -69,7 +71,7 @@ describe("app shell", () => {
     expect(html).toContain("Home");
     expect(html).toContain("Campaigns");
     expect(html).toContain("Profile");
-    expect(html).toContain("pb-[calc(8.75rem+env(safe-area-inset-bottom))]");
+    expect(html).toContain("pb-[calc(11rem+env(safe-area-inset-bottom))]");
     expect(html).not.toMatch(
       /<h2[^>]*>Preview another local role without leaving the app\.<\/h2>/,
     );
@@ -80,9 +82,9 @@ describe("app shell", () => {
 
     const html = renderToStaticMarkup(<AppShell actor={actor}><section>Member surface</section></AppShell>);
 
-    expect(html).toContain("Student member view");
+    expect(html).toContain("Member app");
     expect(html).toContain("Action Committee Member");
-    expect(html).not.toContain("General member");
+    expect(html).not.toContain("Student member view");
     expect(html).toContain("Member surface");
   });
 });

@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { HqProofDecisionVerificationPanel } from "@/components/hq-proof-decision-verification-panel";
@@ -6,6 +6,7 @@ import { RestrictedState } from "@/components/restricted-state";
 import { getHqProofDecisionPacket } from "@/services/hq-proof-decision-verification-packet";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminHqProofWrite");
@@ -19,9 +20,12 @@ export default async function HqProofWritePage() {
   const packet = getHqProofDecisionPacket(actor, data);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="workflows" />
+      <AdminBackendLaneNav
+        current="hq_proof_write"
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
       {packet.canReadPacket ? (
         <HqProofDecisionVerificationPanel packet={packet} />
       ) : (
@@ -32,6 +36,6 @@ export default async function HqProofWritePage() {
           nextLabel="Back to Rush Month"
         />
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }

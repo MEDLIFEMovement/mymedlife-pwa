@@ -99,8 +99,8 @@ describe("auth onboarding workspace", () => {
     );
     expect(workspace.launchPreflight?.counts).toEqual({
       total: 10,
-      ready: 2,
-      watch: 7,
+      ready: 1,
+      watch: 8,
       blocked: 1,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
@@ -137,7 +137,7 @@ describe("auth onboarding workspace", () => {
       workspace.launchPreflight?.items.find(
         (item) => item.key === "role_coverage_matrix",
       )?.currentPosture,
-    ).toContain("8 of 8 required roles");
+    ).toContain("Missing local reviewer actors for: Admin.");
     expect(workspace.launchPreflight?.blockedControls).toEqual(
       expect.arrayContaining([
         "create production users",

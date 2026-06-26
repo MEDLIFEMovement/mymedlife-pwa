@@ -1,5 +1,6 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import { getSopWorkflowRuntime } from "@/services/sop-workflow-runtime";
 import {
   canReadChapterData,
   getActorSurfaceFamily,
@@ -31,6 +32,7 @@ export type RushMonthOperatingPathView = {
 type RushMonthPathSpec = {
   id: string;
   ownerLabel: string;
+  runtimeStepId?: string;
   fallbackTitle: string;
   fallbackSummary: string;
   fallbackDueLabel: string;
@@ -40,6 +42,7 @@ const rushMonthPathSpecs: RushMonthPathSpec[] = [
   {
     id: "open-home",
     ownerLabel: "President / VP",
+    runtimeStepId: "rush-visibility",
     fallbackTitle: "Open the chapter home and align the leader team",
     fallbackSummary: "Start the week by making sure the chapter understands the path.",
     fallbackDueLabel: "Week start",
@@ -47,6 +50,7 @@ const rushMonthPathSpecs: RushMonthPathSpec[] = [
   {
     id: "assign-eboard",
     ownerLabel: "Leader / E-Board",
+    runtimeStepId: "rush-events",
     fallbackTitle: "Assign Rush Month outreach owners",
     fallbackSummary: "Name the owners, due dates, and proof expectations for the push.",
     fallbackDueLabel: "Midweek",
@@ -54,6 +58,7 @@ const rushMonthPathSpecs: RushMonthPathSpec[] = [
   {
     id: "member-push",
     ownerLabel: "General Member",
+    runtimeStepId: "rush-actions",
     fallbackTitle: "Run the general member invite push",
     fallbackSummary: "Members do the invite work and bring back proof of what happened.",
     fallbackDueLabel: "Invite window",
@@ -61,6 +66,7 @@ const rushMonthPathSpecs: RushMonthPathSpec[] = [
   {
     id: "proof-pack",
     ownerLabel: "Action Committee Chair",
+    runtimeStepId: "rush-proof",
     fallbackTitle: "Submit the outreach proof pack",
     fallbackSummary: "Collect the chapter proof into one reviewable story for the next decision.",
     fallbackDueLabel: "Proof review",
@@ -68,6 +74,7 @@ const rushMonthPathSpecs: RushMonthPathSpec[] = [
   {
     id: "coach-summary",
     ownerLabel: "Coach",
+    runtimeStepId: "rush-recognition",
     fallbackTitle: "Prepare the coach-readable progress summary",
     fallbackSummary: "Coach reads the week and decides whether to advance, hold, or intervene.",
     fallbackDueLabel: "Coach check-in",
@@ -78,9 +85,15 @@ export function getRushMonthOperatingPathView(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
 ): RushMonthOperatingPathView {
+  const runtime = getSopWorkflowRuntime("rush-month");
+  const eyebrow =
+    runtime?.currentStep?.title
+      ? `Current checkpoint: ${runtime.currentStep.title}`
+      : data.campaign.weekLabel;
+
   if (!canReadChapterData(actor)) {
     return {
-      eyebrow: data.campaign.weekLabel,
+      eyebrow,
       title: "Rush Month operating truth stays with the app and chapter roles.",
       summary:
         "DS Admin can inspect integration posture, disabled outbox rows, and system safety, but not the student operating path itself.",
@@ -95,13 +108,13 @@ export function getRushMonthOperatingPathView(
   const currentStepId = getCurrentStepId(data.assignments);
 
   return {
-    eyebrow: data.campaign.weekLabel,
+    eyebrow,
     title: getPathTitle(actor),
-    summary: getPathSummary(actor),
+    summary: getPathSummary(actor, runtime),
     boundaryNote: getBoundaryNote(actor),
     focusStepId,
     steps: rushMonthPathSpecs.map((spec) =>
-      toOperatingPathStep(spec, data.assignments, currentStepId, focusStepId),
+      toOperatingPathStep(spec, data.assignments, currentStepId, focusStepId, runtime),
     ),
   };
 }
@@ -111,15 +124,21 @@ function toOperatingPathStep(
   assignments: Assignment[],
   currentStepId: string | null,
   focusStepId: string | null,
+  runtime: ReturnType<typeof getSopWorkflowRuntime>,
 ): RushMonthOperatingPathStep {
   const assignment = assignments.find((item) => item.id === spec.id);
+  const runtimeStep =
+    runtime?.steps.find((step) => step.id === spec.runtimeStepId) ?? null;
   const status = assignment?.status ?? "not_started";
 
   return {
     id: spec.id,
     ownerLabel: spec.ownerLabel,
-    title: assignment?.title ?? spec.fallbackTitle,
-    summary: assignment?.instructions ?? spec.fallbackSummary,
+    title: assignment?.title ?? runtimeStep?.title ?? spec.fallbackTitle,
+    summary:
+      buildRuntimeStepSummary(spec, runtimeStep) ??
+      assignment?.instructions ??
+      spec.fallbackSummary,
     dueLabel: assignment?.dueLabel ?? spec.fallbackDueLabel,
     status,
     stepState:
@@ -130,6 +149,30 @@ function toOperatingPathStep(
           : "upcoming",
     isFocus: spec.id === focusStepId,
   };
+}
+
+function buildRuntimeStepSummary(
+  spec: RushMonthPathSpec,
+  runtimeStep:
+    | NonNullable<ReturnType<typeof getSopWorkflowRuntime>>["steps"][number]
+    | null,
+) {
+  if (!runtimeStep) {
+    return null;
+  }
+
+  switch (spec.id) {
+    case "open-home":
+      return `${runtimeStep.whyItMatters} ${runtimeStep.completionSignal}`;
+    case "assign-eboard":
+      return `${runtimeStep.whyItMatters} Keep the route-owned handoff visible before the chapter scales the next push.`;
+    case "member-push":
+      return `${runtimeStep.whyItMatters} ${runtimeStep.completionSignal}`;
+    case "proof-pack":
+      return `${runtimeStep.whyItMatters} ${runtimeStep.completionSignal}`;
+    case "coach-summary":
+      return `Coach uses proof and recognition context to read whether the chapter should advance, hold, or intervene. ${runtimeStep.whyItMatters}`;
+  }
 }
 
 function getCurrentStepId(assignments: Assignment[]): string | null {
@@ -192,23 +235,66 @@ function getPathTitle(actor: LocalActorContext): string {
   }
 }
 
-function getPathSummary(actor: LocalActorContext): string {
+function getPathSummary(
+  actor: LocalActorContext,
+  runtime: ReturnType<typeof getSopWorkflowRuntime>,
+): string {
+  const phaseObjective = runtime?.currentPhase?.objective;
+  const phaseExit = runtime?.currentPhase?.exitCriteria[0];
+
   switch (getActorSurfaceFamily(actor)) {
     case "member":
-      return "Leader setup, member outreach, proof collection, and coach review are one sequence. Your action is the student-facing middle of that loop.";
+      return buildPhaseAwareSummary(
+        "Leader setup, member outreach, proof collection, and coach review are one sequence. Your action is the student-facing middle of that loop.",
+        phaseObjective,
+        phaseExit,
+      );
     case "leader":
       return actor.chapterRoles.includes("President / VP")
-        ? "Set the owner path, clear proof follow-up, and hand the coach a readable chapter state before the next push."
-        : "Keep the team moving by naming owners, checking follow-up, and making sure proof becomes reviewable chapter context.";
+        ? buildPhaseAwareSummary(
+            "Set the owner path, clear proof follow-up, and hand the coach a readable chapter state before the next push.",
+            phaseObjective,
+            phaseExit,
+          )
+        : buildPhaseAwareSummary(
+            "Keep the team moving by naming owners, checking follow-up, and making sure proof becomes reviewable chapter context.",
+            phaseObjective,
+            phaseExit,
+          );
     case "coach":
-      return "The coach decision should come after assignments, proof, and visible movement make the chapter's week legible.";
+      return buildPhaseAwareSummary(
+        "The coach decision should come after assignments, proof, and visible movement make the chapter's week legible.",
+        phaseObjective,
+        phaseExit,
+      );
     case "staff":
-      return "HQ should support review and proof-sharing posture while keeping app writes, publishing, and external sends off.";
+      return buildPhaseAwareSummary(
+        "HQ should support review and proof-sharing posture while keeping app writes, publishing, and external sends off.",
+        phaseObjective,
+        phaseExit,
+      );
     case "super_admin":
-      return "This view keeps the MVP legible across leader, member, proof, and coach checkpoints before any write-activation decision.";
+      return buildPhaseAwareSummary(
+        "This view keeps the MVP legible across leader, member, proof, and coach checkpoints before any write-activation decision.",
+        phaseObjective,
+        phaseExit,
+      );
     case "ds_admin":
       return "Integration safety belongs beside the operating path, not in place of it.";
   }
+}
+
+function buildPhaseAwareSummary(
+  baseSummary: string,
+  phaseObjective: string | undefined,
+  phaseExit: string | undefined,
+) {
+  const additions = [
+    phaseObjective ? `Current phase objective: ${phaseObjective}` : null,
+    phaseExit ? `Exit signal: ${phaseExit}` : null,
+  ].filter((value): value is string => Boolean(value));
+
+  return additions.length ? `${baseSummary} ${additions.join(" ")}` : baseSummary;
 }
 
 function getBoundaryNote(actor: LocalActorContext): string {

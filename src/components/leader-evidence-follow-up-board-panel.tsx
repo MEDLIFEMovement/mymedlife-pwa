@@ -50,11 +50,11 @@ export function LeaderEvidenceFollowUpBoardPanel({
         />
       </div>
 
-      <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
-        <p className="text-sm font-semibold text-amber-100">
+      <div className="mt-4 rounded-2xl border border-blue-300/20 bg-blue-300/10 p-4">
+        <p className="text-sm font-semibold text-blue-100">
           Leaders can follow up; HQ controls sharing
         </p>
-        <ul className="mt-3 grid gap-2 text-xs leading-5 text-amber-50/72">
+        <ul className="mt-3 grid gap-2 text-xs leading-5 text-blue-50/72">
           {board.safetyNotes.map((note) => (
             <li key={note}>{note}</li>
           ))}
@@ -73,10 +73,10 @@ function FollowUpCard({ row }: { row: LeaderEvidenceFollowUpRow }) {
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tonePill(row.tone)}`}>
               {row.statusLabel}
             </span>
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500">
               {row.ownerLabel}
             </span>
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500">
               Due {row.dueLabel}
             </span>
           </div>
@@ -95,13 +95,13 @@ function FollowUpCard({ row }: { row: LeaderEvidenceFollowUpRow }) {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+        <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1">
           Proof type: {row.proofTypeLabel}
         </span>
-        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+        <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1">
           Leader nudge: {row.canLeaderNudge ? "future only" : "not available"}
         </span>
-        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+        <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1">
           HQ decision: {row.canHqDecide ? "future only" : "restricted"}
         </span>
       </div>
@@ -135,7 +135,7 @@ function FollowUpList({ items, title }: { items: string[]; title: string }) {
         {items.map((item) => (
           <span
             key={item}
-            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500"
+            className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs text-slate-500"
           >
             {item}
           </span>
@@ -152,21 +152,21 @@ function toneBorder(tone: LeaderEvidenceFollowUpTone): string {
     case "info":
       return "border-[#bfdbfe]";
     case "ready":
-      return "border-emerald-200";
+      return "border-blue-200";
     case "warning":
-      return "border-amber-200";
+      return "border-blue-200";
   }
 }
 
 function tonePill(tone: LeaderEvidenceFollowUpTone): string {
   switch (tone) {
     case "blocked":
-      return "border border-slate-200 bg-slate-50 text-slate-600";
+      return "border border-slate-200 bg-[#dbeafe] text-slate-600";
     case "info":
       return "border border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]";
     case "ready":
-      return "border border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "border border-blue-200 bg-blue-50 text-blue-700";
     case "warning":
-      return "border border-amber-200 bg-amber-50 text-amber-700";
+      return "border border-blue-200 bg-blue-50 text-blue-700";
   }
 }

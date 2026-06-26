@@ -17,7 +17,7 @@ describe("rush month event detail", () => {
     expect(workspace?.event?.rsvpStatusLabel).toBe("You're on the list");
     expect(workspace?.event?.rsvpDetail).toContain("showing up ready");
     expect(workspace?.summary).toBe(
-      "See when to show up, what kind of student moment to create, and what proof to capture after the event.",
+      "See when to show up, what kind of student moment to create, and what proof to capture after the event. Luma is the source of truth, RSVP shows intent, attendance confirms who showed up, and points move after the review.",
     );
     expect(workspace?.nextStep.href).toBe(
       "/rush-month/actions/member-push?event=event-rush-social-001&source=events",

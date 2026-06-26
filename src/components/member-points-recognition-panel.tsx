@@ -1,7 +1,12 @@
-import Link from "next/link";
-
 import type { MemberActionRouteSource } from "@/services/member-action-route-href";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
+import { EventLoopStrip } from "@/components/event-loop-strip";
+import {
+  PanelButton,
+  SurfacePanel,
+  StatCard,
+  StatusPill,
+} from "@/components/visual-primitives";
 
 type MemberPointsRecognitionPanelProps = {
   recognition: MemberRecognitionSummary;
@@ -19,7 +24,10 @@ export function MemberPointsRecognitionPanel({
   }
 
   const selectedCampaign =
-    recognition.campaignPoints.find((campaign) => campaign.id === selectedCampaignId) ?? null;
+    recognition.campaignPoints.find((campaign) => campaign.id === selectedCampaignId) ??
+    recognition.campaignPoints[0] ??
+    null;
+  const visibleCampaignPoints = selectedCampaign ? [selectedCampaign] : recognition.campaignPoints.slice(0, 1);
   const sourceContext = getMemberPointsSourceContext(source);
   const campaignFocusHref = (campaignId: string) => {
     const searchParams = new URLSearchParams();
@@ -33,120 +41,162 @@ export function MemberPointsRecognitionPanel({
   };
 
   return (
-    <section className="grid gap-3">
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(180deg,#2455a4_0%,#2a5fb5_48%,#21457d_100%)] p-4 shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+    <div className="grid gap-3">
+      <SurfacePanel tone="info" className="overflow-hidden rounded-[2rem] p-4">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
           UCLA MEDLIFE
         </p>
-        <h1 className="mt-2 text-[2.1rem] font-semibold leading-tight text-white sm:text-[2.5rem]">
+        <h1 className="mt-2 text-[2.1rem] font-semibold leading-tight text-slate-950 sm:text-[2.5rem]">
           Points &amp; Recognition
         </h1>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-white/80">
+        <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
           Points come from meaningful action.
         </p>
+        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          <PointsHeroCard label="Events" title="Show up first" detail="RSVP and attendance drive the loop" />
+          <PointsHeroCard
+            label="Leaderboard"
+            title={recognition.selectedMember ? `#${recognition.selectedMember.rank}` : "Chapter board"}
+            detail="Your rank moves with approved work"
+          />
+          <PointsHeroCard
+            label="Next earn"
+            title={recognition.recentApprovedActions[0]?.pointsLabel ?? "+10 pts"}
+            detail="Open a real action from the points route"
+          />
+        </div>
         {sourceContext ? (
-          <div className="mt-4 rounded-[1.3rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
+          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-xl">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {sourceContext.eyebrow}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-white/78">
+                <p className="mt-2 text-sm leading-6 text-slate-600">
                   {sourceContext.compactDetail}
                 </p>
               </div>
-              <Link
+              <PanelButton
                 href={sourceContext.href}
-                className="inline-flex w-fit rounded-full border border-white/14 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/24 hover:bg-white/14"
+                variant="secondary"
+                className="w-fit"
               >
                 {sourceContext.backLabel}
-              </Link>
+              </PanelButton>
             </div>
           </div>
         ) : null}
         <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
           {recognition.topStats.map((stat) => (
-            <article
-              key={stat.label}
-              className="rounded-[1.4rem] border border-white/12 bg-white/10 px-4 py-3.5 backdrop-blur-sm"
-            >
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-white/58">
-                {stat.label}
-              </p>
-              <p className="mt-2.5 text-3xl font-semibold leading-none text-white">
-                {stat.value}
-              </p>
-              <p className="mt-1.5 text-xs leading-5 text-white/72">{stat.note}</p>
-            </article>
+          <SurfacePanel
+            as="article"
+            key={stat.label}
+            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
+          >
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              {stat.label}
+            </p>
+            <p className="mt-2.5 text-3xl font-semibold leading-none text-slate-950">
+              {stat.value}
+            </p>
+            <p className="mt-1.5 text-xs leading-5 text-slate-600">{stat.note}</p>
+            </SurfacePanel>
           ))}
         </div>
-      </section>
+      </SurfacePanel>
 
-      <section className="app-surface rounded-[1.8rem] p-4">
+      <SurfacePanel tone="info">
+        <p className="app-eyebrow app-eyebrow-blue">Event loop</p>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+          Events create attendance, attendance creates points.
+        </h2>
+        <p className="mt-3 text-sm leading-7 text-slate-700">
+          Use the event route to RSVP, show up, and let the chapter leaderboard
+          reflect the real work that happened.
+        </p>
+          <EventLoopStrip
+            className="mt-4"
+            items={[
+              { label: "Events", detail: "Explore Luma-backed moments", tone: "blue" },
+              { label: "RSVP", detail: "Confirm attendance intent", tone: "blue" },
+              { label: "Attendance", detail: "Record who showed up", tone: "gold" },
+              { label: "Points", detail: "Leaderboard refresh after review", tone: "yellow" },
+            ]}
+          />
+        <div className="mt-4 flex flex-wrap gap-2">
+          <PanelButton href="/rush-month/events" variant="secondary">
+            Open events
+          </PanelButton>
+          <PanelButton href="/rush-month/leaderboard">Open leaderboard</PanelButton>
+        </div>
+      </SurfacePanel>
+
+      <SurfacePanel>
         <p className="app-eyebrow app-eyebrow-blue">Points by Campaign</p>
         <div className="mt-3 grid gap-2.5">
-          {recognition.campaignPoints.map((campaign) => {
+          {visibleCampaignPoints.map((campaign) => {
+            const isSelected = selectedCampaign?.id === campaign.id;
             const width = Math.max(
               8,
               Math.min(100, Math.round((campaign.earned / campaign.available) * 100)),
             );
+            const panelClassName = isSelected
+              ? "rounded-[1.4rem] border border-[#bfdbfe] bg-[#fbfdff] p-3.5 transition"
+              : "rounded-[1.4rem] border-slate-200 bg-[#dbeafe] p-3.5 transition hover:border-[#bfdbfe] hover:bg-[#fbfdff]";
+            const buttonLabel = isSelected ? "Open campaign focus" : "Select campaign focus";
 
             return (
-              <Link
+              <SurfacePanel
+                as="article"
                 key={campaign.label}
-                href={campaignFocusHref(campaign.id)}
-                aria-current={selectedCampaign?.id === campaign.id ? "page" : undefined}
-                className={[
-                  "rounded-[1.4rem] border p-3.5 transition",
-                  selectedCampaign?.id === campaign.id
-                    ? "border-[#bfdbfe] bg-[#fbfdff]"
-                    : "border-slate-200 bg-slate-50 hover:border-[#bfdbfe] hover:bg-[#fbfdff]",
-                ].join(" ")}
+                className={panelClassName}
               >
                 <div className="flex items-center justify-between gap-3">
                   <h2 className="text-base font-semibold text-slate-950">{campaign.label}</h2>
-                  <span className="text-sm font-semibold text-slate-600">
+                  <StatusPill tone={isSelected ? "blue" : "white"}>
                     {campaign.earned} / {campaign.available} pts
-                  </span>
+                  </StatusPill>
                 </div>
-                <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
+                <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#f8fbff]">
                   <div
                     className="h-full rounded-full bg-[#2b5fb4]"
                     style={{ width: `${width}%` }}
                   />
                 </div>
-              </Link>
+                <span aria-current={isSelected ? "page" : undefined}>
+                  <PanelButton
+                    href={campaignFocusHref(campaign.id)}
+                    className="mt-3 rounded-[1.2rem]"
+                  >
+                    {buttonLabel}
+                  </PanelButton>
+                </span>
+              </SurfacePanel>
             );
           })}
         </div>
-      </section>
+      </SurfacePanel>
 
       {selectedCampaign ? (
-        <section
-          id="campaign-focus"
-          className="app-surface-info rounded-[1.8rem] p-4"
-        >
+        <SurfacePanel tone="info" id="campaign-focus">
           <p className="app-eyebrow app-eyebrow-blue">Campaign focus</p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-            {selectedCampaign.label}
-          </h2>
-          <p className="mt-3 text-sm leading-7 text-slate-700">
-            {selectedCampaign.detail}
-          </p>
-          <Link
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">{selectedCampaign.label}</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-700">{selectedCampaign.detail}</p>
+          <PanelButton
             href={recognition.explainer.ctaHref}
-            className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
+            className="mt-4"
           >
             {recognition.explainer.ctaLabel}
-          </Link>
-        </section>
+          </PanelButton>
+        </SurfacePanel>
       ) : null}
 
-      <section className="app-surface rounded-[1.8rem] p-4">
+      <SurfacePanel>
         <p className="app-eyebrow app-eyebrow-blue">Badges Earned</p>
         <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
           {recognition.badges.map((badge) => (
-            <article
+            <SurfacePanel
+              as="article"
               key={badge.label}
               className={getBadgeCardClassName(badge.tone)}
             >
@@ -161,12 +211,12 @@ export function MemberPointsRecognitionPanel({
                   </p>
                 </div>
               </div>
-            </article>
+            </SurfacePanel>
           ))}
         </div>
-      </section>
+      </SurfacePanel>
 
-      <section className="app-surface rounded-[1.8rem] p-4">
+      <SurfacePanel>
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="app-eyebrow app-eyebrow-blue">
@@ -176,9 +226,10 @@ export function MemberPointsRecognitionPanel({
         </div>
         <div className="mt-3 grid gap-2">
           {recognition.leaderboard.map((row, index) => (
-            <article
+            <SurfacePanel
+              as="article"
               key={row.id}
-              className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-3.5"
+              className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-3.5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -187,49 +238,50 @@ export function MemberPointsRecognitionPanel({
                   </p>
                   <p className="mt-1 text-xs text-slate-500">{row.roleLabel}</p>
                 </div>
-                <span className="rounded-full border border-[#f7d05e]/30 bg-[#fff8df] px-3 py-1 text-sm font-semibold text-[#a16207]">
-                  {row.points} pts
-                </span>
+                <StatusPill tone="gold">{row.points} pts</StatusPill>
               </div>
-            </article>
+            </SurfacePanel>
           ))}
         </div>
-      </section>
+      </SurfacePanel>
 
-      <section className="app-surface rounded-[1.8rem] p-4">
+      <SurfacePanel>
         <p className="app-eyebrow app-eyebrow-blue">Recent Approved Actions</p>
         <div className="mt-3 grid gap-2.5">
           {recognition.recentApprovedActions.map((action) => (
-            <Link
+            <SurfacePanel
+              as="article"
               key={`${action.title}-${action.pointsLabel}`}
-              href={action.href}
-              className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-3.5 transition hover:border-[#bfdbfe] hover:bg-[#fbfdff]"
+              className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-3.5 transition hover:border-[#bfdbfe] hover:bg-[#fbfdff]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-semibold text-slate-950">{action.title}</h2>
                   <p className="mt-1 text-sm text-slate-600">{action.detail}</p>
                 </div>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+                <StatusPill tone="blue">
                   {action.pointsLabel}
-                </span>
+                </StatusPill>
               </div>
-            </Link>
+              <PanelButton href={action.href} className="mt-3 w-full rounded-[1.2rem]">
+                Open action
+              </PanelButton>
+            </SurfacePanel>
           ))}
         </div>
-      </section>
+      </SurfacePanel>
 
-      <section className="app-surface-warm rounded-[1.8rem] p-4">
-        <p className="app-eyebrow app-eyebrow-warm">{recognition.explainer.title}</p>
+      <SurfacePanel tone="info">
+        <p className="app-eyebrow app-eyebrow-blue">{recognition.explainer.title}</p>
         <p className="mt-3 text-sm leading-7 text-slate-700">{recognition.explainer.body}</p>
-        <Link
+        <PanelButton
           href={recognition.explainer.ctaHref}
-          className="mt-4 inline-flex text-sm font-semibold text-[#2563eb]"
+          className="mt-4 border border-[#bfdbfe] bg-white text-[#2563eb]"
         >
           {recognition.explainer.ctaLabel} →
-        </Link>
-      </section>
-    </section>
+        </PanelButton>
+      </SurfacePanel>
+    </div>
   );
 }
 
@@ -272,29 +324,49 @@ function getMemberPointsSourceContext(source: MemberActionRouteSource | null | u
   }
 }
 
+function PointsHeroCard({
+  label,
+  title,
+  detail,
+}: {
+  label: string;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <StatCard
+      label={label}
+      value={title}
+      tone="highlight"
+      note={<p>{detail}</p>}
+      className="rounded-[1.35rem] bg-white/12 border-white/12 backdrop-blur-sm px-3.5 py-3"
+    />
+  );
+}
+
 function getBadgeCardClassName(tone: MemberRecognitionSummary["badges"][number]["tone"]) {
   switch (tone) {
     case "gold":
-      return "rounded-[1.35rem] border border-[#f7d05e]/30 bg-[#fffdf5] p-4";
+      return "rounded-[1.35rem] border border-[#2563eb]/30 bg-[#eff6ff] p-4";
     case "blue":
       return "rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4";
-    case "green":
-      return "rounded-[1.35rem] border border-emerald-200 bg-[#f7fffb] p-4";
     case "slate":
-      return "rounded-[1.35rem] border border-slate-200 bg-slate-50/70 p-4 opacity-80";
+      return "rounded-[1.35rem] border border-slate-200 bg-[#dbeafe]/70 p-4 opacity-80";
+    default:
+      return "rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4";
   }
 }
 
 function getBadgeIconClassName(tone: MemberRecognitionSummary["badges"][number]["tone"]) {
   switch (tone) {
     case "gold":
-      return "flex h-10 w-10 items-center justify-center rounded-full border border-[#f7d05e]/40 bg-[#fff8df] text-[#a16207]";
+      return "flex h-10 w-10 items-center justify-center rounded-full border border-[#2563eb]/40 bg-[#dbeafe] text-[#1d4ed8]";
     case "blue":
       return "flex h-10 w-10 items-center justify-center rounded-full border border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]";
-    case "green":
-      return "flex h-10 w-10 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700";
     case "slate":
-      return "flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-500";
+      return "flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-[#eff6ff] text-slate-500";
+    default:
+      return "flex h-10 w-10 items-center justify-center rounded-full border border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]";
   }
 }
 

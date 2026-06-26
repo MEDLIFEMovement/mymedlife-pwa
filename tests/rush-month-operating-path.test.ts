@@ -10,13 +10,18 @@ describe("rush month operating path", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const view = getRushMonthOperatingPathView(actor, data);
 
-    expect(view.eyebrow).toBe(data.campaign.weekLabel);
+    expect(view.eyebrow).toBe("Current checkpoint: Make MEDLIFE visible on campus");
     expect(view.focusStepId).toBe("member-push");
     expect(view.steps).toHaveLength(5);
     expect(view.steps.find((step) => step.id === "open-home")?.stepState).toBe("complete");
     expect(view.steps.find((step) => step.id === "assign-eboard")?.stepState).toBe(
       "current",
     );
+    expect(view.steps.find((step) => step.id === "member-push")?.summary).toContain(
+      "The loop becomes real when a member can move work from not started to in progress.",
+    );
+    expect(view.summary).toContain("Current phase objective:");
+    expect(view.summary).toContain("Exit signal:");
     expect(view.steps.find((step) => step.id === "member-push")?.isFocus).toBe(true);
     expect(view.boundaryNote).toContain("Members");
   });
@@ -75,7 +80,7 @@ describe("rush month operating path", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const view = getRushMonthOperatingPathView(actor, data);
 
-    expect(view.eyebrow).toBe(data.campaign.weekLabel);
+    expect(view.eyebrow).toBe("Current checkpoint: Make MEDLIFE visible on campus");
     expect(view.focusStepId).toBeNull();
     expect(view.steps).toEqual([]);
     expect(view.boundaryNote).toContain("DS Admin");

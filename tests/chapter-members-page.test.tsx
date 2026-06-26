@@ -42,7 +42,7 @@ describe("chapter members page", () => {
     const { default: ChapterMembersPage } = await import("@/app/chapter/members/page");
     const html = renderToStaticMarkup(await ChapterMembersPage({}));
 
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html).toContain(">Open student home<");
   });
 

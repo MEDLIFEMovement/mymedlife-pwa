@@ -34,7 +34,7 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
 
 describe("slt prep overview page helpers", () => {
   it("builds CTA cards that match the overview routing hub from the mockup", () => {
-    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
     const workspace = getSltTripPrepWorkspace(actor);
     const ctas = buildOverviewCtas(workspace);
 
@@ -53,7 +53,7 @@ describe("slt prep overview page helpers", () => {
   });
 
   it("uses the prototype-aligned Travel Details label on the overview checklist", () => {
-    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
     const workspace = getSltTripPrepWorkspace(actor);
     const cards = buildChecklistCards(workspace);
 
@@ -148,6 +148,25 @@ describe("slt prep overview page helpers", () => {
 });
 
 describe("slt prep overview page", () => {
+  it("returns non-travelers to student home when the overview route is blocked", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing blocked slt overview page."),
+    );
+
+    const { default: SltPrepPage } = await import("@/app/slt-prep/page");
+    const html = renderToStaticMarkup(await SltPrepPage({}));
+
+    expect(html).toContain("SLT Prep is only visible to eligible travelers.");
+    expect(html).toContain('href="/app"');
+    expect(html).toContain(">Open student home<");
+  });
+
   it("keeps DS Admin on admin safety routes when SLT prep is blocked", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
@@ -170,7 +189,7 @@ describe("slt prep overview page", () => {
   it("lets the overview route lead with the trip-readiness surface only", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
-    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
     const workspace = getSltTripPrepWorkspace(actor);
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(actor);

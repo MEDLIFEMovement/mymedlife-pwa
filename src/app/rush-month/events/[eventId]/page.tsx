@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { RestrictedState } from "@/components/restricted-state";
@@ -54,7 +54,7 @@ export default async function RushMonthEventDetailPage({
     const isMemberEventSurface = isMemberSurfaceFamily(actor);
 
     return (
-      <AppShell
+      <StudentAppShell
         actor={actor}
         hideTopHeader={isMemberEventSurface}
         showMobileQuickItemHelpers={!isMemberEventSurface}
@@ -66,7 +66,7 @@ export default async function RushMonthEventDetailPage({
           nextHref={workspace.nextStep.href}
           nextLabel={workspace.nextStep.label}
         />
-      </AppShell>
+      </StudentAppShell>
     );
   }
 
@@ -81,7 +81,7 @@ export default async function RushMonthEventDetailPage({
   );
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
       hideTopHeader={isMemberWorkspace}
       showMobileQuickItemHelpers={!isMemberWorkspace}
@@ -96,7 +96,7 @@ export default async function RushMonthEventDetailPage({
                   <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/82">
                     {workspace.title}
                   </span>
-                  <span className="rounded-full border border-[#f7d05e]/30 bg-[#f7d05e]/12 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+                  <span className="rounded-full border border-[#2563eb]/30 bg-[#2563eb]/12 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                     {event.rsvpStatusLabel}
                   </span>
                 </div>
@@ -105,14 +105,14 @@ export default async function RushMonthEventDetailPage({
                 </h1>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {event.memberLumaLabel ? (
-                    <span className="rounded-full border border-[#d8b4fe]/28 bg-[#7c3aed]/16 px-3 py-1 text-xs font-semibold text-white/92">
+                    <span className="rounded-full border border-[#60a5fa]/28 bg-[#2563eb]/16 px-3 py-1 text-xs font-semibold text-white/92">
                       {event.memberLumaLabel}
                     </span>
                   ) : null}
                   <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
                     {event.memberCampaignLabel}
                   </span>
-                  <span className="rounded-full border border-[#f7d05e]/28 bg-[#f7d05e]/12 px-3 py-1 text-xs font-semibold text-[#fde68a]">
+                  <span className="rounded-full border border-[#2563eb]/28 bg-[#2563eb]/12 px-3 py-1 text-xs font-semibold text-[#2563eb]">
                     {event.memberPointsLabel}
                   </span>
                 </div>
@@ -133,10 +133,34 @@ export default async function RushMonthEventDetailPage({
                     </p>
                   </div>
                 ) : null}
+                <div className="mt-4 max-w-3xl rounded-[1.3rem] border border-[#2563eb]/22 bg-[#dbeafe]/10 p-3.5">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                    Event loop
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/80">
+                    Luma holds the event, RSVP shows intent, attendance confirms
+                    who showed up, and points move once the chapter can trust the
+                    record.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
+                      Luma source
+                    </span>
+                    <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
+                      RSVP
+                    </span>
+                    <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
+                      Attendance
+                    </span>
+                    <span className="rounded-full border border-[#2563eb]/28 bg-[#2563eb]/12 px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                      Points
+                    </span>
+                  </div>
+                </div>
                 <div className="mt-4 flex flex-wrap gap-2.5">
                   <Link
                     href={workspace.nextStep.href}
-                    className="inline-flex rounded-full bg-[#f7d05e] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
+                    className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
                   >
                     {workspace.nextStep.label}
                   </Link>
@@ -178,7 +202,7 @@ export default async function RushMonthEventDetailPage({
                     label={event.rsvpStatusLabel}
                   />
                   {getMemberEventSupportLabel(event) ? (
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                    <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
                       {getMemberEventSupportLabel(event)}
                     </span>
                   ) : null}
@@ -188,7 +212,7 @@ export default async function RushMonthEventDetailPage({
                 <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#2563eb]">
                   {event.memberCampaignLabel}
                 </span>
-                <span className="rounded-full border border-[#fef3c7] bg-[#fffbeb] px-3 py-1 text-xs font-semibold text-[#a16207]">
+                <span className="rounded-full border border-[#dbeafe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
                   {event.memberPointsLabel}
                 </span>
               </div>
@@ -263,7 +287,7 @@ export default async function RushMonthEventDetailPage({
       <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               {workspace.title}
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">{event.title}</h1>
@@ -300,7 +324,7 @@ export default async function RushMonthEventDetailPage({
             </div>
             <Link
               href={workspace.nextStep.href}
-              className="w-fit rounded-full bg-[#86efac] px-4 py-2 text-sm font-semibold text-[#14532d]"
+              className="w-fit rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
             >
               {workspace.nextStep.label}
             </Link>
@@ -321,10 +345,10 @@ export default async function RushMonthEventDetailPage({
               {event.rsvpStatusLabel}
             </CheckStatusPill>
             <LumaStatusPill status={event.lumaStatusTone} label={event.lumaStatusLabel} />
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
               {event.committeeName}
             </span>
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
               {event.supportLane} lane
             </span>
           </div>
@@ -346,7 +370,7 @@ export default async function RushMonthEventDetailPage({
             {workspace.readinessChecks.map((check) => (
               <article
                 key={check.label}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-semibold text-slate-950">{check.label}</p>
@@ -363,15 +387,15 @@ export default async function RushMonthEventDetailPage({
           outboxItems={workspace.disabledOutboxItems}
         />
 
-        <section className="rounded-[2rem] border border-[#f7d05e]/30 bg-[#fff8df] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a16207]">
+        <section className="rounded-[2rem] border border-[#2563eb]/30 bg-[#dbeafe] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1d4ed8]">
             Safety boundary
           </p>
           <div className="mt-4 grid gap-2">
             {workspace.safetyNotes.map((note) => (
               <p
                 key={note}
-                className="rounded-2xl border border-[#f7d05e]/20 bg-white/70 p-3 text-sm leading-6 text-slate-700"
+                className="rounded-2xl border border-[#2563eb]/20 bg-white/70 p-3 text-sm leading-6 text-slate-700"
               >
                 {note}
               </p>
@@ -385,7 +409,7 @@ export default async function RushMonthEventDetailPage({
       </div>
         </>
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 
@@ -523,10 +547,10 @@ function MemberEventStatusPill({
 }) {
   const className =
     tone === "ready"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : tone === "mocked"
         ? "border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]"
-        : "border-amber-200 bg-amber-50 text-amber-700";
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span
@@ -568,7 +592,7 @@ function getMemberEventSupportLabel(event: {
 
 function DetailBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+    <div className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
@@ -597,10 +621,10 @@ function CheckStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "mocked"
-        ? "border-cyan-300/30 bg-cyan-300/15 text-cyan-100"
-        : "border-amber-300/30 bg-amber-300/15 text-amber-100";
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
 
   return (
     <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${className}`}>
@@ -618,10 +642,10 @@ function LumaStatusPill({
 }) {
   const className =
     status === "mock_linked"
-      ? "border-cyan-300/30 bg-cyan-300/15 text-cyan-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "future_sync_disabled"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-        : "border-slate-200 bg-slate-50 text-slate-600";
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        : "border-slate-200 bg-[#dbeafe] text-slate-600";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

@@ -159,6 +159,21 @@ Material PRs should include:
 - risks or blockers
 - handoff note
 
+## Claude PR Review Pilot
+
+Claude Desktop may participate in this repo only as a bounded pre-review
+assistant for Codex-authored PRs.
+
+Rules:
+
+- Claude uses its own `GH_TOKEN`, never shared human credentials.
+- Claude reads PRs and returns a draft review summary first.
+- Claude does not push, merge, approve, or post direct GitHub comments during
+  the pilot.
+- Claude should use `CLAUDE.md` and
+  `docs/review/claude-pr-review-template.md` for review behavior and output.
+- Human reviewers keep final approval authority.
+
 ## Current Goal Guardrail
 
 The repo has moved beyond the earlier Goal 89 checkpoint. The current local

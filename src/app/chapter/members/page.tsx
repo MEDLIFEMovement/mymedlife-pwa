@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AppShell } from "@/components/app-shell";
+import { LeaderAppShell } from "@/components/leader-app-shell";
 import { ChapterMembershipWorkspacePanel } from "@/components/chapter-membership-workspace-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { MembershipApprovalServerActionPanel } from "@/components/membership-approval-server-action-panel";
@@ -59,35 +59,35 @@ export default async function ChapterMembersPage({
             : "Open your owned surface";
 
   return (
-    <AppShell actor={actor}>
+    <LeaderAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
 
       {workspace.canReadWorkspace ? (
         <>
           {memberRoleFocus.canReadFocus ? (
-            <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
                 {memberRoleFocus.roleLabel}
               </p>
               <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
                 <div>
-                  <h2 className="text-2xl font-semibold text-white">
+                  <h2 className="text-2xl font-semibold text-slate-950">
                     {memberRoleFocus.title}
                   </h2>
-                  <p className="mt-2 max-w-3xl text-sm leading-6 text-white/68">
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
                     {memberRoleFocus.summary}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={memberRoleFocus.primaryHref}
-                    className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#06211d]"
+                    className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
                   >
                     {memberRoleFocus.primaryLabel}
                   </Link>
                   <Link
                     href={memberRoleFocus.secondaryHref}
-                    className="rounded-full border border-white/14 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
                   >
                     {memberRoleFocus.secondaryLabel}
                   </Link>
@@ -95,20 +95,20 @@ export default async function ChapterMembersPage({
               </div>
               <div className="mt-4 grid gap-3 md:grid-cols-3">
                 {memberRoleFocus.items.map((item) => (
-                  <div key={item.label} className="rounded-2xl bg-black/20 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
+                  <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                       {item.label}
                     </p>
-                    <p className="mt-2 text-2xl font-semibold text-white">
+                    <p className="mt-2 text-2xl font-semibold text-slate-950">
                       {item.value}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white/58">
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
                       {item.note}
                     </p>
                   </div>
                 ))}
               </div>
-              <p className="mt-4 rounded-2xl border border-white/10 bg-black/18 p-3 text-sm leading-6 text-white/62">
+              <p className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
                 {memberRoleFocus.safetyNote}
               </p>
             </section>
@@ -131,7 +131,7 @@ export default async function ChapterMembersPage({
           nextLabel={restrictedNextLabel}
         />
       )}
-    </AppShell>
+    </LeaderAppShell>
   );
 }
 

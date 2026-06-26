@@ -1,6 +1,6 @@
-import { campaignShells } from "@/data/mock-campaigns";
 import { mockChapter } from "@/data/mock-rush-month";
 import type { CanonicalRole } from "@/services/canonical-role-scope";
+import { getCampaignShells } from "@/services/campaign-ops-service";
 import {
   getMockLocalActorContext,
   localActorOptions,
@@ -14,7 +14,10 @@ import {
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
 import { getWriteSequencePlanner } from "@/services/write-sequence-planner";
-import type { CampaignShellStatus } from "@/shared/types/campaigns";
+import type {
+  CampaignShellStatus,
+  CampaignWorkflowSnapshot,
+} from "@/shared/types/campaigns";
 
 export type AdminControlAreaKey =
   | "audit_logs"
@@ -94,6 +97,7 @@ export type AdminCampaignTemplateInventoryItem = {
   primaryKpis: readonly string[];
   actionCommitteeLanes: readonly string[];
   integrationPosture: string;
+  workflowSnapshot: CampaignWorkflowSnapshot | null;
   adminStatus: AdminControlStatus;
   detail: string;
 };
@@ -129,6 +133,7 @@ export function getAdminControlCenterSummary(
   data: ReadOnlyAppData,
   actors: readonly LocalActorOption[] = localActorOptions,
 ): AdminControlCenterSummary {
+  const campaignTemplates = getCampaignShells();
   const resolvedActors = getResolvedLocalActors(actors);
   const roleAudienceCount = new Set(
     resolvedActors.map((actor) => getActorSurfaceFamily(actor)),
@@ -180,9 +185,9 @@ export function getAdminControlCenterSummary(
       key: "campaign_templates",
       title: "Campaign templates",
       status: "ready_readonly",
-      primaryMetric: `${campaignShells.length} shells`,
+      primaryMetric: `${campaignTemplates.length} lanes`,
       detail:
-        "Rush Month plus reusable campaign shells are visible as read-only operating templates.",
+        "Rush Month plus reusable campaign lanes are visible as read-only operating templates, and workflow-backed drafts now stay explicit where the SOP runtime already owns them.",
       nextAction:
         "Keep campaign template editing disabled until campaign admin writes are explicitly approved.",
     },
@@ -229,7 +234,7 @@ export function getAdminControlCenterSummary(
     externalWritesEnabled: false,
     userCount: resolvedActors.length,
     chapterCount: 1,
-    campaignTemplateCount: campaignShells.length,
+    campaignTemplateCount: campaignTemplates.length,
     roleAudienceCount,
     namedRoleCount,
     disabledOutboxCount,
@@ -247,6 +252,8 @@ function getAdminMasterDataInventory(
   actors: readonly LocalActorContext[],
   roleCoverage: readonly AdminRoleCoverageItem[],
 ): AdminMasterDataInventory {
+  const campaignTemplates = getCampaignShells();
+
   return {
     users: actors.map((actor) => ({
       email: actor.selectedEmail,
@@ -277,16 +284,19 @@ function getAdminMasterDataInventory(
             : "Mock chapter scope used for local MVP review.",
       },
     ],
-    campaignTemplates: campaignShells.map((shell) => ({
+    campaignTemplates: campaignTemplates.map((shell) => ({
       slug: shell.slug,
       name: shell.name,
       status: shell.status,
       primaryKpis: shell.primaryKpis,
       actionCommitteeLanes: shell.actionCommitteeLanes,
       integrationPosture: shell.integrationPosture,
+      workflowSnapshot: shell.workflowSnapshot ?? null,
       adminStatus: "ready_readonly",
       detail:
-        "Read-only campaign shell. Template editing stays disabled until campaign admin writes are approved.",
+        shell.workflowSnapshot
+          ? "Read-only workflow-backed draft template. Template editing stays disabled until campaign admin writes are approved."
+          : "Read-only campaign shell. Template editing stays disabled until campaign admin writes are approved.",
     })),
     mutationControlsEnabled: 0,
     externalWritesExpected: 0,

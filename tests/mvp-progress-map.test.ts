@@ -371,7 +371,7 @@ describe("mvp progress map", () => {
     expect(
       progressMap.subprojects.find((item) => item.key === "campaign_templates")
         ?.plainEnglish,
-    ).toContain("exact required starter campaign shells");
+    ).toContain("exact required non-Rush campaign lanes");
     expect(
       progressMap.subprojects.find((item) => item.key === "campaign_templates")
         ?.routeEvidence,

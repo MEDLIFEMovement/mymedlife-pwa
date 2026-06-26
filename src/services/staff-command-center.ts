@@ -11,6 +11,7 @@ import {
   canReadIntegrationOutbox,
   getActorSurfaceFamily,
 } from "@/services/role-visibility";
+import type { CampaignWorkflowSnapshot } from "@/shared/types/campaigns";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
 
 export type StaffCommandCenterView =
@@ -268,6 +269,7 @@ export type StaffCampaignOperationCard = {
   actionCommitteeLanes: string[];
   recommendedStaffMove: string;
   integrationPosture: string;
+  workflowSnapshot: CampaignWorkflowSnapshot | null;
   href: string;
 };
 
@@ -313,6 +315,10 @@ export type StaffCampaignOperationsOverview = {
   timestampLabel: string;
   selectedCampaignSlug: string;
   selectedCampaignName: string;
+  selectedCampaignSummary: string;
+  selectedCampaignRecommendedMove: string;
+  selectedCampaignIntegrationPosture: string;
+  selectedWorkflowSnapshot: CampaignWorkflowSnapshot | null;
   selectedRiskGroup: StaffCampaignRiskGroup;
   selectedRiskGroupLabel: string;
   clearRiskGroupHref: string;
@@ -3124,6 +3130,7 @@ function getCampaignOperationCards(): StaffCampaignOperationCard[] {
       actionCommitteeLanes: campaign.actionCommitteeLanes.slice(0, 3),
       recommendedStaffMove: getRecommendedStaffMove(campaign.status),
       integrationPosture: campaign.integrationPosture,
+      workflowSnapshot: campaign.workflowSnapshot ?? null,
       href: `/campaigns/${campaign.slug}`,
     }));
 }
@@ -3377,6 +3384,16 @@ function getCampaignOperationsOverview(
     timestampLabel: "Jun 17, 2026 · 14:41 UTC",
     selectedCampaignSlug,
     selectedCampaignName: selectedCampaign?.name ?? "Rush Month",
+    selectedCampaignSummary:
+      selectedCampaign?.summary ??
+      "Campaign operating summary is not available for the selected campaign.",
+    selectedCampaignRecommendedMove:
+      selectedCampaign?.recommendedStaffMove ??
+      "Keep the next staff move narrow and evidence-backed.",
+    selectedCampaignIntegrationPosture:
+      selectedCampaign?.integrationPosture ??
+      "Broader ecosystem posture is not available for the selected campaign.",
+    selectedWorkflowSnapshot: selectedCampaign?.workflowSnapshot ?? null,
     selectedRiskGroup: context.selectedCampaignRiskGroup,
     selectedRiskGroupLabel: campaignRiskGroupToLabel(context.selectedCampaignRiskGroup),
     clearRiskGroupHref: getHref({
@@ -5400,7 +5417,7 @@ function getAdminWorkspace(
     },
     {
       eyebrow: "Operations",
-      title: "Chapter Management",
+      title: "Portfolio Management",
       summary:
         "Inspect chapter inventory, ownership, and launch posture without opening write paths.",
       href: "/admin/master-data",
@@ -6749,6 +6766,12 @@ function emptyStaffCommandCenter(): StaffCommandCenter {
       timestampLabel: "No campaign review visible",
       selectedCampaignSlug: "rush-month",
       selectedCampaignName: "Rush Month",
+      selectedCampaignSummary: "No campaign review visible.",
+      selectedCampaignRecommendedMove:
+        "Keep the next staff move narrow and evidence-backed.",
+      selectedCampaignIntegrationPosture:
+        "Broader ecosystem posture is not available for the selected campaign.",
+      selectedWorkflowSnapshot: null,
       selectedRiskGroup: "all",
       selectedRiskGroupLabel: "All campaign risks",
       clearRiskGroupHref: "/staff?view=campaigns",
@@ -6839,26 +6862,26 @@ function getStaffLandingSourceContext(
       eyebrow: "Member app handoff",
       title:
         routeBase === "/coach"
-          ? `Opened from ${originChapterName} into Coach Dashboard`
+          ? `Opened from ${originChapterName} into Staff Command Center`
           : `Opened from ${originChapterName} into Admin Console`,
       summary:
         routeBase === "/coach"
-          ? `This coach surface was opened from the ${originChapterName} member home via the app's Switch View buttons. Review chapter risk and support posture as a continuation of the student-facing loop, with a clear path back to Student view.`
-          : `This staff surface was opened from the ${originChapterName} member home via the app's Switch View buttons. Keep HQ review tied to the student-facing Rush Month flow that triggered the handoff, with a clear path back to Student view.`,
+          ? `This staff-supported chapter surface was opened from the ${originChapterName} member-home role handoff. Review chapter risk and support posture as a continuation of the student-facing loop, with a clear path back to Student view.`
+          : `This staff surface was opened from the ${originChapterName} member-home role handoff. Keep HQ review tied to the student-facing Rush Month flow that triggered the handoff, with a clear path back to Student view.`,
       actions:
         routeBase === "/coach"
           ? [
               {
                 label: "Open chapter",
-                href: `/coach?view=chapter_detail&source=member_home&chapter=${originChapterId}`,
+                href: `/staff?view=chapter_detail&source=member_home&chapter=${originChapterId}`,
               },
               {
                 label: "Write coach note",
-                href: "/coach?view=support_notes&source=member_home#support-notes",
+                href: "/staff?view=support_notes&source=member_home#support-notes",
               },
               {
                 label: "Review risk reports",
-                href: "/coach?view=chapters&source=member_home&risk=high",
+                href: "/staff?view=chapters&source=member_home&risk=high",
               },
               {
                 label: "Student view",

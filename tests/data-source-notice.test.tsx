@@ -19,7 +19,7 @@ describe("data source notice", () => {
     expect(html).toContain("Data source status");
     expect(html).toContain("Preview data");
     expect(html).toContain("Using mock data because MYMEDLIFE_DATA_SOURCE is not set to supabase.");
-    expect(html).toContain("bg-[#fffaf0]/94");
+    expect(html).toContain("bg-[#eef5ff]/94");
   });
 
   it("renders the Supabase-ready state with the quieter review label", () => {
@@ -35,6 +35,6 @@ describe("data source notice", () => {
 
     expect(html).toContain("Connected preview data");
     expect(html).toContain("Reading review data from local Supabase tables.");
-    expect(html).toContain("bg-emerald-50/88");
+    expect(html).toContain("bg-blue-50/88");
   });
 });

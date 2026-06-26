@@ -58,6 +58,8 @@ The current repo has distinct owned surfaces instead of one generic dashboard:
 - staff HQ routes
 - SLT Prep traveler/staff routes
 - admin review, safety, and backend tooling routes
+- admin review, safety, and backend tooling routes, including the staff dry-run
+  rehearsal lane
 
 The traveler-facing SLT profile and notifications routes now stay traveler-owned
 and keep the staff-review handoff in `/slt-prep/staff` instead of rendering that
@@ -80,6 +82,10 @@ The backend tooling requested by the packet now exists in typed mock-safe form:
 - `src/services/sop-library-workspace.ts`
 - `src/services/sop-builder-workspace.ts`
 
+The admin master-data inventory now also carries a direct SOP builder handoff,
+so the review path moves from static inventory into the workflow lane without
+having to guess which route owns the next step.
+
 The builder now exposes route-backed lanes for:
 
 - `steps`
@@ -98,14 +104,22 @@ as inert buttons.
 
 Latest local verification on this branch:
 
-- `pnpm test`: `179` test files passed, `1106` tests passed
+- `pnpm test`: `184` test files passed, `1113` tests passed
 - `pnpm typecheck`: passed
 - `pnpm lint`: passed
 - `pnpm build`: passed
 
-Browser spot-checks on 2026-06-23 also confirmed the member profile,
-submit-evidence, points, events, and chapter leadership surfaces in their live
-local routes.
+Browser spot-checks on 2026-06-23 also confirmed the member home, member
+campaigns, member profile, submit-evidence, points, events, and chapter
+leadership surfaces in their live local routes. The local preview helper
+cleanly switches the browser between seeded member and leader personas, so the
+live route checks now have a repeatable mock-safe handoff instead of relying on
+stale screenshots.
+The same pass also rechecked the Figma Make member action-detail hierarchy
+against the local route and tightened the local `Action Detail` label into a
+real secondary heading signal instead of plain body copy.
+It also restored the Figma campaign-screen `What Good Looks Like` checklist and
+the featured `Intro GBM` event summary on the local `/campaigns` route.
 
 This matters because the branch started this packet-parity pass with broad test
 drift across shared assignment, proof, points/KPI, and shell expectations.
@@ -166,6 +180,7 @@ The packet-to-product parity goal is close in the sense that the repo now has:
 - role-owned surface families
 - SOP backend lanes
 - green tests, typecheck, lint, and build
+- verified member and leader browser routes in the current local preview flow
 
 But the goal is not fully complete if the bar is "Phase 1 complete and Phase 2
 complete," because the repo itself still truthfully reports a local-review-only

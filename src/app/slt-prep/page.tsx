@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import { SltPrepTonePill } from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
@@ -13,6 +13,7 @@ import {
   getSltTripPrepWorkspace,
   parseSltTripPrepRouteSource,
 } from "@/services/slt-trip-prep-workspace";
+import { hasTravelerAccess } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("sltPrep");
@@ -34,9 +35,40 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
   const routeSource = parseSltTripPrepRouteSource(search.source);
   const workspace = getSltTripPrepWorkspace(actor, search.traveler);
 
+  const isAdminSafetyActor =
+    actor.primaryCanonicalRole === "ds_admin" || actor.primaryCanonicalRole === "super_admin";
+
+  if (!hasTravelerAccess(actor) && !search.traveler && !isAdminSafetyActor) {
+    return (
+      <SltPrepShell
+        actor={actor}
+        mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
+          source: routeSource ?? undefined,
+          travelerId: search.traveler,
+        })}
+        hideTopHeader
+        showMobileQuickItemHelpers={false}
+        showDebugTools={false}
+      >
+        <SltPrepSubnav
+          items={getSltTripPrepSubnavItems({
+            source: routeSource ?? undefined,
+            travelerId: search.traveler,
+          })}
+        />
+        <RestrictedState
+          title="SLT Prep is only visible to eligible travelers."
+          message="Use the traveler-matched member profile or the staff review surface instead of this direct prep route."
+          nextHref="/app"
+          nextLabel="Open student home"
+        />
+      </SltPrepShell>
+    );
+  }
+
   if (!workspace.canReadWorkspace || !workspace.traveler) {
     return (
-      <AppShell
+      <SltPrepShell
         actor={actor}
         mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
           source: routeSource ?? undefined,
@@ -60,7 +92,7 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
           })}
           nextLabel={workspace.nextStep.label}
         />
-      </AppShell>
+      </SltPrepShell>
     );
   }
 
@@ -78,7 +110,7 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
   );
 
   return (
-    <AppShell
+    <SltPrepShell
       actor={actor}
       mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
         source: routeSource ?? undefined,
@@ -117,10 +149,10 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
             className={[
               "rounded-[1.2rem] border px-4 py-3 text-sm font-medium",
               workspace.readiness.tone === "red"
-                ? "border-rose-200 bg-rose-50 text-rose-700"
+                ? "border-blue-200 bg-blue-50 text-blue-700"
                 : workspace.readiness.tone === "yellow"
-                  ? "border-amber-200 bg-amber-50 text-amber-700"
-                  : "border-emerald-200 bg-emerald-50 text-emerald-700",
+                  ? "border-blue-200 bg-blue-50 text-blue-700"
+                  : "border-blue-200 bg-blue-50 text-blue-700",
             ].join(" ")}
           >
             {workspace.readiness.tone === "red"
@@ -145,7 +177,7 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
                 </p>
               </div>
             </div>
-            <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
+            <div className="mt-3 h-3 overflow-hidden rounded-full bg-[#f8fbff]">
               <div
                 className="h-full rounded-full bg-[#111827]"
                 style={{ width: `${readinessPercent}%` }}
@@ -177,16 +209,16 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
                     source: "overview",
                     travelerId: search.traveler,
                   })}
-                  className="flex items-start gap-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50"
+                  className="flex items-start gap-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 transition hover:bg-[#dbeafe]"
                 >
                   <span
                     className={[
                       "mt-1 h-2.5 w-2.5 rounded-full",
                       alert.tone === "red"
-                        ? "bg-rose-500"
+                        ? "bg-blue-500"
                         : alert.tone === "yellow"
-                          ? "bg-amber-400"
-                          : "bg-sky-500",
+                          ? "bg-blue-400"
+                          : "bg-blue-500",
                     ].join(" ")}
                   />
                   <div className="min-w-0 flex-1">
@@ -206,7 +238,7 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
                   key={card.href}
                   href={card.href}
                   className={[
-                    "block rounded-[1.2rem] border bg-white p-4 transition hover:bg-slate-50",
+                    "block rounded-[1.2rem] border bg-white p-4 transition hover:bg-[#dbeafe]",
                     card.borderClassName,
                   ].join(" ")}
                 >
@@ -241,6 +273,6 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
           </section>
         </div>
       </section>
-    </AppShell>
+    </SltPrepShell>
   );
 }

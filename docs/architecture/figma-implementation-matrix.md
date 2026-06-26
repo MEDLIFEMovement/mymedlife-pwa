@@ -89,6 +89,68 @@ Do not declare parity from spacing and color alone. A screen is only "mapped"
 when its routes, visible states, and clickthrough destinations are accounted
 for.
 
+## 0. Role-Based Login Workspace
+
+Reference mockup:
+
+- `Role-Based App Shells + Workspace Login`
+
+Primary role:
+
+- authenticated user choosing a workspace entry point
+
+### Route map
+
+- `/login`
+
+### First-viewport contract
+
+- workspace-oriented sign-in copy
+- six workspace entry cards
+- seeded account sign-in panel
+- access-boundary explanation
+- selected-workspace state
+
+### Required clickthroughs
+
+- General Member -> `/login?redirectTo=/app`
+- Student Leader -> `/login?redirectTo=/leader`
+- Sales Coach / Sales Staff -> `/login?redirectTo=/staff`
+- Staff -> `/login?redirectTo=/staff`
+- Data Solutions / Admin -> `/login?redirectTo=/admin`
+- Super Admin -> `/login?redirectTo=/admin`
+
+### Required states
+
+- default sign-in
+- selected workspace card
+- signed-in session summary
+- disabled / review-mode session
+- nested redirect preserved
+- unsafe redirect rejected
+
+### Data domains
+
+- workspace cards
+- seeded review accounts
+- auth session state
+- redirect target
+- access boundaries
+
+### Component families
+
+- intro hero
+- workspace card grid
+- seeded account form
+- session summary panel
+- boundary summary panel
+
+### Boundaries
+
+- the clicked workspace is only an entry point
+- post-auth routing must still be role-driven
+- nested owned destinations like `/app/slt-prep` should stay available when selected through the redirect target
+
 ## Cross-Surface Build Rules
 
 ### Role ownership
@@ -235,9 +297,15 @@ Primary role:
 
 ### Current parity note
 
+- the member campaign route now restores the `What Good Looks Like` checklist
+  plus the featured `Intro GBM` event summary from the Make clickthrough,
+  instead of flattening the screen to KPIs, role groups, and buttons alone
 - the member action-detail route now keeps `Action Detail` as the route label
   while the assignment title owns the main hero hierarchy, matching the Make
   clickthrough more closely than the earlier title-first local pass
+- the local member action-detail panel now exposes that route label as a real
+  secondary heading signal, so the screen reads closer to the Make hierarchy
+  and gives the route label better accessibility than plain body text
 
 ### Boundaries
 
@@ -620,6 +688,7 @@ Primary roles:
 - `/admin/workflows`
 - `/admin/workflows?section=lanes|onboarding|writes`
 - `/admin/workflows?section=...&focus=...`
+- `/admin/staff-dry-run`
 - `/admin/sop-library`
 
 ### Build contract
@@ -628,6 +697,9 @@ Primary roles:
 - `/admin` now acts as the overview lane for the backend route family, so
   reviewers can move into the broader review and tooling lanes without the
   admin surface reading like a disconnected stack of pages
+- `/admin/master-data` should keep a direct handoff to `/admin/sop-builder`
+  visible so the master-data inventory remains obviously connected to the
+  workflow builder instead of reading as a dead-end catalog
 - new backend lanes should extend the admin story, not replace it
 - committee registry state should stay route-owned on `/admin/committees`
 - keep inspector/configuration routes read-only or mock-safe until explicit

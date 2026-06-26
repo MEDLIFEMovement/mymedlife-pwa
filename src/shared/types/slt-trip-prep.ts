@@ -1,4 +1,4 @@
-export type TripPrepAlertTone = "red" | "yellow" | "green";
+export type TripPrepAlertTone = "red" | "yellow" | "blue";
 
 export type TripPrepChecklistStatus =
   | "complete"

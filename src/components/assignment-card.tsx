@@ -25,7 +25,7 @@ export function AssignmentCard({
             <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
               {assignment.lane} lane
             </span>
-            <span className="rounded-full border border-[#f7d05e]/30 bg-[#fff8df] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#a16207]">
+            <span className="rounded-full border border-[#2563eb]/30 bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
               {assignment.points} points
             </span>
           </div>
@@ -52,7 +52,7 @@ export function AssignmentCard({
 
       <Link
         href={actionHref ?? buildMemberActionRouteHref(assignment.id, { source })}
-        className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+        className="mt-4 inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
       >
         Open action
       </Link>

@@ -42,7 +42,7 @@ describe("slt prep staff page", () => {
     const { default: SltPrepStaffPage } = await import("@/app/slt-prep/staff/page");
     const html = renderToStaticMarkup(await SltPrepStaffPage({}));
 
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html).toContain(">Open student home<");
   });
 
@@ -85,7 +85,7 @@ describe("slt prep staff page", () => {
     expect(html).toContain("Missing Forms");
     expect(html).toContain("Unpaid Balance");
     expect(html).toContain("High Risk");
-    expect(html).toContain("Filter travelers");
+    expect(html).toContain("Status filters");
     expect(html).toContain("Traveler portfolio");
     expect(html).toContain("Bulk actions");
     expect(html).toContain("Payment follow-up");

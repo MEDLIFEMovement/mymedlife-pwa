@@ -9,6 +9,14 @@ describe("chapter engagement campaign", () => {
 
     expect(plan.canReadPlan).toBe(true);
     expect(plan.title).toBe("Leader Chapter Engagement campaign plan");
+    expect(plan.workflowSource).toBe("template_version");
+    expect(plan.workflowName).toContain("Management");
+    expect(plan.workflowVersionLabel).toBe("v0 reviewed");
+    expect(plan.importStatus).toBe("draft_reviewed");
+    expect(plan.summary).toContain("Current phase objective:");
+    expect(plan.currentPhaseLabel.length).toBeGreaterThan(0);
+    expect(plan.currentPhaseObjective.length).toBeGreaterThan(20);
+    expect(plan.currentPhaseExitSignal.length).toBeGreaterThan(20);
     expect(plan.route).toBe("/campaigns/chapter-engagement");
     expect(plan.browserWritesExpected).toBe(0);
     expect(plan.externalWritesExpected).toBe(0);
@@ -78,7 +86,9 @@ describe("chapter engagement campaign", () => {
 
     expect(getChapterEngagementCampaignPlan(member).canReadPlan).toBe(false);
     expect(getChapterEngagementCampaignPlan(member).phases).toEqual([]);
+    expect(getChapterEngagementCampaignPlan(member).workflowSource).toBe("hidden");
     expect(getChapterEngagementCampaignPlan(dsAdmin).canReadPlan).toBe(false);
     expect(getChapterEngagementCampaignPlan(dsAdmin).phases).toEqual([]);
+    expect(getChapterEngagementCampaignPlan(dsAdmin).workflowSource).toBe("hidden");
   });
 });

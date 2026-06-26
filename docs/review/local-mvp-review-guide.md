@@ -186,7 +186,9 @@ The local MVP review is healthy when:
   `0` secrets
 - `/admin/master-data` shows the same fake users, named roles, chapter scope,
   campaign templates, blocked admin writes, `0` mutation controls, and `0`
-  external sends in a focused review route
+  external sends in a focused review route. It also gives reviewers a direct
+  handoff into the SOP builder lane so the inventory and workflow tooling stay
+  visibly connected.
 - `/admin` production operations runbook shows incident triage, auth/access,
   database/RLS, write rollback, proof moderation, integration/outbox recovery,
   mobile PWA, and pilot support playbooks with `launch no`, `0 writes`, `0

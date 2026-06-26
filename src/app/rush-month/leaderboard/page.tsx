@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { MemberRecognitionPanel } from "@/components/member-recognition-panel";
 import { MemberPointsRecognitionPanel } from "@/components/member-points-recognition-panel";
@@ -39,7 +39,7 @@ export default async function RushMonthLeaderboardPage({
     getActorSurfaceFamily(actor) === "member" && workspace.canReadLeaderboard;
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
       hideTopHeader={isMemberLeaderboard}
       showMobileQuickItemHelpers={!isMemberLeaderboard}
@@ -47,12 +47,12 @@ export default async function RushMonthLeaderboardPage({
     >
       {!workspace.canReadLeaderboard ? (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               {workspace.eyebrow}
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{workspace.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">{workspace.title}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               {workspace.summary}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -79,12 +79,12 @@ export default async function RushMonthLeaderboardPage({
         </>
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               {workspace.eyebrow}
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{workspace.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">{workspace.title}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               {workspace.summary}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -110,7 +110,7 @@ export default async function RushMonthLeaderboardPage({
                 </div>
                 <Link
                   href={workspace.nextStep.href}
-                  className="inline-flex rounded-full bg-[#86efac] px-4 py-2 text-sm font-semibold text-[#14532d]"
+                  className="inline-flex rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
                 >
                   {workspace.nextStep.ctaLabel}
                 </Link>
@@ -126,7 +126,7 @@ export default async function RushMonthLeaderboardPage({
               {workspace.safetyNotes.map((note) => (
                 <p
                   key={note}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600"
+                  className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 text-sm leading-6 text-slate-600"
                 >
                   {note}
                 </p>
@@ -139,7 +139,7 @@ export default async function RushMonthLeaderboardPage({
           </section>
         </>
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 

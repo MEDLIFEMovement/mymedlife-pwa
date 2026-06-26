@@ -23,6 +23,30 @@ describe("admin workflows workspace", () => {
       "membership_approved",
     );
     expect(workspace.writeOperations[0]?.key).toBe("action_started");
+    expect(workspace.lanes.find((lane) => lane.key === "sop_builder")?.route).toBe(
+      "/admin/sop-library",
+    );
+    expect(workspace.lanes.find((lane) => lane.key === "sop_builder")?.pills).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("campaign definitions"),
+        expect.stringContaining("structured drafts"),
+        expect.stringContaining("review warnings"),
+        "source of truth: SOP library + builder",
+      ]),
+    );
+    expect(
+      workspace.lanes.find((lane) => lane.key === "sop_builder")?.currentPosture,
+    ).toContain("The live app already carries this lane");
+    expect(workspace.nextStep.href).toBe("/admin/sop-builder/rush-month?tab=steps");
+    expect(workspace.nextStep.label).toBe("Open SOP builder");
+    expect(workspace.rolloutInventory.workflows.find((workflow) => workflow.slug === "planning-goal-setting"))
+      .toMatchObject({
+        importReadiness: "needs_permissions_resolution",
+      });
+    expect(workspace.rolloutInventory.workflows.find((workflow) => workflow.slug === "start-a-chapter"))
+      .toMatchObject({
+        importReadiness: "needs_source_clarification",
+      });
   });
 
   it("keeps section and focus state route-owned for the workflow registry", () => {

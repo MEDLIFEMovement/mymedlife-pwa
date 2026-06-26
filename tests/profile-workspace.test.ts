@@ -63,7 +63,7 @@ describe("profile workspace", () => {
     expect(workspace.title).toBe("Coach profile and portfolio scope");
     expect(workspace.profileLabel).toBe("Coach");
     expect(workspace.identityRows.find((row) => row.label === "Surface")?.value).toBe(
-      "Coach view",
+      "Staff view",
     );
     expect(
       workspace.scopeRows.find((row) => row.label === "Coach portfolio")?.value,

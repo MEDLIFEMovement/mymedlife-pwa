@@ -5,6 +5,11 @@ import {
   proofLibraryItems,
 } from "@/data/mock-campaigns";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getPreferredCampaignVersion,
+  getSopTemplateBySlug,
+} from "@/services/sop-template-registry";
+import { getSopWorkflowRuntime } from "@/services/sop-workflow-runtime";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type {
   ActionCommittee,
@@ -27,16 +32,17 @@ const leaderVisibleStarterShellSlugs = new Set([
 ]);
 
 export function getCampaignShells(): CampaignShell[] {
-  return campaignShells;
+  return campaignShells.map(toWorkflowAwareCampaignShell);
 }
 
 export function getCampaignShellBySlug(slug: string): CampaignShell | undefined {
-  return campaignShells.find((campaign) => campaign.slug === slug);
+  const campaign = campaignShells.find((item) => item.slug === slug);
+  return campaign ? toWorkflowAwareCampaignShell(campaign) : undefined;
 }
 
 export function getVisibleCampaignShellsForActor(
   actor: LocalActorContext,
-  shells: CampaignShell[] = campaignShells,
+  shells: CampaignShell[] = getCampaignShells(),
 ): CampaignShell[] {
   switch (getActorSurfaceFamily(actor)) {
     case "ds_admin":
@@ -156,7 +162,7 @@ export function getProofLibraryItemsForActor(
 }
 
 export function getCampaignReadinessSummary(
-  shells: CampaignShell[] = campaignShells,
+  shells: CampaignShell[] = getCampaignShells(),
   eventPlans: ChapterEventPlan[] = chapterEventPlans,
   proofItems: ProofLibraryItem[] = proofLibraryItems,
 ): CampaignReadinessSummary {
@@ -171,6 +177,38 @@ export function getCampaignReadinessSummary(
     disabledIntegrationEvents: eventPlans.filter(
       (eventPlan) => eventPlan.lumaStatus === "future_sync_disabled",
     ).length,
+  };
+}
+
+function toWorkflowAwareCampaignShell(campaign: CampaignShell): CampaignShell {
+  const runtime = getSopWorkflowRuntime(campaign.slug);
+
+  if (!runtime?.currentPhase) {
+    return {
+      ...campaign,
+      workflowSnapshot: null,
+    };
+  }
+
+  const template =
+    runtime.sourceKind === "template_version"
+      ? getSopTemplateBySlug(campaign.slug)
+      : null;
+  const preferredVersion = template ? getPreferredCampaignVersion(template) : null;
+
+  return {
+    ...campaign,
+    workflowSnapshot: {
+      sourceKind: runtime.sourceKind,
+      versionLabel: runtime.sourceVersionLabel,
+      workflowName:
+        preferredVersion?.workflowName ?? runtime.operatingRhythm ?? campaign.name,
+      currentPhaseLabel: runtime.currentPhase.label,
+      currentPhaseObjective: runtime.currentPhase.objective,
+      currentPhaseExitSignal:
+        runtime.currentPhase.exitCriteria[0] ??
+        "Current phase exit criteria stay visible in the workflow runtime.",
+    },
   };
 }
 

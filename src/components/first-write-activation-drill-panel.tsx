@@ -1,8 +1,8 @@
-import Link from "next/link";
 import type {
   FirstWriteActivationDrill,
   FirstWriteDrillStatus,
 } from "@/services/first-write-activation-drill";
+import { PanelButton, SurfacePanel, StatusPill } from "@/components/visual-primitives";
 
 type FirstWriteActivationDrillPanelProps = {
   drill: FirstWriteActivationDrill;
@@ -16,10 +16,13 @@ export function FirstWriteActivationDrillPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
+    <SurfacePanel
+      as="section"
+      className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5"
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
             First write drill
           </p>
           <h1 className="mt-2 text-3xl font-semibold text-white">{drill.title}</h1>
@@ -27,21 +30,24 @@ export function FirstWriteActivationDrillPanel({
             {drill.plainEnglishSummary}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <StatusPill status={drill.status} />
+            <StatusPill tone={drillStatusTone(drill.status)}>
+              {drill.status.replaceAll("_", " ")}
+            </StatusPill>
             {drill.candidateAssignment ? (
-              <Link
+              <PanelButton
                 href={drill.candidateAssignment.route}
-                className="rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+                className="bg-blue-300 text-[#08224c]"
               >
                 Open candidate action
-              </Link>
+              </PanelButton>
             ) : null}
-            <Link
+            <PanelButton
               href="/login"
-              className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
+              variant="secondary"
+              className="border-white/12 bg-[#bfdbfe]/40 text-white/78"
             >
               Open local sign-in
-            </Link>
+            </PanelButton>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
@@ -54,7 +60,7 @@ export function FirstWriteActivationDrillPanel({
       </div>
 
       {drill.candidateAssignment ? (
-        <article className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
+        <article className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/42">
             Candidate action
           </p>
@@ -71,7 +77,7 @@ export function FirstWriteActivationDrillPanel({
           </div>
         </article>
       ) : (
-        <article className="mt-5 rounded-3xl border border-amber-300/20 bg-amber-300/10 p-4">
+        <article className="mt-5 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
           <h2 className="text-xl font-semibold text-white">
             No candidate assignment found
           </h2>
@@ -81,10 +87,13 @@ export function FirstWriteActivationDrillPanel({
         </article>
       )}
 
-      <section className="mt-5 rounded-[2rem] border border-teal-300/20 bg-teal-300/10 p-4">
+      <SurfacePanel
+        as="section"
+        className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4"
+      >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em]  text-blue-100/80">
               Operator packet
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -94,13 +103,13 @@ export function FirstWriteActivationDrillPanel({
               {drill.verificationPacket.plainEnglishDecision}
             </p>
           </div>
-          <span className={verificationStatusClassName(drill.verificationPacket.status)}>
+          <StatusPill tone={verificationStatusTone(drill.verificationPacket.status)}>
             {drill.verificationPacket.status.replaceAll("_", " ")}
-          </span>
+          </StatusPill>
         </div>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.9fr]">
-          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+          <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
             <p className="text-sm font-semibold text-white">
               Required local env settings
             </p>
@@ -108,9 +117,9 @@ export function FirstWriteActivationDrillPanel({
               {drill.verificationPacket.envSettings.map((setting) => (
                 <div
                   key={setting.key}
-                  className="rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3"
+                  className="rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3"
                 >
-                  <p className="font-mono text-xs text-emerald-100/80">
+                  <p className="font-mono text-xs text-blue-100/80">
                     {setting.key}={setting.value}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-white/52">
@@ -121,20 +130,20 @@ export function FirstWriteActivationDrillPanel({
             </div>
           </article>
 
-          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+          <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
             <p className="text-sm font-semibold text-white">Fake member sign-in</p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3 font-mono text-xs text-emerald-100/80">
+            <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3 font-mono text-xs text-blue-100/80">
               {drill.verificationPacket.fakeMemberCredential.email}
             </p>
-            <p className="mt-2 rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3 font-mono text-xs text-emerald-100/80">
+            <p className="mt-2 rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3 font-mono text-xs text-blue-100/80">
               password={drill.verificationPacket.fakeMemberCredential.passwordLabel}
             </p>
-            <Link
+            <PanelButton
               href={drill.verificationPacket.fakeMemberCredential.route}
-              className="mt-3 inline-flex rounded-full bg-emerald-300 px-4 py-2 text-sm font-semibold text-[#06211d]"
+              className="mt-3 bg-blue-300 text-[#08224c]"
             >
               Open local sign-in
-            </Link>
+            </PanelButton>
             <p className="mt-3 text-xs leading-5 text-white/54">
               This fake credential is local seed data only. It is not a production
               account.
@@ -146,23 +155,24 @@ export function FirstWriteActivationDrillPanel({
           {drill.verificationPacket.operatorSequence.map((step, index) => (
             <article
               key={`${step.label}-${step.route}`}
-              className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+              className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/70">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em]  text-blue-100/70">
                     Packet step {index + 1}
                   </p>
                   <h3 className="mt-2 text-lg font-semibold text-white">
                     {step.label}
                   </h3>
                 </div>
-                <Link
+                <PanelButton
                   href={step.route}
-                  className="rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+                  variant="secondary"
+                  className="border-white/12 bg-[#bfdbfe]/40 text-white/72"
                 >
                   Open {step.route}
-                </Link>
+                </PanelButton>
               </div>
               <p className="mt-3 text-sm leading-6 text-white/62">
                 {step.expectedProof}
@@ -171,7 +181,7 @@ export function FirstWriteActivationDrillPanel({
           ))}
         </div>
 
-        <article className="mt-4 rounded-3xl border border-orange-300/20 bg-orange-300/10 p-4">
+        <article className="mt-4 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
           <p className="text-sm font-semibold text-white">Stop conditions</p>
           <ul className="mt-3 grid gap-2">
             {drill.verificationPacket.safetyStops.map((stop) => (
@@ -181,19 +191,19 @@ export function FirstWriteActivationDrillPanel({
             ))}
           </ul>
         </article>
-      </section>
+      </SurfacePanel>
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {drill.checks.map((check) => (
           <article
             key={check.key}
-            className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+            className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
           >
             <p
               className={
                 check.passed
-                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100"
-                  : "text-xs font-semibold uppercase tracking-[0.18em] text-amber-100"
+                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100"
+                  : "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100"
               }
             >
               {check.passed ? "Ready" : "Blocked"}
@@ -204,7 +214,10 @@ export function FirstWriteActivationDrillPanel({
         ))}
       </div>
 
-      <section className="mt-5 rounded-[2rem] border border-lime-300/20 bg-lime-300/10 p-4">
+      <SurfacePanel
+        as="section"
+        className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4"
+      >
         <h2 className="text-2xl font-semibold text-white">
           Post-drill readback evidence
         </h2>
@@ -217,11 +230,11 @@ export function FirstWriteActivationDrillPanel({
           {drill.readbackEvidence.map((item) => (
             <article
               key={item.key}
-              className="rounded-3xl border border-white/10 bg-[#071d1a]/80 p-4"
+              className="rounded-3xl border border-white/10 bg-[#0b66cc]/80 p-4"
             >
-              <p className={readbackStatusClassName(item.status)}>
+              <StatusPill tone={readbackStatusTone(item.status)}>
                 {item.status.replaceAll("_", " ")}
-              </p>
+              </StatusPill>
               <h3 className="mt-2 text-lg font-semibold text-white">
                 {item.label}
               </h3>
@@ -231,9 +244,12 @@ export function FirstWriteActivationDrillPanel({
             </article>
           ))}
         </div>
-      </section>
+      </SurfacePanel>
 
-      <section className="mt-5 rounded-[2rem] border border-white/10 bg-black/20 p-4">
+      <SurfacePanel
+        as="section"
+        className="mt-5 rounded-[2rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+      >
         <h2 className="text-2xl font-semibold text-white">
           Staff drill sequence
         </h2>
@@ -245,28 +261,29 @@ export function FirstWriteActivationDrillPanel({
           {drill.steps.map((step, index) => (
             <article
               key={step.key}
-              className="rounded-3xl border border-white/10 bg-[#071d1a]/80 p-4"
+              className="rounded-3xl border border-white/10 bg-[#0b66cc]/80 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100/70">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
                     Step {index + 1}
                   </p>
                   <h3 className="mt-2 text-lg font-semibold text-white">
                     {step.label}
                   </h3>
                 </div>
-                <Link
+                <PanelButton
                   href={step.route}
-                  className="rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+                  variant="secondary"
+                  className="border-white/12 bg-[#bfdbfe]/40 text-white/72"
                 >
                   Open {step.route}
-                </Link>
+                </PanelButton>
               </div>
               <p className="mt-3 text-sm leading-6 text-white/64">
                 {step.plainEnglish}
               </p>
-              <p className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 font-mono text-xs text-emerald-100/76">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3 font-mono text-xs text-blue-100/76">
                 MYMEDLIFE_LOCAL_ACTOR_EMAIL={step.localActorEmail}
               </p>
               <p className="mt-3 text-xs leading-5 text-white/56">
@@ -277,22 +294,25 @@ export function FirstWriteActivationDrillPanel({
                   {step.structuredEvents.map((eventName) => (
                     <span
                       key={`${step.key}-${eventName}`}
-                      className="rounded-full border border-emerald-200/15 bg-emerald-200/10 px-3 py-1 font-mono text-[0.68rem] text-emerald-100/80"
+                      className="rounded-full border border-blue-200/15 bg-blue-200/10 px-3 py-1 font-mono text-[0.68rem] text-blue-100/80"
                     >
                       {eventName}
                     </span>
                   ))}
                 </div>
               ) : null}
-              <p className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/52">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3 text-xs leading-5 text-white/52">
                 Safety: {step.safetyBoundary}
               </p>
             </article>
           ))}
         </div>
-      </section>
+      </SurfacePanel>
 
-      <section className="mt-5 rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-4">
+      <SurfacePanel
+        as="section"
+        className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4"
+      >
         <h2 className="text-2xl font-semibold text-white">Proof to collect</h2>
         <ul className="mt-4 grid gap-2">
           {drill.proofToCollect.map((proof) => (
@@ -301,12 +321,15 @@ export function FirstWriteActivationDrillPanel({
             </li>
           ))}
         </ul>
-      </section>
+      </SurfacePanel>
 
-      <section className="mt-5 rounded-[2rem] border border-violet-300/20 bg-violet-300/10 p-4">
+      <SurfacePanel
+        as="section"
+        className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4"
+      >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
               Phase 2 closeout
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -323,7 +346,7 @@ export function FirstWriteActivationDrillPanel({
         </div>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
-          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+          <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
             <p className="text-sm font-semibold text-white">Required hosted readback</p>
             <ul className="mt-3 grid gap-2">
               {drill.hostedCloseout.requiredReadback.map((item) => (
@@ -334,13 +357,13 @@ export function FirstWriteActivationDrillPanel({
             </ul>
           </article>
 
-          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+          <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
             <p className="text-sm font-semibold text-white">Review surfaces</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {drill.hostedCloseout.reviewSurfaces.map((route) => (
                 <span
                   key={route}
-                  className="rounded-full border border-violet-200/15 bg-violet-200/10 px-3 py-1 font-mono text-[0.68rem] text-violet-100/80"
+                  className="rounded-full border border-blue-200/15 bg-blue-200/10 px-3 py-1 font-mono text-[0.68rem] text-blue-100/80"
                 >
                   {route}
                 </span>
@@ -356,9 +379,9 @@ export function FirstWriteActivationDrillPanel({
           {drill.hostedCloseout.namedOwnersStillNeeded.map((item) => (
             <article
               key={item.key}
-              className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+              className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-100/72">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/72">
                 {item.label}
               </p>
               <p className="mt-2 text-sm font-semibold text-white">
@@ -369,15 +392,15 @@ export function FirstWriteActivationDrillPanel({
         </div>
 
         {drill.hostedCloseout.recordedOwnerAnswers.length > 0 ? (
-          <article className="mt-4 rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-4">
+          <article className="mt-4 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
             <p className="text-sm font-semibold text-white">Recorded approval answers</p>
             <div className="mt-3 grid gap-3 lg:grid-cols-2">
               {drill.hostedCloseout.recordedOwnerAnswers.map((item) => (
                 <div
                   key={item.key}
-                  className="rounded-2xl border border-white/10 bg-black/20 p-3"
+                  className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-100/72">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-100/72">
                     {item.label}
                   </p>
                   <p className="mt-2 text-sm font-semibold text-white">{item.value}</p>
@@ -387,34 +410,34 @@ export function FirstWriteActivationDrillPanel({
           </article>
         ) : null}
 
-        <article className="mt-4 rounded-3xl border border-white/10 bg-black/20 p-4">
+        <article className="mt-4 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
           <p className="text-sm font-semibold text-white">Copy-paste approval reply</p>
-          <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-violet-100/82">
+          <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-blue-100/82">
             {drill.hostedCloseout.approvalReplyBlock.join("\n")}
           </pre>
         </article>
 
-        <article className="mt-4 rounded-3xl border border-orange-300/20 bg-orange-300/10 p-4">
+        <article className="mt-4 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
           <p className="text-sm font-semibold text-white">Still blocked in this step</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {drill.hostedCloseout.blockedScope.map((item) => (
               <span
                 key={item}
-                className="rounded-full border border-orange-200/15 bg-orange-200/10 px-3 py-1 text-xs font-semibold text-orange-100/80"
+                className="rounded-full border border-blue-200/15 bg-blue-200/10 px-3 py-1 text-xs font-semibold text-blue-100/80"
               >
                 {item}
               </span>
             ))}
           </div>
         </article>
-      </section>
-    </section>
+      </SurfacePanel>
+    </SurfacePanel>
   );
 }
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -423,54 +446,48 @@ function MiniStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StatusPill({ status }: { status: FirstWriteDrillStatus }) {
-  const className =
-    status === "ready_for_local_action_start"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
-      : status === "blocked_until_local_supabase"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-        : status === "blocked_until_flags"
-          ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
-          : status === "blocked_until_auth"
-            ? "border-orange-300/30 bg-orange-300/15 text-orange-100"
-            : "border-white/10 bg-white/10 text-white/70";
-
-  return (
-    <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
-      {status.replaceAll("_", " ")}
-    </span>
-  );
-}
-
-function readbackStatusClassName(status: string): string {
-  const base = "text-xs font-semibold uppercase tracking-[0.18em]";
-
+function readbackStatusTone(status: string): "blue" | "amber" | "white" | "yellow" {
   switch (status) {
     case "observed":
     case "safe_zero":
-      return `${base} text-emerald-100`;
+      return "blue";
     case "manual_check_needed":
-      return `${base} text-sky-100`;
+      return "blue";
     case "missing":
-      return `${base} text-amber-100`;
+      return "amber";
     case "blocked":
     default:
-      return `${base} text-orange-100`;
+      return "white";
   }
 }
 
-function verificationStatusClassName(status: string): string {
-  const base = "rounded-full border px-3 py-1 text-xs font-semibold";
-
+function verificationStatusTone(
+  status: string,
+): "blue" | "yellow" | "white" | "amber" {
   switch (status) {
     case "evidence_observed":
-      return `${base} border-emerald-300/30 bg-emerald-300/15 text-emerald-100`;
+      return "blue";
     case "ready_to_run_locally":
-      return `${base} border-sky-300/30 bg-sky-300/15 text-sky-100`;
+      return "blue";
     case "needs_manual_audit_check":
-      return `${base} border-amber-300/30 bg-amber-300/15 text-amber-100`;
+      return "yellow";
     case "blocked":
     default:
-      return `${base} border-orange-300/30 bg-orange-300/15 text-orange-100`;
+      return "white";
+  }
+}
+
+function drillStatusTone(status: FirstWriteDrillStatus): "amber" | "blue" | "white" | "yellow" {
+  switch (status) {
+    case "ready_for_local_action_start":
+      return "blue";
+    case "blocked_until_local_supabase":
+      return "amber";
+    case "blocked_until_flags":
+      return "blue";
+    case "blocked_until_auth":
+      return "yellow";
+    default:
+      return "white";
   }
 }

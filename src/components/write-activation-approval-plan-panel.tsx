@@ -12,8 +12,8 @@ export function WriteActivationApprovalPlanPanel({
   });
 
   return (
-    <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
+    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
         Activation approval plan
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -25,7 +25,7 @@ export function WriteActivationApprovalPlanPanel({
       </p>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-2xl bg-black/20 p-3">
+        <div className="rounded-2xl bg-[#bfdbfe]/40 p-3">
           <p className="text-sm font-semibold text-white">Recommended order</p>
           <div className="mt-3 grid gap-2">
             {plan.candidates.map((candidate) => (
@@ -33,7 +33,7 @@ export function WriteActivationApprovalPlanPanel({
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
                   {candidate.recommendedOrder}. {candidate.riskLevel} risk
                 </p>
-                <p className="mt-1 font-mono text-xs text-emerald-100/80">
+                <p className="mt-1 font-mono text-xs text-blue-100/80">
                   {candidate.operation}
                 </p>
                 <p className="mt-1 text-xs leading-5 text-white/58">
@@ -47,14 +47,14 @@ export function WriteActivationApprovalPlanPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl bg-black/20 p-3">
+        <div className="rounded-2xl bg-[#bfdbfe]/40 p-3">
           <p className="text-sm font-semibold text-white">Required before activation</p>
           <div className="mt-3 grid gap-2">
             {plan.requirements.map((requirement) => (
               <article key={requirement.key} className="rounded-xl bg-white/[0.05] p-3">
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-semibold text-white">{requirement.label}</p>
-                  <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2 py-1 text-xs text-amber-100">
+                  <span className="rounded-full border border-blue-300/20 bg-blue-300/10 px-2 py-1 text-xs text-blue-100">
                     not approved
                   </span>
                 </div>

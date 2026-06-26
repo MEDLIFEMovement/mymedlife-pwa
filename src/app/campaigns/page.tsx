@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { CampaignCard } from "@/components/campaign-card";
 import { CampaignStarterShellReadinessPanel } from "@/components/campaign-starter-shell-readiness-panel";
 import { MemberRushMonthCampaignPanel } from "@/components/member-rush-month-campaign-panel";
@@ -51,7 +51,7 @@ export default async function CampaignsPage({
   const memberCampaignSource = parseMemberCampaignSource(resolvedSearchParams?.source);
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
       hideTopHeader={isMemberCampaignSurface}
       showMobileQuickItemHelpers={!isMemberCampaignSurface}
@@ -67,14 +67,14 @@ export default async function CampaignsPage({
         </>
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               Campaign library
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">
               Campaigns turn chapter goals into student action.
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               This library holds the chapter playbooks behind Rush Month and the
               next campaign lanes. Each campaign should clarify what students do,
               what action committees organize, what proof matters, which KPIs move,
@@ -138,7 +138,7 @@ export default async function CampaignsPage({
           </div>
         </>
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 

@@ -60,7 +60,7 @@ describe("chapter page", () => {
 
     const { default: ChapterPage } = await import("@/app/chapter/page");
 
-    await expect(ChapterPage({})).rejects.toThrow("NEXT_REDIRECT:/coach?view=chapters");
+    await expect(ChapterPage({})).rejects.toThrow("NEXT_REDIRECT:/staff?view=chapters");
   });
 
   it("opens the default chapter route with the leader home surface", async () => {
@@ -76,8 +76,9 @@ describe("chapter page", () => {
 
     const { default: ChapterPage } = await import("@/app/chapter/page");
     const html = renderToStaticMarkup(await ChapterPage({}));
-    expect(html).toContain("Chapter Leadership Home");
+    expect(html).toContain("Leader Overview");
     expect(html).toContain("Boston College MEDLIFE");
+    expect(html).toContain("Leadership Dashboard · Jun 2025");
     expect(html).toContain(
       "Activate Member Engagement committee, collect bridge videos from all chairs, and push the SLT sign-up campaign.",
     );
@@ -90,48 +91,48 @@ describe("chapter page", () => {
     expect(html).toContain("This Week&#x27;s Priority");
     expect(html).toContain("Quick Actions");
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=leaderboard"[^>]*>Leaderboard<\/a>/,
+      /<a[^>]*href="\/leader\?view=leaderboard"[^>]*>Leaderboard<\/a>/,
     );
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=members"[^>]*>Member Pipeline<\/a>/,
+      /<a[^>]*href="\/leader\?view=members"[^>]*>Member Pipeline<\/a>/,
     );
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=member_profile"[^>]*>Member Profile<\/a>/,
+      /<a[^>]*href="\/leader\?view=member_profile"[^>]*>Member Profile<\/a>/,
     );
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=committees"[^>]*>Committees<\/a>/,
+      /<a[^>]*href="\/leader\?view=committees"[^>]*>Committees<\/a>/,
     );
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=events&amp;quickAction=create_event"[^>]*>Create Event<\/a>/,
+      /<a[^>]*href="\/leader\?view=events&amp;quickAction=create_event"[^>]*>Create Event<\/a>/,
     );
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=members&amp;pipeline=follow_up&amp;quickAction=assign_action"[^>]*>Assign Action<\/a>/,
+      /<a[^>]*href="\/leader\?view=members&amp;pipeline=follow_up&amp;quickAction=assign_action"[^>]*>Assign Action<\/a>/,
     );
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=members&amp;quickAction=review_members"[^>]*>Review Members<\/a>/,
+      /<a[^>]*href="\/leader\?view=members&amp;quickAction=review_members"[^>]*>Review Members<\/a>/,
     );
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=succession&amp;quickAction=promote_emerging_leader"[^>]*>Promote Emerging Leader<\/a>/,
+      /<a[^>]*href="\/leader\?view=succession&amp;quickAction=promote_emerging_leader"[^>]*>Promote Emerging Leader<\/a>/,
     );
     expect(html).toMatch(
-      /<a[^>]*href="\/chapter\?view=bridge_videos&amp;quickAction=share_bridge_video"[^>]*>Share Bridge Video<\/a>/,
+      /<a[^>]*href="\/leader\?view=bridge_videos&amp;quickAction=share_bridge_video"[^>]*>Share Bridge Video<\/a>/,
     );
     expect(html.match(/>Create Event</g)?.length).toBe(2);
     expect(html.match(/>Assign Action</g)?.length).toBe(2);
     expect(html).not.toMatch(
-      /<a[^>]*href="\/chapter\?view=leaderboard&amp;member=member-zara"[^>]*>Leaderboard<\/a>/,
+      /<a[^>]*href="\/leader\?view=leaderboard&amp;member=member-zara"[^>]*>Leaderboard<\/a>/,
     );
     expect(html).not.toMatch(
-      /<a[^>]*href="\/chapter\?view=members&amp;member=member-zara"[^>]*>Member Pipeline<\/a>/,
+      /<a[^>]*href="\/leader\?view=members&amp;member=member-zara"[^>]*>Member Pipeline<\/a>/,
     );
     expect(html).not.toMatch(
-      /<a[^>]*href="\/chapter\?view=committees&amp;committee=committee-recruitment"[^>]*>Committees<\/a>/,
+      /<a[^>]*href="\/leader\?view=committees&amp;committee=committee-recruitment"[^>]*>Committees<\/a>/,
     );
     expect(html).not.toMatch(
-      /<a[^>]*href="\/chapter\?view=events&amp;member=member-zara&amp;quickAction=create_event"[^>]*>Create Event<\/a>/,
+      /<a[^>]*href="\/leader\?view=events&amp;member=member-zara&amp;quickAction=create_event"[^>]*>Create Event<\/a>/,
     );
     expect(html).not.toMatch(
-      /<a[^>]*href="\/chapter\?view=members&amp;member=member-zara&amp;pipeline=follow_up&amp;quickAction=assign_action"[^>]*>Assign Action<\/a>/,
+      /<a[^>]*href="\/leader\?view=members&amp;member=member-zara&amp;pipeline=follow_up&amp;quickAction=assign_action"[^>]*>Assign Action<\/a>/,
     );
   });
 
@@ -163,10 +164,10 @@ describe("chapter page", () => {
     expect(html).toContain("12 of 12 members");
     expect(html).toContain("Sofia Reyes");
     expect(html).toContain("Marcus Chen");
-    expect(html).toContain('href="/chapter?view=members&amp;quickAction=export_members"');
-    expect(html).toContain('href="/chapter?view=members&amp;quickAction=add_member"');
-    expect(html).toContain('href="/chapter?view=member_profile&amp;member=member-ivy"');
-    expect(html).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=export_members"');
+    expect(html).toContain('href="/leader?view=members&amp;quickAction=export_members"');
+    expect(html).toContain('href="/leader?view=members&amp;quickAction=add_member"');
+    expect(html).toContain('href="/leader?view=member_profile&amp;member=member-ivy"');
+    expect(html).not.toContain('href="/leader?view=members&amp;member=member-zara&amp;quickAction=export_members"');
     expect(html).not.toContain("Mock-seeded review data");
     expect(html).not.toContain("Ready Now");
     expect(html).not.toContain("Emerging Leaders");
@@ -201,7 +202,7 @@ describe("chapter page", () => {
     expect(html).toContain("Start from the member pipeline, then open the right member review.");
     expect(html).toContain("Open member review");
     expect(html).toContain(
-      'href="/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
+      'href="/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy"',
     );
   });
 
@@ -227,7 +228,7 @@ describe("chapter page", () => {
     );
     expect(html).toContain(">Bridge Video Hub</h1>");
     expect(html).toContain("Communications");
-    expect(html).toContain("/chapter?view=feed_analytics");
+    expect(html).toContain("/leader?view=feed_analytics");
     expect(html).not.toContain("Mock-seeded review data");
   });
 
@@ -370,10 +371,10 @@ describe("chapter page", () => {
     expect(html).toContain("SLT info meeting recap - 18 signed up!");
     expect(html).toContain("Content Engagement — Actions Driven");
     expect(html).toContain(
-      "/chapter?view=bridge_videos&amp;source=feed_analytics&amp;feedPost=feed-post-slt-recap&amp;quickAction=share_to_feed",
+      "/leader?view=bridge_videos&amp;source=feed_analytics&amp;feedPost=feed-post-slt-recap&amp;quickAction=share_to_feed",
     );
     expect(html).toContain(
-      "/chapter?view=members&amp;source=feed_analytics&amp;pipeline=follow_up&amp;feedPost=feed-post-slt-recap&amp;quickAction=ask_members_to_respond",
+      "/leader?view=members&amp;source=feed_analytics&amp;pipeline=follow_up&amp;feedPost=feed-post-slt-recap&amp;quickAction=ask_members_to_respond",
     );
     expect(html).toContain("Open member review");
     expect(html).not.toContain("Mock-seeded review data");
@@ -407,7 +408,7 @@ describe("chapter page", () => {
     expect(html).toContain("Impact Analysis");
     expect(html).toContain("Back to recent posts");
     expect(html).toContain(
-      "/chapter?view=feed_analytics&amp;source=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill",
+      "/leader?view=feed_analytics&amp;source=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill",
     );
   });
 
@@ -436,13 +437,13 @@ describe("chapter page", () => {
       }),
     );
     expect(html).toContain(
-      "/chapter?view=bridge_videos&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;feedPost=feed-post-info-night&amp;quickAction=share_to_feed",
+      "/leader?view=bridge_videos&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;feedPost=feed-post-info-night&amp;quickAction=share_to_feed",
     );
     expect(html).toContain(
-      "/chapter?view=members&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;feedPost=feed-post-info-night&amp;quickAction=ask_members_to_respond",
+      "/leader?view=members&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;feedPost=feed-post-info-night&amp;quickAction=ask_members_to_respond",
     );
     expect(html).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;q=Ivy&amp;feedPost=feed-post-info-night",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;q=Ivy&amp;feedPost=feed-post-info-night",
     );
   });
 
@@ -734,7 +735,7 @@ describe("chapter page", () => {
     expect(html).toContain(">Impact Dashboard</h1>");
     expect(html).toContain("Share Bridge Video");
     expect(html).not.toContain("Story in focus");
-    expect(html).toContain("/chapter?view=impact&amp;quickAction=share_impact_story");
+    expect(html).toContain("/leader?view=impact&amp;quickAction=share_impact_story");
     expect(html).toContain("Local Community Impact");
     expect(html).toContain("MEDLIFE Global Impact");
     expect(html).toContain("Moving Mountains");
@@ -768,7 +769,7 @@ describe("chapter page", () => {
     expect(
       html,
     ).toContain(
-      "/chapter?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains",
+      "/leader?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains",
     );
     expect(html).not.toContain("Mock-seeded review data");
   });
@@ -930,7 +931,7 @@ describe("chapter page", () => {
     expect(html).toContain("Leadership Gaps");
     expect(html).toContain("Candidate Pipeline");
     expect(html).toContain("Succession Timeline");
-    expect(html).toContain("href=\"/chapter?view=members\"");
+    expect(html).toContain("href=\"/leader?view=members\"");
   });
 
   it("opens the committees route with a selected committee inside the chapter surface", async () => {
@@ -955,7 +956,7 @@ describe("chapter page", () => {
     );
     expect(html).toContain("Action Committees");
     expect(html).toContain(
-      "/chapter?view=committees&amp;committee=committee-events",
+      "/leader?view=committees&amp;committee=committee-events",
     );
     expect(html).toContain("Committee in focus");
     expect(html).toContain("Events committee");
@@ -991,7 +992,7 @@ describe("chapter page", () => {
       }),
     );
     expect(html).toContain("Action Committees");
-    expect(html).toContain('href="/chapter?view=committees&amp;quickAction=add_committee"');
+    expect(html).toContain('href="/leader?view=committees&amp;quickAction=add_committee"');
     expect(html).not.toContain("Committee in focus");
     expect(html).not.toContain("Broader committee workspace");
     expect(html).not.toContain("Open committee workspace");
@@ -1027,8 +1028,8 @@ describe("chapter page", () => {
     expect(html).toContain("Reviewing Ivy Invite for succession");
     expect(html).toContain("Ivy Invite");
     expect(html).not.toContain("Jordan Kim");
-    expect(html).toContain("href=\"/chapter?view=members\"");
-    expect(html).toContain("href=\"/chapter?view=succession&amp;member=member-ivy\"");
+    expect(html).toContain("href=\"/leader?view=members\"");
+    expect(html).toContain("href=\"/leader?view=succession&amp;member=member-ivy\"");
   });
 
   it("lets add committee open as a committees-owned chapter state before the broader committee lane", async () => {
@@ -1137,7 +1138,7 @@ describe("chapter page", () => {
     expect(html).toContain("Submit Bridge Video");
     expect(html).toContain("Open proof lane");
     expect(html).toContain(
-      "/proof-library/upload?source=chapter_bridge_video&amp;returnTo=%2Fchapter%3Fview%3Dbridge_videos%26bridge%3Dcomms",
+      "/proof-library/upload?source=chapter_bridge_video&amp;returnTo=%2Fleader%3Fview%3Dbridge_videos%26bridge%3Dcomms",
     );
   });
 
@@ -1163,7 +1164,7 @@ describe("chapter page", () => {
       }),
     );
     expect(html).toContain(
-      "/chapter?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains&amp;quickAction=share_bridge_video",
+      "/leader?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains&amp;quickAction=share_bridge_video",
     );
     expect(html).toContain("Story in focus");
     expect(html.indexOf("Story in focus")).toBeLessThan(html.indexOf("1,840"));
@@ -1191,10 +1192,10 @@ describe("chapter page", () => {
       }),
     );
     expect(html).toMatch(
-      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos"[^>]*>Share Bridge Video<\/a>/,
+      /href="\/leader\?view=feed_analytics&amp;source=bridge_videos"[^>]*>Share Bridge Video<\/a>/,
     );
     expect(html).not.toMatch(
-      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=recruitment"[^>]*>Share Bridge Video<\/a>/,
+      /href="\/leader\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=recruitment"[^>]*>Share Bridge Video<\/a>/,
     );
   });
 
@@ -1220,7 +1221,7 @@ describe("chapter page", () => {
       }),
     );
     expect(html).toMatch(
-      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms"[^>]*>Share Bridge Video<\/a>/,
+      /href="\/leader\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms"[^>]*>Share Bridge Video<\/a>/,
     );
   });
 
@@ -1246,7 +1247,7 @@ describe("chapter page", () => {
     );
     expect(html).toContain("Member app handoff");
     expect(html).toContain("Opened from UCLA MEDLIFE into Leader Hub");
-    expect(html).toContain("Switch View buttons");
+    expect(html).toContain("member-home role handoff");
     expect(html).toContain("Review all 7");
     expect(html).toContain("Assign action");
     expect(html).toContain("Review evidence");
@@ -1256,17 +1257,17 @@ describe("chapter page", () => {
     expect(html).toContain("Risk Alerts");
     expect(html).toContain("Member Status");
     expect(html).toContain("Evidence Queue");
-    expect(html).toContain("/chapter?view=members&amp;source=member_home&amp;quickAction=review_members");
+    expect(html).toContain("/leader?view=members&amp;source=member_home&amp;quickAction=review_members");
     expect(html).toContain(
-      "/chapter?view=members&amp;source=member_home&amp;pipeline=follow_up&amp;quickAction=assign_action",
+      "/leader?view=members&amp;source=member_home&amp;pipeline=follow_up&amp;quickAction=assign_action",
     );
-    expect(html).toContain("/chapter?view=events&amp;source=member_home&amp;quickAction=create_event");
+    expect(html).toContain("/leader?view=events&amp;source=member_home&amp;quickAction=create_event");
     expect(html).toContain(
-      "/chapter?view=succession&amp;source=member_home&amp;quickAction=promote_emerging_leader",
+      "/leader?view=succession&amp;source=member_home&amp;quickAction=promote_emerging_leader",
     );
     expect(html).toContain("/rush-month/review");
     expect(html).toContain(
-      'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2F"',
+      'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2Fapp"',
     );
     expect(html.indexOf("Opened from UCLA MEDLIFE into Leader Hub")).toBeLessThan(
       html.indexOf("Leadership Center"),

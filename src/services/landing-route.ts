@@ -92,18 +92,19 @@ function getDefaultLandingRouteForRole(
   switch (role) {
     case "student_member":
     case "committee_member":
-      return "/";
+      return "/app";
     case "traveler":
-      return "/slt-prep";
+      return "/app/slt-prep";
     case "committee_chair":
     case "eboard_officer":
     case "vice_president":
     case "president":
-      return "/chapter?view=overview";
+      return "/leader?view=overview";
     case "coach":
     case "sales_coach":
-      return "/coach?view=chapters";
+      return "/staff?view=chapters";
     case "department_staff":
+      return "/staff?view=chapters";
     case "sales_admin":
       return "/staff?view=chapters";
     case "ds_admin":
@@ -113,18 +114,18 @@ function getDefaultLandingRouteForRole(
 
   switch (fallbackSurface) {
     case "student_home_mobile":
-      return "/";
+      return "/app";
     case "student_leadership_command_center":
-      return "/chapter?view=overview";
+      return "/leader?view=overview";
     case "coach_command_center":
-      return "/coach?view=chapters";
+      return "/staff?view=chapters";
     case "staff_hq_command_center":
       return "/staff?view=chapters";
     case "admin_backend":
       return "/admin";
     case "slt_prep":
-      return "/slt-prep";
+      return "/app/slt-prep";
     default:
-      return "/";
+      return "/app";
   }
 }

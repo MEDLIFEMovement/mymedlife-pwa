@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppNavigation } from "@/components/app-navigation";
 
 const navigationState = {
-  pathname: "/chapter",
+  pathname: "/leader",
   searchParams: new URLSearchParams(),
 };
 
@@ -15,26 +15,26 @@ vi.mock("next/navigation", () => ({
 
 describe("app navigation", () => {
   beforeEach(() => {
-    navigationState.pathname = "/chapter";
+    navigationState.pathname = "/leader";
     navigationState.searchParams = new URLSearchParams();
   });
 
-  it("treats the chapter overview as active when the route relies on the default view", () => {
+  it("treats the leader overview as active when the route relies on the default view", () => {
     const html = renderToStaticMarkup(
       <AppNavigation
         navItems={[
-          { href: "/chapter?view=overview", label: "Chapter Home" },
-          { href: "/chapter?view=members", label: "Member Pipeline" },
+          { href: "/leader?view=overview", label: "Overview" },
+          { href: "/leader?view=members", label: "Member Pipeline" },
         ]}
         quickItems={[]}
       />,
     );
 
     expect(html).toMatch(
-      /<a aria-current="page"[^>]*href="\/chapter\?view=overview"[^>]*>Chapter Home<\/a>/,
+      /<a aria-current="page"[^>]*href="\/leader\?view=overview"[^>]*>Overview<\/a>/,
     );
     expect(html).not.toMatch(
-      /<a aria-current="page"[^>]*href="\/chapter\?view=members"[^>]*>Member Pipeline<\/a>/,
+      /<a aria-current="page"[^>]*href="\/leader\?view=members"[^>]*>Member Pipeline<\/a>/,
     );
   });
 
@@ -44,18 +44,18 @@ describe("app navigation", () => {
     const html = renderToStaticMarkup(
       <AppNavigation
         navItems={[
-          { href: "/chapter?view=members", label: "Member Pipeline" },
-          { href: "/chapter?view=member_profile", label: "Member Profile" },
+          { href: "/leader?view=members", label: "Member Pipeline" },
+          { href: "/leader?view=member_profile", label: "Member Profile" },
         ]}
         quickItems={[]}
       />,
     );
 
     expect(html).toMatch(
-      /<a aria-current="page"[^>]*href="\/chapter\?view=member_profile"[^>]*>Member Profile<\/a>/,
+      /<a aria-current="page"[^>]*href="\/leader\?view=member_profile"[^>]*>Member Profile<\/a>/,
     );
     expect(html).not.toMatch(
-      /<a aria-current="page"[^>]*href="\/chapter\?view=members"[^>]*>Member Pipeline<\/a>/,
+      /<a aria-current="page"[^>]*href="\/leader\?view=members"[^>]*>Member Pipeline<\/a>/,
     );
   });
 
@@ -101,5 +101,23 @@ describe("app navigation", () => {
     expect(html).not.toContain(">Start<");
     expect(html).not.toContain(">Loop<");
     expect(html).not.toContain(">Me<");
+  });
+
+  it("renders a stacked sidebar rail for command-center layouts", () => {
+    const html = renderToStaticMarkup(
+      <AppNavigation
+        layout="sidebar"
+        navItems={[
+          { href: "/staff?view=chapters", label: "Chapters" },
+          { href: "/staff?view=campaigns", label: "Campaigns" },
+        ]}
+        quickItems={[]}
+      />,
+    );
+
+    expect(html).toContain("Navigation");
+    expect(html).toContain("Move through the surface that matches your role.");
+    expect(html).toContain("/staff?view=chapters");
+    expect(html).toContain("/staff?view=campaigns");
   });
 });

@@ -9,6 +9,14 @@ describe("leadership transition campaign", () => {
 
     expect(plan.canReadPlan).toBe(true);
     expect(plan.title).toBe("Leader Leadership Transition campaign plan");
+    expect(plan.workflowSource).toBe("template_version");
+    expect(plan.workflowName).toContain("Leadership Continuity");
+    expect(plan.workflowVersionLabel).toBe("v0 reviewed");
+    expect(plan.importStatus).toBe("draft_reviewed");
+    expect(plan.summary).toContain("Current phase objective:");
+    expect(plan.currentPhaseLabel.length).toBeGreaterThan(0);
+    expect(plan.currentPhaseObjective.length).toBeGreaterThan(20);
+    expect(plan.currentPhaseExitSignal.length).toBeGreaterThan(20);
     expect(plan.route).toBe("/campaigns/leadership-transition");
     expect(plan.browserWritesExpected).toBe(0);
     expect(plan.externalWritesExpected).toBe(0);
@@ -82,7 +90,9 @@ describe("leadership transition campaign", () => {
 
     expect(getLeadershipTransitionCampaignPlan(member).canReadPlan).toBe(false);
     expect(getLeadershipTransitionCampaignPlan(member).phases).toEqual([]);
+    expect(getLeadershipTransitionCampaignPlan(member).workflowSource).toBe("hidden");
     expect(getLeadershipTransitionCampaignPlan(dsAdmin).canReadPlan).toBe(false);
     expect(getLeadershipTransitionCampaignPlan(dsAdmin).phases).toEqual([]);
+    expect(getLeadershipTransitionCampaignPlan(dsAdmin).workflowSource).toBe("hidden");
   });
 });

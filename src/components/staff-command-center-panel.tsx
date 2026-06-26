@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { EventLoopStrip } from "@/components/event-loop-strip";
 import { StaffPortfolioToolbar } from "@/components/staff-portfolio-toolbar";
 import type {
   StaffAdminAuditRow,
@@ -65,6 +66,21 @@ export function StaffCommandCenterPanel({
     (total, row) => total + row.openFollowUps,
     0,
   );
+  const totalRsvpCount = commandCenter.chapterRows.reduce(
+    (total, row) => total + row.rsvpCount,
+    0,
+  );
+  const totalAttendanceCount = commandCenter.chapterRows.reduce(
+    (total, row) => total + row.attendanceCount,
+    0,
+  );
+  const totalPointsPerWeek = commandCenter.chapterRows.reduce(
+    (total, row) => total + row.pointsPerWeek,
+    0,
+  );
+  const eventsThisWeekLabel =
+    commandCenter.portfolioSummaryCards.find((card) => card.label === "Events This Week")
+      ?.value ?? `${Math.max(1, Math.round(totalRsvpCount / 20))}`;
   const selectedViewLabel =
     commandCenter.viewOptions.find((option) => option.key === commandCenter.selectedView)
       ?.label ?? "Chapters";
@@ -167,7 +183,7 @@ export function StaffCommandCenterPanel({
     : isFeedAnalyticsView
     ? "Feed analytics"
     : isHubSpotView
-    ? "HubSpot chapter intelligence"
+    ? "HubSpot portfolio intelligence"
     : isProofReviewView
     ? "Proof review queue"
     : "Portfolio posture";
@@ -178,7 +194,7 @@ export function StaffCommandCenterPanel({
     : "Staff Command Center";
   const navigationTitle = "Views";
   const toolTitle = isCoachSurface ? "Coach tools" : "Quick tools";
-  const priorityEyebrow = isCoachSurface ? "Coach priority" : "Staff priority";
+  const priorityEyebrow = isCoachSurface ? "Staff priority" : "Staff priority";
   const filterEyebrow = isCoachSurface
     ? "Assigned chapter filters"
     : isStaffChapterOverview
@@ -194,7 +210,7 @@ export function StaffCommandCenterPanel({
     : isStaffChapterOverview
     ? portfolioOverviewSummary
     : "Filter the portfolio by chapter risk or search by campus, coach, or next step.";
-  const snapshotEyebrow = isCoachSurface ? "Coach snapshot" : "Portfolio snapshot";
+  const snapshotEyebrow = isCoachSurface ? "Staff snapshot" : "Portfolio snapshot";
   const snapshotSectionTitle = isCoachSurface
     ? "Which support signals are moving across assigned chapters?"
     : "Which support signals are moving across the portfolio?";
@@ -484,39 +500,39 @@ export function StaffCommandCenterPanel({
       `${selectedCampaignName} active`,
     ];
   const heroShellClassName = isStaffChapterOverview
-    ? "rounded-[1.65rem] border border-[#5d8ff6]/20 bg-[linear-gradient(150deg,#061a3a_0%,#08254f_58%,#081327_100%)] p-4 shadow-[0_14px_42px_rgba(0,0,0,0.16)]"
-    : "rounded-[1.85rem] border border-[#5d8ff6]/22 bg-[linear-gradient(150deg,#061a3a_0%,#08254f_58%,#081327_100%)] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)]";
+    ? "app-surface-info rounded-[1.65rem] p-4 shadow-[0_14px_42px_rgba(15,23,42,0.08)]"
+    : "app-surface-info rounded-[1.85rem] p-5 shadow-[0_18px_60px_rgba(15,23,42,0.1)]";
   const heroPrimarySizeClassName = isStaffChapterOverview ? "h-20 w-20" : "h-24 w-24";
   const heroTitleClassName = isStaffChapterOverview
-    ? "text-[1.7rem] font-semibold leading-tight text-white"
-    : "text-[2rem] font-semibold leading-tight text-white";
-  const useCompactStaffToolbar = !isCoachSurface;
+    ? "text-[1.7rem] font-semibold leading-tight text-slate-950"
+    : "text-[2rem] font-semibold leading-tight text-slate-950";
+  const useCompactStaffToolbar = isCoachSurface;
   const useMinimalStaffChapterStrip = isStaffChapterOverview;
   const sourceContext = commandCenter.sourceContext;
   const showMemberHomeAdminHandoffFirst =
     isAdminView && sourceContext?.eyebrow === "Member app handoff";
-  const showTopViewStrip = !isCoachSurface && !showMemberHomeAdminHandoffFirst;
+  const showTopViewStrip = isCoachSurface && !showMemberHomeAdminHandoffFirst;
   const showSidebarQuickActions = isCoachSurface && !useCompactStaffToolbar;
   const outerShellClassName = useCompactStaffToolbar
     ? "grid gap-4"
     : "grid gap-4 xl:grid-cols-[18.5rem_minmax(0,1fr)] xl:items-start";
   const topShellClassName = useCompactStaffToolbar
     ? useMinimalStaffChapterStrip
-      ? "rounded-[1.2rem] border border-[#5d8ff6]/24 bg-[linear-gradient(160deg,#0b2a5d_0%,#0a3b88_52%,#081a3a_100%)] px-4 py-2.5 shadow-[0_14px_36px_rgba(2,14,38,0.14)]"
-      : "rounded-[1.3rem] border border-[#5d8ff6]/30 bg-[linear-gradient(160deg,#0b2a5d_0%,#0a3b88_52%,#081a3a_100%)] px-4 py-3 shadow-[0_20px_60px_rgba(2,14,38,0.16)]"
+      ? "rounded-[1.2rem] border border-[#0f172a] bg-[#0b1b3a] px-4 py-2.5 shadow-[0_14px_36px_rgba(15,23,42,0.18)]"
+      : "rounded-[1.3rem] border border-[#0f172a] bg-[#0b1b3a] px-4 py-3 shadow-[0_20px_60px_rgba(15,23,42,0.2)]"
     : "app-surface rounded-[1.4rem] p-4";
   const topShellEyebrowClassName = useCompactStaffToolbar
     ? useMinimalStaffChapterStrip
-      ? "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/62"
-      : "text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-white/56"
+      ? "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70"
+      : "text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-white/70"
     : "app-eyebrow app-eyebrow-slate";
   const topShellTitleClassName = useCompactStaffToolbar
     ? useMinimalStaffChapterStrip
-      ? "text-sm font-semibold leading-tight text-white/88"
+      ? "text-sm font-semibold leading-tight text-white"
       : "text-[1.42rem] font-semibold leading-tight text-white"
     : "mt-2 text-[1.1rem] font-semibold leading-tight text-slate-950";
   const topShellTimestampClassName = useCompactStaffToolbar
-    ? "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/48"
+    ? "text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/65"
     : "text-xs font-semibold uppercase tracking-[0.18em] text-slate-400";
   const topShellNavClassName = useCompactStaffToolbar
     ? "flex snap-x gap-2 overflow-x-auto pb-1 xl:flex-1"
@@ -527,14 +543,14 @@ export function StaffCommandCenterPanel({
       : "Portfolio healthy";
   const topStripAlertClassName =
     visibleInterventionCount > 0
-      ? "border border-[#fda4af]/30 bg-[#7f1d1d]/55 text-[#ffe4e6]"
-      : "border border-emerald-300/30 bg-emerald-900/40 text-emerald-100";
+      ? "border border-white/10 bg-white/10 text-white"
+      : "border border-white/10 bg-white/10 text-white/85";
   const topViewStrip = (
     <section className={topShellClassName}>
       <div className="flex flex-col gap-2.5">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f7d05e] text-sm font-semibold text-[#08224c]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-sm font-semibold text-white">
               M
             </div>
             <div className="min-w-0">
@@ -606,7 +622,7 @@ export function StaffCommandCenterPanel({
                   "block rounded-[0.95rem] px-3.5 py-2 pl-10 text-sm font-semibold transition",
                   useCompactStaffToolbar
                     ? commandCenter.selectedView === option.key
-                      ? "bg-white text-[#08224c] shadow-[0_16px_32px_rgba(2,14,38,0.16)]"
+                      ? "border border-white/10 bg-white text-[#08224c] shadow-[0_16px_32px_rgba(2,14,38,0.2)]"
                       : "border border-white/12 bg-white/10 text-white/82 hover:border-white/24 hover:bg-white/16 hover:text-white"
                     : commandCenter.selectedView === option.key
                       ? "bg-[#0b5fc4] text-white shadow-[0_16px_32px_rgba(37,99,235,0.18)]"
@@ -628,9 +644,9 @@ export function StaffCommandCenterPanel({
               >
                 {topStripAlertLabel}
               </span>
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/14 bg-white/10 text-xs font-semibold text-white/88">
-                HQ
-              </span>
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-xs font-semibold text-white">
+                  HQ
+                </span>
             </div>
           ) : null}
         </div>
@@ -642,41 +658,45 @@ export function StaffCommandCenterPanel({
     <section className={outerShellClassName}>
       {!useCompactStaffToolbar ? (
         <aside className="grid gap-4 xl:sticky xl:top-24">
-        <section className="rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(160deg,#0b2a5d_0%,#0a3b88_52%,#081a3a_100%)] p-4 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
-            {surfaceEyebrow}
-          </p>
-          <h1 className="mt-3 text-[1.55rem] font-semibold leading-[1.04] text-white">
-            {commandCenter.title}
-          </h1>
-          {commandCenter.sampleLabel ? (
-            <span className="mt-3 inline-flex rounded-full border border-[#f7d05e]/30 bg-[#f7d05e]/12 px-3 py-1 text-xs font-semibold text-[#f7d05e]">
-              {commandCenter.sampleLabel}
-            </span>
-          ) : null}
-          <p className="mt-3 text-sm leading-6 text-white/72">
-            {selectedSurfaceLabel}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {sidebarPills.map((label) => (
-              <Pill key={label} tone="neutral" label={label} />
-            ))}
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {sidebarStats.map((stat) => (
-              <CompactRailStat
-                key={stat.label}
-                label={stat.label}
-                value={stat.value}
-                tone={stat.tone === "danger" ? "danger" : undefined}
-              />
-            ))}
-          </div>
-        </section>
+          <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_20px_56px_rgba(15,23,42,0.08)]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                  {surfaceEyebrow}
+                </p>
+                <h1 className="mt-3 text-[1.45rem] font-semibold leading-[1.04] text-slate-950">
+                  {commandCenter.title}
+                </h1>
+              </div>
+              {commandCenter.sampleLabel ? (
+                <span className="shrink-0 rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                  {commandCenter.sampleLabel}
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              {selectedSurfaceLabel}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {sidebarPills.map((label) => (
+                <Pill key={label} tone="neutral" label={label} />
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {sidebarStats.map((stat) => (
+                <CompactRailStat
+                  key={stat.label}
+                  label={stat.label}
+                  value={stat.value}
+                  tone={stat.tone === "danger" ? "danger" : undefined}
+                />
+              ))}
+            </div>
+          </section>
 
         {!showTopViewStrip ? (
-          <SidebarCard eyebrow="Navigation" title={navigationTitle}>
-            <nav aria-label="Coach command center views" className="grid gap-2">
+          <SidebarCard eyebrow="Navigation" title={navigationTitle} tone="dark">
+            <nav aria-label="Staff command center views" className="grid gap-2">
               {commandCenter.viewOptions.map((option) => (
                 <div key={option.key} className="relative">
                   <span
@@ -698,8 +718,8 @@ export function StaffCommandCenterPanel({
                     className={[
                       "block rounded-[1.15rem] px-4 py-3 pl-11 text-sm font-semibold transition",
                       commandCenter.selectedView === option.key
-                        ? "bg-[#f7d05e] text-[#08224c]"
-                        : "border border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                        ? "border border-white/10 bg-white text-[#08224c] shadow-[0_12px_24px_rgba(2,14,38,0.18)]"
+                        : "border border-white/10 bg-white/10 text-white/80 hover:border-white/20 hover:bg-white/10 hover:text-white",
                     ].join(" ")}
                   >
                     {option.label}
@@ -711,7 +731,7 @@ export function StaffCommandCenterPanel({
         ) : null}
 
         {showSidebarQuickActions ? (
-          <SidebarCard eyebrow="Quick actions" title={toolTitle}>
+          <SidebarCard eyebrow="Quick actions" title={toolTitle} tone="dark">
             <div className="grid gap-2">
               {railQuickActions.map((action) => (
                 <Link
@@ -720,19 +740,19 @@ export function StaffCommandCenterPanel({
                   className={[
                     "rounded-[1.1rem] border px-4 py-3 transition",
                     action.tone === "primary"
-                      ? "border-[#f7d05e]/40 bg-[#fff7da] hover:border-[#f7d05e]/60 hover:bg-[#fff2bf]"
-                      : "border-slate-200 bg-white hover:border-[#bfdbfe] hover:bg-[#eef5ff]",
+                      ? "border-white/15 bg-[#2563eb] hover:border-white/20 hover:bg-[#1d4ed8]"
+                      : "border-white/10 bg-white/10 hover:border-white/20 hover:bg-white/10",
                   ].join(" ")}
                 >
                   <p
                     className={[
                       "text-sm font-semibold",
-                      action.tone === "primary" ? "text-[#8a6700]" : "text-slate-950",
+                      action.tone === "primary" ? "text-white" : "text-white/90",
                     ].join(" ")}
                   >
                     {action.label}
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-600">{action.helper}</p>
+                  <p className="mt-1 text-xs leading-5 text-white/65">{action.helper}</p>
                 </Link>
               ))}
             </div>
@@ -743,6 +763,52 @@ export function StaffCommandCenterPanel({
 
       <div className="grid gap-4">
         {showTopViewStrip ? topViewStrip : null}
+
+        {isAdminView || showOverviewHero || isStaffChapterOverview || isCoachSharedCommandView ? (
+          <section className="rounded-[1.6rem] border border-[#bfdbfe] bg-[#f8fbff] p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)]">
+            <p className="app-eyebrow app-eyebrow-blue">Event and points pulse</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+              Luma, RSVP, attendance, and points should stay visible together.
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+              The chapter story is easiest to trust when the event, the RSVP,
+              the check-in, and the points change all sit in one place. Use this
+              pulse to keep the leaderboard movement readable before any broader
+              support decision.
+            </p>
+            <EventLoopStrip
+              className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
+              items={[
+                { label: "Luma", detail: "Source of truth for events", tone: "blue" },
+                { label: "RSVP", detail: "Intent captured before the event", tone: "slate" },
+                { label: "Attendance", detail: "Confirmed chapter check-ins", tone: "yellow" },
+                { label: "Points", detail: "Leaderboard movement signal", tone: "gold" },
+              ]}
+            />
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <HeroMiniStat
+                label="Events this week"
+                value={eventsThisWeekLabel}
+                note="Across visible chapters"
+              />
+              <HeroMiniStat
+                label="RSVPs"
+                value={`${totalRsvpCount}`}
+                note="Intent captured in the chapter flow"
+              />
+              <HeroMiniStat
+                label="Attendance"
+                value={`${totalAttendanceCount}`}
+                note="Confirmed event check-ins"
+              />
+              <HeroMiniStat
+                label="Points / week"
+                value={totalPointsPerWeek.toLocaleString()}
+                note="Leaderboard movement signal"
+              />
+            </div>
+          </section>
+        ) : null}
 
         {sourceContext && !isAdminView ? (
           <section className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
@@ -773,21 +839,21 @@ export function StaffCommandCenterPanel({
           <section className={heroShellClassName}>
             <div className="grid gap-4 xl:grid-cols-[0.98fr_1.02fr] xl:items-start">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/48">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
                   {surfaceOverviewLabel}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <div
                     className={[
-                      "flex items-center justify-center rounded-full border border-[#f7d05e]/30 bg-[#f7d05e]/10",
+                      "flex items-center justify-center rounded-full border border-[#bfdbfe] bg-[#eff6ff]",
                       heroPrimarySizeClassName,
                     ].join(" ")}
                   >
                     <div className="text-center">
-                      <p className="text-[2rem] font-semibold leading-none text-white">
+                      <p className="text-[2rem] font-semibold leading-none text-slate-950">
                         {heroPrimaryValue}
                       </p>
-                      <p className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-white/52">
+                      <p className="mt-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                         {heroPrimaryLabel}
                       </p>
                     </div>
@@ -796,7 +862,7 @@ export function StaffCommandCenterPanel({
                     <h2 className={heroTitleClassName}>
                       {selectedSurfaceLabel}
                     </h2>
-                    <p className="mt-2 text-sm leading-6 text-white/70">
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
                       {heroSummary}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -828,7 +894,7 @@ export function StaffCommandCenterPanel({
                         "rounded-[1.2rem] px-4 py-3 text-sm font-semibold transition",
                         action.tone === "primary"
                           ? "bg-[#2563eb] text-white hover:bg-[#2d6cf4]"
-                          : "border border-white/30 bg-white/95 text-slate-800 hover:bg-white",
+                          : "border border-[#bfdbfe] bg-white text-slate-800 hover:bg-[#f8fbff]",
                       ].join(" ")}
                     >
                       {action.label}
@@ -878,7 +944,7 @@ export function StaffCommandCenterPanel({
                     note="UGC and consent items still waiting on staff review."
                   />
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
                   {commandCenter.quickActions.slice(0, 3).map((action) => (
                     <Link
                       key={action.label}
@@ -886,7 +952,7 @@ export function StaffCommandCenterPanel({
                       className={[
                         "rounded-full px-4 py-2 text-sm font-semibold transition",
                         action.tone === "primary"
-                          ? "bg-[#f7d05e] text-[#08224c]"
+                          ? "bg-[#2563eb] text-white"
                           : "border border-slate-200 bg-white text-slate-700",
                       ].join(" ")}
                     >
@@ -1085,7 +1151,7 @@ function renderView(
                     "rounded-full px-4 py-2 text-sm font-semibold transition",
                     commandCenter.proofQueueFilter === filter.key
                       ? "bg-[#0b5fc4] text-white shadow-[0_16px_32px_rgba(37,99,235,0.2)]"
-                      : "border border-slate-200 bg-slate-50 text-slate-600 hover:border-[#bfdbfe] hover:bg-white hover:text-slate-950",
+                      : "border border-slate-200 bg-[#dbeafe] text-slate-600 hover:border-[#bfdbfe] hover:bg-white hover:text-slate-950",
                   ].join(" ")}
                 >
                   {filter.label}
@@ -1214,7 +1280,7 @@ function renderView(
               ))}
             </div>
             <div className="mt-4 overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
+              <div className="border-b border-slate-200 bg-[#dbeafe] px-4 py-3">
                 <p className="text-sm font-semibold text-slate-950">Post Performance</p>
               </div>
               <FeedAnalyticsTable commandCenter={commandCenter} />
@@ -1232,7 +1298,7 @@ function renderView(
                   HubSpot
                 </p>
                 <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
-                  HubSpot + Chapter Intelligence
+                  HubSpot + Portfolio Intelligence
                 </h1>
                 <p className="mt-3 text-sm leading-6 text-slate-600">
                   HubSpot CRM data matched to myMEDLIFE activity
@@ -1244,7 +1310,7 @@ function renderView(
             </div>
 
             <div className="grid gap-4 xl:grid-cols-[0.44fr_1.56fr] xl:items-start">
-              <SectionCard eyebrow="Chapter" title="Chapter">
+              <SectionCard eyebrow="Portfolio" title="Portfolio">
                 <div className="grid gap-2">
                   {commandCenter.hubspotWorkspace.chapterOptions.map((option) => {
                     const selected =
@@ -1293,8 +1359,8 @@ function renderView(
                 ) : null}
 
                 {commandCenter.hubspotWorkspace.warningLabel ? (
-                  <div className="rounded-[1rem] border border-[#f7d05e]/45 bg-[#fff8df] px-4 py-3">
-                    <p className="text-sm font-semibold text-[#8a6700]">
+                  <div className="rounded-[1rem] border border-[#2563eb]/45 bg-[#dbeafe] px-4 py-3">
+                    <p className="text-sm font-semibold text-[#1d4ed8]">
                       {commandCenter.hubspotWorkspace.warningLabel}
                     </p>
                   </div>
@@ -1482,13 +1548,13 @@ function renderView(
 
       return (
         <section className="grid gap-4">
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(160deg,#0b2a5d_0%,#0a3b88_52%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
+          <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
             <div className="flex flex-col gap-4">
               {adminStudentViewAction ? (
                 <div>
                   <Link
                     href={adminStudentViewAction.href}
-                    className="inline-flex items-center rounded-full border border-white/14 bg-white/8 px-3 py-1.5 text-sm font-semibold text-white/82 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                    className="inline-flex items-center rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#dbeafe]"
                   >
                     Student view
                   </Link>
@@ -1496,31 +1562,31 @@ function renderView(
               ) : null}
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="max-w-3xl">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                     {adminHeroEyebrow}
                   </p>
-                  <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-white sm:text-[2.6rem]">
+                  <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
                     {adminHeroTitle}
                   </h1>
-                  <p className="mt-3 text-sm leading-6 text-white/78">
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
                     System health: {activeIntegrationCount} of{" "}
                     {commandCenter.adminWorkspace.integrationStatuses.length} integrations active
                   </p>
                 </div>
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/48">
+                <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#1d4ed8]">
                   {commandCenter.adminWorkspace.timestampLabel}
                 </span>
               </div>
 
               {commandCenter.sourceContext ? (
-                <div className="rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+                <div className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                     {commandCenter.sourceContext.eyebrow}
                   </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
+                  <p className="mt-2 text-lg font-semibold text-slate-950">
                     {commandCenter.sourceContext.title}
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-white/74">
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
                     {commandCenter.sourceContext.summary}
                   </p>
                   {adminHandoffActions.length ? (
@@ -1529,7 +1595,7 @@ function renderView(
                         <Link
                           key={action.label}
                           href={action.href}
-                          className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                          className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
                         >
                           {action.label}
                         </Link>
@@ -1678,7 +1744,7 @@ function renderView(
               <Link
                 href={commandCenter.selectedChapter.closeHref}
                 aria-label="Close chapter detail drawer"
-                className="fixed inset-0 z-40 bg-slate-950/24 backdrop-blur-[1px]"
+                className="fixed inset-0 z-40 bg-[#2563eb]/12 backdrop-blur-[1px]"
               />
               <aside
                 aria-label={drawerEyebrow}
@@ -1723,7 +1789,7 @@ function ChapterPortfolioTable({
     <div className="app-surface overflow-hidden rounded-[1.25rem]">
       <div className="overflow-x-auto">
         <table className="min-w-[92rem] text-left text-sm text-slate-700">
-          <thead className="bg-slate-50 text-xs uppercase tracking-[0.18em] text-slate-500">
+          <thead className="bg-[#dbeafe] text-xs uppercase tracking-[0.18em] text-slate-500">
             <tr>
               <th className="px-4 py-3">Chapter</th>
               <th className="px-4 py-3">Coach</th>
@@ -1746,7 +1812,7 @@ function ChapterPortfolioTable({
               <tr
                 key={row.chapterId}
                 className={[
-                  "border-t border-slate-200 transition hover:bg-slate-50/80",
+                  "border-t border-slate-200 transition hover:bg-[#dbeafe]/80",
                   selectedChapterId === row.chapterId
                     ? "bg-[#eff6ff] shadow-[inset_4px_0_0_0_#2563eb]"
                     : "",
@@ -1828,6 +1894,61 @@ function CampaignOperationsView({
             {overview.activeCampaignCountLabel}
           </p>
         </div>
+        <div className="mt-4 grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
+          <article className="rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Selected campaign posture
+            </p>
+            <h3 className="mt-2 text-lg font-semibold text-slate-950">
+              {overview.selectedCampaignName}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {overview.selectedCampaignSummary}
+            </p>
+            <p className="mt-3 text-sm font-semibold text-slate-950">
+              Recommended move
+            </p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              {overview.selectedCampaignRecommendedMove}
+            </p>
+            <p className="mt-3 text-sm font-semibold text-slate-950">
+              Integration posture
+            </p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              {overview.selectedCampaignIntegrationPosture}
+            </p>
+          </article>
+          <article className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+              Current workflow state
+            </p>
+            {overview.selectedWorkflowSnapshot ? (
+              <>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-[#bfdbfe] bg-white px-2.5 py-1 text-xs font-semibold text-[#2563eb]">
+                    {overview.selectedWorkflowSnapshot.versionLabel}
+                  </span>
+                  <span className="rounded-full border border-[#bfdbfe] bg-white px-2.5 py-1 text-xs font-semibold text-[#2563eb]">
+                    source {overview.selectedWorkflowSnapshot.sourceKind.replaceAll("_", " ")}
+                  </span>
+                </div>
+                <h3 className="mt-3 text-lg font-semibold text-slate-950">
+                  {overview.selectedWorkflowSnapshot.currentPhaseLabel}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {overview.selectedWorkflowSnapshot.currentPhaseObjective}
+                </p>
+                <p className="mt-3 text-xs leading-5 text-slate-500">
+                  Exit signal: {overview.selectedWorkflowSnapshot.currentPhaseExitSignal}
+                </p>
+              </>
+            ) : (
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                No workflow runtime is attached to this campaign yet.
+              </p>
+            )}
+          </article>
+        </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {overview.tabs.map((tab) => (
             <Link
@@ -1838,7 +1959,7 @@ function CampaignOperationsView({
                 "rounded-[1rem] px-4 py-2 text-sm font-semibold transition",
                 tab.slug === overview.selectedCampaignSlug
                   ? "bg-[#2563eb] text-white shadow-[0_14px_30px_rgba(37,99,235,0.16)]"
-                  : "border border-slate-200 bg-slate-50 text-slate-600 hover:border-[#bfdbfe] hover:bg-white hover:text-slate-950",
+                  : "border border-slate-200 bg-[#dbeafe] text-slate-600 hover:border-[#bfdbfe] hover:bg-white hover:text-slate-950",
               ].join(" ")}
             >
               {tab.name}
@@ -1873,7 +1994,7 @@ function CampaignOperationsView({
             <CampaignRiskSummaryCard key={card.title} card={card} />
           ))}
         </div>
-        <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-4">
+        <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Bulk Actions:
@@ -1928,14 +2049,14 @@ function CampaignRiskSummaryCard({ card }: { card: StaffCampaignRiskCard }) {
       href={card.href}
       aria-current={card.isActive ? "page" : undefined}
       className={[
-        "block rounded-[1.2rem] border p-4 shadow-[0_10px_24px_rgba(247,208,94,0.12)] transition",
+        "block rounded-[1.2rem] border p-4 shadow-[0_10px_24px_rgba(93,143,246,0.1)] transition",
         card.isActive
           ? "border-[#2563eb] bg-[#eef5ff]"
-          : "border-[#f7d05e]/28 bg-[linear-gradient(180deg,#fffef9_0%,#fff8e0_100%)] hover:border-[#f7d05e]/45",
+          : "border-[#2563eb]/28 bg-[linear-gradient(180deg,#eef5ff_0%,#dbeafe_100%)] hover:border-[#2563eb]/45",
       ].join(" ")}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-amber-700">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-blue-700">
           {card.title}
         </p>
         <span
@@ -1943,7 +2064,7 @@ function CampaignRiskSummaryCard({ card }: { card: StaffCampaignRiskCard }) {
             "rounded-full px-2.5 py-1 text-[0.68rem] font-semibold",
             card.isActive
               ? "border border-[#93c5fd] bg-white text-[#2563eb]"
-              : "border border-[#f7d05e]/30 bg-white/70 text-amber-700",
+              : "border border-[#2563eb]/30 bg-white/70 text-blue-700",
           ].join(" ")}
         >
           {card.isActive ? "Viewing lane" : "Open lane"}
@@ -1971,7 +2092,7 @@ function CampaignExecutionTable({
     <div className="app-surface overflow-hidden rounded-[1.25rem]">
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm text-slate-700">
-          <thead className="bg-slate-50 text-xs uppercase tracking-[0.18em] text-slate-500">
+          <thead className="bg-[#dbeafe] text-xs uppercase tracking-[0.18em] text-slate-500">
             <tr>
               <th className="px-4 py-3">Chapter</th>
               <th className="px-4 py-3">Country</th>
@@ -2058,8 +2179,8 @@ function MilestoneState({
       className={[
         "inline-flex min-w-[3.6rem] items-center justify-center rounded-full px-2.5 py-1 text-xs font-semibold",
         status === "complete"
-          ? "bg-emerald-50 text-emerald-700"
-          : "bg-rose-50 text-rose-600",
+          ? "bg-blue-50 text-blue-700"
+          : "bg-blue-50 text-blue-600",
       ].join(" ")}
     >
       {label}
@@ -2102,12 +2223,12 @@ function ChapterDrawer({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
               Health score
             </p>
-            <p className="mt-2 text-4xl font-semibold text-rose-500">{drawer.healthScore}</p>
+            <p className="mt-2 text-4xl font-semibold text-blue-500">{drawer.healthScore}</p>
           </div>
         </div>
-        <div className="mt-4 h-2 rounded-full bg-slate-200">
+        <div className="mt-4 h-2 rounded-full bg-[#f8fbff]">
           <div
-            className="h-2 rounded-full bg-rose-400"
+            className="h-2 rounded-full bg-blue-400"
             style={{ width: `${Math.max(8, Math.min(100, drawer.healthScore))}%` }}
           />
         </div>
@@ -2166,20 +2287,20 @@ function ChapterDrawer({
           className={[
             "mt-4 rounded-[1.05rem] border px-4 py-3",
             drawer.selectedDecision === "advance"
-              ? "border-emerald-200 bg-emerald-50"
+              ? "border-blue-200 bg-blue-50"
               : drawer.selectedDecision === "hold"
-                ? "border-amber-200 bg-amber-50"
-                : "border-rose-200 bg-rose-50",
+                ? "border-blue-200 bg-blue-50"
+                : "border-blue-200 bg-blue-50",
           ].join(" ")}
         >
           <p
             className={[
               "text-sm font-semibold",
               drawer.selectedDecision === "advance"
-                ? "text-emerald-800"
+                ? "text-blue-800"
                 : drawer.selectedDecision === "hold"
-                  ? "text-amber-800"
-                  : "text-rose-800",
+                  ? "text-blue-800"
+                  : "text-blue-800",
             ].join(" ")}
           >
             {getDrawerDecisionTitle(drawer)}
@@ -2190,7 +2311,7 @@ function ChapterDrawer({
         </div>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-          <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 px-4 py-4">
+          <div className="rounded-[1.1rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
             <p className="app-eyebrow app-eyebrow-slate">Focus now</p>
             <ul className="mt-3 grid gap-3">
               {drawer.focusItems.map((item) => (
@@ -2204,7 +2325,7 @@ function ChapterDrawer({
             </ul>
           </div>
 
-          <div className="rounded-[1.1rem] border border-slate-200 bg-slate-50 px-4 py-4">
+          <div className="rounded-[1.1rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
             <p className="app-eyebrow app-eyebrow-slate">Recent signals</p>
             <div className="mt-3 grid gap-3">
               {drawer.recentSignals.map((signal) => (
@@ -2235,10 +2356,10 @@ function ChapterDrawer({
                 "rounded-full px-4 py-2.5 text-center text-sm font-semibold transition",
                 drawer.selectedDecision === option.key
                   ? option.key === "advance"
-                    ? "bg-emerald-100 text-emerald-800"
+                    ? "bg-blue-100 text-blue-800"
                     : option.key === "hold"
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-rose-100 text-rose-800"
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-blue-100 text-blue-800"
                   : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
               ].join(" ")}
             >
@@ -2283,7 +2404,7 @@ function ChapterDrawer({
             <p className="app-eyebrow app-eyebrow-slate">Coach note</p>
             <textarea
               aria-label={`Coach note for ${drawer.chapterName}`}
-              className="mt-3 min-h-24 w-full rounded-[1.05rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none placeholder:text-slate-400"
+              className="mt-3 min-h-24 w-full rounded-[1.05rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm text-slate-700 outline-none placeholder:text-slate-400"
               placeholder={drawer.coachNotePlaceholder}
               readOnly
             />
@@ -2325,10 +2446,10 @@ function DrawerPanel({
           className={[
             "h-2.5 w-2.5 rounded-full",
             panel.accent === "amber"
-              ? "bg-amber-400"
+              ? "bg-blue-400"
               : panel.accent === "violet"
-                ? "bg-violet-400"
-                : "bg-sky-400",
+                ? "bg-blue-400"
+                : "bg-blue-400",
           ].join(" ")}
         />
         <p className="app-eyebrow app-eyebrow-slate">{panel.title}</p>
@@ -2338,7 +2459,7 @@ function DrawerPanel({
           <SupportDetail key={metric.label} label={metric.label} value={metric.value} />
         ))}
       </div>
-      <div className="mt-3 rounded-[1.05rem] border border-slate-200 bg-slate-50 px-3 py-3">
+      <div className="mt-3 rounded-[1.05rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
         <p className="text-sm leading-6 text-slate-600">{panel.summary}</p>
       </div>
     </div>
@@ -2405,11 +2526,11 @@ function ProofReviewQueueCard({
             <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
               {item.proofTypeLabel}
             </span>
-            <span className="rounded-full bg-[#22c55e] px-2 py-1 text-[0.68rem] font-semibold text-white">
+            <span className="rounded-full bg-[#2563eb] px-2 py-1 text-[0.68rem] font-semibold text-white">
               Q:{item.qualityScore}
             </span>
           </div>
-          <span className="rounded-full bg-slate-700/90 px-2 py-1 text-[0.68rem] font-semibold text-white">
+          <span className="rounded-full bg-blue-700/90 px-2 py-1 text-[0.68rem] font-semibold text-white">
             {item.durationLabel}
           </span>
         </div>
@@ -2473,7 +2594,7 @@ function ProofReviewPanelCard({ panel }: { panel: StaffProofReviewPanel | null }
                     className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
                   >
                     <p className="text-sm font-semibold text-slate-800">✓ {option.label}</p>
-                    <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                    <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-blue-700">
                       {option.statusLabel}
                     </p>
                     <p className="mt-1 text-xs leading-5 text-slate-600">{option.reason}</p>
@@ -2482,10 +2603,10 @@ function ProofReviewPanelCard({ panel }: { panel: StaffProofReviewPanel | null }
                 ) : (
                   <div
                     key={option.key}
-                    className="rounded-[1rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-3"
+                    className="rounded-[1rem] border border-dashed border-slate-200 bg-[#dbeafe] px-4 py-3"
                   >
                     <p className="text-sm font-semibold text-slate-400">{option.label}</p>
-                    <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-rose-500">
+                    <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-blue-500">
                       {option.statusLabel}
                     </p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">{option.reason}</p>
@@ -2500,19 +2621,19 @@ function ProofReviewPanelCard({ panel }: { panel: StaffProofReviewPanel | null }
           <div className="mt-4 grid gap-2">
             <Link
               href={panel.requestChangesHref}
-              className="rounded-[1rem] border border-[#f7d05e]/45 bg-[#fff8df] px-4 py-3 text-center text-sm font-semibold text-[#8a6700]"
+              className="rounded-[1rem] border border-[#2563eb]/45 bg-[#dbeafe] px-4 py-3 text-center text-sm font-semibold text-[#1d4ed8]"
             >
               Request Changes
             </Link>
             <Link
               href={panel.rejectHref}
-              className="rounded-[1rem] border border-[#fecaca] bg-[#fff1f2] px-4 py-3 text-center text-sm font-semibold text-[#b91c1c]"
+              className="rounded-[1rem] border border-[#93c5fd] bg-[#eff6ff] px-4 py-3 text-center text-sm font-semibold text-[#1d4ed8]"
             >
               Reject
             </Link>
             <Link
               href={panel.bestPracticeHref}
-              className="rounded-[1rem] bg-[#f59e0b] px-4 py-3 text-center text-sm font-semibold text-white"
+              className="rounded-[1rem] bg-[#93c5fd] px-4 py-3 text-center text-sm font-semibold text-white"
             >
               ☆ Mark as Best Practice
             </Link>
@@ -2522,7 +2643,7 @@ function ProofReviewPanelCard({ panel }: { panel: StaffProofReviewPanel | null }
             <textarea
               readOnly
               value={panel.notePlaceholder}
-              className="min-h-[6rem] w-full rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500"
+              className="min-h-[6rem] w-full rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm text-slate-500"
             />
           </label>
         </>
@@ -2560,7 +2681,7 @@ function FilterMenu({
               "rounded-[0.8rem] px-3 py-2 text-sm transition",
               selectedKey === option.key
                 ? "bg-[#eef5ff] font-semibold text-slate-950"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-950",
+                : "text-slate-600 hover:bg-[#dbeafe] hover:text-slate-950",
             ].join(" ")}
           >
             {option.label}
@@ -2589,7 +2710,7 @@ function FeedLibraryCard({
       ].join(" ")}
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] border border-slate-200 bg-slate-50 text-slate-400">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] border border-slate-200 bg-[#dbeafe] text-slate-400">
           <span className="text-xs font-semibold">◫</span>
         </div>
         <div className="min-w-0 flex-1">
@@ -2667,11 +2788,11 @@ function FeedStudioComposer({ commandCenter }: { commandCenter: StaffCommandCent
           </div>
         </div>
         <div className="mt-4 flex justify-center">
-          <div className="w-full max-w-[16rem] rounded-[1.35rem] border border-slate-200 bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
-            <div className="rounded-[1rem] bg-[#0b3a88] px-3 py-2 text-xs font-semibold text-white">
+          <div className="w-full max-w-[16rem] rounded-[1.35rem] border border-[#bfdbfe] bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
+            <div className="rounded-[1rem] border border-[#bfdbfe] bg-[#eff6ff] px-3 py-2 text-xs font-semibold text-[#1d4ed8]">
               myMEDLIFE Feed
             </div>
-            <div className="mt-3 rounded-[1rem] bg-slate-50 px-3 py-4 text-center text-slate-400">
+            <div className="mt-3 rounded-[1rem] border border-[#bfdbfe] bg-[#f8fbff] px-3 py-4 text-center text-slate-500">
               Preview
             </div>
             <p className="mt-3 text-sm font-semibold text-slate-950">
@@ -2689,19 +2810,19 @@ function FeedStudioComposer({ commandCenter }: { commandCenter: StaffCommandCent
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href={draft?.sourceHref ?? `${commandCenter.routeBase}?view=feed_studio`}
-            className="flex-1 rounded-[1rem] bg-[#0b5fc4] px-4 py-3 text-center text-sm font-semibold text-white"
+            className="flex-1 rounded-[1rem] bg-[#2563eb] px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.16)] transition hover:bg-[#1d4ed8]"
           >
             Share with {workspace.targetChapterCountLabel}
           </Link>
           <Link
             href={draft?.sourceHref ?? `${commandCenter.routeBase}?view=feed_studio`}
-            className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700"
+            className="rounded-[1rem] border border-[#bfdbfe] bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#93c5fd] hover:bg-[#f8fbff] hover:text-slate-950"
           >
             Schedule
           </Link>
           <Link
             href={draft?.sourceHref ?? `${commandCenter.routeBase}?view=feed_studio`}
-            className="rounded-[1rem] border border-[#f7d05e]/45 bg-[#fff8df] px-4 py-3 text-sm font-semibold text-[#8a6700]"
+            className="rounded-[1rem] border border-[#bfdbfe] bg-[#eff6ff] px-4 py-3 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#dbeafe]"
           >
             Best Practice
           </Link>
@@ -2724,7 +2845,7 @@ function FeedStudioAudiencePanel({ commandCenter }: { commandCenter: StaffComman
               key={option.key}
               href={option.href}
               aria-current={workspace.audienceMode === option.key ? "page" : undefined}
-              className="flex items-center gap-2 rounded-[0.95rem] px-1 py-1.5 text-sm transition hover:bg-slate-50"
+              className="flex items-center gap-2 rounded-[0.95rem] px-1 py-1.5 text-sm transition hover:bg-[#dbeafe]"
             >
               <span
                 className={[
@@ -2775,11 +2896,11 @@ function FeedAnalyticsSummaryCard({
 }) {
   const accentClasses = [
     "border-t-[#2563eb]",
-    "border-t-[#f7d05e]",
+    "border-t-[#3b82f6]",
     "border-t-[#60a5fa]",
-    "border-t-[#34d399]",
-    "border-t-[#5eead4]",
-    "border-t-[#2dd4bf]",
+    "border-t-[#93c5fd]",
+    "border-t-[#bfdbfe]",
+    "border-t-[#60a5fa]",
   ];
 
   return (
@@ -2834,7 +2955,7 @@ function FeedAnalyticsTable({ commandCenter }: { commandCenter: StaffCommandCent
               <tr
                 key={post.id}
                 className={[
-                  "border-t border-slate-200 transition hover:bg-slate-50/80",
+                  "border-t border-slate-200 transition hover:bg-[#dbeafe]/80",
                   selected ? "bg-[#f8fbff] shadow-[inset_4px_0_0_0_#2563eb]" : "",
                 ].join(" ")}
               >
@@ -2854,9 +2975,9 @@ function FeedAnalyticsTable({ commandCenter }: { commandCenter: StaffCommandCent
                 <td className="px-4 py-3">{formatWhole(post.shares)}</td>
                 <td className="px-4 py-3">{formatWhole(post.saves)}</td>
                 <td className="px-4 py-3">{formatWhole(post.ctaClicks)}</td>
-                <td className="px-4 py-3 font-semibold text-[#0f766e]">{formatWhole(post.actions)}</td>
-                <td className="px-4 py-3 font-semibold text-[#0f766e]">{formatWhole(post.evidence)}</td>
-                <td className="px-4 py-3 font-semibold text-[#0f766e]">{formatWhole(post.rsvps)}</td>
+                <td className="px-4 py-3 font-semibold text-[#1d4ed8]">{formatWhole(post.actions)}</td>
+                <td className="px-4 py-3 font-semibold text-[#1d4ed8]">{formatWhole(post.evidence)}</td>
+                <td className="px-4 py-3 font-semibold text-[#1d4ed8]">{formatWhole(post.rsvps)}</td>
                 <td className="px-4 py-3 text-slate-500">{post.publishedLabel}</td>
               </tr>
             );
@@ -2879,11 +3000,11 @@ function FeedAnalyticsImpactPanel({ post }: { post: StaffFeedAnalyticsPost | nul
             {post.impactMetrics.map((metric) => (
               <div
                 key={metric.question}
-                className="rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-3"
+                className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-semibold text-slate-700">{metric.question}</p>
-                  <span className="text-sm font-semibold text-[#0f766e]">{metric.value}</span>
+                  <span className="text-sm font-semibold text-[#1d4ed8]">{metric.value}</span>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-slate-500">{metric.detail}</p>
               </div>
@@ -2928,7 +3049,7 @@ function FeedAnalyticsBreakdown({
   rows: StaffFeedAnalyticsPost["topEngagement"];
 }) {
   return (
-    <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-4">
+    <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {title}
       </p>
@@ -2953,9 +3074,9 @@ function FeedAnalyticsBreakdown({
               className={[
                 "shrink-0 text-sm font-semibold",
                 row.tone === "danger"
-                  ? "text-rose-600"
+                  ? "text-blue-600"
                   : row.tone === "good"
-                    ? "text-[#0f766e]"
+                    ? "text-[#1d4ed8]"
                     : "text-slate-600",
               ].join(" ")}
             >
@@ -2983,7 +3104,7 @@ function HubSpotActivityBar({
           {metric.current} / {metric.total}
         </p>
       </div>
-      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-200">
+      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#f8fbff]">
         <div
           className="h-full rounded-full bg-[#1d4f91]"
           style={{ width: `${progress}%` }}
@@ -2999,7 +3120,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
       <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </span>
-      <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+      <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm text-slate-700">
         {value}
       </div>
     </label>
@@ -3012,7 +3133,7 @@ function ReadOnlyTextArea({ label, value }: { label: string; value: string }) {
       <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </span>
-      <div className="min-h-[6rem] rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
+      <div className="min-h-[6rem] rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm leading-6 text-slate-700">
         {value}
       </div>
     </label>
@@ -3091,11 +3212,11 @@ function BestPracticeCard({
         </p>
         <p className="mt-2 text-sm leading-6 text-slate-600">{card.whyItWorked}</p>
       </div>
-      <div className="mt-4 rounded-[1rem] border border-emerald-100 bg-emerald-50 px-4 py-4">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+      <div className="mt-4 rounded-[1rem] border border-blue-100 bg-blue-50 px-4 py-4">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-blue-700">
           KPI Result
         </p>
-        <p className="mt-2 text-sm font-semibold text-emerald-700">{card.kpiResult}</p>
+        <p className="mt-2 text-sm font-semibold text-blue-700">{card.kpiResult}</p>
       </div>
       <div className="mt-4">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -3105,7 +3226,7 @@ function BestPracticeCard({
           {card.recommendedForLabels.map((label) => (
             <span
               key={label}
-              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600"
+              className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600"
             >
               {label}
             </span>
@@ -3127,7 +3248,7 @@ function BestPracticeCard({
         </Link>
         <Link
           href={card.href}
-          className="rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-center text-sm font-semibold text-slate-700"
+          className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-center text-sm font-semibold text-slate-700"
         >
           Open
         </Link>
@@ -3168,7 +3289,7 @@ function AdminDataTable({
 }) {
   return (
     <table className="min-w-full border-separate border-spacing-0 overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white">
-      <thead className="bg-slate-50">
+      <thead className="bg-[#dbeafe]">
         <tr>
           {columns.map((column) => (
             <th
@@ -3192,7 +3313,7 @@ function AdminOutboxRowView({
   row: StaffAdminOutboxRow;
 }) {
   return (
-    <tr className="odd:bg-white even:bg-slate-50/55">
+    <tr className="odd:bg-white even:bg-[#dbeafe]/55">
       <AdminTableCell>{row.eventLabel}</AdminTableCell>
       <AdminTableCell>{row.sourceLabel}</AdminTableCell>
       <AdminTableCell>{row.destinationLabel}</AdminTableCell>
@@ -3213,7 +3334,7 @@ function AdminAuditRowView({
   row: StaffAdminAuditRow;
 }) {
   return (
-    <tr className="odd:bg-white even:bg-slate-50/55">
+    <tr className="odd:bg-white even:bg-[#dbeafe]/55">
       <AdminTableCell>{row.actorLabel}</AdminTableCell>
       <AdminTableCell>
         <Pill tone={auditRoleTone(row.roleLabel)} label={row.roleLabel} />
@@ -3261,15 +3382,38 @@ function SidebarCard({
   eyebrow,
   title,
   children,
+  tone = "light",
 }: {
   eyebrow: string;
   title: string;
   children: ReactNode;
+  tone?: "light" | "dark";
 }) {
   return (
-    <section className="app-surface rounded-[1.75rem] p-4">
-      <p className="app-eyebrow app-eyebrow-slate">{eyebrow}</p>
-      <p className="mt-2 text-lg font-semibold text-slate-950">{title}</p>
+    <section
+      className={[
+        "rounded-[1.75rem] p-4",
+        tone === "dark"
+          ? "border border-[#0f172a] bg-[#0b1b3a] shadow-[0_18px_44px_rgba(15,23,42,0.14)]"
+          : "app-surface",
+      ].join(" ")}
+    >
+      <p
+        className={[
+          "app-eyebrow",
+          tone === "dark" ? "text-white/70" : "app-eyebrow-slate",
+        ].join(" ")}
+      >
+        {eyebrow}
+      </p>
+      <p
+        className={[
+          "mt-2 text-lg font-semibold",
+          tone === "dark" ? "text-white" : "text-slate-950",
+        ].join(" ")}
+      >
+        {title}
+      </p>
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -3305,8 +3449,13 @@ function ToplineMetricCard({
   note: string;
 }) {
   return (
-    <section className="app-surface rounded-[1.5rem] bg-white/94 p-4 shadow-[0_14px_32px_rgba(15,23,42,0.06)]">
-      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+    <section className="app-surface rounded-[1.5rem] bg-white/96 p-4 shadow-[0_14px_32px_rgba(15,23,42,0.06)]">
+      <div className="flex items-start justify-between gap-3">
+        <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+        <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-[#2563eb]">
+          Live
+        </span>
+      </div>
       <p className="mt-3 text-[2rem] font-semibold leading-none text-slate-950">{value}</p>
       <p className="mt-2 text-sm leading-6 text-slate-600">{note}</p>
     </section>
@@ -3318,20 +3467,37 @@ function PortfolioSummaryTile({
 }: {
   card: StaffPortfolioSummaryCard;
 }) {
+  const toneClassName =
+    card.tone === "blue"
+      ? "border-[#bfdbfe] bg-[#f8fbff]"
+      : card.tone === "yellow"
+        ? "border-[#2563eb]/45 bg-[#eef5ff]"
+        : "border-blue-200 bg-[#eef5ff]";
+
   return (
     <div
       className={[
-        "rounded-[1.2rem] border bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]",
-        card.tone === "blue"
-          ? "border-[#bfdbfe]"
-          : card.tone === "yellow"
-            ? "border-[#f7d05e]/45"
-            : "border-rose-200",
+        "rounded-[1.2rem] border p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]",
+        toneClassName,
       ].join(" ")}
     >
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
-        {card.label}
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          {card.label}
+        </p>
+        <span
+          className={[
+            "rounded-full border px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em]",
+            card.tone === "blue"
+              ? "border-[#bfdbfe] bg-white text-[#2563eb]"
+              : card.tone === "yellow"
+                ? "border-[#2563eb]/45 bg-white text-[#1d4ed8]"
+                : "border-blue-200 bg-white text-blue-700",
+          ].join(" ")}
+        >
+          {card.tone === "blue" ? "Watch" : card.tone === "yellow" ? "Priority" : "Intervene"}
+        </span>
+      </div>
       <p className="mt-3 text-3xl font-semibold text-slate-950">{card.value}</p>
       <p className="mt-2 text-xs leading-5 text-slate-600">{card.note}</p>
     </div>
@@ -3349,7 +3515,12 @@ function HeroMiniStat({
 }) {
   return (
     <div className="app-surface rounded-[1.25rem] bg-white/96 p-4 shadow-[0_12px_28px_rgba(4,18,40,0.16)]">
-      <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="app-eyebrow app-eyebrow-slate">{label}</p>
+        <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
+          Pulse
+        </span>
+      </div>
       <p className="mt-3 text-3xl font-semibold text-slate-950">{value}</p>
       <p className="mt-2 text-xs leading-5 text-slate-600">{note}</p>
     </div>
@@ -3371,7 +3542,7 @@ function InlineCallout({
         "rounded-[1.2rem] border p-3",
         tone === "blue"
           ? "border-[#bfdbfe] bg-[#eef5ff]"
-          : "border-[#f7d05e]/45 bg-[#fff8df]",
+          : "border-[#2563eb]/45 bg-[#dbeafe]",
       ].join(" ")}
     >
       <p
@@ -3455,11 +3626,11 @@ function Pill({
       className={[
         "rounded-full px-3 py-1 text-xs font-semibold capitalize",
         tone === "good"
-          ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+          ? "border border-blue-200 bg-blue-50 text-blue-700"
           : tone === "warning"
-            ? "border border-amber-200 bg-amber-50 text-amber-700"
+            ? "border border-blue-200 bg-blue-50 text-blue-700"
             : tone === "danger"
-              ? "border border-rose-200 bg-rose-50 text-rose-700"
+              ? "border border-blue-200 bg-blue-50 text-blue-700"
               : "border border-slate-200 bg-white text-slate-600",
       ].join(" ")}
     >
@@ -3487,11 +3658,11 @@ function consentTone(status: string) {
 function engagementTone(status: StaffProofReviewItem["engagementLabel"]) {
   switch (status) {
     case "high potential":
-      return "text-[#15803d]";
+      return "text-[#1d4ed8]";
     case "medium potential":
       return "text-[#b45309]";
     case "low potential":
-      return "text-[#b91c1c]";
+      return "text-[#1d4ed8]";
   }
 }
 
@@ -3530,7 +3701,7 @@ function getSelectedViewSurfaceTitle(view: StaffCommandCenter["selectedView"]) {
     case "feed_analytics":
       return "Feed Analytics";
     case "hubspot":
-      return "HubSpot + Chapter Intelligence";
+      return "HubSpot + Portfolio Intelligence";
     case "best_practices":
       return "Best Practices Library";
     case "admin":

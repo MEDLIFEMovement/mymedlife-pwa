@@ -18,6 +18,10 @@ describe("campaign ops service", () => {
       expect.objectContaining({
         name: "Rush Month",
         status: "active",
+        workflowSnapshot: expect.objectContaining({
+          sourceKind: "template_version",
+          versionLabel: "v2.1",
+        }),
       }),
     );
   });
@@ -45,6 +49,31 @@ describe("campaign ops service", () => {
       "med-talk-series",
     );
     expect(getVisibleCampaignShellsForActor(dsAdmin)).toEqual([]);
+  });
+
+  it("attaches workflow snapshots to SOP-backed campaign shells in the shared catalog", () => {
+    const planning = getCampaignShellBySlug("planning-goal-setting");
+    const engagement = getCampaignShellBySlug("chapter-engagement");
+    const growTheMovement = getCampaignShellBySlug("grow-the-movement");
+    const startAChapter = getCampaignShellBySlug("start-a-chapter");
+
+    expect(planning?.workflowSnapshot).toMatchObject({
+      sourceKind: "template_version",
+      versionLabel: "v0 reviewed",
+      currentPhaseLabel: "GSW Preparation",
+    });
+    expect(engagement?.workflowSnapshot).toMatchObject({
+      sourceKind: "template_version",
+      versionLabel: "v0 reviewed",
+    });
+    expect(growTheMovement?.workflowSnapshot).toMatchObject({
+      sourceKind: "template_version",
+      versionLabel: "v0 reviewed",
+    });
+    expect(startAChapter?.workflowSnapshot).toMatchObject({
+      sourceKind: "template_version",
+      versionLabel: "v0 reviewed",
+    });
   });
 
   it("summarizes campaign readiness and disabled integration posture", () => {

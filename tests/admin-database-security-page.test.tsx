@@ -36,6 +36,7 @@ describe("admin database security page", () => {
     expect(html).toContain('href="/admin/integration-outbox"');
     expect(html).toContain('href="/admin/database-security"');
     expect(html).toContain('href="/admin/system-health"');
+    expect(html).toContain('href="/admin/sop-builder/rush-month?tab=steps"');
     expect(html).toContain('href="/admin/sop-library"');
     expect(html).toContain('href="/admin/master-data"');
     expect(html).toContain("Database security");

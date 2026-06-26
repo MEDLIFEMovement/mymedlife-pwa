@@ -5,7 +5,7 @@ import { ActionStartActivationContractPanel } from "@/components/action-start-ac
 import { ActionStartResultStatesPanel } from "@/components/action-start-result-states-panel";
 import { ActionStartServerActionPanel } from "@/components/action-start-server-action-panel";
 import { ActionProofHandoffPanel } from "@/components/action-proof-handoff-panel";
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { EventOutboxLog } from "@/components/event-outbox-log";
@@ -110,7 +110,7 @@ export default async function ActionDetailPage({
     const isMemberAssignmentSurface = isMemberSurfaceFamily(actor);
 
     return (
-      <AppShell
+      <StudentAppShell
         actor={actor}
         hideTopHeader={isMemberAssignmentSurface}
         showMobileQuickItemHelpers={!isMemberAssignmentSurface}
@@ -122,7 +122,7 @@ export default async function ActionDetailPage({
           nextHref="/rush-month/actions"
           nextLabel="Back to visible actions"
         />
-      </AppShell>
+      </StudentAppShell>
     );
   }
 
@@ -232,7 +232,7 @@ export default async function ActionDetailPage({
         : null;
 
     return (
-      <AppShell
+      <StudentAppShell
         actor={actor}
         hideTopHeader
         showMobileQuickItemHelpers={false}
@@ -304,12 +304,12 @@ export default async function ActionDetailPage({
             />
           ) : null}
         </section>
-      </AppShell>
+      </StudentAppShell>
     );
   }
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
       hideTopHeader={isMemberActionDetail}
       showMobileQuickItemHelpers={!isMemberActionDetail}
@@ -322,7 +322,7 @@ export default async function ActionDetailPage({
               <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/82">
                 Member action detail
               </span>
-              <span className="rounded-full border border-[#f7d05e]/30 bg-[#f7d05e]/12 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+              <span className="rounded-full border border-[#2563eb]/30 bg-[#2563eb]/12 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                 {assignment.points} points
               </span>
             </div>
@@ -547,7 +547,7 @@ export default async function ActionDetailPage({
             Back to all actions
           </Link>
       </>
-    </AppShell>
+    </StudentAppShell>
   );
 }
 

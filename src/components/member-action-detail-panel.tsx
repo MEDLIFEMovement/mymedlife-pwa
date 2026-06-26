@@ -24,41 +24,88 @@ export function MemberActionDetailPanel({
 }: MemberActionDetailPanelProps) {
   return (
     <section className="grid gap-3">
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(180deg,#2455a4_0%,#2a5fb5_48%,#21457d_100%)] p-4 shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+      <section className="app-surface-info overflow-hidden rounded-[2rem] p-4">
+        <p
+          aria-level={2}
+          className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]"
+          role="heading"
+        >
           Action Detail
         </p>
-        <h1 className="mt-3 text-[2rem] font-semibold leading-tight text-white sm:text-[2.35rem]">
+        <h1 className="mt-3 text-[2rem] font-semibold leading-tight text-slate-950 sm:text-[2.35rem]">
           {workspace.title}
         </h1>
         <div className="mt-3 flex flex-wrap gap-2">
-          <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
+          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
             {workspace.campaignLabel}
           </span>
           <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
             {workspace.statusLabel}
           </span>
         </div>
-        <p className="mt-2 text-sm text-white/82">{workspace.dueLabel}</p>
-        <p className="mt-2 text-sm text-white/78">{workspace.assignedByLabel}</p>
-        <p className="mt-3 text-sm font-semibold text-[#f7d05e]">
+        <p className="mt-2 text-sm text-slate-600">{workspace.dueLabel}</p>
+        <p className="mt-2 text-sm text-slate-600">{workspace.assignedByLabel}</p>
+        <p className="mt-3 text-sm font-semibold text-[#2563eb]">
           {workspace.pointsApprovalLabel}
         </p>
-        <p className="mt-2 text-sm text-white/78">{workspace.appliesToLabel}</p>
+        <p className="mt-2 text-sm text-slate-600">{workspace.appliesToLabel}</p>
+
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <ActionDetailMetaTile
+            label="Due"
+            value={workspace.dueLabel}
+            note="This is the current local deadline"
+          />
+          <ActionDetailMetaTile
+            label="Owner"
+            value={workspace.assignedByLabel.replace("Assigned by ", "")}
+            note="Who set the work in motion"
+          />
+          <ActionDetailMetaTile
+            label="Points"
+            value={workspace.pointsApprovalLabel}
+            note="Recognition after the proof is approved"
+          />
+          <ActionDetailMetaTile
+            label="Scope"
+            value="Rush Month"
+            note={workspace.appliesToLabel}
+          />
+        </div>
+
+        <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="max-w-xl">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Action loop
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Start the action, capture proof, and submit the preview when the chapter
+                story is ready to be reviewed.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <ActionLoopPill label="Start" tone="active" />
+              <ActionLoopPill label="Proof" tone="idle" />
+              <ActionLoopPill label="Submit" tone="idle" />
+            </div>
+          </div>
+        </div>
+
         {sourceContext ? (
-          <div className="mt-4 rounded-[1.3rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
+          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-xl">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {sourceContext.eyebrow}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-white/78">
+                <p className="mt-2 text-sm leading-6 text-slate-600">
                   {sourceContext.detail}
                 </p>
               </div>
               <Link
                 href={sourceContext.href}
-                className="inline-flex w-fit rounded-full border border-white/14 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/24 hover:bg-white/14"
+                className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
               >
                 {sourceContext.backLabel}
               </Link>
@@ -69,9 +116,23 @@ export function MemberActionDetailPanel({
 
       <section className="app-surface rounded-[1.8rem] p-4">
         <p className="app-eyebrow app-eyebrow-blue">{workspace.whyItMattersTitle}</p>
-        <p className="mt-3 text-sm leading-7 text-slate-700">
-          {workspace.whyItMattersBody}
-        </p>
+        <div className="mt-3 grid gap-3 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+          <p className="text-sm leading-7 text-slate-700">{workspace.whyItMattersBody}</p>
+          <div className="rounded-[1.25rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-3">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+              Evidence preview
+            </p>
+            <p className="mt-2 text-sm font-semibold text-slate-950">
+              {workspace.previewAssignment.title}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {workspace.previewAssignment.evidenceRequired}
+            </p>
+            <p className="mt-2 text-sm font-semibold text-[#1d4ed8]">
+              {workspace.previewAssignment.points} points if approved
+            </p>
+          </div>
+        </div>
       </section>
 
       <section className="app-surface rounded-[1.8rem] p-4">
@@ -80,13 +141,18 @@ export function MemberActionDetailPanel({
           {workspace.steps.map((step, index) => (
             <article
               key={`${index + 1}-${step}`}
-              className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-3.5"
+              className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
             >
               <div className="flex items-start gap-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#bfdbfe] bg-white text-sm font-semibold text-[#2563eb]">
                   {index + 1}
                 </span>
-                <p className="text-sm leading-6 text-slate-700">{step}</p>
+                <div className="min-w-0">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Step {index + 1}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-700">{step}</p>
+                </div>
               </div>
             </article>
           ))}
@@ -95,25 +161,77 @@ export function MemberActionDetailPanel({
 
       <section className="app-surface rounded-[1.8rem] p-4">
         <p className="app-eyebrow app-eyebrow-blue">{workspace.evidenceTitle}</p>
-        <div className="mt-3 grid gap-2.5">
-          {workspace.evidenceItems.map((item) => (
-            <article
-              key={item.label}
-              className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-3.5"
+        <div className="mt-3 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="grid gap-2.5">
+            {workspace.evidenceItems.map((item) => (
+              <article
+                key={item.label}
+                className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]"
+              >
+                <p className="text-sm font-semibold text-slate-950">{item.label}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.detail}</p>
+              </article>
+            ))}
+          </div>
+          <div className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+              Submission path
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Use the preview route first so the proof story stays legible before any
+              save state is opened.
+            </p>
+            <p className="mt-3 text-sm font-semibold text-slate-950">{workspace.helperLabel}</p>
+            <Link
+              href={actionHref ?? workspace.submitEvidenceHref}
+              className="mt-4 inline-flex rounded-full bg-[#2b5fb4] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2455a4]"
             >
-              <p className="text-sm font-semibold text-slate-950">{item.label}</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{item.detail}</p>
-            </article>
-          ))}
+              {actionLabel ?? workspace.submitEvidenceLabel}
+            </Link>
+          </div>
         </div>
-        <p className="mt-4 text-sm text-slate-500">{workspace.helperLabel}</p>
-        <Link
-          href={actionHref ?? workspace.submitEvidenceHref}
-          className="mt-4 inline-flex rounded-full bg-[#2b5fb4] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#2455a4]"
-        >
-          {actionLabel ?? workspace.submitEvidenceLabel}
-        </Link>
       </section>
     </section>
+  );
+}
+
+function ActionDetailMetaTile({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <article className="rounded-[1.15rem] border border-slate-200 bg-white px-3.5 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-semibold text-slate-950">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-600">{note}</p>
+    </article>
+  );
+}
+
+function ActionLoopPill({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: "active" | "idle";
+}) {
+  return (
+    <span
+      className={[
+        "inline-flex rounded-full px-3 py-1.5 text-xs font-semibold",
+        tone === "active"
+          ? "border border-[#2563eb]/40 bg-[#dbeafe] text-[#1d4ed8]"
+          : "border border-slate-200 bg-white text-slate-600",
+      ].join(" ")}
+    >
+      {label}
+    </span>
   );
 }

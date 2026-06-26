@@ -16,10 +16,10 @@ export function ControlledPilotReadinessPanel({
   }
 
   return (
-    <section className="app-surface-warm rounded-[2rem] p-5">
+    <section className="app-surface-info rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="app-eyebrow app-eyebrow-warm">
+          <p className="app-eyebrow app-eyebrow-blue">
             Controlled pilot gate
           </p>
           <h2 className="app-title mt-2">{readiness.title}</h2>
@@ -30,7 +30,7 @@ export function ControlledPilotReadinessPanel({
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/admin/staff-dry-run"
-              className="rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#10223f]"
+              className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#10223f]"
             >
               Open staff dry-run guide
             </Link>
@@ -131,12 +131,12 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: PilotReadinessStatus }) {
   const className =
     status === "ready_now"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "needs_decision"
         ? "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]"
         : status === "blocked_before_pilot"
-          ? "border-amber-200 bg-amber-50 text-amber-700"
-          : "border-rose-200 bg-rose-50 text-rose-700";
+          ? "border-blue-200 bg-blue-50 text-blue-700"
+          : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

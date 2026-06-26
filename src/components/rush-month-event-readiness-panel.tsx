@@ -17,14 +17,14 @@ export function RushMonthEventReadinessPanel({
 
   return (
     <section className="grid gap-4">
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f7d05e]">
+      <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
           Rush Month events
         </p>
-        <h1 className="mt-2 text-3xl font-semibold text-white">
+        <h1 className="mt-2 text-3xl font-semibold text-slate-950">
           {workspace.title}
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
           {workspace.summary}
         </p>
         <div className="mt-4 grid grid-cols-3 gap-3 lg:hidden">
@@ -74,12 +74,12 @@ export function RushMonthEventReadinessPanel({
               {workspace.futureStructuredEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-3"
+                  className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="font-semibold text-slate-950">{event.title}</p>
-                      <p className="mt-1 font-mono text-xs text-[#0f766e]">
+                      <p className="mt-1 font-mono text-xs text-[#1d4ed8]">
                         {event.eventType}
                       </p>
                     </div>
@@ -95,8 +95,8 @@ export function RushMonthEventReadinessPanel({
             </div>
           </article>
 
-          <article className="rounded-[2rem] border border-[#f7d05e]/30 bg-[#fff8df] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a16207]">
+          <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1d4ed8]">
               Disabled outbox
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -106,11 +106,11 @@ export function RushMonthEventReadinessPanel({
               {workspace.disabledOutboxItems.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-[#f7d05e]/20 bg-white/70 p-3"
+                  className="rounded-2xl border border-[#2563eb]/20 bg-white/70 p-3"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-semibold text-slate-950">{item.destination}</p>
-                    <span className="rounded-full border border-[#f7d05e]/20 bg-[#fff4c2] px-2 py-1 text-xs font-semibold text-[#a16207]">
+                    <span className="rounded-full border border-[#2563eb]/20 bg-[#dbeafe] px-2 py-1 text-xs font-semibold text-[#1d4ed8]">
                       {item.status}
                     </span>
                   </div>
@@ -131,7 +131,7 @@ export function RushMonthEventReadinessPanel({
             {workspace.safetyNotes.map((note) => (
               <p
                 key={note}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600"
+                className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 text-sm leading-6 text-slate-600"
               >
                 {note}
               </p>
@@ -151,10 +151,10 @@ function EventReadinessCard({ row }: { row: RushMonthEventReadinessRow }) {
           <div className="flex flex-wrap gap-2">
             <RsvpStatusPill status={row.rsvpStatusTone} label={row.rsvpStatusLabel} />
             <LumaStatusPill status={row.lumaStatusTone} label={row.lumaStatusLabel} />
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
               {row.timing}
             </span>
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
               {row.eventTypeLabel}
             </span>
           </div>
@@ -165,7 +165,7 @@ function EventReadinessCard({ row }: { row: RushMonthEventReadinessRow }) {
         </div>
         <Link
           href={`/rush-month/events/${row.id}`}
-          className="w-fit rounded-full bg-[#86efac] px-4 py-2 text-sm font-semibold text-[#14532d]"
+          className="w-fit rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
         >
           Open event
         </Link>
@@ -184,7 +184,7 @@ function EventReadinessCard({ row }: { row: RushMonthEventReadinessRow }) {
 
 function DetailBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+    <div className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
@@ -202,10 +202,10 @@ function LumaStatusPill({
 }) {
   const className =
     status === "mock_linked"
-      ? "border-cyan-300/30 bg-cyan-300/15 text-cyan-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "future_sync_disabled"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-        : "border-slate-200 bg-slate-50 text-slate-600";
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        : "border-slate-200 bg-[#dbeafe] text-slate-600";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -223,10 +223,10 @@ function RsvpStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "mocked"
-        ? "border-cyan-300/30 bg-cyan-300/15 text-cyan-100"
-        : "border-amber-300/30 bg-amber-300/15 text-amber-100";
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

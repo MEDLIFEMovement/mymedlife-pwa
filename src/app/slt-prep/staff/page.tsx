@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import {
   SltPrepSectionCard,
   SltPrepTonePill,
@@ -156,7 +156,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
   ];
 
   return (
-    <AppShell actor={actor} hideTopHeader showDebugTools={false}>
+    <SltPrepShell actor={actor} hideTopHeader showDebugTools={false}>
       <SltPrepSubnav
         items={getSltTripPrepSubnavItems({
           source: travelerPacketSource,
@@ -173,12 +173,12 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
         />
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f7d05e]">
-              Staff dashboard
+          <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_55%,#eef4ff_100%)] p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+              Traveler readiness
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{workspace.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">{workspace.title}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               Sort the traveler portfolio by risk, open the next blocker quickly, and keep support follow-up readable without leaving the dashboard.
             </p>
             <div className="mt-4 grid grid-cols-4 gap-3">
@@ -190,9 +190,9 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
               />
               <StaffHeroStat label="High risk" value={`${workspace.counts.highRiskTravelers}`} />
             </div>
-            <div className="mt-4 rounded-[1.4rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-white/68">
-                Filter travelers
+            <div className="mt-4 rounded-[1.4rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Status filters
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {filterOptions.map((filter) => (
@@ -203,8 +203,8 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                     className={[
                       "rounded-full border px-4 py-2 text-sm font-semibold transition",
                       filter.active
-                        ? "border-[#f7d05e]/35 bg-[#fff8df] text-[#a16207]"
-                        : "border-white/12 bg-white/8 text-white/88 hover:border-[#f7d05e]/35 hover:bg-white/14 hover:text-white",
+                        ? "border-[#2563eb]/35 bg-[#dbeafe] text-[#1d4ed8]"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#f8fbff] hover:text-slate-950",
                     ].join(" ")}
                   >
                     {filter.label}
@@ -241,7 +241,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                         className={[
                           "rounded-full border px-4 py-2 text-sm font-semibold transition",
                           workspace.bulkAction === option.value
-                            ? "border-[#f7d05e]/35 bg-[#fff8df] text-[#a16207]"
+                            ? "border-[#2563eb]/35 bg-[#dbeafe] text-[#1d4ed8]"
                             : "border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
                         ].join(" ")}
                       >
@@ -329,8 +329,8 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
             </section>
 
             {workspace.bulkActionPreview ? (
-              <section className="rounded-[2rem] border border-[#f7d05e]/30 bg-[#fff8df] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a16207]">
+              <section className="rounded-[2rem] border border-[#2563eb]/30 bg-[#dbeafe] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1d4ed8]">
                   Bulk preview
                 </p>
                 <p className="mt-3 text-sm leading-6 text-slate-700">
@@ -375,7 +375,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                         source: travelerPacketSource,
                         travelerId: selectedTravelerId,
                       })}
-                      className="inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+                      className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
                     >
                       Open traveler mobile view
                     </Link>
@@ -452,7 +452,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
           </div>
         </>
       )}
-    </AppShell>
+    </SltPrepShell>
   );
 }
 
@@ -525,11 +525,11 @@ function buildStaffHref({
 
 function StaffHeroStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.2rem] border border-white/12 bg-white/10 p-3 backdrop-blur-sm">
-      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-white/56">
+    <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-slate-500">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }

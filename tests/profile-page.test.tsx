@@ -44,18 +44,24 @@ describe("profile page", () => {
 
     expect(html).toContain("Hi, Sofia");
     expect(html).toContain("Profile snapshot");
-    expect(html).toContain("Recognition and momentum.");
+    expect(html).toContain("<h2 class=\"mt-2 text-2xl font-semibold text-slate-950\">Recognition</h2>");
+    expect(html).toContain("Keep identity easy to trust.");
     expect(html).toContain("How your name appears across myMEDLIFE.");
     expect(html).toContain("Email connected to this myMEDLIFE profile.");
     expect(html).toContain(
-      "Keep this surface centered on identity, role, and the next step. Recognition and points stay visible lower on the route instead of turning profile into a second dashboard.",
+      "Keep this surface centered on identity, role, and the next step. Recognition and points stay visible lower on the route instead of turning profile into a second dashboard, so profile can hand you back to the event-and-points loop when you are ready to move again.",
     );
+    expect(html).toContain("Finish: Invite 3 friends to the Intro GBM");
     expect(html).toContain("/campaigns?source=profile");
     expect(html).toContain("/rush-month/leaderboard?source=profile");
     expect(html).not.toContain("Earned across visible campaigns");
     expect(html).not.toContain("Friendly chapter-only visibility");
-    expect(html.indexOf("About you")).toBeLessThan(html.indexOf("Recognition and momentum."));
-    expect(html.indexOf("Chapter access")).toBeLessThan(html.indexOf("Recognition and momentum."));
+    expect(html.indexOf("About you")).toBeLessThan(
+      html.indexOf("<h2 class=\"mt-2 text-2xl font-semibold text-slate-950\">Recognition</h2>"),
+    );
+    expect(html.indexOf("Chapter access")).toBeLessThan(
+      html.indexOf("<h2 class=\"mt-2 text-2xl font-semibold text-slate-950\">Recognition</h2>"),
+    );
     expect(html).not.toContain("Safety boundary");
     expect(html).not.toContain("Active scope");
     expect(html).not.toContain("This local profile shows who the selected actor is");
@@ -84,10 +90,10 @@ describe("profile page", () => {
     expect(html).toContain("Coach profile and portfolio scope");
     expect(html).toContain("Current role");
     expect(html).toContain("Next focus");
-    expect(html).toContain("Open Coach Dashboard");
-    expect(html).toContain("/coach?view=chapters");
+    expect(html).toContain("Open Staff Command Center");
+    expect(html).toContain("/staff?view=chapters");
     expect(html).toContain("Coach portfolio");
-    expect(html).toContain("Coach view");
+    expect(html).toContain("Staff view");
     expect(html).not.toContain("Data source status");
     expect(html).not.toContain("Safety boundary");
     expect(html).not.toContain("Local preview tools");

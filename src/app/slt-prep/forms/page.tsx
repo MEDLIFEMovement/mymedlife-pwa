@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import { SltPrepRouteHandoffCard } from "@/components/slt-prep-route-handoff-card";
 import {
   SltPrepSectionCard,
@@ -52,7 +52,7 @@ export default async function SltPrepFormsPage({
     workspace.traveler?.forms.filter((item) => item.status === "submitted").length ?? 0;
 
   return (
-    <AppShell
+    <SltPrepShell
       actor={actor}
       mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
         source: routeSource ?? undefined,
@@ -78,14 +78,14 @@ export default async function SltPrepFormsPage({
         />
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#083f8f_0%,#0b4f9b_52%,#081b3c_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f7d05e]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
               Required forms
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">
               Required Forms Hub
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               Keep {workspace.traveler.firstName}&apos;s forms simple: what is done, what is waiting
               for review, and what still needs a human signature before departure.
             </p>
@@ -252,7 +252,7 @@ export default async function SltPrepFormsPage({
           </div>
         </>
       )}
-    </AppShell>
+    </SltPrepShell>
   );
 }
 

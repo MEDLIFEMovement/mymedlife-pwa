@@ -9,5 +9,5 @@ export function buildLocalPreviewHref(selectedEmail: string, returnTo?: string) 
 }
 
 export function buildStudentHomePreviewHref() {
-  return buildLocalPreviewHref("member.a@mymedlife.test", "/");
+  return buildLocalPreviewHref("member.a@mymedlife.test", "/app");
 }

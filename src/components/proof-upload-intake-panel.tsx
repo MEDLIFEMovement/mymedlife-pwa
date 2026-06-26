@@ -218,7 +218,7 @@ function ProofUploadStoragePacketPanel({
           {packet.blockedControls.map((control) => (
             <span
               key={control}
-              className="rounded-full border border-[#f7d05e]/28 bg-[#fff8df] px-3 py-1 text-xs font-semibold text-[#a16207]"
+              className="rounded-full border border-[#2563eb]/28 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]"
             >
               Held {control}
             </span>
@@ -238,8 +238,8 @@ function ReadinessCheck({ check }: { check: ProofUploadIntakeCheck }) {
           className={[
             "rounded-full border px-2.5 py-1 text-xs font-semibold",
             check.passed
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-rose-200 bg-rose-50 text-rose-700",
+              ? "border-blue-200 bg-blue-50 text-blue-700"
+              : "border-blue-200 bg-blue-50 text-blue-700",
           ].join(" ")}
         >
           {check.passed ? "ready" : "blocked"}

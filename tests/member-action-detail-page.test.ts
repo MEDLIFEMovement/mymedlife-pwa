@@ -3,7 +3,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { assignments } from "@/data/mock-rush-month";
 import {
   getActionDetailFacts,
+  getActionWorkflowPhase,
   getActionSteps,
+  getActionWorkflowStep,
   getActionWhyItMatters,
 } from "@/services/member-action-detail";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
@@ -48,15 +50,29 @@ describe("member action detail copy", () => {
 
   it("builds a why-it-matters summary around the current action and KPI", () => {
     expect(getActionWhyItMatters(assignment)).toContain("30-point action");
+    expect(getActionWhyItMatters(assignment)).toContain("Start one concrete member action");
     expect(getActionWhyItMatters(assignment)).toContain("Student invites sent");
+    expect(getActionWhyItMatters(assignment)).toContain("Current phase objective:");
   });
 
-  it("keeps the steps explicit about evidence and local confirmation", () => {
+  it("keeps the steps explicit about workflow completion, evidence, and local confirmation", () => {
     expect(getActionSteps(assignment)).toEqual([
       "Invite three students to the Intro GBM using the approved chapter message, then submit proof that shows the real outreach happened.",
+      'Advance the "Start one concrete member action" workflow step by meeting this completion signal: Assignment detail exposes due date, status, why-it-matters context, and the guarded start path.',
+      "Keep the broader phase on track by preserving this exit signal: Action status moves to in progress and the proof expectations are visible before submission.",
       "Capture proof that answers this requirement: Message screenshot, invite list, or event RSVP link.",
       "Confirm the proof is accurate, preview the submission locally, and use the confirmation state before any real save path is approved.",
     ]);
+  });
+
+  it("resolves the member action against the Rush Month workflow runtime", () => {
+    const workflowStep = getActionWorkflowStep(assignment);
+    const workflowPhase = getActionWorkflowPhase(assignment);
+
+    expect(workflowStep?.id).toBe("rush-actions");
+    expect(workflowStep?.route).toBe("/rush-month/actions/member-push");
+    expect(workflowPhase?.id).toBe("rush-month-phase-3");
+    expect(workflowPhase?.label).toBe("Recruitment");
   });
 
   it("surfaces due date, assignee, status, and the 30-point detail facts", () => {
@@ -100,10 +116,23 @@ describe("member action detail page", () => {
     );
 
     expect(html).toContain("Action Detail");
+    expect(html).toMatch(
+      /Action Detail<\/p>/,
+    );
+    expect(html).toContain('role="heading"');
+    expect(html).toContain('aria-level="2"');
     expect(html.indexOf("Action Detail")).toBeLessThan(
       html.indexOf("Invite 3 friends to the Intro GBM"),
     );
+    expect(html).toContain("Action loop");
+    expect(html).toContain("Start the action, capture proof, and submit the preview when the chapter story is ready to be reviewed.");
+    expect(html).toContain("Due");
+    expect(html).toContain("Owner");
+    expect(html).toContain("Points");
+    expect(html).toContain("Scope");
     expect(html).toContain("Submit evidence");
+    expect(html).toContain("Evidence preview");
+    expect(html).toContain("Submission path");
     expect(html.match(/Evidence Required/g)?.length).toBe(1);
     expect(html.match(/Submit evidence/g)?.length).toBe(1);
     expect(html).not.toContain("Mock-seeded review data");
@@ -258,7 +287,7 @@ describe("member action detail page", () => {
       "Keep the action tied to the weekly priority you opened from the home route so the member loop still feels like one clear next step.",
     );
     expect(html).toContain("Back to home");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html.indexOf("Action Detail")).toBeLessThan(html.indexOf("From home"));
   });
 

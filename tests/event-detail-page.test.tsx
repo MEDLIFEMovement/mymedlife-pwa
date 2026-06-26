@@ -45,6 +45,8 @@ describe("event detail page", () => {
     expect(html).toContain("Tue Nov 13 · 11:00 AM - 1:00 PM");
     expect(html).toContain("Bruin Walk Table 7");
     expect(html).toContain("20 pts for attending");
+    expect(html).toContain("Event loop");
+    expect(html).toContain("Luma is the source of truth");
     expect(html).toContain("RSVP status");
     expect(html).toContain("You&#x27;re on the list");
     expect(html).toContain("Why this event matters");
@@ -151,7 +153,7 @@ describe("event detail page", () => {
       "Home surfaced this chapter moment as the next place to show up. Keep the weekly loop attached while you review the event plan.",
     );
     expect(html).toContain("Back to home");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html).toContain(
       "/rush-month/actions/member-push?event=event-rush-social-001&amp;source=home",
     );

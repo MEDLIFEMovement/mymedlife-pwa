@@ -161,7 +161,7 @@ export function ChapterMembershipWorkspacePanel({
                 <p className="mt-1 text-sm leading-6 text-slate-600">
                   {control.reason}
                 </p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#a16207]">
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
                   Future trail: {control.futureEventType}
                 </p>
               </div>
@@ -347,12 +347,12 @@ function PacketToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: ChapterMembershipStatus }) {
   const className =
     status === "approved"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "requested"
         ? "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]"
         : status === "needs_follow_up"
-          ? "border-amber-200 bg-amber-50 text-amber-700"
-          : "border-slate-200 bg-slate-50 text-slate-600";
+          ? "border-blue-200 bg-blue-50 text-blue-700"
+          : "border-slate-200 bg-[#dbeafe] text-slate-600";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -364,10 +364,10 @@ function StatusPill({ status }: { status: ChapterMembershipStatus }) {
 function RoleCoverageCard({ item }: { item: RoleCoverageItem }) {
   const className =
     item.status === "covered"
-      ? "border-emerald-200 bg-emerald-50"
+      ? "border-blue-200 bg-blue-50"
       : item.status === "thin"
-        ? "border-amber-200 bg-amber-50"
-        : "border-rose-200 bg-rose-50";
+        ? "border-blue-200 bg-blue-50"
+        : "border-blue-200 bg-blue-50";
 
   return (
     <div className={`rounded-2xl border p-3 ${className}`}>

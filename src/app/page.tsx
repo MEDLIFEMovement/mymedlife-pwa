@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { AppShell } from "@/components/app-shell";
+import { EventLoopStrip } from "@/components/event-loop-strip";
+import { StudentAppShell } from "@/components/student-app-shell";
+import { PanelButton, SurfacePanel, StatCard } from "@/components/visual-primitives";
 import { StatusBadge } from "@/components/status-badge";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import { buildLocalPreviewHref } from "@/services/local-preview-route";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { homeSurfaceJumps } from "@/services/home-role-jumps";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isMemberSurfaceFamily } from "@/services/role-visibility";
 import {
@@ -27,7 +27,7 @@ export default async function Home() {
   ]);
   const landingRoute = getLandingRouteForActor(actor);
 
-  if (!isMemberSurfaceFamily(actor) || landingRoute !== "/") {
+  if (!isMemberSurfaceFamily(actor) || (landingRoute !== "/" && landingRoute !== "/app")) {
     redirect(landingRoute);
   }
 
@@ -40,29 +40,45 @@ export default async function Home() {
   const homePointsHref = `${workspace.points.href}?source=home`;
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
-      debugToolsPlacement="after-content"
       hideTopHeader
-      showMobileQuickItemHelpers={false}
       showDebugTools={false}
     >
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(180deg,#2455a4_0%,#2a5fb5_48%,#21457d_100%)] shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
+      <section className="app-surface-info overflow-hidden rounded-[2rem] p-0">
         <div className="p-4 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                 {workspace.chapterName}
               </p>
-              <h1 className="mt-2 text-[2rem] font-semibold leading-none text-white sm:text-[2.6rem]">
+              <h1 className="mt-2 text-[2rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
                 {workspace.greeting}
               </h1>
-              <p className="mt-2 text-sm text-white/78">You are making a difference.</p>
-              <p className="mt-2 text-xs font-medium uppercase tracking-[0.14em] text-white/56">
+              <p className="mt-2 text-sm text-slate-600">You are making a difference.</p>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                {workspace.heroSummary}
+              </p>
+              <p className="mt-2 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
                 {workspace.chapterMeta}
               </p>
+              {workspace.travelerPrep ? (
+                <div className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-[#bfdbfe] bg-[#eff6ff] px-4 py-3">
+                  <div>
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+                      Traveler access
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-slate-950">
+                      {workspace.travelerPrep.title}
+                    </p>
+                  </div>
+                  <PanelButton href={workspace.travelerPrep.href} variant="secondary" className="px-3 py-2 text-xs">
+                    {workspace.travelerPrep.ctaLabel}
+                  </PanelButton>
+                </div>
+              ) : null}
             </div>
-            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/12 bg-white/10 text-white/78 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -77,31 +93,106 @@ export default async function Home() {
             </span>
           </div>
 
-          <article className="mt-4 rounded-[1.5rem] border border-white/12 bg-white/10 p-3.5 backdrop-blur-sm sm:p-4">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+          <article className="mt-4 rounded-[1.5rem] border border-[#bfdbfe] bg-[#fbfdff] p-3.5 sm:p-4">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
               This Week&apos;s Priority
             </p>
-            <h2 className="mt-2 text-xl font-semibold leading-tight text-white">
+            <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950">
               {featuredAction?.title ?? workspace.startNextAction.label}
             </h2>
-            <p className="mt-2 text-sm text-white/74">
+            <p className="mt-2 text-sm text-slate-600">
               {featuredAction
                 ? `Rush Month · Due ${featuredAction.dueLabel} · ${featuredAction.points} pts`
                 : workspace.startNextAction.detail}
             </p>
-            <Link
+            <PanelButton
               href={featuredAction?.href ?? workspace.startNextAction.href}
-              className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
+              className="mt-4"
             >
               Start next action
-            </Link>
+            </PanelButton>
           </article>
         </div>
       </section>
 
-      <section className="app-surface rounded-[1.8rem] p-4 sm:p-5">
-        <Link
-          href={workspace.campaign.href}
+      <SurfacePanel tone="info">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="app-eyebrow app-eyebrow-blue">Event loop</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+              Luma, RSVP, attendance, and points are the story to watch.
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-slate-700">
+              Open the event, RSVP, confirm attendance, and keep the points and
+              leaderboard movement tied to the chapter moment that actually
+              happened.
+            </p>
+          </div>
+          <EventLoopStrip
+            className="mt-4 grid gap-2 sm:grid-cols-2 lg:w-[24rem]"
+            items={[
+              {
+                label: "Luma",
+                detail: "Source of truth",
+                tone: "blue",
+              },
+              {
+                label: "RSVP",
+                detail: "Student action",
+                tone: "blue",
+              },
+              {
+                label: "Attendance",
+                detail: "Confirms who showed",
+                tone: "gold",
+              },
+              {
+                label: "Points",
+                detail: "Leaderboard impact",
+                tone: "yellow",
+              },
+            ]}
+          />
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <PanelButton href="/rush-month/events?source=home" variant="secondary">
+            Open events
+          </PanelButton>
+          <PanelButton href={homePointsHref}>Open points</PanelButton>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {workspace.stats.map((stat) => (
+            <StatCard
+              key={stat.label}
+              label={stat.label}
+              value={stat.value}
+              note={stat.note}
+            />
+          ))}
+        </div>
+      </SurfacePanel>
+
+      {workspace.travelerPrep ? (
+        <SurfacePanel tone="info">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl">
+              <p className="app-eyebrow app-eyebrow-blue">Traveler access</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                {workspace.travelerPrep.title}
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-slate-700">
+                {workspace.travelerPrep.summary}
+              </p>
+            </div>
+            <PanelButton href={workspace.travelerPrep.href} variant="secondary">
+              {workspace.travelerPrep.ctaLabel}
+            </PanelButton>
+          </div>
+        </SurfacePanel>
+      ) : null}
+
+      <SurfacePanel>
+        <div
           aria-label={`Open ${workspace.campaign.name} campaign`}
           className="block rounded-[1.4rem] transition hover:bg-[#f8fbff]"
         >
@@ -109,7 +200,7 @@ export default async function Home() {
             <div>
               <p className="app-eyebrow app-eyebrow-blue">Active Campaign</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
                   Active
                 </span>
                 <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#2563eb]">
@@ -120,7 +211,7 @@ export default async function Home() {
                 {workspace.campaign.name}
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Recruit new members, build your chapter.
+                {workspace.campaign.summary}
               </p>
             </div>
           </div>
@@ -130,7 +221,7 @@ export default async function Home() {
               <span>Your progress</span>
               <span>{workspace.campaign.progressCountLabel}</span>
             </div>
-            <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-200">
+            <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#f8fbff]">
               <div
                 className="h-full rounded-full bg-[#2b5fb4]"
                 style={{ width: `${workspace.campaign.progressPercent}%` }}
@@ -139,50 +230,51 @@ export default async function Home() {
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-sm font-semibold text-slate-950">
-                Chapter: {workspace.campaign.progressPercent}% complete
-              </p>
-            </div>
-            <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-3 text-right">
-              <p className="text-sm font-semibold text-slate-950">
-                {workspace.campaign.activeMemberCount} / {workspace.campaign.totalMemberCount} members active
-              </p>
-            </div>
+            <StatCard
+              label="Chapter completion"
+              value={`${workspace.campaign.progressPercent}%`}
+              note="of campaign milestones"
+            />
+            <StatCard
+              label="Members active"
+              value={`${workspace.campaign.activeMemberCount}/${workspace.campaign.totalMemberCount}`}
+              note="currently participating"
+            />
           </div>
 
           <div className="mt-4 flex justify-end">
-            <span className="inline-flex rounded-full border border-[#dbeafe] bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]">
+            <PanelButton href={workspace.campaign.href} variant="secondary">
               Open Rush Month campaign
-            </span>
+            </PanelButton>
           </div>
-        </Link>
-      </section>
+        </div>
+      </SurfacePanel>
 
-      <section className="app-surface rounded-[1.8rem] p-4 sm:p-5">
+      <SurfacePanel>
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="app-eyebrow app-eyebrow-blue">My Actions</p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">My Actions</h2>
           </div>
-          <Link
+          <PanelButton
             href="/rush-month/actions?source=home"
-          className="text-sm font-semibold text-[#2563eb]"
-        >
-          See all
-        </Link>
-      </div>
+            className="px-3 py-2 text-xs"
+            variant="secondary"
+          >
+            See all
+          </PanelButton>
+        </div>
 
         <div className="mt-3 grid gap-3">
           {featuredAction ? <ActionRow action={featuredAction} featured /> : null}
           {secondaryActions.map((action) => (
             <ActionRow key={action.id} action={action} />
           ))}
-        </div>
-      </section>
+          </div>
+      </SurfacePanel>
 
       <section className="grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
-        <article className="app-surface rounded-[1.8rem] p-4 sm:p-5">
+        <SurfacePanel>
           <p className="app-eyebrow app-eyebrow-blue">My Points · Rush Month</p>
           <div className="mt-3">
             <div>
@@ -195,46 +287,41 @@ export default async function Home() {
               </p>
             </div>
           </div>
-          <Link
-            href={homePointsHref}
-            className="mt-4 inline-flex text-sm font-semibold text-[#2563eb]"
-          >
+          <PanelButton href={homePointsHref} className="mt-4 px-3 py-2 text-xs" variant="secondary">
             Leaderboard →
-          </Link>
-        </article>
+          </PanelButton>
+        </SurfacePanel>
 
-        <article className="app-surface rounded-[1.8rem] p-4 sm:p-5">
+        <SurfacePanel>
           <div className="flex items-end justify-between gap-3">
             <div>
               <p className="app-eyebrow app-eyebrow-blue">Upcoming Events</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950">Upcoming Events</h2>
             </div>
-            <Link
+            <PanelButton
               href="/rush-month/events?source=home"
-              className="text-sm font-semibold text-[#2563eb]"
+              variant="secondary"
+              className="px-3 py-2 text-xs"
             >
               View all
-            </Link>
+            </PanelButton>
           </div>
-          <div className="mt-4 grid gap-3">
+        <div className="mt-4 grid gap-3">
             {featuredEvent ? <EventRow event={featuredEvent} /> : null}
             {secondaryEvent ? <EventRow event={secondaryEvent} /> : null}
           </div>
-        </article>
+        </SurfacePanel>
       </section>
 
-      <section className="app-surface rounded-[1.8rem] p-4 sm:p-5">
+      <SurfacePanel>
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="app-eyebrow app-eyebrow-blue">Chapter Leaderboard</p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">Chapter Leaderboard</h2>
           </div>
-          <Link
-            href={homePointsHref}
-            className="text-sm font-semibold text-[#2563eb]"
-          >
+          <PanelButton href={homePointsHref} variant="secondary" className="px-3 py-2 text-xs">
             Full board
-          </Link>
+          </PanelButton>
         </div>
         <div className="mt-4 grid gap-2">
           {leaderboardRows.map((row, index) => (
@@ -246,32 +333,17 @@ export default async function Home() {
             />
           ))}
         </div>
-      </section>
+      </SurfacePanel>
 
-      <section className="app-surface-warm rounded-[1.8rem] p-4 sm:p-5">
-        <p className="app-eyebrow app-eyebrow-warm">Coach message</p>
+      <SurfacePanel tone="info">
+        <p className="app-eyebrow app-eyebrow-blue">Coach message</p>
         <p className="mt-3 text-sm font-semibold text-slate-900">
           {workspace.coachMessage.authorName} · {workspace.coachMessage.dateLabel}
         </p>
         <p className="mt-3 text-sm leading-7 text-slate-700">{workspace.coachMessage.body}</p>
-      </section>
+      </SurfacePanel>
 
-      <section className="app-surface rounded-[1.8rem] p-4 sm:p-5">
-        <p className="app-eyebrow app-eyebrow-blue">Switch View</p>
-        <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-slate-50/90 p-3">
-          <div className="flex flex-wrap gap-2">
-          {homeSurfaceJumps.map((option) => (
-            <HomeSurfaceJumpCard
-              key={option.label}
-              actorIdentitySource={actor.identitySource}
-              currentEmail={actor.selectedEmail}
-              option={option}
-            />
-          ))}
-        </div>
-        </div>
-      </section>
-    </AppShell>
+    </StudentAppShell>
   );
 }
 
@@ -302,7 +374,7 @@ function ActionRow({
               "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition",
               isSelected
                 ? "border-[#2b5fb4] bg-white text-[#2b5fb4]"
-                : "border-slate-300 bg-slate-50 text-transparent",
+                : "border-slate-300 bg-[#dbeafe] text-transparent",
             ].join(" ")}
           >
             <span
@@ -325,73 +397,6 @@ function ActionRow({
   );
 }
 
-function HomeSurfaceJumpCard({
-  actorIdentitySource,
-  currentEmail,
-  option,
-}: {
-  actorIdentitySource: string;
-  currentEmail: string;
-  option: (typeof homeSurfaceJumps)[number];
-}) {
-  const isCurrent = currentEmail.toLowerCase() === option.selectedEmail.toLowerCase();
-  const isAuthControlled = actorIdentitySource === "local_auth_session";
-
-  return (
-    isAuthControlled ? (
-      <p className="inline-flex items-center gap-2 rounded-full border border-white/16 bg-white/10 px-3 py-2 text-center text-xs font-semibold text-white/72">
-        <HomeSurfaceJumpIcon label={option.label} />
-        {option.label}
-      </p>
-    ) : (
-      <Link
-        href={isCurrent ? option.returnTo : buildLocalPreviewHref(option.selectedEmail, option.returnTo)}
-        aria-current={isCurrent ? "page" : undefined}
-        className={[
-          "inline-flex items-center gap-2 rounded-full px-3 py-2.5 text-xs font-semibold transition",
-          isCurrent
-            ? "bg-[#f7d05e] text-[#08224c]"
-            : "border border-white/14 bg-white text-slate-700 hover:border-[#dbe8ff] hover:bg-[#eef5ff] hover:text-slate-950",
-        ].join(" ")}
-      >
-        <HomeSurfaceJumpIcon label={option.label} />
-        {option.label}
-      </Link>
-    )
-  );
-}
-
-function HomeSurfaceJumpIcon({ label }: { label: string }) {
-  const iconClassName = "h-[0.9rem] w-[0.9rem]";
-
-  switch (label) {
-    case "Leader Hub":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
-          <path d="M4 10.5 12 4l8 6.5" />
-          <path d="M6.5 10v9h11v-9" />
-        </svg>
-      );
-    case "Coach View":
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
-          <circle cx="8" cy="9" r="2.5" />
-          <circle cx="16" cy="8" r="2.5" />
-          <path d="M4.5 18a4 4 0 0 1 7 0" />
-          <path d="M13.5 17a4 4 0 0 1 6 0" />
-        </svg>
-      );
-    default:
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
-          <rect x="5" y="4.5" width="14" height="15" rx="2" />
-          <path d="M9 9h6" />
-          <path d="M9 13h6" />
-        </svg>
-      );
-  }
-}
-
 function EventRow({ event }: { event: StudentHomeEventCard }) {
   const isRegistered = event.rsvpState === "registered";
 
@@ -399,17 +404,28 @@ function EventRow({ event }: { event: StudentHomeEventCard }) {
     <article className="rounded-[1.35rem] border border-slate-200 bg-white p-4 transition hover:border-[#bfdbfe] hover:bg-[#f8fbff]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#2563eb]">
+              Luma
+            </span>
+            <span className="rounded-full border border-[#dbeafe] bg-[#dbeafe] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#1d4ed8]">
+              RSVP
+            </span>
+          </div>
           <Link
             href={event.href}
-            className="text-base font-semibold text-slate-950 transition hover:text-[#1d4ed8]"
+            className="mt-2 block text-base font-semibold text-slate-950 transition hover:text-[#1d4ed8]"
           >
             {event.title}
           </Link>
           <p className="mt-1 text-sm text-slate-500">{event.timing}</p>
           <p className="mt-1 text-sm text-slate-500">{event.locationLabel}</p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            RSVP &rarr; attendance &rarr; points
+          </p>
         </div>
         {isRegistered ? (
-          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
+          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
             {event.rsvpLabel}
           </span>
         ) : (
@@ -442,8 +458,8 @@ function LeaderboardRowCard({
       className={[
         "flex items-center justify-between rounded-[1.2rem] border px-4 py-3",
         isCurrentUser
-          ? "border-[#f7d05e]/35 bg-[#fff8df]"
-          : "border-slate-200 bg-slate-50",
+          ? "border-[#2563eb]/35 bg-[#dbeafe]"
+          : "border-slate-200 bg-[#dbeafe]",
       ].join(" ")}
     >
       <div className="flex items-center gap-3">
@@ -456,7 +472,7 @@ function LeaderboardRowCard({
           </p>
         </div>
       </div>
-      <p className="text-sm font-semibold text-[#a16207]">{row.points} pts</p>
+      <p className="text-sm font-semibold text-[#1d4ed8]">{row.points} pts</p>
     </div>
   );
 }

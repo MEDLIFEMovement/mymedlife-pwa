@@ -15,7 +15,9 @@ describe("SOP role preview helpers", () => {
     expect(getLocalPreviewEmailForSopRole("president")).toBe("leader.a@mymedlife.test");
     expect(getLocalPreviewEmailForSopRole("coach")).toBe("coach@mymedlife.test");
     expect(getLocalPreviewEmailForSopRole("sales_coach")).toBe("sales.coach@mymedlife.test");
-    expect(getLocalPreviewEmailForSopRole("department_staff")).toBe("admin@mymedlife.test");
+    expect(getLocalPreviewEmailForSopRole("department_staff")).toBe(
+      "general.staff@mymedlife.test",
+    );
     expect(getLocalPreviewEmailForSopRole("sales_admin")).toBe("sales.admin@mymedlife.test");
     expect(getLocalPreviewEmailForSopRole("ds_admin")).toBe("ds.admin@mymedlife.test");
     expect(getLocalPreviewEmailForSopRole("super_admin")).toBe("super.admin@mymedlife.test");
@@ -26,7 +28,7 @@ describe("SOP role preview helpers", () => {
       "/local-preview?selectedEmail=member.a%40mymedlife.test&returnTo=%2Frush-month",
     );
     expect(buildSopRolePreviewHref("department_staff", "/staff?view=campaigns")).toBe(
-      "/local-preview?selectedEmail=admin%40mymedlife.test&returnTo=%2Fstaff%3Fview%3Dcampaigns",
+      "/local-preview?selectedEmail=general.staff%40mymedlife.test&returnTo=%2Fstaff%3Fview%3Dcampaigns",
     );
   });
 

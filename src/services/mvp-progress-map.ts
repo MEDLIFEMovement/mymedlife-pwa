@@ -255,9 +255,9 @@ function getSubprojects(): MvpSubprojectProgress[] {
         "/campaigns/start-a-chapter",
       ],
       plainEnglish:
-        "The app has the exact required starter campaign shells beyond Rush Month, a review checkpoint for them, and deeper local plans for all seven required non-Rush campaigns, but those campaigns are still not implemented as production write-enabled workflows.",
+        "The app has the exact required non-Rush campaign lanes beyond Rush Month, a workflow-readiness checkpoint for them, and deeper local plans for all seven required campaigns. Several are now workflow-backed draft templates, but none are production write-enabled workflows yet.",
       technicalEvidence:
-        "Campaign catalog, route shells, starter-shell readiness service, and all seven non-Rush phase plans, proof prompts, structured events, KPI signals, and coach focus fields are present.",
+        "Campaign catalog, route shells, workflow-readiness service, shared workflow snapshots, and all seven non-Rush phase plans, proof prompts, structured events, KPI signals, and coach focus fields are present.",
       remainingWork:
         "Turn the read-only campaign plans into production campaign-template workflows only after auth, RLS, audit, rollback, and integration approval are complete.",
       nextReviewStep:

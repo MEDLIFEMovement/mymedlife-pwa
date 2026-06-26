@@ -48,12 +48,18 @@ describe("admin master data page", () => {
     expect(html).toContain('href="/admin/committees"');
     expect(html).toContain('href="/admin/workflows"');
     expect(html).toContain('href="/admin/sop-library"');
+    expect(html).toContain('href="/admin/sop-builder/rush-month?tab=steps"');
     expect(html).toContain("Admin master data");
     expect(html).toContain("Admin master data inventory");
     expect(html).toContain("Fake users");
     expect(html).toContain("Named roles");
     expect(html).toContain("Chapters");
     expect(html).toContain("Campaign templates");
+    expect(html).toContain("v2.1");
+    expect(html).toContain("source template version");
+    expect(html).toContain("Current workflow state");
+    expect(html).toContain("SOP tooling");
+    expect(html).toContain("Open SOP builder");
     expect(html).toContain("Blocked until approval");
   });
 });

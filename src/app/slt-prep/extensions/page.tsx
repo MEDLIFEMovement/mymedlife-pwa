@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import { SltPrepRouteHandoffCard } from "@/components/slt-prep-route-handoff-card";
 import {
   SltPrepMiniStat,
@@ -51,7 +51,7 @@ export default async function SltPrepExtensionsPage({
     workspace.traveler?.extensions.find((item) => item.status === "considering") ?? null;
 
   return (
-    <AppShell
+    <SltPrepShell
       actor={actor}
       mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
         source: routeSource ?? undefined,
@@ -78,7 +78,7 @@ export default async function SltPrepExtensionsPage({
       ) : (
         <>
           <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#083f8f_0%,#0b4f9b_52%,#081b3c_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#f7d05e]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
               Extensions and tours
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">
@@ -265,7 +265,7 @@ export default async function SltPrepExtensionsPage({
           </div>
         </>
       )}
-    </AppShell>
+    </SltPrepShell>
   );
 }
 

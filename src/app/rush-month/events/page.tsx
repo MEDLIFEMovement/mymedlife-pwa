@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { MemberRushMonthEventsPanel } from "@/components/member-rush-month-events-panel";
 import { RestrictedState } from "@/components/restricted-state";
@@ -47,7 +47,7 @@ export default async function RushMonthEventsPage({
     getActorSurfaceFamily(actor) === "member" && workspace.canReadWorkspace;
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
       hideTopHeader={isMemberWorkspace}
       showMobileQuickItemHelpers={!isMemberWorkspace}
@@ -91,7 +91,7 @@ export default async function RushMonthEventsPage({
           <RushMonthEventProofBridgePanel workspace={bridgeWorkspace} />
         </>
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 

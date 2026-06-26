@@ -41,19 +41,19 @@ describe("chapter leader command center", () => {
       "Share Bridge Video",
     ]);
     expect(commandCenter.quickActions.find((action) => action.label === "Create Event")?.href).toBe(
-      "/chapter?view=events&quickAction=create_event",
+      "/leader?view=events&quickAction=create_event",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Assign Action")?.href).toBe(
-      "/chapter?view=members&pipeline=follow_up&quickAction=assign_action",
+      "/leader?view=members&pipeline=follow_up&quickAction=assign_action",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Review Members")?.href).toBe(
-      "/chapter?view=members&quickAction=review_members",
+      "/leader?view=members&quickAction=review_members",
     );
     expect(
       commandCenter.quickActions.find((action) => action.label === "Promote Emerging Leader")?.href,
-    ).toBe("/chapter?view=succession&quickAction=promote_emerging_leader");
+    ).toBe("/leader?view=succession&quickAction=promote_emerging_leader");
     expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video")?.href).toBe(
-      "/chapter?view=bridge_videos&quickAction=share_bridge_video",
+      "/leader?view=bridge_videos&quickAction=share_bridge_video",
     );
     expect(commandCenter.activeCampaignLabel).toBe("Moving Mountains 🏔");
     expect(commandCenter.navGroups.map((group) => group.label)).toEqual([
@@ -88,25 +88,25 @@ describe("chapter leader command center", () => {
       expect.objectContaining({
         severity: "high",
         title: "Member Engagement committee has no chair — inactive for 3 weeks",
-        href: "/chapter?view=committees&committee=committee-member-engagement",
+        href: "/leader?view=committees&committee=committee-member-engagement",
       }),
     );
     expect(commandCenter.riskAlerts[1]).toEqual(
       expect.objectContaining({
         title: "Fundraising committee has low activity — only 9 actions completed this month",
-        href: "/chapter?view=committees&committee=committee-fundraising",
+        href: "/leader?view=committees&committee=committee-fundraising",
       }),
     );
     expect(commandCenter.riskAlerts[2]).toEqual(
       expect.objectContaining({
         title: "No bridge videos submitted this month from 3 of 7 committees",
-        href: "/chapter?view=bridge_videos",
+        href: "/leader?view=bridge_videos",
       }),
     );
     expect(commandCenter.riskAlerts[3]).toEqual(
       expect.objectContaining({
         title: "Follow-up overdue after 'Tabling: Quad Recruitment' (Jun 15)",
-        href: "/chapter?view=events&eventCommittee=recruitment&event=bc-event-quad-tabling",
+        href: "/leader?view=events&eventCommittee=recruitment&event=bc-event-quad-tabling",
       }),
     );
   });
@@ -127,9 +127,9 @@ describe("chapter leader command center", () => {
       note: "+11% vs last week",
     });
 
-    expect(markup).toContain("Chapter Leadership Home");
+    expect(markup).toContain("Leader Overview");
     expect(markup).toContain("Leadership Center");
-    expect(markup).toContain("Chapter Dashboard · Jun 2025");
+    expect(markup).toContain("Leadership Dashboard · Jun 2025");
     expect(markup).toContain("Sofia Reyes, President · New England Region");
     expect(markup).toContain("3rd in New England · top 15% globally");
     expect(markup).toContain("Create Event");
@@ -137,7 +137,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Review Members");
     expect(markup).toContain("Promote Emerging Leader");
     expect(markup).toContain("Share Bridge Video");
-    expect(markup).toContain("Chapter Metrics — June 2025");
+    expect(markup).toContain("Leadership Metrics — June 2025");
     expect(markup).toContain("E-Board roles");
     expect(markup).toContain("Health Score");
     expect(markup).toContain("Active Members");
@@ -156,6 +156,8 @@ describe("chapter leader command center", () => {
     expect(markup).toContain(
       "Activate Member Engagement committee, collect bridge videos from all chairs, and push the SLT sign-up campaign.",
     );
+    expect(markup).toContain("Event + points pulse");
+    expect(markup).toContain("Luma, RSVP, attendance, and points are the chapter story.");
     expect(markup).toContain("Quick Actions");
     expect(markup).toContain("Risk Alerts");
     expect(markup).toContain("Member Engagement committee has no chair — inactive for 3 weeks");
@@ -178,10 +180,10 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Bridge stories");
     expect(markup.match(/>Create Event</g)?.length).toBe(2);
     expect(markup.match(/>Assign Action</g)?.length).toBe(2);
-    expect(markup.indexOf("Create Event")).toBeLessThan(markup.indexOf("Chapter Metrics"));
-    expect(markup.indexOf("Assign Action")).toBeLessThan(markup.indexOf("Chapter Metrics"));
-    expect(markup.indexOf("Chapter Metrics")).toBeLessThan(markup.indexOf("Risk Alerts"));
-    expect(markup.indexOf("Active Members")).toBeGreaterThan(markup.indexOf("Chapter Metrics"));
+    expect(markup.indexOf("Create Event")).toBeLessThan(markup.indexOf("Leadership Metrics"));
+    expect(markup.indexOf("Assign Action")).toBeLessThan(markup.indexOf("Leadership Metrics"));
+    expect(markup.indexOf("Leadership Metrics")).toBeLessThan(markup.indexOf("Risk Alerts"));
+    expect(markup.indexOf("Active Members")).toBeGreaterThan(markup.indexOf("Leadership Metrics"));
     expect(markup.indexOf("Risk Alerts")).toBeLessThan(markup.indexOf("This Week&#x27;s Priority"));
     expect(markup.indexOf("This Week&#x27;s Priority")).toBeLessThan(markup.indexOf("Quick Actions"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.lastIndexOf("Review Members"));
@@ -194,7 +196,7 @@ describe("chapter leader command center", () => {
       markup.lastIndexOf("Share Bridge Video"),
     );
     expect(markup.indexOf("Risk Alerts")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
-    expect(markup.indexOf("Chapter Metrics")).toBeLessThan(markup.indexOf("Meals Served"));
+    expect(markup.indexOf("Leadership Metrics")).toBeLessThan(markup.indexOf("Meals Served"));
     expect(markup.indexOf("Meals Served")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
     expect(markup.indexOf("Quick Actions")).toBeLessThan(markup.indexOf("Weekly Points Trend"));
     expect(markup.indexOf("Weekly Points Trend")).toBeLessThan(markup.indexOf("Role coverage"));
@@ -217,7 +219,7 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Navigation");
     expect(markup).not.toContain("Views");
     expect(markup).not.toContain(">Chapter Lead<");
-    expect(markup.indexOf("Active Campaign")).toBeLessThan(markup.indexOf("Chapter Home"));
+    expect(markup.indexOf("Active Campaign")).toBeLessThan(markup.indexOf("Overview"));
     expect(markup.indexOf("Feed Analytics")).toBeLessThan(markup.indexOf("Sofia Reyes"));
     expect(markup).not.toContain("3 shortcuts");
     expect(markup).not.toContain("4 active alerts");
@@ -250,13 +252,13 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedView).toBe("overview");
     expect(commandCenter.selectedMember?.id).toBe("member-zara");
     expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
-      "/chapter?view=members",
+      "/leader?view=members",
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
-      "/chapter?view=leaderboard",
+      "/leader?view=leaderboard",
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "member_profile")?.href).toBe(
-      "/chapter?view=member_profile",
+      "/leader?view=member_profile",
     );
   });
 
@@ -272,16 +274,16 @@ describe("chapter leader command center", () => {
     expect(commandCenter.weeklyPriority?.primaryHref).toBe("/rush-month/actions");
     expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
     expect(commandCenter.quickActions.find((action) => action.label === "Promote Emerging Leader")?.href).toBe(
-      "/chapter?view=succession&member=member-ivy&quickAction=promote_emerging_leader",
+      "/leader?view=succession&member=member-ivy&quickAction=promote_emerging_leader",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Review Members")?.href).toBe(
-      "/chapter?view=members&member=member-ivy&quickAction=review_members",
+      "/leader?view=members&member=member-ivy&quickAction=review_members",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Create Event")?.href).toBe(
-      "/chapter?view=events&member=member-ivy&quickAction=create_event",
+      "/leader?view=events&member=member-ivy&quickAction=create_event",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Assign Action")?.href).toBe(
-      "/chapter?view=members&member=member-ivy&pipeline=follow_up&quickAction=assign_action",
+      "/leader?view=members&member=member-ivy&pipeline=follow_up&quickAction=assign_action",
     );
     expect(commandCenter.pipelineItems.map((item) => item.displayName)).toEqual(
       expect.arrayContaining(["Avery New", "Sam Service", "Ivy Invite", "Zara Events"]),
@@ -302,22 +304,22 @@ describe("chapter leader command center", () => {
     expect(commandCenter.pipelineRows.map((row) => row.displayName)).toEqual(["Ivy Invite"]);
     expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
     expect(commandCenter.pipelineRows[0]?.href).toBe(
-      "/chapter?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
+      "/leader?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
     );
     expect(commandCenter.pipelineRows[0]?.profileHref).toBe(
-      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy",
+      "/leader?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Review Members")?.href).toBe(
-      "/chapter?view=members&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=review_members",
+      "/leader?view=members&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=review_members",
     );
     expect(
       commandCenter.quickActions.find((action) => action.label === "Promote Emerging Leader")
         ?.href,
     ).toBe(
-      "/chapter?view=succession&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=promote_emerging_leader",
+      "/leader?view=succession&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=promote_emerging_leader",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video")?.href).toBe(
-      "/chapter?view=bridge_videos&member=member-ivy&quickAction=share_bridge_video",
+      "/leader?view=bridge_videos&member=member-ivy&quickAction=share_bridge_video",
     );
     expect(commandCenter.pipelineFilterOptions.map((option) => option.label)).toEqual([
       "All Pipeline Levels",
@@ -351,19 +353,19 @@ describe("chapter leader command center", () => {
     expect(markup).toContain('aria-label="Pipeline filter"');
     expect(markup).toContain("<select");
     expect(markup).toContain(`${commandCenter.pipelineRows.length} of ${commandCenter.pipelineTotalCount} members`);
-    expect(markup).toContain('href="/chapter?view=members&amp;member=member-ivy&amp;quickAction=export_members"');
-    expect(markup).toContain('href="/chapter?view=members&amp;member=member-ivy&amp;quickAction=add_member"');
-    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=export_members"');
-    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=add_member"');
+    expect(markup).toContain('href="/leader?view=members&amp;member=member-ivy&amp;quickAction=export_members"');
+    expect(markup).toContain('href="/leader?view=members&amp;member=member-ivy&amp;quickAction=add_member"');
+    expect(markup).not.toContain('href="/leader?view=members&amp;member=member-zara&amp;quickAction=export_members"');
+    expect(markup).not.toContain('href="/leader?view=members&amp;member=member-zara&amp;quickAction=add_member"');
     expect(markup).toContain("12 of 12 members");
     expect(markup).toContain("Sofia Reyes");
     expect(markup).toContain("Marcus Chen");
     expect(markup).toContain("VP of Events · Today");
     expect(markup).toContain("Chair candidate");
     expect(markup).toContain("$1,200");
-    expect(markup).toContain('href="/chapter?view=member_profile&amp;member=member-nina"');
-    expect(markup).toContain('href="/chapter?view=member_profile&amp;member=member-ivy"');
-    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-nina"');
+    expect(markup).toContain('href="/leader?view=member_profile&amp;member=member-nina"');
+    expect(markup).toContain('href="/leader?view=member_profile&amp;member=member-ivy"');
+    expect(markup).not.toContain('href="/leader?view=members&amp;member=member-nina"');
     expect(markup).not.toContain("Member detail");
     expect(markup).not.toContain("Pending joins");
     expect(markup).not.toContain("Select a member from the pipeline table");
@@ -382,12 +384,12 @@ describe("chapter leader command center", () => {
       createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
     );
 
-    expect(markup).toContain('href="/chapter?view=members&amp;quickAction=export_members"');
-    expect(markup).toContain('href="/chapter?view=members&amp;quickAction=add_member"');
-    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=export_members"');
-    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara&amp;quickAction=add_member"');
-    expect(markup).toContain('href="/chapter?view=member_profile&amp;member=member-zara"');
-    expect(markup).not.toContain('href="/chapter?view=members&amp;member=member-zara">Zara Events<');
+    expect(markup).toContain('href="/leader?view=members&amp;quickAction=export_members"');
+    expect(markup).toContain('href="/leader?view=members&amp;quickAction=add_member"');
+    expect(markup).not.toContain('href="/leader?view=members&amp;member=member-zara&amp;quickAction=export_members"');
+    expect(markup).not.toContain('href="/leader?view=members&amp;member=member-zara&amp;quickAction=add_member"');
+    expect(markup).toContain('href="/leader?view=member_profile&amp;member=member-zara"');
+    expect(markup).not.toContain('href="/leader?view=members&amp;member=member-zara">Zara Events<');
     expect(markup).toContain("General member");
     expect(markup).not.toContain("Needs Follow-Up");
   });
@@ -405,10 +407,10 @@ describe("chapter leader command center", () => {
     );
 
     expect(markup).toContain(
-      "/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=export_members",
+      "/leader?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=export_members",
     );
     expect(markup).toContain(
-      "/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_member",
+      "/leader?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_member",
     );
   });
 
@@ -430,7 +432,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Start from the member pipeline, then open the assignment lane.");
     expect(markup).toContain("Open assignment flow");
     expect(markup).toContain(
-      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fchapter%3Fview%3Dmembers%26member%3Dmember-ivy%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
+      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-ivy%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
     );
   });
 
@@ -452,7 +454,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Start from the member pipeline, then open the right member review.");
     expect(markup).toContain("Open member review");
     expect(markup).toContain(
-      "href=\"/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+      "href=\"/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
     );
   });
 
@@ -508,35 +510,35 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedView).toBe("member_profile");
     expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
     expect(commandCenter.selectedMember?.backToPipelineHref).toBe(
-      "/chapter?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
+      "/leader?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
     );
     expect(commandCenter.selectedMember?.badgeLabel).toBe(
       "Needs follow-up before promotion",
     );
     expect(commandCenter.selectedMember?.leadershipActions[0]?.href).toBe(
-      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=promote_to_chair",
+      "/leader?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=promote_to_chair",
     );
     expect(commandCenter.selectedMember?.leadershipActions[1]?.href).toBe(
-      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=schedule_values_interview",
+      "/leader?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=schedule_values_interview",
     );
     expect(commandCenter.selectedMember?.leadershipActions[1]).toMatchObject({
       label: "Schedule Values Interview",
       tone: "primary",
     });
     expect(commandCenter.selectedMember?.leadershipActions[2]?.href).toBe(
-      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=assign_leadership_action",
+      "/leader?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=assign_leadership_action",
     );
     expect(commandCenter.selectedMember?.leadershipActions[3]?.href).toBe(
-      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=nominate_for_eboard",
+      "/leader?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=nominate_for_eboard",
     );
     expect(commandCenter.selectedMember?.leadershipActions[4]?.href).toBe(
-      "/chapter?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=add_leader_note",
+      "/leader?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=add_leader_note",
     );
     expect(commandCenter.selectedMember?.reviewContext).toMatchObject({
       eyebrow: "Follow-up review",
       title: "Re-engagement context is active",
       actionLabel: "Open follow-up queue",
-      actionHref: "/chapter?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
+      actionHref: "/leader?view=members&member=member-ivy&pipeline=follow_up&q=Ivy",
     });
     expect(commandCenter.selectedMember?.valuesAlignment[1]?.label).toBe(
       "Needs consistency proof",
@@ -564,6 +566,10 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Open follow-up queue");
     expect(markup).toContain("Leadership Actions");
     expect(markup).toContain("Points History — Weekly");
+    expect(markup).toContain("Member loop");
+    expect(markup).toContain("Events, points, and follow-through stay in one story.");
+    expect(markup).toContain("Open event context");
+    expect(markup).toContain("Jump to points history");
     expect(markup).toContain("Values Alignment");
     expect(markup).toContain("Activity Timeline");
     expect(markup).toContain("Coach &amp; Leader Notes");
@@ -578,7 +584,17 @@ describe("chapter leader command center", () => {
     expect(markup.indexOf("Leadership Actions")).toBeLessThan(markup.indexOf("Points History"));
     expect(markup.indexOf("Leadership Actions")).toBeLessThan(markup.indexOf("Add Note"));
     expect(markup.indexOf("Add Note")).toBeLessThan(markup.indexOf("Coach &amp; Leader Notes"));
-    expect(markup).toContain("/chapter?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy");
+    expect(markup.indexOf("Member loop")).toBeLessThan(markup.indexOf("Points History"));
+    expect(markup).toContain(
+      buildChapterLeaderEventFlowHref({
+        memberId: "member-ivy",
+        pipelineFilter: "follow_up",
+        searchQuery: "Ivy",
+        quickAction: "review_members",
+      }).replace(/&/g, "&amp;"),
+    );
+    expect(markup).toContain("/leader?view=members&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy");
+    expect(markup).toContain("#member-points-history");
   });
 
   it("keeps the member-profile header compact so the person workbench leads the viewport", () => {
@@ -643,19 +659,19 @@ describe("chapter leader command center", () => {
     );
 
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=promote_to_chair",
+      "/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=promote_to_chair",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=schedule_values_interview",
+      "/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=schedule_values_interview",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_leadership_action",
+      "/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=assign_leadership_action",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=nominate_for_eboard",
+      "/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=nominate_for_eboard",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_leader_note",
+      "/leader?view=member_profile&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;quickAction=add_leader_note",
     );
   });
 
@@ -677,7 +693,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Start from this member profile, then open chair-readiness review.");
     expect(markup).toContain("Open chair review");
     expect(markup).toContain(
-      "href=\"/chapter?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+      "href=\"/leader?view=succession&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
     );
   });
 
@@ -722,7 +738,7 @@ describe("chapter leader command center", () => {
     );
     expect(markup).toContain("Open leadership action flow");
     expect(markup).toContain(
-      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fchapter%3Fview%3Dmembers%26member%3Dmember-ivy%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
+      "href=\"/rush-month/actions?source=chapter_assign_action&amp;returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-ivy%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&amp;member=member-ivy\"",
     );
   });
 
@@ -746,30 +762,30 @@ describe("chapter leader command center", () => {
       actions: [
         {
           label: "Back to re-engagement queue",
-          href: "/chapter?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+          href: "/leader?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
         },
       ],
     });
     expect(commandCenter.selectedMember?.backToPipelineHref).toBe(
-      "/chapter?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+      "/leader?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
     );
     expect(commandCenter.selectedMember?.reviewContext).toMatchObject({
       eyebrow: "Feed analytics follow-up",
       actionLabel: "Back to re-engagement queue",
       actionHref:
-        "/chapter?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+        "/leader?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
     });
     expect(markup).toContain("Feed analytics handoff");
     expect(markup).toContain("Feed analytics follow-up");
     expect(markup).toContain("Back to re-engagement queue");
     expect(markup).toContain(
-      "/chapter?view=members&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy",
+      "/leader?view=members&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy",
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
-      "/chapter?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+      "/leader?view=members&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
-      "/chapter?view=bridge_videos&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+      "/leader?view=bridge_videos&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
     );
   });
 
@@ -793,11 +809,11 @@ describe("chapter leader command center", () => {
       actions: [
         {
           label: "Back to selected post",
-          href: "/chapter?view=feed_analytics&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
+          href: "/leader?view=feed_analytics&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
         },
         {
           label: "Open member pipeline",
-          href: "/chapter?view=members&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
+          href: "/leader?view=members&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
         },
       ],
     });
@@ -812,22 +828,22 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Back to selected post");
     expect(markup).toContain("Sofia Alvarez");
     expect(markup).toContain(
-      "/chapter?view=feed_analytics&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
+      "/leader?view=feed_analytics&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=promote_to_chair",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=promote_to_chair",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=schedule_values_interview",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=schedule_values_interview",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;pipeline=follow_up&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=assign_leadership_action",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;pipeline=follow_up&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=assign_leadership_action",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=nominate_for_eboard",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=nominate_for_eboard",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=add_leader_note",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap&amp;quickAction=add_leader_note",
     );
   });
 
@@ -869,9 +885,9 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedCommittee?.name).toBe("Events");
     expect(
       commandCenter.committees.find((committee) => committee.id === "committee-events")?.href,
-    ).toBe("/chapter?view=committees&committee=committee-events");
+    ).toBe("/leader?view=committees&committee=committee-events");
     expect(commandCenter.viewOptions.find((item) => item.key === "committees")?.href).toBe(
-      "/chapter?view=committees&committee=committee-events",
+      "/leader?view=committees&committee=committee-events",
     );
   });
 
@@ -896,10 +912,10 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Review add committee handoff");
     expect(markup).not.toContain("Open selected committee flow");
     expect(markup).toContain(
-      "/chapter?view=committees&amp;quickAction=add_committee",
+      "/leader?view=committees&amp;quickAction=add_committee",
     );
     expect(markup).not.toContain(
-      "/chapter?view=committees&amp;committee=committee-recruitment&amp;quickAction=add_committee",
+      "/leader?view=committees&amp;committee=committee-recruitment&amp;quickAction=add_committee",
     );
     expect(markup).toContain("Needs Attention");
     expect(markup).toContain("Inactive");
@@ -936,13 +952,13 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Add another committee");
     expect(markup).toContain("Open committee workspace");
     expect(markup).toContain(
-      "/chapter?view=committees&amp;committee=committee-events",
+      "/leader?view=committees&amp;committee=committee-events",
     );
     expect(markup).toContain(
-      "/chapter?view=committees&amp;committee=committee-events&amp;quickAction=add_committee",
+      "/leader?view=committees&amp;committee=committee-events&amp;quickAction=add_committee",
     );
     expect(markup).toContain(
-      "href=\"/action-committees?source=chapter_add_committee&amp;returnTo=%2Fchapter%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee\"",
+      "href=\"/action-committees?source=chapter_add_committee&amp;returnTo=%2Fleader%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee\"",
     );
     expect(markup).toContain("Selected");
   });
@@ -976,7 +992,7 @@ describe("chapter leader command center", () => {
       eventStatusLabel: "Past",
       followUpStatusLabel: "Done",
       creatorLabel: "Marcus Chen",
-      href: "/chapter?view=events&event=bc-event-moving-mountains-kickoff",
+      href: "/leader?view=events&event=bc-event-moving-mountains-kickoff",
       eventFlowHref: "/rush-month/events/event-rush-social-001",
     });
     expect(commandCenter.events.at(-1)).toMatchObject({
@@ -1005,7 +1021,7 @@ describe("chapter leader command center", () => {
       { label: "Best Post Reach", value: "2,180" },
     ]);
     expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toBe(
-      "/chapter?view=events",
+      "/leader?view=events",
     );
   });
 
@@ -1027,7 +1043,7 @@ describe("chapter leader command center", () => {
     });
     expect(commandCenter.eventCommitteeFilters.find((filter) => filter.key === "recruitment")).toMatchObject({
       isActive: true,
-      href: "/chapter?view=events&eventCommittee=recruitment",
+      href: "/leader?view=events&eventCommittee=recruitment",
     });
     expect(markup).toContain('aria-label="Committee filter"');
     expect(markup).toContain('id="chapter-events-committee-filter"');
@@ -1052,12 +1068,15 @@ describe("chapter leader command center", () => {
     expect(commandCenter.activeQuickAction).toBe("create_event");
     expect(markup).toContain("Create Event");
     expect(markup).toContain("Open the chapter event lane with ownership and follow-up in mind.");
+    expect(markup).toContain(
+      "Track event creation, RSVP, attendance, proof, and point impact across the chapter.",
+    );
     expect(markup).toContain("Open event flow");
     expect(markup).toContain(
-      "href=\"/rush-month/events?source=chapter_create_event&amp;returnTo=%2Fchapter%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26quickAction%3Dcreate_event\"",
+      "href=\"/rush-month/events?source=chapter_create_event&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26quickAction%3Dcreate_event\"",
     );
     expect(markup).toContain(
-      "/chapter?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event",
+      "/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event",
     );
   });
 
@@ -1076,7 +1095,7 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedEventId).toBe("bc-event-moving-mountains-kickoff");
     expect(commandCenter.selectedEvent?.title).toBe("Moving Mountains Kickoff");
     expect(commandCenter.events[0]?.href).toBe(
-      "/chapter?view=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
+      "/leader?view=events&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
     );
     expect(markup).toContain(">Events</h1>");
     expect(markup).toContain("Event Detail");
@@ -1084,11 +1103,18 @@ describe("chapter leader command center", () => {
       "Keep the selected event in chapter context before you leave this surface.",
     );
     expect(markup).toContain(
-      "href=\"/chapter?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
+      "Luma keeps the source of truth, RSVP tells you who intends to come, attendance confirms who actually showed, and points follow the reviewed check-in path.",
+    );
+    expect(markup).toContain("Event source of truth");
+    expect(markup).toContain("Intent before check-in");
+    expect(markup).toContain("Attendance unlocks the point step");
+    expect(markup).toContain("Awarded");
+    expect(markup).toContain(
+      "href=\"/leader?view=events&amp;member=member-ivy&amp;eventCommittee=events&amp;quickAction=create_event\"",
     );
     expect(markup).toContain("Open broader event flow");
     expect(markup).toContain(
-      "href=\"/rush-month/events/bc-event-moving-mountains-kickoff?source=chapter_event_review&amp;returnTo=%2Fchapter%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff\"",
+      "href=\"/rush-month/events/bc-event-moving-mountains-kickoff?source=chapter_event_review&amp;returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-ivy%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff\"",
     );
     expect(markup).toContain("Events This Month");
     expect(markup).toContain("RSVP vs. Actual Attendance");
@@ -1138,7 +1164,7 @@ describe("chapter leader command center", () => {
     expect(commandCenter.leaderboardFilters[0]).toMatchObject({
       label: "Chapter Health",
       isActive: true,
-      href: "/chapter?view=leaderboard",
+      href: "/leader?view=leaderboard",
     });
     expect(commandCenter.leaderboardIdeaNote).toContain(
       "UCLA runs weekly SLT testimonial posts",
@@ -1153,7 +1179,7 @@ describe("chapter leader command center", () => {
       healthLabel: "Health 87",
     });
     expect(commandCenter.leaderboardChapters[0]?.bestPracticesHref).toBe(
-      "/chapter?view=feed_analytics&source=leaderboard&benchmark=leaderboard-ucla",
+      "/leader?view=feed_analytics&source=leaderboard&benchmark=leaderboard-ucla",
     );
   });
 
@@ -1172,17 +1198,17 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedLeaderboardRegion).toBe("canada");
     expect(commandCenter.leaderboardRegionLabel).toBe("Canada");
     expect(commandCenter.leaderboardRegionOptions.find((option) => option.key === "canada")).toMatchObject({
-      href: "/chapter?view=leaderboard&leaderboardMetric=attendance&region=canada",
+      href: "/leader?view=leaderboard&leaderboardMetric=attendance&region=canada",
     });
     expect(commandCenter.leaderboardChapters).toHaveLength(1);
     expect(commandCenter.leaderboardChapters[0]?.chapterName).toBe("McGill MEDLIFE");
     expect(commandCenter.leaderboardFilters.find((filter) => filter.key === "attendance")).toMatchObject({
       isActive: true,
-      href: "/chapter?view=leaderboard&leaderboardMetric=attendance&region=canada",
+      href: "/leader?view=leaderboard&leaderboardMetric=attendance&region=canada",
     });
     expect(commandCenter.leaderboardFilters.find((filter) => filter.key === "chapter_health")).toMatchObject({
       isActive: false,
-      href: "/chapter?view=leaderboard&region=canada",
+      href: "/leader?view=leaderboard&region=canada",
     });
     expect(commandCenter.leaderboardIdeaNote).toContain("attendance stay high");
     expect(markup).toContain('aria-label="Leaderboard region filter"');
@@ -1194,7 +1220,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Learn from top chapters. Find ideas to try. Rise together.");
     expect(markup).not.toContain(">Apply<");
     expect(markup).toContain(
-      "/chapter?view=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada",
+      "/leader?view=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada",
     );
   });
 
@@ -1219,10 +1245,10 @@ describe("chapter leader command center", () => {
     });
     expect(commandCenter.sourceContext?.actions?.[0]).toMatchObject({
       label: "Back to leaderboard",
-      href: "/chapter?view=leaderboard&leaderboardMetric=attendance",
+      href: "/leader?view=leaderboard&leaderboardMetric=attendance",
     });
     expect(commandCenter.sourceContext?.actions?.[0]?.href).toBe(
-      "/chapter?view=leaderboard&leaderboardMetric=attendance",
+      "/leader?view=leaderboard&leaderboardMetric=attendance",
     );
     expect(markup).toContain("Leaderboard handoff");
     expect(markup).toContain("Opened from UCLA MEDLIFE best practices");
@@ -1231,10 +1257,10 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Weekly SLT testimonial posts doubled sign-up rate");
     expect(markup).toContain("Back to leaderboard");
     expect(markup).toContain(
-      "/chapter?view=leaderboard&amp;leaderboardMetric=attendance",
+      "/leader?view=leaderboard&amp;leaderboardMetric=attendance",
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
-      "/chapter?view=bridge_videos&source=leaderboard&leaderboardMetric=attendance&benchmark=leaderboard-ucla",
+      "/leader?view=bridge_videos&source=leaderboard&leaderboardMetric=attendance&benchmark=leaderboard-ucla",
     );
   });
 
@@ -1247,7 +1273,7 @@ describe("chapter leader command center", () => {
     });
 
     expect(commandCenter.leaderboardChapters[0]?.bestPracticesHref).toBe(
-      "/chapter?view=feed_analytics&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+      "/leader?view=feed_analytics&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
     );
   });
 
@@ -1262,13 +1288,13 @@ describe("chapter leader command center", () => {
     });
 
     expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
-      "/chapter?view=bridge_videos&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+      "/leader?view=bridge_videos&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "members")?.href).toBe(
-      "/chapter?view=members&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+      "/leader?view=members&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "overview")?.href).toBe(
-      "/chapter?view=overview&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
+      "/leader?view=overview&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill",
     );
   });
 
@@ -1291,7 +1317,7 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedBestPracticeChapter?.chapterName).toBe("McGill MEDLIFE");
     expect(commandCenter.feedPostRows[0]).toMatchObject({
       href:
-        "/chapter?view=feed_analytics&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&feedPost=feed-post-info-night",
+        "/leader?view=feed_analytics&source=leaderboard&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&feedPost=feed-post-info-night",
     });
     expect(commandCenter.sourceContext).toMatchObject({
       title: "Opened from McGill MEDLIFE best practices",
@@ -1301,7 +1327,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("McGill MEDLIFE");
     expect(markup).toContain("Back to recent posts");
     expect(markup).toContain(
-      "/chapter?view=feed_analytics&amp;source=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill",
+      "/leader?view=feed_analytics&amp;source=leaderboard&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill",
     );
   });
 
@@ -1320,16 +1346,16 @@ describe("chapter leader command center", () => {
     );
 
     expect(commandCenter.selectedFeedPost?.nextActionHref).toBe(
-      "/chapter?view=member_profile&source=feed_analytics&member=member-ivy&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&feedPost=feed-post-info-night",
+      "/leader?view=member_profile&source=feed_analytics&member=member-ivy&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&feedPost=feed-post-info-night",
     );
     expect(commandCenter.leastEngagedMembers[0]?.actionHref).toBe(
-      "/chapter?view=member_profile&source=feed_analytics&member=member-ivy&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&feedPost=feed-post-info-night",
+      "/leader?view=member_profile&source=feed_analytics&member=member-ivy&leaderboardMetric=attendance&region=canada&benchmark=leaderboard-mcgill&pipeline=follow_up&q=Ivy&feedPost=feed-post-info-night",
     );
     expect(markup).toContain(
-      "/chapter?view=bridge_videos&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;feedPost=feed-post-info-night&amp;quickAction=share_to_feed",
+      "/leader?view=bridge_videos&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;feedPost=feed-post-info-night&amp;quickAction=share_to_feed",
     );
     expect(markup).toContain(
-      "/chapter?view=members&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;feedPost=feed-post-info-night&amp;quickAction=ask_members_to_respond",
+      "/leader?view=members&amp;source=feed_analytics&amp;leaderboardMetric=attendance&amp;region=canada&amp;benchmark=leaderboard-mcgill&amp;pipeline=follow_up&amp;feedPost=feed-post-info-night&amp;quickAction=ask_members_to_respond",
     );
   });
 
@@ -1347,7 +1373,7 @@ describe("chapter leader command center", () => {
       value: "1,840",
       label: "meals served",
       actionLabel: "Share this story",
-      href: "/chapter?view=impact&impactStory=impact-local-meals&quickAction=share_impact_story",
+      href: "/leader?view=impact&impactStory=impact-local-meals&quickAction=share_impact_story",
       tone: "blue",
     });
     expect(commandCenter.impactHighlights[2]).toMatchObject({
@@ -1390,7 +1416,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Share Impact Story");
     expect(markup).toContain("Share Bridge Video");
     expect(markup).toContain(
-      "/chapter?view=impact&amp;quickAction=share_impact_story",
+      "/leader?view=impact&amp;quickAction=share_impact_story",
     );
     expect(markup).not.toContain("Story in focus");
     expect(markup.indexOf("1,840")).toBeLessThan(markup.indexOf("Local Community Impact"));
@@ -1416,7 +1442,7 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedMember?.displayName).toBe("Ivy Invite");
     expect(commandCenter.impactHighlights[0]?.href).toBe(
-      "/chapter?view=impact&member=member-ivy&impactStory=impact-local-meals&quickAction=share_impact_story",
+      "/leader?view=impact&member=member-ivy&impactStory=impact-local-meals&quickAction=share_impact_story",
     );
     expect(markup).not.toContain("Impact focus");
     expect(markup).not.toContain("Keep Ivy Invite anchored to the story");
@@ -1465,7 +1491,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Story in focus: #3 network rank");
     expect(markup).toContain("Open story library");
     expect(markup).toContain(
-      "href=\"/chapter?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains\"",
+      "href=\"/leader?view=bridge_videos&amp;source=impact&amp;member=member-ivy&amp;impactStory=impact-moving-mountains\"",
     );
   });
 
@@ -1498,7 +1524,7 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedImpactHighlight?.id).toBe("impact-moving-mountains");
     expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video"))
       .toMatchObject({
-        href: "/chapter?view=bridge_videos&source=impact&member=member-ivy&impactStory=impact-moving-mountains&quickAction=share_bridge_video",
+        href: "/leader?view=bridge_videos&source=impact&member=member-ivy&impactStory=impact-moving-mountains&quickAction=share_bridge_video",
       });
   });
 
@@ -1520,7 +1546,7 @@ describe("chapter leader command center", () => {
       actions: [
         {
           label: "Back to impact",
-          href: "/chapter?view=impact&member=member-ivy&impactStory=impact-moving-mountains",
+          href: "/leader?view=impact&member=member-ivy&impactStory=impact-moving-mountains",
         },
       ],
     });
@@ -1595,29 +1621,29 @@ describe("chapter leader command center", () => {
     ]);
     expect(commandCenter.sourceContext?.actions?.[0]).toMatchObject({
       label: "Review all 7",
-      href: "/chapter?view=members&source=member_home&quickAction=review_members",
+      href: "/leader?view=members&source=member_home&quickAction=review_members",
     });
     expect(commandCenter.sourceContext?.actions?.[1]).toMatchObject({
       label: "Assign action",
-      href: "/chapter?view=members&source=member_home&pipeline=follow_up&quickAction=assign_action",
+      href: "/leader?view=members&source=member_home&pipeline=follow_up&quickAction=assign_action",
     });
     expect(commandCenter.quickActions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           label: "Create Event",
-          href: "/chapter?view=events&source=member_home&quickAction=create_event",
+          href: "/leader?view=events&source=member_home&quickAction=create_event",
         }),
         expect.objectContaining({
           label: "Assign Action",
-          href: "/chapter?view=members&source=member_home&pipeline=follow_up&quickAction=assign_action",
+          href: "/leader?view=members&source=member_home&pipeline=follow_up&quickAction=assign_action",
         }),
         expect.objectContaining({
           label: "Review Members",
-          href: "/chapter?view=members&source=member_home&quickAction=review_members",
+          href: "/leader?view=members&source=member_home&quickAction=review_members",
         }),
         expect.objectContaining({
           label: "Promote Emerging Leader",
-          href: "/chapter?view=succession&source=member_home&quickAction=promote_emerging_leader",
+          href: "/leader?view=succession&source=member_home&quickAction=promote_emerging_leader",
         }),
       ]),
     );
@@ -1650,7 +1676,7 @@ describe("chapter leader command center", () => {
       viewsLabel: "284",
       rsvpsLabel: "11",
       isSelected: true,
-      href: "/chapter?view=feed_analytics&feedPost=feed-post-info-night",
+      href: "/leader?view=feed_analytics&feedPost=feed-post-info-night",
     });
     expect(commandCenter.mostEngagedMembers[0]).toMatchObject({
       displayName: "Sofia Reyes",
@@ -1660,23 +1686,23 @@ describe("chapter leader command center", () => {
       displayName: "Ivy Invite",
       actionLabel: "Re-engage",
       actionHref:
-        "/chapter?view=member_profile&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
+        "/leader?view=member_profile&source=feed_analytics&member=member-ivy&pipeline=follow_up&q=Ivy",
     });
     expect(commandCenter.leastEngagedMembers.slice(1)).toEqual([
       expect.objectContaining({
         displayName: "Omar Outreach",
         actionHref:
-          "/chapter?view=member_profile&source=feed_analytics&member=member-omar&pipeline=follow_up&q=Omar",
+          "/leader?view=member_profile&source=feed_analytics&member=member-omar&pipeline=follow_up&q=Omar",
       }),
       expect.objectContaining({
         displayName: "Zara Events",
         actionHref:
-          "/chapter?view=member_profile&source=feed_analytics&member=member-zara&pipeline=follow_up&q=Zara",
+          "/leader?view=member_profile&source=feed_analytics&member=member-zara&pipeline=follow_up&q=Zara",
       }),
       expect.objectContaining({
         displayName: "Sofia Alvarez",
         actionHref:
-          "/chapter?view=member_profile&source=feed_analytics&member=member-maya&pipeline=follow_up&q=Sofia",
+          "/leader?view=member_profile&source=feed_analytics&member=member-maya&pipeline=follow_up&q=Sofia",
       }),
     ]);
   });
@@ -1699,22 +1725,22 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Comments");
     expect(markup).toContain("Actions After");
     expect(markup).toContain(
-      "/chapter?view=bridge_videos&amp;source=feed_analytics&amp;quickAction=share_to_feed",
+      "/leader?view=bridge_videos&amp;source=feed_analytics&amp;quickAction=share_to_feed",
     );
     expect(markup).toContain(
-      "/chapter?view=members&amp;source=feed_analytics&amp;pipeline=follow_up&amp;quickAction=ask_members_to_respond",
+      "/leader?view=members&amp;source=feed_analytics&amp;pipeline=follow_up&amp;quickAction=ask_members_to_respond",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-omar&amp;pipeline=follow_up&amp;q=Omar",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-omar&amp;pipeline=follow_up&amp;q=Omar",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-zara&amp;pipeline=follow_up&amp;q=Zara",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-zara&amp;pipeline=follow_up&amp;q=Zara",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;pipeline=follow_up&amp;q=Sofia",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;pipeline=follow_up&amp;q=Sofia",
     );
     expect(markup).toContain("Recent Posts");
     expect(markup).not.toContain("Selected post");
@@ -1741,20 +1767,20 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedFeedPost?.id).toBe("feed-post-slt-recap");
     expect(commandCenter.feedPostRows.find((row) => row.id === "feed-post-slt-recap")).toMatchObject({
       isSelected: true,
-      href: "/chapter?view=feed_analytics&feedPost=feed-post-slt-recap",
+      href: "/leader?view=feed_analytics&feedPost=feed-post-slt-recap",
     });
     expect(markup).toContain("Impact Analysis");
     expect(markup).toContain("Back to recent posts");
     expect(markup).toContain("SLT info meeting recap - 18 signed up!");
     expect(markup).toContain("Open member review");
     expect(markup).toContain(
-      "/chapter?view=bridge_videos&amp;source=feed_analytics&amp;feedPost=feed-post-slt-recap&amp;quickAction=share_to_feed",
+      "/leader?view=bridge_videos&amp;source=feed_analytics&amp;feedPost=feed-post-slt-recap&amp;quickAction=share_to_feed",
     );
     expect(markup).toContain(
-      "/chapter?view=members&amp;source=feed_analytics&amp;pipeline=follow_up&amp;feedPost=feed-post-slt-recap&amp;quickAction=ask_members_to_respond",
+      "/leader?view=members&amp;source=feed_analytics&amp;pipeline=follow_up&amp;feedPost=feed-post-slt-recap&amp;quickAction=ask_members_to_respond",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
     );
     expect(markup.indexOf("Impact Analysis")).toBeLessThan(
       markup.indexOf("Posts Published"),
@@ -1824,11 +1850,11 @@ describe("chapter leader command center", () => {
       actions: [
         {
           label: "Back to feed analytics",
-          href: "/chapter?view=feed_analytics&source=feed_analytics",
+          href: "/leader?view=feed_analytics&source=feed_analytics",
         },
         {
           label: "Open re-engagement queue",
-          href: "/chapter?view=members&source=feed_analytics",
+          href: "/leader?view=members&source=feed_analytics",
         },
       ],
     });
@@ -1841,10 +1867,10 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Back to feed analytics");
     expect(markup).toContain("Open re-engagement queue");
     expect(markup).toContain(
-      "href=\"/chapter?view=feed_analytics&amp;source=bridge_videos&amp;bridge=recruitment\"",
+      "href=\"/leader?view=feed_analytics&amp;source=bridge_videos&amp;bridge=recruitment\"",
     );
     expect(markup).toContain(
-      "href=\"/chapter?view=feed_analytics&amp;source=feed_analytics\"",
+      "href=\"/leader?view=feed_analytics&amp;source=feed_analytics\"",
     );
   });
 
@@ -1865,18 +1891,18 @@ describe("chapter leader command center", () => {
       actions: [
         {
           label: "Back to selected post",
-          href: "/chapter?view=feed_analytics&source=feed_analytics&feedPost=feed-post-slt-recap",
+          href: "/leader?view=feed_analytics&source=feed_analytics&feedPost=feed-post-slt-recap",
         },
         {
           label: "Open re-engagement queue",
-          href: "/chapter?view=members&source=feed_analytics&feedPost=feed-post-slt-recap",
+          href: "/leader?view=members&source=feed_analytics&feedPost=feed-post-slt-recap",
         },
       ],
     });
     expect(markup).toContain("Post in focus: SLT info meeting recap - 18 signed up!");
     expect(markup).toContain("Back to selected post");
     expect(markup).toContain(
-      "href=\"/chapter?view=feed_analytics&amp;source=bridge_videos&amp;feedPost=feed-post-slt-recap&amp;bridge=recruitment\"",
+      "href=\"/leader?view=feed_analytics&amp;source=bridge_videos&amp;feedPost=feed-post-slt-recap&amp;bridge=recruitment\"",
     );
   });
 
@@ -1905,7 +1931,7 @@ describe("chapter leader command center", () => {
       "Keep this feed signal visible while reviewing bridge assets so the library stays anchored to the real post that needs reinforcement, follow-up, or a better story handoff.",
     );
     expect(markup).toContain(
-      "/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
+      "/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap",
     );
     expect(markup.indexOf("Post in focus")).toBeLessThan(
       markup.indexOf("Videos Submitted"),
@@ -1931,7 +1957,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Start from the re-engagement queue, then open a member review.");
     expect(markup).toContain("Open member review");
     expect(markup).toContain(
-      "href=\"/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
+      "href=\"/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy\"",
     );
   });
 
@@ -1953,10 +1979,10 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Post in focus: SLT info meeting recap - 18 signed up!");
     expect(markup).toContain("Back to selected post");
     expect(markup).toContain(
-      "href=\"/chapter?view=feed_analytics&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;feedPost=feed-post-slt-recap\"",
+      "href=\"/leader?view=feed_analytics&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;feedPost=feed-post-slt-recap\"",
     );
     expect(markup).toContain(
-      "href=\"/chapter?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;feedPost=feed-post-slt-recap\"",
+      "href=\"/leader?view=member_profile&amp;source=feed_analytics&amp;member=member-ivy&amp;pipeline=follow_up&amp;q=Ivy&amp;feedPost=feed-post-slt-recap\"",
     );
   });
 
@@ -1973,11 +1999,11 @@ describe("chapter leader command center", () => {
     expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "comms")).toMatchObject({
       isActive: true,
       href:
-        "/chapter?view=bridge_videos&source=feed_analytics&feedPost=feed-post-slt-recap&bridge=comms&quickAction=share_to_feed",
+        "/leader?view=bridge_videos&source=feed_analytics&feedPost=feed-post-slt-recap&bridge=comms&quickAction=share_to_feed",
     });
     expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "recruitment")).toMatchObject({
       href:
-        "/chapter?view=bridge_videos&source=feed_analytics&feedPost=feed-post-slt-recap&bridge=recruitment&quickAction=share_to_feed",
+        "/leader?view=bridge_videos&source=feed_analytics&feedPost=feed-post-slt-recap&bridge=recruitment&quickAction=share_to_feed",
     });
   });
 
@@ -1996,13 +2022,13 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video")).toMatchObject({
       href:
-        "/chapter?view=bridge_videos&source=feed_analytics&member=member-ivy&feedPost=feed-post-slt-recap&bridge=comms&quickAction=share_bridge_video",
+        "/leader?view=bridge_videos&source=feed_analytics&member=member-ivy&feedPost=feed-post-slt-recap&bridge=comms&quickAction=share_bridge_video",
     });
     expect(commandCenter.bridgeVideoEntries[0]?.featureHref).toBe(
-      "/chapter?view=bridge_videos&source=feed_analytics&member=member-ivy&feedPost=feed-post-slt-recap&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
+      "/leader?view=bridge_videos&source=feed_analytics&member=member-ivy&feedPost=feed-post-slt-recap&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
     );
     expect(markup).toContain(
-      "href=\"/chapter?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms&amp;quickAction=submit_bridge_video\"",
+      "href=\"/leader?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms&amp;quickAction=submit_bridge_video\"",
     );
   });
 
@@ -2021,10 +2047,10 @@ describe("chapter leader command center", () => {
     );
 
     expect(markup).toContain(
-      "href=\"/chapter?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms\"",
+      "href=\"/leader?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms\"",
     );
     expect(markup).toContain(
-      "href=\"/chapter?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms&amp;bridgeVideo=bridge-social-strategy&amp;quickAction=feature_bridge_video\"",
+      "href=\"/leader?view=bridge_videos&amp;source=feed_analytics&amp;member=member-ivy&amp;feedPost=feed-post-slt-recap&amp;bridge=comms&amp;bridgeVideo=bridge-social-strategy&amp;quickAction=feature_bridge_video\"",
     );
   });
 
@@ -2077,11 +2103,11 @@ describe("chapter leader command center", () => {
     expect(commandCenter.selectedBridgeVideoFilter).toBe("comms");
     expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "comms")).toMatchObject({
       isActive: true,
-      href: "/chapter?view=bridge_videos&bridge=comms",
+      href: "/leader?view=bridge_videos&bridge=comms",
     });
     expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "all")).toMatchObject({
       isActive: false,
-      href: "/chapter?view=bridge_videos",
+      href: "/leader?view=bridge_videos",
     });
     expect(commandCenter.bridgeVideoEntries).toHaveLength(1);
     expect(commandCenter.bridgeVideoEntries[0]?.categoryLabel).toBe("Communications");
@@ -2089,13 +2115,13 @@ describe("chapter leader command center", () => {
       "Social Media Posting Strategy for MEDLIFE",
     );
     expect(commandCenter.bridgeVideoEntries[0]?.featureHref).toBe(
-      "/chapter?view=bridge_videos&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
+      "/leader?view=bridge_videos&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
     );
     expect(commandCenter.bridgeVideoEntries[0]?.shareHref).toBe(
-      "/chapter?view=feed_analytics&source=bridge_videos&bridge=comms",
+      "/leader?view=feed_analytics&source=bridge_videos&bridge=comms",
     );
     expect(commandCenter.quickActions.find((action) => action.label === "Share Bridge Video")?.href).toBe(
-      "/chapter?view=bridge_videos&bridge=comms&quickAction=share_bridge_video",
+      "/leader?view=bridge_videos&bridge=comms&quickAction=share_bridge_video",
     );
   });
 
@@ -2122,18 +2148,18 @@ describe("chapter leader command center", () => {
     );
     expect(markup).toContain("Feature selected video");
     expect(markup).toContain(
-      "href=\"/chapter?view=bridge_videos&amp;bridge=comms&amp;bridgeVideo=bridge-social-strategy\"",
+      "href=\"/leader?view=bridge_videos&amp;bridge=comms&amp;bridgeVideo=bridge-social-strategy\"",
     );
     expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "all")).toMatchObject({
       href:
-        "/chapter?view=bridge_videos&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
+        "/leader?view=bridge_videos&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
     });
     expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "comms")).toMatchObject({
       href:
-        "/chapter?view=bridge_videos&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
+        "/leader?view=bridge_videos&bridge=comms&bridgeVideo=bridge-social-strategy&quickAction=feature_bridge_video",
     });
     expect(commandCenter.bridgeVideoFilters.find((filter) => filter.key === "recruitment")).toMatchObject({
-      href: "/chapter?view=bridge_videos&bridge=recruitment",
+      href: "/leader?view=bridge_videos&bridge=recruitment",
     });
   });
 
@@ -2151,13 +2177,13 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("&quot;MEDLIFE leaders build a bridge for the next generation.&quot;");
     expect(markup).toContain("Submit Bridge Video");
     expect(markup).toContain(
-      "/chapter?view=bridge_videos&amp;bridge=comms&amp;quickAction=submit_bridge_video",
+      "/leader?view=bridge_videos&amp;bridge=comms&amp;quickAction=submit_bridge_video",
     );
     expect(markup).toContain("Videos Submitted");
     expect(markup).toContain("Communications");
     expect(markup).toContain("Bridge Culture Reminder");
-    expect(markup).toContain("/chapter?view=bridge_videos&amp;bridge=comms");
-    expect(markup).toContain("/chapter?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms");
+    expect(markup).toContain("/leader?view=bridge_videos&amp;bridge=comms");
+    expect(markup).toContain("/leader?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms");
   });
 
   it("surfaces a route-owned selected video state when a bridge video is selected", () => {
@@ -2207,7 +2233,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("General Member");
     expect(markup).toContain("Recruitment");
     expect(markup).toContain("Follow-up now");
-    expect(markup).toContain("/chapter?view=member_profile&amp;member=member-ivy");
+    expect(markup).toContain("/leader?view=member_profile&amp;member=member-ivy");
   });
 
   it("keeps bridge-video category context when a leader opens feed analytics from the library", () => {
@@ -2227,25 +2253,25 @@ describe("chapter leader command center", () => {
       actions: [
         {
           label: "Back to bridge videos",
-          href: "/chapter?view=bridge_videos&source=bridge_videos&bridge=comms",
+          href: "/leader?view=bridge_videos&source=bridge_videos&bridge=comms",
         },
       ],
     });
     expect(commandCenter.feedAnalyticsBridgeContext).toMatchObject({
       label: "Communications bridge videos",
-      backHref: "/chapter?view=bridge_videos&bridge=comms",
+      backHref: "/leader?view=bridge_videos&bridge=comms",
     });
     expect(commandCenter.viewOptions.find((item) => item.key === "feed_analytics")?.href).toBe(
-      "/chapter?view=feed_analytics&source=bridge_videos",
+      "/leader?view=feed_analytics&source=bridge_videos",
     );
     expect(commandCenter.viewOptions.find((item) => item.key === "bridge_videos")?.href).toBe(
-      "/chapter?view=bridge_videos&source=bridge_videos&bridge=comms",
+      "/leader?view=bridge_videos&source=bridge_videos&bridge=comms",
     );
     expect(markup).toContain("Opened from bridge-video review into feed planning");
     expect(markup).toContain("Back to bridge videos");
     expect(markup).toContain("Bridge Video Context");
     expect(markup).toContain("Reviewing Communications bridge videos");
-    expect(markup).toContain("/chapter?view=bridge_videos&amp;source=bridge_videos&amp;bridge=comms");
+    expect(markup).toContain("/leader?view=bridge_videos&amp;source=bridge_videos&amp;bridge=comms");
   });
 
   it("keeps the selected-post review block ahead of bridge-video context when both states are present", () => {
@@ -2303,7 +2329,7 @@ describe("chapter leader command center", () => {
     });
     expect(commandCenter.successionCandidates.find((candidate) => candidate.displayName === "Ivy Invite")).toMatchObject({
       isSelected: true,
-      href: "/chapter?view=succession&member=member-ivy",
+      href: "/leader?view=succession&member=member-ivy",
     });
     expect(commandCenter.successionCandidates.at(-1)).toMatchObject({
       displayName: "Omar Outreach",
@@ -2332,7 +2358,7 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Selected now");
     expect(markup).toContain("Nominate Candidate");
     expect(markup).toContain("Start Transition Plan");
-    expect(markup).toContain("href=\"/chapter?view=members\"");
+    expect(markup).toContain("href=\"/leader?view=members\"");
   });
 
   it("renders the succession route with the gap, pipeline, and timeline sections from the mockup", () => {
@@ -2354,8 +2380,8 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Selected now");
     expect(markup).toContain("Nominate Candidate");
     expect(markup).toContain("Start Transition Plan");
-    expect(markup).toContain("href=\"/chapter?view=members\"");
-    expect(markup).toContain("href=\"/chapter?view=succession&amp;member=member-ivy\"");
+    expect(markup).toContain("href=\"/leader?view=members\"");
+    expect(markup).toContain("href=\"/leader?view=succession&amp;member=member-ivy\"");
     expect(markup.indexOf("Selected candidate")).toBeLessThan(
       markup.indexOf("E-Board Roles Filled"),
     );
@@ -2379,7 +2405,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Promote Emerging Leader");
     expect(markup).toContain("Start from succession planning, then open the candidate lane.");
     expect(markup).toContain("Open candidate review");
-    expect(markup).toContain("href=\"/chapter?view=succession&amp;member=member-ivy\"");
+    expect(markup).toContain("href=\"/leader?view=succession&amp;member=member-ivy\"");
   });
 
   it("opens add committee as a chapter-owned committees state before the broader committee lane", () => {
@@ -2398,7 +2424,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Open the committee lane with ownership and operating health in mind.");
     expect(markup).toContain("Open committee flow");
     expect(markup).toContain(
-      "href=\"/action-committees?source=chapter_add_committee&amp;returnTo=%2Fchapter%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee\"",
+      "href=\"/action-committees?source=chapter_add_committee&amp;returnTo=%2Fleader%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee\"",
     );
   });
 
@@ -2418,7 +2444,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Start from the bridge-video library, then open the sharing lane.");
     expect(markup).toContain("Share Bridge Video");
     expect(markup).toContain(
-      "href=\"/chapter?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms\"",
+      "href=\"/leader?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms\"",
     );
   });
 
@@ -2435,7 +2461,7 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedBridgeVideo?.id).toBe("bridge-social-strategy");
     expect(markup).toMatch(
-      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms"[^>]*>Share Bridge Video<\/a>/,
+      /href="\/leader\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=comms"[^>]*>Share Bridge Video<\/a>/,
     );
   });
 
@@ -2451,10 +2477,10 @@ describe("chapter leader command center", () => {
 
     expect(commandCenter.selectedBridgeVideo).toBeNull();
     expect(markup).toMatch(
-      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos"[^>]*>Share Bridge Video<\/a>/,
+      /href="\/leader\?view=feed_analytics&amp;source=bridge_videos"[^>]*>Share Bridge Video<\/a>/,
     );
     expect(markup).not.toMatch(
-      /href="\/chapter\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=recruitment"[^>]*>Share Bridge Video<\/a>/,
+      /href="\/leader\?view=feed_analytics&amp;source=bridge_videos&amp;bridge=recruitment"[^>]*>Share Bridge Video<\/a>/,
     );
   });
 
@@ -2474,7 +2500,7 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Start from the bridge-video library, then open the proof lane.");
     expect(markup).toContain("Open proof lane");
     expect(markup).toContain(
-      "href=\"/proof-library/upload?source=chapter_bridge_video&amp;returnTo=%2Fchapter%3Fview%3Dbridge_videos%26bridge%3Dcomms\"",
+      "href=\"/proof-library/upload?source=chapter_bridge_video&amp;returnTo=%2Fleader%3Fview%3Dbridge_videos%26bridge%3Dcomms\"",
     );
   });
 
@@ -2490,9 +2516,9 @@ describe("chapter leader command center", () => {
 
 describe("chapter leader command center href", () => {
   it("builds a clean overview href without unnecessary query params", () => {
-    expect(buildChapterLeaderCommandCenterHref("overview")).toBe("/chapter?view=overview");
+    expect(buildChapterLeaderCommandCenterHref("overview")).toBe("/leader?view=overview");
     expect(buildChapterLeaderCommandCenterHref("overview", { memberId: "member-zara" })).toBe(
-      "/chapter?view=overview&member=member-zara",
+      "/leader?view=overview&member=member-zara",
     );
   });
 
@@ -2503,7 +2529,7 @@ describe("chapter leader command center href", () => {
         pipelineFilter: "follow_up",
         searchQuery: "Ivy",
       }),
-    ).toBe("/chapter?view=members&member=member-zara&pipeline=follow_up&q=Ivy");
+    ).toBe("/leader?view=members&member=member-zara&pipeline=follow_up&q=Ivy");
   });
 
   it("builds the broader assignment lane href with chapter return context preserved", () => {
@@ -2514,7 +2540,7 @@ describe("chapter leader command center href", () => {
         searchQuery: "Ivy",
       }),
     ).toBe(
-      "/rush-month/actions?source=chapter_assign_action&returnTo=%2Fchapter%3Fview%3Dmembers%26member%3Dmember-zara%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&member=member-zara",
+      "/rush-month/actions?source=chapter_assign_action&returnTo=%2Fleader%3Fview%3Dmembers%26member%3Dmember-zara%26pipeline%3Dfollow_up%26q%3DIvy%26quickAction%3Dassign_action&member=member-zara",
     );
   });
 
@@ -2526,7 +2552,7 @@ describe("chapter leader command center href", () => {
         quickAction: "create_event",
       }),
     ).toBe(
-      "/rush-month/events?source=chapter_create_event&returnTo=%2Fchapter%3Fview%3Devents%26member%3Dmember-zara%26eventCommittee%3Devents%26quickAction%3Dcreate_event",
+      "/rush-month/events?source=chapter_create_event&returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-zara%26eventCommittee%3Devents%26quickAction%3Dcreate_event",
     );
     expect(
       buildChapterLeaderEventFlowHref({
@@ -2535,7 +2561,7 @@ describe("chapter leader command center href", () => {
         eventId: "bc-event-moving-mountains-kickoff",
       }),
     ).toBe(
-      "/rush-month/events/bc-event-moving-mountains-kickoff?source=chapter_event_review&returnTo=%2Fchapter%3Fview%3Devents%26member%3Dmember-zara%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff",
+      "/rush-month/events/bc-event-moving-mountains-kickoff?source=chapter_event_review&returnTo=%2Fleader%3Fview%3Devents%26member%3Dmember-zara%26eventCommittee%3Devents%26event%3Dbc-event-moving-mountains-kickoff",
     );
   });
 
@@ -2545,7 +2571,7 @@ describe("chapter leader command center href", () => {
         committeeId: "committee-events",
       }),
     ).toBe(
-      "/action-committees?source=chapter_add_committee&returnTo=%2Fchapter%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee",
+      "/action-committees?source=chapter_add_committee&returnTo=%2Fleader%3Fview%3Dcommittees%26committee%3Dcommittee-events%26quickAction%3Dadd_committee",
     );
   });
 
@@ -2554,23 +2580,23 @@ describe("chapter leader command center href", () => {
       buildChapterLeaderCommandCenterHref("bridge_videos", {
         bridgeVideoFilter: "comms",
       }),
-    ).toBe("/chapter?view=bridge_videos&bridge=comms");
+    ).toBe("/leader?view=bridge_videos&bridge=comms");
     expect(
       buildChapterLeaderCommandCenterHref("bridge_videos", {
         bridgeVideoFilter: "all",
       }),
-    ).toBe("/chapter?view=bridge_videos");
+    ).toBe("/leader?view=bridge_videos");
     expect(
       buildChapterLeaderCommandCenterHref("feed_analytics", {
         bridgeVideoFilter: "comms",
       }),
-    ).toBe("/chapter?view=feed_analytics&bridge=comms");
+    ).toBe("/leader?view=feed_analytics&bridge=comms");
     expect(
       buildChapterLeaderCommandCenterHref("feed_analytics", {
         source: "bridge_videos",
         bridgeVideoFilter: "comms",
       }),
-    ).toBe("/chapter?view=feed_analytics&source=bridge_videos&bridge=comms");
+    ).toBe("/leader?view=feed_analytics&source=bridge_videos&bridge=comms");
     expect(
       buildChapterLeaderCommandCenterHref("bridge_videos", {
         source: "impact",
@@ -2578,7 +2604,7 @@ describe("chapter leader command center href", () => {
         impactStoryId: "impact-moving-mountains",
       }),
     ).toBe(
-      "/chapter?view=bridge_videos&source=impact&member=member-ivy&impactStory=impact-moving-mountains",
+      "/leader?view=bridge_videos&source=impact&member=member-ivy&impactStory=impact-moving-mountains",
     );
   });
 
@@ -2587,12 +2613,12 @@ describe("chapter leader command center href", () => {
       buildChapterLeaderCommandCenterHref("committees", {
         committeeId: "committee-events",
       }),
-    ).toBe("/chapter?view=committees&committee=committee-events");
+    ).toBe("/leader?view=committees&committee=committee-events");
     expect(
       buildChapterLeaderCommandCenterHref("events", {
         committeeId: "committee-events",
       }),
-    ).toBe("/chapter?view=events");
+    ).toBe("/leader?view=events");
   });
 
   it("uses query state for event committee filters only on the events route", () => {
@@ -2600,25 +2626,25 @@ describe("chapter leader command center href", () => {
       buildChapterLeaderCommandCenterHref("events", {
         eventCommitteeFilter: "recruitment",
       }),
-    ).toBe("/chapter?view=events&eventCommittee=recruitment");
+    ).toBe("/leader?view=events&eventCommittee=recruitment");
     expect(
       buildChapterLeaderCommandCenterHref("committees", {
         eventCommitteeFilter: "recruitment",
       }),
-    ).toBe("/chapter?view=committees");
+    ).toBe("/leader?view=committees");
     expect(
       buildChapterLeaderCommandCenterHref("events", {
         eventCommitteeFilter: "events",
         eventId: "bc-event-moving-mountains-kickoff",
       }),
     ).toBe(
-      "/chapter?view=events&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
+      "/leader?view=events&eventCommittee=events&event=bc-event-moving-mountains-kickoff",
     );
     expect(
       buildChapterLeaderCommandCenterHref("committees", {
         eventId: "bc-event-moving-mountains-kickoff",
       }),
-    ).toBe("/chapter?view=committees");
+    ).toBe("/leader?view=committees");
   });
 
   it("uses query state for leaderboard metric filters and benchmark handoffs", () => {
@@ -2626,17 +2652,17 @@ describe("chapter leader command center href", () => {
       buildChapterLeaderCommandCenterHref("leaderboard", {
         leaderboardMetric: "attendance",
       }),
-    ).toBe("/chapter?view=leaderboard&leaderboardMetric=attendance");
+    ).toBe("/leader?view=leaderboard&leaderboardMetric=attendance");
     expect(
       buildChapterLeaderCommandCenterHref("leaderboard", {
         leaderboardMetric: "chapter_health",
       }),
-    ).toBe("/chapter?view=leaderboard");
+    ).toBe("/leader?view=leaderboard");
     expect(
       buildChapterLeaderCommandCenterHref("feed_analytics", {
         source: "leaderboard",
         bestPracticeChapterId: "leaderboard-ucla",
       }),
-    ).toBe("/chapter?view=feed_analytics&source=leaderboard&benchmark=leaderboard-ucla");
+    ).toBe("/leader?view=feed_analytics&source=leaderboard&benchmark=leaderboard-ucla");
   });
 });

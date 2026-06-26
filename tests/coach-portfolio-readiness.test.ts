@@ -11,7 +11,7 @@ describe("coach portfolio readiness", () => {
     const portfolio = getCoachPortfolioReadiness(actor, data);
 
     expect(portfolio.canReadPortfolio).toBe(true);
-    expect(portfolio.title).toBe("Coach Dashboard");
+    expect(portfolio.title).toBe("Staff Command Center");
     expect(portfolio.counts.totalChapters).toBe(4);
     expect(portfolio.counts.coachChangesEnabled).toBe(0);
     expect(portfolio.counts.handoffsPending).toBe(0);
@@ -82,7 +82,7 @@ describe("coach portfolio readiness", () => {
     const portfolio = getCoachPortfolioReadiness(actor, data);
 
     expect(portfolio.canReadPortfolio).toBe(true);
-    expect(portfolio.title).toBe("Coach Dashboard");
+    expect(portfolio.title).toBe("Staff Command Center");
     expect(portfolio.counts.intervene).toBe(
       portfolio.rows.filter((row) => row.decision === "intervene").length,
     );
@@ -94,7 +94,7 @@ describe("coach portfolio readiness", () => {
     const portfolio = getCoachPortfolioReadiness(actor, data);
 
     expect(portfolio.canReadPortfolio).toBe(true);
-    expect(portfolio.title).toBe("Coach Dashboard");
+    expect(portfolio.title).toBe("Staff Command Center");
     expect(portfolio.rows).toHaveLength(4);
   });
 

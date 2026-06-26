@@ -9,6 +9,14 @@ describe("moving mountains campaign", () => {
 
     expect(plan.canReadPlan).toBe(true);
     expect(plan.title).toBe("Leader Moving Mountains campaign plan");
+    expect(plan.workflowSource).toBe("template_version");
+    expect(plan.workflowName).toContain("Fundraising Activation");
+    expect(plan.workflowVersionLabel).toBe("v0 reviewed");
+    expect(plan.importStatus).toBe("draft_reviewed");
+    expect(plan.summary).toContain("Current phase objective:");
+    expect(plan.currentPhaseLabel.length).toBeGreaterThan(0);
+    expect(plan.currentPhaseObjective.length).toBeGreaterThan(20);
+    expect(plan.currentPhaseExitSignal.length).toBeGreaterThan(20);
     expect(plan.route).toBe("/campaigns/moving-mountains");
     expect(plan.browserWritesExpected).toBe(0);
     expect(plan.externalWritesExpected).toBe(0);
@@ -80,7 +88,9 @@ describe("moving mountains campaign", () => {
 
     expect(getMovingMountainsCampaignPlan(member).canReadPlan).toBe(false);
     expect(getMovingMountainsCampaignPlan(member).phases).toEqual([]);
+    expect(getMovingMountainsCampaignPlan(member).workflowSource).toBe("hidden");
     expect(getMovingMountainsCampaignPlan(dsAdmin).canReadPlan).toBe(false);
     expect(getMovingMountainsCampaignPlan(dsAdmin).phases).toEqual([]);
+    expect(getMovingMountainsCampaignPlan(dsAdmin).workflowSource).toBe("hidden");
   });
 });

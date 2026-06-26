@@ -30,7 +30,7 @@ export function LeaderSelectedAssignmentPanel({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={assignment.status} />
-          <span className="rounded-full border border-[#f7d05e]/30 bg-[#fff8df] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#a16207]">
+          <span className="rounded-full border border-[#2563eb]/30 bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
             {assignment.points} points
           </span>
         </div>
@@ -73,7 +73,7 @@ export function LeaderSelectedAssignmentPanel({
         {(assignment.status === "submitted" || assignment.status === "changes_requested") ? (
           <Link
             href={`/rush-month/review?assignmentId=${assignment.id}`}
-            className="rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+            className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
           >
             Open proof review
           </Link>

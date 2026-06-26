@@ -27,8 +27,8 @@ export function HqProofDecisionServerActionPanel({
   const readbackState = getHqProofDecisionReadbackState(evidenceItem, resultCode);
 
   return (
-    <section className="rounded-[2rem] border border-teal-300/20 bg-teal-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-100">
+    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em]  text-blue-100">
         Sharing decision preview
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -43,12 +43,12 @@ export function HqProofDecisionServerActionPanel({
           className={[
             "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
               : resultState.tone === "warning"
-                ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
+                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
                 : resultState.tone === "error"
-                  ? "border-rose-300/30 bg-rose-300/10 text-rose-100"
-                  : "border-teal-300/30 bg-teal-300/10 text-teal-100",
+                  ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+                  : "border-blue-300/30 bg-blue-300/10  text-blue-100",
           ].join(" ")}
           role="status"
         >
@@ -62,10 +62,10 @@ export function HqProofDecisionServerActionPanel({
           className={[
             "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
               : readbackState.tone === "warning"
-                ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
-                : "border-white/10 bg-black/18 text-white/68",
+                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+                : "border-white/10 bg-[#bfdbfe]/42 text-white/68",
           ].join(" ")}
         >
           <p className="font-semibold">Decision readback</p>
@@ -86,7 +86,7 @@ export function HqProofDecisionServerActionPanel({
         <select
           id="decision"
           name="decision"
-          className="w-full rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+          className="w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
           defaultValue={defaultInput.decision}
           disabled={!readiness.canSubmit}
         >
@@ -101,7 +101,7 @@ export function HqProofDecisionServerActionPanel({
         <textarea
           id="note"
           name="note"
-          className="min-h-28 w-full rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
+          className="min-h-28 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
           defaultValue={defaultInput.note}
           disabled={!readiness.canSubmit}
         />
@@ -109,7 +109,7 @@ export function HqProofDecisionServerActionPanel({
         <button
           type="submit"
           disabled={!readiness.canSubmit}
-          className="w-full rounded-full bg-teal-200 px-5 py-3 text-sm font-semibold text-[#06211d] transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
+          className="w-full rounded-full bg-blue-200 px-5 py-3 text-sm font-semibold text-[#08224c] transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
         >
           {readiness.canSubmit ? "Save sharing decision" : "Sharing decision unavailable"}
         </button>
@@ -119,7 +119,7 @@ export function HqProofDecisionServerActionPanel({
         {readiness.checks.map((check) => (
           <div
             key={check.key}
-            className="rounded-2xl border border-white/10 bg-black/18 px-3 py-2"
+            className="rounded-2xl border border-white/10 bg-[#bfdbfe]/42 px-3 py-2"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
               {check.passed ? "Ready" : "Blocked"}

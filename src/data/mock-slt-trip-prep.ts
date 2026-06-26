@@ -37,7 +37,7 @@ export const mockSltTripTravelers: TripPrepTraveler[] = [
       },
       {
         id: "sofia-passport-ready",
-        tone: "green",
+        tone: "blue",
         label: "Passport and insurance are already approved",
         summary:
           "The core travel documents are already in good shape, so the last blockers are operational.",
@@ -608,7 +608,7 @@ export const mockSltTripTravelers: TripPrepTraveler[] = [
     alerts: [
       {
         id: "aria-good",
-        tone: "green",
+        tone: "blue",
         label: "Only the optional extension decision is still open",
         summary: "Core travel, meetings, and payments are clear, so the only remaining choice is whether to add the optional trip extension.",
         owner: "Traveler success",

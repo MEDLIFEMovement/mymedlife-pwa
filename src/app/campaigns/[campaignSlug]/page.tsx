@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { ChapterEngagementCampaignPanel } from "@/components/chapter-engagement-campaign-panel";
 import { GrowTheMovementCampaignPanel } from "@/components/grow-the-movement-campaign-panel";
 import { LeadershipTransitionCampaignPanel } from "@/components/leadership-transition-campaign-panel";
@@ -87,7 +87,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
     campaign.slug === "start-a-chapter" ? getStartAChapterCampaignPlan(actor) : null;
 
   return (
-    <AppShell actor={actor}>
+    <StudentAppShell actor={actor}>
       {!canReadCampaign ? (
         <RestrictedState
           title="This campaign shell is hidden for the selected local role."
@@ -97,32 +97,32 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
         />
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               {campaign.status} campaign
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{campaign.name}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">{campaign.name}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               {campaign.summary}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {campaign.slug === "rush-month" ? (
                 <Link
                   href="/rush-month"
-                  className="rounded-full bg-[#86efac] px-4 py-2 text-sm font-semibold text-[#14532d]"
+                  className="rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
                 >
                   Open active Rush Month loop
                 </Link>
               ) : null}
               <Link
                 href="/action-committees"
-                className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
               >
                 See action committees
               </Link>
               <Link
                 href="/proof-library"
-                className="rounded-full border border-white/12 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
               >
                 See proof library
               </Link>
@@ -206,7 +206,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
                 {campaign.primaryKpis.map((kpi) => (
                   <span
                     key={kpi}
-                    className="rounded-full border border-[#f7d05e]/30 bg-[#fff8df] px-3 py-1 text-sm text-[#a16207]"
+                    className="rounded-full border border-[#2563eb]/30 bg-[#dbeafe] px-3 py-1 text-sm text-[#1d4ed8]"
                   >
                     {kpi.replaceAll("_", " ")}
                   </span>
@@ -220,7 +220,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
                 {eventPlans.map((eventPlan) => (
                   <article
                     key={eventPlan.id}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                    className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
                       {eventPlan.eventType.replaceAll("_", " ")} / {eventPlan.lumaStatus.replaceAll("_", " ")}
@@ -259,11 +259,11 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-950">{event.title}</p>
-                        <p className="mt-1 font-mono text-xs text-[#0f766e]">
+                        <p className="mt-1 font-mono text-xs text-[#1d4ed8]">
                           {event.eventType} / {event.destination}
                         </p>
                       </div>
-                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600">
+                      <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2 py-1 text-xs text-slate-600">
                         {event.status}
                       </span>
                     </div>
@@ -275,6 +275,6 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
           </div>
         </>
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { ChapterLeaderEventCommitteeFilterSelect } from "@/components/chapter-leader-event-committee-filter-select";
 import { ChapterLeaderLeaderboardRegionFilterSelect } from "@/components/chapter-leader-leaderboard-region-filter-select";
 import { ChapterLeaderPipelineFilterSelect } from "@/components/chapter-leader-pipeline-filter-select";
+import { EventLoopStrip } from "@/components/event-loop-strip";
 import {
   buildChapterLeaderAssignmentFlowHref,
   buildChapterLeaderCommitteeFlowHref,
@@ -68,7 +69,7 @@ export function ChapterLeaderCommandCenterPanel({
   return (
     <section className="grid gap-4 xl:grid-cols-[17.25rem_minmax(0,1fr)] xl:items-start">
       {showMemberHomeHandoff && commandCenter.sourceContext ? (
-        <section className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4 xl:col-span-2">
+        <section className="app-surface-info rounded-[1.35rem] p-4 xl:col-span-2">
           <p className="app-eyebrow app-eyebrow-blue">{commandCenter.sourceContext.eyebrow}</p>
           <h2 className="mt-2 text-lg font-semibold text-slate-950">
             {commandCenter.sourceContext.title}
@@ -85,7 +86,7 @@ export function ChapterLeaderCommandCenterPanel({
                   className={[
                     "rounded-full px-4 py-2 text-sm font-semibold transition",
                     action.label === "Student view"
-                      ? "border border-[#f7d05e]/40 bg-[#fff8df] text-[#a16207] hover:border-[#f7d05e]/60 hover:bg-[#ffefb0]"
+                      ? "border border-[#2563eb]/40 bg-[#dbeafe] text-[#1d4ed8] hover:border-[#2563eb]/60 hover:bg-[#dbeafe]"
                       : "border border-[#bfdbfe] bg-white text-[#0b5fc4] hover:border-[#93c5fd] hover:bg-[#eef5ff]",
                   ].join(" ")}
                 >
@@ -128,38 +129,38 @@ export function ChapterLeaderCommandCenterPanel({
       ) : null}
 
       <aside className="xl:sticky xl:top-24">
-        <section className="rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(160deg,#0b234d_0%,#0a3171_50%,#08162d_100%)] p-4 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
+        <section className="rounded-[2rem] border border-[#0f172a] bg-[#0b1b3a] p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)]">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#f7d05e] text-sm font-semibold text-[#08224c]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-sm font-semibold text-white">
               M
             </div>
             <div>
               <p className="text-base font-semibold text-white">myMEDLIFE</p>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/50">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70">
                 Leadership Center
               </p>
             </div>
           </div>
-          <div className="mt-4 rounded-[1.15rem] border border-[#f7d05e]/20 bg-[rgba(15,23,42,0.42)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="mt-4 rounded-[1.15rem] border border-white/10 bg-white/5 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.16)]">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#93c5fd]">
                   Active Campaign
                 </p>
                 <p className="mt-2 text-base font-semibold text-white">
                   {commandCenter.activeCampaignLabel}
                 </p>
               </div>
-              <span className="rounded-full border border-[#f7d05e]/35 bg-[#f7d05e]/12 px-2 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-[#f8df89]">
+              <span className="rounded-full border border-white/10 bg-white/10 px-2 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.16em] text-white">
                 Live
               </span>
             </div>
           </div>
-          <div className="mt-4 border-t border-white/12 pt-4">
+          <div className="mt-4 border-t border-white/10 pt-4">
             <nav aria-label="Leadership command center views" className="grid gap-3">
               {commandCenter.navGroups.map((group) => (
                 <div key={group.label}>
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/42">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/60">
                     {group.label}
                   </p>
                   <div className="mt-2 grid gap-2">
@@ -173,7 +174,7 @@ export function ChapterLeaderCommandCenterPanel({
                               "pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 transition",
                               commandCenter.selectedView === option.key
                                 ? "text-white"
-                                : "text-white/58",
+                                : "text-white/55",
                             ].join(" ")}
                           >
                             <ChapterNavIcon view={option.key} />
@@ -186,8 +187,8 @@ export function ChapterLeaderCommandCenterPanel({
                             className={[
                               "block rounded-[1rem] px-3 py-2.5 pl-11 text-sm font-semibold transition",
                               commandCenter.selectedView === option.key
-                                ? "bg-[#2563eb] text-white shadow-[0_10px_24px_rgba(37,99,235,0.32)]"
-                                : "border border-white/10 bg-white/[0.05] text-white/74 hover:border-white/18 hover:bg-white/[0.1] hover:text-white",
+                                ? "border border-white/10 bg-[#2563eb] text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)]"
+                                : "border border-white/10 bg-white/5 text-white/80 hover:border-[#93c5fd]/40 hover:bg-white/10 hover:text-white",
                             ].join(" ")}
                           >
                             {option.label}
@@ -199,16 +200,16 @@ export function ChapterLeaderCommandCenterPanel({
               ))}
             </nav>
           </div>
-          <div className="mt-4 border-t border-white/12 pt-4">
+          <div className="mt-4 border-t border-white/10 pt-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/10 text-sm font-semibold text-white">
                 {getInitials(commandCenter.sidebarLeaderLabel)}
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">
                   {commandCenter.sidebarLeaderLabel}
                 </p>
-                <p className="truncate text-xs text-white/60">
+                <p className="truncate text-xs text-white/65">
                   {commandCenter.sidebarLeaderRoleLabel}
                 </p>
               </div>
@@ -245,20 +246,20 @@ export function ChapterLeaderCommandCenterPanel({
 
         {isOverview ? (
           <div className="grid gap-4">
-            <section className="rounded-[1.85rem] border border-[#5d8ff6]/22 bg-[linear-gradient(150deg,#061a3a_0%,#08254f_58%,#081327_100%)] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)]">
+            <section className="app-surface-info rounded-[1.85rem] p-5">
               <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/48">
-                    Chapter Leadership Home
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                    Leader Overview
                   </p>
                   <div className="mt-3 min-w-0">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-white/48">
-                      {dashboardHeading}
-                    </p>
-                    <h1 className="mt-2 text-[1.9rem] font-semibold leading-[1.05] text-white sm:text-[2.1rem]">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                        {dashboardHeading}
+                      </p>
+                    <h1 className="mt-2 text-[1.9rem] font-semibold leading-[1.05] text-slate-950 sm:text-[2.1rem]">
                       {commandCenter.chapterName}
                     </h1>
-                    <p className="mt-2 text-sm leading-6 text-white/72">
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
                       {commandCenter.sidebarLeaderLabel}
                       {", "}
                       {commandCenter.sidebarLeaderRoleLabel}
@@ -298,7 +299,7 @@ export function ChapterLeaderCommandCenterPanel({
               </div>
             </section>
 
-            <SectionCard eyebrow="Chapter Metrics" title={getChapterMetricsHeading(commandCenter)}>
+            <SectionCard eyebrow="Leadership Metrics" title={getChapterMetricsHeading(commandCenter)}>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {commandCenter.metrics.map((metric) => (
                   <ToplineMetricCard
@@ -314,7 +315,7 @@ export function ChapterLeaderCommandCenterPanel({
             <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
               <SectionCard eyebrow="Risk Alerts" title="Risk Alerts">
                 <div className="mb-4">
-                  <span className="rounded-full border border-[#fef3c7] bg-[#fffbeb] px-3 py-1 text-xs font-semibold text-[#a16207]">
+                  <span className="rounded-full border border-[#dbeafe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
                     {commandCenter.riskAlerts.length} active
                   </span>
                 </div>
@@ -337,7 +338,7 @@ export function ChapterLeaderCommandCenterPanel({
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Link
                         href={commandCenter.weeklyPriority.primaryHref}
-                        className="rounded-full border border-[#f7d05e]/45 bg-[#fff8df] px-3 py-1.5 text-sm font-semibold text-[#a16207]"
+                        className="rounded-full border border-[#2563eb]/45 bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
                       >
                         {commandCenter.weeklyPriority.primaryLabel}
                       </Link>
@@ -356,6 +357,42 @@ export function ChapterLeaderCommandCenterPanel({
                 )}
               </SectionCard>
             </section>
+
+            <SectionCard
+              eyebrow="Event + points pulse"
+              title="Luma, RSVP, attendance, and points are the chapter story."
+            >
+              <p className="text-sm leading-6 text-slate-600">
+                Keep event creation, RSVP conversion, attendance confirmation,
+                and point awards visible together so the chapter knows which
+                action actually moved the leaderboard.
+              </p>
+              <EventLoopStrip
+                className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+                items={[
+                  {
+                    label: "Luma",
+                    detail: `${commandCenter.eventsOverview.totalEventsThisMonth} events created`,
+                    tone: "blue",
+                  },
+                  {
+                    label: "RSVP",
+                    detail: `conversion ${commandCenter.eventsOverview.rsvpConversionLabel}`,
+                    tone: "blue",
+                  },
+                  {
+                    label: "Attendance",
+                    detail: commandCenter.eventsOverview.attendanceRateLabel,
+                    tone: "gold",
+                  },
+                  {
+                    label: "Points",
+                    detail: `${commandCenter.eventsOverview.eventsWithProofLabel} with proof`,
+                    tone: "yellow",
+                  },
+                ]}
+              />
+            </SectionCard>
 
             <SectionCard eyebrow="Quick Actions" title="Quick Actions">
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -637,7 +674,7 @@ function renderView(
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50/90 p-3.5 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-col gap-3 rounded-[1.25rem] border border-slate-200 bg-[#dbeafe]/90 p-3.5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex flex-col gap-3 xl:min-w-[34rem] xl:flex-1 xl:flex-row xl:items-center">
                 <form action="/chapter" method="get" className="min-w-0 xl:flex-[1.15]">
                   <input type="hidden" name="view" value="members" />
@@ -780,6 +817,61 @@ function renderView(
               </div>
             ) : null}
 
+            <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    Member loop
+                  </p>
+                  <h2 className="mt-2 text-[1.4rem] font-semibold leading-tight text-slate-950">
+                    Events, points, and follow-through stay in one story.
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    Keep this member&apos;s event participation, point movement, and open follow-up
+                    in the same line of sight so the next leadership move stays grounded in real
+                    chapter work.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3 xl:w-[31rem]">
+                  <LoopMetricPill
+                    label="Points"
+                    value={`${commandCenter.selectedMember.points}`}
+                    note={commandCenter.selectedMember.weeklyPointsDeltaLabel}
+                  />
+                  <LoopMetricPill
+                    label="Events"
+                    value={commandCenter.selectedMember.eventsCreatedLabel.split(" ")[0] ?? commandCenter.selectedMember.eventsCreatedLabel}
+                    note={commandCenter.selectedMember.eventsCreatedLabel}
+                  />
+                  <LoopMetricPill
+                    label="Open follow-up"
+                    value={`${commandCenter.selectedMember.openAssignments}`}
+                    note={`${commandCenter.selectedMember.completedActions} completed actions`}
+                  />
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  href={buildChapterLeaderEventFlowHref({
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.selectedMember.id,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                    quickAction: "review_members",
+                  })}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Open event context
+                </Link>
+                <Link
+                  href="#member-points-history"
+                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                >
+                  Jump to points history
+                </Link>
+              </div>
+            </section>
+
             <section className="grid gap-4 xl:grid-cols-[0.72fr_1.28fr] xl:items-start">
               <div className="grid gap-4">
                 <MemberProfileSummaryCard member={commandCenter.selectedMember} />
@@ -813,9 +905,11 @@ function renderView(
                   />
                 </div>
 
-                <SectionCard eyebrow="Momentum" title="Points History — Weekly">
+                <div id="member-points-history">
+                  <SectionCard eyebrow="Momentum" title="Points History — Weekly">
                   <MemberPointsHistoryChart points={commandCenter.selectedMember.pointsHistory} />
-                </SectionCard>
+                  </SectionCard>
+                </div>
 
                 <section className="grid gap-4 xl:grid-cols-2">
                   <SectionCard eyebrow="Values" title="Values Alignment">
@@ -1125,7 +1219,7 @@ function renderView(
                   Events
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Track event execution, proof submission, and follow-up across the chapter.
+                  Track event creation, RSVP, attendance, proof, and point impact across the chapter.
                 </p>
               </div>
               <Link
@@ -1195,49 +1289,96 @@ function renderView(
                 eyebrow="Event Detail"
                 title="Keep the selected event in chapter context before you leave this surface."
               >
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="grid gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-950">
-                        {commandCenter.selectedEvent.title}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {commandCenter.selectedEvent.lane} · {commandCenter.selectedEvent.dateLabel} ·{" "}
-                        {commandCenter.selectedEvent.creatorLabel}
-                      </p>
-                    </div>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                          Expected student action
-                        </p>
-                        <p className="mt-2 text-sm leading-6 text-slate-700">
-                          {commandCenter.selectedEvent.expectedStudentAction}
+                <div className="grid gap-4">
+                  <div className="rounded-[1.25rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                      <div className="grid gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-950">
+                            {commandCenter.selectedEvent.title}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {commandCenter.selectedEvent.lane} · {commandCenter.selectedEvent.dateLabel} ·{" "}
+                            {commandCenter.selectedEvent.creatorLabel}
+                          </p>
+                        </div>
+                        <p className="text-sm leading-6 text-slate-600">
+                          Luma keeps the source of truth, RSVP tells you who intends to come,
+                          attendance confirms who actually showed, and points follow the reviewed
+                          check-in path.
                         </p>
                       </div>
-                      <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-4 py-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                          Proof prompt
-                        </p>
-                        <p className="mt-2 text-sm leading-6 text-slate-700">
-                          {commandCenter.selectedEvent.proofPrompt}
-                        </p>
+                      <div className="grid gap-2 sm:grid-cols-2 xl:w-[28rem]">
+                        <EventDetailMetricPill
+                          label="Luma"
+                          value={commandCenter.selectedEvent.lumaStatusLabel}
+                          note="Event source of truth"
+                        />
+                        <EventDetailMetricPill
+                          label="RSVP"
+                          value={
+                            commandCenter.selectedEvent.rsvpCount === null
+                              ? "—"
+                              : `${commandCenter.selectedEvent.rsvpCount}`
+                          }
+                          note="Intent before check-in"
+                        />
+                        <EventDetailMetricPill
+                          label="Attended"
+                          value={
+                            commandCenter.selectedEvent.attendedCount === null
+                              ? "—"
+                              : `${commandCenter.selectedEvent.attendedCount}`
+                          }
+                          note={commandCenter.selectedEvent.attendanceRateLabel}
+                        />
+                        <EventDetailMetricPill
+                          label="Points"
+                          value={
+                            commandCenter.selectedEvent.followUpStatusLabel === "Done"
+                              ? "Awarded"
+                              : "Ready to award"
+                          }
+                          note="Attendance unlocks the point step"
+                        />
                       </div>
                     </div>
                   </div>
-                  <Link
-                    href={buildChapterLeaderEventFlowHref({
-                      source: commandCenter.selectedSource,
-                      memberId: commandCenter.navigationMemberId,
-                      pipelineFilter: commandCenter.selectedPipelineFilter,
-                      searchQuery: commandCenter.pipelineSearchQuery,
-                      eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
-                      eventId: commandCenter.selectedEvent.id,
-                    })}
-                    className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
-                  >
-                    Open broader event flow
-                  </Link>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                        Expected student action
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">
+                        {commandCenter.selectedEvent.expectedStudentAction}
+                      </p>
+                    </div>
+                    <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+                        Proof prompt
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-700">
+                        {commandCenter.selectedEvent.proofPrompt}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Link
+                      href={buildChapterLeaderEventFlowHref({
+                        source: commandCenter.selectedSource,
+                        memberId: commandCenter.navigationMemberId,
+                        pipelineFilter: commandCenter.selectedPipelineFilter,
+                        searchQuery: commandCenter.pipelineSearchQuery,
+                        eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+                        eventId: commandCenter.selectedEvent.id,
+                      })}
+                      className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                    >
+                      Open broader event flow
+                    </Link>
+                  </div>
                 </div>
               </SectionCard>
             ) : null}
@@ -1250,7 +1391,7 @@ function renderView(
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <span className="rounded-full border border-[#fef3c7] bg-[#fffbeb] px-3 py-1 text-xs font-semibold text-[#a16207]">
+                    <span className="rounded-full border border-[#dbeafe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
                       Manual update
                     </span>
                     <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -1831,7 +1972,7 @@ function renderView(
                   />
                 ))
               ) : (
-                <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] p-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
                     No other bridge videos in this filter
                   </p>
@@ -1847,8 +1988,8 @@ function renderView(
               )}
             </div>
 
-            <div className="mt-4 rounded-[1.2rem] border border-[#f7d05e]/35 bg-[#fff7da] p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#8a6700]">
+            <div className="mt-4 rounded-[1.2rem] border border-[#2563eb]/35 bg-[#dbeafe] p-4">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
                 Bridge Culture Reminder
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -2156,7 +2297,7 @@ function renderView(
                       <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
                         {commandCenter.selectedBestPracticeChapter.countryLabel}
                       </span>
-                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
                         {commandCenter.selectedBestPracticeChapter.healthLabel}
                       </span>
                     </div>
@@ -2361,7 +2502,7 @@ function orderCommandCenterActions(
 }
 
 function getChapterMetricsHeading(commandCenter: ChapterLeaderCommandCenter) {
-  return `Chapter Metrics — ${expandMonthLabel(commandCenter.eventsOverview.monthLabel)}`;
+  return `Leadership Metrics — ${expandMonthLabel(commandCenter.eventsOverview.monthLabel)}`;
 }
 
 function expandMonthLabel(monthLabel: string) {
@@ -2407,14 +2548,14 @@ function HeroProgressStat({
   const progress = getProgressValue(value);
 
   return (
-    <div className="rounded-[1.25rem] border border-white/14 bg-white/[0.08] p-4 backdrop-blur-sm">
+    <div className="rounded-[1.25rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
           {label}
         </p>
-        <p className="text-sm font-semibold text-white">{value}</p>
+        <p className="text-sm font-semibold text-[#2563eb]">{value}</p>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#eff6ff]">
         <div
           className="h-full rounded-full bg-[#2563eb]"
           style={{ width: `${progress * 100}%` }}
@@ -2432,11 +2573,11 @@ function HeroStatusStat({
   value: string;
 }) {
   return (
-    <div className="rounded-[1.25rem] border border-white/14 bg-white/[0.08] p-4 backdrop-blur-sm">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+    <div className="rounded-[1.25rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
-      <p className="mt-3 text-sm font-semibold leading-6 text-white/88">{value}</p>
+      <p className="mt-3 text-sm font-semibold leading-6 text-slate-950">{value}</p>
     </div>
   );
 }
@@ -2547,10 +2688,10 @@ function ToplineMetricCard({
 function RiskAlertCard({ alert }: { alert: ChapterLeaderCommandCenterRiskAlert }) {
   const accentClassName =
     alert.severity === "high"
-      ? "border-l-4 border-l-rose-400"
+      ? "border-l-4 border-l-blue-400"
       : alert.severity === "medium"
-        ? "border-l-4 border-l-amber-400"
-        : "border-l-4 border-l-emerald-400";
+        ? "border-l-4 border-l-blue-400"
+        : "border-l-4 border-l-blue-400";
 
   return (
     <div
@@ -2565,7 +2706,7 @@ function RiskAlertCard({ alert }: { alert: ChapterLeaderCommandCenterRiskAlert }
       </div>
       <Link
         href={alert.href}
-        className="mt-3 inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700"
+        className="mt-3 inline-flex rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-slate-700"
       >
         Open
       </Link>
@@ -2608,7 +2749,7 @@ function ChapterMemberPipelineTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-[61rem] border-collapse">
-        <thead className="bg-slate-50">
+        <thead className="bg-[#dbeafe]">
           <tr>
             {[
               "Member",
@@ -2640,7 +2781,7 @@ function ChapterMemberPipelineTable({
             <tr
               key={row.id}
               className={[
-                "bg-white transition hover:bg-slate-50",
+                "bg-white transition hover:bg-[#dbeafe]",
                 row.isSelected ? "ring-1 ring-inset ring-[#bfdbfe]" : "",
               ].join(" ")}
             >
@@ -2727,13 +2868,13 @@ function formatTableNumber(value: number) {
 function getPipelineValuesBadgeClassName(label: string) {
   const normalized = label.toLowerCase();
   if (normalized.includes("needs interview")) {
-    return "inline-flex rounded-full border border-[#fdba74] bg-[#fff7ed] px-2.5 py-1 text-[0.68rem] font-semibold text-[#c2410c]";
+    return "inline-flex rounded-full border border-[#93c5fd] bg-[#dbeafe] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
   }
   if (normalized.includes("watch")) {
-    return "inline-flex rounded-full border border-[#fde68a] bg-[#fefce8] px-2.5 py-1 text-[0.68rem] font-semibold text-[#a16207]";
+    return "inline-flex rounded-full border border-[#2563eb] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
   }
 
-  return "inline-flex rounded-full border border-[#bbf7d0] bg-[#f0fdf4] px-2.5 py-1 text-[0.68rem] font-semibold text-[#15803d]";
+  return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
 }
 
 function getPipelineStageBadgeClassName(label: string) {
@@ -2741,15 +2882,15 @@ function getPipelineStageBadgeClassName(label: string) {
     case "e-board":
       return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
     case "chair":
-      return "inline-flex rounded-full border border-[#ddd6fe] bg-[#f5f3ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#6d28d9]";
+      return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#2563eb]";
     case "chair candidate":
-      return "inline-flex rounded-full border border-[#bae6fd] bg-[#ecfeff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#0f766e]";
+      return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
     case "active contributor":
-      return "inline-flex rounded-full border border-[#bbf7d0] bg-[#f0fdf4] px-2.5 py-1 text-[0.68rem] font-semibold text-[#15803d]";
+      return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
     case "needs follow-up":
-      return "inline-flex rounded-full border border-[#fecaca] bg-[#fef2f2] px-2.5 py-1 text-[0.68rem] font-semibold text-[#b91c1c]";
+      return "inline-flex rounded-full border border-[#93c5fd] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
     default:
-      return "inline-flex rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[0.68rem] font-semibold text-slate-700";
+      return "inline-flex rounded-full border border-slate-200 bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-slate-700";
   }
 }
 
@@ -2759,23 +2900,23 @@ function MemberProfileSummaryCard({
   member: ChapterLeaderCommandCenterMemberProfile;
 }) {
   return (
-    <section className="app-surface-info self-start rounded-[1.5rem] p-5">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2563eb] text-xl font-semibold text-white">
+    <section className="app-surface-info self-start rounded-[1.5rem] p-4">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2563eb] text-lg font-semibold text-white">
         {member.displayName
           .split(" ")
           .slice(0, 2)
           .map((part) => part[0])
           .join("")}
       </div>
-      <h3 className="mt-4 text-2xl font-semibold text-slate-950">{member.displayName}</h3>
-      <div className="mt-1 text-sm text-slate-600">
+      <h3 className="mt-3 text-xl font-semibold text-slate-950">{member.displayName}</h3>
+      <div className="mt-1 text-sm leading-6 text-slate-600">
         <p>{member.roleLabel}</p>
         <p>{member.committeeLane}</p>
       </div>
-      <div className="mt-4 rounded-[1rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+      <div className="mt-3 inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
         {member.badgeLabel}
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2">
         <ProfileStatRow label="Last active" value={member.lastActiveLabel} />
         <ProfileStatRow label="SLT interest" value={member.sltInterestLabel} />
         <ProfileStatRow label="Volunteer hrs" value={member.volunteerHoursLabel} />
@@ -3016,6 +3157,46 @@ function DetailCallout({
   );
 }
 
+function LoopMetricPill({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <article className="rounded-[1.15rem] border border-white/12 bg-white px-3.5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-600">{note}</p>
+    </article>
+  );
+}
+
+function EventDetailMetricPill({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <article className="rounded-[1rem] border border-white/70 bg-white px-3.5 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <p className="text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 text-xl font-semibold text-slate-950">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-600">{note}</p>
+    </article>
+  );
+}
+
 function MemberPointsHistoryChart({
   points,
 }: {
@@ -3152,7 +3333,7 @@ function EventAttendanceComparisonChart({
                   {row.lane} · {row.dateLabel}
                 </p>
               </div>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+              <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
                 {row.attendanceRateLabel}
               </span>
             </div>
@@ -3196,7 +3377,7 @@ function AttendanceBarRow({
         </p>
         <p className="text-sm font-semibold text-slate-950">{value}</p>
       </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
+      <div className="h-2.5 overflow-hidden rounded-full bg-[#eff6ff]">
         <div className={["h-full rounded-full", toneClassName].join(" ")} style={{ width }} />
       </div>
     </div>
@@ -3209,7 +3390,7 @@ function SocialRecruitingMetricTile({
   metric: ChapterLeaderCommandCenter["socialRecruitingMetrics"][number];
 }) {
   return (
-    <div className="rounded-[1.15rem] border border-slate-200 bg-slate-50/80 p-4">
+    <div className="rounded-[1.15rem] border border-slate-200 bg-[#dbeafe]/80 p-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {metric.label}
       </p>
@@ -3264,7 +3445,7 @@ function ChapterEventsTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-left text-sm text-slate-700">
-        <thead className="bg-slate-50 text-xs uppercase tracking-[0.18em] text-slate-500">
+        <thead className="bg-[#dbeafe] text-xs uppercase tracking-[0.18em] text-slate-500">
           <tr>
             <th className="px-4 py-3">Event</th>
             <th className="px-4 py-3">Date</th>
@@ -3283,7 +3464,7 @@ function ChapterEventsTable({
             <tr
               key={event.id}
               className={`border-t border-slate-200 ${
-                event.id === selectedEventId ? "bg-[#fffdf5]" : ""
+                event.id === selectedEventId ? "bg-[#eff6ff]" : ""
               }`}
             >
               <td className="px-4 py-3 font-semibold text-slate-950">
@@ -3374,7 +3555,7 @@ function CommitteeOperatingRow({
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
               KPI {committee.kpiLabel}
             </p>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#eff6ff]">
               <div
                 className={["h-full rounded-full", getCommitteeKpiBarClassName(committee.operatingStatusLabel)].join(" ")}
                 style={{ width: `${kpiValue}%` }}
@@ -3408,7 +3589,7 @@ function renderCommitteeOwnerBadges(ownerLabel: string) {
     return [
       <span
         key={ownerLabel}
-        className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700"
+        className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
       >
         <span aria-hidden="true">⚠</span>
         No chair assigned
@@ -3419,7 +3600,7 @@ function renderCommitteeOwnerBadges(ownerLabel: string) {
   return owners.map((owner) => (
     <span
       key={owner}
-      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600"
+      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-600"
     >
       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563eb] text-[0.58rem] font-semibold text-white">
         {getInitials(owner)}
@@ -3525,12 +3706,12 @@ function TableTonePill({
 }) {
   const className =
     tone === "green"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : tone === "yellow"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
+        ? "border-blue-200 bg-blue-50 text-blue-700"
         : tone === "red"
-          ? "border-rose-200 bg-rose-50 text-rose-700"
-          : "border-slate-200 bg-slate-50 text-slate-600";
+          ? "border-blue-200 bg-blue-50 text-blue-700"
+          : "border-slate-200 bg-[#dbeafe] text-slate-600";
 
   return (
     <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${className}`}>
@@ -3591,8 +3772,8 @@ function ImpactHighlightCard({
     highlight.tone === "blue"
       ? "bg-[linear-gradient(160deg,#2563eb_0%,#1d4ed8_100%)] text-white"
       : highlight.tone === "purple"
-        ? "bg-[linear-gradient(160deg,#6d28d9_0%,#4338ca_100%)] text-white"
-        : "bg-[linear-gradient(160deg,#f59e0b_0%,#ea580c_100%)] text-white";
+        ? "bg-[linear-gradient(160deg,#2563eb_0%,#1d4ed8_100%)] text-white"
+        : "bg-[linear-gradient(160deg,#93c5fd_0%,#3b82f6_100%)] text-white";
 
   return (
     <div className={["rounded-[1.6rem] p-5 shadow-[0_18px_48px_rgba(15,23,42,0.12)]", toneClassName].join(" ")}>
@@ -3670,8 +3851,8 @@ function CampaignImpactCard({
         <p className="text-sm font-semibold text-slate-700">{overview.progressLabel}</p>
       </div>
 
-      <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full w-[70%] rounded-full bg-emerald-500" />
+      <div className="h-3 overflow-hidden rounded-full bg-[#eff6ff]">
+        <div className="h-full w-[70%] rounded-full bg-blue-500" />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -3681,7 +3862,7 @@ function CampaignImpactCard({
 
       <div className="grid grid-cols-4 gap-3">
         {overview.pillars.map((pillar, index) => (
-          <div key={pillar.label} className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3">
+          <div key={pillar.label} className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] p-3">
             <div
               className="h-12 rounded-[0.8rem] bg-[#2563eb]"
               style={{ opacity: 1 - index * 0.12 }}
@@ -3709,17 +3890,17 @@ function FeedEngagementChart({
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-500">
-        <LegendPill label="Likes" colorClassName="bg-sky-200" />
+        <LegendPill label="Likes" colorClassName="bg-blue-200" />
         <LegendPill label="Comments" colorClassName="bg-blue-500" />
-        <LegendPill label="Actions After" colorClassName="bg-amber-400" />
+        <LegendPill label="Actions After" colorClassName="bg-blue-400" />
       </div>
       <div className="grid gap-3 rounded-[1.25rem] border border-slate-200 bg-white p-4">
         <div className="flex h-48 items-end gap-4">
           {rows.map((row) => (
             <div key={row.label} className="flex min-w-0 flex-1 items-end justify-center gap-1">
-              <FeedChartBar value={row.likes} maxValue={maxValue} colorClassName="bg-sky-200" />
+              <FeedChartBar value={row.likes} maxValue={maxValue} colorClassName="bg-blue-200" />
               <FeedChartBar value={row.comments} maxValue={maxValue} colorClassName="bg-blue-500" />
-              <FeedChartBar value={row.actionsAfter} maxValue={maxValue} colorClassName="bg-amber-400" />
+              <FeedChartBar value={row.actionsAfter} maxValue={maxValue} colorClassName="bg-blue-400" />
             </div>
           ))}
         </div>
@@ -3797,7 +3978,7 @@ function FeedPostsTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-left text-sm text-slate-700">
-        <thead className="bg-slate-50 text-[0.68rem] uppercase tracking-[0.16em] text-slate-500">
+        <thead className="bg-[#dbeafe] text-[0.68rem] uppercase tracking-[0.16em] text-slate-500">
           <tr>
             {["Post", "Type", "Author", "Views", "Likes", "Comments", "Shares", "Actions After", "RSVPs", "Date"].map((label) => (
               <th key={label} className="px-4 py-3">
@@ -3828,7 +4009,7 @@ function FeedPostsTable({
               <td className="px-4 py-3">{row.likesLabel}</td>
               <td className="px-4 py-3">{row.commentsLabel}</td>
               <td className="px-4 py-3">{row.sharesLabel}</td>
-              <td className="px-4 py-3 font-semibold text-emerald-700">{row.actionsAfterLabel}</td>
+              <td className="px-4 py-3 font-semibold text-blue-700">{row.actionsAfterLabel}</td>
               <td className="px-4 py-3">{row.rsvpsLabel}</td>
               <td className="px-4 py-3">{row.dateLabel}</td>
             </tr>
@@ -3848,10 +4029,10 @@ function getFeedPostBadgeClassName(label: string) {
   }
 
   if (label === "Best Practice") {
-    return `${baseClassName} border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700`;
+    return `${baseClassName} border-blue-200 bg-blue-50 text-blue-700`;
   }
 
-  return `${baseClassName} border-slate-200 bg-slate-50 text-slate-600`;
+  return `${baseClassName} border-slate-200 bg-[#dbeafe] text-slate-600`;
 }
 
 function FeedMemberRow({
@@ -3873,12 +4054,12 @@ function FeedMemberRow({
           member.actionHref ? (
             <Link
               href={member.actionHref}
-              className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+              className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
             >
               {member.actionLabel}
             </Link>
           ) : (
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
               {member.actionLabel}
             </span>
           )
@@ -3947,7 +4128,7 @@ function BridgeVideoHubCard({
               "flex h-16 w-16 shrink-0 items-center justify-center rounded-[1rem] text-xl font-semibold",
               isFeatured
                 ? "bg-[linear-gradient(160deg,#2563eb_0%,#1d4ed8_100%)] text-white"
-                : "bg-slate-50 text-slate-400",
+                : "bg-[#dbeafe] text-slate-400",
             ].join(" ")}
           >
             &gt;
@@ -3956,7 +4137,7 @@ function BridgeVideoHubCard({
             <div className="flex flex-wrap items-center gap-2">
               <p className="truncate text-lg font-semibold text-slate-950">{entry.title}</p>
               {entry.badgeLabel ? (
-                <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
                   {entry.badgeLabel}
                 </span>
               ) : null}
@@ -3972,7 +4153,7 @@ function BridgeVideoHubCard({
               <span>Likes {entry.likesLabel}</span>
               <span>Comments {entry.commentsLabel}</span>
               <span>Shares {entry.sharesLabel}</span>
-              <span className="text-emerald-700">{entry.chaptersUsingLabel}</span>
+              <span className="text-blue-700">{entry.chaptersUsingLabel}</span>
             </div>
           </div>
         </div>
@@ -4005,10 +4186,10 @@ function SuccessionGapCard({
       className={[
         "rounded-[1.25rem] border p-4",
         gap.severity === "high"
-          ? "border-rose-200 bg-rose-50"
+          ? "border-blue-200 bg-blue-50"
           : gap.severity === "medium"
-            ? "border-amber-200 bg-amber-50"
-            : "border-slate-200 bg-slate-50",
+            ? "border-blue-200 bg-blue-50"
+            : "border-slate-200 bg-[#dbeafe]",
       ].join(" ")}
     >
       <div className="flex flex-wrap items-center gap-3">
@@ -4056,8 +4237,8 @@ function SuccessionPipelineRow({
         className={[
           "shrink-0 rounded-full px-3 py-1 text-xs font-semibold",
           candidate.badgeLabel.toLowerCase().includes("candidate")
-            ? "border border-cyan-200 bg-cyan-50 text-cyan-700"
-            : "border border-indigo-200 bg-indigo-50 text-indigo-700",
+            ? "border border-blue-200 bg-blue-50 text-blue-700"
+            : "border border-blue-200 bg-blue-50 text-blue-700",
         ].join(" ")}
       >
         {candidate.badgeLabel}
@@ -4092,7 +4273,7 @@ function buildNominateCandidateHref(commandCenter: ChapterLeaderCommandCenter) {
       ? commandCenter.selectedMember?.profileHref
       : null) ??
     commandCenter.successionCandidates[0]?.href ??
-    "/chapter?view=succession"
+    "/leader?view=succession"
   );
 }
 
@@ -4106,7 +4287,7 @@ function buildTransitionPlanHref(commandCenter: ChapterLeaderCommandCenter) {
     });
   }
 
-  return commandCenter.successionCandidates[0]?.href ?? "/chapter?view=succession";
+  return commandCenter.successionCandidates[0]?.href ?? "/leader?view=succession";
 }
 
 function LeaderboardFilterPill({
@@ -4154,14 +4335,14 @@ function ChapterBenchmarkCard({
                 {chapter.badgeLabel}
               </span>
             ) : null}
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
               {chapter.countryLabel}
             </span>
           </div>
           <p className="mt-2 text-sm italic text-slate-500">{chapter.quote}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
             {chapter.healthLabel}
           </span>
           <Link
@@ -4173,9 +4354,9 @@ function ChapterBenchmarkCard({
         </div>
       </div>
 
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#eff6ff]">
         <div
-          className={["h-full rounded-full", isCurrentChapter ? "bg-[#2563eb]" : "bg-slate-400"].join(" ")}
+          className={["h-full rounded-full", isCurrentChapter ? "bg-[#2563eb]" : "bg-[#bfdbfe]"].join(" ")}
           style={{
             width:
               chapter.healthLabel === "Health 96"
@@ -4215,10 +4396,10 @@ function TonePill({
       className={[
         "rounded-full px-3 py-1 text-xs font-semibold capitalize",
         tone === "green"
-          ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+          ? "border border-blue-200 bg-blue-50 text-blue-700"
           : tone === "yellow"
-            ? "border border-amber-200 bg-amber-50 text-amber-700"
-            : "border border-rose-200 bg-rose-50 text-rose-700",
+            ? "border border-blue-200 bg-blue-50 text-blue-700"
+            : "border border-blue-200 bg-blue-50 text-blue-700",
       ].join(" ")}
     >
       {label}
@@ -4248,7 +4429,7 @@ function getInitials(value: string) {
 }
 
 function getDashboardHeading(monthLabel: string) {
-  return `Chapter Dashboard · ${monthLabel.replace("June", "Jun")}`;
+  return `Leadership Dashboard · ${monthLabel.replace("June", "Jun")}`;
 }
 
 function getProgressValue(value: string) {
@@ -4292,11 +4473,11 @@ function getWeeklyMovementClassName(value: string) {
   const numericValue = Number.parseInt(value, 10);
 
   if (numericValue >= 50) {
-    return "text-emerald-700";
+    return "text-blue-700";
   }
 
   if (numericValue >= 30) {
-    return "text-amber-600";
+    return "text-blue-600";
   }
 
   return "text-slate-700";
@@ -4308,7 +4489,7 @@ function getCommitteeAccentClassName(value: string) {
   }
 
   if (value === "Fundraising") {
-    return "border-l-4 border-l-amber-400";
+    return "border-l-4 border-l-blue-400";
   }
 
   if (value === "Events") {
@@ -4324,10 +4505,10 @@ function getCommitteeAccentClassName(value: string) {
   }
 
   if (value === "Service / Local Volunteering") {
-    return "border-l-4 border-l-emerald-500";
+    return "border-l-4 border-l-blue-500";
   }
 
-  return "border-l-4 border-l-rose-400";
+  return "border-l-4 border-l-blue-400";
 }
 
 function getCommitteeKpiBarClassName(value: string) {
@@ -4336,10 +4517,10 @@ function getCommitteeKpiBarClassName(value: string) {
   }
 
   if (value.toLowerCase() === "inactive") {
-    return "bg-rose-400";
+    return "bg-blue-400";
   }
 
-  return "bg-amber-400";
+  return "bg-blue-400";
 }
 
 function getPercentValue(value: string) {

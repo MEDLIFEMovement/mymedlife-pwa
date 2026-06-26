@@ -60,6 +60,6 @@ describe("leader review focus", () => {
     expect(member.canReadFocus).toBe(false);
     expect(member.items).toEqual([]);
     expect(admin.canReadFocus).toBe(false);
-    expect(admin.roleLabel).toBe("Admin");
+    expect(admin.roleLabel).toBe("Staff");
   });
 });

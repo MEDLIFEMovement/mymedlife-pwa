@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { StaffAppShell } from "@/components/staff-app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { CoachDecisionServerActionPanel } from "@/components/coach-decision-server-action-panel";
 import { CoachDecisionResultStatesPanel } from "@/components/coach-decision-result-states-panel";
@@ -10,6 +10,7 @@ import { EventOutboxLog } from "@/components/event-outbox-log";
 import { RestrictedState } from "@/components/restricted-state";
 import { StaffCommandCenterPanel } from "@/components/staff-command-center-panel";
 import { WriteReadinessNotice } from "@/components/write-readiness-notice";
+import { SurfacePanel, VisualTabStrip } from "@/components/visual-primitives";
 import { getCoachDecisionBrowserWriteGate } from "@/services/browser-write-activation";
 import {
   type CoachDecisionResultCode,
@@ -243,37 +244,30 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
           ? "Open student home"
           : "Open your owned surface";
   const coachViewTabsSection = (
-    <section className="app-surface rounded-[1.5rem] p-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-          Coach views
-        </span>
-        {coachViewTabs.map((item) => {
+    <SurfacePanel as="section" className="rounded-[1.5rem] p-3">
+      <p className="px-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+        Staff views
+      </p>
+      <VisualTabStrip
+        label="Staff command center views"
+        className="mt-2"
+        iconClassName="h-4 w-4 opacity-80"
+        items={coachViewTabs.map((item) => {
           const isCurrent =
             (item.key === "overview" && showCoachPortfolioHome) ||
             (item.key === "chapter_detail" && showCoachChapterDetail) ||
             (item.key === "campaigns" && showCoachCampaigns) ||
             (item.key === "support_notes" && showCoachSupportNotes);
 
-          return (
-            <Link
-              key={item.key}
-              href={item.href}
-              aria-current={isCurrent ? "page" : undefined}
-              className={[
-                "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition",
-                isCurrent
-                  ? "bg-[#0b4f9b] text-white"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff]",
-              ].join(" ")}
-            >
-              <CoachViewTabIcon view={item.key} />
-              {item.label}
-            </Link>
-          );
+          return {
+            href: item.href,
+            label: item.label,
+            active: isCurrent,
+            icon: <CoachViewTabIcon view={item.key} />,
+          };
         })}
-      </div>
-    </section>
+      />
+    </SurfacePanel>
   );
   const coachPortfolioSourceContext =
     showCoachPortfolioHome && commandCenter.sourceContext
@@ -290,7 +284,7 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
   );
 
   return (
-    <AppShell
+    <StaffAppShell
       actor={actor}
       hideTopHeader={commandCenter.canReadCommandCenter}
       showDebugTools={!commandCenter.canReadCommandCenter}
@@ -337,14 +331,14 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
               )}
               sourceContext={getCoachChapterDetailSourceContext(search, selectedCoachChapter)}
             />
-          ) : showCoachSupportNotes ? (
-            <section className="app-surface rounded-[1.8rem] p-5">
-              <p className="app-eyebrow app-eyebrow-blue">Coach note lane</p>
+              ) : showCoachSupportNotes ? (
+              <section className="app-surface rounded-[1.8rem] p-5">
+              <p className="app-eyebrow app-eyebrow-blue">Staff note lane</p>
               <h1 className="mt-2 text-2xl font-semibold text-slate-950">
                 Support Notes
               </h1>
               <p className="app-copy mt-3">
-                Keep this coach-owned state focused on follow-up posture, intervention
+                Keep this staff-owned state focused on follow-up posture, intervention
                 readiness, and the notes that should guide the next conversation.
               </p>
               {selectedCoachChapter ? (
@@ -389,7 +383,7 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
                 </div>
               ) : null}
               {coachChapterSourceContext ? (
-                <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4">
+                <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                       <p className="app-eyebrow app-eyebrow-slate">
@@ -530,7 +524,7 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
       {showCoachReviewArtifacts && canReadIntegrationOutbox(actor) ? (
         <EventOutboxLog events={data.integrationEvents} outboxItems={data.outboxItems} />
       ) : null}
-    </AppShell>
+    </StaffAppShell>
   );
 }
 
@@ -623,14 +617,14 @@ function CoachChapterDetailPanel({
 
   return (
     <section className="grid gap-4">
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
-          Coach chapter detail
+      <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+          Staff chapter detail
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-slate-950">
           {selectedChapter?.chapterName ?? "Assigned chapter detail"}
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
           Use the filtered chapter list to inspect risk posture, recent signals, and
           the next support move one chapter at a time.
         </p>
@@ -648,37 +642,37 @@ function CoachChapterDetailPanel({
             label={
               selectedChapter
                 ? `${selectedChapter.memberCount} members`
-                : "Coach-owned review lane"
+                : "Staff-owned review lane"
             }
           />
         </div>
 
-        <div className="mt-5 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
+        <div className="mt-5 rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
-                Coach actions
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Staff actions
               </p>
-              <p className="mt-2 text-lg font-semibold text-white">
+              <p className="mt-2 text-lg font-semibold text-slate-950">
                 Keep support posture, notes, and campaign follow-up attached to the same chapter.
               </p>
             </div>
             <div className="grid gap-2 sm:min-w-[15rem]">
               <Link
                 href={supportNotesHref}
-                className="rounded-full bg-[#f7d05e] px-4 py-2 text-center text-sm font-semibold text-[#08224c] transition hover:bg-[#f9d96c]"
+                className="rounded-full bg-[#2563eb] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
               >
                 Write coach note
               </Link>
               <Link
                 href={riskReviewHref}
-                className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-center text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-center text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eef5ff] hover:text-[#1d4ed8]"
               >
                 Review risk reports
               </Link>
               <Link
                 href={campaignsHref}
-                className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-center text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-center text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eef5ff] hover:text-[#1d4ed8]"
               >
                 Open campaign support
               </Link>
@@ -689,36 +683,8 @@ function CoachChapterDetailPanel({
 
       {selectedChapter ? (
         <section className="app-surface rounded-[1.8rem] p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                  {selectedChapter.statusLabel}
-                </span>
-                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                  {selectedChapter.campus}
-                </span>
-                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                  {selectedChapter.campaignName}
-                </span>
-              </div>
-              <h3 className="mt-3 text-2xl font-semibold text-slate-950">
-                Current support posture
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                {selectedChapter.chapterName} is the active coach review lane. {selectedChapter.nextStep}
-              </p>
-            </div>
-            <Link
-              href={overviewHref}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
-            >
-              Return to chapter list
-            </Link>
-          </div>
-
           {sourceContext ? (
-            <section className="mt-4 rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+            <section className="mb-4 rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="app-eyebrow app-eyebrow-blue">
@@ -740,6 +706,35 @@ function CoachChapterDetailPanel({
               </div>
             </section>
           ) : null}
+
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                  {selectedChapter.statusLabel}
+                </span>
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                  {selectedChapter.campus}
+                </span>
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                  {selectedChapter.campaignName}
+                </span>
+              </div>
+              <h3 className="mt-3 text-2xl font-semibold text-slate-950">
+                Current support posture
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Keep this lane focused on risk posture, recent signals, and the next support move.
+                {` ${selectedChapter.nextStep}`}
+              </p>
+            </div>
+            <Link
+              href={overviewHref}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+            >
+              Return to chapter list
+            </Link>
+          </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <ReviewStat
@@ -765,7 +760,7 @@ function CoachChapterDetailPanel({
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-[0.94fr_1.06fr]">
-            <section className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
+            <section className="rounded-[1.4rem] border border-slate-200 bg-[#dbeafe] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Focus items
               </p>
@@ -780,7 +775,7 @@ function CoachChapterDetailPanel({
                 ))}
               </div>
             </section>
-            <section className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
+            <section className="rounded-[1.4rem] border border-slate-200 bg-[#dbeafe] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Recent signals
               </p>
@@ -826,13 +821,13 @@ function CoachChapterDetailPanel({
               Keep coach review focused while opening another chapter
             </h3>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Stay in the coach-owned chapter-detail route and switch directly into another assigned chapter when the support priority changes.
+                Stay in the staff-owned chapter-detail route and switch directly into another assigned chapter when the support priority changes.
             </p>
             <div className="mt-4 grid gap-3 xl:grid-cols-2">
               {chapterSwitchRows.map((row) => (
                 <article
                   key={row.chapterId}
-                  className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4"
+                  className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-4"
                 >
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center gap-2">
@@ -876,7 +871,7 @@ function CoachChapterDetailPanel({
             {rows.map((row) => (
               <article
                 key={row.chapterId}
-                className="rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4"
+                className="rounded-[1.4rem] border border-slate-200 bg-[#dbeafe] p-4"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0 flex-1">
@@ -920,34 +915,34 @@ function CoachCampaignOperationsPanel({
 }) {
   return (
     <section className="grid gap-4">
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+      <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
           Campaign focus
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-slate-950">
           {overview.selectedCampaignName}
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-          Keep campaign interventions attached to coach-owned chapter support so the
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+          Keep campaign interventions attached to staff-owned chapter support so the
           selected risk lane and return path stay narrower than the HQ command center.
         </p>
         {overview.sourceContext ? (
-          <div className="mt-5 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
+          <div className="mt-5 rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {overview.sourceContext.eyebrow}
                 </p>
-                <h3 className="mt-2 text-lg font-semibold text-white">
+                <h3 className="mt-2 text-lg font-semibold text-slate-950">
                   {overview.sourceContext.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-white/74">
+                <p className="mt-2 text-sm leading-6 text-slate-600">
                   {overview.sourceContext.summary}
                 </p>
               </div>
               <Link
                 href={overview.sourceContext.actionHref}
-                className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eef5ff] hover:text-[#1d4ed8]"
               >
                 {overview.sourceContext.actionLabel}
               </Link>
@@ -971,7 +966,7 @@ function CoachCampaignOperationsPanel({
                 "block rounded-[1.2rem] border p-4 transition",
                 card.isActive
                   ? "border-[#2563eb] bg-[#eef5ff]"
-                  : "border-slate-200 bg-slate-50 hover:border-[#bfdbfe] hover:bg-white",
+                  : "border-slate-200 bg-[#dbeafe] hover:border-[#bfdbfe] hover:bg-white",
               ].join(" ")}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1007,7 +1002,7 @@ function CoachCampaignOperationsPanel({
                 "rounded-[1.4rem] border p-4",
                 row.selected
                   ? "border-[#bfdbfe] bg-[#f8fbff]"
-                  : "border-slate-200 bg-slate-50",
+                  : "border-slate-200 bg-[#dbeafe]",
               ].join(" ")}
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

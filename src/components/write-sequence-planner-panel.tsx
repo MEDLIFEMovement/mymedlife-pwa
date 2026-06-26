@@ -1,9 +1,10 @@
-import Link from "next/link";
 import type {
   WriteSequenceOperation,
   WriteSequenceOperationStatus,
+  WriteSequencePacketStatus,
   WriteSequencePlanner,
 } from "@/services/write-sequence-planner";
+import { PanelButton, SurfacePanel, StatusPill } from "@/components/visual-primitives";
 
 type WriteSequencePlannerPanelProps = {
   planner: WriteSequencePlanner;
@@ -17,10 +18,13 @@ export function WriteSequencePlannerPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
+    <SurfacePanel
+      as="section"
+      className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5"
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
             Write sequence planner
           </p>
           <h1 className="mt-2 text-3xl font-semibold text-white">
@@ -38,16 +42,16 @@ export function WriteSequencePlannerPanel({
       </div>
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
-        <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
+        <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
             Student journey
           </p>
           <p className="mt-2 text-sm leading-6 text-white/64">
             {planner.studentJourneySummary}
           </p>
         </article>
-        <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
+        <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
             Technical promotion order
           </p>
           <p className="mt-2 text-sm leading-6 text-white/64">
@@ -56,7 +60,10 @@ export function WriteSequencePlannerPanel({
         </article>
       </div>
 
-      <div className="mt-5 rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4">
+      <SurfacePanel
+        as="section"
+        className="mt-5 rounded-3xl border border-blue-300/20 bg-[#eff6ff] p-4"
+      >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-white">Next safest move</p>
@@ -65,28 +72,29 @@ export function WriteSequencePlannerPanel({
             </p>
           </div>
           {planner.nextRecommendedOperation ? (
-            <span className="rounded-full bg-cyan-300 px-4 py-2 text-sm font-semibold text-[#061f25]">
-              {planner.nextRecommendedOperation.replaceAll("_", " ")}
-            </span>
+            <StatusPill tone="blue">{planner.nextRecommendedOperation.replaceAll("_", " ")}</StatusPill>
           ) : null}
         </div>
-      </div>
+      </SurfacePanel>
 
       <div className="mt-5 grid gap-4">
         {planner.operations.map((operation) => (
           <OperationCard key={operation.key} operation={operation} />
         ))}
       </div>
-    </section>
+    </SurfacePanel>
   );
 }
 
 function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
   return (
-    <article className="rounded-[1.75rem] border border-white/10 bg-[#071d1a]/82 p-4">
+    <SurfacePanel
+      as="article"
+      className="rounded-[1.75rem] border border-blue-300/20 bg-[#eff6ff] p-4"
+    >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
             Promote {operation.promotionOrder} / student step{" "}
             {operation.studentJourneyOrder}
           </p>
@@ -98,48 +106,50 @@ function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
           </p>
         </div>
         <div className="flex shrink-0 flex-col gap-2 lg:items-end">
-          <StatusPill status={operation.status} />
-          <Link
+          <StatusPill tone={operationStatusTone(operation.status)}>
+            {operation.status.replaceAll("_", " ")}
+          </StatusPill>
+          <PanelButton
             href={operation.route}
-            className="rounded-full bg-cyan-300 px-4 py-2 text-sm font-semibold text-[#061f25]"
+            className="bg-blue-300 text-[#10223f]"
           >
             Open route
-          </Link>
+          </PanelButton>
         </div>
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+        <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3">
           <p className="text-sm font-semibold text-white">Local actor</p>
           <p className="mt-2 text-sm text-white/64">{operation.actorLabel}</p>
-          <p className="mt-2 rounded-xl bg-black/20 p-3 font-mono text-xs text-cyan-100/78">
+          <p className="mt-2 rounded-xl bg-[#bfdbfe]/40 p-3 font-mono text-xs text-blue-100/78">
             MYMEDLIFE_LOCAL_ACTOR_EMAIL={operation.localActorEmail}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-sky-300/20 bg-sky-300/10 p-3">
+        <div className="rounded-2xl border border-blue-300/20 bg-[#eff6ff] p-3">
           <p className="text-sm font-semibold text-white">Role responsibility</p>
-          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-sky-100/70">
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-blue-100/70">
             {operation.roleResponsibility.responsibility}
           </p>
           <p className="mt-2 text-sm leading-6 text-white/62">
             {operation.roleResponsibility.reviewPrompt}
           </p>
-          <p className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/52">
+          <p className="mt-3 rounded-xl border border-white/10 bg-[#bfdbfe]/40 p-3 text-xs leading-5 text-white/52">
             {operation.roleResponsibility.safetyBoundary}
           </p>
         </div>
       </div>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+        <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3">
           <p className="text-sm font-semibold text-white">Responsible role</p>
           <p className="mt-2 text-sm leading-6 text-white/64">
             {operation.roleResponsibility.roleLabel}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-3">
+        <div className="rounded-2xl border border-blue-300/20 bg-blue-300/10 p-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-white">
@@ -149,9 +159,9 @@ function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
                 {operation.packetStatus.plainEnglish}
               </p>
             </div>
-            <span className="rounded-full bg-black/20 px-3 py-1 text-xs font-semibold text-cyan-100">
+            <StatusPill tone={packetStatusTone(operation.packetStatus.status)}>
               {operation.packetStatus.status.replaceAll("_", " ")}
-            </span>
+            </StatusPill>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             <MiniStat
@@ -167,16 +177,17 @@ function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
               value={operation.packetStatus.canPromoteToStagingReview ? "Review" : "Blocked"}
             />
           </div>
-          <Link
+          <PanelButton
             href={operation.packetStatus.route}
-            className="mt-3 inline-flex rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+            variant="secondary"
+            className="border-white/12 bg-[#bfdbfe]/40 text-white/72"
           >
             Open packet
-          </Link>
+          </PanelButton>
         </div>
       </div>
 
-      <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
+      <div className="mt-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3">
         <p className="text-sm font-semibold text-white">Expected tables</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {operation.expectedTables.map((table) => (
@@ -196,7 +207,7 @@ function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
           items={operation.structuredEvents}
         />
         <ChecklistCard title="Audit proof" items={operation.auditEvidence} />
-        <article className="rounded-2xl border border-white/10 bg-black/20 p-3">
+        <article className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3">
           <p className="text-sm font-semibold text-white">Outbox posture</p>
           <p className="mt-2 text-xs leading-5 text-white/58">
             {operation.outboxPosture}
@@ -205,26 +216,26 @@ function OperationCard({ operation }: { operation: WriteSequenceOperation }) {
       </div>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
-        <article className="rounded-2xl border border-amber-300/20 bg-amber-300/10 p-3">
+        <article className="rounded-2xl border border-blue-300/20 bg-blue-300/10 p-3">
           <p className="text-sm font-semibold text-white">Safety boundary</p>
           <p className="mt-2 text-xs leading-5 text-white/60">
             {operation.safetyBoundary}
           </p>
         </article>
-        <article className="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-3">
+        <article className="rounded-2xl border border-blue-300/20 bg-[#dbeafe] p-3">
           <p className="text-sm font-semibold text-white">Next gate</p>
           <p className="mt-2 text-xs leading-5 text-white/60">
             {operation.nextGate}
           </p>
         </article>
       </div>
-    </article>
+    </SurfacePanel>
   );
 }
 
 function ChecklistCard({ title, items }: { title: string; items: string[] }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-black/20 p-3">
+    <article className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3">
       <p className="text-sm font-semibold text-white">{title}</p>
       <ul className="mt-2 grid gap-2">
         {items.map((item) => (
@@ -239,7 +250,7 @@ function ChecklistCard({ title, items }: { title: string; items: string[] }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -248,29 +259,34 @@ function MiniStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StatusPill({ status }: { status: WriteSequenceOperationStatus }) {
-  return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-semibold ${statusClassName(
-        status,
-      )}`}
-    >
-      {status.replaceAll("_", " ")}
-    </span>
-  );
-}
-
-function statusClassName(status: WriteSequenceOperationStatus): string {
+function packetStatusTone(status: WriteSequencePacketStatus["status"]): "blue" | "amber" | "white" {
   switch (status) {
     case "packet_ready":
-      return "bg-emerald-300/20 text-emerald-100";
+      return "blue";
     case "server_action_ready":
-      return "bg-sky-300/20 text-sky-100";
+      return "blue";
     case "needs_operator_packet":
-      return "bg-amber-300/20 text-amber-100";
+      return "amber";
     case "blocked_until_first_write":
-      return "bg-orange-300/20 text-orange-100";
+      return "white";
     case "external_disabled":
-      return "bg-white/10 text-white/62";
+      return "white";
+    default:
+      return "white";
+  }
+}
+
+function operationStatusTone(status: WriteSequenceOperationStatus): "blue" | "amber" | "yellow" | "white" {
+  switch (status) {
+    case "packet_ready":
+      return "blue";
+    case "server_action_ready":
+      return "blue";
+    case "needs_operator_packet":
+      return "yellow";
+    case "blocked_until_first_write":
+    case "external_disabled":
+    default:
+      return "white";
   }
 }

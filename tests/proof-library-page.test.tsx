@@ -54,7 +54,7 @@ describe("proof library page", () => {
     const { default: ProofLibraryPage } = await import("@/app/proof-library/page");
 
     await expect(ProofLibraryPage()).rejects.toThrow(
-      "NEXT_REDIRECT:/coach?view=support_notes#support-notes",
+      "NEXT_REDIRECT:/staff?view=support_notes#support-notes",
     );
   });
 

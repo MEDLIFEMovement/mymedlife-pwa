@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminAuditLogReviewPanel } from "@/components/admin-audit-log-review-panel";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { AdminControlCenterPanel } from "@/components/admin-control-center-panel";
@@ -12,6 +11,7 @@ import { DesignQaReadinessPanel } from "@/components/design-qa-readiness-panel";
 import { EnvironmentSafetySummaryPanel } from "@/components/environment-safety-summary-panel";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { MetricCard } from "@/components/metric-card";
+import { PanelButton, SurfacePanel, StatusPill } from "@/components/visual-primitives";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
 import { MvpProgressMapPanel } from "@/components/mvp-progress-map-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
@@ -34,6 +34,7 @@ import { getControlledPilotReadiness } from "@/services/controlled-pilot-readine
 import { getDatabaseSecurityDecisionPacket } from "@/services/database-security-decision";
 import { getDesignQaReadiness } from "@/services/design-qa-readiness";
 import { getEnvironmentSafetySummary } from "@/services/environment-safety-summary";
+import { getLandingRouteForActor } from "@/services/landing-route";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
@@ -64,6 +65,25 @@ export default async function AdminPage() {
     getReadOnlyAppData(),
     getLocalActorContext(),
   ]);
+  const surfaceFamily = getActorSurfaceFamily(actor);
+  const canReadAdminBackend =
+    surfaceFamily === "ds_admin" || surfaceFamily === "super_admin";
+
+  if (!canReadAdminBackend) {
+    return (
+      <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <RestrictedState
+            title="This admin backend is not visible to this role."
+            message="Members, leaders, and coaches should use their own student or coach shells. Admin panels stay limited to HQ, DS Admin, and Super Admin contexts."
+            nextHref={getLandingRouteForActor(actor)}
+            nextLabel="Go to your app"
+          />
+        </div>
+      </main>
+    );
+  }
+
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
   const adminControlCenter = getAdminControlCenterSummary(data);
@@ -92,7 +112,7 @@ export default async function AdminPage() {
   const backendLaneLinks = getBackendLaneLinks(actor);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
       <AdminBackendLaneNav
         current="overview"
@@ -103,20 +123,83 @@ export default async function AdminPage() {
         showIntegrations={canReadAdminIntegrationsSecurity(actor)}
       />
 
-      <section className="rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
-          Admin permission proof
+      <SurfacePanel
+        as="section"
+        className="app-surface-info rounded-[2rem] p-5"
+      >
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] xl:items-start">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                Admin permission proof
+              </p>
+              <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#1d4ed8]">
+                DS / Super Admin backend
+              </span>
+            </div>
+            <h1 className="text-3xl font-semibold text-slate-950">
+              DS and Super Admin context is role-aware and read-only.
+            </h1>
+            <p className="max-w-2xl text-sm leading-6 text-slate-600">
+              The shell stays white-blue and workspace-oriented so it feels like a
+              distinct admin product, not a generic backend console.
+            </p>
+            <p className="max-w-2xl text-sm leading-6 text-slate-600">
+              DS Admin can inspect disabled or mock integration rows only. Super Admin can inspect
+              the full local permission surface. No other role can enter this backend or send
+              real external writes from this app.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            <MetricCard
+              label="Backend posture"
+              value="Read-only"
+              note="No live mutation lane enabled"
+            />
+            <MetricCard
+              label="Sensitive access"
+              value="Restricted"
+              note="DS and Super Admin only"
+            />
+            <MetricCard
+              label="External writes"
+              value="Off"
+              note="Mock-safe integration posture"
+            />
+          </div>
+        </div>
+      </SurfacePanel>
+
+      <SurfacePanel as="section" className="rounded-[2rem] border border-[#5d8ff6]/25 bg-[#f4f8ff] p-5">
+        <p className="app-eyebrow app-eyebrow-blue">Event loop</p>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+          Luma event creation, RSVP, attendance, and points stay app-owned.
+        </h2>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+          Admin review should keep the event story visible at portfolio scale:
+          chapter events create RSVP signals, attendance creates trustworthy
+          points movement, and the leaderboard stays a read-only reflection of
+          what happened in the app.
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">
-          Staff context is role-aware and read-only.
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/82">
-          Admins can inspect support and HQ proof-sharing posture. DS Admin can
-          inspect disabled/mock integration rows only. Super Admin can inspect
-          the full local permission surface. No role can send real external
-          writes from this app.
-        </p>
-      </section>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          <MetricCard
+            label="Linked mock events"
+            value={`${campaignSummary.linkedMockEvents}`}
+            note="Luma-backed event shells"
+          />
+          <MetricCard
+            label="HQ proof items"
+            value={`${campaignSummary.hqProofItems}`}
+            note="Attendance and proof review"
+          />
+          <MetricCard
+            label="Disabled syncs"
+            value={`${campaignSummary.disabledIntegrationEvents}`}
+            note="No live external writes"
+          />
+        </div>
+      </SurfacePanel>
 
       {visiblePanels.length > 0 ? (
         <>
@@ -138,7 +221,7 @@ export default async function AdminPage() {
             />
           </section>
 
-          <section className="app-surface rounded-[1.75rem] p-5">
+          <SurfacePanel as="section" className="rounded-[1.75rem] border border-slate-200 p-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="app-eyebrow app-eyebrow-slate">Backend lanes</p>
@@ -174,21 +257,20 @@ export default async function AdminPage() {
                 />
               </div>
             </div>
-          </section>
+          </SurfacePanel>
 
           {backendLaneLinks.length > 0 ? (
             <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {backendLaneLinks.map((lane) => (
-                <Link
-                  key={lane.href}
+                <PanelButton
                   href={lane.href}
-                  className="app-surface rounded-[1.6rem] p-4 transition hover:border-slate-300/80"
+                  variant="secondary"
+                  key={lane.href}
+                  className="app-surface rounded-[1.6rem] p-4 text-left transition hover:border-slate-300/80"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className="app-eyebrow app-eyebrow-slate">{lane.eyebrow}</p>
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">
-                      Read-only
-                    </span>
+                    <StatusPill tone="white">Read-only</StatusPill>
                   </div>
                   <h2 className="mt-3 text-xl font-semibold text-slate-950">
                     {lane.title}
@@ -196,7 +278,7 @@ export default async function AdminPage() {
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     {lane.summary}
                   </p>
-                </Link>
+                </PanelButton>
               ))}
             </section>
           ) : null}
@@ -223,9 +305,7 @@ export default async function AdminPage() {
                   <p className="app-eyebrow app-eyebrow-slate">
                     {panel.key.replace("_", " ")}
                   </p>
-                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500">
-                    Backend
-                  </span>
+                  <StatusPill tone="white">Backend</StatusPill>
                 </div>
                 <h2 className="mt-3 text-xl font-semibold text-slate-950">{panel.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{panel.summary}</p>
@@ -263,7 +343,7 @@ export default async function AdminPage() {
           message="Only DS Admin and Super Admin can inspect disabled/mock external-send posture. Admin can read support and proof-sharing context, but does not own connection configuration."
         />
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }
 

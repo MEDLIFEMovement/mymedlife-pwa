@@ -162,7 +162,7 @@ export function StaffPortfolioToolbar({
           type="search"
           defaultValue={searchQuery}
           placeholder="Search chapter, school, student..."
-          className="w-full rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#5d8ff6]/40"
+          className="w-full rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#5d8ff6]/40"
         />
       </form>
 
@@ -256,7 +256,7 @@ export function StaffPortfolioToolbar({
 
       <a
         href={reviewAtRiskHref}
-        className="rounded-full border border-[#f7d05e]/45 bg-[#fff8df] px-4 py-2 text-center text-sm font-semibold text-[#8a6700]"
+        className="rounded-full border border-[#2563eb]/45 bg-[#dbeafe] px-4 py-2 text-center text-sm font-semibold text-[#1d4ed8]"
       >
         Review At-Risk
       </a>

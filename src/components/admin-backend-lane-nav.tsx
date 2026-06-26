@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StatusPill } from "@/components/visual-primitives";
 
 type AdminBackendLaneKey =
   | "overview"
@@ -198,18 +199,20 @@ export function AdminBackendLaneNav({
   ];
 
   return (
-    <section className="app-surface rounded-[1.6rem] p-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="app-eyebrow app-eyebrow-slate">Backend route family</p>
-          <h2 className="mt-2 text-xl font-semibold text-slate-950">
+    <section className="app-surface-info rounded-[1.75rem] p-5">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="app-eyebrow app-eyebrow-slate">Backend route family</p>
+            <StatusPill tone="blue">DS-owned lane</StatusPill>
+          </div>
+          <h2 className="text-xl font-semibold text-slate-950">
             Keep internal tooling inside one owned admin lane
           </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-            Permissions, committees, workflows, SOP tooling, and approval packets
-            should stay visibly connected so reviewers can move across backend
-            routes without falling back into the broader staff command-center
-            surface.
+          <p className="max-w-3xl text-sm leading-6 text-slate-600">
+            Permissions, committees, workflows, SOP tooling, and approval packets should stay
+            visibly connected so reviewers can move across backend routes without falling back
+            into the broader staff command-center surface.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -222,7 +225,7 @@ export function AdminBackendLaneNav({
                   aria-hidden="true"
                   className={[
                     "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transition",
-                    selected ? "text-white" : "text-slate-500",
+                    selected ? "text-[#1d4ed8]" : "text-slate-500",
                   ].join(" ")}
                 >
                   <AdminLaneIcon lane={lane.key} />
@@ -230,13 +233,13 @@ export function AdminBackendLaneNav({
                 <Link
                   href={lane.href}
                   aria-current={selected ? "page" : undefined}
-                  className={
-                    selected
-                      ? "block rounded-full bg-slate-950 px-3 py-1.5 pl-9 text-sm font-semibold text-white"
-                      : "block rounded-full border border-slate-200 bg-white px-3 py-1.5 pl-9 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
-                  }
-                >
-                  {lane.label}
+                className={
+                  selected
+                    ? "block rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 pl-9 text-sm font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
+                    : "block rounded-full border border-slate-200 bg-white px-3 py-1.5 pl-9 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                }
+              >
+                {lane.label}
                 </Link>
               </div>
             );
@@ -244,7 +247,7 @@ export function AdminBackendLaneNav({
         </div>
       </div>
 
-      <div className="mt-4 border-t border-slate-200/80 pt-4">
+      <div className="mt-5 border-t border-slate-200/80 pt-4">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
           Review packets
         </p>
@@ -259,7 +262,7 @@ export function AdminBackendLaneNav({
                 aria-current={selected ? "page" : undefined}
                 className={
                   selected
-                    ? "rounded-full bg-sky-950 px-3 py-1.5 text-xs font-semibold text-white"
+                    ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
                     : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
                 }
               >
@@ -285,8 +288,8 @@ export function AdminBackendLaneNav({
                 aria-current={selected ? "page" : undefined}
                 className={
                   selected
-                    ? "rounded-full bg-emerald-950 px-3 py-1.5 text-xs font-semibold text-white"
-                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bbf7d0] hover:bg-[#f0fdf4] hover:text-slate-950"
+                    ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
+                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eff6ff] hover:text-slate-950"
                 }
               >
                 {lane.label}

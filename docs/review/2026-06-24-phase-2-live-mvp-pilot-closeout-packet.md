@@ -81,10 +81,10 @@ Observed staging access on 2026-06-24:
 - anonymous requests to `https://staging.mymedlife.org` redirected to Vercel SSO first
 - that Vercel SSO request then redirected to a Vercel-hosted `/login?next=/sso-api...` path before reaching the app
 - direct anonymous requests to `https://staging.mymedlife.org/login` were also intercepted by the same Vercel SSO gate
-- this means the reviewer access path is still not self-evident from the staging hostname alone and needs explicit owner confirmation
+- this means the reviewer access path is still not self-evident from the staging hostname alone and needs clear hosted evidence that the approved path is being used
 
 Implication:
-- hosted auth proof is still blocked until the team confirms the intended reviewer access path, whether that stays Vercel-SSO-gated, becomes a named approved reviewer session flow, or moves to a different approved staging access posture
+- hosted auth proof is still blocked until the staging reviewer path is captured in hosted evidence, even though the approved default path is now `staging.mymedlife.org` behind the existing Vercel SSO handoff
 
 Reason:
 - this keeps Phase 2 from depending on broad self-serve join and onboarding writes

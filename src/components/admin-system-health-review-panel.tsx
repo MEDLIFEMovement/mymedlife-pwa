@@ -82,7 +82,7 @@ function HealthCheckCard({ check }: { check: AdminSystemHealthCheck }) {
         {check.routeEvidence.map((route) => (
           <span
             key={`${check.key}-${route}`}
-            className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -114,12 +114,12 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: AdminSystemHealthStatus }) {
   const className =
     status === "local_ready"
-      ? "border-emerald-300/60 bg-emerald-50 text-emerald-700"
+      ? "border-blue-300/60 bg-blue-50 text-blue-700"
       : status === "mock_safe"
-        ? "border-sky-300/60 bg-sky-50 text-sky-700"
+        ? "border-blue-300/60 bg-blue-50 text-blue-700"
         : status === "needs_review"
-          ? "border-amber-300/60 bg-amber-50 text-amber-700"
-          : "border-rose-300/60 bg-rose-50 text-rose-700";
+          ? "border-blue-300/60 bg-blue-50 text-blue-700"
+          : "border-blue-300/60 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

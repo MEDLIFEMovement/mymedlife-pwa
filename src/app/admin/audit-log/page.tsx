@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { AdminAuditLogReviewPanel } from "@/components/admin-audit-log-review-panel";
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
 import { getAdminAuditLogReview } from "@/services/admin-audit-log-review";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { getActorSurfaceFamily } from "@/services/role-visibility";
+import {
+  canReadAdminIntegrationsSecurity,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminAuditLog");
@@ -23,9 +26,12 @@ export default async function AdminAuditLogPage() {
   const nextStep = getNextStep(actor);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="audit_log" />
+      <AdminBackendLaneNav
+        current="audit_log"
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
 
       {!review.canReadReview ? (
         <RestrictedState
@@ -36,16 +42,16 @@ export default async function AdminAuditLogPage() {
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
+          <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-100">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
                   Admin audit log
                 </p>
-                <h1 className="mt-3 text-3xl font-semibold text-white">
+                <h1 className="mt-3 text-3xl font-semibold text-slate-950">
                   {review.title}
                 </h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                   Review persisted audit readback posture before any production
                   write path is approved. DS Admin can confirm safety posture
                   without row-level chapter/member audit details.
@@ -53,7 +59,7 @@ export default async function AdminAuditLogPage() {
               </div>
               <Link
                 href={nextStep.href}
-                className="w-fit rounded-full bg-violet-300 px-4 py-2 text-sm font-semibold text-[#170d29]"
+                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
               >
                 {nextStep.label}
               </Link>
@@ -71,7 +77,7 @@ export default async function AdminAuditLogPage() {
           <AdminAuditLogReviewPanel review={review} />
         </>
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }
 
@@ -91,11 +97,11 @@ function getNextStep(actor: LocalActorContext) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }

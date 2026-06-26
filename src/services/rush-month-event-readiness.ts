@@ -5,6 +5,11 @@ import {
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getRushMonthEventRsvpPosture } from "@/services/rush-month-event-rsvp";
+import {
+  getSopWorkflowRuntime,
+  getWorkflowCurrentPhaseExitSignal,
+  getWorkflowCurrentPhaseObjective,
+} from "@/services/sop-workflow-runtime";
 import type { ChapterEventPlan } from "@/shared/types/campaigns";
 import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
 
@@ -63,12 +68,30 @@ export function getRushMonthEventReadinessWorkspace(
 
   const eventPlans = getEventPlansForCampaign("rush-month");
   const rows = eventPlans.map((eventPlan) => toEventReadinessRow(eventPlan, actor));
+  const runtime = getSopWorkflowRuntime("rush-month");
+  const futureStructuredEvents =
+    runtime?.futureStructuredEvents.length
+      ? runtime.futureStructuredEvents
+      : buildFutureEvents(eventPlans);
+  const disabledOutboxItems =
+    runtime?.disabledOutboxItems.length
+      ? runtime.disabledOutboxItems
+      : buildDisabledOutboxItems(eventPlans);
+  const safetyNotes =
+    runtime?.safetyNotes.length
+      ? buildRuntimeSafetyNotes(runtime)
+      : [
+          "No Luma event is created or updated from this route.",
+          "No Luma attendance/check-in import runs from this route.",
+          "No NPS email, SMS, or reminder is sent from this route.",
+          "No warehouse, Power BI, HubSpot, n8n, or AI export runs from this route.",
+          "Event attendance and NPS remain mock/readiness posture until approved.",
+        ];
 
   return {
     canReadWorkspace: true,
     title: getTitle(actor),
-    summary:
-      "Rush Month events should create the moments that make MEDLIFE feel active: socials, Med Talks, volunteer pushes, and proof-worthy experiences. This view shows the event/NPS/proof loop without sending anything to Luma or n8n.",
+    summary: `${buildRuntimeSummary(runtime)} Attendance is what turns RSVP into points and leaderboard movement.`,
     counts: {
       totalEvents: eventPlans.length,
       mockLinkedLumaEvents: eventPlans.filter(
@@ -84,16 +107,41 @@ export function getRushMonthEventReadinessWorkspace(
       externalWritesExpected: 0,
     },
     rows,
-    futureStructuredEvents: buildFutureEvents(eventPlans),
-    disabledOutboxItems: buildDisabledOutboxItems(eventPlans),
-    safetyNotes: [
-      "No Luma event is created or updated from this route.",
-      "No Luma attendance/check-in import runs from this route.",
-      "No NPS email, SMS, or reminder is sent from this route.",
-      "No warehouse, Power BI, HubSpot, n8n, or AI export runs from this route.",
-      "Event attendance and NPS remain mock/readiness posture until approved.",
-    ],
+    futureStructuredEvents: [...futureStructuredEvents],
+    disabledOutboxItems: [...disabledOutboxItems],
+    safetyNotes: [...safetyNotes],
   };
+}
+
+function buildRuntimeSummary(runtime: ReturnType<typeof getSopWorkflowRuntime>) {
+  const currentPhase = runtime?.currentPhase;
+  const eventStep = runtime?.steps.find((step) => step.id === "rush-events") ?? runtime?.currentStep;
+  const base =
+    eventStep?.whyItMatters ??
+    "Rush Month events should create the moments that make MEDLIFE feel active: socials, Med Talks, volunteer pushes, and proof-worthy experiences.";
+  const objective = currentPhase?.objective
+    ? `Current phase objective: ${getWorkflowCurrentPhaseObjective(runtime, currentPhase.objective)}`
+    : null;
+  const exitSignal = currentPhase?.exitCriteria[0]
+    ? `Exit signal: ${getWorkflowCurrentPhaseExitSignal(runtime, currentPhase.exitCriteria[0])}`
+    : null;
+
+  return [base, objective, exitSignal]
+    .filter((value): value is string => Boolean(value))
+    .join(" ");
+}
+
+function buildRuntimeSafetyNotes(
+  runtime: NonNullable<ReturnType<typeof getSopWorkflowRuntime>>,
+) {
+  const phaseObjective = runtime.currentPhase?.objective
+    ? `Current phase objective: ${getWorkflowCurrentPhaseObjective(runtime, runtime.currentPhase.objective)}`
+    : null;
+
+  return [
+    ...(phaseObjective ? [phaseObjective] : []),
+    ...runtime.safetyNotes,
+  ];
 }
 
 function toEventReadinessRow(

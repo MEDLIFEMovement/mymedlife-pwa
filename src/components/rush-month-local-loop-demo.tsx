@@ -63,7 +63,7 @@ export function RushMonthLocalLoopDemo({
             <p className="text-sm font-semibold text-slate-950">Progress</p>
             <p className="text-sm font-semibold text-[#2563eb]">{progress}%</p>
           </div>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-slate-200">
+          <div className="mt-3 h-3 overflow-hidden rounded-full bg-[#f8fbff]">
             <div
               className="h-full rounded-full bg-[#5d8ff6] transition-all"
               style={{ width: `${progress}%` }}
@@ -177,7 +177,7 @@ export function RushMonthLocalLoopDemo({
                 className={`rounded-2xl border p-4 text-left transition ${
                   enabled
                     ? "border-[#5d8ff6]/28 bg-[#eaf2ff] text-slate-950 hover:bg-[#dce8ff]"
-                    : "border-slate-200 bg-slate-100 text-slate-400"
+                    : "border-slate-200 bg-[#eff6ff] text-slate-400"
                 }`}
               >
                 <span className="block text-sm font-semibold">{commandLabels[command]}</span>
@@ -241,10 +241,10 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
 function stepClassName(status: RushMonthLoopStepStatus): string {
   switch (status) {
     case "complete":
-      return "border-emerald-200 bg-emerald-50";
+      return "border-blue-200 bg-blue-50";
     case "current":
-      return "border-amber-200 bg-amber-50";
+      return "border-blue-200 bg-blue-50";
     case "locked":
-      return "border-slate-200 bg-slate-100";
+      return "border-slate-200 bg-[#eff6ff]";
   }
 }

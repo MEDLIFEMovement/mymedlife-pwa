@@ -33,24 +33,24 @@ export function CoachPortfolioReadinessPanel({
 
   return (
     <section className="grid gap-4">
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(160deg,#0b2a5d_0%,#0a3b88_52%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
+      <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
         {studentViewAction ? (
           <div className="mb-4">
             <Link
               href={studentViewAction.href}
-              className="inline-flex items-center rounded-full border border-white/14 bg-white/8 px-3 py-1.5 text-sm font-semibold text-white/82 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
             >
               Student view
             </Link>
           </div>
         ) : null}
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
           MEDLIFE National
         </p>
-        <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-white sm:text-[2.6rem]">
+        <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
           {portfolio.title}
         </h1>
-        <p className="mt-3 text-sm leading-6 text-white/78">
+        <p className="mt-3 text-sm leading-6 text-slate-600">
           {portfolio.dashboardOwnerLabel}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -60,19 +60,19 @@ export function CoachPortfolioReadinessPanel({
         </div>
 
         {sourceContext ? (
-          <div className="mt-5 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+          <div className="mt-5 rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
               {sourceContext.eyebrow}
             </p>
-            <p className="mt-2 text-lg font-semibold text-white">{sourceContext.title}</p>
-            <p className="mt-2 text-sm leading-6 text-white/74">{sourceContext.summary}</p>
+            <p className="mt-2 text-lg font-semibold text-slate-950">{sourceContext.title}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{sourceContext.summary}</p>
             {handoffActions.length ? (
               <div className="mt-4 flex flex-wrap gap-2">
                 {handoffActions.map((action) => (
                   <Link
                     key={action.label}
                     href={action.href}
-                    className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
                   >
                     {action.label}
                   </Link>
@@ -88,9 +88,9 @@ export function CoachPortfolioReadinessPanel({
           <HeroStat label="Evidence Queue" value={portfolio.evidenceQueueLabel} />
         </div>
 
-        <div className="mt-5 flex flex-col gap-4 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
+        <div className="mt-5 flex flex-col gap-4 rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Assigned portfolio
             </p>
             <HeroInfoPill label={`${portfolio.counts.totalChapters} chapters assigned`} />
@@ -101,19 +101,19 @@ export function CoachPortfolioReadinessPanel({
           <div className="flex flex-wrap gap-2">
             <Link
               href={portfolio.chapterHref}
-              className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-center text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
             >
               Open chapter
             </Link>
             <Link
               href={portfolio.notesHref}
-              className="rounded-full bg-[#f7d05e] px-4 py-2 text-center text-sm font-semibold text-[#08224c] transition hover:bg-[#f9d96c]"
+              className="rounded-full bg-[#2563eb] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
             >
               Write coach note
             </Link>
             <Link
               href={portfolio.riskReviewHref}
-              className="rounded-full border border-white/14 bg-white/8 px-4 py-2 text-center text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
             >
               Review risk reports
             </Link>
@@ -167,7 +167,7 @@ export function CoachPortfolioReadinessPanel({
           {portfolio.priorities.map((item) => (
             <p
               key={item}
-              className="rounded-[1.1rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
+              className="rounded-[1.1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm font-medium text-slate-700"
             >
               {item}
             </p>
@@ -184,7 +184,7 @@ function PortfolioFilterGroup({
   group: CoachPortfolioReadiness["filterGroups"][number];
 }) {
   return (
-    <section className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+    <section className="rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] p-4">
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
           {group.label}
@@ -246,7 +246,7 @@ function CoachChapterCard({
   row: CoachPortfolioReadiness["rows"][number];
 }) {
   return (
-    <article className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+    <article className="rounded-[1.5rem] border border-slate-200 bg-[#dbeafe] p-4">
       <div className="flex flex-col gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -321,8 +321,8 @@ function InlineStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ label }: { label: CoachPortfolioReadiness["rows"][number]["statusLabel"] }) {
   const className =
     label === "Healthy"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-      : "border-amber-200 bg-amber-50 text-amber-700";
+      ? "border-blue-200 bg-blue-50 text-blue-700"
+      : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -334,10 +334,10 @@ function StatusPill({ label }: { label: CoachPortfolioReadiness["rows"][number][
 function DecisionPill({ decision }: { decision: CoachPortfolioDecision }) {
   const className =
     decision === "advance"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : decision === "hold"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-rose-200 bg-rose-50 text-rose-700";
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <p className={`rounded-full border px-3 py-1 text-sm font-semibold ${className}`}>
@@ -371,10 +371,10 @@ function readableDecision(decision: CoachPortfolioDecision) {
 function getCoachProgressBarClassName(decision: CoachPortfolioDecision) {
   switch (decision) {
     case "advance":
-      return "h-full rounded-full bg-emerald-500";
+      return "h-full rounded-full bg-blue-500";
     case "hold":
-      return "h-full rounded-full bg-amber-400";
+      return "h-full rounded-full bg-blue-400";
     case "intervene":
-      return "h-full rounded-full bg-rose-500";
+      return "h-full rounded-full bg-blue-500";
   }
 }

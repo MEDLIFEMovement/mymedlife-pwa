@@ -35,7 +35,7 @@ export function HqProofDecisionVerificationPanel({
             </Link>
             <Link
               href="/rush-month/review"
-              className="rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#10223f]"
+              className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#10223f]"
             >
               Open HQ review
             </Link>
@@ -188,8 +188,8 @@ export function HqProofDecisionVerificationPanel({
             <p
               className={
                 check.passed
-                  ? "app-eyebrow text-emerald-700"
-                  : "app-eyebrow text-amber-700"
+                  ? "app-eyebrow text-blue-700"
+                  : "app-eyebrow text-blue-700"
               }
             >
               {check.passed ? "Ready" : "Blocked"}
@@ -253,16 +253,16 @@ function packetStatusClassName(status: HqProofDecisionPacketStatus): string {
   switch (status) {
     case "ready_for_local_hq_decision":
     case "evidence_observed":
-      return "border border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "border border-blue-200 bg-blue-50 text-blue-700";
     case "needs_manual_audit_check":
-      return "border border-amber-200 bg-amber-50 text-amber-700";
+      return "border border-blue-200 bg-blue-50 text-blue-700";
     case "blocked_until_local_supabase":
     case "blocked_until_proof_metadata":
     case "blocked_until_flags":
     case "blocked_until_auth":
-      return "border border-amber-200 bg-amber-50 text-amber-700";
+      return "border border-blue-200 bg-blue-50 text-blue-700";
     case "hidden":
-      return "border border-slate-200 bg-slate-50 text-slate-500";
+      return "border border-slate-200 bg-[#dbeafe] text-slate-500";
   }
 }
 
@@ -270,9 +270,9 @@ function readbackStatusClassName(status: HqProofDecisionReadbackStatus): string 
   switch (status) {
     case "observed":
     case "disabled_outbox_observed":
-      return "app-eyebrow text-emerald-700";
+      return "app-eyebrow text-blue-700";
     case "manual_check_needed":
-      return "app-eyebrow text-amber-700";
+      return "app-eyebrow text-blue-700";
     case "missing":
     case "blocked":
       return "app-eyebrow text-slate-500";

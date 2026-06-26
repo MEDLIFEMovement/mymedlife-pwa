@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RushMonthOperatingPathPanel } from "@/components/rush-month-operating-path-panel";
 import { RushMonthLocalLoopDemo } from "@/components/rush-month-local-loop-demo";
@@ -20,10 +20,10 @@ export default async function RushMonthLoopPage() {
   const operatingPath = getRushMonthOperatingPathView(actor, data);
 
   return (
-    <AppShell actor={actor}>
+    <StudentAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
       <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
           Rush Month operating loop
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-white">
@@ -53,6 +53,6 @@ export default async function RushMonthLoopPage() {
       />
 
       <RushMonthLocalLoopDemo />
-    </AppShell>
+    </StudentAppShell>
   );
 }

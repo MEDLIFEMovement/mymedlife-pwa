@@ -7,10 +7,10 @@ import {
 describe("local preview route helpers", () => {
   it("defaults preview redirects to the selected role landing surface", () => {
     expect(buildLocalPreviewHref("leader.a@mymedlife.test")).toBe(
-      "/local-preview?selectedEmail=leader.a%40mymedlife.test&returnTo=%2Fchapter%3Fview%3Doverview",
+      "/local-preview?selectedEmail=leader.a%40mymedlife.test&returnTo=%2Fleader%3Fview%3Doverview",
     );
-    expect(buildLocalPreviewHref("admin@mymedlife.test")).toBe(
-      "/local-preview?selectedEmail=admin%40mymedlife.test&returnTo=%2Fstaff%3Fview%3Dchapters",
+    expect(buildLocalPreviewHref("general.staff@mymedlife.test")).toBe(
+      "/local-preview?selectedEmail=general.staff%40mymedlife.test&returnTo=%2Fstaff%3Fview%3Dchapters",
     );
   });
 
@@ -24,7 +24,7 @@ describe("local preview route helpers", () => {
       "/local-preview?selectedEmail=coach%40mymedlife.test&returnTo=%2Fcoach%3Fview%3Dchapters%26source%3Dmember_home",
     );
     expect(buildStudentHomePreviewHref()).toBe(
-      "/local-preview?selectedEmail=member.a%40mymedlife.test&returnTo=%2F",
+      "/local-preview?selectedEmail=member.a%40mymedlife.test&returnTo=%2Fapp",
     );
   });
 });

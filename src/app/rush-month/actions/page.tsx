@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { AssignmentCreateResultStatesPanel } from "@/components/assignment-create-result-states-panel";
 import { AssignmentCard } from "@/components/assignment-card";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
@@ -140,7 +140,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
 
   if (isMemberActions) {
     return (
-      <AppShell
+      <StudentAppShell
         actor={actor}
         hideTopHeader
         showMobileQuickItemHelpers={false}
@@ -150,12 +150,12 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
           assignments={visibleAssignments}
           source={memberActionSource}
         />
-      </AppShell>
+      </StudentAppShell>
     );
   }
 
   return (
-    <AppShell actor={actor}>
+    <StudentAppShell actor={actor}>
       {chapterAssignmentContext ? (
         <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
           <p className="app-eyebrow app-eyebrow-blue">{chapterAssignmentContext.eyebrow}</p>
@@ -174,14 +174,14 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
         </section>
       ) : null}
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+      <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
           This week actions
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-slate-950">
           {getActorSurfaceNounLabel(actor)} assignments
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/78">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
           This read-only view shows who owns what, what evidence is needed, and
           what this local role should act on next.
         </p>
@@ -208,29 +208,29 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
       ) : null}
 
       {leaderActionsFocus.canReadFocus ? (
-        <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+        <section className="app-surface-info rounded-[2rem] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
             {leaderActionsFocus.roleLabel}
           </p>
           <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
             <div>
-              <h2 className="text-2xl font-semibold text-white">
+              <h2 className="text-2xl font-semibold text-slate-950">
                 {leaderActionsFocus.title}
               </h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/68">
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
                 {leaderActionsFocus.summary}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link
                 href={leaderActionsFocus.primaryHref}
-                className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#06211d]"
+                className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
               >
                 {leaderActionsFocus.primaryLabel}
               </Link>
               <Link
                 href={leaderActionsFocus.secondaryHref}
-                className="rounded-full border border-white/14 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
               >
                 {leaderActionsFocus.secondaryLabel}
               </Link>
@@ -238,7 +238,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {leaderActionsFocus.items.map((item) => (
-              <div key={item.label} className="rounded-2xl bg-black/20 p-4">
+              <div key={item.label} className="rounded-2xl bg-[#bfdbfe]/40 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
                   {item.label}
                 </p>
@@ -247,7 +247,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
               </div>
             ))}
           </div>
-          <p className="mt-4 rounded-2xl border border-white/10 bg-black/18 p-3 text-sm leading-6 text-white/62">
+          <p className="mt-4 rounded-2xl border border-white/10 bg-[#bfdbfe]/42 p-3 text-sm leading-6 text-white/62">
             {leaderActionsFocus.safetyNote}
           </p>
         </section>
@@ -257,8 +257,8 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
 
       {canCreateAssignment ? (
         <section className="grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
-          <article className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
+          <article className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
               Leader assignment path
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -273,7 +273,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
             </p>
 
             {assignmentCreatePreview.success ? (
-              <div className="mt-4 rounded-2xl bg-black/20 p-3">
+              <div className="mt-4 rounded-2xl bg-[#bfdbfe]/40 p-3">
                 <p className="text-sm font-semibold text-white">
                   Preview assignment: {assignmentCreatePreview.data.assignment.title}
                 </p>
@@ -344,7 +344,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
           nextLabel="Open admin integration view"
         />
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 

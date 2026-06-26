@@ -13,8 +13,9 @@ export function getCampaignsRouteRedirectHref(
   switch (actor.primaryCanonicalRole) {
     case "coach":
     case "sales_coach":
-      return `/coach?view=campaigns${campaignQuery}`;
+      return `/staff?view=campaigns${campaignQuery}`;
     case "department_staff":
+      return `/staff?view=campaigns${campaignQuery}`;
     case "sales_admin":
     case "super_admin":
       return `/staff?view=campaigns${campaignQuery}`;
@@ -37,8 +38,9 @@ export function getProofLibraryRouteRedirectHref(
   switch (actor.primaryCanonicalRole) {
     case "coach":
     case "sales_coach":
-      return "/coach?view=support_notes#support-notes";
+      return "/staff?view=support_notes#support-notes";
     case "department_staff":
+      return "/staff?view=proof_ugc";
     case "sales_admin":
     case "super_admin":
       return "/staff?view=proof_ugc";
@@ -67,8 +69,9 @@ export function getRushMonthEventsRouteRedirectHref(
   switch (actor.primaryCanonicalRole) {
     case "coach":
     case "sales_coach":
-      return `/coach?view=campaigns&campaign=rush-month${eventQuery}`;
+      return `/staff?view=campaigns&campaign=rush-month${eventQuery}`;
     case "department_staff":
+      return `/staff?view=campaigns&campaign=rush-month${eventQuery}`;
     case "sales_admin":
     case "super_admin":
       return `/staff?view=campaigns&campaign=rush-month${eventQuery}`;
@@ -109,7 +112,9 @@ export function getRushMonthActionDetailRouteRedirectHref(
     case "president":
     case "coach":
     case "sales_coach":
+      return "/rush-month/actions";
     case "department_staff":
+      return "/staff?view=campaigns&campaign=rush-month";
     case "sales_admin":
     case "super_admin":
     case "ds_admin":

@@ -43,11 +43,11 @@ export function ProofSubmissionServerActionPanel({
           className={[
             "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              ? "border-blue-200 bg-blue-50 text-blue-700"
               : resultState.tone === "warning"
-                ? "border-amber-200 bg-amber-50 text-amber-700"
+                ? "border-blue-200 bg-blue-50 text-blue-700"
                 : resultState.tone === "error"
-                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  ? "border-blue-200 bg-blue-50 text-blue-700"
                   : "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]",
           ].join(" ")}
           role="status"
@@ -62,9 +62,9 @@ export function ProofSubmissionServerActionPanel({
           className={[
             "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+              ? "border-blue-200 bg-blue-50 text-blue-700"
               : readbackState.tone === "warning"
-                ? "border-amber-200 bg-amber-50 text-amber-700"
+                ? "border-blue-200 bg-blue-50 text-blue-700"
                 : "border-slate-200 bg-white text-slate-600",
           ].join(" ")}
         >
@@ -91,7 +91,7 @@ export function ProofSubmissionServerActionPanel({
         <textarea
           id="proofSummary"
           name="proofSummary"
-          className="min-h-32 w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+          className="min-h-32 w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-[#eff6ff] disabled:text-slate-400"
           defaultValue={defaultInput.summary}
           disabled={!readiness.canSubmit}
         />
@@ -102,7 +102,7 @@ export function ProofSubmissionServerActionPanel({
         <input
           id="proofUrl"
           name="proofUrl"
-          className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+          className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-[#eff6ff] disabled:text-slate-400"
           placeholder="Paste a Drive, Luma, or form link. No file upload happens here."
           disabled={!readiness.canSubmit}
         />
@@ -110,7 +110,7 @@ export function ProofSubmissionServerActionPanel({
         <button
           type="submit"
           disabled={!readiness.canSubmit}
-          className="w-full rounded-full bg-[#f7d05e] px-5 py-3 text-sm font-semibold text-[#10223f] transition hover:bg-[#f2c63f] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 sm:w-auto"
+          className="w-full rounded-full bg-[#2563eb] px-5 py-3 text-sm font-semibold text-[#10223f] transition hover:bg-[#93c5fd] disabled:cursor-not-allowed disabled:bg-[#f8fbff] disabled:text-slate-400 sm:w-auto"
         >
           {readiness.canSubmit ? "Send proof to review" : "Proof submission unavailable"}
         </button>

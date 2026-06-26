@@ -23,7 +23,7 @@ export function BrowserWriteGateNotice({ gate }: BrowserWriteGateNoticeProps) {
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
         <div className="app-surface rounded-2xl p-3">
-          <p className="text-sm font-semibold text-emerald-700">Ready pieces</p>
+          <p className="text-sm font-semibold text-blue-700">Ready pieces</p>
           <div className="mt-3 grid gap-2">
             {passedChecks.map((check) => (
               <div key={check.key} className="app-surface-soft rounded-xl p-3">
@@ -34,8 +34,8 @@ export function BrowserWriteGateNotice({ gate }: BrowserWriteGateNoticeProps) {
           </div>
         </div>
 
-        <div className="app-surface-warm rounded-2xl p-3">
-          <p className="text-sm font-semibold text-amber-700">Still blocked</p>
+        <div className="app-surface-info rounded-2xl p-3">
+          <p className="text-sm font-semibold text-blue-700">Still blocked</p>
           <div className="mt-3 grid gap-2">
             {blockingChecks.map((check) => (
               <div key={check.key} className="app-surface rounded-xl p-3">

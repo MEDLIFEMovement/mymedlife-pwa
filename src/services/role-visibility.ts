@@ -32,7 +32,7 @@ export type ActorSurfaceFamily =
   | "super_admin";
 
 const baseNavigation: NavigationItem[] = [
-  { href: "/", label: "Home" },
+  { href: "/app", label: "Home" },
   { href: "/campaigns", label: "Campaigns" },
   { href: "/rush-month", label: "Rush Month" },
   { href: "/rush-month/dashboard", label: "My Week" },
@@ -44,23 +44,23 @@ const baseNavigation: NavigationItem[] = [
 ];
 
 const chapterLeaderNavigation: NavigationItem[] = [
-  { href: "/chapter?view=overview", label: "Chapter Home" },
-  { href: "/chapter?view=leaderboard", label: "Leaderboard" },
-  { href: "/chapter?view=members", label: "Member Pipeline" },
-  { href: "/chapter?view=member_profile", label: "Member Profile" },
-  { href: "/chapter?view=committees", label: "Committees" },
-  { href: "/chapter?view=events", label: "Events" },
-  { href: "/chapter?view=impact", label: "Impact" },
-  { href: "/chapter?view=bridge_videos", label: "Bridge Videos" },
-  { href: "/chapter?view=succession", label: "Succession" },
-  { href: "/chapter?view=feed_analytics", label: "Feed Analytics" },
+  { href: "/leader?view=overview", label: "Overview" },
+  { href: "/leader?view=leaderboard", label: "Leaderboard" },
+  { href: "/leader?view=members", label: "Member Pipeline" },
+  { href: "/leader?view=member_profile", label: "Member Profile" },
+  { href: "/leader?view=committees", label: "Committees" },
+  { href: "/leader?view=events", label: "Events" },
+  { href: "/leader?view=impact", label: "Impact" },
+  { href: "/leader?view=bridge_videos", label: "Bridge Videos" },
+  { href: "/leader?view=succession", label: "Succession" },
+  { href: "/leader?view=feed_analytics", label: "Feed Analytics" },
 ];
 
 const coachNavigation: NavigationItem[] = [
-  { href: "/coach?view=chapters", label: "Portfolio" },
-  { href: "/coach?view=chapter_detail", label: "Chapter Detail" },
-  { href: "/coach?view=campaigns", label: "Campaigns" },
-  { href: "/coach?view=support_notes#support-notes", label: "Support Notes" },
+  { href: "/staff?view=chapters", label: "Portfolio" },
+  { href: "/staff?view=chapter_detail", label: "Chapter Detail" },
+  { href: "/staff?view=campaigns", label: "Campaigns" },
+  { href: "/staff?view=support_notes#support-notes", label: "Support Notes" },
   { href: "/slt-prep/staff", label: "Trip Prep" },
   { href: "/profile", label: "Profile" },
 ];
@@ -190,8 +190,6 @@ export function getVisibleRiskFlagsForActor(
 
 export function getVisibleAdminPanelsForActor(actor: LocalActorContext): AdminPanel[] {
   switch (getActorSurfaceFamily(actor)) {
-    case "staff":
-      return [supportContextPanel, proofSharingPanel];
     case "ds_admin":
       return [integrationOutboxPanel];
     case "super_admin":
@@ -201,6 +199,7 @@ export function getVisibleAdminPanelsForActor(actor: LocalActorContext): AdminPa
         integrationOutboxPanel,
         fullOversightPanel,
       ];
+    case "staff":
     case "coach":
     case "leader":
     case "member":
@@ -215,7 +214,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
       ...baseNavigation,
       { href: "/rush-month/evidence", label: "Proof" },
       { href: "/rush-month/review", label: "Review" },
-      { href: "/coach", label: "Coach" },
+      { href: "/staff?view=chapters", label: "Staff" },
       { href: "/admin", label: "Admin" },
     ];
   }
@@ -223,10 +222,13 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
   switch (getActorSurfaceFamily(actor)) {
     case "member":
       return [
-        { href: "/", label: "Home" },
+        { href: "/app", label: "Home" },
         { href: "/campaigns", label: "Campaigns" },
         { href: "/rush-month/events", label: "Events" },
         { href: "/rush-month/leaderboard", label: "Points" },
+        ...(hasTravelerAccess(actor)
+          ? [{ href: "/app/slt-prep", label: "SLT Prep" }]
+          : []),
         { href: "/profile", label: "Profile" },
       ];
     case "leader":
@@ -257,25 +259,28 @@ export function getMobileQuickNavigationForActor(
   switch (getActorSurfaceFamily(actor)) {
     case "member":
       return [
-        { href: "/", label: "Home", helper: "Today" },
+        { href: "/app", label: "Home", helper: "Today" },
         { href: "/campaigns", label: "Campaigns", helper: "Goals" },
         { href: "/rush-month/events", label: "Events", helper: "Meet" },
         { href: "/rush-month/leaderboard", label: "Points", helper: "Rank" },
+        ...(hasTravelerAccess(actor)
+          ? [{ href: "/app/slt-prep", label: "SLT Prep", helper: "Trip" }]
+          : []),
         { href: "/profile", label: "Profile", helper: "Me" },
       ];
     case "leader":
       return [
-        { href: "/chapter?view=overview", label: "Home", helper: "Health" },
-        { href: "/chapter?view=members", label: "Pipeline", helper: "People" },
-        { href: "/chapter?view=events", label: "Events", helper: "Plan" },
-        { href: "/chapter?view=succession", label: "Succession", helper: "Leaders" },
+        { href: "/leader?view=overview", label: "Home", helper: "Health" },
+        { href: "/leader?view=members", label: "Pipeline", helper: "People" },
+        { href: "/leader?view=events", label: "Events", helper: "Plan" },
+        { href: "/leader?view=succession", label: "Succession", helper: "Leaders" },
       ];
     case "coach":
       return [
-        { href: "/coach?view=chapters", label: "Portfolio", helper: "Overview" },
-        { href: "/coach?view=chapter_detail", label: "Chapter", helper: "Focus" },
-        { href: "/coach?view=campaigns", label: "Campaigns", helper: "Support" },
-        { href: "/coach?view=support_notes#support-notes", label: "Notes", helper: "Coach" },
+        { href: "/staff?view=chapters", label: "Portfolio", helper: "Overview" },
+        { href: "/staff?view=chapter_detail", label: "Chapter", helper: "Focus" },
+        { href: "/staff?view=campaigns", label: "Campaigns", helper: "Support" },
+        { href: "/staff?view=support_notes#support-notes", label: "Notes", helper: "Staff" },
       ];
     case "staff":
       return [
@@ -308,6 +313,10 @@ export function getMobileQuickNavigationForActor(
 
 export function isMemberSurfaceFamily(actor: LocalActorContext): boolean {
   return getActorSurfaceFamily(actor) === "member";
+}
+
+export function hasTravelerAccess(actor: LocalActorContext): boolean {
+  return actor.canonicalRoles.includes("traveler");
 }
 
 export function getActorSurfaceFamily(

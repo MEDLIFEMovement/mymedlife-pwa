@@ -130,7 +130,7 @@ describe("leaderboard page", () => {
       "Home handed you into recognition as part of the weekly loop. Review progress here and still jump back without losing the member-home context.",
     );
     expect(html).toContain("Back to home");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html).toContain("/rush-month/leaderboard?campaign=rush-month&amp;source=home#campaign-focus");
     expect(html.indexOf("Points &amp; Recognition")).toBeLessThan(html.indexOf("From home"));
   });

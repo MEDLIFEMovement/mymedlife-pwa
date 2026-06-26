@@ -77,7 +77,7 @@ describe("evidence page", () => {
     expect(html).toContain("From home");
     expect(html).toContain("This proof queue opened from your member home flow.");
     expect(html).toContain("Back to home");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/app"');
     expect(html.indexOf("Turn your action into one believable story.")).toBeLessThan(
       html.indexOf("From home"),
     );

@@ -2,6 +2,15 @@ import type { AssignmentLane, ChapterRole, IntegrationEvent } from "@/shared/typ
 
 export type CampaignShellStatus = "active" | "planned" | "template";
 
+export type CampaignWorkflowSnapshot = {
+  sourceKind: "builder_definition" | "template_version";
+  versionLabel: string;
+  workflowName: string;
+  currentPhaseLabel: string;
+  currentPhaseObjective: string;
+  currentPhaseExitSignal: string;
+};
+
 export type CampaignFamily =
   | "rush_month"
   | "planning_goal_setting"
@@ -31,6 +40,7 @@ export type CampaignShell = {
   coachFocus: string;
   primaryKpis: string[];
   integrationPosture: string;
+  workflowSnapshot?: CampaignWorkflowSnapshot | null;
 };
 
 export type ActionCommittee = {

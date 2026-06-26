@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import {
   getAuthOnboardingWorkspace,
@@ -24,130 +23,141 @@ export default async function OnboardingPage() {
     surfaceFamily === "super_admin";
 
   return (
-    <AppShell actor={actor}>
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
-              Auth and onboarding
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">
-              {workspace.title}
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
-              {workspace.summary}
-            </p>
-          </div>
-          <div className="w-fit rounded-[1.5rem] border border-white/12 bg-white/10 px-4 py-3 backdrop-blur-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/72">
-              Local reviewer
-            </p>
-            <p className="mt-1 text-lg font-semibold text-white">
-              {workspace.actorLabel}
-            </p>
-          </div>
-        </div>
-      </section>
+    <main className="min-h-screen px-4 py-4 sm:px-6 lg:px-8">
+      <a
+        href="#main-content"
+        className="sr-only rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+      >
+        Skip to onboarding content
+      </a>
 
-      <section className="app-surface-info rounded-[2rem] p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="app-eyebrow app-eyebrow-blue">
-              Next best step
-            </p>
-            <h2 className="app-title mt-2">{workspace.nextStep.detail}</h2>
-          </div>
-          <Link
-            href={workspace.nextStep.href}
-            className="w-fit rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#10223f]"
-          >
-            {workspace.nextStep.label}
-          </Link>
-        </div>
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <MiniStat label="Steps" value={`${workspace.counts.steps}`} />
-        <MiniStat label="Owned here" value={`${workspace.counts.actorOwnedSteps}`} />
-        <MiniStat label="Browser steps" value={`${workspace.counts.browserEnabledSteps}`} />
-        <MiniStat label="Live auth" value={`${workspace.counts.liveAuthEnabled}`} />
-        <MiniStat
-          label="External writes"
-          value={`${workspace.counts.externalWritesExpected}`}
-        />
-      </section>
-
-      <section className="app-surface rounded-[2rem] p-5">
-        <p className="app-eyebrow app-eyebrow-slate">
-          Onboarding sequence
-        </p>
-        <div className="mt-4 grid gap-3">
-          {workspace.stepRows.map((step, index) => (
-            <article key={step.key} className="app-surface-soft rounded-[1.35rem] p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="app-eyebrow app-eyebrow-blue">
-                    Step {index + 1} / {step.ownerLabel}
-                  </p>
-                  <h2 className="mt-2 text-xl font-semibold text-slate-950">{step.label}</h2>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Pill tone={step.actorCanOwn ? "ready" : "muted"}>
-                    {step.actorCanOwn ? "owned here" : "not this role"}
-                  </Pill>
-                  <Pill tone="locked">available later</Pill>
-                  <Pill tone="ready">tracked</Pill>
-                </div>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{step.notes}</p>
-              <p className="mt-3 font-mono text-xs text-[#2563eb]">
-                {step.futureEventType}
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4">
+        <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                Auth and onboarding
               </p>
-            </article>
-          ))}
-        </div>
-      </section>
+              <h1 className="mt-3 text-3xl font-semibold text-slate-950">
+                {workspace.title}
+              </h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                {workspace.summary}
+              </p>
+            </div>
+            <div className="app-surface w-fit rounded-[1.5rem] px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Local reviewer
+              </p>
+              <p className="mt-1 text-lg font-semibold text-slate-950">
+                {workspace.actorLabel}
+              </p>
+            </div>
+          </div>
+        </section>
 
-      {workspace.launchPreflight ? (
-        <AuthLaunchPreflightPanel preflight={workspace.launchPreflight} />
-      ) : null}
+        <div id="main-content" tabIndex={-1} className="flex flex-col gap-4">
+          <section className="app-surface-info rounded-[2rem] p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="app-eyebrow app-eyebrow-blue">
+                  Next best step
+                </p>
+                <h2 className="app-title mt-2">{workspace.nextStep.detail}</h2>
+              </div>
+              <Link
+                href={workspace.nextStep.href}
+                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+              >
+                {workspace.nextStep.label}
+              </Link>
+            </div>
+          </section>
 
-      <section className="app-surface-warm rounded-[2rem] p-5">
-        <p className="app-eyebrow app-eyebrow-warm">
-          Held for later
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {workspace.blockedWrites.map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-[#f7d05e]/28 bg-[#fff8df] px-3 py-1 text-xs font-semibold text-[#a16207]"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
-      </section>
+          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <MiniStat label="Steps" value={`${workspace.counts.steps}`} />
+            <MiniStat label="Owned here" value={`${workspace.counts.actorOwnedSteps}`} />
+            <MiniStat label="Browser steps" value={`${workspace.counts.browserEnabledSteps}`} />
+            <MiniStat label="Live auth" value={`${workspace.counts.liveAuthEnabled}`} />
+            <MiniStat
+              label="External writes"
+              value={`${workspace.counts.externalWritesExpected}`}
+            />
+          </section>
 
-      {showOperationalAudit ? (
-        <EventOutboxLog events={workspace.futureStructuredEvents} outboxItems={[]} />
-      ) : null}
-
-      <section className="app-surface rounded-[2rem] p-5">
-        <p className="app-eyebrow app-eyebrow-slate">
-          Safety notes
-        </p>
-        <div className="mt-4 grid gap-2">
-          {workspace.safetyNotes.map((note) => (
-            <p
-              key={note}
-              className="app-surface-soft rounded-[1.1rem] p-3 text-sm leading-6 text-slate-600"
-            >
-              {note}
+          <section className="app-surface rounded-[2rem] p-5">
+            <p className="app-eyebrow app-eyebrow-slate">
+              Onboarding sequence
             </p>
-          ))}
+            <div className="mt-4 grid gap-3">
+              {workspace.stepRows.map((step, index) => (
+                <article key={step.key} className="app-surface-soft rounded-[1.35rem] p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="app-eyebrow app-eyebrow-blue">
+                        Step {index + 1} / {step.ownerLabel}
+                      </p>
+                      <h2 className="mt-2 text-xl font-semibold text-slate-950">{step.label}</h2>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Pill tone={step.actorCanOwn ? "ready" : "muted"}>
+                        {step.actorCanOwn ? "owned here" : "not this role"}
+                      </Pill>
+                      <Pill tone="locked">available later</Pill>
+                      <Pill tone="ready">tracked</Pill>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">{step.notes}</p>
+                  <p className="mt-3 font-mono text-xs text-[#2563eb]">
+                    {step.futureEventType}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          {workspace.launchPreflight ? (
+            <AuthLaunchPreflightPanel preflight={workspace.launchPreflight} />
+          ) : null}
+
+          <section className="app-surface-warm rounded-[2rem] p-5">
+            <p className="app-eyebrow app-eyebrow-warm">
+              Held for later
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {workspace.blockedWrites.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1e40af]"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </section>
+
+          {showOperationalAudit ? (
+            <EventOutboxLog events={workspace.futureStructuredEvents} outboxItems={[]} />
+          ) : null}
+
+          <section className="app-surface rounded-[2rem] p-5">
+            <p className="app-eyebrow app-eyebrow-slate">
+              Safety notes
+            </p>
+            <div className="mt-4 grid gap-2">
+              {workspace.safetyNotes.map((note) => (
+                <p
+                  key={note}
+                  className="app-surface-soft rounded-[1.1rem] p-3 text-sm leading-6 text-slate-600"
+                >
+                  {note}
+                </p>
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
-    </AppShell>
+      </div>
+    </main>
   );
 }
 
@@ -192,7 +202,7 @@ function AuthLaunchPreflightPanel({
         {preflight.blockedControls.map((control) => (
           <span
             key={control}
-            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500"
           >
             Later: {control}
           </span>
@@ -231,7 +241,7 @@ function AuthPreflightCard({ item }: { item: AuthOnboardingPreflightItem }) {
         {item.routeEvidence.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -248,10 +258,10 @@ function AuthPreflightStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "watch"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-rose-200 bg-rose-50 text-rose-700";
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -271,7 +281,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function MiniToken({ label, value }: { label: string; value: string }) {
   return (
-    <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500">
+    <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500">
       {label} {value}
     </span>
   );
@@ -286,10 +296,10 @@ function Pill({
 }) {
   const className =
     tone === "ready"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : tone === "locked"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-slate-200 bg-slate-50 text-slate-500";
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-slate-200 bg-[#dbeafe] text-slate-500";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

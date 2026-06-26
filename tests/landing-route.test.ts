@@ -9,22 +9,25 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 describe("landing route service", () => {
   it("maps current local personas to their owned default surfaces", () => {
     expect(getLandingRouteForActor(getMockLocalActorContext("member.a@mymedlife.test"))).toBe(
-      "/",
+      "/app",
     );
     expect(getLandingRouteForActor(getMockLocalActorContext("traveler.a@mymedlife.test"))).toBe(
-      "/slt-prep",
+      "/app/slt-prep",
     );
     expect(getLandingRouteForActor(getMockLocalActorContext("leader.a@mymedlife.test"))).toBe(
-      "/chapter?view=overview",
+      "/leader?view=overview",
     );
     expect(getLandingRouteForActor(getMockLocalActorContext("vice.president@mymedlife.test"))).toBe(
-      "/chapter?view=overview",
+      "/leader?view=overview",
     );
     expect(getLandingRouteForActor(getMockLocalActorContext("coach@mymedlife.test"))).toBe(
-      "/coach?view=chapters",
+      "/staff?view=chapters",
     );
+    expect(
+      getLandingRouteForActor(getMockLocalActorContext("general.staff@mymedlife.test")),
+    ).toBe("/staff?view=chapters");
     expect(getLandingRouteForActor(getMockLocalActorContext("sales.coach@mymedlife.test"))).toBe(
-      "/coach?view=chapters",
+      "/staff?view=chapters",
     );
     expect(getLandingRouteForActor(getMockLocalActorContext("admin@mymedlife.test"))).toBe(
       "/staff?view=chapters",
@@ -39,13 +42,16 @@ describe("landing route service", () => {
 
   it("can derive a landing route directly from a preview actor email", () => {
     expect(getLandingRouteForLocalActorEmail("traveler.a@mymedlife.test")).toBe(
-      "/slt-prep",
+      "/app/slt-prep",
     );
     expect(getLandingRouteForLocalActorEmail("leader.a@mymedlife.test")).toBe(
-      "/chapter?view=overview",
+      "/leader?view=overview",
     );
     expect(getLandingRouteForLocalActorEmail("sales.coach@mymedlife.test")).toBe(
-      "/coach?view=chapters",
+      "/staff?view=chapters",
+    );
+    expect(getLandingRouteForLocalActorEmail("general.staff@mymedlife.test")).toBe(
+      "/staff?view=chapters",
     );
     expect(getLandingRouteForLocalActorEmail("admin@mymedlife.test")).toBe(
       "/staff?view=chapters",
@@ -59,6 +65,6 @@ describe("landing route service", () => {
     expect(appendLandingRouteSource("/staff?view=chapters", "member_home")).toBe(
       "/staff?view=chapters&source=member_home",
     );
-    expect(appendLandingRouteSource("/", "member_home")).toBe("/?source=member_home");
+    expect(appendLandingRouteSource("/app", "member_home")).toBe("/app?source=member_home");
   });
 });

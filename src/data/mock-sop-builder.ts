@@ -10,13 +10,19 @@ import type {
   RoleActionRule,
   SopAuditRecord,
   SopCampaignDefinition,
+  SopFeatureFlagBinding,
+  SopHandoffRule,
   SopIntegrationBoundary,
   SopLibraryStatus,
+  SopOperationPermission,
+  SopPhase,
   SopPreviewScenario,
   SopRole,
   SopRuleStatus,
   SopScope,
+  SopSourceTrace,
   SopStep,
+  SopValidator,
 } from "@/shared/types/sop-builder";
 
 export const sopBuilderTabs = [
@@ -34,6 +40,10 @@ export const sopCampaignDefinitions: readonly SopCampaignDefinition[] = campaign
     switch (shell.slug) {
       case "rush-month":
         return createRushMonthDefinition(shell);
+      case "chapter-engagement":
+        return createChapterEngagementDefinition(shell);
+      case "moving-mountains":
+        return createMovingMountainsDefinition(shell);
       case "leadership-transition":
         return createLeadershipTransitionDefinition(shell);
       case "slt-promotion":
@@ -78,7 +88,7 @@ function createRushMonthDefinition(shell: CampaignShell): SopCampaignDefinition 
       approvalRequired: true,
       pointsEnabled: false,
       required: true,
-      kpiTag: "Chapter Health",
+      kpiTag: "Leads Captured",
       communicationCount: 2,
       riskEscalation:
         "If visibility planning slips, intro-event attendance and member action confidence both drop.",
@@ -108,7 +118,7 @@ function createRushMonthDefinition(shell: CampaignShell): SopCampaignDefinition 
       approvalRequired: false,
       pointsEnabled: true,
       required: true,
-      kpiTag: "Attendance Rate",
+      kpiTag: "Intro GBM RSVPs",
       communicationCount: 4,
       riskEscalation:
         "If the event route feels vague, interest dies before students reach the action loop.",
@@ -138,7 +148,7 @@ function createRushMonthDefinition(shell: CampaignShell): SopCampaignDefinition 
       approvalRequired: false,
       pointsEnabled: true,
       required: false,
-      kpiTag: "Recruitment Rate",
+      kpiTag: "Follow-ups Done",
       communicationCount: 3,
       riskEscalation:
         "If this action screen is weak, the entire campaign collapses into generic interest instead of movement.",
@@ -168,7 +178,7 @@ function createRushMonthDefinition(shell: CampaignShell): SopCampaignDefinition 
       approvalRequired: false,
       pointsEnabled: false,
       required: true,
-      kpiTag: "Proof Quality",
+      kpiTag: "Follow-ups Done",
       communicationCount: 5,
       riskEscalation:
         "If proof expectations are fuzzy, members either skip submission or share the wrong artifact.",
@@ -198,7 +208,7 @@ function createRushMonthDefinition(shell: CampaignShell): SopCampaignDefinition 
       approvalRequired: true,
       pointsEnabled: true,
       required: true,
-      kpiTag: "Campaign Health",
+      kpiTag: "New Members",
       communicationCount: 1,
       riskEscalation:
         "If recognition is detached from real actions, points become decorative instead of motivational.",
@@ -289,6 +299,40 @@ function createRushMonthDefinition(shell: CampaignShell): SopCampaignDefinition 
         "Member can move between home, actions, events, and points without losing route ownership.",
       ),
     ],
+    kpiRules: [
+      {
+        id: "rush-month-kpi-leads-captured",
+        metricKey: "leads_captured",
+        displayLabel: "Leads Captured",
+        sourceOfTruth: "Structured Rush Month KPI events in the mock-safe ledger.",
+        targetValue: 80,
+        status: "ready_readonly",
+      },
+      {
+        id: "rush-month-kpi-intro-gbm-rsvps",
+        metricKey: "intro_gbm_rsvps",
+        displayLabel: "Intro GBM RSVPs",
+        sourceOfTruth: "Structured Rush Month KPI events in the mock-safe ledger.",
+        targetValue: 50,
+        status: "ready_readonly",
+      },
+      {
+        id: "rush-month-kpi-followups-done",
+        metricKey: "followups_completed",
+        displayLabel: "Follow-ups Done",
+        sourceOfTruth: "Structured Rush Month KPI events in the mock-safe ledger.",
+        targetValue: 47,
+        status: "ready_readonly",
+      },
+      {
+        id: "rush-month-kpi-new-members",
+        metricKey: "new_members",
+        displayLabel: "New Members",
+        sourceOfTruth: "Structured Rush Month KPI events in the mock-safe ledger.",
+        targetValue: 25,
+        status: "ready_readonly",
+      },
+    ],
     previewScenarios: [
       createPreviewScenario(
         "rush-member-loop",
@@ -329,41 +373,569 @@ function createLeadershipTransitionDefinition(
     versionLabel: "v1.0",
     versionState: "review_ready",
     versionSummary:
-      "Adds succession, role coverage, and coach handoff logic to the packet-backed admin library.",
+      "Adds successor mapping, role notes, committee chair handoff, coach validation, and risk closeout to the packet-backed admin library.",
     lastEditedBy: "Chris Morgan",
     lastPublishedDate: null,
-    builderSections: ["Handoff", "Coach gate", "Incoming onboarding"],
-    steps: [
-      createStep(
-        "transition-successors",
-        "Handoff",
-        "Name the next officer and chair owners",
+    builderSections: [
+      "Successor map",
+      "Role notes",
+      "Committee chairs",
+      "Coach handoff",
+      "Risk closeout",
+    ],
+    roleActionRules: [
+      createRoleRule(
         "president",
-        "ready_readonly",
+        "chapter",
+        "Map successor coverage, keep open risks visible, and close the handoff loop without relying on informal memory.",
         "/chapter?view=succession",
-        "A chapter cannot survive leadership turnover if successors are vague or unnamed.",
-        "Succession view names who owns the next lane and what role still lacks a successor.",
-      ),
-      createStep(
-        "transition-notes",
-        "Handoff",
-        "Package role notes and open risks",
-        "eboard_officer",
-        "mock_only",
-        "/chapter?view=member_profile",
-        "Leaders need a boring, reliable record of what the next person inherits.",
-        "Role handoff notes stay readable even before admin editing is live.",
-      ),
-      createStep(
-        "transition-coach-review",
-        "Coach gate",
-        "Coach confirms the chapter is ready for the handoff",
-        "coach",
         "ready_readonly",
-        "/coach?view=support_notes#support-notes",
-        "Coach review keeps a risky leadership transition from getting mislabeled as complete.",
-        "Coach route shows the next check-in posture without saving notes yet.",
+        "Leadership transition remains reviewable here without opening live role or membership writes.",
       ),
+      createRoleRule(
+        "eboard_officer",
+        "chapter",
+        "Package role notes, recurring responsibilities, and open decisions into a handoff another leader can actually use.",
+        "/chapter?view=member_profile",
+        "mock_only",
+        "Role-note editing posture stays mock-safe while the workflow engine remains read-first.",
+      ),
+      createRoleRule(
+        "committee_chair",
+        "committee",
+        "Confirm committee chair ownership, next actions, and proof posture before the new team restarts committee work.",
+        "/chapter?view=committees",
+        "ready_readonly",
+        "Committee handoff remains visible without enabling live assignment, membership, or reminder writes.",
+      ),
+      createRoleRule(
+        "coach",
+        "assigned_coach_portfolio",
+        "Validate whether the chapter can advance, should hold, or needs intervention before the transition is treated as complete.",
+        "/coach?view=support_notes#support-notes",
+        "ready_readonly",
+        "Coach review remains mock-safe and does not open CRM, notification, or automation writes.",
+      ),
+    ],
+    steps: [
+      {
+        ...createStep(
+          "leadership-transition-successors",
+          "Successor map",
+          "Map successor coverage",
+          "president",
+          "ready_readonly",
+          "/chapter?view=succession",
+          "A chapter cannot survive leadership turnover if successors are vague, unnamed, or disconnected from the work they inherit.",
+          "Succession view names confirmed successors, open role gaps, and the first responsibility each incoming leader should understand.",
+        ),
+        stepNumber: 1,
+        affectedRoles: ["president", "vice_president", "eboard_officer"],
+        supportingRoles: ["vice_president"],
+        entryCriteria:
+          "Outgoing leaders can name the current officer roster and identify where successor certainty is still weak.",
+        exitCriteria:
+          "Every critical chapter role shows a named successor or a visible risk note with the current owner attached.",
+        dueTiming: "As soon as the next leadership slate is forming",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "successors_confirmed",
+        communicationCount: 1,
+        riskEscalation:
+          "If successor coverage is fuzzy, the chapter starts the handoff with hidden risk instead of a believable continuity plan.",
+      },
+      {
+        ...createStep(
+          "leadership-transition-role-notes",
+          "Role notes",
+          "Write role handoff notes",
+          "eboard_officer",
+          "mock_only",
+          "/chapter?view=member_profile",
+          "Incoming leaders need a boring, reliable record of first actions, recurring work, relationships, and open decisions.",
+          "Role notes stay readable in the app so the next team does not have to rebuild chapter memory from scratch.",
+        ),
+        stepNumber: 2,
+        affectedRoles: ["eboard_officer", "president", "committee_chair"],
+        supportingRoles: ["president"],
+        entryCriteria:
+          "Named successors exist for the core chapter roles or the remaining gaps are explicitly visible.",
+        exitCriteria:
+          "Each outgoing role has a handoff note with first actions, recurring responsibilities, and open decisions.",
+        dueTiming: "Immediately after successor coverage is visible",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "handoff_notes",
+        communicationCount: 1,
+        riskEscalation:
+          "If role notes stay informal, the chapter loses practical knowledge even when successors are already named.",
+      },
+      {
+        ...createStep(
+          "leadership-transition-committee-chairs",
+          "Committee chairs",
+          "Confirm committee chair handoff",
+          "committee_chair",
+          "ready_readonly",
+          "/chapter?view=committees",
+          "Committee work stalls when new chairs inherit vague ownership, missing proof standards, or no next action at all.",
+          "Committee handoff shows who owns each committee, what their first action is, and where questions should go.",
+        ),
+        stepNumber: 3,
+        affectedRoles: ["committee_chair", "committee_member", "president"],
+        supportingRoles: ["president"],
+        entryCriteria:
+          "Officer successor coverage and role notes are visible enough to hand committee lanes to the next owners.",
+        exitCriteria:
+          "Each committee chair has a named next owner, first action, and handoff posture before committee work restarts.",
+        dueTiming: "Before the next committee cycle begins",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "roles_handed_off",
+        communicationCount: 1,
+        riskEscalation:
+          "If committee ownership is vague, the chapter enters the next term with silent operational gaps even when officer roles look covered.",
+      },
+      {
+        ...createStep(
+          "leadership-transition-coach-review",
+          "Coach handoff",
+          "Prepare coach validation",
+          "coach",
+          "ready_readonly",
+          "/coach?view=support_notes#support-notes",
+          "Coach review keeps a risky transition from being mislabeled as complete just because the chapter filled a slate.",
+          "Coach route shows whether the chapter can advance, should hold, or needs intervention before the new team takes over.",
+        ),
+        stepNumber: 4,
+        affectedRoles: ["coach", "president", "eboard_officer"],
+        supportingRoles: ["president"],
+        entryCriteria:
+          "Successor coverage, role notes, and committee chair handoff posture are visible enough for an external review.",
+        exitCriteria:
+          "Coach review clearly records whether the transition is ready, should hold, or needs intervention before closeout.",
+        dueTiming: "After successor, role-note, and committee-chair review are visible together",
+        evidenceRequired: true,
+        approvalRequired: true,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "coach_validations",
+        communicationCount: 1,
+        riskEscalation:
+          "If the coach gate is shallow, the chapter can carry visible handoff work forward while still missing the real blockers.",
+      },
+      {
+        ...createStep(
+          "leadership-transition-risk-closeout",
+          "Risk closeout",
+          "Close transition risks",
+          "president",
+          "ready_readonly",
+          "/campaigns/leadership-transition",
+          "A transition is not done when people feel optimistic; it is done when open risks, gaps, and support needs are explicitly closed or owned.",
+          "Campaign detail closes the loop with named risks, support posture, and a believable readiness signal for the incoming team.",
+        ),
+        stepNumber: 5,
+        affectedRoles: ["president", "vice_president", "coach"],
+        supportingRoles: ["coach"],
+        entryCriteria:
+          "Coach validation is visible and the chapter has a concrete list of remaining risks or support needs.",
+        exitCriteria:
+          "Open transition risks, support owners, and final readiness posture are visible before the chapter treats the handoff as complete.",
+        dueTiming: "Before the incoming team fully owns the next chapter cycle",
+        evidenceRequired: true,
+        approvalRequired: true,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "open_risks",
+        communicationCount: 1,
+        riskEscalation:
+          "If risk closeout stays implicit, the chapter declares a healthy transition while known gaps are still floating between teams.",
+      },
+    ],
+  });
+}
+
+function createChapterEngagementDefinition(
+  shell: CampaignShell,
+): SopCampaignDefinition {
+  return createDefinition(shell, {
+    builderStatus: "review_ready",
+    libraryStatus: "live",
+    versionLabel: "v4.0",
+    versionState: "review_ready",
+    versionSummary:
+      "Turns Chapter Engagement into a fuller recurring workflow with participation, event follow-through, recognition, retention, and coach review inside the builder backbone.",
+    lastEditedBy: "Sam Rivera",
+    lastPublishedDate: "Apr 20, 2026",
+    builderSections: [
+      "Participation",
+      "Event follow-through",
+      "Recognition",
+      "Retention",
+      "Coach review",
+    ],
+    steps: [
+      {
+        ...createStep(
+          "chapter-engagement-pulse",
+          "Participation pulse",
+          "Find this week's participation pulse",
+          "eboard_officer",
+          "ready_readonly",
+          "/campaigns/chapter-engagement",
+          "Recurring chapter energy starts when leaders define the simplest believable participation path for this week.",
+          "Members can see one clear way to participate this week without needing leader context.",
+        ),
+        stepNumber: 1,
+        affectedRoles: ["eboard_officer", "committee_chair", "student_member"],
+        supportingRoles: ["committee_chair", "president"],
+        entryCriteria:
+          "The campaign detail route is readable and the chapter can name one concrete participation path.",
+        exitCriteria:
+          "The chapter has one visible participation lane and invite posture for the current week.",
+        dueTiming: "Start of each weekly engagement loop",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "active_members",
+        communicationCount: 2,
+        riskEscalation:
+          "If the participation pulse is vague, members drift because there is no obvious next step to join.",
+      },
+      {
+        ...createStep(
+          "chapter-engagement-events",
+          "Event momentum",
+          "Turn events into follow-up",
+          "committee_chair",
+          "ready_readonly",
+          "/campaigns/chapter-engagement",
+          "Attendance matters only if events lead to a next action, reflection, or follow-up moment.",
+          "Event posture names the host, next action, and follow-up plan before the chapter calls the event done.",
+        ),
+        stepNumber: 2,
+        affectedRoles: ["committee_chair", "committee_member", "student_member"],
+        supportingRoles: ["eboard_officer"],
+        entryCriteria:
+          "The chapter has at least one current event or gathering worth turning into follow-through.",
+        exitCriteria:
+          "Event momentum stays readable through host ownership, feedback posture, and the next action after attendance.",
+        dueTiming: "Before and during each engagement event",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "event_attendance",
+        communicationCount: 3,
+        riskEscalation:
+          "If events end as attendance only, members do not build momentum or move into deeper chapter participation.",
+      },
+      {
+        ...createStep(
+          "chapter-engagement-recognition",
+          "Recognition loop",
+          "Recognize useful action",
+          "committee_member",
+          "mock_only",
+          "/campaigns/chapter-engagement",
+          "Recognition keeps helpful behavior visible so members can feel progress instead of invisible labor.",
+          "Recognition posture links visible actions to points, stories, and chapter goals without turning points into decorative noise.",
+        ),
+        stepNumber: 3,
+        affectedRoles: ["committee_member", "student_member", "president"],
+        supportingRoles: ["committee_chair", "president"],
+        entryCriteria:
+          "The chapter can name at least one helpful student action or event contribution worth surfacing.",
+        exitCriteria:
+          "Recognition lane explains what counts, why it matters, and how it connects back to chapter action.",
+        dueTiming: "Within the same weekly loop as visible student action",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "points_awarded",
+        communicationCount: 2,
+        riskEscalation:
+          "If recognition is disconnected from real action, the chapter sees points but not the behavior they are supposed to reinforce.",
+      },
+      {
+        ...createStep(
+          "chapter-engagement-retention",
+          "Retention follow-up",
+          "Follow up before members disappear",
+          "president",
+          "ready_readonly",
+          "/campaigns/chapter-engagement",
+          "Retention is a workflow, not an afterthought, when quiet members get a named owner and a clear re-entry action.",
+          "Leaders can spot drifting members, assign follow-up owners, and keep reconnection posture visible before anyone disappears silently.",
+        ),
+        stepNumber: 4,
+        affectedRoles: ["president", "eboard_officer", "committee_member"],
+        supportingRoles: ["coach"],
+        entryCriteria:
+          "The chapter can identify members who attended less, stopped responding, or never moved into action.",
+        exitCriteria:
+          "Retention follow-up names the member risk, the owner, and the next action that could help the person reconnect.",
+        dueTiming: "At the end of each engagement cycle",
+        evidenceRequired: true,
+        approvalRequired: true,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "retention_signals",
+        communicationCount: 2,
+        riskEscalation:
+          "If quiet members are not surfaced with owners and next steps, engagement falls faster than the chapter realizes.",
+      },
+      {
+        ...createStep(
+          "chapter-engagement-coach-review",
+          "Coach engagement review",
+          "Prepare engagement review",
+          "coach",
+          "ready_readonly",
+          "/coach?view=chapters",
+          "Coach review helps the chapter interpret participation, recognition, and retention together before a weak loop repeats.",
+          "Coach lane can see whether engagement is building, stalling, or needs intervention without opening live notes or external sends.",
+        ),
+        stepNumber: 5,
+        affectedRoles: ["coach", "president", "department_staff"],
+        supportingRoles: ["president", "department_staff"],
+        entryCriteria:
+          "Participation, event follow-through, recognition, and retention posture are visible enough to review together.",
+        exitCriteria:
+          "Coach review captures whether the chapter should keep going, intervene, or change the next engagement loop.",
+        dueTiming: "End of the current engagement loop",
+        evidenceRequired: true,
+        approvalRequired: true,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "retention_signals",
+        communicationCount: 1,
+        riskEscalation:
+          "If the coach review is shallow, the chapter can repeat a weak participation loop without understanding what actually stalled.",
+      },
+    ],
+  });
+}
+
+function createMovingMountainsDefinition(
+  shell: CampaignShell,
+): SopCampaignDefinition {
+  return createDefinition(shell, {
+    builderStatus: "review_ready",
+    libraryStatus: "archived",
+    versionLabel: "v2.0",
+    versionState: "review_ready",
+    versionSummary:
+      "Turns Moving Mountains into a fuller story, advocacy, fundraising, supporter follow-up, and coach review workflow while keeping supporter systems and reporting blocked.",
+    lastEditedBy: "Taylor Brooks",
+    lastPublishedDate: "Aug 15, 2025",
+    builderSections: [
+      "Movement story",
+      "Advocacy action",
+      "Fundraising momentum",
+      "Supporter follow-up",
+      "Coach review",
+    ],
+    roleActionRules: [
+      createRoleRule(
+        "student_member",
+        "own",
+        "See the movement story, advocacy action, and fundraising context clearly enough to take a next step.",
+        "/campaigns/moving-mountains",
+        "ready_readonly",
+        "Students can inspect the campaign but do not edit movement configuration from this lane.",
+      ),
+      createRoleRule(
+        "committee_member",
+        "committee",
+        "Run fundraising and follow-up work that turns the movement story into repeatable chapter action.",
+        "/chapter?view=committees",
+        "mock_only",
+        "Committee execution stays visible while live outreach and external writes remain blocked.",
+      ),
+      createRoleRule(
+        "committee_chair",
+        "committee",
+        "Turn the chapter story into a real advocacy action with a named owner and proof posture.",
+        "/chapter?view=committees",
+        "ready_readonly",
+        "Committee chairs can inspect movement execution but do not open live sends or supporter writes.",
+      ),
+      createRoleRule(
+        "eboard_officer",
+        "chapter",
+        "Keep supporter follow-up and impact visibility attached to the same chapter workflow instead of a separate reporting lane.",
+        "/chapter?view=impact",
+        "ready_readonly",
+        "E-Board follow-up posture remains read-only until supporter and CRM writes are explicitly approved.",
+      ),
+      createRoleRule(
+        "president",
+        "chapter",
+        "Keep the chapter story, fundraising momentum, and supporter follow-up coherent across the campaign.",
+        "/chapter?view=impact",
+        "ready_readonly",
+        "Leader writes remain guarded and no supporter mutations are enabled from the campaign lane.",
+      ),
+      createRoleRule(
+        "coach",
+        "assigned_coach_portfolio",
+        "Review whether the movement push is turning mission energy into action, support, and believable follow-up.",
+        "/coach?view=campaigns",
+        "ready_readonly",
+        "Coach review remains mock-safe and does not open CRM, supporter, or automation writes.",
+      ),
+    ],
+    steps: [
+      {
+        ...createStep(
+          "moving-mountains-story",
+          "Movement story",
+          "Set the movement story",
+          "president",
+          "ready_readonly",
+          "/campaigns/moving-mountains",
+          "Students need a concrete mission story so movement language turns into action instead of floating as inspiration only.",
+          "Campaign detail explains how the chapter story, mission proof, and desired student action connect before the push begins.",
+        ),
+        stepNumber: 1,
+        affectedRoles: ["president", "committee_chair", "student_member"],
+        supportingRoles: ["committee_chair", "coach"],
+        entryCriteria:
+          "The chapter can point to one campaign story, one desired student action, and one proof point that makes the mission concrete.",
+        exitCriteria:
+          "Movement story is visible enough that a student can understand why the campaign matters and what action it wants.",
+        dueTiming: "Before the movement push opens",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "proof_items",
+        communicationCount: 2,
+        riskEscalation:
+          "If the story stays abstract, students hear the mission language but never see the concrete action attached to it.",
+      },
+      {
+        ...createStep(
+          "moving-mountains-advocacy",
+          "Advocacy action",
+          "Run the advocacy action",
+          "committee_chair",
+          "ready_readonly",
+          "/campaigns/moving-mountains",
+          "The movement becomes real when students get one specific advocacy action they can take without needing extra leader translation.",
+          "Campaign route names the action, owner, participation prompt, and proof posture clearly enough for students to move.",
+        ),
+        stepNumber: 2,
+        affectedRoles: ["committee_chair", "committee_member", "student_member"],
+        supportingRoles: ["president"],
+        entryCriteria:
+          "The chapter has chosen the advocacy action and a named owner or host for it.",
+        exitCriteria:
+          "Advocacy posture is visible through the campaign route with participation target, proof prompt, and next action context.",
+        dueTiming: "During the active campaign push",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "actions_completed",
+        communicationCount: 3,
+        riskEscalation:
+          "If the advocacy action is vague, the movement loses energy because students cannot tell what to actually do.",
+      },
+      {
+        ...createStep(
+          "moving-mountains-fundraising",
+          "Fundraising momentum",
+          "Build fundraising momentum",
+          "committee_member",
+          "mock_only",
+          "/campaigns/moving-mountains",
+          "Fundraising only feels real when the chapter turns the mission story into a doable campaign moment with repeatable proof.",
+          "Campaign route makes the fundraising action, proof prompt, and follow-up posture visible without opening live payment flows.",
+        ),
+        stepNumber: 3,
+        affectedRoles: ["committee_member", "student_member", "president"],
+        supportingRoles: ["committee_chair", "president"],
+        entryCriteria:
+          "The chapter has named the fundraising action, owner, and proof prompt for this push.",
+        exitCriteria:
+          "Fundraising momentum is visible through chapter-facing posture before any payment processor or warehouse sync is opened.",
+        dueTiming: "During the fundraising push",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "funds_raised",
+        communicationCount: 2,
+        riskEscalation:
+          "If fundraising posture is invisible or generic, the chapter cannot tell whether mission energy is turning into real support.",
+      },
+      {
+        ...createStep(
+          "moving-mountains-supporters",
+          "Supporter follow-up",
+          "Follow up with new supporters",
+          "eboard_officer",
+          "ready_readonly",
+          "/chapter?view=impact",
+          "A supporter moment should lead to the next chapter action instead of ending as a one-time interaction.",
+          "Impact lane can show supporter follow-up ownership and the next chapter action without opening CRM or outbound messaging.",
+        ),
+        stepNumber: 4,
+        affectedRoles: ["eboard_officer", "committee_member", "president"],
+        supportingRoles: ["coach"],
+        entryCriteria:
+          "The chapter can identify new supporters or interested people who need a named follow-up owner.",
+        exitCriteria:
+          "Supporter follow-up names the next chapter action and keeps ownership visible before any HubSpot or email path exists.",
+        dueTiming: "Right after visible mission or fundraising engagement",
+        evidenceRequired: true,
+        approvalRequired: true,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "new_supporters",
+        communicationCount: 2,
+        riskEscalation:
+          "If supporter follow-up is not owned, the campaign creates awareness but loses the relationship before it becomes chapter momentum.",
+      },
+      {
+        ...createStep(
+          "moving-mountains-coach-review",
+          "Coach movement review",
+          "Prepare Moving Mountains review",
+          "coach",
+          "ready_readonly",
+          "/coach?view=campaigns",
+          "Coach review needs one view that combines story, advocacy, fundraising, and supporter follow-up before a weak movement push repeats.",
+          "Coach route can inspect whether the chapter should advance, adjust, or pause the campaign without opening supporter or external write paths.",
+        ),
+        stepNumber: 5,
+        affectedRoles: ["coach", "president", "department_staff"],
+        supportingRoles: ["president", "department_staff"],
+        entryCriteria:
+          "Movement story, action, fundraising, and supporter follow-up posture are visible enough to review together.",
+        exitCriteria:
+          "Coach review names whether the movement push should keep going, change course, or pause before the next loop.",
+        dueTiming: "End of the current movement push",
+        evidenceRequired: true,
+        approvalRequired: true,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "coach_review_ready",
+        communicationCount: 1,
+        riskEscalation:
+          "If the coach review is shallow, the chapter can repeat a weak movement push without understanding whether story, action, or follow-up broke down.",
+      },
     ],
   });
 }
@@ -377,41 +949,157 @@ function createSltPromotionDefinition(
     versionLabel: "v1.5",
     versionState: "review_ready",
     versionSummary:
-      "Connects campaign storytelling to the traveler and staff SLT Prep surfaces while keeping Shopify and live attendance disabled.",
+      "Connects campaign storytelling to the traveler and staff SLT Prep surfaces through a fuller belief, follow-up, commitment, and readiness workflow while keeping Shopify and live attendance disabled.",
     lastEditedBy: "Alex Kim",
     lastPublishedDate: "Nov 10, 2025",
-    builderSections: ["Belief", "Follow-up", "Staff review"],
+    builderSections: [
+      "Belief",
+      "Info session",
+      "Follow-up",
+      "Commitment",
+      "Staff review",
+    ],
     steps: [
-      createStep(
-        "slt-interest",
-        "Belief",
-        "Show proof that SLT is possible and worth exploring",
-        "student_member",
-        "ready_readonly",
-        "/campaigns/slt-promotion",
-        "Students need belief-building proof before they are willing to ask questions about an SLT.",
-        "Campaign detail shows the proof use and next student action clearly.",
-      ),
-      createStep(
-        "slt-followup",
-        "Follow-up",
-        "Move interested students into concrete prep next steps",
-        "committee_member",
-        "mock_only",
-        "/slt-prep",
-        "Interest matters only if students can move into forms, meetings, and readiness steps.",
-        "Traveler route opens with countdown, checklist, and next step context.",
-      ),
-      createStep(
-        "slt-staff",
-        "Staff review",
-        "Flag readiness risk before travel planning gets messy",
-        "department_staff",
-        "ready_readonly",
-        "/slt-prep/staff",
-        "Staff needs one focused readiness lane before they approve broader automation or payments.",
-        "Staff dashboard shows traveler risk filters and mock-safe bulk actions.",
-      ),
+      {
+        ...createStep(
+          "slt-belief-proof",
+          "Belief proof",
+          "Prepare belief-building proof",
+          "president",
+          "ready_readonly",
+          "/campaigns/slt-promotion",
+          "Students need a believable reason to care about the trip before they are willing to ask harder questions about cost, timing, or fit.",
+          "Campaign detail shows the proof, the value of the SLT, and the first low-pressure next step clearly.",
+        ),
+        stepNumber: 1,
+        affectedRoles: ["president", "committee_chair", "student_member"],
+        supportingRoles: ["committee_chair", "coach"],
+        entryCriteria:
+          "The chapter can point to one real student story, trip outcome, or partner-community proof point worth showing.",
+        exitCriteria:
+          "Belief-building proof is visible and the campaign route names why the SLT matters before asking for commitment.",
+        dueTiming: "Before the first SLT info push",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "proof_items",
+        communicationCount: 2,
+        riskEscalation:
+          "If belief-building proof is weak, students disengage before they even reach the real questions about travel.",
+      },
+      {
+        ...createStep(
+          "slt-info-session",
+          "Info session",
+          "Run the SLT info session",
+          "committee_chair",
+          "ready_readonly",
+          "/campaigns/slt-promotion",
+          "Students need a concrete, low-pressure moment to learn what the trip is, how it works, and what happens next.",
+          "The chapter can see who hosted, what questions surfaced, and what next step the session should lead to.",
+        ),
+        stepNumber: 2,
+        affectedRoles: ["committee_chair", "committee_member", "student_member"],
+        supportingRoles: ["president"],
+        entryCriteria:
+          "The chapter has a clear session objective, one proof item, and a named host or owner.",
+        exitCriteria:
+          "The info session route posture keeps the session objective, attendance, and next action visible instead of ending at awareness only.",
+        dueTiming: "During the interest-building phase",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "info_sessions",
+        communicationCount: 3,
+        riskEscalation:
+          "If the info session is vague, students leave curious but not actually closer to a next step.",
+      },
+      {
+        ...createStep(
+          "slt-question-followup",
+          "Question follow-up",
+          "Track questions and hesitations",
+          "committee_member",
+          "mock_only",
+          "/campaigns/slt-promotion",
+          "Interest becomes real only when questions about cost, parents, travel, and fit get a human response.",
+          "Campaign follow-up posture shows which questions are open, who owns them, and whether students are moving toward clarity.",
+        ),
+        stepNumber: 3,
+        affectedRoles: ["committee_member", "student_member", "president"],
+        supportingRoles: ["committee_chair", "president"],
+        entryCriteria:
+          "The chapter has real student questions or hesitations to sort and assign.",
+        exitCriteria:
+          "Question follow-up is visible by theme and owner before any live reminders or CRM writes exist.",
+        dueTiming: "Right after the info session and early follow-up",
+        evidenceRequired: true,
+        approvalRequired: false,
+        pointsEnabled: true,
+        required: true,
+        kpiTag: "followups_completed",
+        communicationCount: 2,
+        riskEscalation:
+          "If open hesitations are not tracked, interest fades because students never get a useful answer at the right time.",
+      },
+      {
+        ...createStep(
+          "slt-commitment-path",
+          "Commitment path",
+          "Move interested students to next step",
+          "president",
+          "mock_only",
+          "/slt-prep/payments",
+          "The chapter needs a clear handoff from interest into forms, deposit readiness, and real prep expectations.",
+          "Traveler-prep routes show the next required step and what commitment readiness means without opening live payment or enrollment writes.",
+        ),
+        stepNumber: 4,
+        affectedRoles: ["president", "student_member", "department_staff"],
+        supportingRoles: ["committee_member", "department_staff"],
+        entryCriteria:
+          "The chapter can identify which students are ready for a personal next-step conversation or deposit-readiness review.",
+        exitCriteria:
+          "Commitment posture makes the next step visible through prep routes without hiding payment, form, or readiness expectations.",
+        dueTiming: "After interest is qualified",
+        evidenceRequired: true,
+        approvalRequired: true,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "deposits",
+        communicationCount: 2,
+        riskEscalation:
+          "If the commitment path is fuzzy, students stall between interest and action because no route owns the real next step.",
+      },
+      {
+        ...createStep(
+          "slt-coach-review",
+          "Staff review",
+          "Prepare SLT promotion review",
+          "coach",
+          "ready_readonly",
+          "/slt-prep/staff",
+          "Coach and staff need one readiness view that combines interest, follow-up, and trip-prep posture before broader automation is approved.",
+          "Staff dashboard can inspect traveler readiness, risk filters, and next-step posture without creating real reminders, payments, or external writes.",
+        ),
+        stepNumber: 5,
+        affectedRoles: ["coach", "department_staff", "president"],
+        supportingRoles: ["department_staff", "president"],
+        entryCriteria:
+          "Belief-building, question follow-up, and commitment readiness are visible enough to review together.",
+        exitCriteria:
+          "Coach and staff can see whether the SLT promotion loop should keep going, adjust, or pause before handing more students into prep.",
+        dueTiming: "End of the current SLT promotion cycle",
+        evidenceRequired: true,
+        approvalRequired: true,
+        pointsEnabled: false,
+        required: true,
+        kpiTag: "coach_review_ready",
+        communicationCount: 1,
+        riskEscalation:
+          "If coach and staff review stays shallow, the chapter can keep generating interest without a clean path into readiness.",
+      },
     ],
   });
 }
@@ -431,20 +1119,61 @@ function createDefinition(
     lastEditedBy: string;
     lastPublishedDate: string | null;
     builderSections: readonly string[];
+    phases: readonly SopPhase[];
     steps: readonly SopStep[];
     roleActionRules: readonly RoleActionRule[];
+    validators: readonly SopValidator[];
+    handoffRules: readonly SopHandoffRule[];
     completionRules: readonly CompletionRule[];
     evidenceRules: readonly EvidenceRule[];
     approvalRules: readonly ApprovalRule[];
     pointsRules: readonly PointsRule[];
     kpiRules: readonly KpiRule[];
     communicationRules: readonly CommunicationTriggerRule[];
+    featureFlagBindings: readonly SopFeatureFlagBinding[];
+    operationPermissions: readonly SopOperationPermission[];
     previewScenarios: readonly SopPreviewScenario[];
     auditRecords: readonly SopAuditRecord[];
     integrationBoundaries: readonly SopIntegrationBoundary[];
+    sourceTraces: readonly SopSourceTrace[];
   }>,
 ): SopCampaignDefinition {
   const defaultRoute = getDefaultOperationalRoute(shell.slug);
+  const steps =
+    overrides.steps ??
+    [
+      createStep(
+        `${shell.slug}-launch`,
+        "Phase 1",
+        `Open the ${shell.name} campaign lane`,
+        "committee_chair",
+        "ready_readonly",
+        defaultRoute,
+        shell.studentPromise,
+        `The route should expose the first believable next step for ${shell.name}.`,
+      ),
+      createStep(
+        `${shell.slug}-assign`,
+        "Phase 2",
+        "Assign work to the right role",
+        "president",
+        "mock_only",
+        "/chapter?view=members",
+        shell.operatingRhythm,
+        "Leader review route keeps assignment intent visible before browser writes are approved.",
+      ),
+      createStep(
+        `${shell.slug}-coach`,
+        "Phase 3",
+        "Coach reviews what still needs intervention",
+        "coach",
+        "ready_readonly",
+        "/coach?view=chapters",
+        shell.coachFocus,
+        "Coach route calls out what still blocks the chapter from healthy execution.",
+      ),
+    ];
+  const phases = overrides.phases ?? buildPhasesFromSteps(shell.slug, steps);
 
   return {
     slug: shell.slug,
@@ -516,40 +1245,8 @@ function createDefinition(
           : []),
       ],
     },
-    steps:
-      overrides.steps ??
-      [
-        createStep(
-          `${shell.slug}-launch`,
-          "Phase 1",
-          `Open the ${shell.name} campaign lane`,
-          "committee_chair",
-          "ready_readonly",
-          defaultRoute,
-          shell.studentPromise,
-          `The route should expose the first believable next step for ${shell.name}.`,
-        ),
-        createStep(
-          `${shell.slug}-assign`,
-          "Phase 2",
-          "Assign work to the right role",
-          "president",
-          "mock_only",
-          "/chapter?view=members",
-          shell.operatingRhythm,
-          "Leader review route keeps assignment intent visible before browser writes are approved.",
-        ),
-        createStep(
-          `${shell.slug}-coach`,
-          "Phase 3",
-          "Coach reviews what still needs intervention",
-          "coach",
-          "ready_readonly",
-          "/coach?view=chapters",
-          shell.coachFocus,
-          "Coach route calls out what still blocks the chapter from healthy execution.",
-        ),
-      ],
+    phases,
+    steps,
     roleActionRules:
       overrides.roleActionRules ??
       [
@@ -586,6 +1283,12 @@ function createDefinition(
           "Coach notes and external escalations remain disabled.",
         ),
       ],
+    validators:
+      overrides.validators ??
+      buildDefaultValidators(phases, steps),
+    handoffRules:
+      overrides.handoffRules ??
+      buildDefaultHandoffRules(phases, steps),
     completionRules:
       overrides.completionRules ??
       [
@@ -672,6 +1375,12 @@ function createDefinition(
           "No email, SMS, AI action, HubSpot write, or Luma mutation is opened from the SOP builder.",
         ),
       ],
+    featureFlagBindings:
+      overrides.featureFlagBindings ??
+      buildDefaultFeatureFlagBindings(shell.slug),
+    operationPermissions:
+      overrides.operationPermissions ??
+      buildDefaultOperationPermissions(),
     previewScenarios:
       overrides.previewScenarios ??
       [
@@ -716,6 +1425,9 @@ function createDefinition(
           "Analytics export remains off until data contracts and freshness QA are approved.",
         ),
       ],
+    sourceTraces:
+      overrides.sourceTraces ??
+      buildDefaultSourceTraces(shell.slug, phases, steps),
   };
 }
 
@@ -852,6 +1564,245 @@ function createBoundary(
   };
 }
 
+function buildPhasesFromSteps(
+  campaignSlug: string,
+  steps: readonly SopStep[],
+): readonly SopPhase[] {
+  const phaseMap = new Map<string, SopStep[]>();
+
+  for (const step of steps) {
+    const existing = phaseMap.get(step.phaseLabel) ?? [];
+    phaseMap.set(step.phaseLabel, [...existing, step]);
+  }
+
+  return [...phaseMap.entries()].map(([label, phaseSteps], index) => {
+    const firstStep = phaseSteps[0];
+    const lastStep = phaseSteps.at(-1) ?? firstStep;
+
+    return {
+      id: `${campaignSlug}-phase-${index + 1}`,
+      label,
+      sequence: index + 1,
+      objective: firstStep?.purpose ?? `${label} objective`,
+      entryCriteria: firstStep ? [firstStep.entryCriteria] : [],
+      exitCriteria: lastStep ? [lastStep.exitCriteria] : [],
+      stepIds: phaseSteps.map((step) => step.id),
+      status: phaseSteps.some((step) => step.status === "ready_readonly")
+        ? "ready_readonly"
+        : phaseSteps.some((step) => step.status === "mock_only")
+          ? "mock_only"
+          : "blocked",
+      sourceCertainty: "repo_only_placeholder",
+    };
+  });
+}
+
+function buildDefaultValidators(
+  phases: readonly SopPhase[],
+  steps: readonly SopStep[],
+): readonly SopValidator[] {
+  return phases.map((phase, index) => ({
+    id: `${phase.id}-validator`,
+    label: `${phase.label} validator`,
+    validatorRoles: index === phases.length - 1
+      ? ["coach", "president"]
+      : ["president", "committee_chair"],
+    prompt:
+      index === phases.length - 1
+        ? "Confirm the chapter can advance without opening live writes, sends, or hidden admin shortcuts."
+        : "Confirm owners, next actions, and proof expectations are explicit enough for the next phase.",
+    phaseIds: [phase.id],
+    stepIds: steps
+      .filter((step) => phase.stepIds.includes(step.id))
+      .map((step) => step.id),
+    authorityStatus: "permissions_matrix_missing_local_copy",
+    status: phase.status,
+    sourceCertainty: "repo_only_placeholder",
+  }));
+}
+
+function buildDefaultHandoffRules(
+  phases: readonly SopPhase[],
+  steps: readonly SopStep[],
+): readonly SopHandoffRule[] {
+  return phases.slice(0, -1).map((phase, index) => {
+    const nextPhase = phases[index + 1];
+    const nextPhaseFirstStep = steps.find((step) => nextPhase.stepIds.includes(step.id));
+
+    return {
+      id: `${phase.id}-to-${nextPhase.id}`,
+      fromPhaseId: phase.id,
+      toPhaseId: nextPhase.id,
+      triggerLabel: `${phase.label} exit criteria are visible`,
+      ownerRoles: ["president", "committee_chair"],
+      destinationRoutes: nextPhaseFirstStep ? [nextPhaseFirstStep.linkedRoute] : [],
+      status:
+        phase.status === "blocked" || nextPhase.status === "blocked"
+          ? "blocked"
+          : phase.status === "mock_only" || nextPhase.status === "mock_only"
+            ? "mock_only"
+            : "ready_readonly",
+      sourceCertainty: "repo_only_placeholder",
+    };
+  });
+}
+
+function buildDefaultFeatureFlagBindings(
+  campaignSlug: string,
+): readonly SopFeatureFlagBinding[] {
+  return [
+    {
+      id: `${campaignSlug}-builder-preview`,
+      flagKey: `workflow.${campaignSlug}.builder_preview`,
+      description: "Keeps the backend workflow configuration lane visible in mock-safe form.",
+      defaultState: "enabled",
+      rolloutStage: "review_only",
+      status: "ready_readonly",
+      sourceCertainty: "repo_only_placeholder",
+    },
+    {
+      id: `${campaignSlug}-runtime-reads`,
+      flagKey: `workflow.${campaignSlug}.runtime_reads`,
+      description: "Lets product surfaces read structured workflow data before any writes or external automation open.",
+      defaultState: "enabled",
+      rolloutStage: "pilot_ready",
+      status: "mock_only",
+      sourceCertainty: "repo_only_placeholder",
+    },
+  ];
+}
+
+function buildDefaultOperationPermissions(): readonly SopOperationPermission[] {
+  return [
+    {
+      id: "workflow-draft-edit",
+      operation: "draft_edit",
+      allowedRoles: ["ds_admin", "super_admin"],
+      allowedScopes: ["all_platform", "breakglass"],
+      approvalRequired: false,
+      authorityStatus: "repo_preview_only",
+      note: "Local backend preview allows draft-edit posture conceptually while final authority still depends on the external permissions matrix.",
+    },
+    {
+      id: "workflow-review-submit",
+      operation: "review_submit",
+      allowedRoles: ["department_staff", "sales_admin", "ds_admin", "super_admin"],
+      allowedScopes: ["department", "all_platform", "breakglass"],
+      approvalRequired: false,
+      authorityStatus: "permissions_matrix_missing_local_copy",
+      note: "Review submission remains visible while final operation-level authority still depends on the external matrix link.",
+    },
+    {
+      id: "workflow-publish-approve",
+      operation: "publish_approve",
+      allowedRoles: ["sales_admin", "super_admin"],
+      allowedScopes: ["department", "breakglass"],
+      approvalRequired: true,
+      authorityStatus: "permissions_matrix_missing_local_copy",
+      note: "Publishing remains approval-gated and blocked from live behavior until the matrix is attached and reviewed.",
+    },
+    {
+      id: "workflow-schedule-change",
+      operation: "schedule_change",
+      allowedRoles: ["sales_admin", "super_admin"],
+      allowedScopes: ["department", "breakglass"],
+      approvalRequired: true,
+      authorityStatus: "permissions_matrix_missing_local_copy",
+      note: "Scheduling changes are separate from draft edits and still await matrix-backed approval rules.",
+    },
+    {
+      id: "workflow-rollback-change",
+      operation: "rollback_change",
+      allowedRoles: ["super_admin"],
+      allowedScopes: ["breakglass"],
+      approvalRequired: true,
+      authorityStatus: "permissions_matrix_missing_local_copy",
+      note: "Rollback stays a breakglass operation with audit expectations, not a casual admin action.",
+    },
+    {
+      id: "workflow-archive-template",
+      operation: "archive_template",
+      allowedRoles: ["sales_admin", "super_admin"],
+      allowedScopes: ["department", "breakglass"],
+      approvalRequired: true,
+      authorityStatus: "permissions_matrix_missing_local_copy",
+      note: "Archiving affects future campaign availability and should stay explicitly approved.",
+    },
+    {
+      id: "workflow-integration-binding-change",
+      operation: "integration_binding_change",
+      allowedRoles: ["ds_admin", "super_admin"],
+      allowedScopes: ["all_platform", "breakglass"],
+      approvalRequired: true,
+      authorityStatus: "permissions_matrix_missing_local_copy",
+      note: "Integration binding changes stay blocked until permissions and downstream system ownership are confirmed.",
+    },
+    {
+      id: "workflow-feature-flag-change",
+      operation: "feature_flag_change",
+      allowedRoles: ["ds_admin", "super_admin"],
+      allowedScopes: ["all_platform", "breakglass"],
+      approvalRequired: true,
+      authorityStatus: "repo_preview_only",
+      note: "Feature-flag posture is modeled locally first and should not imply hosted rollout authority.",
+    },
+  ];
+}
+
+function buildDefaultSourceTraces(
+  campaignSlug: string,
+  phases: readonly SopPhase[],
+  steps: readonly SopStep[],
+): readonly SopSourceTrace[] {
+  return [
+    {
+      id: `${campaignSlug}-campaign-trace`,
+      label: "Current repo SOP builder definition",
+      location: `src/data/mock-sop-builder.ts#${campaignSlug}`,
+      mappedTargetType: "campaign",
+      mappedTargetId: campaignSlug,
+      certainty: "repo_only_placeholder",
+      note: "Current backend builder definition used while deeper source import continues.",
+    },
+    ...phases.map((phase) => ({
+      id: `${phase.id}-trace`,
+      label: `${phase.label} phase trace`,
+      location: "docs/architecture/figma-route-and-surface-map.md",
+      mappedTargetType: "phase" as const,
+      mappedTargetId: phase.id,
+      certainty: "repo_only_placeholder" as const,
+      note: "Phase remains aligned to the route-owned surface inventory while richer source attachments are reconciled.",
+    })),
+    ...steps.slice(0, 3).map((step) => ({
+      id: `${step.id}-trace`,
+      label: `${step.title} step trace`,
+      location: step.linkedRoute,
+      mappedTargetType: "step" as const,
+      mappedTargetId: step.id,
+      certainty: "repo_only_placeholder" as const,
+      note: "Step stays tied to a real route family instead of becoming detached workflow prose.",
+    })),
+    {
+      id: `${campaignSlug}-feature-flag-trace`,
+      label: "Workflow feature flag posture",
+      location: "/admin/sop-builder",
+      mappedTargetType: "feature_flag",
+      mappedTargetId: `${campaignSlug}-builder-preview`,
+      certainty: "repo_only_placeholder",
+      note: "Feature-flag posture is tracked locally in the builder before any hosted rollout is approved.",
+    },
+    {
+      id: `${campaignSlug}-publish-permission-trace`,
+      label: "Publish operation permission posture",
+      location: "/admin/permissions",
+      mappedTargetType: "operation_permission",
+      mappedTargetId: "workflow-publish-approve",
+      certainty: "missing_source_confirmation",
+      note: "Final publish authority depends on the external permissions matrix, which is linked but not bundled locally.",
+    },
+  ];
+}
+
 function createStep(
   id: string,
   phaseLabel: string,
@@ -902,6 +1853,8 @@ function isCoreSopLibraryCampaign(slug: string) {
     "slt-promotion",
     "moving-mountains",
     "leadership-transition",
+    "grow-the-movement",
+    "start-a-chapter",
   ].includes(slug);
 }
 

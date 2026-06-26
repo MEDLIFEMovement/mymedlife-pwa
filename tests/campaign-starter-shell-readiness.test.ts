@@ -7,13 +7,15 @@ import {
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 describe("campaign starter shell readiness", () => {
-  it("proves the exact required starter campaign shells are present", () => {
+  it("proves the exact required campaign lanes are present", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const readiness = getCampaignStarterShellReadiness(actor);
 
     expect(readiness.canReadReadiness).toBe(true);
     expect(readiness.requiredCount).toBe(7);
     expect(readiness.presentCount).toBe(7);
+    expect(readiness.workflowBackedCount).toBe(7);
+    expect(readiness.shellOnlyCount).toBe(0);
     expect(readiness.missingCount).toBe(0);
     expect(readiness.items.map((item) => item.name)).toEqual([
       "Planning / Goal Setting",
@@ -35,16 +37,19 @@ describe("campaign starter shell readiness", () => {
     ]);
   });
 
-  it("keeps starter shells mock-safe and visibly incomplete beyond shell readiness", () => {
+  it("keeps all workflow-backed lanes mock-safe and visibly incomplete", () => {
     const actor = getMockLocalActorContext("coach@mymedlife.test");
     const readiness = getCampaignStarterShellReadiness(actor);
 
     expect(readiness.browserWritesExpected).toBe(0);
     expect(readiness.externalWritesExpected).toBe(0);
+    const workflowBacked = readiness.items.filter(
+      (item) => item.status === "workflow_backed_draft",
+    );
     expect(
       readiness.items.every(
         (item) =>
-          item.status === "shell_ready" &&
+          item.status !== "missing" &&
           item.browserWritesExpected === 0 &&
           item.externalWritesExpected === 0 &&
           item.safeToSendExternally === false &&
@@ -55,10 +60,47 @@ describe("campaign starter shell readiness", () => {
           item.nextBuildStep.length > 30,
       ),
     ).toBe(true);
-    expect(readiness.summary).toContain("not end-to-end campaign builds yet");
+    expect(workflowBacked).toHaveLength(7);
+    expect(
+      workflowBacked
+        .filter((item) =>
+          [
+            "planning-goal-setting",
+            "chapter-engagement",
+            "slt-promotion",
+            "moving-mountains",
+            "leadership-transition",
+          ].includes(item.slug),
+        )
+        .every(
+          (item) =>
+            item.workflowSource === "template_version" &&
+            item.workflowVersionLabel === "v0 reviewed" &&
+            item.currentPhaseLabel !== null,
+        ),
+    ).toBe(true);
+    expect(
+      workflowBacked
+        .filter((item) =>
+          ["grow-the-movement", "start-a-chapter"].includes(item.slug),
+        )
+        .every(
+          (item) =>
+            item.workflowSource === "template_version" &&
+            item.workflowVersionLabel === "v0 reviewed" &&
+            item.currentPhaseLabel !== null,
+        ),
+    ).toBe(true);
+    expect(
+      workflowBacked.every(
+        (item) =>
+          item.nextBuildStep.length > 30,
+      ),
+    ).toBe(true);
+    expect(readiness.summary).toContain("All required lanes are now workflow-backed drafts");
   });
 
-  it("reports a missing required campaign shell without hiding the gap", () => {
+  it("reports a missing required campaign lane without hiding the gap", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const shellsWithoutSlt = campaignShells.filter(
       (campaign) => campaign.slug !== "slt-promotion",
@@ -79,7 +121,7 @@ describe("campaign starter shell readiness", () => {
     );
   });
 
-  it("hides the starter-shell review from members and DS Admin", () => {
+  it("hides the workflow-readiness review from members and DS Admin", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
     const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
@@ -91,7 +133,7 @@ describe("campaign starter shell readiness", () => {
     expect(getCampaignStarterShellReadiness(committeeMember).items).toEqual([]);
     expect(getCampaignStarterShellReadiness(committeeChair).canReadReadiness).toBe(true);
     expect(getCampaignStarterShellReadiness(committeeChair).title).toBe(
-      "Leader starter campaign shell checkpoint",
+      "Leader campaign workflow readiness checkpoint",
     );
     expect(getCampaignStarterShellReadiness(dsAdmin).canReadReadiness).toBe(false);
     expect(getCampaignStarterShellReadiness(dsAdmin).items).toEqual([]);

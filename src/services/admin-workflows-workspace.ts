@@ -5,6 +5,8 @@ import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getWorkflowInventorySnapshot } from "@/services/sop-rollout-inventory";
+import { getSopLibraryWorkspace } from "@/services/sop-library-workspace";
 import { getWriteSequencePlanner } from "@/services/write-sequence-planner";
 
 export type AdminWorkflowsWorkspace = {
@@ -19,6 +21,7 @@ export type AdminWorkflowsWorkspace = {
   lanes: readonly WorkflowLane[];
   onboardingSteps: readonly WorkflowOnboardingStep[];
   writeOperations: readonly WorkflowWriteOperation[];
+  rolloutInventory: ReturnType<typeof getWorkflowInventorySnapshot>;
   selectedSection: WorkflowRegistrySection;
   sectionOptions: readonly WorkflowSectionOption[];
   focusedSection: WorkflowFocusedSection;
@@ -39,6 +42,7 @@ export type WorkflowLane = {
   status: "ready_readonly" | "mock_only" | "blocked";
   currentPosture: string;
   nextProof: string;
+  pills?: readonly string[];
 };
 
 export type WorkflowOnboardingStep = {
@@ -111,6 +115,7 @@ export function getAdminWorkflowsWorkspace(
       lanes: [],
       onboardingSteps: [],
       writeOperations: [],
+      rolloutInventory: getWorkflowInventorySnapshot(),
       selectedSection: "lanes",
       sectionOptions: [],
       focusedSection: emptyFocusedSection(),
@@ -119,6 +124,7 @@ export function getAdminWorkflowsWorkspace(
   }
 
   const onboardingPlan = getAuthOnboardingPlan();
+  const rolloutInventory = getWorkflowInventorySnapshot();
   const writePlanner = getWriteSequencePlanner(actor, data);
   const selectedSection = normalizeSection(search?.section);
   const lanes: readonly WorkflowLane[] = [
@@ -188,17 +194,7 @@ export function getAdminWorkflowsWorkspace(
       nextProof:
         "Need named owners, audit readback, and explicit approval before coach note saves or decision writes open.",
     },
-    {
-      key: "sop_builder",
-      label: "SOP library and builder",
-      route: "/admin/sop-library",
-      ownerSummary: "Backend-only campaign workflow configuration and versioning lane.",
-      status: "ready_readonly",
-      currentPosture:
-        "Structured steps, role matrix, completion rules, points, KPIs, comms, preview, and version history are available in mock-safe form.",
-      nextProof:
-        "Admin editing and version publish behavior should stay blocked until backend mutations are approved separately.",
-    },
+    createSopBuilderLane(actor),
   ];
   const onboardingSteps: readonly WorkflowOnboardingStep[] = onboardingPlan.steps.map((step) => ({
     key: step.key,
@@ -234,6 +230,7 @@ export function getAdminWorkflowsWorkspace(
     lanes,
     onboardingSteps,
     writeOperations,
+    rolloutInventory,
     selectedSection,
     sectionOptions,
     focusedSection,
@@ -273,10 +270,10 @@ function getNextStep(actor: LocalActorContext): AdminWorkflowsWorkspace["nextSte
   }
 
   return {
-    href: "/admin/sop-library",
-    label: "Open SOP builder library",
+    href: "/admin/sop-builder/rush-month?tab=steps",
+    label: "Open SOP builder",
     detail:
-      "Use the workflow registry to decide what the SOP builder needs to encode and what must stay blocked.",
+      "Use the workflow registry to decide what the SOP builder needs to encode and what must stay blocked, then open the builder workspace directly.",
   };
 }
 
@@ -333,7 +330,7 @@ function buildFocusedSection(
           statusLabel: lane.status.replaceAll("_", " "),
           href: lane.route,
           hrefLabel: "Open workflow route",
-          pills: [lane.ownerSummary],
+          pills: lane.pills ?? [lane.ownerSummary],
           focusHref: buildFocusHref(selectedSection, lane.key),
         }))
       : selectedSection === "onboarding"
@@ -383,6 +380,42 @@ function buildFocusedSection(
 
 function buildFocusHref(section: WorkflowRegistrySection, focus: string) {
   return `/admin/workflows?section=${section}&focus=${focus}`;
+}
+
+function createSopBuilderLane(actor: LocalActorContext): WorkflowLane {
+  const libraryWorkspace = getSopLibraryWorkspace(actor);
+
+  if (!libraryWorkspace.canReadWorkspace) {
+    return {
+      key: "sop_builder",
+      label: "SOP library and builder",
+      route: "/admin/sop-builder/rush-month?tab=steps",
+      ownerSummary: "Backend-only campaign workflow configuration and versioning lane.",
+      status: "ready_readonly",
+      currentPosture:
+        "Structured steps, role matrix, completion rules, points, KPIs, comms, preview, and version history are available in mock-safe form.",
+      nextProof:
+        "Admin editing and version publish behavior should stay blocked until backend mutations are approved separately.",
+    };
+  }
+
+  return {
+    key: "sop_builder",
+    label: "SOP library and builder",
+    route: "/admin/sop-library",
+    ownerSummary:
+      "Backend-only campaign workflow configuration and versioning lane.",
+    status: "ready_readonly",
+    currentPosture: `The live app already carries this lane: ${libraryWorkspace.counts.totalSops} campaign definitions, ${libraryWorkspace.counts.structuredDrafts} structured drafts, and ${libraryWorkspace.counts.reviewWarnings} review warnings stay visible across the in-app SOP library and builder without enabling writes.`,
+    nextProof:
+      "Keep /admin/sop-library and /admin/sop-builder/[campaignSlug] as the source of truth for campaign configuration while admin editing and version publish behavior remain blocked pending explicit approval.",
+    pills: [
+      `${libraryWorkspace.counts.totalSops} campaign definitions`,
+      `${libraryWorkspace.counts.structuredDrafts} structured drafts`,
+      `${libraryWorkspace.counts.reviewWarnings} review warnings`,
+      "source of truth: SOP library + builder",
+    ],
+  };
 }
 
 function emptyFocusedSection(): WorkflowFocusedSection {

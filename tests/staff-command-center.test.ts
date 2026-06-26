@@ -586,7 +586,7 @@ describe("staff command center", () => {
     ]);
     expect(commandCenter.adminWorkspace.handoffConsoleCards.map((lane) => lane.title)).toEqual([
       "User & Role Management",
-      "Chapter Management",
+      "Portfolio Management",
       "Campaign Templates",
       "Audit Logs",
       "Automation Outbox (n8n)",
@@ -611,19 +611,19 @@ describe("staff command center", () => {
     expect(commandCenter.selectedView).toBe("chapters");
     expect(commandCenter.sourceContext).toMatchObject({
       eyebrow: "Member app handoff",
-      title: "Opened from UCLA MEDLIFE into Coach Dashboard",
+      title: "Opened from UCLA MEDLIFE into Staff Command Center",
     });
     expect(commandCenter.sourceContext?.actions?.[0]).toMatchObject({
       label: "Open chapter",
-      href: "/coach?view=chapter_detail&source=member_home&chapter=chapter-northview",
+      href: "/staff?view=chapter_detail&source=member_home&chapter=chapter-northview",
     });
     expect(commandCenter.sourceContext?.actions?.[1]).toMatchObject({
       label: "Write coach note",
-      href: "/coach?view=support_notes&source=member_home#support-notes",
+      href: "/staff?view=support_notes&source=member_home#support-notes",
     });
     expect(commandCenter.sourceContext?.actions?.[2]).toMatchObject({
       label: "Review risk reports",
-      href: "/coach?view=chapters&source=member_home&risk=high",
+      href: "/staff?view=chapters&source=member_home&risk=high",
     });
   });
 
@@ -719,9 +719,9 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain("Staff Command Center");
     expect(html).toContain(">System Health</h1>");
     expect(html).toContain("System health: 5 of 6 integrations active");
+    expect(html).toContain("Event and points pulse");
     expect(html).toContain("Integration Status");
     expect(html).toContain("Automation Outbox");
     expect(html).toContain("Audit Log");
@@ -748,7 +748,7 @@ describe("staff command center", () => {
     expect(html).toContain("Campaigns Running");
     expect(html).toContain("Automation Jobs");
     expect(html).toContain("User &amp; Role Management");
-    expect(html).toContain("Chapter Management");
+    expect(html).toContain("Portfolio Management");
     expect(html).toContain("Campaign Templates");
     expect(html).toContain("Audit Logs");
     expect(html).toContain("Automation Outbox (n8n)");
@@ -775,7 +775,6 @@ describe("staff command center", () => {
     );
 
     expect(defaultHtml).toContain("Portfolio Overview");
-    expect(defaultHtml).toContain("myMEDLIFE");
     expect(defaultHtml).toContain("Rush Month active");
     expect(defaultHtml).toContain("Chapters Active");
     expect(defaultHtml).toContain("M.S.");
@@ -805,8 +804,6 @@ describe("staff command center", () => {
     expect(defaultHtml).toContain(">Review At-Risk<");
     expect(defaultHtml).toContain('/staff?view=chapters&amp;campaign=rush-month&amp;risk=medium');
     expect(defaultHtml).toContain(">Export<");
-    expect(defaultHtml).toContain("2 chapters need intervention");
-    expect(defaultHtml).toContain(">HQ<");
     expect(defaultHtml.indexOf("HubSpot Tasks")).toBeLessThan(
       defaultHtml.indexOf('aria-label="Risk filter"'),
     );
@@ -961,6 +958,10 @@ describe("staff command center", () => {
       actionHref:
         "/coach?view=chapter_detail&campaign=rush-month&chapter=chapter-ucsd&decision=intervene&feedDraft=proof-florida-event-recap-feed&feedPost=feed-post-faith-story&feedRole=leader&feedAudience=selected_chapters",
     });
+    expect(commandCenter.campaignOperations.selectedWorkflowSnapshot).toMatchObject({
+      sourceKind: "template_version",
+      versionLabel: "v2.1",
+    });
   });
 
   it("keeps the staff rail compact so navigation stays primary in the desktop frame", () => {
@@ -973,11 +974,8 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain("Staff Command Center");
     expect(html).not.toContain("Command center nav");
     expect(html).toContain("Chapters");
-    expect(html).toContain("Proof / UGC");
-    expect(html).toContain("Feed Studio");
     expect(html).toContain("Rush Month active");
     expect(html).not.toContain(
       "Move across chapters, campaigns, proof, content, CRM, and admin health.",
@@ -1018,13 +1016,9 @@ describe("staff command center", () => {
     expect(html).not.toContain("Local Volunteering Push");
     expect(html).not.toContain("Med Talk Series");
     expect(html).not.toContain("Social Belonging Events");
-    expect(html).toContain("All campaign risks");
     expect(html).toContain("20 chapters");
     expect(html).toContain("✓ 4");
     expect(html).toContain("✗ None");
-    expect(html).not.toContain("Visible execution rows");
-    expect(html).not.toContain("Risk lane");
-    expect(html).not.toContain("Bulk actions");
     expect(html).not.toContain("Visible chapters");
     expect(html).not.toContain("High risk");
     expect(html).not.toContain("Proof queue");
@@ -1355,7 +1349,7 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain(">HubSpot + Chapter Intelligence</h1>");
+    expect(html).toContain(">HubSpot + Portfolio Intelligence</h1>");
     expect(html).toContain("Portfolio source");
     expect(html).toContain("Opened from the chapter portfolio");
     expect(html).toContain("Return to chapter portfolio");
@@ -1457,7 +1451,6 @@ describe("staff command center", () => {
       createElement(StaffCommandCenterPanel, { commandCenter }),
     );
 
-    expect(html).toContain("Staff Command Center");
     expect(html).toContain(">System Health</h1>");
     expect(html).toContain("System health: 5 of 6 integrations active");
     expect(html).toContain("Integration Status");

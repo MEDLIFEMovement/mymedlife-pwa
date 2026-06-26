@@ -472,11 +472,11 @@ function sortPortfolioRows(rows: CoachPortfolioChapter[]): CoachPortfolioChapter
 function getPortfolioTitle(surfaceFamily: ActorSurfaceFamily): string {
   switch (surfaceFamily) {
     case "coach":
-      return "Coach Dashboard";
+      return "Staff Command Center";
     case "staff":
-      return "Coach Dashboard";
+      return "Staff Command Center";
     case "super_admin":
-      return "Coach Dashboard";
+      return "Staff Command Center";
     case "member":
     case "leader":
     case "ds_admin":

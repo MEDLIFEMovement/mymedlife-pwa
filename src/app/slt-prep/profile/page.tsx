@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import { SltPrepTonePill } from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
@@ -36,7 +36,7 @@ export default async function SltPrepProfilePage({
   const preservedRouteSource = parseSltTripPrepRouteSource(search.source);
 
   return (
-    <AppShell
+    <SltPrepShell
       actor={actor}
       mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
         source: preservedRouteSource ?? undefined,
@@ -195,7 +195,7 @@ export default async function SltPrepProfilePage({
           </section>
         </>
       )}
-    </AppShell>
+    </SltPrepShell>
   );
 }
 
@@ -227,7 +227,7 @@ function PreferenceRow({ label, value }: { label: string; value: string }) {
           <p className="text-sm font-semibold text-slate-950">{label}</p>
           <p className="mt-1 text-sm text-slate-500">{value}</p>
         </div>
-        <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+        <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
           Active
         </span>
       </div>

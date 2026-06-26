@@ -22,7 +22,7 @@ export function getLocalPreviewEmailForSopRole(role: SopRole) {
     case "sales_coach":
       return "sales.coach@mymedlife.test";
     case "department_staff":
-      return "admin@mymedlife.test";
+      return "general.staff@mymedlife.test";
     case "sales_admin":
       return "sales.admin@mymedlife.test";
     case "ds_admin":

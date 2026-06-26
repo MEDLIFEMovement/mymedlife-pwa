@@ -1,5 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
+  getPreferredCampaignVersion,
+  getSopTemplateBySlug,
+} from "@/services/sop-template-registry";
+import { getSopWorkflowRuntime } from "@/services/sop-workflow-runtime";
+import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
@@ -29,6 +34,13 @@ export type ChapterEngagementCampaignPlan = {
   canReadPlan: boolean;
   title: string;
   summary: string;
+  workflowSource: "builder_definition" | "template_version" | "missing" | "hidden";
+  workflowName: string;
+  workflowVersionLabel: string;
+  importStatus: string;
+  currentPhaseLabel: string;
+  currentPhaseObjective: string;
+  currentPhaseExitSignal: string;
   route: "/campaigns/chapter-engagement";
   browserWritesExpected: 0;
   externalWritesExpected: 0;
@@ -48,6 +60,13 @@ export function getChapterEngagementCampaignPlan(
       title: "Chapter Engagement hidden for this role",
       summary:
         "Members should see simple participation opportunities and DS Admin should stay in integration safety views.",
+      workflowSource: "hidden",
+      workflowName: "Chapter Engagement / Bi-Weekly Management",
+      workflowVersionLabel: "unknown",
+      importStatus: "hidden",
+      currentPhaseLabel: "hidden",
+      currentPhaseObjective: "hidden",
+      currentPhaseExitSignal: "hidden",
       route: "/campaigns/chapter-engagement",
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -57,11 +76,30 @@ export function getChapterEngagementCampaignPlan(
     };
   }
 
+  const template = getSopTemplateBySlug("chapter-engagement");
+  const preferredVersion = template
+    ? getPreferredCampaignVersion(template)
+    : null;
+  const runtime = getSopWorkflowRuntime("chapter-engagement");
+
   return {
     canReadPlan: true,
     title: getTitle(surfaceFamily),
-    summary:
-      "This deepens the Chapter Engagement starter shell into a mock-safe operating plan: leaders create weekly participation, action committees host useful moments, members get recognized, and coaches can spot retention risk before the chapter goes quiet.",
+    summary: buildChapterEngagementSummary(runtime, preferredVersion),
+    workflowSource: runtime?.sourceKind ?? "missing",
+    workflowName:
+      preferredVersion?.workflowName ??
+      runtime?.operatingRhythm ??
+      "Chapter Performance Management / Culture, Retention & Leadership Development Workflow",
+    workflowVersionLabel: runtime?.sourceVersionLabel ?? preferredVersion?.label ?? "fallback",
+    importStatus: preferredVersion?.status ?? "repo_only_placeholder",
+    currentPhaseLabel: runtime?.currentPhase?.label ?? "Participation phase",
+    currentPhaseObjective:
+      runtime?.currentPhase?.objective ??
+      "Keep the current engagement phase explicit before live chapter writes exist.",
+    currentPhaseExitSignal:
+      runtime?.currentPhase?.exitCriteria[0] ??
+      "Current engagement exit criteria stay visible before launch review.",
     route: "/campaigns/chapter-engagement",
     browserWritesExpected: 0,
     externalWritesExpected: 0,
@@ -79,6 +117,30 @@ export function getChapterEngagementCampaignPlan(
       "Live engagement writes still require auth, RLS, audit, rollback, and explicit approval.",
     ],
   };
+}
+
+function buildChapterEngagementSummary(
+  runtime: ReturnType<typeof getSopWorkflowRuntime>,
+  preferredVersion: ReturnType<typeof getPreferredCampaignVersion>,
+) {
+  if (runtime?.currentPhase) {
+    const parts = [
+      `This route now reads its operating phases from the ${runtime.sourceKind === "template_version" ? "structured" : "builder-backed"} ${runtime.sourceVersionLabel} Chapter Engagement workflow runtime.`,
+      `Current phase objective: ${runtime.currentPhase.objective}`,
+    ];
+
+    if (runtime.currentPhase.exitCriteria[0]) {
+      parts.push(`Exit signal: ${runtime.currentPhase.exitCriteria[0]}`);
+    }
+
+    return parts.join(" ");
+  }
+
+  if (preferredVersion) {
+    return `This route now reads its operating phases from the structured ${preferredVersion.label} Chapter Engagement template, so participation rhythm, event follow-through, recognition posture, and retention review stay inside the current app without enabling real writes.`;
+  }
+
+  return "This deepens the Chapter Engagement starter shell into a mock-safe operating plan: leaders create weekly participation, action committees host useful moments, members get recognized, and coaches can spot retention risk before the chapter goes quiet.";
 }
 
 const chapterEngagementPhases: ChapterEngagementPhase[] = [

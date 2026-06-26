@@ -1,10 +1,11 @@
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
 import { StaffDryRunGuidePanel } from "@/components/staff-dry-run-guide-panel";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaffDryRunGuide } from "@/services/staff-dry-run-guide";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
@@ -19,9 +20,12 @@ export default async function StaffDryRunPage() {
   const guide = getStaffDryRunGuide(actor, data);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="system_health" />
+      <AdminBackendLaneNav
+        current="staff_dry_run"
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
       {guide.canReadGuide ? (
         <StaffDryRunGuidePanel guide={guide} />
       ) : (
@@ -32,6 +36,6 @@ export default async function StaffDryRunPage() {
           nextLabel="Back to Rush Month"
         />
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }

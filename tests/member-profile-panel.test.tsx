@@ -29,17 +29,29 @@ describe("member profile panel", () => {
 
     expect(html).toContain("Hi, Sofia");
     expect(html).toContain("Profile snapshot");
+    expect(html).toContain("Next event");
+    expect(html).toContain("Event loop");
+    expect(html).toContain("Keep events and points one tap away from profile.");
+    expect(html).toContain("RSVP, attendance, and points should stay in view here too.");
+    expect(html).toContain("Next event");
+    expect(html).toContain("RSVP");
+    expect(html).toContain("Attendance");
+    expect(html).toContain("Points");
     expect(html).toContain("Next step");
     expect(html).toContain("Start next action");
     expect(html).toContain("Open campaign");
-    expect(html).toContain("Recognition and momentum.");
+    expect(html).toContain("Open leaderboard");
+    expect(html).toContain("Open points and recognition");
+    expect(html).toContain("<h2 class=\"mt-2 text-2xl font-semibold text-slate-950\">Recognition</h2>");
     expect(html).toContain("About you");
     expect(html).toContain("Chapter access");
+    expect(html).toContain("Keep identity easy to trust.");
     expect(html).toContain("How your name appears across myMEDLIFE.");
     expect(html).toContain("Email connected to this myMEDLIFE profile.");
     expect(html).toContain(
-      "Keep this surface centered on identity, role, and the next step. Recognition and points stay visible lower on the route instead of turning profile into a second dashboard.",
+      "Keep this surface centered on identity, role, and the next step. Recognition and points stay visible lower on the route instead of turning profile into a second dashboard, so profile can hand you back to the event-and-points loop when you are ready to move again.",
     );
+    expect(html).toContain("Finish: Invite 3 friends to the Intro GBM");
     expect(html).not.toContain("Earned across visible campaigns");
     expect(html).not.toContain("Friendly chapter-only visibility");
     expect(html).not.toContain("Show up");
@@ -52,7 +64,11 @@ describe("member profile panel", () => {
     expect(html).toContain("/campaigns?source=profile");
     expect(html).toContain("/rush-month/leaderboard?source=profile");
     expect(html).toContain("/rush-month/actions/member-push?source=profile");
-    expect(html.indexOf("About you")).toBeLessThan(html.indexOf("Recognition and momentum."));
-    expect(html.indexOf("Chapter access")).toBeLessThan(html.indexOf("Recognition and momentum."));
+    expect(html.indexOf("About you")).toBeLessThan(
+      html.indexOf("<h2 class=\"mt-2 text-2xl font-semibold text-slate-950\">Recognition</h2>"),
+    );
+    expect(html.indexOf("Chapter access")).toBeLessThan(
+      html.indexOf("<h2 class=\"mt-2 text-2xl font-semibold text-slate-950\">Recognition</h2>"),
+    );
   });
 });

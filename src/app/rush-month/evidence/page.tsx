@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { MemberProofStatusPanel } from "@/components/member-proof-status-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
@@ -66,7 +66,7 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
   };
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
       hideTopHeader={isMemberEvidence}
       showMobileQuickItemHelpers={!isMemberEvidence}
@@ -74,34 +74,34 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
     >
       {isMemberEvidence ? (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(150deg,#2455a4_0%,#2f65ba_52%,#183666_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#dbe8ff]">
               Proof
             </p>
-            <h1 className="mt-3 text-[2.15rem] font-semibold leading-none text-white">
+            <h1 className="mt-3 text-[2.15rem] font-semibold leading-none text-slate-950">
               Turn your action into one believable story.
             </h1>
-            <p className="mt-3 text-sm leading-6 text-white/78">
+            <p className="mt-3 text-sm leading-6 text-slate-600">
               Proof should explain what happened, why it mattered, and what another
               student would believe because of it. Keep it clean and simple.
             </p>
             {evidenceSourceContext ? (
-              <div className="mt-5 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
+              <div className="mt-5 rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="max-w-2xl">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                       {evidenceSourceContext.eyebrow}
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-white">
+                    <p className="mt-2 text-lg font-semibold text-slate-950">
                       {evidenceSourceContext.title}
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-white/74">
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
                       {evidenceSourceContext.detail}
                     </p>
                   </div>
                   <Link
                     href={evidenceSourceContext.href}
-                    className="inline-flex w-fit rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                    className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
                   >
                     {evidenceSourceContext.backLabel}
                   </Link>
@@ -109,29 +109,29 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
               </div>
             ) : null}
             {evidenceSubmissionWorkspace.nextSubmission ? (
-              <article className="mt-5 rounded-[1.7rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+              <article className="mt-5 rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                   Next proof item
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
                   {evidenceSubmissionWorkspace.nextSubmission.assignmentTitle}
                 </h2>
-                <p className="mt-2 text-sm text-white/74">
+                <p className="mt-2 text-sm text-slate-600">
                   {evidenceSubmissionWorkspace.nextSubmission.statusLabel}
                 </p>
-                <p className="mt-3 text-sm leading-6 text-white/76">
+                <p className="mt-3 text-sm leading-6 text-slate-600">
                   {evidenceSubmissionWorkspace.nextSubmission.storyPrompt}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
                     href={evidenceSubmissionWorkspace.nextSubmission.proofIntakeHref}
-                    className="inline-flex rounded-full bg-[#f7d05e] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
+                    className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
                   >
                     {evidenceSubmissionWorkspace.nextSubmission.proofIntakeLabel}
                   </Link>
                   <Link
                     href={evidenceSubmissionWorkspace.nextSubmission.actionHref}
-                    className="inline-flex rounded-full border border-white/14 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white"
+                    className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
                   >
                     Open linked action
                   </Link>
@@ -204,7 +204,7 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
                           </h3>
                         </div>
                         {row.isRecommended ? (
-                          <span className="rounded-full border border-[#f7d05e]/35 bg-[#fff8df] px-3 py-1 text-xs font-semibold text-[#8a6700]">
+                          <span className="rounded-full border border-[#2563eb]/35 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
                             Start here
                           </span>
                         ) : null}
@@ -218,7 +218,7 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Link
                           href={row.proofIntakeHref}
-                          className="rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+                          className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
                         >
                           {row.proofIntakeLabel}
                         </Link>
@@ -343,7 +343,7 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
       ) : (
         <>
           <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               Evidence
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">Proof and testimonials</h1>
@@ -373,7 +373,7 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
                       <h2 className="mt-2 text-xl font-semibold text-slate-950">{item.summary}</h2>
                       <p className="mt-2 text-sm text-slate-600">Submitted by {item.submittedBy}</p>
                     </div>
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+                    <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
                       {item.status}
                     </span>
                   </div>
@@ -389,12 +389,12 @@ export default async function EvidencePage({ searchParams }: EvidencePageProps) 
           ) : (
             <RestrictedState
               title="No proof rows are visible to this role."
-              message="DS Admin and unrelated local contexts should not see student proof/testimonials. Use the local role switcher to preview member, leader, coach, admin, or super admin views."
+              message="DS Admin and unrelated local contexts should not see student proof/testimonials. Use the local role switcher to preview member, leader, staff, admin, or super admin views."
             />
           )}
         </>
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 
@@ -445,7 +445,7 @@ function MemberEvidenceLink({
   return (
     <Link
       href={href}
-      className="app-surface rounded-[1.35rem] p-4 transition hover:border-[#f7d05e]/35 hover:bg-white"
+      className="app-surface rounded-[1.35rem] p-4 transition hover:border-[#2563eb]/35 hover:bg-white"
     >
       <p className="app-eyebrow app-eyebrow-blue">{eyebrow}</p>
       <h3 className="mt-2 text-lg font-semibold text-slate-950">{title}</h3>
@@ -564,7 +564,7 @@ function EvidenceSubmissionReadinessPanel({
             </div>
             <Link
               href={workspace.nextSubmission.proofIntakeHref}
-              className="w-fit rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#10223f]"
+              className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#10223f]"
             >
               {workspace.nextSubmission.proofIntakeLabel}
             </Link>
@@ -600,11 +600,11 @@ function EvidenceSubmissionReadinessPanel({
         <TokenList title="Held actions" items={workspace.blockedWrites} />
       </div>
 
-      <div className="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4">
-        <p className="text-sm font-semibold text-amber-100">
+      <div className="mt-4 rounded-2xl border border-blue-300/20 bg-blue-300/10 p-4">
+        <p className="text-sm font-semibold text-blue-100">
           Sharing stays reviewed
         </p>
-        <ul className="mt-3 grid gap-2 text-xs leading-5 text-amber-50/72">
+        <ul className="mt-3 grid gap-2 text-xs leading-5 text-blue-50/72">
           {workspace.safetyNotes.map((note) => (
             <li key={note}>{note}</li>
           ))}
@@ -680,8 +680,8 @@ function EvidenceSubmissionPacketPanel({
                 key={check.key}
                 className={`rounded-full border px-3 py-1 text-xs font-semibold ${
                   check.passed
-                    ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
-                    : "border-amber-300/30 bg-amber-300/15 text-amber-100"
+                    ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+                    : "border-blue-300/30 bg-blue-300/15 text-blue-100"
                 }`}
               >
                 {check.label}
@@ -708,7 +708,7 @@ function EvidenceSubmissionPacketPanel({
         {packet.blockedControls.map((control) => (
           <span
             key={control}
-            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500"
           >
             Hold {control}
           </span>
@@ -739,20 +739,20 @@ function EvidenceSubmissionCard({ row }: { row: EvidenceSubmissionRow }) {
   return (
     <article
       className={`app-surface rounded-[1.45rem] p-4 ${
-        row.isRecommended ? "border-[#f7d05e]/40 bg-[#fffdf5]" : ""
+        row.isRecommended ? "border-[#2563eb]/40 bg-[#eff6ff]" : ""
       }`}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
               {row.statusLabel}
             </span>
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
               {row.ownerLabel}
             </span>
             {row.isRecommended ? (
-              <span className="rounded-full border border-[#f7d05e]/40 bg-[#fff4c4] px-3 py-1 text-xs font-semibold text-[#a16207]">
+              <span className="rounded-full border border-[#2563eb]/40 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
                 next
               </span>
             ) : null}
@@ -807,7 +807,7 @@ function EvidenceSubmissionCard({ row }: { row: EvidenceSubmissionRow }) {
         {row.disabledControls.map((control) => (
           <span
             key={`${row.assignmentId}-${control}`}
-            className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-500"
+            className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs text-slate-500"
           >
             Hold {control}
           </span>
@@ -834,7 +834,7 @@ function TokenList({ items, title }: { items: string[]; title: string }) {
         {items.map((item) => (
           <span
             key={item}
-            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500"
+            className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs text-slate-500"
           >
             {item}
           </span>

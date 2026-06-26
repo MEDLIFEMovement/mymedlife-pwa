@@ -193,10 +193,19 @@ export const localActorOptions: LocalActorOption[] = [
   },
   {
     email: "admin@mymedlife.test",
-    displayName: "Ari Admin",
+    displayName: "Ari Staff",
     audience: "admin",
     chapterRoles: [],
-    staffRoles: ["Admin"],
+    staffRoles: ["Staff"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "general.staff@mymedlife.test",
+    displayName: "Gina General Staff",
+    audience: "admin",
+    chapterRoles: [],
+    staffRoles: ["General Staff"],
     chapterNames: [],
     coachPortfolioChapterNames: [],
   },
@@ -599,7 +608,7 @@ function roleKeyToLabel(roleKey: DatabaseRoleKey) {
     case "coach":
       return "Coach";
     case "admin":
-      return "Admin";
+      return "Staff";
     case "ds_admin":
       return "DS Admin";
     case "super_admin":
@@ -617,7 +626,7 @@ function audienceToLabel(audience: ActorAudience) {
     case "coach":
       return "Coach";
     case "admin":
-      return "Admin";
+      return "Staff";
     case "ds_admin":
       return "DS Admin";
     case "super_admin":
@@ -633,9 +642,9 @@ function audienceToAccessSummary(audience: ActorAudience) {
     case "chapter_leader":
       return "Leader view: chapter-scoped campaign progress, assignments, readiness, and member follow-up.";
     case "coach":
-      return "Coach view: assigned portfolio chapters, readiness, risk signals, closeouts, and KPI movement.";
+      return "Staff view: assigned portfolio chapters, readiness, risk signals, closeouts, and KPI movement.";
     case "admin":
-      return "Admin view: staff-safe campaign, chapter, proof-sharing, and support context.";
+      return "Staff view: approved department dashboards, queues, proof-sharing, and support context.";
     case "ds_admin":
       return "DS Admin view: integration configuration context only; student truth stays in the app.";
     case "super_admin":

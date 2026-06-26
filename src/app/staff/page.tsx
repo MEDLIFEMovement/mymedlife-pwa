@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { StaffAppShell } from "@/components/staff-app-shell";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLandingRouteForActor } from "@/services/landing-route";
@@ -39,7 +39,17 @@ type StaffPageProps = {
   }>;
 };
 
-export default async function StaffPage({ searchParams }: StaffPageProps) {
+export default async function StaffPage(props: StaffPageProps) {
+  return renderStaffPage({
+    searchParams: props.searchParams,
+  });
+}
+
+async function renderStaffPage({
+  searchParams,
+}: {
+  searchParams?: StaffPageProps["searchParams"];
+}) {
   const emptySearchParams: {
     bestPractice?: string;
     campaign?: string;
@@ -97,18 +107,17 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   const surfaceFamily = getActorSurfaceFamily(actor);
   const restrictedNextHref = getLandingRouteForActor(actor);
   const restrictedNextLabel =
-    surfaceFamily === "ds_admin"
+      surfaceFamily === "ds_admin"
       ? "Open admin safety review"
       : surfaceFamily === "leader"
-        ? "Open chapter home"
+        ? "Open leader home"
         : surfaceFamily === "member"
           ? "Open student home"
           : "Open your owned surface";
 
   return (
-    <AppShell
+    <StaffAppShell
       actor={actor}
-      hideTopHeader={commandCenter.canReadCommandCenter}
       showDebugTools={!commandCenter.canReadCommandCenter}
     >
       {commandCenter.canReadCommandCenter ? (
@@ -133,6 +142,6 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
           />
         </>
       )}
-    </AppShell>
+    </StaffAppShell>
   );
 }

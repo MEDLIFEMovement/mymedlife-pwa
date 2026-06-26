@@ -1,5 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
+  getPreferredCampaignVersion,
+  getSopTemplateBySlug,
+} from "@/services/sop-template-registry";
+import { getSopWorkflowRuntime } from "@/services/sop-workflow-runtime";
+import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
@@ -29,6 +34,13 @@ export type LeadershipTransitionCampaignPlan = {
   canReadPlan: boolean;
   title: string;
   summary: string;
+  workflowSource: "builder_definition" | "template_version" | "missing" | "hidden";
+  workflowName: string;
+  workflowVersionLabel: string;
+  importStatus: string;
+  currentPhaseLabel: string;
+  currentPhaseObjective: string;
+  currentPhaseExitSignal: string;
   route: "/campaigns/leadership-transition";
   browserWritesExpected: 0;
   externalWritesExpected: 0;
@@ -48,6 +60,13 @@ export function getLeadershipTransitionCampaignPlan(
       title: "Leadership Transition hidden for this role",
       summary:
         "Members should see simple handoff confidence signals and DS Admin should stay in integration safety views.",
+      workflowSource: "hidden",
+      workflowName: "Leadership Transition",
+      workflowVersionLabel: "unknown",
+      importStatus: "hidden",
+      currentPhaseLabel: "hidden",
+      currentPhaseObjective: "hidden",
+      currentPhaseExitSignal: "hidden",
       route: "/campaigns/leadership-transition",
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -57,11 +76,30 @@ export function getLeadershipTransitionCampaignPlan(
     };
   }
 
+  const template = getSopTemplateBySlug("leadership-transition");
+  const preferredVersion = template
+    ? getPreferredCampaignVersion(template)
+    : null;
+  const runtime = getSopWorkflowRuntime("leadership-transition");
+
   return {
     canReadPlan: true,
     title: getTitle(surfaceFamily),
-    summary:
-      "This deepens the Leadership Transition starter shell into a mock-safe operating plan: outgoing leaders name successors, write role handoff notes, confirm committee chairs, prepare coach validation, and close open risks before any real role, membership, or notification writes are enabled.",
+    summary: buildLeadershipTransitionSummary(runtime, preferredVersion),
+    workflowSource: runtime?.sourceKind ?? "missing",
+    workflowName:
+      preferredVersion?.workflowName ??
+      runtime?.operatingRhythm ??
+      "Chapter Leadership Continuity Workflow",
+    workflowVersionLabel: runtime?.sourceVersionLabel ?? preferredVersion?.label ?? "fallback",
+    importStatus: preferredVersion?.status ?? "repo_only_placeholder",
+    currentPhaseLabel: runtime?.currentPhase?.label ?? "Succession phase",
+    currentPhaseObjective:
+      runtime?.currentPhase?.objective ??
+      "Keep the current handoff phase visible before live role or membership writes exist.",
+    currentPhaseExitSignal:
+      runtime?.currentPhase?.exitCriteria[0] ??
+      "Current succession exit criteria stay visible before launch review.",
     route: "/campaigns/leadership-transition",
     browserWritesExpected: 0,
     externalWritesExpected: 0,
@@ -79,6 +117,30 @@ export function getLeadershipTransitionCampaignPlan(
       "Live transition writes still require auth, RLS, audit, rollback, staff review, and explicit approval.",
     ],
   };
+}
+
+function buildLeadershipTransitionSummary(
+  runtime: ReturnType<typeof getSopWorkflowRuntime>,
+  preferredVersion: ReturnType<typeof getPreferredCampaignVersion>,
+) {
+  if (runtime?.currentPhase) {
+    const parts = [
+      `This route now reads its operating phases from the ${runtime.sourceKind === "template_version" ? "structured" : "builder-backed"} ${runtime.sourceVersionLabel} Leadership Transition workflow runtime.`,
+      `Current phase objective: ${runtime.currentPhase.objective}`,
+    ];
+
+    if (runtime.currentPhase.exitCriteria[0]) {
+      parts.push(`Exit signal: ${runtime.currentPhase.exitCriteria[0]}`);
+    }
+
+    return parts.join(" ");
+  }
+
+  if (preferredVersion) {
+    return `This route now reads its operating phases from the structured ${preferredVersion.label} Leadership Transition template, so successor mapping, role notes, coach validation, and open-risk closeout stay inside the current app without enabling real writes.`;
+  }
+
+  return "This deepens the Leadership Transition starter shell into a mock-safe operating plan: outgoing leaders name successors, write role handoff notes, confirm committee chairs, prepare coach validation, and close open risks before any real role, membership, or notification writes are enabled.";
 }
 
 const leadershipTransitionPhases: LeadershipTransitionPhase[] = [

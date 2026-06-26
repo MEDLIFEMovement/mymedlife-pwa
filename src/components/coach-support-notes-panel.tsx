@@ -41,7 +41,7 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
         <MiniToken label="Coach-private" value={`${workspace.counts.coachPrivate}`} />
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-[#dbeafe] p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -106,7 +106,7 @@ function InterventionChecklistCard({
       <p className="mt-2 text-xs leading-5 text-[#2563eb]">
         Next: {item.action}
       </p>
-      <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+      <p className="mt-3 rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 text-xs leading-5 text-slate-500">
         Signal: {item.sourceSignal}
       </p>
     </article>
@@ -115,7 +115,7 @@ function InterventionChecklistCard({
 
 function SupportNoteCard({ note }: { note: CoachSupportNote }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <article className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -155,10 +155,10 @@ function SupportNoteCard({ note }: { note: CoachSupportNote }) {
 function ChecklistStatusPill({ status }: { status: CoachInterventionChecklistStatus }) {
   const className =
     status === "ready"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "watch"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-rose-200 bg-rose-50 text-rose-700";
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -189,10 +189,10 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: CoachSupportNoteStatus }) {
   const className =
     status === "ready_for_check_in"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "needs_follow_up"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-rose-200 bg-rose-50 text-rose-700";
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

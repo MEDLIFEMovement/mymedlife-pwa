@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { CoachDecisionVerificationPanel } from "@/components/coach-decision-verification-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
@@ -6,6 +6,7 @@ import { RestrictedState } from "@/components/restricted-state";
 import { getCoachDecisionPacket } from "@/services/coach-decision-verification-packet";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminCoachWrite");
@@ -19,9 +20,12 @@ export default async function AdminCoachWritePage() {
   const packet = getCoachDecisionPacket(actor, data);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="workflows" />
+      <AdminBackendLaneNav
+        current="coach_write"
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
       {packet.canReadPacket ? (
         <CoachDecisionVerificationPanel packet={packet} />
       ) : (
@@ -32,6 +36,6 @@ export default async function AdminCoachWritePage() {
           nextLabel="Back to Coach"
         />
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }

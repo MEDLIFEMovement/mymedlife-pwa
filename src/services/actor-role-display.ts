@@ -26,7 +26,7 @@ export function getActorPrimaryRoleLabel(actor: LocalActorContext): string {
     case "coach":
       return "Coach";
     case "department_staff":
-      return "Admin";
+      return "Staff";
     case "sales_coach":
       return "Sales Coach";
     case "sales_admin":
@@ -47,7 +47,7 @@ export function getActorSurfaceLabel(actor: LocalActorContext): string {
     case "leader":
       return "Leader view";
     case "coach":
-      return "Coach view";
+      return "Staff view";
     case "staff":
       return "Staff view";
     case "ds_admin":

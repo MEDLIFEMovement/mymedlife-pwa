@@ -1,9 +1,9 @@
-import Link from "next/link";
 import type {
   LeaderAssignmentPacket,
   LeaderAssignmentPacketStatus,
   LeaderAssignmentReadbackStatus,
 } from "@/services/leader-assignment-verification-packet";
+import { PanelButton, StatusPill, SurfacePanel } from "@/components/visual-primitives";
 
 type LeaderAssignmentVerificationPanelProps = {
   packet: LeaderAssignmentPacket;
@@ -17,10 +17,10 @@ export function LeaderAssignmentVerificationPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-lime-300/20 bg-lime-300/10 p-5">
+    <SurfacePanel as="section" className="rounded-[2rem] border border-blue-300/20 bg-[#eff6ff] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-lime-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
             Leader assignment packet
           </p>
           <h1 className="mt-2 text-3xl font-semibold text-white">
@@ -30,19 +30,21 @@ export function LeaderAssignmentVerificationPanel({
             {packet.plainEnglishSummary}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <StatusPill status={packet.status} />
-            <Link
+            <StatusPill tone={packetStatusTone(packet.status)}>
+              {packet.status.replaceAll("_", " ")}
+            </StatusPill>
+            <PanelButton
               href="/admin/hq-proof-write"
-              className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
+              className="border-white/12 bg-[#bfdbfe]/40 text-white/78"
             >
               Check HQ packet
-            </Link>
-            <Link
+            </PanelButton>
+            <PanelButton
               href="/rush-month/actions"
-              className="rounded-full bg-lime-200 px-4 py-2 text-sm font-semibold text-[#06211d]"
+              className="bg-[#2563eb] text-[#08224c]"
             >
               Open assignments
-            </Link>
+            </PanelButton>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
@@ -54,7 +56,7 @@ export function LeaderAssignmentVerificationPanel({
         </div>
       </div>
 
-      <article className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-4">
+      <SurfacePanel as="article" className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/42">
           Default local assignment
         </p>
@@ -70,10 +72,10 @@ export function LeaderAssignmentVerificationPanel({
           <MiniStat label="KPI" value={packet.defaultInput.kpi} />
           <MiniStat label="Due" value={packet.defaultInput.dueLabel} />
         </div>
-      </article>
+      </SurfacePanel>
 
-      <section className="mt-5 rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
           Leader responsibility map
         </p>
         <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -86,11 +88,12 @@ export function LeaderAssignmentVerificationPanel({
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-3">
           {packet.roleResponsibilities.map((item) => (
-            <article
+            <SurfacePanel
+              as="article"
               key={item.roleLabel}
-              className="rounded-3xl border border-white/10 bg-black/20 p-4"
+              className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-100/70">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
                 {item.responsibility}
               </p>
               <h3 className="mt-2 text-lg font-semibold text-white">
@@ -99,24 +102,25 @@ export function LeaderAssignmentVerificationPanel({
               <p className="mt-2 text-sm leading-6 text-white/62">
                 {item.reviewPrompt}
               </p>
-              <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3 text-xs leading-5 text-white/54">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3 text-xs leading-5 text-white/54">
                 {item.safetyBoundary}
               </p>
-              <Link
+              <PanelButton
                 href={item.route}
-                className="mt-3 inline-flex rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+                variant="secondary"
+                className="mt-3 border-white/12 bg-[#bfdbfe]/40 text-white/72"
               >
                 Open {item.route}
-              </Link>
-            </article>
+              </PanelButton>
+            </SurfacePanel>
           ))}
         </div>
-      </section>
+      </SurfacePanel>
 
-      <section className="mt-5 rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-4">
+      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
               Operator packet
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -126,13 +130,13 @@ export function LeaderAssignmentVerificationPanel({
               {packet.verificationPacket.plainEnglishDecision}
             </p>
           </div>
-          <span className={packetStatusClassName(packet.verificationPacket.status)}>
+          <StatusPill tone={verificationPacketStatusTone(packet.verificationPacket.status)}>
             {packet.verificationPacket.status.replaceAll("_", " ")}
-          </span>
+          </StatusPill>
         </div>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.9fr]">
-          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+          <SurfacePanel as="article" className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
             <p className="text-sm font-semibold text-white">
               Required local env settings
             </p>
@@ -140,9 +144,9 @@ export function LeaderAssignmentVerificationPanel({
               {packet.verificationPacket.envSettings.map((setting) => (
                 <div
                   key={setting.key}
-                  className="rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3"
+                  className="rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3"
                 >
-                  <p className="font-mono text-xs text-lime-100/80">
+                  <p className="font-mono text-xs text-blue-100/80">
                     {setting.key}={setting.value}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-white/52">
@@ -151,11 +155,11 @@ export function LeaderAssignmentVerificationPanel({
                 </div>
               ))}
             </div>
-          </article>
+          </SurfacePanel>
 
-          <article className="rounded-3xl border border-white/10 bg-black/20 p-4">
+          <SurfacePanel as="article" className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
             <p className="text-sm font-semibold text-white">Assignment proof</p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/78 p-3 font-mono text-xs text-lime-100/80">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3 font-mono text-xs text-blue-100/80">
               chapter={packet.chapterId}
               <br />
               campaign={packet.campaignId}
@@ -163,43 +167,45 @@ export function LeaderAssignmentVerificationPanel({
             <p className="mt-3 text-xs leading-5 text-white/56">
               Proof required: {packet.defaultInput.evidenceRequired}
             </p>
-            <p className="mt-3 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-3 text-xs leading-5 text-amber-100/78">
+            <p className="mt-3 rounded-2xl border border-blue-300/20 bg-blue-300/10 p-3 text-xs leading-5 text-blue-100/78">
               This packet must not send reminder emails, SMS, HubSpot handoffs,
               n8n workflows, Luma writes, or any external automation.
             </p>
-          </article>
+          </SurfacePanel>
         </div>
 
         <div className="mt-4 grid gap-3">
           {packet.verificationPacket.operatorSequence.map((step, index) => (
-            <article
+            <SurfacePanel
+              as="article"
               key={`${step.label}-${step.route}`}
-              className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+              className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
                     Packet step {index + 1}
                   </p>
                   <h3 className="mt-2 text-lg font-semibold text-white">
                     {step.label}
                   </h3>
                 </div>
-                <Link
-                  href={step.route}
-                  className="rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
-                >
-                  Open {step.route}
-                </Link>
-              </div>
-              <p className="mt-3 text-sm leading-6 text-white/62">
-                {step.expectedProof}
-              </p>
-            </article>
+              <PanelButton
+                href={step.route}
+                variant="secondary"
+                className="border-white/12 bg-[#bfdbfe]/40 text-white/72"
+              >
+                Open {step.route}
+              </PanelButton>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-white/62">
+              {step.expectedProof}
+            </p>
+            </SurfacePanel>
           ))}
         </div>
 
-        <article className="mt-4 rounded-3xl border border-orange-300/20 bg-orange-300/10 p-4">
+        <SurfacePanel as="article" className="mt-4 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
           <p className="text-sm font-semibold text-white">Stop conditions</p>
           <ul className="mt-3 grid gap-2">
             {packet.verificationPacket.safetyStops.map((stop) => (
@@ -208,31 +214,32 @@ export function LeaderAssignmentVerificationPanel({
               </li>
             ))}
           </ul>
-        </article>
-      </section>
+        </SurfacePanel>
+      </SurfacePanel>
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {packet.checks.map((check) => (
-          <article
+          <SurfacePanel
+            as="article"
             key={check.key}
-            className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+            className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
           >
             <p
               className={
                 check.passed
-                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100"
-                  : "text-xs font-semibold uppercase tracking-[0.18em] text-amber-100"
+                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100"
+                  : "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100"
               }
             >
               {check.passed ? "Ready" : "Blocked"}
             </p>
             <h2 className="mt-2 text-lg font-semibold text-white">{check.label}</h2>
             <p className="mt-2 text-sm leading-6 text-white/62">{check.detail}</p>
-          </article>
+          </SurfacePanel>
         ))}
       </div>
 
-      <section className="mt-5 rounded-[2rem] border border-lime-300/20 bg-lime-300/10 p-4">
+      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-blue-300/20 bg-[#eff6ff] p-4">
         <h2 className="text-2xl font-semibold text-white">
           Post-assignment readback evidence
         </h2>
@@ -243,9 +250,10 @@ export function LeaderAssignmentVerificationPanel({
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {packet.readbackEvidence.map((item) => (
-            <article
+            <SurfacePanel
+              as="article"
               key={item.key}
-              className="rounded-3xl border border-white/10 bg-[#071d1a]/80 p-4"
+              className="rounded-3xl border border-white/10 bg-[#0b66cc]/80 p-4"
             >
               <p className={readbackStatusClassName(item.status)}>
                 {item.status.replaceAll("_", " ")}
@@ -256,17 +264,17 @@ export function LeaderAssignmentVerificationPanel({
               <p className="mt-2 text-sm leading-6 text-white/62">
                 {item.detail}
               </p>
-            </article>
+            </SurfacePanel>
           ))}
         </div>
-      </section>
-    </section>
+      </SurfacePanel>
+    </SurfacePanel>
   );
 }
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -275,28 +283,39 @@ function MiniStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function StatusPill({ status }: { status: LeaderAssignmentPacketStatus }) {
-  return (
-    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${packetStatusClassName(status)}`}>
-      {status.replaceAll("_", " ")}
-    </span>
-  );
-}
-
-function packetStatusClassName(status: LeaderAssignmentPacketStatus): string {
+function packetStatusTone(status: LeaderAssignmentPacketStatus): "blue" | "amber" | "white" {
   switch (status) {
     case "ready_for_local_assignment_create":
     case "evidence_observed":
-      return "border border-emerald-300/30 bg-emerald-300/12 text-emerald-100";
+      return "blue";
     case "needs_manual_audit_check":
-      return "border border-amber-300/30 bg-amber-300/12 text-amber-100";
+      return "amber";
     case "blocked_until_local_supabase":
     case "blocked_until_hq_decision":
     case "blocked_until_flags":
     case "blocked_until_auth":
-      return "border border-orange-300/30 bg-orange-300/12 text-orange-100";
     case "hidden":
-      return "border border-white/10 bg-white/10 text-white/56";
+      return "white";
+  }
+}
+
+function verificationPacketStatusTone(
+  status: LeaderAssignmentPacketStatus,
+): "yellow" | "blue" | "white" {
+  switch (status) {
+    case "ready_for_local_assignment_create":
+    case "evidence_observed":
+      return "blue";
+    case "needs_manual_audit_check":
+      return "yellow";
+    case "hidden":
+      return "white";
+    case "blocked_until_local_supabase":
+    case "blocked_until_hq_decision":
+    case "blocked_until_flags":
+    case "blocked_until_auth":
+    default:
+      return "blue";
   }
 }
 
@@ -304,9 +323,9 @@ function readbackStatusClassName(status: LeaderAssignmentReadbackStatus): string
   switch (status) {
     case "observed":
     case "disabled_outbox_observed":
-      return "text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100";
+      return "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100";
     case "manual_check_needed":
-      return "text-xs font-semibold uppercase tracking-[0.18em] text-amber-100";
+      return "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100";
     case "missing":
     case "blocked":
       return "text-xs font-semibold uppercase tracking-[0.18em] text-white/42";

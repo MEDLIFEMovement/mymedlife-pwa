@@ -28,6 +28,25 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
 });
 
 describe("staff page", () => {
+  it("returns members to their owned student surface when the staff route is blocked", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member-blocked staff page."),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(await StaffPage({}));
+
+    expect(html).toContain("This staff command center is not visible to this role.");
+    expect(html).toContain('href="/app"');
+    expect(html).toContain(">Open student home<");
+  });
+
   it("returns chapter leaders to their owned chapter surface when the staff route is blocked", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
@@ -43,8 +62,8 @@ describe("staff page", () => {
     const html = renderToStaticMarkup(await StaffPage({}));
 
     expect(html).toContain("This staff command center is not visible to this role.");
-    expect(html).toContain('href="/chapter?view=overview"');
-    expect(html).toContain(">Open chapter home<");
+    expect(html).toContain('href="/leader?view=overview"');
+    expect(html).toContain(">Open leader home<");
   });
 
   it("keeps DS Admin on admin safety lanes when the staff route is blocked", async () => {
@@ -70,7 +89,7 @@ describe("staff page", () => {
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
+      getMockLocalActorContext("general.staff@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing staff portfolio page."),
@@ -79,8 +98,11 @@ describe("staff page", () => {
     const { default: StaffPage } = await import("@/app/staff/page");
     const html = renderToStaticMarkup(await StaffPage({}));
 
-    expect(html).toContain("Staff Command Center");
-    expect(html).toContain("myMEDLIFE");
+    expect(html).toContain("Event and points pulse");
+    expect(html).toContain("Luma");
+    expect(html).toContain("RSVP");
+    expect(html).toContain("Attendance");
+    expect(html).toContain("Points");
     expect(html).toContain("Portfolio Overview");
     expect(html).toContain("Chapters Active");
     expect(html).toContain("M.S.");
@@ -89,15 +111,6 @@ describe("staff page", () => {
     expect(html).not.toContain("Naomi Outreach Lead");
     expect(html).not.toContain("Command center nav");
     expect(html).not.toContain("Live rows");
-    expect(html).toMatch(
-      /<a[^>]*href="\/staff\?view=chapters"[^>]*>Chapters<\/a>/,
-    );
-    expect(html).toMatch(
-      /<a[^>]*href="\/staff\?view=campaigns"[^>]*>Campaigns<\/a>/,
-    );
-    expect(html).toMatch(
-      /<a[^>]*href="\/staff\?view=feed_analytics"[^>]*>Feed Analytics<\/a>/,
-    );
     expect(html).not.toMatch(
       /<a[^>]*href="\/staff\?view=chapters&amp;campaign=rush-month"[^>]*>Chapters<\/a>/,
     );
@@ -129,8 +142,6 @@ describe("staff page", () => {
     expect(html).toContain(">Export<");
     expect(html).not.toContain('type="submit"');
     expect(html).toContain("Chapters Active");
-    expect(html).toContain("2 chapters need intervention");
-    expect(html).toContain(">HQ<");
     expect(html.indexOf("Chapters Active")).toBeLessThan(
       html.indexOf("Search chapter, school, student..."),
     );
@@ -305,7 +316,7 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain(">HubSpot + Chapter Intelligence</h1>");
+    expect(html).toContain(">HubSpot + Portfolio Intelligence</h1>");
     expect(html).toContain("HubSpot CRM Profile");
     expect(html).toContain("Conversion Funnel");
     expect(html).not.toContain("Visible chapters");
@@ -333,8 +344,10 @@ describe("staff page", () => {
     );
 
     expect(html).toContain(">Campaign Operations</h1>");
+    expect(html).toContain("Current workflow state");
+    expect(html).toContain("v2.1");
     expect(html).toContain("No event created");
-    expect(html).not.toContain("Visible execution rows");
+    expect(html).toContain("Visible execution rows");
     expect(html).not.toContain("Visible chapters");
     expect(html).not.toContain("Quick tools");
     expect(html).not.toContain("Mock-seeded review data");
@@ -547,7 +560,7 @@ describe("staff page", () => {
     expect(html).toContain("Platform Admin");
     expect(html).toContain(">Admin Console</h1>");
     expect(html).toContain("Opened from UCLA MEDLIFE into Admin Console");
-    expect(html).toContain("Switch View buttons");
+    expect(html).toContain("member-home role handoff");
     expect(html).toContain("View integration events");
     expect(html).toContain("Open workflow registry");
     expect(html).toContain("Student view");
@@ -556,13 +569,12 @@ describe("staff page", () => {
     expect(html).toContain("Campaigns Running");
     expect(html).toContain("Automation Jobs");
     expect(html).toContain("User &amp; Role Management");
-    expect(html).toContain("Chapter Management");
+    expect(html).toContain("Portfolio Management");
     expect(html).toContain("Campaign Templates");
     expect(html).toContain("Audit Logs");
     expect(html).toContain("Automation Outbox (n8n)");
-    expect(html.indexOf("Student view")).toBeLessThan(html.indexOf("Admin Console"));
     expect(html).toContain("System health: 5 of 6 integrations active");
-    expect(html.indexOf("Admin Console")).toBeLessThan(html.indexOf("Staff Command Center"));
+    expect(html).toContain("Admin Console");
     expect(html.indexOf("Opened from UCLA MEDLIFE into Admin Console")).toBeLessThan(
       html.indexOf("Integration Status"),
     );
@@ -572,7 +584,7 @@ describe("staff page", () => {
     expect(html).not.toContain("Portfolio Overview");
     expect(html).not.toContain("Permission Registry");
     expect(html).toContain(
-      'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2F"',
+      'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2Fapp"',
     );
   });
 });

@@ -13,12 +13,18 @@ describe("student home workspace", () => {
     expect(workspace.greeting).toBe("Hi, Sofia");
     expect(workspace.chapterName).toBe("UCLA MEDLIFE");
     expect(workspace.chapterMeta).toBe(
-      "General Member • UCLA • Week 1: Invite and prove the first push",
+      "General Member • UCLA • Current checkpoint: Make MEDLIFE visible on campus",
     );
     expect(workspace.startNextAction.href).toBe("/rush-month/actions/member-push?source=home");
     expect(workspace.startNextAction.label).toBe("Start next action");
     expect(workspace.campaign.href).toBe("/campaigns?source=home");
     expect(workspace.campaign.campaignsHref).toBe("/campaigns");
+    expect(workspace.campaign.summary).toBe(
+      "Turn campus interest into actual student action through invites, events, follow-up, and proof.",
+    );
+    expect(workspace.campaign.weekLabel).toBe(
+      "Current checkpoint: Make MEDLIFE visible on campus",
+    );
     expect(workspace.campaign.stageLabel).toBe("Week 1 of 4");
     expect(workspace.campaign.activeMemberCount).toBe(22);
     expect(workspace.campaign.totalMemberCount).toBe(34);
@@ -69,15 +75,32 @@ describe("student home workspace", () => {
     const workspace = getStudentHomeWorkspace(actor, data);
 
     expect(workspace.chapterMeta).toBe(
-      "Action Committee Member • UCLA • Week 1: Invite and prove the first push",
+      "Action Committee Member • UCLA • Current checkpoint: Make MEDLIFE visible on campus",
     );
     expect(workspace.campaign.progressPercent).toBe(67);
     expect(workspace.campaign.progressLabel).toBe("2 of 3 Rush Month steps are moving.");
     expect(workspace.campaign.progressCountLabel).toBe("1 / 3 actions done");
+    expect(workspace.heroSummary).toContain(
+      "Rush Month works only when students see momentum, not just announcements.",
+    );
     expect(workspace.stats.find((stat) => stat.label === "Points")?.value).toBe("10");
     expect(workspace.coachMessage.authorName).toBe("Coach David Kim");
     expect(workspace.coachMessage.dateLabel).toBe("Nov 12");
     expect(workspace.coachMessage.body).toContain("Intro GBM");
     expect(workspace.safetyNote).toContain("turned off until approval");
+    expect(workspace.travelerPrep).toBeNull();
+  });
+
+  it("exposes an SLT Prep entry point when the member is also a traveler", () => {
+    const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
+    const workspace = getStudentHomeWorkspace(actor, data);
+
+    expect(workspace.travelerPrep).toEqual({
+      href: "/app/slt-prep?source=home",
+      title: "SLT Prep",
+      summary:
+        "Traveler-ready students can jump into trip prep, deadlines, flights, and checklist items from the member app.",
+      ctaLabel: "Open SLT Prep",
+    });
   });
 });

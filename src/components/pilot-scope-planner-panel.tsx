@@ -16,35 +16,35 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
   }
 
   return (
-    <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+    <section className="app-surface-info rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
             First pilot scope
           </p>
-          <h1 className="mt-2 text-3xl font-semibold text-white">{planner.title}</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+          <h1 className="mt-2 text-3xl font-semibold text-slate-950">{planner.title}</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
             {planner.plainEnglishSummary}
           </p>
-          <p className="mt-3 max-w-3xl rounded-2xl border border-white/10 bg-black/20 p-3 text-sm leading-6 text-sky-50/78">
+          <p className="mt-3 max-w-3xl rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
             Recommended scope: {planner.recommendedScope}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/admin/staff-dry-run"
-              className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#061b2b]"
+              className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
             >
               Open staff dry run
             </Link>
             <Link
               href="/rush-month/loop"
-              className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
             >
               Open Rush Month loop
             </Link>
             <Link
               href="/admin/first-write"
-              className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/78"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
             >
               Open first-write drill
             </Link>
@@ -58,9 +58,9 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
         </div>
       </div>
 
-      <section className="mt-5 rounded-[2rem] border border-white/10 bg-black/20 p-4">
-        <h2 className="text-2xl font-semibold text-white">Phase 2 closeout defaults</h2>
-        <p className="mt-2 text-sm leading-6 text-white/62">
+      <section className="mt-5 rounded-[2rem] border border-slate-200 bg-slate-50 p-4">
+        <h2 className="text-2xl font-semibold text-slate-950">Phase 2 closeout defaults</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
           These are the recommended defaults for closing Phase 2 at controlled live
           pilot readiness. They are defaults, not final approvals.
         </p>
@@ -68,20 +68,20 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
           {planner.closeoutDefaults.map((item) => (
             <article
               key={item.key}
-              className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+              className="rounded-3xl border border-slate-200 bg-white p-4"
             >
               <DecisionPill
                 status={
                   item.status === "recorded_final" ? "staff_ready" : "needs_decision"
                 }
               />
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-100/72">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                 {item.label}
               </p>
-              <h3 className="mt-2 text-lg font-semibold text-white">
+              <h3 className="mt-2 text-lg font-semibold text-slate-950">
                 {item.recommendedDefault}
               </h3>
-              <p className="mt-3 text-sm leading-6 text-white/62">
+              <p className="mt-3 text-sm leading-6 text-slate-600">
                 {item.whyThisIsDefault}
               </p>
             </article>
@@ -89,9 +89,9 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
         </div>
       </section>
 
-      <section className="mt-5 rounded-[2rem] border border-white/10 bg-black/20 p-4">
-        <h2 className="text-2xl font-semibold text-white">Named owner slots</h2>
-        <p className="mt-2 text-sm leading-6 text-white/62">
+      <section className="mt-5 rounded-[2rem] border border-slate-200 bg-slate-50 p-4">
+        <h2 className="text-2xl font-semibold text-slate-950">Named owner slots</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
           Phase 2 is not finished until these human owners are named. The app can
           recommend the slots, but the team still needs to confirm the actual people.
         </p>
@@ -99,7 +99,7 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
           {planner.ownerSlots.map((slot) => (
             <article
               key={slot.key}
-              className="rounded-3xl border border-white/10 bg-white/[0.05] p-4"
+              className="rounded-3xl border border-slate-200 bg-white p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -110,19 +110,19 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
                         : "needs_decision"
                     }
                   />
-                  <h3 className="mt-3 text-lg font-semibold text-white">
+                  <h3 className="mt-3 text-lg font-semibold text-slate-950">
                     {slot.label}
                   </h3>
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100/60">
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Confirm with: {slot.confirmationNeededFrom}
                   </p>
                 </div>
-                <p className="font-mono text-xs text-white/42">{slot.key}</p>
+                <p className="font-mono text-xs text-slate-500">{slot.key}</p>
               </div>
-              <p className="mt-3 text-sm leading-6 text-white/66">
+              <p className="mt-3 text-sm leading-6 text-slate-600">
                 Recommended default: {slot.recommendedDefault}
               </p>
-              <p className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/54">
+              <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
                 Why it matters: {slot.whyItMatters}
               </p>
             </article>
@@ -134,21 +134,21 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
         {planner.candidates.map((candidate) => (
           <article
             key={candidate.key}
-            className="rounded-3xl border border-white/10 bg-[#071d1a]/78 p-4"
+            className="rounded-3xl border border-slate-200 bg-white p-4"
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <StatusPill status={candidate.status} />
-                <h2 className="mt-3 text-xl font-semibold text-white">
+                <h2 className="mt-3 text-xl font-semibold text-slate-950">
                   {candidate.recommendedOrder}. {candidate.label}
                 </h2>
               </div>
-              <p className="font-mono text-xs text-white/42">{candidate.key}</p>
+              <p className="font-mono text-xs text-slate-500">{candidate.key}</p>
             </div>
-            <p className="mt-3 text-sm leading-6 text-white/66">
+            <p className="mt-3 text-sm leading-6 text-slate-600">
               {candidate.plainEnglish}
             </p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/58">
+            <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
               Expected people: {candidate.expectedPeople}
             </p>
             <TagList label="Roles" values={candidate.includedRoles} />
@@ -162,11 +162,11 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
         ))}
       </div>
 
-      <section className="mt-5 rounded-[2rem] border border-white/10 bg-black/20 p-4">
-        <h2 className="text-2xl font-semibold text-white">
+      <section className="mt-5 rounded-[2rem] border border-slate-200 bg-slate-50 p-4">
+        <h2 className="text-2xl font-semibold text-slate-950">
           Minimum pilot path
         </h2>
-        <p className="mt-2 text-sm leading-6 text-white/62">
+        <p className="mt-2 text-sm leading-6 text-slate-600">
           This is the smallest Rush Month path that should be reviewed before
           any real student invitation. It keeps student screens simple and pushes
           risky operations into manual or blocked posture.
@@ -182,35 +182,35 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
         {planner.decisions.map((decision) => (
           <article
             key={decision.key}
-            className="rounded-3xl border border-white/10 bg-white/[0.05] p-4"
+            className="rounded-3xl border border-slate-200 bg-white p-4"
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <DecisionPill status={decision.status} />
-                <h2 className="mt-3 text-lg font-semibold text-white">
+                <h2 className="mt-3 text-lg font-semibold text-slate-950">
                   {decision.label}
                 </h2>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100/60">
+                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Owner: {decision.owner}
                 </p>
               </div>
-              <p className="font-mono text-xs text-white/42">{decision.key}</p>
+              <p className="font-mono text-xs text-slate-500">{decision.key}</p>
             </div>
-            <p className="mt-3 text-sm leading-6 text-white/66">
+            <p className="mt-3 text-sm leading-6 text-slate-600">
               Recommendation: {decision.recommendation}
             </p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/54">
+            <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
               Why it matters: {decision.whyItMatters}
             </p>
           </article>
         ))}
       </div>
 
-      <section className="mt-5 rounded-[2rem] border border-rose-300/20 bg-rose-300/10 p-4">
-        <h2 className="text-2xl font-semibold text-white">Safety rules</h2>
+      <section className="mt-5 rounded-[2rem] border border-slate-200 bg-white p-4">
+        <h2 className="text-2xl font-semibold text-slate-950">Safety rules</h2>
         <ul className="mt-4 grid gap-2">
           {planner.safetyRules.map((rule) => (
-            <li key={rule} className="text-sm leading-6 text-white/66">
+            <li key={rule} className="text-sm leading-6 text-slate-600">
               {rule}
             </li>
           ))}
@@ -221,20 +221,20 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
         </div>
       </section>
 
-      <section className="mt-5 rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-4">
-        <h2 className="text-2xl font-semibold text-white">How to approve this</h2>
+      <section className="mt-5 rounded-[2rem] border border-slate-200 bg-slate-50 p-4">
+        <h2 className="text-2xl font-semibold text-slate-950">How to approve this</h2>
         <ul className="mt-4 grid gap-2">
           {planner.approvalReplyGuide.map((line) => (
-            <li key={line} className="text-sm leading-6 text-white/66">
+            <li key={line} className="text-sm leading-6 text-slate-600">
               {line}
             </li>
           ))}
         </ul>
-        <div className="mt-4 rounded-3xl border border-white/10 bg-black/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+        <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
             Copy-paste reply block
           </p>
-          <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-sky-50/82">
+          <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
             {planner.approvalReplyBlock.join("\n")}
           </pre>
         </div>
@@ -245,27 +245,27 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
 
 function PilotPathCard({ step }: { step: MinimumPilotPath }) {
   return (
-    <article className="rounded-3xl border border-white/10 bg-[#071d1a]/80 p-4">
+    <article className="rounded-3xl border border-slate-200 bg-white p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-white/66">
+          <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
             {step.pilotMode.replaceAll("_", " ")}
           </span>
-          <h3 className="mt-3 text-lg font-semibold text-white">{step.label}</h3>
+          <h3 className="mt-3 text-lg font-semibold text-slate-950">{step.label}</h3>
         </div>
         <Link
           href={step.route === "/rush-month/actions/[assignmentId]" ? "/rush-month/actions/member-push" : step.route}
-          className="rounded-full border border-white/12 bg-black/20 px-3 py-2 text-xs font-semibold text-white/72"
+          className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700"
         >
           Open {step.route}
         </Link>
       </div>
-      <p className="mt-3 text-sm leading-6 text-white/64">{step.whatMustWork}</p>
-      <p className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 font-mono text-xs text-sky-100/76">
+      <p className="mt-3 text-sm leading-6 text-slate-600">{step.whatMustWork}</p>
+      <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-600">
         MYMEDLIFE_LOCAL_ACTOR_EMAIL={step.localActorEmail}
       </p>
       <TagList label="Structured events" values={step.structuredEvents} mono />
-      <p className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3 text-xs leading-5 text-white/54">
+      <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
         Safety: {step.safetyBoundary}
       </p>
     </article>
@@ -283,14 +283,14 @@ function TagList({
 }) {
   return (
     <div className="mt-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
       <div className="mt-2 flex flex-wrap gap-2">
         {values.map((value) => (
           <span
             key={`${label}-${value}`}
-            className={`rounded-full border border-sky-200/15 bg-sky-200/10 px-3 py-1 text-xs text-sky-100/80 ${mono ? "font-mono" : "font-semibold"}`}
+            className={`rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 ${mono ? "font-mono" : "font-semibold"}`}
           >
             {value}
           </span>
@@ -302,13 +302,13 @@ function TagList({
 
 function Checklist({ label, values }: { label: string; values: string[] }) {
   return (
-    <div className="mt-3 rounded-2xl border border-white/10 bg-black/20 p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
       <ul className="mt-2 grid gap-1">
         {values.map((value) => (
-          <li key={`${label}-${value}`} className="text-xs leading-5 text-white/58">
+          <li key={`${label}-${value}`} className="text-xs leading-5 text-slate-600">
             {value}
           </li>
         ))}
@@ -319,11 +319,11 @@ function Checklist({ label, values }: { label: string; values: string[] }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
@@ -331,12 +331,12 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: PilotScopeCandidateStatus }) {
   const className =
     status === "ready_for_staff_only"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "recommended_after_gates"
-        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
+        ? "border-blue-200 bg-blue-50 text-blue-700"
         : status === "later"
-          ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-          : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+          ? "border-blue-200 bg-blue-50 text-blue-700"
+          : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -348,10 +348,10 @@ function StatusPill({ status }: { status: PilotScopeCandidateStatus }) {
 function DecisionPill({ status }: { status: PilotScopeDecisionStatus }) {
   const className =
     status === "staff_ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : status === "needs_decision"
-        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
-        : "border-amber-300/30 bg-amber-300/15 text-amber-100";
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

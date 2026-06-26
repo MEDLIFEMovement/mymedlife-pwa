@@ -16,10 +16,10 @@ export function CampaignCloseoutReadinessPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
+    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
             Phase closeout
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{closeout.title}</h2>
@@ -44,7 +44,7 @@ export function CampaignCloseoutReadinessPanel({
 
       <div className="mt-5 grid gap-3">
         {closeout.rows.map((row) => (
-          <article key={row.key} className="rounded-2xl bg-black/20 p-4">
+          <article key={row.key} className="rounded-2xl bg-[#bfdbfe]/40 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2">
@@ -63,7 +63,7 @@ export function CampaignCloseoutReadinessPanel({
         ))}
       </div>
 
-      <p className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/54">
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
         Closeout writes and external exports are disabled. This panel does not
         advance phases, send coach packets, update warehouse rows, or trigger n8n.
       </p>
@@ -73,7 +73,7 @@ export function CampaignCloseoutReadinessPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -85,10 +85,10 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function ReadinessPill({ state }: { state: CampaignReadinessState }) {
   const className =
     state === "advance_ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : state === "hold_for_follow_up"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-        : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
 
   return (
     <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -100,12 +100,12 @@ function ReadinessPill({ state }: { state: CampaignReadinessState }) {
 function StatusPill({ status }: { status: CampaignCloseoutStatus }) {
   const className =
     status === "ready"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "mocked"
-        ? "border-cyan-300/30 bg-cyan-300/15 text-cyan-100"
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
         : status === "needs_work"
-          ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
-          : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+          ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+          : "border-blue-300/30 bg-blue-300/15 text-blue-100";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

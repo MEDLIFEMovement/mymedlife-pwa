@@ -15,6 +15,7 @@ const fakeAccounts = [
   "leader.a@mymedlife.test",
   "eboard.a@mymedlife.test",
   "coach@mymedlife.test",
+  "general.staff@mymedlife.test",
   "admin@mymedlife.test",
   "ds.admin@mymedlife.test",
   "super.admin@mymedlife.test",
@@ -26,7 +27,7 @@ const initialLoginActionState: LoginActionState = {
   email: "member.a@mymedlife.test",
 };
 
-export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
+export function LoginForm({ redirectTo = "/app" }: LoginFormProps) {
   const [state, formAction] = useActionState(
     signInWithPassword,
     initialLoginActionState,
@@ -44,8 +45,8 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
         </p>
         <h2 className="text-2xl font-semibold text-slate-950">Sign in with a seeded account</h2>
         <p className="text-sm leading-6 text-slate-600">
-          Choose a member, leader, coach, or staff account to open the matching
-          myMEDLIFE experience.
+          Choose a member, leader, staff, admin, or traveler account to open the
+          matching myMEDLIFE experience.
         </p>
       </div>
 
@@ -58,7 +59,7 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
             defaultValue={state.email}
             list="fake-local-accounts"
             autoComplete="email"
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
+            className="rounded-2xl border border-slate-200 bg-[#dbeafe] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
           />
         </label>
         <datalist id="fake-local-accounts">
@@ -74,7 +75,7 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
             type="password"
             defaultValue="password"
             autoComplete="current-password"
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
+            className="rounded-2xl border border-slate-200 bg-[#dbeafe] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
           />
         </label>
       </div>
@@ -84,10 +85,10 @@ export function LoginForm({ redirectTo = "/" }: LoginFormProps) {
         className={[
           "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
           state.status === "error"
-            ? "border-rose-200 bg-rose-50 text-rose-700"
+            ? "border-blue-200 bg-blue-50 text-blue-700"
             : state.status === "disabled"
-              ? "border-amber-200 bg-amber-50 text-amber-700"
-              : "border-slate-200 bg-slate-50 text-slate-600",
+              ? "border-blue-200 bg-blue-50 text-blue-700"
+              : "border-slate-200 bg-[#dbeafe] text-slate-600",
         ].join(" ")}
       >
         {state.message}
@@ -105,7 +106,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="mt-5 w-full rounded-full bg-[#f7d05e] px-5 py-3 text-sm font-semibold text-[#10223f] transition hover:bg-[#f2c63f] disabled:cursor-wait disabled:opacity-70"
+      className="mt-5 w-full rounded-full bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-wait disabled:opacity-70"
     >
       {pending ? "Signing in..." : "Continue"}
     </button>

@@ -43,10 +43,10 @@ export function EnvironmentSafetySummaryPanel({
 function EnvironmentItemCard({ item }: { item: EnvironmentSafetyItem }) {
   const statusClass =
     item.status === "safe"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      ? "border-blue-200 bg-blue-50 text-blue-700"
       : item.status === "watch"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-rose-200 bg-rose-50 text-rose-700";
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <article className="app-surface rounded-[1.3rem] p-4">

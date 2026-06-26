@@ -27,7 +27,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
         <p className="mt-2 text-sm leading-6 text-slate-600">
           {isUsingAuthSession
             ? "Sign out or sign in as another fake local seed user to preview a different role. Browser writes and production auth remain disabled."
-            : "This is a local-only review panel. It stores one preview-role cookie for this browser so you can move through member, leader, coach, and admin surfaces without changing env vars. It does not create production users, auth sessions, or app writes."}
+            : "This is a local-only review panel. It stores one preview-role cookie for this browser so you can move through member, leader, staff, and admin surfaces without changing env vars. It does not create production users, auth sessions, or app writes."}
         </p>
       </div>
 
@@ -42,7 +42,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
             <form action={clearLocalActorPreviewAction}>
               <button
                 type="submit"
-                className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
               >
                 Use configured default
               </button>
@@ -54,11 +54,11 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
       <div className="mt-4 grid gap-2 md:grid-cols-2">
         {localActorOptions.map((option) => {
           const isSelected = option.email === actor.selectedEmail.toLowerCase();
-          const scopeSummary = option.chapterNames.length > 0
+              const scopeSummary = option.chapterNames.length > 0
             ? option.chapterNames.join(", ")
             : option.coachPortfolioChapterNames.length > 0
               ? `Portfolio: ${option.coachPortfolioChapterNames.join(", ")}`
-              : "Admin and system-wide review scope";
+              : "Staff and system-wide review scope";
           const roleSummary = [...option.chapterRoles, ...option.staffRoles].join(", ");
 
           return (
@@ -75,7 +75,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
                   <p className="text-sm font-semibold text-slate-950">{option.displayName}</p>
                   <p className="mt-1 text-xs text-slate-500">{option.email}</p>
                 </div>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500">
+                <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2 py-1 text-xs text-slate-500">
                   {option.audience.replace("_", " ")}
                 </span>
               </div>
@@ -84,7 +84,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-500">{scopeSummary}</p>
               {isUsingAuthSession ? (
-                <p className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                <p className="mt-3 rounded-xl border border-slate-200 bg-[#dbeafe] px-3 py-2 text-xs text-slate-500">
                   Local auth is active, so the browser session controls this route.
                 </p>
               ) : (
@@ -96,8 +96,8 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
                     className={[
                       "w-full rounded-xl px-3 py-2 text-sm font-semibold transition",
                       isSelected
-                        ? "cursor-default bg-[#f7d05e] text-[#08224c]"
-                        : "border border-slate-200 bg-slate-50 text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                        ? "cursor-default bg-[#2563eb] text-[#08224c]"
+                        : "border border-slate-200 bg-[#dbeafe] text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
                     ].join(" ")}
                   >
                     {isSelected

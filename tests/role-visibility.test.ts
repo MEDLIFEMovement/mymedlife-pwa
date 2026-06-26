@@ -78,16 +78,13 @@ describe("role visibility service", () => {
     ]);
   });
 
-  it("gives admin proof/support panels without DS outbox ownership", () => {
+  it("keeps staff out of the DS admin backend panels", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
 
     expect(canReadChapterData(actor)).toBe(true);
     expect(canReadIntegrationOutbox(actor)).toBe(false);
     expect(canReadAdminIntegrationsSecurity(actor)).toBe(false);
-    expect(getVisibleAdminPanelsForActor(actor).map((panel) => panel.key)).toEqual([
-      "support_context",
-      "proof_sharing",
-    ]);
+    expect(getVisibleAdminPanelsForActor(actor)).toEqual([]);
   });
 
   it("gives super admin full local oversight", () => {
@@ -121,7 +118,7 @@ describe("role visibility service", () => {
       "Profile",
     ]);
     expect(getNavigationForActor(leader).map((item) => item.label)).toEqual([
-      "Chapter Home",
+      "Overview",
       "Leaderboard",
       "Member Pipeline",
       "Member Profile",
@@ -135,7 +132,7 @@ describe("role visibility service", () => {
     expect(
       getNavigationForActor(leader).find((item) => item.label === "Member Pipeline"),
     ).toEqual({
-      href: "/chapter?view=members",
+      href: "/leader?view=members",
       label: "Member Pipeline",
     });
     expect(getNavigationForActor(coach).map((item) => item.label)).toEqual([
@@ -222,11 +219,32 @@ describe("role visibility service", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
-      { href: "/", label: "Home", helper: "Today" },
+      { href: "/app", label: "Home", helper: "Today" },
       { href: "/campaigns", label: "Campaigns", helper: "Goals" },
       { href: "/rush-month/events", label: "Events", helper: "Meet" },
       { href: "/rush-month/leaderboard", label: "Points", helper: "Rank" },
       { href: "/profile", label: "Profile", helper: "Me" },
+    ]);
+  });
+
+  it("adds SLT Prep into the member workspace for traveler accounts", () => {
+    const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
+
+    expect(getNavigationForActor(actor).map((item) => item.label)).toEqual([
+      "Home",
+      "Campaigns",
+      "Events",
+      "Points",
+      "SLT Prep",
+      "Profile",
+    ]);
+    expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
+      "Home",
+      "Campaigns",
+      "Events",
+      "Points",
+      "SLT Prep",
+      "Profile",
     ]);
   });
 
@@ -240,7 +258,7 @@ describe("role visibility service", () => {
       "Succession",
     ]);
     expect(getMobileQuickNavigationForActor(actor)[1]).toEqual({
-      href: "/chapter?view=members",
+      href: "/leader?view=members",
       label: "Pipeline",
       helper: "People",
     });
@@ -250,10 +268,10 @@ describe("role visibility service", () => {
     const actor = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
-      { href: "/coach?view=chapters", label: "Portfolio", helper: "Overview" },
-      { href: "/coach?view=chapter_detail", label: "Chapter", helper: "Focus" },
-      { href: "/coach?view=campaigns", label: "Campaigns", helper: "Support" },
-      { href: "/coach?view=support_notes#support-notes", label: "Notes", helper: "Coach" },
+      { href: "/staff?view=chapters", label: "Portfolio", helper: "Overview" },
+      { href: "/staff?view=chapter_detail", label: "Chapter", helper: "Focus" },
+      { href: "/staff?view=campaigns", label: "Campaigns", helper: "Support" },
+      { href: "/staff?view=support_notes#support-notes", label: "Notes", helper: "Staff" },
     ]);
   });
 

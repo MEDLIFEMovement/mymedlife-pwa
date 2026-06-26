@@ -63,16 +63,16 @@ export function statusLabel(status: DisplayStatus): string {
 export function statusClassName(status: DisplayStatus): string {
   switch (status) {
     case "approved":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+      return "border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8]";
     case "submitted":
     case "pending_review":
-      return "border-sky-200 bg-sky-50 text-sky-700";
+      return "border-blue-200 bg-[#dbeafe] text-[#1d4ed8]";
     case "in_progress":
-      return "border-amber-200 bg-amber-50 text-amber-700";
+      return "border-blue-200 bg-blue-50 text-blue-700";
     case "changes_requested":
     case "rejected":
-      return "border-rose-200 bg-rose-50 text-rose-700";
+      return "border-blue-200 bg-blue-50 text-blue-700";
     case "not_started":
-      return "border-slate-200 bg-slate-50 text-slate-600";
+      return "border-slate-200 bg-[#dbeafe] text-slate-600";
   }
 }

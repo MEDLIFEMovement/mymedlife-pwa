@@ -97,7 +97,7 @@ export function getRushMonthEventDetailWorkspace(
     canReadWorkspace: true,
     title: getTitle(actor, surfaceFamily),
     summary:
-      "See when to show up, what kind of student moment to create, and what proof to capture after the event.",
+      "See when to show up, what kind of student moment to create, and what proof to capture after the event. Luma is the source of truth, RSVP shows intent, attendance confirms who showed up, and points move after the review.",
     event: toEventDetail(actor, eventPlan),
     nextStep: getNextStep(actor, surfaceFamily, eventPlan.id, source),
     proofNextStep: getProofNextStep(surfaceFamily, eventPlan.id, source),

@@ -14,14 +14,14 @@ export function NickMvpReviewPanel({ packet }: NickMvpReviewPanelProps) {
   }
 
   return (
-    <section className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
+    <section className="app-surface-info rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
             Final local review
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">{packet.title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">{packet.title}</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
             {packet.summary}
           </p>
         </div>
@@ -34,47 +34,47 @@ export function NickMvpReviewPanel({ packet }: NickMvpReviewPanelProps) {
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {packet.reviewItems.map((item) => (
-          <article key={item.key} className="rounded-2xl bg-black/20 p-4">
+          <article key={item.key} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2">
                   <StatusPill status={item.status} />
-                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/58">
+                  <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
                     {item.ownerLane}
                   </span>
                 </div>
-                <h3 className="mt-3 text-base font-semibold text-white">
+                <h3 className="mt-3 text-base font-semibold text-slate-950">
                   {item.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-white/62">
+                <p className="mt-2 text-sm leading-6 text-slate-600">
                   {item.plainEnglish}
                 </p>
               </div>
               <Link
                 href={item.route}
-                className="w-fit shrink-0 rounded-full bg-cyan-200 px-3 py-2 text-sm font-semibold text-[#06211d]"
+                className="w-fit shrink-0 rounded-full bg-[#2563eb] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
               >
                 Open {item.route}
               </Link>
             </div>
-            <p className="mt-3 break-words font-mono text-xs text-cyan-100/72">
+            <p className="mt-3 break-words font-mono text-xs text-slate-500">
               MYMEDLIFE_LOCAL_ACTOR_EMAIL={item.reviewerActorEmail}
             </p>
-            <p className="mt-3 rounded-xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/54">
+            <p className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
               Pass signal: {item.passSignal}
             </p>
-            <p className="mt-2 text-xs leading-5 text-white/46">
+            <p className="mt-2 text-xs leading-5 text-slate-500">
               Boundary: {item.launchBoundary}
             </p>
           </article>
         ))}
       </div>
 
-      <article className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-        <p className="text-sm font-semibold text-white">Nick decision prompts</p>
+      <article className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+        <p className="text-sm font-semibold text-slate-950">Nick decision prompts</p>
         <ul className="mt-3 grid gap-2">
           {packet.finalDecisionPrompts.map((prompt) => (
-            <li key={prompt} className="text-sm leading-6 text-white/64">
+            <li key={prompt} className="text-sm leading-6 text-slate-600">
               {prompt}
             </li>
           ))}
@@ -86,11 +86,11 @@ export function NickMvpReviewPanel({ packet }: NickMvpReviewPanelProps) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
         {label}
       </p>
-      <p className="mt-1 text-xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
     </div>
   );
 }
@@ -98,8 +98,8 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: NickMvpReviewStatus }) {
   const className =
     status === "ready_for_nick_review"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
-      : "border-rose-300/30 bg-rose-300/15 text-rose-100";
+      ? "border-blue-200 bg-blue-50 text-blue-700"
+      : "border-blue-200 bg-blue-50 text-blue-700";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

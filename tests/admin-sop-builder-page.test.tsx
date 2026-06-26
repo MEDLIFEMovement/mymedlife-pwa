@@ -153,6 +153,14 @@ describe("admin SOP builder page", () => {
     expect(html).toContain("Default focus: v2.1");
     expect(html).toContain("Current template posture");
     expect(html).toContain("v2.1");
+    expect(html).toContain("package-backed structured draft");
+    expect(html).toContain("33-59 coach pages");
+    expect(html).toContain("214-240 chapter pages");
+    expect(html).toContain("Source perspectives");
+    expect(html).toContain("Coach perspective");
+    expect(html).toContain("Chapter / platform perspective");
+    expect(html).toContain("/coach?view=chapters");
+    expect(html).toContain("/rush-month/dashboard");
     expect(html).toContain("review ready");
     expect(html).toContain("draft");
     expect(html).toContain('href="/admin/sop-builder/rush-month?tab=version&amp;focus=current-version"');
@@ -170,6 +178,27 @@ describe("admin SOP builder page", () => {
     );
     expect(html).toContain("Current draft");
     expect(html).toContain("Current live version");
+    expect(html).toContain("Local draft session");
+    expect(html).toContain("Draft session comparison");
+    expect(html).toContain("Current draft vs local draft session");
+    expect(html).toContain("Current draft baseline");
+    expect(html).toContain("Draft session package");
+    expect(html).toContain("Draft session review lanes");
+    expect(html).toContain("Grouped packet review inside the builder");
+    expect(html).toContain("Runtime controls");
+    expect(html).toContain("Feature flags and rollout posture");
+    expect(html).toContain("Audit and rollout posture");
+    expect(html).toContain("Integration boundaries and audit expectations");
+    expect(html).toContain("Campaign template linkage");
+    expect(html).toContain("Committee owner mapping");
+    expect(html).toContain("Workflow permission posture");
+    expect(html).toContain("Local draft proposals");
+    expect(html).toContain("Backend config proposals feeding this workflow");
+    expect(html).toContain("local draft session");
+    expect(html).toContain("Edit draft session");
+    expect(html).toContain("Committee registry campaign link review");
+    expect(html).toContain("Permissions registry workflow operation review");
+    expect(html).toContain("Edit draft proposal");
     expect(
       (
         html.match(
@@ -177,6 +206,348 @@ describe("admin SOP builder page", () => {
         ) ?? []
       ).length,
     ).toBeGreaterThanOrEqual(3);
+  });
+
+  it("opens a local draft proposal as a builder version focus record", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP builder local draft proposal."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "version",
+          focus: "proposal-permission-planning-goal-setting-publish_approve",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Selected version or source record");
+    expect(html).toContain("Local draft proposal");
+    expect(html).toContain("publish approve permission review");
+    expect(html).toContain("Open source route");
+    expect(html).toContain(
+      'href="/admin/permissions?section=routes&amp;focus=admin_backend&amp;permission=planning-goal-setting-publish_approve"',
+    );
+  });
+
+  it("opens the mock-safe draft proposal editor on the version lane", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP builder draft proposal editor."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "version",
+          focus: "proposal-permission-planning-goal-setting-publish_approve",
+          mode: "edit_proposal",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Mock-safe builder action");
+    expect(html).toContain("Edit draft proposal:");
+    expect(html).toContain("Allowed roles");
+    expect(html).toContain("Allowed scopes");
+    expect(html).toContain("Authority review lane");
+    expect(html).toContain("draft proposal");
+    expect(html).toContain("Return to workflow");
+  });
+
+  it("opens the mock-safe draft session editor on the version lane", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP builder draft session editor."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "version",
+          focus: "draft-session-planning-goal-setting",
+          mode: "edit_draft_session",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Mock-safe builder action");
+    expect(html).toContain("Edit draft session:");
+    expect(html).toContain("Proposal count");
+    expect(html).toContain("Review lanes");
+    expect(html).toContain("Affected roles");
+    expect(html).toContain("Bundled change themes");
+    expect(html).toContain("draft session");
+    expect(html).toContain("Return to workflow");
+  });
+
+  it("renders structured import review posture for Planning / Goal Setting", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP builder structured import posture."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "version",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Structured import review");
+    expect(html).toContain("v0 reviewed import posture");
+    expect(html).toContain("draft reviewed");
+    expect(html).toContain("package-backed structured draft");
+    expect(html).toContain("0 source gaps");
+    expect(html).toContain("1-32 coach pages");
+    expect(html).toContain("184-213 chapter pages");
+    expect(html).toContain("Imported phases");
+    expect(html).toContain("Imported steps");
+    expect(html).toContain("Unresolved import warnings");
+    expect(html).toContain("Imported source coverage");
+    expect(html).toContain("Script templates");
+    expect(html).toContain("Resource links");
+    expect(html).toContain("workflow.planning_goal_setting.builder_preview");
+    expect(html).toContain("workflow.planning_goal_setting.runtime_reads");
+    expect(html).toContain("audit.record.created");
+    expect(html).toContain("crm.coach_decisions");
+    expect(html).toContain("Goal alignment meeting prompt");
+    expect(html).toContain("Run A source map");
+    expect(html).toContain("Selected version or source record");
+  });
+
+  it("shows repo-defined import provenance for Grow the Movement on the version tab", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing builder repo-defined import posture."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "grow-the-movement" }),
+        searchParams: Promise.resolve({
+          tab: "version",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Structured import review");
+    expect(html).toContain("repo-defined structured draft");
+    expect(html).toContain("source gaps");
+    expect(html).toContain(
+      "still leans on repo-defined campaign artifacts where the rollout package has source gaps",
+    );
+  });
+
+  it("renders Planning / Goal Setting steps from the imported template surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing template-driven Planning / Goal Setting steps."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "steps",
+          focus: "planning-goal-brief",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Imported phases");
+    expect(html).toContain("Structured imported draft");
+    expect(html).toContain("Define the chapter goal and deadline");
+    expect(html).toContain("Goal brief is specific, owned, and time-bound");
+    expect(html).toContain("Expected Outputs");
+    expect(html).toContain("chapter_goal");
+    expect(html).toContain("Open linked route");
+  });
+
+  it("renders Planning / Goal Setting role matrix from the imported template surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing template-driven Planning / Goal Setting role matrix."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "role-matrix",
+          focus: "planning-president-chapter",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Imported workflow behavior");
+    expect(html).toContain("Role Matrix");
+    expect(html).toContain("Define the chapter goal and deadline");
+    expect(html).toContain("Goals set");
+    expect(html).toContain("campaign.phase.started");
+    expect(html).toContain("Open role route");
+  });
+
+  it("renders Planning / Goal Setting completion rules from the imported template surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing template-driven Planning / Goal Setting completion."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "completion",
+          focus: "planning-coach-approval",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Workflow completion gates");
+    expect(html).toContain("Imported completion rows");
+    expect(html).toContain("Imported risk posture");
+    expect(html).toContain("Escalation follow-through");
+    expect(html).toContain("Closeout requirements");
+    expect(html).toContain("Escalate missing owner gaps");
+    expect(html).toContain("Approved goal brief");
+    expect(html).toContain("Coach readiness validation");
+    expect(html).toContain("Human review gates remain explicit");
+    expect(html).toContain("Selected workflow rule");
+  });
+
+  it("renders Planning / Goal Setting points and KPI rules from the imported template surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing template-driven Planning / Goal Setting points and KPI."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "points-kpi",
+          focus: "points-president",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Recognition and measurement rules");
+    expect(html).toContain("roles with points");
+    expect(html).toContain("Goals set");
+    expect(html).toContain("40 points");
+    expect(html).toContain("Selected points or KPI rule");
+  });
+
+  it("renders Planning / Goal Setting communications from the imported template surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing template-driven Planning / Goal Setting comms."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "comms",
+          focus: "planning-coach-checkin-reminder",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Communication triggers");
+    expect(html).toContain("coach and president");
+    expect(html).toContain("approval required");
+    expect(html).toContain("Integration boundary");
+    expect(html).toContain("kpi.event.created");
+    expect(html).toContain("Selected communication trigger");
   });
 
   it("opens preview scenarios through role-correct local preview handoffs", async () => {
@@ -274,7 +645,7 @@ describe("admin SOP builder page", () => {
     );
     expect(completionHtml).toContain("Preview as department staff");
     expect(completionHtml).toContain(
-      'href="/local-preview?selectedEmail=admin%40mymedlife.test&amp;returnTo=%2Fstaff%3Fview%3Dproof_ugc"',
+      'href="/local-preview?selectedEmail=general.staff%40mymedlife.test&amp;returnTo=%2Fstaff%3Fview%3Dproof_ugc"',
     );
 
     const previewHtml = renderToStaticMarkup(
@@ -292,6 +663,42 @@ describe("admin SOP builder page", () => {
     );
     expect(previewHtml).toContain(
       'href="/admin/sop-builder/rush-month?tab=preview&amp;focus=rush-member-loop"',
+    );
+  });
+
+  it("renders Planning / Goal Setting preview from the imported template surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing template-driven Planning / Goal Setting preview."),
+    );
+
+    const { default: AdminSopBuilderPage } = await import(
+      "@/app/admin/sop-builder/[campaignSlug]/page"
+    );
+    const html = renderToStaticMarkup(
+      await AdminSopBuilderPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+        searchParams: Promise.resolve({
+          tab: "preview",
+          focus: "planning-goal-brief",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Preview by role");
+    expect(html).toContain("5 preview scenarios");
+    expect(html).toContain("Define the chapter goal and deadline");
+    expect(html).toContain("Leadership goal note");
+    expect(html).toContain("Goals set");
+    expect(html).toContain("40 points");
+    expect(html).toContain("Open raw route");
+    expect(html).toContain(
+      'href="/local-preview?selectedEmail=leader.a%40mymedlife.test&amp;returnTo=%2Fchapter%3Fview%3Doverview"',
     );
   });
 
@@ -357,6 +764,11 @@ describe("admin SOP builder page", () => {
     expect(html).toContain("Points &amp; KPI Impact");
     expect(html).toContain("Recognition and measurement rules");
     expect(html).toContain("Role-based points");
+    expect(html).toContain("Imported KPI rules");
+    expect(html).toContain("KPI rules");
+    expect(html).toContain("Leads Captured");
+    expect(html).toContain("leads_captured");
+    expect(html).toContain("80");
     expect(html).toContain("Approval Before Points");
     expect(html).toContain("Leaderboard Visible");
     expect(html).toContain("Caps / Manual Override");
@@ -459,7 +871,7 @@ describe("admin SOP builder page", () => {
     expect(versionHtml).toContain(
       'href="/admin/sop-builder/rush-month?tab=version&amp;focus=version-0"',
     );
-    expect(versionHtml).toContain("Selected version detail");
+    expect(versionHtml).toContain("Selected version or source record");
   });
 
   it("turns visible builder controls into route-owned mock-safe action states", async () => {

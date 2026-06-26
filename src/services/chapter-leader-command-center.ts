@@ -654,7 +654,7 @@ export type ChapterLeaderCommandCenterOptions = {
 const mockLeaderProfileId = "member-sofia-profile";
 
 const commandCenterViewLabels: Record<ChapterLeaderCommandCenterView, string> = {
-  overview: "Chapter Home",
+  overview: "Overview",
   leaderboard: "Leaderboard",
   members: "Member Pipeline",
   member_profile: "Member Profile",
@@ -1021,11 +1021,11 @@ const memberProfileDetailById: Record<string, Omit<
       },
     ],
     leadershipActions: [
-      { label: "Promote to Chair", href: "/chapter?view=succession&member=member-sofia-president", tone: "primary" },
-      { label: "Schedule Values Interview", href: "/chapter?view=member_profile&member=member-sofia-president&quickAction=schedule_values_interview", tone: "secondary" },
-      { label: "Assign Leadership Action", href: "/chapter?view=member_profile&member=member-sofia-president&quickAction=assign_leadership_action", tone: "secondary" },
-      { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-sofia-president", tone: "secondary" },
-      { label: "Add Note", href: "/chapter?view=member_profile&member=member-sofia-president&quickAction=add_leader_note", tone: "secondary" },
+      { label: "Promote to Chair", href: "/leader?view=succession&member=member-sofia-president", tone: "primary" },
+      { label: "Schedule Values Interview", href: "/leader?view=member_profile&member=member-sofia-president&quickAction=schedule_values_interview", tone: "secondary" },
+      { label: "Assign Leadership Action", href: "/leader?view=member_profile&member=member-sofia-president&quickAction=assign_leadership_action", tone: "secondary" },
+      { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-sofia-president", tone: "secondary" },
+      { label: "Add Note", href: "/leader?view=member_profile&member=member-sofia-president&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-zara": {
@@ -1078,11 +1078,11 @@ const memberProfileDetailById: Record<string, Omit<
       },
     ],
     leadershipActions: [
-      { label: "Promote to Chair", href: "/chapter?view=succession&member=member-zara", tone: "primary" },
-      { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-zara", tone: "secondary" },
+      { label: "Promote to Chair", href: "/leader?view=succession&member=member-zara", tone: "primary" },
+      { label: "Schedule Values Interview", href: "/leader?view=members&member=member-zara", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "secondary" },
-      { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-zara", tone: "secondary" },
-      { label: "Add Note", href: "/chapter?view=member_profile&member=member-zara&quickAction=add_leader_note", tone: "secondary" },
+      { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-zara", tone: "secondary" },
+      { label: "Add Note", href: "/leader?view=member_profile&member=member-zara&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-ivy": {
@@ -1135,11 +1135,11 @@ const memberProfileDetailById: Record<string, Omit<
       },
     ],
     leadershipActions: [
-      { label: "Promote to Chair", href: "/chapter?view=succession&member=member-ivy", tone: "secondary" },
-      { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-ivy&pipeline=follow_up", tone: "primary" },
+      { label: "Promote to Chair", href: "/leader?view=succession&member=member-ivy", tone: "secondary" },
+      { label: "Schedule Values Interview", href: "/leader?view=members&member=member-ivy&pipeline=follow_up", tone: "primary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "secondary" },
-      { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-ivy", tone: "secondary" },
-      { label: "Add Note", href: "/chapter?view=member_profile&member=member-ivy&quickAction=add_leader_note", tone: "secondary" },
+      { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-ivy", tone: "secondary" },
+      { label: "Add Note", href: "/leader?view=member_profile&member=member-ivy&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-maya": {
@@ -1182,11 +1182,11 @@ const memberProfileDetailById: Record<string, Omit<
       },
     ],
     leadershipActions: [
-      { label: "Promote to Chair", href: "/chapter?view=succession&member=member-maya", tone: "secondary" },
-      { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-maya", tone: "secondary" },
+      { label: "Promote to Chair", href: "/leader?view=succession&member=member-maya", tone: "secondary" },
+      { label: "Schedule Values Interview", href: "/leader?view=members&member=member-maya", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
-      { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-maya", tone: "secondary" },
-      { label: "Add Note", href: "/chapter?view=member_profile&member=member-maya&quickAction=add_leader_note", tone: "secondary" },
+      { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-maya", tone: "secondary" },
+      { label: "Add Note", href: "/leader?view=member_profile&member=member-maya&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-leo": {
@@ -1229,11 +1229,11 @@ const memberProfileDetailById: Record<string, Omit<
       },
     ],
     leadershipActions: [
-      { label: "Promote to Chair", href: "/chapter?view=succession&member=member-leo", tone: "secondary" },
-      { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-leo", tone: "secondary" },
+      { label: "Promote to Chair", href: "/leader?view=succession&member=member-leo", tone: "secondary" },
+      { label: "Schedule Values Interview", href: "/leader?view=members&member=member-leo", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
-      { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-leo", tone: "primary" },
-      { label: "Add Note", href: "/chapter?view=member_profile&member=member-leo&quickAction=add_leader_note", tone: "secondary" },
+      { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-leo", tone: "primary" },
+      { label: "Add Note", href: "/leader?view=member_profile&member=member-leo&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-nina": {
@@ -1276,11 +1276,11 @@ const memberProfileDetailById: Record<string, Omit<
       },
     ],
     leadershipActions: [
-      { label: "Promote to Chair", href: "/chapter?view=succession&member=member-nina", tone: "secondary" },
-      { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-nina", tone: "secondary" },
+      { label: "Promote to Chair", href: "/leader?view=succession&member=member-nina", tone: "secondary" },
+      { label: "Schedule Values Interview", href: "/leader?view=members&member=member-nina", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
-      { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-nina", tone: "secondary" },
-      { label: "Add Note", href: "/chapter?view=member_profile&member=member-nina&quickAction=add_leader_note", tone: "secondary" },
+      { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-nina", tone: "secondary" },
+      { label: "Add Note", href: "/leader?view=member_profile&member=member-nina&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
   "member-omar": {
@@ -1323,11 +1323,11 @@ const memberProfileDetailById: Record<string, Omit<
       },
     ],
     leadershipActions: [
-      { label: "Promote to Chair", href: "/chapter?view=succession&member=member-omar", tone: "secondary" },
-      { label: "Schedule Values Interview", href: "/chapter?view=members&member=member-omar", tone: "secondary" },
+      { label: "Promote to Chair", href: "/leader?view=succession&member=member-omar", tone: "secondary" },
+      { label: "Schedule Values Interview", href: "/leader?view=members&member=member-omar", tone: "secondary" },
       { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
-      { label: "Nominate for E-Board", href: "/chapter?view=succession&member=member-omar", tone: "secondary" },
-      { label: "Add Note", href: "/chapter?view=member_profile&member=member-omar&quickAction=add_leader_note", tone: "secondary" },
+      { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-omar", tone: "secondary" },
+      { label: "Add Note", href: "/leader?view=member_profile&member=member-omar&quickAction=add_leader_note", tone: "secondary" },
     ],
   },
 };
@@ -1846,7 +1846,7 @@ function getChapterLeaderSourceContext(
         eyebrow: "Member app handoff",
         title: `Opened from ${context.originChapterName} into Leader Hub`,
         summary:
-          `This leadership view was opened from the ${context.originChapterName} member home via the app's Switch View buttons. Keep review anchored to the student-facing Rush Month loop, with a clear path back to Student view instead of treating this like a disconnected dashboard.`,
+          `This leadership view was opened from the ${context.originChapterName} member-home role handoff. Keep review anchored to the student-facing Rush Month loop, with a clear path back to Student view instead of treating this like a disconnected dashboard.`,
         preview: {
           heading: "Leader Hub",
           chapterLabel: context.originChapterName,
@@ -2246,7 +2246,7 @@ export function buildChapterLeaderCommandCenterHref(
   }
 
   const query = searchParams.toString();
-  return `/chapter?${query}`;
+  return `/leader?${query}`;
 }
 
 export function buildChapterLeaderAssignmentFlowHref(options: {

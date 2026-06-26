@@ -16,10 +16,10 @@ export function RouteCoverageSummaryPanel({
     summary.counts.unknownSmokeRoutes > 0;
 
   return (
-    <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
+    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
             Route coverage
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{summary.title}</h2>
@@ -30,8 +30,8 @@ export function RouteCoverageSummaryPanel({
         <span
           className={
             hasUnknownRoutes
-              ? "rounded-full border border-rose-300/30 bg-rose-300/15 px-3 py-1 text-xs font-semibold text-rose-100"
-              : "rounded-full border border-emerald-300/30 bg-emerald-300/15 px-3 py-1 text-xs font-semibold text-emerald-100"
+              ? "rounded-full border border-blue-300/30 bg-blue-300/15 px-3 py-1 text-xs font-semibold text-blue-100"
+              : "rounded-full border border-blue-300/30 bg-blue-300/15 px-3 py-1 text-xs font-semibold text-blue-100"
           }
         >
           {hasUnknownRoutes ? "Needs route fix" : "No broken route references"}
@@ -53,7 +53,7 @@ export function RouteCoverageSummaryPanel({
           <UnknownList label="Unknown smoke routes" items={summary.unknownSmokeRoutes} />
         </div>
       ) : (
-        <p className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/54">
+        <p className="mt-4 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
           Current role navigation, mobile shortcuts, and the manual smoke manifest
           all point at known local routes. This does not approve release or
           enable any writes.
@@ -65,7 +65,7 @@ export function RouteCoverageSummaryPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -76,8 +76,8 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function UnknownList({ label, items }: { label: string; items: string[] }) {
   return (
-    <div className="rounded-2xl border border-rose-300/20 bg-rose-300/10 p-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-rose-100">
+    <div className="rounded-2xl border border-blue-300/20 bg-blue-300/10 p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-100">
         {label}
       </p>
       <ul className="mt-2 space-y-1 text-sm text-white/70">

@@ -71,15 +71,13 @@ describe("environment safety summary", () => {
       MYMEDLIFE_AUTH_MODE: "staging_supabase",
       MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
       MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE: "true",
-      NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: "staging-anon-key",
     });
 
     expect(summary.counts.browserWritesEnabled).toBe(1);
     expect(summary.counts.externalWritesEnabled).toBe(0);
     expect(
       summary.items.filter((item) => item.status === "watch").map((item) => item.label),
-    ).toEqual(["Supabase review auth", "Action-start write"]);
+    ).toEqual(["Action-start write"]);
   });
 
   it("counts approved local proof metadata writes without enabling uploads or external sends", () => {

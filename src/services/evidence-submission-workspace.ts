@@ -21,6 +21,7 @@ import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getSopWorkflowRuntime } from "@/services/sop-workflow-runtime";
 import type { Assignment, EvidenceItem, IntegrationEvent } from "@/shared/types/domain";
 
 export type EvidenceSubmissionStatus =
@@ -103,6 +104,9 @@ export type EvidenceSubmissionWorkspace = {
   };
 };
 
+type WorkflowRuntimeStep =
+  NonNullable<ReturnType<typeof getSopWorkflowRuntime>>["steps"][number];
+
 export function getEvidenceSubmissionWorkspace(
   actor: LocalActorContext,
   allAssignments: Assignment[] = assignments,
@@ -117,8 +121,16 @@ export function getEvidenceSubmissionWorkspace(
   const visibleAssignments = allAssignments.filter((assignment) =>
     canReadAssignment(actor, assignment),
   );
+  const runtime = getSopWorkflowRuntime("rush-month");
+  const proofRuntimeStep =
+    runtime?.steps.find((step) => step.route === "/rush-month/evidence") ?? null;
   const baseRows = visibleAssignments.map((assignment) =>
-    toSubmissionRow(actor, assignment, findEvidenceForAssignment(allEvidence, assignment.id)),
+    toSubmissionRow(
+      actor,
+      assignment,
+      findEvidenceForAssignment(allEvidence, assignment.id),
+      proofRuntimeStep,
+    ),
   );
   const nextSubmission = pickNextSubmission(baseRows);
   const rows = baseRows.map((row) => ({
@@ -137,27 +149,47 @@ export function getEvidenceSubmissionWorkspace(
   return {
     canReadWorkspace: true,
     title: getTitle(surfaceFamily),
-    summary:
-      "This route turns proof and testimonial work into a clear follow-through queue. Students and chapter operators can see what to prepare next, what is waiting on review, and what still needs a stronger story.",
+    summary: runtime
+      ? buildRuntimeWorkspaceSummary(runtime, proofRuntimeStep)
+      : "This route turns proof and testimonial work into a clear follow-through queue. Students and chapter operators can see what to prepare next, what is waiting on review, and what still needs a stronger story.",
     nextSubmission: rows.find((row) => row.isRecommended) ?? null,
     submissionPacket,
     rows,
-    futureStructuredEvents: buildFutureEvents(actor),
-    blockedWrites: [
-      "proof summary saves",
-      "file uploads",
-      "broader proof publishing",
-      "points updates",
-      "KPI updates",
-      "member reminders",
-      "warehouse proof exports",
-      "AI proof summaries",
-    ],
-    safetyNotes: [
-      "Use the linked action detail to keep the proof tied to the actual assignment.",
-      "Proof still starts as a simple summary and link until storage, consent, audit, and rollback approvals are in place.",
-      "No HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, or AI handoff runs from this route.",
-    ],
+    futureStructuredEvents:
+      runtime?.futureStructuredEvents.length
+        ? [
+            {
+              id: `${actor.user.id}-proof-status-viewed`,
+              eventType: "proof_submission_queue_viewed",
+              title: "Future proof queue viewed",
+              destination: "internal",
+              status: "disabled",
+              detail:
+                "A future production view can record that the actor reviewed proof submission needs.",
+              occurredAt: "local-mock-time",
+            },
+            ...pickProofWorkspaceRuntimeEvents(runtime.futureStructuredEvents),
+          ]
+        : buildFutureEvents(actor),
+    blockedWrites: runtime
+      ? buildRuntimeBlockedWrites(runtime, proofRuntimeStep)
+      : [
+          "proof summary saves",
+          "file uploads",
+          "broader proof publishing",
+          "points updates",
+          "KPI updates",
+          "member reminders",
+          "warehouse proof exports",
+          "AI proof summaries",
+        ],
+    safetyNotes: runtime
+      ? buildRuntimeSafetyNotes(runtime)
+      : [
+          "Use the linked action detail to keep the proof tied to the actual assignment.",
+          "Proof still starts as a simple summary and link until storage, consent, audit, and rollback approvals are in place.",
+          "No HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, or AI handoff runs from this route.",
+        ],
     counts: {
       total: rows.length,
       readyToSubmit: rows.filter((row) => row.status === "ready_to_submit").length,
@@ -175,6 +207,24 @@ export function getEvidenceSubmissionWorkspace(
       submissionPackets: submissionPacket ? 1 : 0,
     },
   };
+}
+
+function pickProofWorkspaceRuntimeEvents(
+  events: readonly IntegrationEvent[],
+): readonly IntegrationEvent[] {
+  const orderedEventTypes = [
+    "luma_event_linked",
+    "luma_attendance_import_mocked",
+    "kpi_event_recorded",
+    "evidence_submitted",
+    "audit_log_recorded",
+    "hubspot_handoff_mocked",
+  ] as const;
+
+  return orderedEventTypes.flatMap((eventType) => {
+    const match = events.find((event) => event.eventType === eventType);
+    return match ? [match] : [];
+  });
 }
 
 function buildSubmissionPacket(
@@ -255,6 +305,7 @@ function toSubmissionRow(
   actor: LocalActorContext,
   assignment: Assignment,
   evidence: EvidenceItem | undefined,
+  proofRuntimeStep: WorkflowRuntimeStep | null,
 ): EvidenceSubmissionRow {
   const status = getSubmissionStatus(assignment, evidence);
   const canSubmit = canSubmitProofForAssignment(actor, assignment);
@@ -269,7 +320,7 @@ function toSubmissionRow(
     dueLabel: assignment.dueLabel,
     evidenceRequired: assignment.evidenceRequired,
     status,
-    ...getStatusCopy(status, assignment),
+    ...getStatusCopy(status, assignment, proofRuntimeStep),
     actionHref: getEvidenceActionHref(actor, assignment.id),
     canPrepareNow,
     canUseLocalWritePath: canPrepareNow,
@@ -277,7 +328,7 @@ function toSubmissionRow(
     disabledReason: getDisabledReason(canSubmit, status),
     storyPrompt: proofHandoff.storyPrompt,
     preparationChecklist: proofHandoff.checklist,
-    reviewLane: getReviewLane(status, assignment),
+    reviewLane: getReviewLane(status, assignment, proofRuntimeStep),
     proofIntakeHref: getEvidenceProofIntakeHref(actor, assignment.id, proofHandoff.phase, proofHandoff.nextBestAction.href),
     proofIntakeLabel: proofHandoff.nextBestAction.label,
     disabledControls: [
@@ -315,6 +366,7 @@ function getSubmissionStatus(
 function getStatusCopy(
   status: EvidenceSubmissionStatus,
   assignment: Assignment,
+  proofRuntimeStep: WorkflowRuntimeStep | null,
 ): Pick<EvidenceSubmissionRow, "nextStep" | "plainEnglishStatus" | "statusLabel"> {
   switch (status) {
     case "action_not_ready":
@@ -328,8 +380,11 @@ function getStatusCopy(
       return {
         statusLabel: "Ready for proof",
         plainEnglishStatus:
+          proofRuntimeStep?.whyItMatters ??
           "The action is active and needs proof or a testimonial before it can move to review.",
-        nextStep: `Prepare evidence for: ${assignment.evidenceRequired}`,
+        nextStep: proofRuntimeStep
+          ? `Prepare evidence for: ${assignment.evidenceRequired}. Completion signal: ${proofRuntimeStep.completionSignal}`
+          : `Prepare evidence for: ${assignment.evidenceRequired}`,
       };
     case "waiting_review":
       return {
@@ -411,12 +466,15 @@ function getEvidenceProofIntakeHref(
 function getReviewLane(
   status: EvidenceSubmissionStatus,
   assignment: Assignment,
+  proofRuntimeStep: WorkflowRuntimeStep | null,
 ): string {
   switch (status) {
     case "action_not_ready":
       return `${assignment.ownerRole} starts the action before proof moves to review.`;
     case "ready_to_submit":
-      return `${assignment.ownerRole} prepares the proof story; chapter leadership and HQ review later.`;
+      return proofRuntimeStep
+        ? `${assignment.ownerRole} prepares the proof story for the "${proofRuntimeStep.title}" workflow step; chapter leadership and HQ review later.`
+        : `${assignment.ownerRole} prepares the proof story; chapter leadership and HQ review later.`;
     case "waiting_review":
       return "Chapter leadership and HQ review the submitted proof posture.";
     case "changes_requested":
@@ -486,6 +544,74 @@ function buildFutureEvents(actor: LocalActorContext): IntegrationEvent[] {
       occurredAt: "local-mock-time",
     },
   ];
+}
+
+function buildRuntimeBlockedWrites(
+  runtime: NonNullable<ReturnType<typeof getSopWorkflowRuntime>>,
+  proofRuntimeStep:
+    | NonNullable<ReturnType<typeof getSopWorkflowRuntime>>["steps"][number]
+    | null,
+) {
+  const outboxBlocks = runtime.disabledOutboxItems.map((item) => {
+    switch (item.destination) {
+      case "n8n":
+        return "member reminders";
+      case "warehouse":
+        return "warehouse proof exports";
+      case "HubSpot":
+        return "broader proof publishing";
+      case "Luma":
+        return "external handoff";
+    }
+  });
+
+  return unique([
+    "proof summary saves",
+    "file uploads",
+    "broader proof publishing",
+    "points updates",
+    "KPI updates",
+    "AI proof summaries",
+    ...(proofRuntimeStep?.approvalRequired ? ["leader and HQ review writes"] : []),
+    ...outboxBlocks,
+  ]);
+}
+
+function buildRuntimeSafetyNotes(
+  runtime: NonNullable<ReturnType<typeof getSopWorkflowRuntime>>,
+) {
+  const currentPhaseNote = runtime.currentPhase?.objective
+    ? `Current phase objective: ${runtime.currentPhase.objective}`
+    : null;
+
+  return unique([
+    "Use the linked action detail to keep the proof tied to the actual assignment.",
+    "Proof still starts as a simple summary and link until storage, consent, audit, and rollback approvals are in place.",
+    ...(currentPhaseNote ? [currentPhaseNote] : []),
+    ...runtime.safetyNotes,
+  ]);
+}
+
+function buildRuntimeWorkspaceSummary(
+  runtime: NonNullable<ReturnType<typeof getSopWorkflowRuntime>>,
+  proofRuntimeStep:
+    | NonNullable<ReturnType<typeof getSopWorkflowRuntime>>["steps"][number]
+    | null,
+) {
+  const stepSummary = proofRuntimeStep?.whyItMatters
+    ? `${proofRuntimeStep.whyItMatters}`
+    : "Proof and testimonial work should stay tied to the real student action, not float away into a generic upload queue.";
+  const phaseExit = runtime.currentPhase?.exitCriteria[0]
+    ? `Current phase exit signal: ${runtime.currentPhase.exitCriteria[0]}`
+    : null;
+
+  return [stepSummary, phaseExit]
+    .filter((value): value is string => Boolean(value))
+    .join(" ");
+}
+
+function unique<T>(values: readonly T[]) {
+  return [...new Set(values)];
 }
 
 function getTitle(surfaceFamily: ActorSurfaceFamily): string {

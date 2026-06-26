@@ -16,10 +16,10 @@ export function LeaderProofDecisionWorkspacePanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-violet-300/20 bg-violet-300/10 p-5">
+    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-violet-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
             Chapter decisions
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{workspace.title}</h2>
@@ -43,7 +43,7 @@ export function LeaderProofDecisionWorkspacePanel({
         ))}
       </div>
 
-      <p className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/58">
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/58">
         {workspace.finalPrompt}
       </p>
     </section>
@@ -52,7 +52,7 @@ export function LeaderProofDecisionWorkspacePanel({
 
 function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-black/20 p-4">
+    <article className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -84,7 +84,7 @@ function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
         />
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
+      <div className="mt-4 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
@@ -98,7 +98,7 @@ function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-2">
           {row.reviewRubric.map((item) => (
-            <div key={`${row.key}-${item.label}`} className="rounded-2xl bg-black/20 p-3">
+            <div key={`${row.key}-${item.label}`} className="rounded-2xl bg-[#bfdbfe]/40 p-3">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/44">
                 {item.label}
               </p>
@@ -120,7 +120,7 @@ function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
               type="button"
               disabled
               title={option.disabledReason}
-              className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-semibold text-white/52 disabled:cursor-not-allowed"
+              className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1.5 text-xs font-semibold text-white/52 disabled:cursor-not-allowed"
             >
               {option.label}
             </button>
@@ -138,7 +138,7 @@ function ProofDecisionCard({ row }: { row: LeaderProofDecisionRow }) {
 
 function DecisionFact({ body, title }: { body: string; title: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
+    <div className="rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {title}
       </p>
@@ -149,7 +149,7 @@ function DecisionFact({ body, title }: { body: string; title: string }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -169,11 +169,11 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: LeaderProofDecisionStatus }) {
   const className =
     status === "ready_for_approval"
-      ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
+      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
       : status === "needs_changes"
-        ? "border-amber-300/30 bg-amber-300/15 text-amber-100"
+        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
         : status === "already_approved"
-          ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
+          ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
           : "border-white/10 bg-white/10 text-white/70";
 
   return (

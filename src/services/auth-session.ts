@@ -111,7 +111,9 @@ export function getAuthDisplayName(user: AuthenticatedUser): string {
   );
 }
 
-export function normalizeLoginRedirect(value: FormDataEntryValue | null): string {
+export function normalizeLoginRedirect(
+  value: FormDataEntryValue | null | undefined,
+): string {
   if (typeof value !== "string") {
     return "/";
   }

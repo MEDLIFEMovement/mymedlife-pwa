@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
+import { SltPrepShell } from "@/components/slt-prep-shell";
 import { SltPrepTonePill } from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
@@ -48,7 +48,7 @@ export default async function SltPrepChecklistDetailPage({
 
   if (!workspace.canReadDetail || !workspace.item || !workspace.traveler) {
     return (
-      <AppShell
+      <SltPrepShell
         actor={actor}
         mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
           source: routeSource ?? undefined,
@@ -72,7 +72,7 @@ export default async function SltPrepChecklistDetailPage({
           })}
           nextLabel="Back to checklist"
         />
-      </AppShell>
+      </SltPrepShell>
     );
   }
 
@@ -115,7 +115,7 @@ export default async function SltPrepChecklistDetailPage({
   }));
 
   return (
-    <AppShell
+    <SltPrepShell
       actor={actor}
       mobileQuickItemsOverride={getSltTripPrepMobileQuickNavItems({
         source: routeSource ?? undefined,
@@ -219,7 +219,7 @@ export default async function SltPrepChecklistDetailPage({
                   <InputField label="Departure Time" placeholder="12:30 PM" />
                 </div>
                 <InputField label="Airport" placeholder="e.g., Lima Jorge Chávez" />
-                <div className="rounded-[1.2rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
+                <div className="rounded-[1.2rem] border border-dashed border-slate-300 bg-[#dbeafe] px-4 py-6 text-center">
                   <p className="text-sm font-medium text-slate-700">
                     Upload Confirmation (Optional)
                   </p>
@@ -234,7 +234,7 @@ export default async function SltPrepChecklistDetailPage({
             <section className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
               <h2 className="text-lg font-semibold text-slate-950">What happens next</h2>
               <p className="mt-3 text-sm leading-6 text-slate-600">{workspace.item.nextStep}</p>
-              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4">
+              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                   Evidence requirement
                 </p>
@@ -254,7 +254,7 @@ export default async function SltPrepChecklistDetailPage({
             </Link>
             <Link
               href={supportHref}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm font-semibold text-slate-700"
             >
               Need help? Contact support
             </Link>
@@ -263,9 +263,9 @@ export default async function SltPrepChecklistDetailPage({
           {search.preview === "complete" ? (
             <section
               id="completion-preview"
-              className="rounded-[1.5rem] border border-emerald-200 bg-emerald-50 p-4"
+              className="rounded-[1.5rem] border border-blue-200 bg-blue-50 p-4"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
                 Completion preview
               </p>
               <h2 className="mt-2 text-lg font-semibold text-slate-950">
@@ -281,13 +281,13 @@ export default async function SltPrepChecklistDetailPage({
                   href={buildSltTripPrepRouteHref("/slt-prep/staff", {
                     travelerId: search.traveler,
                   })}
-                  className="inline-flex rounded-full border border-emerald-300 bg-white px-4 py-2 text-sm font-semibold text-emerald-700"
+                  className="inline-flex rounded-full border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-700"
                 >
                   Open staff dashboard
                 </Link>
                 <Link
                   href={completionBackHref}
-                  className="inline-flex rounded-full border border-transparent bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700"
+                  className="inline-flex rounded-full border border-transparent bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700"
                 >
                   {completionBackLabel}
                 </Link>
@@ -302,7 +302,7 @@ export default async function SltPrepChecklistDetailPage({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50"
+                  className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 transition hover:bg-[#dbeafe]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -317,7 +317,7 @@ export default async function SltPrepChecklistDetailPage({
           </section>
         </div>
       </section>
-    </AppShell>
+    </SltPrepShell>
   );
 }
 
@@ -335,7 +335,7 @@ function InputField({
         readOnly
         aria-label={label}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-[1rem] border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-700 outline-none"
+        className="mt-2 w-full rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-3 py-3 text-sm text-slate-700 outline-none"
       />
     </label>
   );
@@ -343,7 +343,7 @@ function InputField({
 
 function DetailStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.15rem] border border-slate-200 bg-slate-50 px-3 py-3">
+    <div className="rounded-[1.15rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
         {label}
       </p>

@@ -1,4 +1,4 @@
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { PilotScopePlannerPanel } from "@/components/pilot-scope-planner-panel";
@@ -6,6 +6,7 @@ import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getPilotScopePlanner } from "@/services/pilot-scope-planner";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminPilotScope");
@@ -19,9 +20,12 @@ export default async function PilotScopePage() {
   const planner = getPilotScopePlanner(actor);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="pilot_scope" />
+      <AdminBackendLaneNav
+        current="pilot_scope"
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
       {planner.canReadPlanner ? (
         <PilotScopePlannerPanel planner={planner} />
       ) : (
@@ -32,6 +36,6 @@ export default async function PilotScopePage() {
           nextLabel="Back to Rush Month"
         />
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }

@@ -9,6 +9,8 @@ describe("rush month event readiness", () => {
 
     expect(workspace.canReadWorkspace).toBe(true);
     expect(workspace.title).toBe("Your Rush Month events");
+    expect(workspace.summary).toContain("Current phase objective:");
+    expect(workspace.summary).toContain("Exit signal:");
     expect(workspace.counts).toEqual({
       totalEvents: 4,
       mockLinkedLumaEvents: 1,
@@ -80,5 +82,6 @@ describe("rush month event readiness", () => {
     expect(workspace.disabledOutboxItems.map((item) => item.destination)).toEqual(
       expect.arrayContaining(["Luma", "n8n", "warehouse"]),
     );
+    expect(workspace.safetyNotes.join(" ")).toContain("Current phase objective:");
   });
 });

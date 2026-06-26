@@ -46,20 +46,20 @@ describe("Figma surface map", () => {
       {
         label: "Leader Hub",
         selectedEmail: "leader.a@mymedlife.test",
-        helper: "Chapter command center",
-        returnTo: "/chapter?view=overview&source=member_home",
+        helper: "Student leadership command center",
+        returnTo: "/leader?view=overview&source=member_home",
       },
       {
-        label: "Coach View",
+        label: "Staff View",
         selectedEmail: "coach@mymedlife.test",
-        helper: "Portfolio support view",
-        returnTo: "/coach?view=chapters&source=member_home",
+        helper: "Staff command center",
+        returnTo: "/staff?view=chapters&source=member_home",
       },
       {
         label: "Admin",
         selectedEmail: "admin@mymedlife.test",
         helper: "Admin Console",
-        returnTo: "/staff?view=admin&source=member_home",
+        returnTo: "/admin?source=member_home",
       },
     ]);
   });
@@ -69,7 +69,7 @@ describe("Figma surface map", () => {
     const overview = getMemberRushMonthCampaignOverview(actor, data);
 
     expect(overview.campaignName).toBe("Rush Month");
-    expect(overview.currentPhaseTitle).toBe("Week 1: Visibility + Lead Capture");
+    expect(overview.currentPhaseTitle).toBe("Planning: Make MEDLIFE visible on campus");
     expect(overview.kpis.map((kpi) => kpi.label)).toEqual([
       "Leads Captured",
       "Intro GBM RSVPs",
@@ -81,6 +81,13 @@ describe("Figma surface map", () => {
       "Action Committee Chairs",
       "E-Board",
       "President / VP",
+    ]);
+    expect(overview.whatGoodLooksLike.items).toEqual([
+      "Assignment can move to in progress",
+      "Proof requirements are visible before submission",
+      "Points surface stays in the same loop",
+      "Story or outcome proof stays metadata-first",
+      "Leader review confirms chapter completion",
     ]);
     expect(overview.primaryActions).toEqual({
       viewActionsHref: "/rush-month/actions?source=campaigns",
@@ -94,7 +101,7 @@ describe("Figma surface map", () => {
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
 
     expect(commandCenter.viewOptions.map((option) => option.label)).toEqual([
-      "Chapter Home",
+      "Overview",
       "Leaderboard",
       "Member Pipeline",
       "Member Profile",
@@ -225,6 +232,26 @@ describe("Figma surface map", () => {
         ?.routes,
     ).toEqual([
       "/admin",
+      "/admin/phase-2",
+      "/admin/review-path",
+      "/admin/nick-review",
+      "/admin/release-readiness",
+      "/admin/launch-gate",
+      "/admin/audit-log",
+      "/admin/integration-outbox",
+      "/admin/master-data",
+      "/admin/database-security",
+      "/admin/system-health",
+      "/admin/design-qa",
+      "/admin/operations",
+      "/admin/first-write",
+      "/admin/write-sequence",
+      "/admin/proof-write",
+      "/admin/hq-proof-write",
+      "/admin/assignment-write",
+      "/admin/coach-write",
+      "/admin/pilot-scope",
+      "/admin/staff-dry-run",
       "/admin/permissions",
       "/admin/committees",
       "/admin/workflows",

@@ -1,5 +1,5 @@
-import { campaignShells } from "@/data/mock-campaigns";
 import type { CanonicalRole } from "@/services/canonical-role-scope";
+import { getCampaignShells } from "@/services/campaign-ops-service";
 import type { LocalActorContext, LocalActorOption } from "@/services/local-actor-context";
 import { getMockLocalActorContext, localActorOptions } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
@@ -9,7 +9,10 @@ import {
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
 import type { ActorAudience } from "@/services/local-actor-context";
-import type { CampaignShellStatus } from "@/shared/types/campaigns";
+import type {
+  CampaignShellStatus,
+  CampaignWorkflowSnapshot,
+} from "@/shared/types/campaigns";
 
 export type AdminControlStatus = "ready_readonly" | "mock_only" | "blocked";
 
@@ -54,6 +57,7 @@ export type AdminCampaignTemplateInventoryItem = {
   primaryKpis: readonly string[];
   actionCommitteeLanes: readonly string[];
   integrationPosture: string;
+  workflowSnapshot: CampaignWorkflowSnapshot | null;
   adminStatus: AdminControlStatus;
   detail: string;
 };
@@ -175,16 +179,19 @@ function getChapterInventory(
 }
 
 function getCampaignTemplateInventory(): readonly AdminCampaignTemplateInventoryItem[] {
-  return campaignShells.map((shell) => ({
+  return getCampaignShells().map((shell) => ({
     slug: shell.slug,
     name: shell.name,
     status: shell.status,
     primaryKpis: shell.primaryKpis,
     actionCommitteeLanes: shell.actionCommitteeLanes,
     integrationPosture: shell.integrationPosture,
+    workflowSnapshot: shell.workflowSnapshot ?? null,
     adminStatus: "ready_readonly",
     detail:
-      "Read-only campaign shell. Template editing stays disabled until campaign admin writes are approved.",
+      shell.workflowSnapshot
+        ? "Read-only workflow-backed draft template. Template editing stays disabled until campaign admin writes are approved."
+        : "Read-only campaign shell. Template editing stays disabled until campaign admin writes are approved.",
   }));
 }
 

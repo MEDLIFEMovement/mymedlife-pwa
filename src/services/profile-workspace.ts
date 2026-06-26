@@ -287,7 +287,7 @@ function getPrimaryRoleDetail(actor: LocalActorContext): string {
     case "leader":
       return "Your role opens chapter planning, people, and follow-through views.";
     case "coach":
-      return "Your role focuses this surface on chapter support and coaching follow-through.";
+      return "Your role focuses this surface on chapter support and staff follow-through.";
     case "staff":
       return "Your role opens portfolio, review, and operations context across chapters.";
     case "ds_admin":
@@ -304,7 +304,7 @@ function getSurfaceDetail(actor: LocalActorContext): string {
     case "leader":
       return "Leadership views keep chapter health, members, events, and succession in one command center.";
     case "coach":
-      return "Coach views stay centered on assigned chapters, risks, and support notes.";
+      return "Staff views stay centered on assigned chapters, risks, and support notes.";
     case "staff":
       return "Staff views stay centered on chapter oversight, proof review, and operational follow-through.";
     case "ds_admin":

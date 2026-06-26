@@ -41,8 +41,10 @@ boundary and the order of future implementation lanes?
 Review:
 
 - PR #95 summary, scope, and validation notes.
-- `/admin/phase-2` for the issue map, review order, and approval gates.
-- `docs/architecture/phase-2-safe-prep-packet.md` for the detailed prep packet.
+- `docs/architecture/goal-163-packet-to-product-parity-audit.md` for the current
+  phase boundary, approved local posture, and live-gate stop line.
+- `docs/04-feature-traceability.md` for the active Phase 1 traceability snapshot
+  that still anchors the current review branch and PR.
 
 Approve PR #95 when reviewers agree that:
 

@@ -53,7 +53,7 @@ export function MemberRecognitionPanel({ recognition }: MemberRecognitionPanelPr
                 </p>
                 <p className="mt-1 text-xs text-slate-500">{row.roleLabel}</p>
               </div>
-              <span className="rounded-full border border-[#f7d05e]/30 bg-[#fff8df] px-3 py-1 text-sm font-semibold text-[#a16207]">
+              <span className="rounded-full border border-[#2563eb]/30 bg-[#dbeafe] px-3 py-1 text-sm font-semibold text-[#1d4ed8]">
                 {row.points} pts
               </span>
             </div>

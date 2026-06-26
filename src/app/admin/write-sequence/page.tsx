@@ -1,10 +1,11 @@
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
 import { WriteSequencePlannerPanel } from "@/components/write-sequence-planner-panel";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getWriteSequencePlanner } from "@/services/write-sequence-planner";
 
@@ -19,9 +20,12 @@ export default async function WriteSequencePage() {
   const planner = getWriteSequencePlanner(actor, data);
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <AdminBackendLaneNav current="workflows" />
+      <AdminBackendLaneNav
+        current="write_sequence"
+        showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+      />
       {planner.canReadPlanner ? (
         <WriteSequencePlannerPanel planner={planner} />
       ) : (
@@ -32,6 +36,6 @@ export default async function WriteSequencePage() {
           nextLabel="Back to Rush Month"
         />
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }

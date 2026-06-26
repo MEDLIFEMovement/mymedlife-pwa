@@ -20,7 +20,7 @@ export function RoleNextActionPanel({ brief }: RoleNextActionPanelProps) {
         <div className="flex shrink-0 flex-wrap gap-2">
           <Link
             href={brief.primaryHref}
-            className="rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+            className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
           >
             {brief.primaryLabel}
           </Link>

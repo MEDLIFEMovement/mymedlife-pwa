@@ -12,6 +12,7 @@ describe("auth session service", () => {
     const state = getDisabledAuthSessionState({
       enabled: false,
       mode: "disabled",
+      reviewEnvironment: "disabled",
       isLocalOnly: true,
       reason: "Auth is off.",
     });
@@ -76,6 +77,8 @@ describe("auth session service", () => {
 
   it("normalizes unsafe redirect targets", () => {
     expect(normalizeLoginRedirect("/rush-month")).toBe("/rush-month");
+    expect(normalizeLoginRedirect("/app/slt-prep")).toBe("/app/slt-prep");
+    expect(normalizeLoginRedirect("/staff/general")).toBe("/staff/general");
     expect(normalizeLoginRedirect("https://evil.example")).toBe("/");
     expect(normalizeLoginRedirect("//evil.example")).toBe("/");
     expect(normalizeLoginRedirect("/login")).toBe("/");

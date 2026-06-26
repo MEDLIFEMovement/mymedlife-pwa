@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">myMEDLIFE app icon</title>
-  <desc id="desc">A rounded green MEDLIFE chapter action mark on a dark background.</desc>
-  <rect width="512" height="512" rx="118" fill="#07110e"/>
-  <circle cx="148" cy="142" r="72" fill="#93e3c8" opacity="0.18"/>
-  <circle cx="368" cy="112" r="96" fill="#f0be61" opacity="0.12"/>
-  <path d="M125 337c0-92 56-160 131-160s131 68 131 160v34H125v-34Z" fill="#12352e"/>
-  <path d="M163 343c0-66 39-118 93-118s93 52 93 118" fill="none" stroke="#93e3c8" stroke-width="38" stroke-linecap="round"/>
-  <path d="M256 139v230" stroke="#f6f4ef" stroke-width="34" stroke-linecap="round"/>
-  <path d="M179 246h154" stroke="#f6f4ef" stroke-width="34" stroke-linecap="round"/>
-  <path d="M132 393h248" stroke="#52c7ab" stroke-width="32" stroke-linecap="round"/>
-  <circle cx="256" cy="139" r="36" fill="#52c7ab"/>
+  <desc id="desc">A rounded MEDLIFE chapter action mark on a white-and-blue background.</desc>
+  <rect width="512" height="512" rx="118" fill="#eff6ff"/>
+  <circle cx="148" cy="142" r="72" fill="#bfdbfe" opacity="0.18"/>
+  <circle cx="368" cy="112" r="96" fill="#93c5fd" opacity="0.16"/>
+  <path d="M125 337c0-92 56-160 131-160s131 68 131 160v34H125v-34Z" fill="#1d4ed8"/>
+  <path d="M163 343c0-66 39-118 93-118s93 52 93 118" fill="none" stroke="#2563eb" stroke-width="38" stroke-linecap="round"/>
+  <path d="M256 139v230" stroke="#eff6ff" stroke-width="34" stroke-linecap="round"/>
+  <path d="M179 246h154" stroke="#eff6ff" stroke-width="34" stroke-linecap="round"/>
+  <path d="M132 393h248" stroke="#dbeafe" stroke-width="32" stroke-linecap="round"/>
+  <circle cx="256" cy="139" r="36" fill="#dbeafe"/>
 </svg>

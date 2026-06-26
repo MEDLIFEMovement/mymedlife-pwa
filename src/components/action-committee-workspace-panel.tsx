@@ -74,7 +74,7 @@ export function ActionCommitteeWorkspacePanel({
               {summary.structuredEventsToWatch.map((eventName) => (
                 <span
                   key={eventName}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
+                  className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500"
                 >
                   {eventName}
                 </span>
@@ -83,7 +83,7 @@ export function ActionCommitteeWorkspacePanel({
           </div>
 
           <div className="app-surface-warm rounded-[1.35rem] p-4">
-            <p className="text-sm font-semibold text-[#a16207]">Safety reminders</p>
+            <p className="text-sm font-semibold text-[#1d4ed8]">Safety reminders</p>
             <ul className="mt-3 grid gap-2 text-xs leading-5 text-slate-600">
               {summary.safetyReminders.map((reminder) => (
                 <li key={reminder}>{reminder}</li>

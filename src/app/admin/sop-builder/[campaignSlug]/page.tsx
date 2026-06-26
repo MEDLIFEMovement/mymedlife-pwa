@@ -2,16 +2,45 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
-import { AppShell } from "@/components/app-shell";
+import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import {
   buildSopRolePreviewHref,
   getSopRolePreviewLabel,
 } from "@/services/sop-role-preview";
+import {
+  getSopLocalDraftProposalEditor,
+  getSopLocalDraftProposals,
+  getSopLocalDraftSession,
+  getSopLocalDraftSessionEditor,
+} from "@/services/sop-local-draft-proposals";
 import { getSopBuilderWorkspace } from "@/services/sop-builder-workspace";
+import {
+  buildWorkflowRolePreviewFields,
+  getSopWorkflowRuntime,
+  getWorkflowAccessTypeLabel,
+  getWorkflowCommunicationRows,
+  getWorkflowCommunicationSummary,
+  getWorkflowCompletionRows,
+  getWorkflowActionRequiredLabel,
+  getWorkflowDistinctRoleCount,
+  getWorkflowDistinctScopeCount,
+  getWorkflowEvidenceTypeEntries,
+  getWorkflowIntegrationBoundaryFocusId,
+  getWorkflowPreviewDistinctRoleCount,
+  getWorkflowPreviewRows,
+  getWorkflowRoleImpactRows,
+  getWorkflowRolePointsRows,
+} from "@/services/sop-workflow-runtime";
+import {
+  getTemplateBuilderSurface,
+  type TemplateBuilderStepView,
+  type TemplateBuilderSurface,
+} from "@/services/sop-template-builder-read-model";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import type {
   SopBuilderTab,
@@ -35,6 +64,8 @@ type AdminSopBuilderPageProps = {
 
 type SopBuilderMode =
   | "filter"
+  | "edit_proposal"
+  | "edit_draft_session"
   | "add_step"
   | "add_step_after_last"
   | "duplicate_step"
@@ -61,6 +92,10 @@ export default async function AdminSopBuilderPage(
     resolvedSearchParams.tab,
   );
   const selectedMode = normalizeBuilderMode(resolvedSearchParams.mode);
+  const templateBuilderSurface =
+    workspace.canReadWorkspace && workspace.definition
+      ? getTemplateBuilderSurface(workspace.definition.slug)
+      : null;
   const focusWorkspace =
     workspace.canReadWorkspace && workspace.definition
       ? getFocusWorkspace(
@@ -68,6 +103,7 @@ export default async function AdminSopBuilderPage(
           workspace.selectedTab,
           workspace.definition.slug,
           resolvedSearchParams.focus,
+          templateBuilderSurface,
         )
       : null;
 
@@ -76,7 +112,7 @@ export default async function AdminSopBuilderPage(
   }
 
   return (
-    <AppShell actor={actor}>
+    <AdminAppShell actor={actor}>
       <DataSourceNotice source={data.source} />
       {workspace.canReadWorkspace && workspace.definition ? (
         <AdminBackendLaneNav
@@ -85,9 +121,13 @@ export default async function AdminSopBuilderPage(
             href: `/admin/sop-builder/${workspace.definition.slug}?tab=${workspace.selectedTab}`,
             label: `${workspace.definition.name} Builder`,
           }}
+          showIntegrations={canReadAdminIntegrationsSecurity(actor)}
         />
       ) : (
-        <AdminBackendLaneNav current="sop_library" />
+        <AdminBackendLaneNav
+          current="sop_library"
+          showIntegrations={canReadAdminIntegrationsSecurity(actor)}
+        />
       )}
 
       {!workspace.canReadWorkspace || !workspace.definition ? (
@@ -99,22 +139,27 @@ export default async function AdminSopBuilderPage(
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-white/12 bg-[#1f1a12] p-5">
+          <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber-200">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
                   SOP builder
                 </p>
-                <h1 className="mt-3 text-3xl font-semibold text-white">
+                <h1 className="mt-3 text-3xl font-semibold text-slate-950">
                   {workspace.title}
                 </h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-white/72">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                   {workspace.summary}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Pill>{workspace.definition.libraryStatus}</Pill>
                   <Pill>{workspace.definition.version.currentLabel}</Pill>
                   <Pill>{workspace.definition.builderStatus.replaceAll("_", " ")}</Pill>
+                  {workspace.templateReview ? (
+                    <Pill>
+                      import {workspace.templateReview.importStatus.replaceAll("_", " ")}
+                    </Pill>
+                  ) : null}
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-3">
                   <ToplineFocusCard
@@ -140,19 +185,19 @@ export default async function AdminSopBuilderPage(
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/admin/sop-library"
-                  className="w-fit rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white"
+                  className="w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
                 >
                   Library
                 </Link>
                 <Link
                   href={`/admin/sop-builder/${workspace.definition.slug}?tab=preview`}
-                  className="w-fit rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
+                  className="w-fit rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700"
                 >
                   Preview
                 </Link>
                 <Link
                   href={`/admin/sop-builder/${workspace.definition.slug}?tab=version&focus=current-version`}
-                  className="w-fit rounded-full bg-amber-200 px-4 py-2 text-sm font-semibold text-[#26180d]"
+                  className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
                 >
                   Publish
                 </Link>
@@ -171,16 +216,16 @@ export default async function AdminSopBuilderPage(
             <MiniStat label="External writes" value="0" />
           </section>
 
-          <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
                   {workspace.definition.version.currentLabel}
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
                   {workspace.definition.name}
                 </h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
                   {workspace.definition.version.summary}
                 </p>
               </div>
@@ -191,7 +236,7 @@ export default async function AdminSopBuilderPage(
                       aria-hidden="true"
                       className={[
                         "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transition",
-                        tab.selected ? "text-[#26180d]" : "text-white/62",
+                        tab.selected ? "text-[#2563eb]" : "text-slate-400",
                       ].join(" ")}
                     >
                       <BuilderTabIcon tab={tab.key} />
@@ -199,9 +244,9 @@ export default async function AdminSopBuilderPage(
                     <Link
                       href={tab.href}
                       className={
-                        tab.selected
-                          ? "block rounded-full bg-amber-200 px-3 py-1.5 pl-9 text-sm font-semibold text-[#26180d]"
-                          : "block rounded-full border border-white/10 bg-white/5 px-3 py-1.5 pl-9 text-sm font-semibold text-white"
+                      tab.selected
+                          ? "block rounded-full bg-[#2563eb] px-3 py-1.5 pl-9 text-sm font-semibold text-white"
+                          : "block rounded-full border border-slate-200 bg-white px-3 py-1.5 pl-9 text-sm font-semibold text-slate-700"
                       }
                     >
                       {tab.label}
@@ -213,16 +258,16 @@ export default async function AdminSopBuilderPage(
           </section>
 
           {workspace.workbench ? (
-            <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
                     Tab workbench
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-white">
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
                     {workspace.workbench.title}
                   </h2>
-                  <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
                     {workspace.workbench.summary}
                   </p>
                 </div>
@@ -230,7 +275,7 @@ export default async function AdminSopBuilderPage(
                   {workspace.workbench.defaultFocusHref ? (
                     <Link
                       href={workspace.workbench.defaultFocusHref}
-                      className="rounded-full bg-amber-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                      className="rounded-full bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
                     >
                       Open default focus
                     </Link>
@@ -239,7 +284,7 @@ export default async function AdminSopBuilderPage(
                     <Link
                       key={tab.key}
                       href={tab.href}
-                      className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white"
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                     >
                       {tab.label}
                     </Link>
@@ -253,15 +298,15 @@ export default async function AdminSopBuilderPage(
                     {workspace.workbench.stats.map((stat) => (
                       <article
                         key={stat.label}
-                        className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4"
+                        className="rounded-[1.35rem] border border-slate-200 bg-[#eff6ff] p-4"
                       >
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-100/72">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
                           {stat.label}
                         </p>
-                        <p className="mt-2 text-2xl font-semibold text-white">
+                        <p className="mt-2 text-2xl font-semibold text-slate-950">
                           {stat.value}
                         </p>
-                        <p className="mt-2 text-sm leading-6 text-white/62">
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
                           {stat.note}
                         </p>
                       </article>
@@ -269,19 +314,19 @@ export default async function AdminSopBuilderPage(
                   </div>
 
                   {focusWorkspace?.selected ? (
-                    <article className="rounded-[1.35rem] border border-amber-200/18 bg-amber-200/10 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-100/80">
+                    <article className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
                         Current workbench focus
                       </p>
                       <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="max-w-3xl">
-                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-amber-100/72">
+                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
                             {focusWorkspace.selected.eyebrow}
                           </p>
-                          <h3 className="mt-2 text-xl font-semibold text-white">
+                          <h3 className="mt-2 text-xl font-semibold text-slate-950">
                             {focusWorkspace.selected.title}
                           </h3>
-                          <p className="mt-3 text-sm leading-6 text-white/72">
+                          <p className="mt-3 text-sm leading-6 text-slate-600">
                             {focusWorkspace.selected.detail}
                           </p>
                         </div>
@@ -290,7 +335,7 @@ export default async function AdminSopBuilderPage(
                           {focusWorkspace.selected.previewHref ? (
                             <Link
                               href={focusWorkspace.selected.previewHref}
-                              className="inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                              className="inline-flex rounded-full bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
                             >
                               {focusWorkspace.selected.previewLabel ?? "Open role preview"}
                             </Link>
@@ -298,7 +343,7 @@ export default async function AdminSopBuilderPage(
                           {focusWorkspace.selected.href ? (
                             <Link
                               href={focusWorkspace.selected.href}
-                              className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-white"
+                              className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                             >
                               {focusWorkspace.selected.hrefLabel ?? "Open route"}
                             </Link>
@@ -309,24 +354,155 @@ export default async function AdminSopBuilderPage(
                   ) : null}
                 </div>
 
-                <article className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-100/72">
+                <article className="rounded-[1.35rem] border border-slate-200 bg-[#fbfdff] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
                     Guardrails
                   </p>
                   <ul className="mt-3 grid gap-3">
                     {workspace.workbench.guardrails.map((item) => (
                       <li
                         key={item}
-                        className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-3 text-sm leading-6 text-white/68"
+                        className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-sm leading-6 text-slate-700"
                       >
                         {item}
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-3 text-xs leading-5 text-amber-100/62">
+                  <p className="mt-3 text-xs leading-5 text-slate-500">
                     Default focus: {workspace.workbench.defaultFocusLabel}
                   </p>
                 </article>
+              </div>
+            </section>
+          ) : null}
+
+          {workspace.templateReview ? (
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-3xl">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                    Structured import review
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                    {workspace.templateReview.versionLabel} import posture
+                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {workspace.templateReview.workflowName} is now available as a
+                    structured draft template for this campaign. The warnings
+                    below stay visible until the imported draft is fully
+                    reconciled and human-approved.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Pill>{workspace.templateReview.importStatus.replaceAll("_", " ")}</Pill>
+                    <Pill>{workspace.templateReview.provenanceLabel}</Pill>
+                    <Pill>{workspace.templateReview.coachPdfPages} coach pages</Pill>
+                    <Pill>
+                      {workspace.templateReview.chapterPlatformPdfPages} chapter pages
+                    </Pill>
+                    <Pill>{workspace.templateReview.sourceReferenceCount} sources</Pill>
+                    <Pill>{workspace.templateReview.sourceGapCount} source gaps</Pill>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <ToplineFocusCard
+                    label="Imported phases"
+                    value={`${workspace.templateReview.phaseCount}`}
+                    note="Structured campaign phases currently in the draft template"
+                  />
+                  <ToplineFocusCard
+                    label="Imported steps"
+                    value={`${workspace.templateReview.stepCount}`}
+                    note="Structured steps extracted into the template registry"
+                  />
+                  <ToplineFocusCard
+                    label="Warnings"
+                    value={`${workspace.templateReview.unresolvedAmbiguities.length}`}
+                    note="Open import-review items that still need human reconciliation"
+                  />
+                  <ToplineFocusCard
+                    label="Suggested order"
+                    value={`${workspace.templateReview.suggestedRolloutOrder}`}
+                    note="Current rollout position from the structured review summary"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                    Sensitive data warnings
+                  </p>
+                  <p className="mt-3 rounded-[1rem] border border-slate-200 bg-[#eff6ff] px-3 py-3 text-sm leading-6 text-slate-700">
+                    {workspace.templateReview.provenanceLabel ===
+                    "package-backed structured draft"
+                      ? "This template is grounded in the rollout package and mapped SOP source coverage."
+                      : "This template is structured and usable in the runtime, but still leans on repo-defined campaign artifacts where the rollout package has source gaps."}
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    {workspace.templateReview.sensitiveDataWarnings.map((warning) => (
+                      <p
+                        key={warning}
+                        className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-sm leading-6 text-slate-700"
+                      >
+                        {warning}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                    Unresolved import warnings
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    {workspace.templateReview.unresolvedAmbiguities.map((warning) => (
+                      <p
+                        key={warning}
+                        className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-sm leading-6 text-slate-700"
+                      >
+                        {warning}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                  Source perspectives
+                </p>
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  {workspace.templateReview.sourcePerspectives.map((perspective) => (
+                    <article
+                      key={perspective.key}
+                      className="rounded-[1rem] border border-slate-200 bg-[#fbfdff] p-4"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-950">
+                          {perspective.label}
+                        </p>
+                        <Pill>{perspective.pdfPages}</Pill>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                        {perspective.summary}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {perspective.primaryRoles.map((role) => (
+                          <Pill key={`${perspective.key}-${role}`}>{role}</Pill>
+                        ))}
+                      </div>
+                      <ul className="mt-3 grid gap-2 text-sm text-slate-600">
+                        {perspective.primaryRoutes.map((route) => (
+                          <li
+                            key={`${perspective.key}-${route}`}
+                            className="rounded-[0.9rem] border border-slate-200 bg-white px-3 py-2"
+                          >
+                            {route}
+                          </li>
+                        ))}
+                      </ul>
+                    </article>
+                  ))}
+                </div>
               </div>
             </section>
           ) : null}
@@ -351,11 +527,13 @@ export default async function AdminSopBuilderPage(
               workspace.selectedTab,
               workspace.definition.slug,
               resolvedSearchParams.focus,
+              templateBuilderSurface,
             ),
+            templateBuilderSurface,
           )}
         </>
       )}
-    </AppShell>
+    </AdminAppShell>
   );
 }
 
@@ -363,15 +541,23 @@ function renderSelectedTab(
   definition: SopCampaignDefinition,
   selectedTab: SopBuilderTab,
   focusWorkspace: BuilderFocusWorkspace,
+  templateBuilderSurface: TemplateBuilderSurface | null,
 ) {
   switch (selectedTab) {
     case "steps":
-      return <StepsBuilderSection definition={definition} focusWorkspace={focusWorkspace} />;
+      return (
+        <StepsBuilderSection
+          definition={definition}
+          focusWorkspace={focusWorkspace}
+          templateBuilderSurface={templateBuilderSurface}
+        />
+      );
     case "role-matrix":
       return (
         <RoleMatrixSection
           definition={definition}
           focusWorkspace={focusWorkspace}
+          templateBuilderSurface={templateBuilderSurface}
         />
       );
     case "completion":
@@ -386,6 +572,7 @@ function renderSelectedTab(
         <PointsKpiSection
           definition={definition}
           focusWorkspace={focusWorkspace}
+          templateBuilderSurface={templateBuilderSurface}
         />
       );
     case "comms":
@@ -393,6 +580,7 @@ function renderSelectedTab(
         <CommsSection
           definition={definition}
           focusWorkspace={focusWorkspace}
+          templateBuilderSurface={templateBuilderSurface}
         />
       );
     case "preview":
@@ -400,6 +588,7 @@ function renderSelectedTab(
         <RolePreviewSection
           definition={definition}
           focusWorkspace={focusWorkspace}
+          templateBuilderSurface={templateBuilderSurface}
         />
       );
     case "version":
@@ -407,6 +596,7 @@ function renderSelectedTab(
         <VersionReviewSection
           definition={definition}
           focusWorkspace={focusWorkspace}
+          templateBuilderSurface={templateBuilderSurface}
         />
       );
   }
@@ -437,8 +627,14 @@ function getFocusWorkspace(
   selectedTab: SopBuilderTab,
   campaignSlug: string,
   focusId: string | undefined,
+  templateBuilderSurface: TemplateBuilderSurface | null,
 ): BuilderFocusWorkspace {
-  const cards = getFocusCards(definition, selectedTab, campaignSlug);
+  const cards = getFocusCards(
+    definition,
+    selectedTab,
+    campaignSlug,
+    templateBuilderSurface,
+  );
   const selected =
     cards.find((card) => card.id === focusId) ??
     cards[0] ??
@@ -457,9 +653,31 @@ function getFocusCards(
   definition: SopCampaignDefinition,
   selectedTab: SopBuilderTab,
   campaignSlug: string,
+  templateBuilderSurface: TemplateBuilderSurface | null,
 ): BuilderFocusCard[] {
   switch (selectedTab) {
     case "steps":
+      if (templateBuilderSurface?.steps.length) {
+        return templateBuilderSurface.steps.map((step) => ({
+          id: step.id,
+          title: step.title,
+          eyebrow: step.phaseLabel,
+          status: getTemplateFocusStatus(step.sourceCertainty),
+          detail: step.objective,
+          footer: `Outputs: ${step.expectedOutputs.join(", ") || "none named"}`,
+          href: step.visibleRoutes[0],
+          hrefLabel: "Open linked route",
+          ...(step.visibleRoutes[0]
+            ? buildWorkflowRolePreviewFields(step.primaryOwnerRole, step.visibleRoutes[0])
+            : {}),
+          focusHref: buildSopBuilderHref(campaignSlug, selectedTab, step.id),
+          pills: [
+            toReadableRole(step.primaryOwnerRole),
+            ...step.kpiLabels,
+          ],
+        }));
+      }
+
       return definition.steps.map((step) => ({
         id: step.id,
         title: step.title,
@@ -469,11 +687,29 @@ function getFocusCards(
         footer: `Completion signal: ${step.completionSignal}`,
         href: step.linkedRoute,
         hrefLabel: "Open linked route",
-        ...buildRolePreviewFields(step.ownerRole, step.linkedRoute),
+        ...buildWorkflowRolePreviewFields(step.ownerRole, step.linkedRoute),
         focusHref: buildSopBuilderHref(campaignSlug, selectedTab, step.id),
         pills: [step.ownerRole],
       }));
     case "role-matrix":
+      if (templateBuilderSurface?.roleMatrix.length) {
+        return templateBuilderSurface.roleMatrix.map((rule) => ({
+          id: rule.id,
+          title: toReadableRole(rule.role),
+          eyebrow: "Role matrix",
+          status: rule.blockedByDefault ? "blocked" : "ready_readonly",
+          detail: rule.actionSummary,
+          footer: `Routes: ${rule.visibleRoutes.join(", ") || "none mapped yet"}`,
+          href: rule.visibleRoutes[0],
+          hrefLabel: "Open role route",
+          ...(rule.visibleRoutes[0]
+            ? buildWorkflowRolePreviewFields(rule.role, rule.visibleRoutes[0])
+            : {}),
+          focusHref: buildSopBuilderHref(campaignSlug, selectedTab, rule.id),
+          pills: [rule.scope, ...rule.kpiLabels],
+        }));
+      }
+
       return definition.roleActionRules.map((rule) => ({
         id: rule.id,
         title: rule.role,
@@ -483,11 +719,63 @@ function getFocusCards(
         footer: `Guardrail: ${rule.guardrail}`,
         href: rule.route,
         hrefLabel: "Open role route",
-        ...buildRolePreviewFields(rule.role, rule.route),
+        ...buildWorkflowRolePreviewFields(rule.role, rule.route),
         focusHref: buildSopBuilderHref(campaignSlug, selectedTab, rule.id),
         pills: [rule.scope],
       }));
     case "completion":
+      if (templateBuilderSurface?.completionRows.length) {
+        return [
+          ...templateBuilderSurface.completionRows.map((row) => ({
+            id: row.id,
+            title: row.title,
+            eyebrow:
+              row.rowType === "completion"
+                ? "Completion rule"
+                : row.rowType === "evidence"
+                  ? "Evidence rule"
+                  : "Approval rule",
+            status: getTemplateFocusStatus(row.sourceCertainty),
+            detail: row.detail,
+            footer: row.footer,
+            focusHref: buildSopBuilderHref(campaignSlug, selectedTab, row.id),
+            pills: row.linkedStepLabels,
+          })),
+          ...templateBuilderSurface.riskRows.map((row) => ({
+            id: row.id,
+            title: row.title,
+            eyebrow: "Risk rule",
+            status: getTemplateFocusStatus(row.sourceCertainty),
+            detail: row.triggerCondition,
+            footer: `Severity: ${row.severity}`,
+            focusHref: buildSopBuilderHref(campaignSlug, selectedTab, row.id),
+            pills: row.linkedStepLabels,
+          })),
+          ...templateBuilderSurface.escalationRows.map((row) => ({
+            id: row.id,
+            title: row.title,
+            eyebrow: "Escalation rule",
+            status: getTemplateFocusStatus(row.sourceCertainty),
+            detail: row.action,
+            footer: `Owner roles: ${row.ownerRoles.map(toReadableRole).join(", ")}`,
+            focusHref: buildSopBuilderHref(campaignSlug, selectedTab, row.id),
+            pills: row.linkedStepLabels.length
+              ? row.linkedStepLabels
+              : row.ownerRoles.map(toReadableRole),
+          })),
+          ...templateBuilderSurface.closeoutRows.map((row) => ({
+            id: row.id,
+            title: row.title,
+            eyebrow: "Closeout requirement",
+            status: getTemplateFocusStatus(row.sourceCertainty),
+            detail: row.description,
+            footer: `Required by: ${row.requiredByRoles.map(toReadableRole).join(", ")}`,
+            focusHref: buildSopBuilderHref(campaignSlug, selectedTab, row.id),
+            pills: row.requiredByRoles.map(toReadableRole),
+          })),
+        ];
+      }
+
       return [
         ...definition.completionRules.map((rule) => ({
           id: rule.id,
@@ -518,11 +806,39 @@ function getFocusCards(
           footer: `Reviewer: ${rule.reviewerRole}`,
           href: rule.route,
           hrefLabel: "Open route",
-          ...buildRolePreviewFields(rule.reviewerRole, rule.route),
+          ...buildWorkflowRolePreviewFields(rule.reviewerRole, rule.route),
           focusHref: buildSopBuilderHref(campaignSlug, selectedTab, rule.id),
         })),
       ];
     case "points-kpi":
+      if (templateBuilderSurface?.pointsRows.length) {
+        return [
+          ...templateBuilderSurface.pointsRows.map((row) => ({
+            id: row.id,
+            title: toReadableRole(row.role),
+            eyebrow: "Points & KPI",
+            status: "ready_readonly",
+            detail: `${row.ruleLabels.join(", ") || "No point rule named"} · ${row.pointValues.join(", ")} points`,
+            footer: `KPI: ${row.kpiLabels.join(", ") || "none named"}`,
+            focusHref: buildSopBuilderHref(campaignSlug, selectedTab, row.id),
+            pills: [...row.approvalLabels, ...row.repeatabilityLabels],
+          })),
+          ...templateBuilderSurface.kpiRows.map((row) => ({
+            id: row.id,
+            title: row.label,
+            eyebrow: "KPI rule",
+            status: getTemplateFocusStatus(row.sourceCertainty),
+            detail:
+              row.targetValue !== null
+                ? `Target ${row.targetValue} · ${row.thresholdLabel ?? "No threshold note"}`
+                : row.thresholdLabel ?? "No threshold note",
+            footer: `Metric key: ${row.metricKey}`,
+            focusHref: buildSopBuilderHref(campaignSlug, selectedTab, row.id),
+            pills: [...row.linkedRoleLabels, ...row.linkedStepLabels],
+          })),
+        ];
+      }
+
       return [
         ...definition.pointsRules.map((rule) => ({
           id: rule.id,
@@ -544,6 +860,39 @@ function getFocusCards(
         })),
       ];
     case "comms":
+      if (templateBuilderSurface) {
+        return [
+          ...templateBuilderSurface.commRows.map((row) => ({
+            id: row.id,
+            title: row.title,
+            eyebrow: "Communication trigger",
+            status:
+              row.mockStatus === "mock_only"
+                ? "mock_only"
+                : row.mockStatus === "approval_required"
+                  ? "blocked"
+                  : "ready_readonly",
+            detail: row.detail,
+            footer: `Audience: ${row.audience}`,
+            focusHref: buildSopBuilderHref(campaignSlug, selectedTab, row.id),
+            pills: [row.sourceSystem, row.timing],
+          })),
+          ...templateBuilderSurface.integrationBoundaries.map((boundary) => ({
+            id: boundary.id,
+            title: boundary.system,
+            eyebrow: "Integration boundary",
+            status:
+              boundary.mode === "disabled_pending_approval"
+                ? "blocked"
+                : "ready_readonly",
+            detail: boundary.detail,
+            footer: `Mode: ${boundary.mode}`,
+            focusHref: buildSopBuilderHref(campaignSlug, selectedTab, boundary.id),
+            pills: boundary.eventNames,
+          })),
+        ];
+      }
+
       return [
         ...definition.communicationRules.map((rule) => ({
           id: rule.id,
@@ -570,6 +919,22 @@ function getFocusCards(
         })),
       ];
     case "preview":
+      if (templateBuilderSurface?.previewScenarios.length) {
+        return templateBuilderSurface.previewScenarios.map((scenario) => ({
+          id: scenario.id,
+          title: scenario.title,
+          eyebrow: "Preview scenario",
+          status: getTemplateFocusStatus(scenario.sourceCertainty),
+          detail: scenario.successSignal,
+          footer: `Primary role: ${toReadableRole(scenario.primaryRole)}`,
+          href: scenario.route,
+          hrefLabel: "Open raw route",
+          ...buildWorkflowRolePreviewFields(scenario.primaryRole, scenario.route),
+          pills: scenario.visibleStates,
+          focusHref: buildSopBuilderHref(campaignSlug, selectedTab, scenario.id),
+        }));
+      }
+
       return definition.previewScenarios.map((scenario) => ({
         id: scenario.id,
         title: scenario.title,
@@ -612,26 +977,120 @@ function getFocusCards(
           footer: entry.updatedLabel,
           focusHref: buildSopBuilderHref(campaignSlug, selectedTab, `version-${index}`),
         })),
-        ...definition.auditRecords.map((record) => ({
-          id: record.id,
-          title: record.eventType,
-          eyebrow: "Audit expectation",
-          status: "ready_readonly",
-          detail: record.auditExpectation,
-          footer: record.targetTable,
-          href: record.route,
-          hrefLabel: "Open route",
-          focusHref: buildSopBuilderHref(campaignSlug, selectedTab, record.id),
+        ...(!templateBuilderSurface
+          ? definition.auditRecords.map((record) => ({
+              id: record.id,
+              title: record.eventType,
+              eyebrow: "Audit expectation",
+              status: "ready_readonly",
+              detail: record.auditExpectation,
+              footer: record.targetTable,
+              href: record.route,
+              hrefLabel: "Open route",
+              focusHref: buildSopBuilderHref(campaignSlug, selectedTab, record.id),
+            }))
+          : []),
+        ...(templateBuilderSurface
+          ? [
+              ...templateBuilderSurface.featureFlagRows.map((flag) => ({
+                id: flag.id,
+                title: flag.flagKey,
+                eyebrow: "Feature flag",
+                status: getTemplateFocusStatus(flag.sourceCertainty),
+                detail: flag.description,
+                footer: `${flag.defaultState} by default · ${flag.rolloutStage.replaceAll("_", " ")}`,
+                focusHref: buildSopBuilderHref(campaignSlug, selectedTab, flag.id),
+                pills: [flag.defaultState, flag.rolloutStage.replaceAll("_", " ")],
+              })),
+              ...templateBuilderSurface.integrationBoundaries.map((boundary) => ({
+                id: boundary.id,
+                title: boundary.system,
+                eyebrow: "Integration boundary",
+                status:
+                  boundary.mode === "disabled_pending_approval"
+                    ? "blocked"
+                    : "ready_readonly",
+                detail: boundary.detail,
+                footer: `Mode: ${boundary.mode.replaceAll("_", " ")}`,
+                focusHref: buildSopBuilderHref(campaignSlug, selectedTab, boundary.id),
+                pills: boundary.eventNames,
+              })),
+              ...templateBuilderSurface.auditRows.map((record) => ({
+                id: record.id,
+                title: record.eventType,
+                eyebrow: "Audit posture",
+                status: record.required ? "ready_readonly" : "mock_only",
+                detail: record.detail,
+                footer:
+                  record.linkedOutboxTopics.length > 0
+                    ? `Outbox topics: ${record.linkedOutboxTopics.join(", ")}`
+                    : "No outbox topic linked on the imported draft",
+                focusHref: buildSopBuilderHref(campaignSlug, selectedTab, record.id),
+                pills: [
+                  record.required ? "required" : "optional",
+                  ...record.linkedIntegrationEvents,
+                ],
+              })),
+              ...templateBuilderSurface.scriptTemplates.map((template) => ({
+                id: template.id,
+                title: template.title,
+                eyebrow: "Script template",
+                status: getTemplateFocusStatus(template.sourceCertainty),
+                detail: template.summary,
+                footer: `Audience: ${template.audience}`,
+                focusHref: buildSopBuilderHref(campaignSlug, selectedTab, template.id),
+                pills: [template.audience],
+              })),
+              ...templateBuilderSurface.resourceLinks.map((resource) => ({
+                id: resource.id,
+                title: resource.label,
+                eyebrow: "Resource link",
+                status: getTemplateFocusStatus(resource.sourceCertainty),
+                detail: resource.href,
+                footer: "Linked rollout/source reference",
+                href: resource.href,
+                hrefLabel: "Open reference",
+                focusHref: buildSopBuilderHref(campaignSlug, selectedTab, resource.id),
+              })),
+            ]
+          : []),
+        ...getSopLocalDraftProposals(campaignSlug).map((proposal) => ({
+          id: proposal.id,
+          title: proposal.title,
+          eyebrow: "Local draft proposal",
+          status: proposal.status,
+          detail: proposal.summary,
+          footer: proposal.rationale,
+          href: proposal.sourceRoute,
+          hrefLabel: "Open source route",
+          focusHref: buildSopBuilderHref(campaignSlug, selectedTab, proposal.id),
+          pills: proposal.affectedRoles.map((role) => toReadableRole(role)),
         })),
+        ...(getSopLocalDraftSession(campaignSlug)
+          ? [
+              {
+                id: `draft-session-${campaignSlug}`,
+                title: getSopLocalDraftSession(campaignSlug)?.title ?? "Local draft session",
+                eyebrow: "Draft session package",
+                status: "draft_session",
+                detail:
+                  getSopLocalDraftSession(campaignSlug)?.summary ??
+                  "Bundled local proposal package",
+                footer: `${getSopLocalDraftSession(campaignSlug)?.proposalIds.length ?? 0} proposals bundled`,
+                focusHref: buildSopBuilderHref(
+                  campaignSlug,
+                  selectedTab,
+                  `draft-session-${campaignSlug}`,
+                ),
+                pills:
+                  getSopLocalDraftSession(campaignSlug)?.affectedRoles.map((role) =>
+                    toReadableRole(role),
+                  ) ?? [],
+              },
+            ]
+          : []),
       ];
   }
-}
-
-function buildRolePreviewFields(role: SopRole, route: string) {
-  return {
-    previewHref: buildSopRolePreviewHref(role, route),
-    previewLabel: `Preview as ${getSopRolePreviewLabel(role)}`,
-  };
 }
 
 function buildSopBuilderHref(
@@ -657,6 +1116,8 @@ function buildSopBuilderHref(
 function normalizeBuilderMode(requestedMode?: string): SopBuilderMode | null {
   switch (requestedMode) {
     case "filter":
+    case "edit_proposal":
+    case "edit_draft_session":
     case "add_step":
     case "add_step_after_last":
     case "duplicate_step":
@@ -697,7 +1158,7 @@ function BuilderFocusLink(props: {
       aria-current={props.selected ? "page" : undefined}
       className={
         props.selected
-          ? "inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+          ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
           : "inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
       }
     >
@@ -713,7 +1174,13 @@ function getBuilderModeNotice(
   focusId: string | undefined,
   mode: SopBuilderMode,
 ) {
-  const focusWorkspace = getFocusWorkspace(definition, selectedTab, campaignSlug, focusId);
+  const focusWorkspace = getFocusWorkspace(
+    definition,
+    selectedTab,
+    campaignSlug,
+    focusId,
+    getTemplateBuilderSurface(definition.slug),
+  );
   const selectedLabel =
     focusWorkspace.selected?.title ?? getBuilderTabDisplayLabel(selectedTab);
   const clearHref = buildSopBuilderHref(
@@ -736,6 +1203,53 @@ function getBuilderModeNotice(
           "Keep route state readable enough that a reviewer can share the exact filtered URL.",
         ],
       };
+    case "edit_proposal": {
+      const proposalEditor = focusWorkspace.selected
+        ? getSopLocalDraftProposalEditor(focusWorkspace.selected.id)
+        : null;
+
+      return {
+        title: proposalEditor
+          ? proposalEditor.title
+          : `Edit proposal: ${selectedLabel}`,
+        summary:
+          proposalEditor?.summary ??
+          "This route reserves proposal editing inside the builder version lane, but the selected record is not a typed local draft proposal.",
+        pills: ["version review", selectedLabel, "draft proposal"],
+        clearHref,
+        guardrails:
+          proposalEditor?.guardrails ?? [
+            "Proposal editing is limited to typed local draft proposals.",
+            "No template, role, or permission write runs from this review state.",
+            "Use the source route when the selected record is not proposal-backed.",
+          ],
+        rows: proposalEditor?.draftFields.map((field) => ({
+          label: field.label,
+          value: `${field.currentValue} -> ${field.draftValue}`,
+          note: field.note,
+        })),
+      };
+    }
+    case "edit_draft_session": {
+      const sessionEditor = getSopLocalDraftSessionEditor(campaignSlug);
+
+      return {
+        title:
+          sessionEditor?.title ?? `Edit draft session: ${selectedLabel}`,
+        summary:
+          sessionEditor?.summary ??
+          "This route reserves campaign-level draft session editing in the builder version lane.",
+        pills: ["version review", selectedLabel, "draft session"],
+        clearHref,
+        guardrails:
+          sessionEditor?.guardrails ?? [
+            "Draft session editing is limited to campaign-scoped local proposal packages.",
+            "No template, role, permission, or publish write runs from this review state.",
+            "Use the source routes when the campaign has no bundled local draft session.",
+          ],
+        rows: sessionEditor?.draftRows,
+      };
+    }
     case "add_step":
       return {
         title: `Add step after ${selectedLabel}`,
@@ -892,16 +1406,41 @@ function BuilderTabIcon({ tab }: { tab: SopBuilderTab }) {
   }
 }
 
+function getTemplateFocusStatus(sourceCertainty: string) {
+  switch (sourceCertainty) {
+    case "repo_only_placeholder":
+    case "missing_source_confirmation":
+      return "mock_only";
+    default:
+      return "ready_readonly";
+  }
+}
+
+function uniqueValues<T>(values: readonly T[]) {
+  return [...new Set(values)];
+}
+
 function StepsBuilderSection(props: {
   definition: SopCampaignDefinition;
   focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface | null;
 }) {
+  if (props.templateBuilderSurface?.steps.length) {
+    return (
+      <TemplateStepsBuilderSection
+        definition={props.definition}
+        focusWorkspace={props.focusWorkspace}
+        templateBuilderSurface={props.templateBuilderSurface}
+      />
+    );
+  }
+
   const selectedStep = getSelectedStep(props.definition, props.focusWorkspace.selected?.id);
 
   return (
     <section className="grid gap-4 xl:grid-cols-[260px_minmax(0,1.2fr)_minmax(0,0.92fr)]">
-      <aside className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/54">
+      <aside className="rounded-[2rem] border border-slate-200 bg-white p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
           Sections
         </p>
         <div className="mt-3 grid gap-2">
@@ -913,14 +1452,14 @@ function StepsBuilderSection(props: {
                 "steps",
                 getSectionFocusStepId(props.definition, section),
               )}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-left text-sm font-semibold text-white"
+              className="rounded-full border border-slate-200 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-700"
             >
               {section}
             </Link>
           ))}
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-white/54">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
           Versions
         </p>
         <div className="mt-3 grid gap-2">
@@ -930,12 +1469,12 @@ function StepsBuilderSection(props: {
               "version",
               "current-version",
             )}
-            className="rounded-[1.2rem] border border-white/10 bg-white/5 px-3 py-3 text-left"
+            className="rounded-[1.2rem] border border-slate-200 bg-white px-3 py-3 text-left"
           >
-            <p className="text-sm font-semibold text-white">
+            <p className="text-sm font-semibold text-slate-950">
               {props.definition.version.currentLabel}
             </p>
-            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-amber-100/72">
+            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-700">
               {props.definition.libraryStatus}
             </p>
           </Link>
@@ -949,17 +1488,17 @@ function StepsBuilderSection(props: {
                   (candidate) => candidate.label === entry.label,
                 )}`,
               )}
-              className="rounded-[1.2rem] border border-white/10 bg-black/20 px-3 py-3 text-left"
+              className="rounded-[1.2rem] border border-blue-200 bg-blue-50 px-3 py-3 text-left"
             >
-              <p className="text-sm font-semibold text-white">{entry.label}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/54">
+              <p className="text-sm font-semibold text-slate-950">{entry.label}</p>
+              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-700">
                 {entry.updatedLabel}
               </p>
             </Link>
           ))}
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-white/54">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
           Settings
         </p>
         <div className="mt-3 grid gap-2">
@@ -967,7 +1506,7 @@ function StepsBuilderSection(props: {
             <Link
               key={setting}
               href="/admin/workflows?section=lanes&focus=campaign-config"
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-left text-sm font-semibold text-white"
+              className="rounded-full border border-slate-200 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-700"
             >
               {setting}
             </Link>
@@ -975,11 +1514,11 @@ function StepsBuilderSection(props: {
         </div>
       </aside>
 
-      <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-white">Workflow Steps</h2>
-            <p className="mt-2 text-sm leading-6 text-white/66">
+            <h2 className="text-2xl font-semibold text-slate-950">Workflow Steps</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
               {props.definition.steps.length} steps
             </p>
           </div>
@@ -990,7 +1529,7 @@ function StepsBuilderSection(props: {
               props.focusWorkspace.selected?.id,
               "filter",
             )}
-            className="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white"
+            className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
           >
             Filter
           </Link>
@@ -1006,18 +1545,18 @@ function StepsBuilderSection(props: {
                   className={[
                     "rounded-[1.5rem] border p-4",
                     isSelected
-                      ? "border-amber-200/28 bg-amber-200/10"
-                      : "border-white/10 bg-black/20",
+                      ? "border-blue-200/30 bg-blue-50"
+                      : "border-slate-200 bg-white",
                   ].join(" ")}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-700">
                         {step.stepNumber}
                       </div>
                       <div>
-                        <h3 className="text-base font-semibold text-white">{step.title}</h3>
-                        <p className="mt-1 text-sm text-white/66">
+                        <h3 className="text-base font-semibold text-slate-950">{step.title}</h3>
+                        <p className="mt-1 text-sm text-slate-600">
                           {step.phaseLabel} · {toReadableRole(step.ownerRole)}
                         </p>
                       </div>
@@ -1040,21 +1579,21 @@ function StepsBuilderSection(props: {
                       aria-current={isSelected ? "page" : undefined}
                       className={
                         isSelected
-                          ? "inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
-                          : "inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white"
+                          ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                          : "inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                       }
                     >
                       {isSelected ? "Selected" : "Open in workspace"}
                     </Link>
                     <Link
                       href={buildSopRolePreviewHref(step.ownerRole, step.linkedRoute)}
-                      className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-white"
+                      className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                     >
                       Preview as {toReadableRole(step.ownerRole)}
                     </Link>
                     <Link
                       href={step.linkedRoute}
-                      className="inline-flex rounded-full bg-black/20 px-3 py-1.5 text-sm font-semibold text-white"
+                      className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
                     >
                       Open linked route
                     </Link>
@@ -1069,7 +1608,7 @@ function StepsBuilderSection(props: {
                       step.id,
                       "add_step",
                     )}
-                    className="justify-self-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white"
+                    className="justify-self-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
                   >
                     Add Step
                   </Link>
@@ -1085,24 +1624,24 @@ function StepsBuilderSection(props: {
               props.definition.steps[props.definition.steps.length - 1]?.id,
               "add_step_after_last",
             )}
-            className="justify-self-start rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white"
+            className="justify-self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
           >
             Add Step After Last
           </Link>
         </div>
       </section>
 
-      <aside className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+      <aside className="rounded-[2rem] border border-slate-200 bg-white p-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-700">
               {selectedStep.stepNumber}
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/54">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
                 Step Details
               </p>
-              <p className="mt-1 text-sm font-semibold text-white">
+              <p className="mt-1 text-sm font-semibold text-slate-950">
                 {selectedStep.title}
               </p>
             </div>
@@ -1119,7 +1658,7 @@ function StepsBuilderSection(props: {
                 selectedStep.id,
                 "duplicate_step",
               )}
-              className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white"
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
             >
               Duplicate Step
             </Link>
@@ -1130,7 +1669,7 @@ function StepsBuilderSection(props: {
                 selectedStep.id,
                 "disable_step",
               )}
-              className="rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-sm font-semibold text-white"
+              className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
             >
               Disable Step
             </Link>
@@ -1153,8 +1692,8 @@ function StepsBuilderSection(props: {
           <DetailBlock label="Exit Criteria">{selectedStep.exitCriteria}</DetailBlock>
           <DetailBlock label="Due Timing">{selectedStep.dueTiming}</DetailBlock>
 
-          <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+          <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
               Rules
             </p>
             <div className="mt-3 grid gap-2">
@@ -1182,17 +1721,28 @@ function getSelectedStep(definition: SopCampaignDefinition, stepId: string | und
 function RoleMatrixSection(props: {
   definition: SopCampaignDefinition;
   focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface | null;
 }) {
+  if (props.templateBuilderSurface?.roleMatrix.length) {
+    return (
+      <TemplateRoleMatrixSection
+        definition={props.definition}
+        focusWorkspace={props.focusWorkspace}
+        templateBuilderSurface={props.templateBuilderSurface}
+      />
+    );
+  }
+
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
               Step-level workflow behavior
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Role Matrix</h2>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-white/66">
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Role Matrix</h2>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
               This matrix defines who can see a step, what action they take,
               what route changes, and which proof, approval, points, KPI, and
               communication rules travel with that role.
@@ -1205,17 +1755,17 @@ function RoleMatrixSection(props: {
               focusId={props.focusWorkspace.selected?.id}
             />
             <Pill>{props.definition.roleActionRules.length} role rules</Pill>
-            <Pill>{getDistinctRoles(props.definition)} canonical roles</Pill>
-            <Pill>{getDistinctScopes(props.definition)} scopes</Pill>
+            <Pill>{getWorkflowDistinctRoleCount(props.definition)} canonical roles</Pill>
+            <Pill>{getWorkflowDistinctScopeCount(props.definition)} scopes</Pill>
           </div>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#071d1a]/90">
+      <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white">
         <div className="overflow-x-auto">
           <table className="min-w-[1200px] w-full">
-            <thead className="bg-black/20">
-              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+            <thead className="bg-slate-50">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Visible</th>
                 <th className="px-4 py-3">Action Required</th>
@@ -1230,76 +1780,502 @@ function RoleMatrixSection(props: {
               </tr>
             </thead>
             <tbody>
-              {props.definition.roleActionRules.map((rule) => {
+              {getWorkflowRoleImpactRows(props.definition).map((rule) => {
                 const isSelected = props.focusWorkspace.selected?.id === rule.id;
-                const routeSteps = props.definition.steps.filter(
-                  (step) => step.ownerRole === rule.role || step.affectedRoles.includes(rule.role),
-                );
-                const evidenceSummary = routeSteps.some((step) => step.evidenceRequired)
-                  ? "Required"
-                  : "None";
-                const approvalSummary = routeSteps.some((step) => step.approvalRequired)
-                  ? "Required"
-                  : "None";
-                const pointsSummary = getRolePointSummary(props.definition, rule.role);
-                const kpiSummary =
-                  [...new Set(routeSteps.map((step) => step.kpiTag))].join(", ") || "—";
 
                 return (
-                  <tr key={rule.id} className={isSelected ? "bg-amber-200/10" : "bg-transparent"}>
-                    <td className="border-t border-white/10 px-4 py-4 align-top">
+                  <tr key={rule.id} className={isSelected ? "bg-blue-200/10" : "bg-transparent"}>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
                       <div>
-                        <p className="font-semibold text-white">{toReadableRole(rule.role)}</p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-amber-100/72">
+                        <p className="font-semibold text-slate-950">{toReadableRole(rule.role)}</p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-700">
                           {rule.scope.replaceAll("_", " ")}
                         </p>
                       </div>
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
                       Yes
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                      {getActionRequiredLabel(rule.role)}
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {getWorkflowActionRequiredLabel(rule.role)}
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                      {getAccessTypeLabel(rule.role)}
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {getWorkflowAccessTypeLabel(rule.role)}
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top">
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
                       <div className="flex flex-col gap-2">
-                        <span className="text-sm text-white/72">{rule.route}</span>
+                        <span className="text-sm text-slate-600">{rule.route}</span>
                         <div className="flex flex-wrap gap-2">
                           <Link
                             href={buildSopRolePreviewHref(rule.role, rule.route)}
-                            className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
+                            className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
                           >
                             Preview
                           </Link>
                           <Link
                             href={rule.route}
-                            className="inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-semibold text-white"
+                            className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700"
                           >
                             Open route
                           </Link>
                         </div>
                       </div>
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
-                      {rule.actionSummary}
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {rule.summary}
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                      {evidenceSummary}
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {rule.evidenceSummary}
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                      {approvalSummary}
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {rule.approvalSummary}
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                      {pointsSummary}
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {rule.pointSummary}
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                      {kpiSummary}
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {rule.kpiSummary}
                     </td>
-                    <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
-                      {getRoleMessagingSummary(props.definition, rule.role)}
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {rule.messagingSummary}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <FocusedTabSection
+        title="Selected role rule"
+        focusWorkspace={props.focusWorkspace}
+        columnsClassName="grid gap-3 lg:grid-cols-2"
+      />
+    </section>
+  );
+}
+
+function TemplateStepsBuilderSection(props: {
+  definition: SopCampaignDefinition;
+  focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface;
+}) {
+  const selectedStep =
+    props.templateBuilderSurface.steps.find(
+      (step) => step.id === props.focusWorkspace.selected?.id,
+    ) ?? props.templateBuilderSurface.steps[0];
+
+  return (
+    <section className="grid gap-4 xl:grid-cols-[260px_minmax(0,1.2fr)_minmax(0,0.92fr)]">
+      <aside className="rounded-[2rem] border border-slate-200 bg-white p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+          Sections
+        </p>
+        <div className="mt-3 grid gap-2">
+          {props.templateBuilderSurface.phaseLabels.map((section) => (
+            <Link
+              key={section}
+              href={buildSopBuilderHref(
+                props.definition.slug,
+                "steps",
+                getTemplateSectionFocusStepId(props.templateBuilderSurface.steps, section),
+              )}
+              className="rounded-full border border-slate-200 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-700"
+            >
+              {section}
+            </Link>
+          ))}
+        </div>
+
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+          Versions
+        </p>
+        <div className="mt-3 grid gap-2">
+          <Link
+            href={buildSopBuilderHref(props.definition.slug, "version", "current-version")}
+            className="rounded-[1.2rem] border border-slate-200 bg-white px-3 py-3 text-left"
+          >
+            <p className="text-sm font-semibold text-slate-950">
+              {props.templateBuilderSurface.versionLabel}
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-700">
+              {props.templateBuilderSurface.importStatus.replaceAll("_", " ")}
+            </p>
+          </Link>
+        </div>
+
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+          Settings
+        </p>
+        <div className="mt-3 grid gap-2">
+          {props.definition.builderSettings.map((setting) => (
+            <Link
+              key={setting}
+              href="/admin/workflows?section=lanes&focus=campaign-config"
+              className="rounded-full border border-slate-200 bg-white px-3 py-2 text-left text-sm font-semibold text-slate-700"
+            >
+              {setting}
+            </Link>
+          ))}
+        </div>
+
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+          Workflow
+        </p>
+        <div className="mt-3 rounded-[1.2rem] border border-slate-200 bg-blue-50 px-3 py-3">
+          <p className="text-sm font-semibold text-slate-950">
+            {props.templateBuilderSurface.workflowName}
+          </p>
+          <p className="mt-1 text-xs leading-5 text-slate-600">
+            Structured imported draft
+          </p>
+        </div>
+      </aside>
+
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-slate-950">Workflow Steps</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {props.templateBuilderSurface.steps.length} imported steps
+            </p>
+          </div>
+          <Link
+            href={buildSopBuilderHref(
+              props.definition.slug,
+              "steps",
+              props.focusWorkspace.selected?.id,
+              "filter",
+            )}
+            className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+          >
+            Filter
+          </Link>
+        </div>
+
+        <div className="mt-4 grid gap-3">
+          {props.templateBuilderSurface.steps.map((step, index) => {
+            const isSelected = props.focusWorkspace.selected?.id === step.id;
+
+            return (
+              <div key={step.id} className="grid gap-3">
+                <article
+                  className={[
+                    "rounded-[1.5rem] border p-4",
+                    isSelected
+                      ? "border-blue-200/30 bg-blue-50"
+                      : "border-slate-200 bg-white",
+                  ].join(" ")}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-700">
+                        {step.sequence}
+                      </div>
+                      <div>
+                        <h3 className="text-base font-semibold text-slate-950">{step.title}</h3>
+                        <p className="mt-1 text-sm text-slate-600">
+                          {step.phaseLabel} · {toReadableRole(step.primaryOwnerRole)}
+                        </p>
+                      </div>
+                    </div>
+                    <Pill>{getTemplateFocusStatus(step.sourceCertainty).replaceAll("_", " ")}</Pill>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {step.evidenceLabels.length ? <SmallChip>Evidence</SmallChip> : null}
+                    {step.approvalLabels.length ? <SmallChip>Approval</SmallChip> : null}
+                    {step.pointsLabels.length ? <SmallChip>Points</SmallChip> : null}
+                    {step.kpiLabels.map((label) => (
+                      <SmallChip key={`${step.id}-${label}`}>{label}</SmallChip>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Link
+                      href={buildSopBuilderHref(props.definition.slug, "steps", step.id)}
+                      aria-current={isSelected ? "page" : undefined}
+                      className={
+                        isSelected
+                          ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                          : "inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
+                      }
+                    >
+                      {isSelected ? "Selected" : "Open in workspace"}
+                    </Link>
+                    {step.visibleRoutes[0] ? (
+                      <Link
+                        href={buildSopRolePreviewHref(step.primaryOwnerRole, step.route)}
+                        className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
+                      >
+                        Preview as {toReadableRole(step.primaryOwnerRole)}
+                      </Link>
+                    ) : null}
+                    {step.route ? (
+                      <Link
+                        href={step.route}
+                        className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
+                      >
+                        Open linked route
+                      </Link>
+                    ) : null}
+                  </div>
+                </article>
+
+                {index < props.templateBuilderSurface.steps.length - 1 ? (
+                  <Link
+                    href={buildSopBuilderHref(props.definition.slug, "steps", step.id, "add_step")}
+                    className="justify-self-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+                  >
+                    Add Step
+                  </Link>
+                ) : null}
+              </div>
+            );
+          })}
+
+          <Link
+            href={buildSopBuilderHref(
+              props.definition.slug,
+              "steps",
+              props.templateBuilderSurface.steps[
+                props.templateBuilderSurface.steps.length - 1
+              ]?.id,
+              "add_step_after_last",
+            )}
+            className="justify-self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+          >
+            Add Step After Last
+          </Link>
+        </div>
+      </section>
+
+      <aside className="rounded-[2rem] border border-slate-200 bg-white p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-slate-700">
+              {selectedStep.sequence}
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+                Step Details
+              </p>
+              <p className="mt-1 text-sm font-semibold text-slate-950">
+                {selectedStep.title}
+              </p>
+            </div>
+          </div>
+          <Pill>{getTemplateFocusStatus(selectedStep.sourceCertainty).replaceAll("_", " ")}</Pill>
+        </div>
+
+        <div className="mt-4 grid gap-4">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={buildSopBuilderHref(
+                props.definition.slug,
+                "steps",
+                selectedStep.id,
+                "duplicate_step",
+              )}
+              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
+            >
+              Duplicate Step
+            </Link>
+            <Link
+              href={buildSopBuilderHref(
+                props.definition.slug,
+                "steps",
+                selectedStep.id,
+                "disable_step",
+              )}
+              className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
+            >
+              Disable Step
+            </Link>
+          </div>
+          <DetailBlock label="Step Name">{selectedStep.title}</DetailBlock>
+          <DetailBlock label="Phase">{selectedStep.phaseLabel}</DetailBlock>
+          <DetailBlock label="Objective">{selectedStep.objective}</DetailBlock>
+          <DetailBlock label="Due Timing">{selectedStep.dueTiming}</DetailBlock>
+          <DetailBlock label="Owner Roles">
+            {selectedStep.ownerRoles.map(toReadableRole).join(", ")}
+          </DetailBlock>
+          <DetailBlock label="Supporting Roles">
+            {selectedStep.supportingRoles.length
+              ? selectedStep.supportingRoles.map(toReadableRole).join(", ")
+              : "—"}
+          </DetailBlock>
+          <DetailBlock label="Visible Routes">
+            {[selectedStep.route, ...selectedStep.visibleRoutes].filter(
+              (route, index, routes) => route && routes.indexOf(route) === index,
+            ).length
+              ? [selectedStep.route, ...selectedStep.visibleRoutes]
+                  .filter((route, index, routes) => route && routes.indexOf(route) === index)
+                  .join(", ")
+              : "No route mapped yet"}
+          </DetailBlock>
+          <DetailBlock label="Completion Rules">
+            {selectedStep.completionLabels.length
+              ? selectedStep.completionLabels.join(", ")
+              : "—"}
+          </DetailBlock>
+          <DetailBlock label="Evidence Rules">
+            {selectedStep.evidenceLabels.length
+              ? selectedStep.evidenceLabels.join(", ")
+              : "—"}
+          </DetailBlock>
+          <DetailBlock label="Approval Rules">
+            {selectedStep.approvalLabels.length
+              ? selectedStep.approvalLabels.join(", ")
+              : "—"}
+          </DetailBlock>
+          <DetailBlock label="Risk / Escalation">
+            {selectedStep.riskEscalation}
+          </DetailBlock>
+          <DetailBlock label="Expected Outputs">
+            {selectedStep.expectedOutputs.length
+              ? selectedStep.expectedOutputs.join(", ")
+              : "—"}
+          </DetailBlock>
+          <DetailBlock label="Integration Events">
+            {selectedStep.integrationEvents.length
+              ? selectedStep.integrationEvents.join(", ")
+              : "—"}
+          </DetailBlock>
+        </div>
+      </aside>
+    </section>
+  );
+}
+
+function getTemplateSectionFocusStepId(
+  steps: readonly TemplateBuilderStepView[],
+  phaseLabel: string,
+) {
+  return steps.find((step) => step.phaseLabel === phaseLabel)?.id ?? steps[0]?.id;
+}
+
+function TemplateRoleMatrixSection(props: {
+  definition: SopCampaignDefinition;
+  focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface;
+}) {
+  return (
+    <section className="grid gap-4">
+      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+              Imported workflow behavior
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Role Matrix</h2>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
+              This matrix now reads from the structured imported template for
+              Planning / Goal Setting. It shows role scope, visible routes, step
+              coverage, completion rules, and event posture without enabling edits.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="role-matrix"
+              focusId={props.focusWorkspace.selected?.id}
+            />
+            <Pill>{props.templateBuilderSurface.roleMatrix.length} role rules</Pill>
+            <Pill>
+              {new Set(props.templateBuilderSurface.roleMatrix.map((rule) => rule.role)).size} canonical roles
+            </Pill>
+            <Pill>
+              {new Set(props.templateBuilderSurface.roleMatrix.map((rule) => rule.scope)).size} scopes
+            </Pill>
+          </div>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1200px] w-full">
+            <thead className="bg-[#dbeafe]">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Visible</th>
+                <th className="px-4 py-3">Action Required</th>
+                <th className="px-4 py-3">Access Type</th>
+                <th className="px-4 py-3">Page / Surface</th>
+                <th className="px-4 py-3">Step Coverage</th>
+                <th className="px-4 py-3">Evidence</th>
+                <th className="px-4 py-3">Approval</th>
+                <th className="px-4 py-3">Point Value</th>
+                <th className="px-4 py-3">KPI Impact</th>
+                <th className="px-4 py-3">Messaging / Triggered Event</th>
+              </tr>
+            </thead>
+            <tbody>
+              {props.templateBuilderSurface.roleMatrix.map((rule) => {
+                const isSelected = props.focusWorkspace.selected?.id === rule.id;
+
+                return (
+                  <tr key={rule.id} className={isSelected ? "bg-[#f8fbff]" : "bg-transparent"}>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
+                      <div>
+                        <p className="font-semibold text-slate-950">{toReadableRole(rule.role)}</p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+                          {rule.scope.replaceAll("_", " ")}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      Yes
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {getWorkflowActionRequiredLabel(rule.role)}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {getWorkflowAccessTypeLabel(rule.role)}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-sm text-slate-600">
+                          {rule.visibleRoutes.join(", ") || "No route mapped yet"}
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {rule.visibleRoutes[0] ? (
+                            <Link
+                              href={buildSopRolePreviewHref(rule.role, rule.visibleRoutes[0])}
+                              className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                            >
+                              Preview
+                            </Link>
+                          ) : null}
+                          {rule.visibleRoutes[0] ? (
+                            <Link
+                              href={rule.visibleRoutes[0]}
+                              className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                            >
+                              Open route
+                            </Link>
+                          ) : null}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {rule.stepLabels.join(", ") || "—"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {rule.evidenceLabels.join(", ") || "None"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {rule.approvalLabels.join(", ") || "None"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {rule.pointsLabels.join(", ") || "None"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {rule.kpiLabels.join(", ") || "—"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {rule.integrationEvents.join(", ") || "No event named yet"}
                     </td>
                   </tr>
                 );
@@ -1322,6 +2298,18 @@ function CompletionSection(props: {
   definition: SopCampaignDefinition;
   focusWorkspace: BuilderFocusWorkspace;
 }) {
+  const templateBuilderSurface = getTemplateBuilderSurface(props.definition.slug);
+
+  if (templateBuilderSurface?.completionRows.length) {
+    return (
+      <TemplateCompletionSection
+        definition={props.definition}
+        focusWorkspace={props.focusWorkspace}
+        templateBuilderSurface={templateBuilderSurface}
+      />
+    );
+  }
+
   const completionTypes = [
     {
       label: "Manual",
@@ -1346,21 +2334,21 @@ function CompletionSection(props: {
         props.definition.kpiRules.length > 0,
     },
   ] as const;
-  const evidenceTypes = getEvidenceTypeEntries(props.definition);
-  const completionRows = getCompletionRows(props.definition);
+  const evidenceTypes = getWorkflowEvidenceTypeEntries(props.definition);
+  const completionRows = getWorkflowCompletionRows(props.definition);
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
               Completion / Proof / Approval
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
               Workflow completion gates
             </h2>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-white/66">
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
               Keep completion type, evidence type, reviewer role, approval posture,
               overdue logic, escalation, and audit behavior visible together before
               any live upload, review, or browser write is enabled.
@@ -1380,52 +2368,53 @@ function CompletionSection(props: {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <article className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+        <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Completion types
           </p>
           <div className="mt-4 grid gap-3">
             {completionTypes.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[1.3rem] border border-white/10 bg-black/20 p-4"
+                className="rounded-[1.3rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-base font-semibold text-white">{item.label}</h3>
+                  <h3 className="text-base font-semibold text-slate-950">{item.label}</h3>
                   <Pill>{item.active ? "modeled" : "future"}</Pill>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-white/68">{item.note}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.note}</p>
               </div>
             ))}
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
-            Evidence types
+        <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Imported completion rows
           </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Evidence types</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {evidenceTypes.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[1.3rem] border border-white/10 bg-black/20 p-4"
+                className="rounded-[1.3rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-base font-semibold text-white">{item.label}</h3>
+                  <h3 className="text-base font-semibold text-slate-950">{item.label}</h3>
                   <Pill>{item.state}</Pill>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-white/68">{item.note}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.note}</p>
               </div>
             ))}
           </div>
         </article>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#071d1a]/90">
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1120px] w-full">
-            <thead className="bg-black/20">
-              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+            <thead className="bg-[#dbeafe]">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Rule</th>
                 <th className="px-4 py-3">Completion Type</th>
                 <th className="px-4 py-3">Evidence Type</th>
@@ -1441,11 +2430,11 @@ function CompletionSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === row.id;
 
                 return (
-                  <tr key={row.id} className={isSelected ? "bg-amber-200/10" : "bg-transparent"}>
+                  <tr key={row.id} className={isSelected ? "bg-blue-200/10" : "bg-transparent"}>
                     <td className="border-t border-white/10 px-4 py-4 align-top">
                       <div>
                         <p className="font-semibold text-white">{row.label}</p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-amber-100/72">
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-100/72">
                           {row.family}
                         </p>
                       </div>
@@ -1475,7 +2464,7 @@ function CompletionSection(props: {
                           {row.previewHref ? (
                             <Link
                               href={row.previewHref}
-                              className="inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                              className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
                             >
                               {row.previewLabel ?? "Open role preview"}
                             </Link>
@@ -1484,7 +2473,7 @@ function CompletionSection(props: {
                             href={row.focusHref}
                             className={
                               isSelected
-                                ? "inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                                ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
                                 : "inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
                             }
                           >
@@ -1492,7 +2481,7 @@ function CompletionSection(props: {
                           </Link>
                           <Link
                             href={row.route}
-                            className="inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-semibold text-white"
+                            className="inline-flex rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1.5 text-xs font-semibold text-white"
                           >
                             Open route
                           </Link>
@@ -1516,33 +2505,368 @@ function CompletionSection(props: {
   );
 }
 
-function PointsKpiSection(props: {
+function TemplateCompletionSection(props: {
   definition: SopCampaignDefinition;
   focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface;
 }) {
-  const pointRoles = getRolesWithPoints(props.definition);
-  const roleImpactRows = pointRoles.map((role) => ({
-    role,
-    pointValue: getRolePointSummary(props.definition, role),
-    chapterPoints: getChapterPointLabel(props.definition, role),
-    kpiImpact: getRoleKpiSummary(props.definition, role),
-    approvalBeforePoints: getRoleApprovalSummary(props.definition, role),
-    leaderboardVisible: getLeaderboardVisibilityLabel(role),
-    capsOverride: getRoleCapsSummary(role),
-  }));
+  const evidenceTypes = getWorkflowEvidenceTypeEntries(props.definition);
+  const completionRows = getWorkflowCompletionRows(props.definition);
+  const completionTypes = [
+    {
+      label: "Completion",
+      note: "Success-state rules extracted directly from the imported template.",
+      active: props.templateBuilderSurface.completionRows.some(
+        (row) => row.rowType === "completion",
+      ),
+    },
+    {
+      label: "Evidence",
+      note: "Evidence requirements stay visible before uploads or sharing are opened.",
+      active: props.templateBuilderSurface.completionRows.some(
+        (row) => row.rowType === "evidence",
+      ),
+    },
+    {
+      label: "Approval",
+      note: "Human review gates remain explicit inside the imported draft template.",
+      active: props.templateBuilderSurface.completionRows.some(
+        (row) => row.rowType === "approval",
+      ),
+    },
+  ] as const;
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-500">
+              Completion / Proof / Approval
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+              Workflow completion gates
+            </h2>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
+              This tab now reads from the structured imported template for
+              Planning / Goal Setting, so completion, evidence, and approval
+              rules stay attached to the real workflow data inside the existing
+              SOP function.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="completion"
+              focusId={props.focusWorkspace.selected?.id}
+            />
+            <Pill>
+              {
+                props.templateBuilderSurface.completionRows.filter(
+                  (row) => row.rowType === "completion",
+                ).length
+              }{" "}
+              completion rules
+            </Pill>
+            <Pill>
+              {
+                props.templateBuilderSurface.completionRows.filter(
+                  (row) => row.rowType === "evidence",
+                ).length
+              }{" "}
+              evidence rules
+            </Pill>
+            <Pill>
+              {
+                props.templateBuilderSurface.completionRows.filter(
+                  (row) => row.rowType === "approval",
+                ).length
+              }{" "}
+              approval rules
+            </Pill>
+            <Pill>{props.templateBuilderSurface.riskRows.length} risk rules</Pill>
+            <Pill>{props.templateBuilderSurface.escalationRows.length} escalations</Pill>
+            <Pill>{props.templateBuilderSurface.closeoutRows.length} closeout requirements</Pill>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Completion types
+          </p>
+          <div className="mt-4 grid gap-3">
+            {completionTypes.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[1.3rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-base font-semibold text-slate-950">{item.label}</h3>
+                  <Pill>{item.active ? "modeled" : "future"}</Pill>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.note}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Imported completion rows
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Evidence types</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {evidenceTypes.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[1.3rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-base font-semibold text-slate-950">{item.label}</h3>
+                  <Pill>{item.state}</Pill>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.note}</p>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1120px] w-full">
+            <thead className="bg-[#dbeafe]">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <th className="px-4 py-3">Rule</th>
+                <th className="px-4 py-3">Completion Type</th>
+                <th className="px-4 py-3">Evidence Type</th>
+                <th className="px-4 py-3">Reviewer Role</th>
+                <th className="px-4 py-3">Approval Required</th>
+                <th className="px-4 py-3">Overdue / Escalation</th>
+                <th className="px-4 py-3">Audit Behavior</th>
+                <th className="px-4 py-3">Route / Surface</th>
+              </tr>
+            </thead>
+            <tbody>
+              {completionRows.map((row) => {
+                const isSelected = props.focusWorkspace.selected?.id === row.id;
+
+                return (
+                  <tr key={row.id} className={isSelected ? "bg-[#f8fbff]" : "bg-white"}>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
+                      <div>
+                        <p className="font-semibold text-slate-950">{row.label}</p>
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
+                          {row.family}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.completionType}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.evidenceType}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.reviewerRole}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.approvalRequired}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {row.overdueEscalation}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {row.auditBehavior}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-sm text-slate-600">{row.route}</span>
+                        <div className="flex flex-wrap gap-2">
+                          {row.previewHref ? (
+                            <Link
+                              href={row.previewHref}
+                              className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                            >
+                              {row.previewLabel ?? "Open role preview"}
+                            </Link>
+                          ) : null}
+                          <Link
+                            href={row.focusHref}
+                            className={
+                              isSelected
+                                ? "inline-flex rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8]"
+                                : "inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                            }
+                          >
+                            {isSelected ? "Selected" : "Open in workspace"}
+                          </Link>
+                          <Link
+                            href={row.route}
+                            className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                          >
+                            Open route
+                          </Link>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-3">
+        <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+            Imported risk posture
+          </p>
+          <div className="mt-4 grid gap-3">
+            {props.templateBuilderSurface.riskRows.map((row) => (
+              <div
+                key={row.id}
+                className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-white">{row.title}</h3>
+                    <p className="mt-1 text-sm text-white/66">
+                      {row.severity} severity
+                      {row.linkedStepLabels.length
+                        ? ` · ${row.linkedStepLabels.join(", ")}`
+                        : ""}
+                    </p>
+                  </div>
+                  <Pill>{getTemplateFocusStatus(row.sourceCertainty).replaceAll("_", " ")}</Pill>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/68">{row.triggerCondition}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <BuilderFocusLink
+                    campaignSlug={props.definition.slug}
+                    tab="completion"
+                    focusId={row.id}
+                    selected={props.focusWorkspace.selected?.id === row.id}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+            Escalation follow-through
+          </p>
+          <div className="mt-4 grid gap-3">
+            {props.templateBuilderSurface.escalationRows.map((row) => (
+              <div
+                key={row.id}
+                className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-white">{row.title}</h3>
+                    <p className="mt-1 text-sm text-white/66">
+                      {row.ownerRoles.map(toReadableRole).join(", ")}
+                    </p>
+                  </div>
+                  <Pill>{getTemplateFocusStatus(row.sourceCertainty).replaceAll("_", " ")}</Pill>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/68">{row.action}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {row.linkedStepLabels.map((label) => (
+                    <SmallChip key={`${row.id}-${label}`}>{label}</SmallChip>
+                  ))}
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <BuilderFocusLink
+                    campaignSlug={props.definition.slug}
+                    tab="completion"
+                    focusId={row.id}
+                    selected={props.focusWorkspace.selected?.id === row.id}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+            Closeout requirements
+          </p>
+          <div className="mt-4 grid gap-3">
+            {props.templateBuilderSurface.closeoutRows.map((row) => (
+              <div
+                key={row.id}
+                className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-semibold text-white">{row.title}</h3>
+                    <p className="mt-1 text-sm text-white/66">
+                      {row.requiredByRoles.map(toReadableRole).join(", ")}
+                    </p>
+                  </div>
+                  <Pill>{getTemplateFocusStatus(row.sourceCertainty).replaceAll("_", " ")}</Pill>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/68">{row.description}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <BuilderFocusLink
+                    campaignSlug={props.definition.slug}
+                    tab="completion"
+                    focusId={row.id}
+                    selected={props.focusWorkspace.selected?.id === row.id}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+        <FocusedTabSection
+        title="Selected workflow rule"
+        focusWorkspace={props.focusWorkspace}
+        columnsClassName="grid gap-3 lg:grid-cols-2"
+      />
+    </section>
+  );
+}
+
+function PointsKpiSection(props: {
+  definition: SopCampaignDefinition;
+  focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface | null;
+}) {
+  if (props.templateBuilderSurface?.pointsRows.length) {
+    return (
+      <TemplatePointsKpiSection
+        definition={props.definition}
+        focusWorkspace={props.focusWorkspace}
+        templateBuilderSurface={props.templateBuilderSurface}
+      />
+    );
+  }
+
+  const roleImpactRows = getWorkflowRolePointsRows(props.definition);
+
+  return (
+    <section className="grid gap-4">
+      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-500">
               Points & KPI Impact
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
               Recognition and measurement rules
             </h2>
-            <p className="mt-2 max-w-4xl text-sm leading-6 text-white/66">
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
               Keep role-based points, chapter points, KPI event logic, approval
               before points, leaderboard visibility, and internal-only tracking in
               the same workflow editor so recognition does not drift away from the
@@ -1557,23 +2881,23 @@ function PointsKpiSection(props: {
             />
             <Pill>{props.definition.pointsRules.length} points rules</Pill>
             <Pill>{props.definition.kpiRules.length} KPI rules</Pill>
-            <Pill>{pointRoles.length} roles with points</Pill>
+            <Pill>{roleImpactRows.length} roles with points</Pill>
           </div>
         </div>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MiniStat label="Role-based points" value={`${pointRoles.length}`} />
+        <MiniStat label="Role-based points" value={`${roleImpactRows.length}`} />
         <MiniStat label="Chapter points" value="Visible in chapter totals" />
         <MiniStat label="Approval before points" value="Guarded by workflow" />
         <MiniStat label="Leaderboard visible" value="Member-facing" />
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#071d1a]/90">
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1120px] w-full">
-            <thead className="bg-black/20">
-              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+            <thead className="bg-[#dbeafe]">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Point Value</th>
                 <th className="px-4 py-3">Chapter Points</th>
@@ -1585,26 +2909,26 @@ function PointsKpiSection(props: {
             </thead>
             <tbody>
               {roleImpactRows.map((row) => (
-                <tr key={row.role}>
-                  <td className="border-t border-white/10 px-4 py-4 align-top">
-                    <p className="font-semibold text-white">{toReadableRole(row.role)}</p>
+                <tr key={row.role} className="bg-white">
+                  <td className="border-t border-slate-200 px-4 py-4 align-top">
+                    <p className="font-semibold text-slate-950">{toReadableRole(row.role)}</p>
                   </td>
-                  <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
                     {row.pointValue}
                   </td>
-                  <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
                     {row.chapterPoints}
                   </td>
-                  <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
                     {row.kpiImpact}
                   </td>
-                  <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
                     {row.approvalBeforePoints}
                   </td>
-                  <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
                     {row.leaderboardVisible}
                   </td>
-                  <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
                     {row.capsOverride}
                   </td>
                 </tr>
@@ -1626,13 +2950,27 @@ function PointsKpiSection(props: {
 function CommsSection(props: {
   definition: SopCampaignDefinition;
   focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface | null;
 }) {
+  if (props.templateBuilderSurface) {
+    return (
+      <TemplateCommsSection
+        definition={props.definition}
+        focusWorkspace={props.focusWorkspace}
+        templateBuilderSurface={props.templateBuilderSurface}
+      />
+    );
+  }
+
+  const communicationRows = getWorkflowCommunicationRows(props.definition);
+  const communicationSummary = getWorkflowCommunicationSummary(props.definition);
+
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+      <section className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
               Comms
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -1651,19 +2989,11 @@ function CommsSection(props: {
               focusId={props.focusWorkspace.selected?.id}
             />
             <Pill>
-              {
-                props.definition.communicationRules.filter(
-                  (rule) => rule.deliveryMode !== "disabled",
-                ).length
-              }{" "}
+              {communicationSummary.enabledInternallyCount}{" "}
               enabled internally
             </Pill>
             <Pill>
-              {
-                props.definition.communicationRules.filter(
-                  (rule) => rule.deliveryMode === "disabled",
-                ).length
-              }{" "}
+              {communicationSummary.blockedExternalCount}{" "}
               blocked external
             </Pill>
             <Pill>{props.definition.integrationBoundaries.length} boundaries</Pill>
@@ -1671,10 +3001,10 @@ function CommsSection(props: {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#071d1a]/90">
+      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b66cc]/90">
         <div className="overflow-x-auto">
           <table className="min-w-[1160px] w-full">
-            <thead className="bg-black/20">
+            <thead className="bg-[#bfdbfe]/40">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
                 <th className="px-4 py-3">Enabled</th>
                 <th className="px-4 py-3">Trigger Condition</th>
@@ -1688,13 +3018,13 @@ function CommsSection(props: {
               </tr>
             </thead>
             <tbody>
-              {props.definition.communicationRules.map((rule) => {
+              {communicationRows.map((rule) => {
                 const isSelected = props.focusWorkspace.selected?.id === rule.id;
 
                 return (
-                <tr key={rule.id} className={isSelected ? "bg-amber-200/10" : "bg-transparent"}>
+                <tr key={rule.id} className={isSelected ? "bg-blue-200/10" : "bg-transparent"}>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                    {rule.deliveryMode === "disabled" ? "No" : "Yes"}
+                    {rule.enabled ? "Yes" : "No"}
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top">
                     <div>
@@ -1706,19 +3036,19 @@ function CommsSection(props: {
                     {rule.audience}
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                    {getSourceSystemLabel(rule.deliveryMode)}
+                    {rule.sourceSystemLabel}
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
-                    {getCommunicationTimingLabel(rule.trigger, rule.detail)}
+                    {rule.timingLabel}
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
-                    {getCommunicationApprovalLabel(rule.deliveryMode)}
+                    {rule.approvalLabel}
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
-                    {rule.deliveryMode.replaceAll("_", " ")}
+                    {rule.deliveryModeLabel}
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
-                    {props.definition.name} workflow
+                    {rule.workflowReference}
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top">
                     <BuilderFocusLink
@@ -1741,9 +3071,9 @@ function CommsSection(props: {
             key={boundary.system}
             className={[
               "rounded-[1.5rem] border p-5",
-              props.focusWorkspace.selected?.id === getIntegrationBoundaryFocusId(boundary.system)
-                ? "border-amber-200/28 bg-amber-200/10"
-                : "border-white/10 bg-[#071d1a]/90",
+              props.focusWorkspace.selected?.id === getWorkflowIntegrationBoundaryFocusId(boundary.system)
+                ? "border-blue-200/28 bg-blue-200/10"
+                : "border-white/10 bg-[#0b66cc]/90",
             ].join(" ")}
           >
             <div className="flex items-start justify-between gap-3">
@@ -1760,11 +3090,336 @@ function CommsSection(props: {
               <BuilderFocusLink
                 campaignSlug={props.definition.slug}
                 tab="comms"
-                focusId={getIntegrationBoundaryFocusId(boundary.system)}
+                focusId={getWorkflowIntegrationBoundaryFocusId(boundary.system)}
                 selected={
                   props.focusWorkspace.selected?.id ===
-                  getIntegrationBoundaryFocusId(boundary.system)
+                  getWorkflowIntegrationBoundaryFocusId(boundary.system)
                 }
+              />
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <FocusedTabSection
+        title="Selected communication trigger"
+        focusWorkspace={props.focusWorkspace}
+        columnsClassName="grid gap-3 lg:grid-cols-2"
+      />
+    </section>
+  );
+}
+
+function TemplatePointsKpiSection(props: {
+  definition: SopCampaignDefinition;
+  focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface;
+}) {
+  return (
+    <section className="grid gap-4">
+      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-500">
+              Points & KPI Impact
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+              Recognition and measurement rules
+            </h2>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
+              This tab now reads imported point and KPI behavior from the
+              structured workflow template inside the current SOP builder, so
+              role-based recognition and KPI targets stay in the same source of
+              truth.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="points-kpi"
+              focusId={props.focusWorkspace.selected?.id}
+            />
+            <Pill>{props.templateBuilderSurface.pointsRows.length} roles with points</Pill>
+            <Pill>{props.templateBuilderSurface.kpiRows.length} KPI rules</Pill>
+            <Pill>
+              {uniqueValues(props.templateBuilderSurface.pointsRows.flatMap((row) => row.approvalLabels)).length} approval gates
+            </Pill>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <MiniStat label="Role-based points" value={`${props.templateBuilderSurface.pointsRows.length}`} />
+        <MiniStat label="KPI rules" value={`${props.templateBuilderSurface.kpiRows.length}`} />
+        <MiniStat
+          label="KPI targets"
+          value={`${props.templateBuilderSurface.kpiRows.filter((row) => row.targetValue !== null).length}`}
+        />
+        <MiniStat label="Approval before points" value="Guarded by workflow" />
+        <MiniStat
+          label="Leaderboard visible"
+          value={
+            props.templateBuilderSurface.pointsRows.some((row) => row.leaderboardVisible)
+              ? "Visible"
+              : "Internal only"
+          }
+        />
+        <MiniStat label="Chapter points" value="Visible in chapter totals" />
+      </section>
+
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1120px] w-full">
+            <thead className="bg-[#dbeafe]">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <th className="px-4 py-3">Role</th>
+                <th className="px-4 py-3">Point Value</th>
+                <th className="px-4 py-3">Chapter Points</th>
+                <th className="px-4 py-3">KPI Event</th>
+                <th className="px-4 py-3">Approval Before Points</th>
+                <th className="px-4 py-3">Leaderboard Visible</th>
+                <th className="px-4 py-3">Caps / Manual Override</th>
+              </tr>
+            </thead>
+            <tbody>
+              {props.templateBuilderSurface.pointsRows.map((row) => (
+                <tr key={row.id} className="bg-white">
+                  <td className="border-t border-slate-200 px-4 py-4 align-top">
+                    <p className="font-semibold text-slate-950">{toReadableRole(row.role)}</p>
+                  </td>
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                    {row.pointValues.join(", ")} points
+                  </td>
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                    {row.ruleLabels.join(", ") || "Visible in chapter totals"}
+                  </td>
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                    {row.kpiLabels.join(", ") || "—"}
+                  </td>
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                    {row.approvalLabels.join(", ") || "No approval rule linked"}
+                  </td>
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                    {row.leaderboardVisible ? "Yes" : "No"}
+                  </td>
+                  <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                    {row.repeatabilityLabels.join(", ")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="border-b border-[#bfdbfe] px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Imported KPI rules
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            KPI rules stay first-class in the workflow builder so labels,
+            metric keys, targets, and step linkage do not drift into
+            dashboard-only display logic.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-[1180px] w-full">
+            <thead className="bg-[#dbeafe]">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <th className="px-4 py-3">KPI rule</th>
+                <th className="px-4 py-3">Metric key</th>
+                <th className="px-4 py-3">Target</th>
+                <th className="px-4 py-3">Threshold / source note</th>
+                <th className="px-4 py-3">Linked steps</th>
+                <th className="px-4 py-3">Linked roles</th>
+                <th className="px-4 py-3">Workspace state</th>
+              </tr>
+            </thead>
+            <tbody>
+              {props.templateBuilderSurface.kpiRows.map((row) => {
+                const isSelected = props.focusWorkspace.selected?.id === row.id;
+
+                return (
+                  <tr key={row.id} className={isSelected ? "bg-[#f8fbff]" : "bg-white"}>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
+                      <p className="font-semibold text-slate-950">{row.label}</p>
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.metricKey}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.targetValue !== null ? row.targetValue : "No fixed target"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {row.thresholdLabel ?? "No threshold note"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {row.linkedStepLabels.join(", ") || "—"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {row.linkedRoleLabels.join(", ") || "—"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
+                      <BuilderFocusLink
+                        campaignSlug={props.definition.slug}
+                        tab="points-kpi"
+                        focusId={row.id}
+                        selected={isSelected}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <FocusedTabSection
+        title="Selected points or KPI rule"
+        focusWorkspace={props.focusWorkspace}
+        columnsClassName="grid gap-3 lg:grid-cols-2"
+      />
+    </section>
+  );
+}
+
+function TemplateCommsSection(props: {
+  definition: SopCampaignDefinition;
+  focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface;
+}) {
+  return (
+    <section className="grid gap-4">
+      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-500">
+              Comms
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+              Communication triggers
+            </h2>
+            <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
+              This tab now reads communication and integration posture from the
+              structured imported template, while keeping all real sends blocked.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <BuilderFilterLink
+              campaignSlug={props.definition.slug}
+              tab="comms"
+              focusId={props.focusWorkspace.selected?.id}
+            />
+            <Pill>
+              {props.templateBuilderSurface.commRows.filter((row) => row.mockStatus !== "approval_required").length} internal/mock
+            </Pill>
+            <Pill>
+              {props.templateBuilderSurface.commRows.filter((row) => row.mockStatus === "approval_required").length} approval required
+            </Pill>
+            <Pill>{props.templateBuilderSurface.integrationBoundaries.length} boundaries</Pill>
+          </div>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <div className="overflow-x-auto">
+          <table className="min-w-[1160px] w-full">
+            <thead className="bg-[#dbeafe]">
+              <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <th className="px-4 py-3">Enabled</th>
+                <th className="px-4 py-3">Trigger Condition</th>
+                <th className="px-4 py-3">Audience</th>
+                <th className="px-4 py-3">Source System</th>
+                <th className="px-4 py-3">Timing</th>
+                <th className="px-4 py-3">Approval Needed</th>
+                <th className="px-4 py-3">Mock / Live Status</th>
+                <th className="px-4 py-3">Workflow Reference</th>
+                <th className="px-4 py-3">Workspace State</th>
+              </tr>
+            </thead>
+            <tbody>
+              {props.templateBuilderSurface.commRows.map((row) => {
+                const isSelected = props.focusWorkspace.selected?.id === row.id;
+
+                return (
+                  <tr key={row.id} className={isSelected ? "bg-[#f8fbff]" : "bg-white"}>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.mockStatus === "approval_required" ? "No" : "Yes"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
+                      <div>
+                        <p className="font-semibold text-slate-950">{row.title}</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">{row.detail}</p>
+                      </div>
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.audience}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.sourceSystem}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {row.timing}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {row.mockStatus === "approval_required" ? "Yes" : "No"}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
+                      {row.mockStatus.replaceAll("_", " ")}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top text-sm leading-6 text-slate-600">
+                      {props.templateBuilderSurface.workflowName}
+                    </td>
+                    <td className="border-t border-slate-200 px-4 py-4 align-top">
+                      <BuilderFocusLink
+                        campaignSlug={props.definition.slug}
+                        tab="comms"
+                        focusId={row.id}
+                        selected={isSelected}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="grid gap-3 lg:grid-cols-2">
+        {props.templateBuilderSurface.integrationBoundaries.map((boundary) => (
+          <article
+            key={boundary.id}
+            className={[
+              "rounded-[1.5rem] border p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]",
+              props.focusWorkspace.selected?.id === boundary.id
+                ? "border-[#bfdbfe] bg-[#f8fbff]"
+                : "border-[#bfdbfe] bg-white",
+            ].join(" ")}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  Integration boundary
+                </p>
+                <h3 className="mt-2 text-lg font-semibold text-slate-950">{boundary.system}</h3>
+              </div>
+              <Pill>{boundary.mode.replaceAll("_", " ")}</Pill>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-slate-600">{boundary.detail}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {boundary.eventNames.map((eventName) => (
+                <SmallChip key={`${boundary.id}-${eventName}`}>{eventName}</SmallChip>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <BuilderFocusLink
+                campaignSlug={props.definition.slug}
+                tab="comms"
+                focusId={boundary.id}
+                selected={props.focusWorkspace.selected?.id === boundary.id}
               />
             </div>
           </article>
@@ -1783,36 +3438,22 @@ function CommsSection(props: {
 function RolePreviewSection(props: {
   definition: SopCampaignDefinition;
   focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface | null;
 }) {
-  const scenarioRows = props.definition.previewScenarios.map((scenario) => {
-    const relevantSteps = getPreviewScenarioSteps(props.definition, scenario);
-
-    return {
-      scenario,
-      relevantSteps,
-      actionAppears: relevantSteps[0]?.title ?? "Route state preview",
-      proofRequested: relevantSteps.some((step) => step.evidenceRequired)
-        ? getPreviewEvidenceSummary(props.definition)
-        : "None",
-      approvalRequired: relevantSteps.some((step) => step.approvalRequired) ? "Yes" : "No",
-      pointsEarned: relevantSteps.some((step) => step.pointsEnabled)
-        ? getRolePointSummary(props.definition, scenario.primaryRole)
-        : "None",
-      kpiChanges:
-        [...new Set(relevantSteps.map((step) => step.kpiTag))].join(", ") || "—",
-      communicationTrigger:
-        relevantSteps.length > 0
-          ? getRoleMessagingSummary(props.definition, scenario.primaryRole)
-          : "No workflow-triggered messages",
-    };
-  });
+  const runtime = getSopWorkflowRuntime(props.definition.slug);
+  const scenarioRows = getWorkflowPreviewRows(
+    props.definition,
+    runtime?.previewScenarios,
+    props.templateBuilderSurface?.previewScenarios,
+  );
+  const distinctRoles = getWorkflowPreviewDistinctRoleCount(scenarioRows);
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+      <section className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
               Preview
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -1831,16 +3472,16 @@ function RolePreviewSection(props: {
               tab="preview"
               focusId={props.focusWorkspace.selected?.id}
             />
-            <Pill>{props.definition.previewScenarios.length} preview scenarios</Pill>
-            <Pill>{getDistinctRoles(props.definition)} role lanes in scope</Pill>
+            <Pill>{scenarioRows.length} preview scenarios</Pill>
+            <Pill>{distinctRoles} role lanes in scope</Pill>
           </div>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#071d1a]/90">
+      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b66cc]/90">
         <div className="overflow-x-auto">
           <table className="min-w-[1320px] w-full">
-            <thead className="bg-black/20">
+            <thead className="bg-[#bfdbfe]/40">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Screen / Page Changes</th>
@@ -1855,33 +3496,33 @@ function RolePreviewSection(props: {
             </thead>
             <tbody>
               {scenarioRows.map((row) => {
-                const isSelected = props.focusWorkspace.selected?.id === row.scenario.id;
+                const isSelected = props.focusWorkspace.selected?.id === row.id;
 
                 return (
-                <tr key={row.scenario.id} className={isSelected ? "bg-amber-200/10" : "bg-transparent"}>
+                <tr key={row.id} className={isSelected ? "bg-blue-200/10" : "bg-transparent"}>
                   <td className="border-t border-white/10 px-4 py-4 align-top">
                     <div className="flex flex-col gap-2">
                       <div>
                         <p className="font-semibold text-white">
-                          {toReadableRole(row.scenario.primaryRole)}
+                          {toReadableRole(row.primaryRole)}
                         </p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-amber-100/72">
-                          {row.scenario.title}
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                          {row.title}
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <Link
                           href={buildSopRolePreviewHref(
-                            row.scenario.primaryRole,
-                            row.scenario.route,
+                            row.primaryRole,
+                            row.route,
                           )}
-                          className="inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                          className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
                         >
-                          Preview as {toReadableRole(row.scenario.primaryRole)}
+                          Preview as {toReadableRole(row.primaryRole)}
                         </Link>
                         <Link
-                          href={row.scenario.route}
-                          className="inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-semibold text-white"
+                          href={row.route}
+                          className="inline-flex rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1.5 text-xs font-semibold text-white"
                         >
                           Open raw route
                         </Link>
@@ -1889,7 +3530,7 @@ function RolePreviewSection(props: {
                     </div>
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
-                    {row.scenario.visibleStates.join(", ")}
+                    {row.visibleStates.join(", ")}
                   </td>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm leading-6 text-white/72">
                     {row.actionAppears}
@@ -1913,7 +3554,7 @@ function RolePreviewSection(props: {
                     <BuilderFocusLink
                       campaignSlug={props.definition.slug}
                       tab="preview"
-                      focusId={row.scenario.id}
+                      focusId={row.id}
                       selected={isSelected}
                     />
                   </td>
@@ -1936,18 +3577,21 @@ function RolePreviewSection(props: {
 function VersionReviewSection(props: {
   definition: SopCampaignDefinition;
   focusWorkspace: BuilderFocusWorkspace;
+  templateBuilderSurface: TemplateBuilderSurface | null;
 }) {
   const liveVersion =
     props.definition.version.history.find((entry) => entry.state === "approved_template") ??
     null;
   const currentVersionSelected = props.focusWorkspace.selected?.id === "current-version";
+  const localDraftProposals = getSopLocalDraftProposals(props.definition.slug);
+  const localDraftSession = getSopLocalDraftSession(props.definition.slug);
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+      <section className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
               Compare live vs draft
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -1972,7 +3616,7 @@ function VersionReviewSection(props: {
                 props.focusWorkspace.selected?.id ?? "current-version",
                 "publish",
               )}
-              className="rounded-full bg-amber-200 px-4 py-2 text-sm font-semibold text-[#26180d]"
+              className="rounded-full bg-blue-200 px-4 py-2 text-sm font-semibold text-[#26180d]"
             >
               Publish now
             </Link>
@@ -1994,7 +3638,7 @@ function VersionReviewSection(props: {
                 props.focusWorkspace.selected?.id ?? "current-version",
                 "rollback",
               )}
-              className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-4 py-2 text-sm font-semibold text-white"
             >
               Rollback
             </Link>
@@ -2003,8 +3647,8 @@ function VersionReviewSection(props: {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <article className="rounded-[2rem] border border-amber-200/18 bg-amber-200/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-100/80">
+        <article className="rounded-[2rem] border border-blue-200/18 bg-blue-200/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100/80">
             Current draft
           </p>
           <h3 className="mt-2 text-2xl font-semibold text-white">
@@ -2028,7 +3672,7 @@ function VersionReviewSection(props: {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
+        <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/54">
             Current live version
           </p>
@@ -2054,8 +3698,140 @@ function VersionReviewSection(props: {
         </article>
       </section>
 
+      {localDraftSession ? (
+        <section className="grid gap-4 xl:grid-cols-2">
+          <article className="rounded-[2rem] border border-blue-200/18 bg-blue-200/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100/80">
+              Local draft session
+            </p>
+            <h3 className="mt-2 text-2xl font-semibold text-white">
+              {localDraftSession.title}
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-white/72">
+              {localDraftSession.summary}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Pill>{localDraftSession.status.replaceAll("_", " ")}</Pill>
+              <Pill>{localDraftSession.proposalIds.length} proposals</Pill>
+              <Pill>{localDraftSession.affectedRoles.length} roles</Pill>
+              <Pill>{localDraftSession.groups.length} review lanes</Pill>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <BuilderFocusLink
+                campaignSlug={props.definition.slug}
+                tab="version"
+                focusId={localDraftSession.id}
+                selected={props.focusWorkspace.selected?.id === localDraftSession.id}
+              />
+              <Link
+                href={buildSopBuilderHref(
+                  props.definition.slug,
+                  "version",
+                  localDraftSession.id,
+                  "edit_draft_session",
+                )}
+                className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+              >
+                Edit draft session
+              </Link>
+            </div>
+          </article>
+
+          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/54">
+              Draft session comparison
+            </p>
+            <h3 className="mt-2 text-2xl font-semibold text-white">
+              Current draft vs local draft session
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-white/72">
+              Compare the current template posture against the bundled campaign-level
+              draft session so reviewers can see what changed before any persisted
+              builder mutation path exists.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <article className="rounded-[1.2rem] border border-white/10 bg-[#bfdbfe]/40 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/72">
+                  Current draft baseline
+                </p>
+                <p className="mt-2 text-sm font-semibold text-white">
+                  {props.definition.version.currentLabel} · {props.definition.builderStatus.replaceAll("_", " ")}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/68">
+                  {props.definition.steps.length} steps, {getWorkflowDistinctRoleCount(props.definition)} roles,
+                  {" "}{props.definition.communicationRules.length} communication lanes.
+                </p>
+              </article>
+              <article className="rounded-[1.2rem] border border-blue-200/18 bg-blue-200/10 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/72">
+                  Draft session package
+                </p>
+                <p className="mt-2 text-sm font-semibold text-white">
+                  {localDraftSession.proposalIds.length} proposals · {localDraftSession.affectedRoles.length} roles · {localDraftSession.sourceRoutes.length} source routes
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/68">
+                  {localDraftSession.proposedChanges.length} proposed changes bundled into one local
+                  campaign review package.
+                </p>
+              </article>
+            </div>
+          </article>
+        </section>
+      ) : null}
+
+      {localDraftSession ? (
+        <section className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/54">
+                Draft session review lanes
+              </p>
+              <h3 className="mt-2 text-2xl font-semibold text-white">
+                Grouped packet review inside the builder
+              </h3>
+              <p className="mt-2 max-w-4xl text-sm leading-6 text-white/72">
+                The existing SOP Creation lane now bundles local proposals into named
+                review groups so template linkage, committee ownership, and permission
+                posture can be reviewed as one campaign packet.
+              </p>
+            </div>
+            <Pill>{localDraftSession.groups.length}</Pill>
+          </div>
+          <div className="mt-4 grid gap-3 xl:grid-cols-3">
+            {localDraftSession.groups.map((group) => (
+              <article
+                key={group.id}
+                className="rounded-[1.35rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                      Review lane
+                    </p>
+                    <h4 className="mt-2 text-lg font-semibold text-white">{group.title}</h4>
+                  </div>
+                  <Pill>{group.proposalIds.length}</Pill>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/72">{group.summary}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Pill>{group.affectedRoles.length} roles</Pill>
+                  <Pill>{group.sourceRoutes.length} source routes</Pill>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {group.proposalTitles.slice(0, 3).map((title) => (
+                    <p key={`${group.id}-${title}`} className="text-sm leading-6 text-white/68">
+                      {title}
+                    </p>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MiniStat label="Impacted roles" value={`${getDistinctRoles(props.definition)}`} />
+        <MiniStat label="Impacted roles" value={`${getWorkflowDistinctRoleCount(props.definition)}`} />
         <MiniStat label="Impacted steps" value={`${props.definition.steps.length}`} />
         <MiniStat
           label="Impacted points/KPIs"
@@ -2067,8 +3843,348 @@ function VersionReviewSection(props: {
         />
       </section>
 
-      <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+      {props.templateBuilderSurface ? (
+        <section className="grid gap-4 xl:grid-cols-2">
+          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+                  Runtime controls
+                </p>
+                <h3 className="mt-2 text-xl font-semibold text-white">
+                  Feature flags and rollout posture
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-white/68">
+                  Keep workflow runtime switches visible on the same version lane so
+                  reviewers can see what stays enabled for read-only use and what still
+                  waits for broader rollout approval.
+                </p>
+              </div>
+              <Pill>{props.templateBuilderSurface.featureFlagRows.length}</Pill>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {props.templateBuilderSurface.featureFlagRows.map((flag) => (
+                <div
+                  key={flag.id}
+                  className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-base font-semibold text-white">{flag.flagKey}</h4>
+                      <p className="mt-2 text-sm leading-6 text-white/68">
+                        {flag.description}
+                      </p>
+                    </div>
+                    <Pill>{flag.defaultState}</Pill>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Pill>{flag.rolloutStage.replaceAll("_", " ")}</Pill>
+                    <Pill>{getTemplateFocusStatus(flag.sourceCertainty).replaceAll("_", " ")}</Pill>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+                  Audit and rollout posture
+                </p>
+                <h3 className="mt-2 text-xl font-semibold text-white">
+                  Integration boundaries and audit expectations
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-white/68">
+                  Version review should show which downstream systems stay blocked and
+                  which audit events must remain visible before any publish posture is
+                  treated as operational truth.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Pill>{props.templateBuilderSurface.integrationBoundaries.length} boundaries</Pill>
+                <Pill>{props.templateBuilderSurface.auditRows.length} audit rows</Pill>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {props.templateBuilderSurface.integrationBoundaries.map((boundary) => (
+                <div
+                  key={boundary.id}
+                  className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-base font-semibold text-white">{boundary.system}</h4>
+                      <p className="mt-2 text-sm leading-6 text-white/68">
+                        {boundary.detail}
+                      </p>
+                    </div>
+                    <Pill>{boundary.mode.replaceAll("_", " ")}</Pill>
+                  </div>
+                </div>
+              ))}
+              {props.templateBuilderSurface.auditRows.map((record) => (
+                <div
+                  key={record.id}
+                  className="rounded-[1.3rem] border border-blue-200/18 bg-blue-200/10 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-base font-semibold text-white">{record.eventType}</h4>
+                      <p className="mt-2 text-sm leading-6 text-white/68">{record.detail}</p>
+                    </div>
+                    <Pill>{record.required ? "required" : "optional"}</Pill>
+                  </div>
+                  {record.linkedOutboxTopics.length > 0 ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {record.linkedOutboxTopics.map((topic) => (
+                        <SmallChip key={`${record.id}-${topic}`}>{topic}</SmallChip>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+                  Imported source coverage
+                </p>
+                <h3 className="mt-2 text-xl font-semibold text-white">
+                  Script templates
+                </h3>
+              </div>
+              <Pill>{props.templateBuilderSurface.scriptTemplates.length}</Pill>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {props.templateBuilderSurface.scriptTemplates.map((template) => (
+                <div
+                  key={template.id}
+                  className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-base font-semibold text-white">{template.title}</h4>
+                      <p className="mt-1 text-sm text-white/66">{template.audience}</p>
+                    </div>
+                    <Pill>
+                      {getTemplateFocusStatus(template.sourceCertainty).replaceAll("_", " ")}
+                    </Pill>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-white/68">{template.summary}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <BuilderFocusLink
+                      campaignSlug={props.definition.slug}
+                      tab="version"
+                      focusId={template.id}
+                      selected={props.focusWorkspace.selected?.id === template.id}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+                  Imported source coverage
+                </p>
+                <h3 className="mt-2 text-xl font-semibold text-white">
+                  Resource links
+                </h3>
+              </div>
+              <Pill>{props.templateBuilderSurface.resourceLinks.length}</Pill>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {props.templateBuilderSurface.resourceLinks.map((resource) => (
+                <div
+                  key={resource.id}
+                  className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-base font-semibold text-white">{resource.label}</h4>
+                      <p className="mt-1 text-sm break-all text-white/66">{resource.href}</p>
+                    </div>
+                    <Pill>
+                      {getTemplateFocusStatus(resource.sourceCertainty).replaceAll("_", " ")}
+                    </Pill>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <BuilderFocusLink
+                      campaignSlug={props.definition.slug}
+                      tab="version"
+                      focusId={resource.id}
+                      selected={props.focusWorkspace.selected?.id === resource.id}
+                    />
+                    <Link
+                      href={resource.href}
+                      className="inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
+                    >
+                      Open reference
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+        </section>
+      ) : null}
+
+      {localDraftProposals.length ? (
+        <section className="rounded-[2rem] border border-blue-200/18 bg-blue-200/10 p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100/80">
+                Local draft proposals
+              </p>
+              <h3 className="mt-2 text-2xl font-semibold text-white">
+                Backend config proposals feeding this workflow
+              </h3>
+              <p className="mt-2 max-w-4xl text-sm leading-6 text-white/72">
+                Committee and permission review routes can open typed local proposals here so
+                workflow configuration changes stay attached to the builder version story before
+                any persisted admin mutation path exists.
+              </p>
+            </div>
+            <Pill>{localDraftProposals.length}</Pill>
+          </div>
+          {localDraftSession ? (
+            <article className="mt-4 rounded-[1.35rem] border border-blue-200/24 bg-[#bfdbfe]/40 p-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-3xl">
+                  <p className="text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                    Draft session package
+                  </p>
+                  <h4 className="mt-2 text-xl font-semibold text-white">
+                    {localDraftSession.title}
+                  </h4>
+                  <p className="mt-2 text-sm leading-6 text-white/72">
+                    {localDraftSession.summary}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Pill>{localDraftSession.status.replaceAll("_", " ")}</Pill>
+                    <Pill>{localDraftSession.proposalIds.length} proposals</Pill>
+                    <Pill>{localDraftSession.sourceRoutes.length} source routes</Pill>
+                    <Pill>{localDraftSession.groups.length} review lanes</Pill>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <BuilderFocusLink
+                    campaignSlug={props.definition.slug}
+                    tab="version"
+                    focusId={localDraftSession.id}
+                    selected={props.focusWorkspace.selected?.id === localDraftSession.id}
+                  />
+                  <Link
+                    href={buildSopBuilderHref(
+                      props.definition.slug,
+                      "version",
+                      localDraftSession.id,
+                      "edit_draft_session",
+                    )}
+                    className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                  >
+                    Edit draft session
+                  </Link>
+                </div>
+              </div>
+            </article>
+          ) : null}
+          {localDraftSession ? (
+            <div className="mt-4 grid gap-3 lg:grid-cols-3">
+              {localDraftSession.groups.map((group) => (
+                <article
+                  key={`session-group-${group.id}`}
+                  className="rounded-[1.2rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                        Review lane
+                      </p>
+                      <h4 className="mt-2 text-base font-semibold text-white">{group.title}</h4>
+                    </div>
+                    <Pill>{group.proposalIds.length}</Pill>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-white/72">{group.summary}</p>
+                </article>
+              ))}
+            </div>
+          ) : null}
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+            {localDraftProposals.map((proposal) => (
+              <article
+                key={proposal.id}
+                className={[
+                  "rounded-[1.35rem] border p-4",
+                  props.focusWorkspace.selected?.id === proposal.id
+                    ? "border-blue-200/28 bg-blue-200/10"
+                    : "border-white/10 bg-[#bfdbfe]/40",
+                ].join(" ")}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                      {proposal.sourceLabel}
+                    </p>
+                    <p className="mt-2 text-base font-semibold text-white">{proposal.title}</p>
+                  </div>
+                  <Pill>{proposal.status.replaceAll("_", " ")}</Pill>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/72">{proposal.summary}</p>
+                <p className="mt-3 text-sm leading-6 text-blue-100/78">{proposal.rationale}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {proposal.affectedRoles.slice(0, 4).map((role) => (
+                    <Pill key={`${proposal.id}-${role}`}>{toReadableRole(role)}</Pill>
+                  ))}
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <BuilderFocusLink
+                    campaignSlug={props.definition.slug}
+                    tab="version"
+                    focusId={proposal.id}
+                    selected={props.focusWorkspace.selected?.id === proposal.id}
+                  />
+                  <Link
+                    href={buildSopBuilderHref(
+                      props.definition.slug,
+                      "version",
+                      proposal.id,
+                      "edit_proposal",
+                    )}
+                    className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                  >
+                    Edit draft proposal
+                  </Link>
+                  <Link
+                    href={proposal.sourceRoute}
+                    className="inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
+                  >
+                    Open source route
+                  </Link>
+                  {proposal.builderRoleMatrixHref ? (
+                    <Link
+                      href={proposal.builderRoleMatrixHref}
+                      className="inline-flex rounded-full border border-blue-200/24 bg-blue-200/12 px-3 py-1.5 text-xs font-semibold text-blue-100"
+                    >
+                      Open role matrix
+                    </Link>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
           Change log
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -2078,20 +4194,20 @@ function VersionReviewSection(props: {
               className={[
                 "rounded-[1.35rem] border p-4",
                 props.focusWorkspace.selected?.id === `version-${index}`
-                  ? "border-amber-200/28 bg-amber-200/10"
-                  : "border-white/10 bg-black/20",
+                  ? "border-[#bfdbfe] bg-[#f8fbff]"
+                  : "border-[#bfdbfe] bg-white",
               ].join(" ")}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-base font-semibold text-white">{entry.label}</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.18em] text-amber-100/72">
+                  <p className="text-base font-semibold text-slate-950">{entry.label}</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-500">
                     {entry.state.replaceAll("_", " ")}
                   </p>
                 </div>
                 <Pill>{entry.updatedLabel}</Pill>
               </div>
-              <p className="mt-3 text-sm leading-6 text-white/68">{entry.summary}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">{entry.summary}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <BuilderFocusLink
                   campaignSlug={props.definition.slug}
@@ -2106,390 +4222,12 @@ function VersionReviewSection(props: {
       </section>
 
       <FocusedTabSection
-        title="Selected version detail"
+        title="Selected version or source record"
         focusWorkspace={props.focusWorkspace}
         columnsClassName="grid gap-3 lg:grid-cols-2"
       />
     </section>
   );
-}
-
-function getDistinctRoles(definition: SopCampaignDefinition) {
-  return new Set(definition.roleActionRules.map((rule) => rule.role)).size;
-}
-
-function getDistinctScopes(definition: SopCampaignDefinition) {
-  return new Set(definition.roleActionRules.map((rule) => rule.scope)).size;
-}
-
-function getIntegrationBoundaryFocusId(system: string) {
-  return `boundary-${system.toLowerCase().replaceAll(" ", "-")}`;
-}
-
-function getRolesWithPoints(definition: SopCampaignDefinition) {
-  return definition.roleActionRules
-    .map((rule) => rule.role)
-    .filter((role, index, roles) => {
-      const hasPoints = definition.steps.some(
-        (step) =>
-          step.pointsEnabled &&
-          (step.ownerRole === role || step.affectedRoles.includes(role)),
-      );
-      return hasPoints && roles.indexOf(role) === index;
-    });
-}
-
-function getChapterPointLabel(
-  definition: SopCampaignDefinition,
-  role: SopRole,
-) {
-  const relevantSteps = definition.steps.filter(
-    (step) =>
-      step.pointsEnabled &&
-      (step.ownerRole === role || step.affectedRoles.includes(role)),
-  );
-
-  if (relevantSteps.length === 0) {
-    return "None";
-  }
-
-  return role === "president" || role === "committee_chair"
-    ? "Visible in chapter total"
-    : "Rolls up after approval";
-}
-
-function getRoleKpiSummary(definition: SopCampaignDefinition, role: SopRole) {
-  const tags = [
-    ...new Set(
-      definition.steps
-        .filter((step) => step.ownerRole === role || step.affectedRoles.includes(role))
-        .map((step) => step.kpiTag),
-    ),
-  ];
-
-  return tags.join(", ") || "—";
-}
-
-function getRoleApprovalSummary(
-  definition: SopCampaignDefinition,
-  role: SopRole,
-) {
-  const requiresApproval = definition.steps.some(
-    (step) =>
-      step.pointsEnabled &&
-      step.approvalRequired &&
-      (step.ownerRole === role || step.affectedRoles.includes(role)),
-  );
-
-  return requiresApproval ? "Yes" : "No";
-}
-
-function getLeaderboardVisibilityLabel(role: SopRole) {
-  switch (role) {
-    case "student_member":
-    case "committee_member":
-    case "committee_chair":
-    case "president":
-      return "Visible";
-    default:
-      return "Internal only";
-  }
-}
-
-function getRoleCapsSummary(role: SopRole) {
-  switch (role) {
-    case "department_staff":
-    case "sales_admin":
-    case "ds_admin":
-    case "super_admin":
-      return "Manual override later";
-    case "president":
-    case "committee_chair":
-      return "Chapter cap later";
-    default:
-      return "User cap later";
-  }
-}
-
-function getEvidenceTypeEntries(definition: SopCampaignDefinition) {
-  const formats = new Set(
-    definition.evidenceRules.flatMap((rule) => rule.acceptedFormats),
-  );
-
-  return [
-    {
-      label: "None",
-      state: definition.steps.some((step) => !step.evidenceRequired) ? "available" : "unused",
-      note: "Used when a workflow move is visible without requiring extra proof.",
-    },
-    {
-      label: "Text",
-      state: formats.has("testimonial_text") ? "modeled" : "future",
-      note: "Member story context or chapter notes can stay metadata-first.",
-    },
-    {
-      label: "Link",
-      state: "future",
-      note: "Reserved for future downstream references without opening uploads yet.",
-    },
-    {
-      label: "File",
-      state: "future",
-      note: "General file upload remains blocked until storage and moderation approval.",
-    },
-    {
-      label: "Image",
-      state: formats.has("event_photo") ? "modeled" : "future",
-      note: "Photo proof remains named and visible before storage writes are enabled.",
-    },
-    {
-      label: "Video",
-      state: formats.has("bridge_video") ? "modeled" : "future",
-      note: "Bridge or testimonial video stays planned without opening public sharing.",
-    },
-    {
-      label: "Attendance",
-      state: definition.steps.some((step) => step.linkedRoute.includes("events"))
-        ? "modeled"
-        : "future",
-      note: "Event attendance remains a workflow signal rather than a builder shortcut.",
-    },
-  ] as const;
-}
-
-function getCompletionRows(definition: SopCampaignDefinition) {
-  const auditBehavior =
-    definition.auditRecords[0]?.auditExpectation ??
-    "Audit rows should persist when live writes are approved later.";
-
-  return [
-    ...definition.completionRules.map((rule) => ({
-      id: rule.id,
-      label: rule.label,
-      family: "Completion rule",
-      completionType: getCompletionTypeLabel(rule.label),
-      evidenceType: "State readback",
-      reviewerRole: "—",
-      approvalRequired: "No",
-      overdueEscalation: getCompletionEscalationLabel(definition, "completion"),
-      auditBehavior,
-      route: getDefaultCompletionRoute(definition),
-      focusHref: buildSopBuilderHref(definition.slug, "completion", rule.id),
-      previewHref: buildSopRolePreviewHref("student_member", getDefaultCompletionRoute(definition)),
-      previewLabel: "Preview as student member",
-    })),
-    ...definition.evidenceRules.map((rule) => ({
-      id: rule.id,
-      label: rule.label,
-      family: "Evidence rule",
-      completionType: "Evidence",
-      evidenceType: formatEvidenceFormats(rule.acceptedFormats),
-      reviewerRole: "Visible before reviewer handoff",
-      approvalRequired: "Conditional",
-      overdueEscalation: getCompletionEscalationLabel(definition, "evidence"),
-      auditBehavior,
-      route: rule.route,
-      focusHref: buildSopBuilderHref(definition.slug, "completion", rule.id),
-      previewHref: buildSopRolePreviewHref("committee_member", rule.route),
-      previewLabel: "Preview as committee member",
-    })),
-    ...definition.approvalRules.map((rule) => ({
-      id: rule.id,
-      label: rule.label,
-      family: "Approval rule",
-      completionType: "Approval",
-      evidenceType: "Review packet",
-      reviewerRole: toReadableRole(rule.reviewerRole),
-      approvalRequired: "Yes",
-      overdueEscalation: getCompletionEscalationLabel(definition, "approval"),
-      auditBehavior,
-      route: rule.route,
-      focusHref: buildSopBuilderHref(definition.slug, "completion", rule.id),
-      previewHref: buildSopRolePreviewHref(rule.reviewerRole, rule.route),
-      previewLabel: `Preview as ${toReadableRole(rule.reviewerRole)}`,
-    })),
-  ];
-}
-
-function getCompletionTypeLabel(label: string) {
-  const normalized = label.toLowerCase();
-
-  if (normalized.includes("proof")) {
-    return "Evidence";
-  }
-  if (normalized.includes("leaderboard")) {
-    return "Threshold";
-  }
-  if (normalized.includes("move to in progress")) {
-    return "Manual";
-  }
-
-  return "Checklist";
-}
-
-function getCompletionEscalationLabel(
-  definition: SopCampaignDefinition,
-  family: "completion" | "evidence" | "approval",
-) {
-  const relevantStep = definition.steps.find((step) => {
-    if (family === "evidence") {
-      return step.evidenceRequired;
-    }
-    if (family === "approval") {
-      return step.approvalRequired;
-    }
-    return true;
-  });
-
-  return relevantStep
-    ? `${relevantStep.dueTiming}; ${relevantStep.riskEscalation}`
-    : "Timing and escalation remain packeted for this family.";
-}
-
-function getDefaultCompletionRoute(definition: SopCampaignDefinition) {
-  return definition.steps.find((step) => step.ownerRole === "student_member")?.linkedRoute ??
-    definition.steps[0]?.linkedRoute ??
-    "/rush-month/actions";
-}
-
-function formatEvidenceFormats(formats: readonly string[]) {
-  const readable = formats.map((format) => formatToken(format));
-  return readable.join(", ");
-}
-
-function getSourceSystemLabel(mode: "disabled" | "internal_only" | "future_external") {
-  switch (mode) {
-    case "internal_only":
-      return "myMEDLIFE app";
-    case "future_external":
-      return "Downstream system";
-    case "disabled":
-      return "HubSpot / downstream only";
-  }
-}
-
-function getCommunicationTimingLabel(trigger: string, detail: string) {
-  const normalized = `${trigger} ${detail}`.toLowerCase();
-
-  if (normalized.includes("approved")) {
-    return "After approval";
-  }
-  if (normalized.includes("reminder")) {
-    return "Reminder cadence";
-  }
-  if (normalized.includes("visible progress")) {
-    return "After visible progress";
-  }
-
-  return "Workflow-timed";
-}
-
-function getCommunicationApprovalLabel(
-  mode: "disabled" | "internal_only" | "future_external",
-) {
-  switch (mode) {
-    case "internal_only":
-      return "No external approval needed";
-    case "future_external":
-      return "Yes before external send";
-    case "disabled":
-      return "Blocked until approved";
-  }
-}
-
-function getPreviewScenarioSteps(
-  definition: SopCampaignDefinition,
-  scenario: SopCampaignDefinition["previewScenarios"][number],
-) {
-  const matchingByRoute = definition.steps.filter(
-    (step) =>
-      step.linkedRoute === scenario.route ||
-      scenario.route.startsWith(step.linkedRoute) ||
-      step.linkedRoute.startsWith(scenario.route),
-  );
-
-  const matchingByRole = definition.steps.filter(
-    (step) =>
-      step.ownerRole === scenario.primaryRole ||
-      step.affectedRoles.includes(scenario.primaryRole),
-  );
-
-  return dedupeSteps([...matchingByRoute, ...matchingByRole]);
-}
-
-function dedupeSteps(steps: readonly SopCampaignDefinition["steps"][number][]) {
-  return steps.filter(
-    (step, index, allSteps) => allSteps.findIndex((candidate) => candidate.id === step.id) === index,
-  );
-}
-
-function getPreviewEvidenceSummary(definition: SopCampaignDefinition) {
-  const formats = definition.evidenceRules[0]?.acceptedFormats;
-  return formats?.length ? formatEvidenceFormats(formats) : "Required";
-}
-
-function getAccessTypeLabel(role: SopRole) {
-  switch (role) {
-    case "department_staff":
-    case "sales_admin":
-    case "ds_admin":
-    case "super_admin":
-      return "configure";
-    case "president":
-    case "vice_president":
-    case "coach":
-      return "approve";
-    case "student_member":
-    case "committee_member":
-    case "committee_chair":
-    case "eboard_officer":
-      return "submit";
-    default:
-      return "read";
-  }
-}
-
-function getActionRequiredLabel(role: SopRole) {
-  switch (role) {
-    case "department_staff":
-    case "sales_admin":
-    case "ds_admin":
-    case "super_admin":
-      return "Optional review";
-    default:
-      return "Yes";
-  }
-}
-
-function getRolePointSummary(definition: SopCampaignDefinition, role: SopRole) {
-  const relevantSteps = definition.steps.filter(
-    (step) => step.ownerRole === role || step.affectedRoles.includes(role),
-  );
-
-  if (!relevantSteps.some((step) => step.pointsEnabled)) {
-    return "None";
-  }
-
-  const basePoints =
-    definition.pointsRules.reduce((sum, rule) => sum + rule.points, 0) /
-    Math.max(definition.pointsRules.length, 1);
-
-  const modifier = role === "president" ? 10 : role === "committee_chair" ? 5 : 0;
-  return `${Math.round(basePoints + modifier)} avg`;
-}
-
-function getRoleMessagingSummary(definition: SopCampaignDefinition, role: SopRole) {
-  const routeSteps = definition.steps.filter(
-    (step) => step.ownerRole === role || step.affectedRoles.includes(role),
-  );
-  const totalMessages = routeSteps.reduce(
-    (sum, step) => sum + step.communicationCount,
-    0,
-  );
-
-  return `${totalMessages} workflow-triggered messages across ${routeSteps.length} step${
-    routeSteps.length === 1 ? "" : "s"
-  }`;
 }
 
 function FocusedTabSection(props: {
@@ -2498,25 +4236,25 @@ function FocusedTabSection(props: {
   columnsClassName: string;
 }) {
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-[#071d1a]/90 p-5">
-      <h2 className="text-2xl font-semibold text-white">{props.title}</h2>
+    <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
+      <h2 className="text-2xl font-semibold text-slate-950">{props.title}</h2>
       {props.focusWorkspace.selected ? (
-        <section className="mt-4 rounded-[1.5rem] border border-amber-200/18 bg-amber-200/10 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-100/72">
+        <section className="mt-4 rounded-[1.5rem] border border-blue-200/30 bg-blue-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
             Selected in workspace
           </p>
           <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-amber-100/72">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-blue-700">
                 {props.focusWorkspace.selected.eyebrow}
               </p>
-              <h3 className="mt-2 text-xl font-semibold text-white">
+              <h3 className="mt-2 text-xl font-semibold text-slate-950">
                 {props.focusWorkspace.selected.title}
               </h3>
-              <p className="mt-3 text-sm leading-6 text-white/72">
+              <p className="mt-3 text-sm leading-6 text-slate-600">
                 {props.focusWorkspace.selected.detail}
               </p>
-              <p className="mt-3 text-sm leading-6 text-amber-100/78">
+              <p className="mt-3 text-sm leading-6 text-blue-700">
                 {props.focusWorkspace.selected.footer}
               </p>
               {props.focusWorkspace.selected.pills?.length ? (
@@ -2532,7 +4270,7 @@ function FocusedTabSection(props: {
               {props.focusWorkspace.selected.previewHref ? (
                 <Link
                   href={props.focusWorkspace.selected.previewHref}
-                  className="inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                  className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
                 >
                   {props.focusWorkspace.selected.previewLabel ?? "Open role preview"}
                 </Link>
@@ -2540,7 +4278,7 @@ function FocusedTabSection(props: {
               {props.focusWorkspace.selected.href ? (
                 <Link
                   href={props.focusWorkspace.selected.href}
-                  className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                 >
                   {props.focusWorkspace.selected.hrefLabel ?? "Open route"}
                 </Link>
@@ -2570,6 +4308,11 @@ function BuilderModeNotice(props: {
     pills: readonly string[];
     clearHref: string;
     guardrails: readonly string[];
+    rows?: readonly {
+      label: string;
+      value: string;
+      note: string;
+    }[];
   } | null;
 }) {
   if (!props.notice) {
@@ -2577,16 +4320,16 @@ function BuilderModeNotice(props: {
   }
 
   return (
-    <section className="rounded-[2rem] border border-amber-200/24 bg-amber-200/10 p-5">
+    <section className="rounded-[2rem] border border-blue-200/30 bg-blue-50 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
             Mock-safe builder action
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950">
             {props.notice.title}
           </h2>
-          <p className="mt-3 max-w-4xl text-sm leading-6 text-white/72">
+          <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-600">
             {props.notice.summary}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -2597,7 +4340,7 @@ function BuilderModeNotice(props: {
         </div>
         <Link
           href={props.notice.clearHref}
-          className="w-fit rounded-full bg-amber-200 px-4 py-2 text-sm font-semibold text-[#26180d]"
+          className="w-fit rounded-full bg-blue-200 px-4 py-2 text-sm font-semibold text-[#26180d]"
         >
           Return to workflow
         </Link>
@@ -2606,12 +4349,28 @@ function BuilderModeNotice(props: {
         {props.notice.guardrails.map((item) => (
           <li
             key={item}
-            className="rounded-[1.2rem] border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-white/68"
+            className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-600"
           >
             {item}
           </li>
         ))}
       </ul>
+      {props.notice.rows?.length ? (
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          {props.notice.rows.map((row) => (
+            <article
+              key={row.label}
+              className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                {row.label}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-slate-950">{row.value}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{row.note}</p>
+            </article>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -2625,27 +4384,27 @@ function SelectableRuleCard(props: {
       className={[
         "rounded-2xl border p-4",
         props.selected
-          ? "border-amber-200/28 bg-amber-200/10"
-          : "border-white/10 bg-black/20",
+          ? "border-blue-200/30 bg-blue-50"
+          : "border-slate-200 bg-white",
       ].join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-amber-100/72">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-blue-700">
             {props.card.eyebrow}
           </p>
-          <h3 className="mt-2 text-base font-semibold text-white">{props.card.title}</h3>
+          <h3 className="mt-2 text-base font-semibold text-slate-950">{props.card.title}</h3>
         </div>
         <Pill>{props.card.status.replaceAll("_", " ")}</Pill>
       </div>
-      <p className="mt-3 text-sm leading-6 text-white/66">{props.card.detail}</p>
-      <p className="mt-3 text-sm leading-6 text-amber-100/72">{props.card.footer}</p>
+      <p className="mt-3 text-sm leading-6 text-slate-600">{props.card.detail}</p>
+      <p className="mt-3 text-sm leading-6 text-blue-700">{props.card.footer}</p>
       {props.card.pills?.length ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {props.card.pills.map((pill) => (
             <span
               key={`${props.card.id}-${pill}`}
-              className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/62"
+              className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
             >
               {pill}
             </span>
@@ -2658,8 +4417,8 @@ function SelectableRuleCard(props: {
           aria-current={props.selected ? "page" : undefined}
           className={
             props.selected
-              ? "inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
-              : "inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-sm font-semibold text-white"
+              ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+              : "inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
           }
         >
           {props.selected ? "Selected" : "Open in workspace"}
@@ -2667,7 +4426,7 @@ function SelectableRuleCard(props: {
         {props.card.previewHref ? (
           <Link
             href={props.card.previewHref}
-            className="inline-flex rounded-full bg-amber-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+            className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
           >
             {props.card.previewLabel ?? "Open role preview"}
           </Link>
@@ -2675,7 +4434,7 @@ function SelectableRuleCard(props: {
         {props.card.href ? (
           <Link
             href={props.card.href}
-            className="inline-flex rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-white"
+            className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
           >
             {props.card.hrefLabel ?? "Open route"}
           </Link>
@@ -2687,11 +4446,11 @@ function SelectableRuleCard(props: {
 
 function MiniStat(props: { label: string; value: string }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#071d1a]/90 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/54">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
         {props.label}
       </p>
-      <p className="mt-2 text-2xl font-semibold text-white">{props.value}</p>
+      <p className="mt-2 text-2xl font-semibold text-slate-950">{props.value}</p>
     </article>
   );
 }
@@ -2702,19 +4461,19 @@ function ToplineFocusCard(props: {
   note: string;
 }) {
   return (
-    <article className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-100/72">
+    <article className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
         {props.label}
       </p>
-      <p className="mt-2 text-lg font-semibold text-white">{props.value}</p>
-      <p className="mt-2 text-sm leading-6 text-white/62">{props.note}</p>
+      <p className="mt-2 text-lg font-semibold text-slate-950">{props.value}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{props.note}</p>
     </article>
   );
 }
 
 function Pill(props: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white/72">
+    <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
       {props.children}
     </span>
   );
@@ -2722,7 +4481,7 @@ function Pill(props: { children: ReactNode }) {
 
 function SmallChip(props: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/62">
+    <span className="rounded-full border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-700">
       {props.children}
     </span>
   );
@@ -2730,11 +4489,11 @@ function SmallChip(props: { children: ReactNode }) {
 
 function DetailBlock(props: { label: string; children: ReactNode }) {
   return (
-    <div className="rounded-[1.25rem] border border-white/10 bg-black/20 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
+    <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
         {props.label}
       </p>
-      <p className="mt-2 text-sm leading-6 text-white/72">{props.children}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{props.children}</p>
     </div>
   );
 }
@@ -2751,14 +4510,14 @@ function getSectionFocusStepId(
 
 function RuleRow(props: { label: string; enabled: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[1rem] border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/72">
+    <div className="flex items-center justify-between gap-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600">
       <span>{props.label}</span>
       <span
         className={[
           "rounded-full px-2.5 py-1 text-xs font-semibold",
           props.enabled
-            ? "bg-amber-200 text-[#26180d]"
-            : "border border-white/10 bg-black/20 text-white/62",
+            ? "bg-blue-200 text-[#26180d]"
+            : "border border-slate-200 bg-slate-50 text-slate-500",
         ].join(" ")}
       >
         {props.enabled ? "On" : "Off"}
@@ -2769,10 +4528,6 @@ function RuleRow(props: { label: string; enabled: boolean }) {
 
 function toReadableRole(role: SopRole) {
   return role.replaceAll("_", " ");
-}
-
-function formatToken(value: string) {
-  return value.replaceAll("_", " ");
 }
 
 function getBuilderTabDisplayLabel(tab: SopBuilderTab) {

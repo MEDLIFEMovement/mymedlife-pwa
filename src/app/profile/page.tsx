@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
 import { getLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
@@ -29,7 +29,7 @@ export default async function ProfilePage() {
     : null;
 
   return (
-    <AppShell
+    <StudentAppShell
       actor={actor}
       hideTopHeader={isMemberProfile}
       showMobileQuickItemHelpers={!isMemberProfile}
@@ -49,16 +49,16 @@ export default async function ProfilePage() {
         </>
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
                   Profile
                 </p>
-                <h1 className="mt-3 text-3xl font-semibold text-white">
+                <h1 className="mt-3 text-3xl font-semibold text-slate-950">
                   {workspace.title}
                 </h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                   {workspace.summary}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -66,11 +66,11 @@ export default async function ProfilePage() {
                   <MiniToken label={getActorSurfaceLabel(actor)} />
                 </div>
               </div>
-              <div className="w-fit rounded-[1.4rem] border border-white/12 bg-white/10 px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/58">
+              <div className="w-fit rounded-[1.4rem] border border-slate-200 bg-white px-4 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Current role
                 </p>
-                <p className="mt-1 text-lg font-semibold text-white">
+                <p className="mt-1 text-lg font-semibold text-slate-950">
                   {workspace.profileLabel}
                 </p>
               </div>
@@ -95,7 +95,7 @@ export default async function ProfilePage() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href={workspace.nextStep.href}
-                    className="w-fit rounded-full bg-[#86efac] px-4 py-2 text-sm font-semibold text-[#14532d]"
+                    className="w-fit rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
                   >
                     {workspace.nextStep.label}
                   </Link>
@@ -126,7 +126,7 @@ export default async function ProfilePage() {
           </div>
         </>
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 
@@ -177,7 +177,7 @@ function getProfileReturnLabel(actor: LocalActorContext) {
     case "leader":
       return "Open Leader Hub";
     case "coach":
-      return "Open Coach Dashboard";
+      return "Open Staff Command Center";
     case "staff":
       return "Open Staff Command Center";
     case "ds_admin":

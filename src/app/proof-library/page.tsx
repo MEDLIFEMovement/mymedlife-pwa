@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { MetricCard } from "@/components/metric-card";
 import { ProofSharingReviewPanel } from "@/components/proof-sharing-review-panel";
 import { RestrictedState } from "@/components/restricted-state";
@@ -37,15 +37,15 @@ export default async function ProofLibraryPage() {
   );
 
   return (
-    <AppShell actor={actor}>
-      <section className="rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+    <StudentAppShell actor={actor}>
+      <section className="app-surface-info rounded-[2rem] p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
           Proof library
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-slate-950">
           Proof exists to break self-limiting beliefs.
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
           Proof is a bridge video, testimonial, event recap, photo, or UGC asset
           that helps another student or chapter believe action is possible. Use
           this library to review what is ready for learning, follow-up, and later
@@ -53,7 +53,7 @@ export default async function ProofLibraryPage() {
         </p>
         <Link
           href="/proof-library/upload"
-          className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+          className="mt-4 inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
         >
           Open proof requirements
         </Link>
@@ -99,7 +99,7 @@ export default async function ProofLibraryPage() {
                         {proofItem.summary}
                       </p>
                     </div>
-                    <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500">
+                    <span className="shrink-0 rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs text-slate-500">
                       {proofItem.sharingStatus.replaceAll("_", " ")}
                     </span>
                   </div>
@@ -136,6 +136,6 @@ export default async function ProofLibraryPage() {
           nextLabel="Open integration posture"
         />
       )}
-    </AppShell>
+    </StudentAppShell>
   );
 }

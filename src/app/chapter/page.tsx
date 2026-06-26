@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/app-shell";
+import { LeaderAppShell } from "@/components/leader-app-shell";
+import { PanelButton, SurfacePanel } from "@/components/visual-primitives";
 import { ChapterLeaderCommandCenterPanel } from "@/components/chapter-leader-command-center-panel";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { MetricCard } from "@/components/metric-card";
@@ -99,9 +99,8 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
   }
 
   return (
-    <AppShell
+    <LeaderAppShell
       actor={actor}
-      hideTopHeader={leaderCommandCenter.canReadCommandCenter}
       showDebugTools={false}
     >
       {leaderCommandCenter.canReadCommandCenter ? (
@@ -121,19 +120,44 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
           <DataSourceNotice source={data.source} />
           <RoleNextActionPanel brief={nextActionBrief} />
 
-          <section className="rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.3)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
-              Chapter snapshot
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{data.chapter.name}</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
-              {data.chapter.campus} in the {data.chapter.region} region. Coach:
-              {" "}
-              {data.chapter.coachName}. This chapter snapshot keeps the current
-              campaign, member progress, and committee context visible for{" "}
-              {getActorSurfaceLabel(actor).toLowerCase()}.
-            </p>
-          </section>
+          <SurfacePanel
+            as="section"
+            className="app-surface-info rounded-[2rem] p-5"
+          >
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                  Leader command center
+                </p>
+                <h1 className="mt-3 text-3xl font-semibold text-slate-950">{data.chapter.name}</h1>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  {data.chapter.campus} in the {data.chapter.region} region. Coach:
+                  {" "}
+                  {data.chapter.coachName}. This leader snapshot keeps the current
+                  campaign, member progress, and committee context visible for{" "}
+                  {getActorSurfaceLabel(actor).toLowerCase()}.
+                </p>
+              </div>
+              <div className="grid min-w-[18rem] gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-white px-4 py-3">
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Chapter focus
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-950">
+                    {data.campaign.name}
+                  </p>
+                </div>
+                <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-white px-4 py-3">
+                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Leadership lane
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-950">
+                    Members, committees, events, and follow-up
+                  </p>
+                </div>
+              </div>
+            </div>
+          </SurfacePanel>
 
           <section className="grid gap-3 sm:grid-cols-3">
             <MetricCard label="Current campaign" value={data.campaign.name} note={data.campaign.weekLabel} />
@@ -145,24 +169,24 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
             <MetricCard
               label="Visible points"
               value={`${visibleAssignments.reduce((total, assignment) => total + assignment.points, 0)}`}
-              note="Points currently visible in this chapter snapshot"
+              note="Points currently visible in this leader snapshot"
             />
           </section>
 
-          <section className="app-surface-info rounded-[2rem] p-5">
-            <h2 className="text-2xl font-semibold text-slate-950">Start here</h2>
+          <SurfacePanel tone="info">
+            <h2 className="text-2xl font-semibold text-slate-950">Leader command center</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Rush Month is active. Members see their own next actions,
               leaders see team follow-up, coaches read readiness, and HQ staff
               keep support context connected to the chapter.
             </p>
-            <Link
+            <PanelButton
               href="/rush-month"
-              className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c]"
+              className="mt-4"
             >
               Open Rush Month
-            </Link>
-          </section>
+            </PanelButton>
+          </SurfacePanel>
 
           <section className="grid gap-3 lg:grid-cols-3">
             {[
@@ -187,19 +211,28 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
                 copy: "Preview how testimonials and bridge videos become belief-building assets after HQ review.",
               },
             ].map((item) => (
-              <Link
+              <SurfacePanel
+                as="article"
                 key={item.href}
-                href={item.href}
-                className="app-surface rounded-3xl p-4 transition hover:border-[#f7d05e]/35 hover:bg-[#fffdf6]"
+                tone="info"
+                className="rounded-[1.75rem] transition hover:border-[#2563eb]/35 hover:bg-[#eff6ff] p-4"
               >
                 <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{item.copy}</p>
-              </Link>
+                <PanelButton
+                  href={item.href}
+                  variant="secondary"
+                  className="mt-4"
+                  ariaLabel={`Open ${item.title}`}
+                >
+                  Open
+                </PanelButton>
+              </SurfacePanel>
             ))}
           </section>
         </>
       )}
-    </AppShell>
+    </LeaderAppShell>
   );
 }
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ActionCommitteeWorkspacePanel } from "@/components/action-committee-workspace-panel";
-import { AppShell } from "@/components/app-shell";
+import { LeaderAppShell } from "@/components/leader-app-shell";
 import { MetricCard } from "@/components/metric-card";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -41,7 +41,7 @@ export default async function ActionCommitteesPage({
   const workspace = getCommitteeWorkspaceForActor(actor, committees, eventPlans);
 
   return (
-    <AppShell actor={actor}>
+    <LeaderAppShell actor={actor}>
       {!canReadChapterData(actor) ? (
         <RestrictedState
           title="Action committee truth is hidden for DS Admin."
@@ -68,14 +68,14 @@ export default async function ActionCommitteesPage({
               </a>
             </section>
           ) : null}
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
+          <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
               Action committees
             </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">
+            <h1 className="mt-3 text-3xl font-semibold text-slate-950">
               The chapter should be doing things, not just holding meetings.
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/78">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
               Action committees turn campaign SOPs into concrete events:
               fundraisers, local volunteering, Med Talks, socials, SLT proof
               nights, and follow-up pushes. Each event should have an owner,
@@ -124,7 +124,7 @@ export default async function ActionCommitteesPage({
                     {committee.sampleMonthlyActions.map((action) => (
                       <span
                         key={action}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-500"
+                        className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500"
                       >
                         {action}
                       </span>
@@ -176,7 +176,7 @@ export default async function ActionCommitteesPage({
           </section>
         </>
       )}
-    </AppShell>
+    </LeaderAppShell>
   );
 }
 

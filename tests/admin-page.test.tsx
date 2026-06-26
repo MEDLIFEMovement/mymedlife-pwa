@@ -28,12 +28,33 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
 });
 
 describe("admin page", () => {
+  it("returns members to their owned student surface when the admin route is blocked", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member-blocked admin page."),
+    );
+
+    const { default: AdminPage } = await import("@/app/admin/page");
+    const html = renderToStaticMarkup(await AdminPage());
+
+    expect(html).toContain("This admin backend is not visible to this role.");
+    expect(html).toContain('href="/app"');
+    expect(html).toContain(">Go to your app<");
+    expect(html).not.toContain("Backend route family");
+    expect(html).not.toContain("Admin permission proof");
+  });
+
   it("keeps the backend overview inside the same owned admin route family", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing admin overview page."),
@@ -45,6 +66,8 @@ describe("admin page", () => {
     expect(html).toContain("Backend route family");
     expect(html).toContain('href="/admin"');
     expect(html).toContain('href="/admin/phase-2"');
+    expect(html).toContain("Event loop");
+    expect(html).toContain("Luma event creation, RSVP, attendance, and points stay app-owned.");
     expect(html).toContain('href="/admin/permissions"');
     expect(html).toContain('href="/admin/committees"');
     expect(html).toContain('href="/admin/workflows"');
@@ -67,12 +90,16 @@ describe("admin page", () => {
     expect(html).toContain('href="/admin/sop-library"');
     expect(html).toContain('href="/admin/master-data"');
     expect(html).toContain(">Overview<");
-    expect(html).toContain("Staff context is role-aware and read-only.");
+    expect(html).toContain("DS and Super Admin context is role-aware and read-only.");
     expect(html).toContain("What this admin surface actually owns");
     expect(html).toContain("Permission Registry");
-    expect(html).toContain("Committee Registry");
     expect(html).toContain("Workflow Registry");
     expect(html).toContain("SOP Builder");
+    expect(html).toContain("Integrations &amp; API Keys");
+    expect(html).toContain("Integration Outbox");
+    expect(html).toContain("Database Security");
+    expect(html).toContain("System Health");
+    expect(html).toContain("Master Data");
     expect(html).toContain("First Write Drill");
     expect(html).toContain("Write Sequence");
     expect(html).toContain("Proof Packet");
@@ -95,5 +122,6 @@ describe("admin page", () => {
     expect(html).toContain("System health signals");
     expect(html).toContain("4 local checks are visible here.");
     expect(html).not.toContain("System health placeholders");
+    expect(html).not.toContain("Committee Registry");
   });
 });

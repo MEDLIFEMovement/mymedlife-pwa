@@ -105,6 +105,7 @@ const chapterRoleLabelMappings: Record<string, CanonicalRoleMapping> = {
 const staffRoleLabelMappings: Record<string, CanonicalRoleMapping> = {
   Coach: { role: "coach", scope: "assigned_coach_portfolio" },
   Admin: { role: "department_staff", scope: "department" },
+  "General Staff": { role: "department_staff", scope: "department" },
   "DS Admin": { role: "ds_admin", scope: "all_platform" },
   "Super Admin": { role: "super_admin", scope: "all_platform" },
   "Sales Coach": { role: "sales_coach", scope: "assigned_coach_portfolio" },

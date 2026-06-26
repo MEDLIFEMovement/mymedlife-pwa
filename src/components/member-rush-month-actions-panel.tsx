@@ -23,33 +23,33 @@ export function MemberRushMonthActionsPanel({
 
   return (
     <section className="grid gap-4">
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(180deg,#2455a4_0%,#2a5fb5_48%,#21457d_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.28)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#dbe8ff]">
+      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_54%,#edf4ff_100%)] p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
           Rush Month
         </p>
-        <h1 className="mt-3 text-[2.1rem] font-semibold leading-none text-white">
+        <h1 className="mt-3 text-[2.1rem] font-semibold leading-none text-slate-950">
           My Actions
         </h1>
-        <p className="mt-3 text-sm leading-6 text-white/78">
+        <p className="mt-3 text-sm leading-6 text-slate-600">
           These are the actions assigned to you right now. Open the next one, do
           it clearly, and submit proof that shows what happened.
         </p>
 
         {sourceContext ? (
-          <div className="mt-5 rounded-[1.35rem] border border-white/14 bg-white/[0.07] p-4">
+          <div className="mt-5 rounded-[1.35rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-2xl">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/58">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {sourceContext.eyebrow}
                 </p>
-                <p className="mt-2 text-lg font-semibold text-white">{sourceContext.title}</p>
-                <p className="mt-2 text-sm leading-6 text-white/74">
+                <p className="mt-2 text-lg font-semibold text-slate-950">{sourceContext.title}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
                   {sourceContext.detail}
                 </p>
               </div>
               <Link
                 href={sourceContext.href}
-                className="inline-flex w-fit rounded-full border border-white/14 bg-white/8 px-4 py-2 text-sm font-semibold text-white/88 transition hover:border-white/24 hover:bg-white/12 hover:text-white"
+                className="inline-flex w-fit rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
               >
                 {sourceContext.backLabel}
               </Link>
@@ -76,20 +76,20 @@ export function MemberRushMonthActionsPanel({
         </div>
 
         {nextAssignment ? (
-          <article className="mt-5 rounded-[1.7rem] border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#f7d05e]">
+          <article className="mt-5 rounded-[1.7rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
               Start here
             </p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950">
               {nextAssignment.title}
             </h2>
-            <p className="mt-2 text-sm text-white/74">{nextAssignment.dueLabel}</p>
-            <p className="mt-3 text-sm leading-6 text-white/76">
+            <p className="mt-2 text-sm text-slate-500">{nextAssignment.dueLabel}</p>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
               {nextAssignment.instructions}
             </p>
             <Link
               href={buildMemberActionRouteHref(nextAssignment.id, { source: source ?? undefined })}
-              className="mt-4 inline-flex rounded-full bg-[#f7d05e] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
+              className="mt-4 inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
             >
               Start next action
             </Link>
@@ -222,12 +222,12 @@ function MemberActionStat({
   note: string;
 }) {
   return (
-    <article className="rounded-[1.2rem] border border-white/12 bg-white/10 p-3 backdrop-blur-sm">
-      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-white/56">
+    <article className="rounded-[1.2rem] border border-[#bfdbfe] bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-slate-500">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
-      <p className="mt-2 text-xs leading-5 text-white/64">{note}</p>
+      <p className="mt-2 text-2xl font-semibold text-slate-950">{value}</p>
+      <p className="mt-2 text-xs leading-5 text-slate-600">{note}</p>
     </article>
   );
 }

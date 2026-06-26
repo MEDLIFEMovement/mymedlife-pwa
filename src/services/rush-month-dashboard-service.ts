@@ -14,6 +14,12 @@ import {
   getVisibleRiskFlagsForActor,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
+import {
+  getSopWorkflowRuntime,
+  getWorkflowCheckpointLabel,
+  getWorkflowCurrentPhaseExitSignal,
+  getWorkflowCurrentPhaseObjective,
+} from "@/services/sop-workflow-runtime";
 import type { Assignment } from "@/shared/types/domain";
 import type {
   DashboardActionGroup,
@@ -29,6 +35,7 @@ export function getRushMonthDashboardForActor(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
 ): RushMonthDashboard {
+  const runtime = getSopWorkflowRuntime("rush-month");
   const surfaceFamily = getActorSurfaceFamily(actor);
   const canReadTruth = canReadChapterData(actor);
   const visibleAssignments = canReadTruth
@@ -49,8 +56,18 @@ export function getRushMonthDashboardForActor(
     title: getDashboardTitle(actor, surfaceFamily),
     summary: getDashboardSummary(actor, surfaceFamily),
     canReadChapterTruth: canReadTruth,
-    phaseSummary: getDashboardPhaseSummary(surfaceFamily, data, visibleAssignments),
-    whyItMatters: getDashboardWhyItMatters(surfaceFamily, data, visibleAssignments),
+    phaseSummary: getDashboardPhaseSummary(
+      surfaceFamily,
+      data,
+      visibleAssignments,
+      runtime,
+    ),
+    whyItMatters: getDashboardWhyItMatters(
+      surfaceFamily,
+      data,
+      visibleAssignments,
+      runtime,
+    ),
     nextStep: getDashboardNextStep(actor, surfaceFamily, visibleAssignments),
     actionGroups: getDashboardActionGroups(
       actor,
@@ -89,36 +106,44 @@ function getDashboardPhaseSummary(
   surfaceFamily: ActorSurfaceFamily,
   data: ReadOnlyAppData,
   assignments: Assignment[],
+  runtime: ReturnType<typeof getSopWorkflowRuntime>,
 ): DashboardPhaseSummary {
   const counts = getAssignmentStatusCounts(assignments);
+  const runtimeCheckpointLabel = getWorkflowCheckpointLabel(runtime, data.campaign.weekLabel);
+  const runtimePhaseStatus = runtime?.currentPhase?.label ?? runtime?.currentStep?.phaseLabel ?? "Current phase";
+  const runtimeCheckpointExit = getWorkflowCurrentPhaseExitSignal(
+    runtime,
+    "Current workflow exit signal stays visible here.",
+  );
+  const runtimeWhyItMatters = getWorkflowCurrentPhaseObjective(
+    runtime,
+    "Keep the current campaign step legible before the chapter scales the next push.",
+  );
 
   switch (surfaceFamily) {
     case "member":
       return {
-        label: data.campaign.weekLabel,
-        status: "Invite and prove the first push",
-        note:
-          "Move one concrete invite action, keep the event visible, and show proof that the chapter actually reached students.",
+        label: runtimeCheckpointLabel,
+        status: runtimePhaseStatus,
+        note: `${runtimeWhyItMatters} ${runtimeCheckpointExit}`,
       };
     case "leader":
       return {
-        label: data.campaign.weekLabel,
-        status: "Owner follow-up and chapter accountability",
-        note: `${counts.inProgress + counts.notStarted} visible action owner${counts.inProgress + counts.notStarted === 1 ? "" : "s"} still need movement before the chapter can scale the next push.`,
+        label: runtimeCheckpointLabel,
+        status: runtimePhaseStatus,
+        note: `${counts.inProgress + counts.notStarted} visible action owner${counts.inProgress + counts.notStarted === 1 ? "" : "s"} still need movement before the chapter can scale the next push. Exit signal: ${runtimeCheckpointExit}`,
       };
     case "coach":
       return {
-        label: data.campaign.weekLabel,
-        status: "Coach readiness check",
-        note:
-          "Use assignment movement, proof quality, and risk posture to decide whether the chapter should advance, hold, or get support.",
+        label: runtimeCheckpointLabel,
+        status: runtimePhaseStatus,
+        note: `Use assignment movement, proof quality, and risk posture to decide whether the chapter should advance, hold, or get support. Exit signal: ${runtimeCheckpointExit}`,
       };
     case "staff":
       return {
-        label: data.campaign.weekLabel,
-        status: "HQ review posture",
-        note:
-          "Review whether the chapter is creating believable proof and support signals before any broader sharing or follow-up path is approved.",
+        label: runtimeCheckpointLabel,
+        status: runtimePhaseStatus,
+        note: `Review whether the chapter is creating believable proof and support signals before any broader sharing or follow-up path is approved. Exit signal: ${runtimeCheckpointExit}`,
       };
     case "ds_admin":
       return {
@@ -129,10 +154,9 @@ function getDashboardPhaseSummary(
       };
     case "super_admin":
       return {
-        label: data.campaign.weekLabel,
-        status: "Full local oversight",
-        note:
-          "Use the full surface to review role boundaries, mock data shape, and disabled integration posture before any write approval.",
+        label: runtimeCheckpointLabel,
+        status: runtimePhaseStatus,
+        note: `Use the full surface to review role boundaries, mock data shape, and disabled integration posture before any write approval. Exit signal: ${runtimeCheckpointExit}`,
       };
   }
 }
@@ -141,23 +165,45 @@ function getDashboardWhyItMatters(
   surfaceFamily: ActorSurfaceFamily,
   data: ReadOnlyAppData,
   assignments: Assignment[],
+  runtime: ReturnType<typeof getSopWorkflowRuntime>,
 ): string {
   const counts = getAssignmentStatusCounts(assignments);
+  const runtimeStepTitle = runtime?.currentStep?.title ?? "current Rush Month step";
+  const runtimeWhyItMatters = getRuntimeWhyItMatters(runtime);
+  const runtimeCompletionSignal = getWorkflowCurrentPhaseExitSignal(
+    runtime,
+    "Keep the current workflow exit signal readable before the chapter moves on.",
+  );
 
   switch (surfaceFamily) {
     case "member":
-      return "Why it matters: one student action plus one clean proof note is what turns Rush Month from a plan into visible chapter momentum. This view keeps the week understandable so you can act without guessing what counts.";
+      return `Why it matters: ${runtimeWhyItMatters} ${runtimeCompletionSignal}`;
     case "leader":
-      return `Why it matters: leaders turn scattered effort into a chapter operating system. Right now ${counts.submitted + counts.changesRequested} visible proof or review item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} still need a decision posture before the next push feels believable.`;
+      return `Why it matters: leaders turn scattered effort into a chapter operating system. The current workflow step is "${runtimeStepTitle}." ${runtimeWhyItMatters} Right now ${counts.submitted + counts.changesRequested} visible proof or review item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} still need a decision posture before the next push feels believable.`;
     case "coach":
-      return `Why it matters: the coach decision should reflect real chapter movement, not optimism. ${data.kpiSummary.proofPending} proof item${data.kpiSummary.proofPending === 1 ? "" : "s"} and the current ${data.kpiSummary.coachDecision} posture still shape whether this chapter is actually ready.`;
+      return `Why it matters: the coach decision should reflect real chapter movement, not optimism. The current workflow step is "${runtimeStepTitle}." ${runtimeWhyItMatters} ${data.kpiSummary.proofPending} proof item${data.kpiSummary.proofPending === 1 ? "" : "s"} and the current ${data.kpiSummary.coachDecision} posture still shape whether this chapter is actually ready.`;
     case "staff":
-      return "Why it matters: HQ support only helps when it stays grounded in what the chapter actually did, what proof exists, and what should remain internal until broader sharing is approved.";
+      return `Why it matters: HQ support only helps when it stays grounded in what the chapter actually did. The current workflow step is "${runtimeStepTitle}." ${runtimeWhyItMatters} Keep broader sharing, follow-up, and external systems blocked until the chapter truth is believable.`;
     case "ds_admin":
       return "Why it matters: systems work should make the app safer, not take over campaign truth. This role exists to inspect disabled integration posture without owning student operations.";
     case "super_admin":
-      return "Why it matters: this full local view is the fastest way to verify role boundaries, UX clarity, and mock-safe operating logic before anybody asks for live writes.";
+      return `Why it matters: this full local view is the fastest way to verify role boundaries, UX clarity, and mock-safe operating logic. The current workflow step is "${runtimeStepTitle}." ${runtimeWhyItMatters}`;
   }
+}
+
+function getRuntimeWhyItMatters(runtime: ReturnType<typeof getSopWorkflowRuntime>) {
+  const stepWhyItMatters = runtime?.currentStep?.whyItMatters;
+  const phaseObjective = runtime?.currentPhase?.objective;
+
+  if (stepWhyItMatters && phaseObjective) {
+    return `${stepWhyItMatters} Current phase objective: ${phaseObjective}`;
+  }
+
+  return (
+    stepWhyItMatters ??
+    phaseObjective ??
+    "Rush Month works when the chapter can point to one visible step that students and leaders both understand."
+  );
 }
 
 export function getVisibleLeaderboardForActor(
@@ -266,9 +312,9 @@ function getDashboardNextStep(
         href: nextMemberAssignment
           ? `/rush-month/actions/${nextMemberAssignment.id}`
           : "/rush-month/actions",
-        summary:
-          nextMemberAssignment?.evidenceRequired ??
-          "Open your visible actions and confirm what proof or testimonial is needed.",
+        summary: nextMemberAssignment
+          ? `Open the assignment detail, confirm why it matters, and prepare proof for: ${nextMemberAssignment.evidenceRequired}`
+          : "Open your visible actions and confirm what proof or testimonial is needed.",
         ctaLabel: "Open my next action",
       };
     }

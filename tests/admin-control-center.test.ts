@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { campaignShells } from "@/data/mock-campaigns";
 import {
   getAdminControlCenterSummary,
   getAudienceLabels,
 } from "@/services/admin-control-center";
+import { getCampaignShells } from "@/services/campaign-ops-service";
 import { localActorOptions } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 import type { AuditLogRow } from "@/shared/types/persistence";
@@ -35,7 +35,7 @@ describe("admin control center", () => {
     expect(summary.userCount).toBe(localActorOptions.length);
     expect(summary.roleAudienceCount).toBe(6);
     expect(summary.namedRoleCount).toBe(13);
-    expect(summary.campaignTemplateCount).toBe(campaignShells.length);
+    expect(summary.campaignTemplateCount).toBe(getCampaignShells().length);
     expect(summary.disabledOutboxCount).toBe(
       data.outboxItems.filter((item) => item.status === "disabled").length,
     );
@@ -58,9 +58,7 @@ describe("admin control center", () => {
         status: "mock_only",
       }),
     ]);
-    expect(summary.masterDataInventory.campaignTemplates).toHaveLength(
-      campaignShells.length,
-    );
+    expect(summary.masterDataInventory.campaignTemplates).toHaveLength(getCampaignShells().length);
     expect(summary.masterDataInventory.campaignTemplates[0]).toEqual(
       expect.objectContaining({
         slug: "rush-month",
@@ -68,6 +66,23 @@ describe("admin control center", () => {
         status: "active",
         adminStatus: "ready_readonly",
         integrationPosture: expect.stringContaining("No live external send"),
+        workflowSnapshot: expect.objectContaining({
+          sourceKind: "template_version",
+          versionLabel: "v2.1",
+        }),
+      }),
+    );
+    expect(
+      summary.masterDataInventory.campaignTemplates.find(
+        (template) => template.slug === "planning-goal-setting",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        workflowSnapshot: expect.objectContaining({
+          sourceKind: "template_version",
+          versionLabel: "v0 reviewed",
+          currentPhaseLabel: "GSW Preparation",
+        }),
       }),
     );
     expect(summary.masterDataInventory.users.find((user) => user.email === "leader.a@mymedlife.test")).toEqual(
@@ -203,6 +218,12 @@ describe("admin control center", () => {
         status: "mock_only",
         primaryMetric: "4 visible checks",
         detail: expect.stringContaining("Read-only health checks cover data source"),
+      }),
+    );
+    expect(summary.areas.find((area) => area.key === "campaign_templates")).toEqual(
+      expect.objectContaining({
+        primaryMetric: `${getCampaignShells().length} lanes`,
+        detail: expect.stringContaining("workflow-backed drafts"),
       }),
     );
     expect(summary.healthItems.find((item) => item.key === "external_writes")).toEqual(

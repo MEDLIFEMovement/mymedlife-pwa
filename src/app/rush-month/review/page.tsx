@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AppShell } from "@/components/app-shell";
+import { StudentAppShell } from "@/components/student-app-shell";
 import { BrowserWriteGateNotice } from "@/components/browser-write-gate-notice";
 import { HqProofDecisionServerActionPanel } from "@/components/hq-proof-decision-server-action-panel";
 import { HqProofDecisionResultStatesPanel } from "@/components/hq-proof-decision-result-states-panel";
@@ -155,15 +155,15 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
   const showLeaderTechnicalPanels = getActorSurfaceFamily(actor) === "super_admin";
 
   return (
-    <AppShell actor={actor} showDebugTools={false}>
-      <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-100">
+    <StudentAppShell actor={actor} showDebugTools={false}>
+      <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
           {showHqQueue ? "HQ proof-sharing review" : "Leader proof review"}
         </p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">
+        <h1 className="mt-3 text-3xl font-semibold text-slate-950">
           {showHqQueue ? "Proof sharing desk" : "Chapter proof follow-up"}
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
           {showHqQueue
             ? "Review proof that may be useful beyond one chapter, keep publishing decisions separate from local follow-through, and hold every broader-sharing step inside the HQ lane."
             : "Keep chapter proof accountable, coach owners toward clearer submissions, and hand off anything worth broader reuse to HQ without taking over the sharing decision."}
@@ -171,29 +171,29 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
       </section>
 
       {leaderReviewFocus.canReadFocus ? (
-        <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-100/80">
+        <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
             {leaderReviewFocus.roleLabel}
           </p>
           <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
             <div>
-              <h2 className="text-2xl font-semibold text-white">
+              <h2 className="text-2xl font-semibold text-slate-950">
                 {leaderReviewFocus.title}
               </h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/68">
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
                 {leaderReviewFocus.summary}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link
                 href={leaderReviewFocus.primaryHref}
-                className="rounded-full bg-sky-200 px-4 py-2 text-sm font-semibold text-[#06211d]"
+                className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
               >
                 {leaderReviewFocus.primaryLabel}
               </Link>
               <Link
                 href={leaderReviewFocus.secondaryHref}
-                className="rounded-full border border-white/14 bg-black/20 px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-[#eef5ff] hover:text-slate-950"
               >
                 {leaderReviewFocus.secondaryLabel}
               </Link>
@@ -201,16 +201,16 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {leaderReviewFocus.items.map((item) => (
-              <div key={item.label} className="rounded-2xl bg-black/20 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
+              <div key={item.label} className="rounded-2xl border border-[#bfdbfe] bg-white p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {item.label}
                 </p>
-                <p className="mt-2 text-2xl font-semibold text-white">{item.value}</p>
-                <p className="mt-2 text-sm leading-6 text-white/58">{item.note}</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-950">{item.value}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">{item.note}</p>
               </div>
             ))}
           </div>
-          <p className="mt-4 rounded-2xl border border-white/10 bg-black/18 p-3 text-sm leading-6 text-white/62">
+          <p className="mt-4 rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] p-3 text-sm leading-6 text-slate-600">
             {leaderReviewFocus.safetyNote}
           </p>
         </section>
@@ -249,16 +249,16 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             });
 
             return (
-              <article key={evidence.id} className="rounded-3xl border border-white/10 bg-white/[0.05] p-4">
+              <article key={evidence.id} className="rounded-3xl border border-[#bfdbfe] bg-white p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <h2 className="text-xl font-semibold text-white">
+                    <h2 className="text-xl font-semibold text-slate-950">
                       {assignment?.title ?? "Unlinked proof item"}
                     </h2>
-                    <p className="mt-2 text-sm leading-6 text-white/64">
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
                       Proof: {evidence.summary}
                     </p>
-                    <p className="mt-2 text-sm text-white/54">
+                    <p className="mt-2 text-sm text-slate-500">
                       Submitted by {evidence.submittedBy}
                       {assignment ? ` for ${assignment.ownerRole}` : ""}
                     </p>
@@ -272,14 +272,14 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                         key={label}
                         type="button"
                         disabled
-                        className="rounded-full border border-white/12 bg-black/20 px-4 py-2 text-sm font-semibold text-white/72"
+                        className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-4 py-2 text-sm font-semibold text-slate-700"
                       >
                         {label}
                       </button>
                     ))}
-                  </div>
+                </div>
                 ) : (
-                  <p className="mt-4 text-sm leading-6 text-white/58">
+                  <p className="mt-4 text-sm leading-6 text-slate-600">
                     This role can track proof posture here, but HQ Admin or
                     Super Admin owns the broader-sharing decision.
                   </p>
@@ -297,8 +297,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       {showHqQueue && firstDecisionPreview?.success ? (
         <>
-          <section className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100/80">
+          <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
               Sharing trail preview
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -338,7 +338,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           ) : null}
         </>
       ) : null}
-    </AppShell>
+    </StudentAppShell>
   );
 }
 

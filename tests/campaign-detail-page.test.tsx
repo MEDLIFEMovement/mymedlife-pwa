@@ -64,7 +64,7 @@ describe("campaign detail page", () => {
       CampaignDetailPage({
         params: Promise.resolve({ campaignSlug: "rush-month" }),
       }),
-    ).rejects.toThrow("NEXT_REDIRECT:/coach?view=campaigns&campaign=rush-month");
+    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=campaigns&campaign=rush-month");
   });
 
   it("routes staff reviewers into the staff-owned campaigns state with the selected campaign preserved", async () => {
@@ -81,5 +81,53 @@ describe("campaign detail page", () => {
         params: Promise.resolve({ campaignSlug: "rush-month" }),
       }),
     ).rejects.toThrow("NEXT_REDIRECT:/staff?view=campaigns&campaign=rush-month");
+  });
+
+  it("shows workflow-engine posture on the Planning / Goal Setting campaign detail lane", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("leader.a@mymedlife.test"),
+    );
+
+    const { default: CampaignDetailPage } = await import("@/app/campaigns/[campaignSlug]/page");
+    const html = renderToStaticMarkup(
+      await CampaignDetailPage({
+        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
+      }),
+    );
+
+    expect(html).toContain("Planning / Goal Setting");
+    expect(html).toContain("Deepened starter campaign");
+    expect(html).toContain("Operation permissions");
+    expect(html).toContain("Validators and handoffs");
+    expect(html).toContain("Risk and escalation posture");
+    expect(html).toContain("Imported source coverage");
+    expect(html).toContain("Feature flag posture");
+    expect(html).toContain("Source trace posture");
+    expect(html).toContain("Goal alignment meeting prompt");
+    expect(html).toContain("Run A source map");
+    expect(html).toContain("workflow.planning_goal_setting.builder_preview");
+    expect(html).toContain("publish approve");
+  });
+
+  it("shows workflow-backed current-state posture on the Chapter Engagement campaign detail lane", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("leader.a@mymedlife.test"),
+    );
+
+    const { default: CampaignDetailPage } = await import("@/app/campaigns/[campaignSlug]/page");
+    const html = renderToStaticMarkup(
+      await CampaignDetailPage({
+        params: Promise.resolve({ campaignSlug: "chapter-engagement" }),
+      }),
+    );
+
+    expect(html).toContain("Chapter Engagement");
+    expect(html).toContain("Current workflow state");
+    expect(html).toContain("v0 reviewed");
+    expect(html).toContain("source template version");
   });
 });

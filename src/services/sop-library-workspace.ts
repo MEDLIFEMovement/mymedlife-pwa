@@ -1,7 +1,17 @@
 import { sopCampaignDefinitions } from "@/data/mock-sop-builder";
+import { getCampaignTemplateCoverage } from "@/services/campaign-template-coverage";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { SopLibraryStatus } from "@/shared/types/sop-builder";
+import {
+  getPreferredCampaignVersion,
+  getSopTemplateBySlug,
+} from "@/services/sop-template-registry";
+import { getTemplateBuilderSurface } from "@/services/sop-template-builder-read-model";
+import type {
+  CampaignVersion,
+  TemplateImportStatus,
+} from "@/shared/types/sop-templates";
 
 export type SopLibraryWorkspace = {
   canReadWorkspace: boolean;
@@ -21,6 +31,8 @@ export type SopLibraryWorkspace = {
     inDraftOrScheduled: number;
     archived: number;
     totalRules: number;
+    structuredDrafts: number;
+    reviewWarnings: number;
     browserWritesExpected: 0;
     externalWritesExpected: 0;
   };
@@ -45,6 +57,17 @@ export type SopLibraryEntry = {
   stepsCount: number;
   roleRulesCount: number;
   integrationBoundariesCount: number;
+  templateImportStatus: TemplateImportStatus | null;
+  templateVersionLabel: string | null;
+  templateReviewWarnings: readonly string[];
+  templateSourceCount: number;
+  templateSourceGapCount: number;
+  templateProvenanceLabel: string | null;
+  templatePhaseCount: number;
+  templateStepCount: number;
+  templateEngineBindingsCount: number;
+  templateImportTraceCount: number;
+  modeledRuleCount: number;
 };
 
 export type SopLibraryStatusFilter = "all" | SopLibraryStatus;
@@ -98,6 +121,7 @@ export function getSopLibraryWorkspace(
   const focus = normalizeFocus(search?.focus);
   const allEntries = sopCampaignDefinitions.map((definition) =>
     createLibraryEntry(definition, {
+      actor,
       query,
       status,
     }),
@@ -121,7 +145,7 @@ export function getSopLibraryWorkspace(
     canReadWorkspace: true,
     title: "Campaign SOP library",
     summary:
-      "Campaign SOPs stay visible as a route-owned library with summary cards, status pills, search, and builder entry points. The lane remains mock-safe and read-only.",
+      "Campaign SOPs stay visible as a route-owned library with summary cards, draft-import posture, review warnings, search, and builder entry points. The lane remains mock-safe and read-only.",
     nextStep: {
       href: "/admin/workflows?section=lanes&focus=campaign-sop-create",
       label: "New Campaign SOP",
@@ -139,20 +163,12 @@ export function getSopLibraryWorkspace(
       }).length,
       archived: allEntries.filter((entry) => entry.status === "archived").length,
       totalRules: allEntries.reduce((total, entry) => {
-        const definition = sopCampaignDefinitions.find(
-          (candidate) => candidate.slug === entry.slug,
-        );
-
-        if (!definition) {
-          return total;
-        }
-
-        return (
-          total +
-          definition.roleActionRules.length +
-          definition.completionRules.length +
-          definition.communicationRules.length
-        );
+        return total + entry.modeledRuleCount;
+      }, 0),
+      structuredDrafts: allEntries.filter((entry) => entry.templateImportStatus !== null)
+        .length,
+      reviewWarnings: allEntries.reduce((total, entry) => {
+        return total + entry.templateReviewWarnings.length;
       }, 0),
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -303,6 +319,8 @@ function emptyCounts(): SopLibraryWorkspace["counts"] {
     inDraftOrScheduled: 0,
     archived: 0,
     totalRules: 0,
+    structuredDrafts: 0,
+    reviewWarnings: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
   };
@@ -311,10 +329,37 @@ function emptyCounts(): SopLibraryWorkspace["counts"] {
 function createLibraryEntry(
   definition: (typeof sopCampaignDefinitions)[number],
   filters: {
+    actor: LocalActorContext;
     query: string;
     status: SopLibraryStatusFilter;
   },
 ): SopLibraryEntry {
+  const template = getSopTemplateBySlug(definition.slug);
+  const preferredVersion = template
+    ? getPreferredCampaignVersion(template)
+    : null;
+  const templateProvenance = preferredVersion
+    ? getTemplateProvenance(preferredVersion)
+    : null;
+  const templateBuilderSurface = getTemplateBuilderSurface(definition.slug);
+  const templateCoverage = getCampaignTemplateCoverage(filters.actor, definition.slug);
+  const templateEngineBindingsCount = templateBuilderSurface
+    ? templateBuilderSurface.engineCounts.operationPermissions +
+      templateBuilderSurface.engineCounts.validators +
+      templateBuilderSurface.engineCounts.handoffs +
+      templateBuilderSurface.engineCounts.featureFlags
+    : definition.operationPermissions.length +
+      definition.validators.length +
+      definition.handoffRules.length +
+      definition.featureFlagBindings.length;
+  const modeledRuleCount = templateBuilderSurface
+    ? templateBuilderSurface.roleMatrix.length +
+      templateBuilderSurface.completionRows.length +
+      templateBuilderSurface.commRows.length
+    : definition.roleActionRules.length +
+      definition.completionRules.length +
+      definition.communicationRules.length;
+
   return {
     key: definition.slug,
     slug: definition.slug,
@@ -349,8 +394,50 @@ function createLibraryEntry(
         href: `/admin/sop-builder/${definition.slug}?tab=version`,
       },
     ],
-    stepsCount: definition.steps.length,
-    roleRulesCount: definition.roleActionRules.length,
-    integrationBoundariesCount: definition.integrationBoundaries.length,
+    stepsCount: templateBuilderSurface?.steps.length ?? definition.steps.length,
+    roleRulesCount:
+      templateBuilderSurface?.roleMatrix.length ?? definition.roleActionRules.length,
+    integrationBoundariesCount:
+      templateBuilderSurface?.integrationBoundaries.length ??
+      definition.integrationBoundaries.length,
+    templateImportStatus: preferredVersion?.status ?? null,
+    templateVersionLabel: preferredVersion?.label ?? null,
+    templateReviewWarnings: [
+      ...(preferredVersion?.reviewSummary.unresolvedAmbiguities ?? []),
+      ...(templateCoverage?.warnings ?? []),
+    ],
+    templateSourceCount: preferredVersion?.sourceReferences.length ?? 0,
+    templateSourceGapCount: templateProvenance?.sourceGapCount ?? 0,
+    templateProvenanceLabel: templateProvenance?.label ?? null,
+    templatePhaseCount: preferredVersion?.phases.length ?? 0,
+    templateStepCount: preferredVersion?.reviewSummary.extractedStepCount ?? 0,
+    templateEngineBindingsCount,
+    templateImportTraceCount:
+      templateBuilderSurface?.engineCounts.importTraces ?? definition.sourceTraces.length,
+    modeledRuleCount,
+  };
+}
+
+function getTemplateProvenance(version: CampaignVersion) {
+  const hasCatalogCoverage = version.sourceReferences.some(
+    (reference) =>
+      reference.sourceType === "campaign_catalog" &&
+      reference.certainty !== "missing_source_confirmation",
+  );
+  const hasPdfCoverage = version.sourceReferences.some(
+    (reference) =>
+      reference.sourceType === "sop_pdf" &&
+      reference.certainty !== "missing_source_confirmation",
+  );
+  const sourceGapCount = version.sourceReferences.filter(
+    (reference) => reference.certainty === "missing_source_confirmation",
+  ).length;
+
+  return {
+    label:
+      hasCatalogCoverage && hasPdfCoverage
+        ? "package-backed structured draft"
+        : "repo-defined structured draft",
+    sourceGapCount,
   };
 }

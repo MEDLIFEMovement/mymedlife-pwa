@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { campaignShells } from "@/data/mock-campaigns";
+import { getCampaignShells } from "@/services/campaign-ops-service";
 import { getAdminMasterDataWorkspace } from "@/services/admin-master-data-workspace";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -15,10 +15,10 @@ describe("admin master data workspace", () => {
     expect(workspace.title).toBe("Admin master data inventory");
     expect(workspace.nextStep.href).toBe("/onboarding");
     expect(workspace.counts).toEqual({
-      users: 13,
+      users: 14,
       roles: 13,
       chapters: 1,
-      campaignTemplates: campaignShells.length,
+      campaignTemplates: getCampaignShells().length,
       mutationControlsEnabled: 0,
       productionAuthEnabled: 0,
       externalWritesExpected: 0,
@@ -53,6 +53,30 @@ describe("admin master data workspace", () => {
     ]);
     expect(workspace.campaignTemplates.map((template) => template.slug)).toContain(
       "rush-month",
+    );
+    expect(
+      workspace.campaignTemplates.find((template) => template.slug === "rush-month"),
+    ).toEqual(
+      expect.objectContaining({
+        workflowSnapshot: expect.objectContaining({
+          sourceKind: "template_version",
+          versionLabel: "v2.1",
+        }),
+      }),
+    );
+    expect(
+      workspace.campaignTemplates.find(
+        (template) => template.slug === "planning-goal-setting",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        workflowSnapshot: expect.objectContaining({
+          sourceKind: "template_version",
+          versionLabel: "v0 reviewed",
+          currentPhaseLabel: "GSW Preparation",
+        }),
+        detail: expect.stringContaining("workflow-backed draft template"),
+      }),
     );
     expect(workspace.roles.find((role) => role.role === "Admin")).toEqual(
       expect.objectContaining({

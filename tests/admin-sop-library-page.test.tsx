@@ -82,4 +82,65 @@ describe("admin SOP library page", () => {
     expect(html).toContain("Last Published");
     expect(html).toContain('/admin/sop-library?focus=rush-month&amp;query=rush&amp;status=draft');
   });
+
+  it("renders structured import review details for Planning / Goal Setting", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP library structured import review."),
+    );
+
+    const { default: AdminSopLibraryPage } = await import("@/app/admin/sop-library/page");
+    const html = renderToStaticMarkup(
+      await AdminSopLibraryPage({
+        searchParams: Promise.resolve({
+          focus: "planning-goal-setting",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Structured Drafts");
+    expect(html).toContain("Review Warnings");
+    expect(html).toContain("Structured import review");
+    expect(html).toContain("Planning / Goal Setting");
+    expect(html).toContain("v0 reviewed");
+    expect(html).toContain("draft reviewed");
+    expect(html).toContain("package-backed structured draft");
+    expect(html).toContain("0 source gaps");
+    expect(html).toContain("sources");
+    expect(html).toContain("Engine bindings");
+    expect(html).toContain("Import traces");
+  });
+
+  it("shows repo-defined provenance when a structured draft lacks rollout-package campaign coverage", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SOP library repo-defined draft review."),
+    );
+
+    const { default: AdminSopLibraryPage } = await import("@/app/admin/sop-library/page");
+    const html = renderToStaticMarkup(
+      await AdminSopLibraryPage({
+        searchParams: Promise.resolve({
+          focus: "grow-the-movement",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Grow the Movement");
+    expect(html).toContain("repo-defined structured draft");
+    expect(html).toContain("source gaps");
+    expect(html).toContain(
+      "still depends on repo-defined campaign artifacts where the rollout package has source gaps",
+    );
+  });
 });

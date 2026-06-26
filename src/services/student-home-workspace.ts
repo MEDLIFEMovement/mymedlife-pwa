@@ -8,8 +8,9 @@ import { buildMemberActionRouteHref } from "@/services/member-action-route-href"
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
-import { getVisibleAssignmentsForActor } from "@/services/role-visibility";
+import { getVisibleAssignmentsForActor, hasTravelerAccess } from "@/services/role-visibility";
 import { getRushMonthEventReadinessWorkspace } from "@/services/rush-month-event-readiness";
+import { getSopWorkflowRuntime } from "@/services/sop-workflow-runtime";
 import type { Assignment, AssignmentStatus } from "@/shared/types/domain";
 import type { LeaderboardRow } from "@/shared/types/rush-month-dashboard";
 
@@ -44,6 +45,7 @@ export type StudentHomeWorkspace = {
   };
   campaign: {
     name: string;
+    summary: string;
     href: string;
     campaignsHref: string;
     weekLabel: string;
@@ -79,6 +81,12 @@ export type StudentHomeWorkspace = {
     dateLabel: string;
     body: string;
   };
+  travelerPrep: {
+    href: string;
+    title: string;
+    summary: string;
+    ctaLabel: string;
+  } | null;
   safetyNote: string;
 };
 
@@ -95,6 +103,7 @@ export function getStudentHomeWorkspace(
   const activeCampaign = visibleCampaigns.find((campaign) => campaign.status === "active");
   const eventPlans = getEventPlansForCampaign("rush-month");
   const eventRows = getRushMonthEventReadinessWorkspace(actor).rows;
+  const runtime = getSopWorkflowRuntime("rush-month");
   const recognition = getMemberRecognitionSummary(actor, data);
   const selectedMember = recognition.selectedMember?.displayName.toLowerCase() ===
       actor.user.displayName.toLowerCase()
@@ -116,25 +125,43 @@ export function getStudentHomeWorkspace(
     : progress.completedCount > 0
     ? `+${progress.completedCount * 25} this week`
     : "No new points this week yet";
+  const campaignWeekLabel = runtime?.currentStep?.title
+    ? `Current checkpoint: ${runtime.currentStep.title}`
+    : data.campaign.weekLabel;
+  const travelerPrep = hasTravelerAccess(actor)
+    ? {
+        href: "/app/slt-prep?source=home",
+        title: "SLT Prep",
+        summary:
+          "Traveler-ready students can jump into trip prep, deadlines, flights, and checklist items from the member app.",
+        ctaLabel: "Open SLT Prep",
+      }
+    : null;
 
   return {
     greeting: `Hi, ${getFirstName(actor.user.displayName)}`,
     chapterName: data.chapter.name,
     chapterMeta:
-      `${getActorPrimaryRoleLabel(actor)} • ${data.chapter.campus} • ${data.campaign.weekLabel}`,
+      `${getActorPrimaryRoleLabel(actor)} • ${data.chapter.campus} • ${campaignWeekLabel}`,
     heroSummary:
-      "Your chapter is in Rush Month. Keep this week simple: take the next action, show up to the right event, and help one more student feel like MEDLIFE is worth joining.",
+      runtime?.currentStep
+        ? `${runtime.currentStep.whyItMatters} ${runtime.currentStep.completionSignal} The event loop matters most right now: RSVP, show up, confirm attendance, and let points move the chapter leaderboard.`
+        : "Your chapter is in Rush Month. Keep this week simple: take the next action, show up to the right event, and help one more student feel like MEDLIFE is worth joining. The event loop matters most right now: RSVP, show up, confirm attendance, and let points move the chapter leaderboard.",
     startNextAction: {
       href: getMemberHomeActionHref(nextActionBrief.primaryHref),
       label: "Start next action",
       detail: nextActionBrief.title,
     },
     campaign: {
-      name: data.campaign.name,
+      name: runtime?.name ?? data.campaign.name,
+      summary:
+        activeCampaign?.summary ??
+        runtime?.summary ??
+        "Recruit new members, build your chapter.",
       href: "/campaigns?source=home",
       campaignsHref: "/campaigns",
-      weekLabel: data.campaign.weekLabel,
-      stageLabel: getCampaignStageLabel(data.campaign.weekLabel),
+      weekLabel: campaignWeekLabel,
+      stageLabel: getCampaignStageLabel(runtime, data.campaign.weekLabel),
       progressPercent: progress.percent,
       progressLabel: progress.label,
       progressCountLabel: `${progress.completedCount} / ${progress.visibleCount} actions done`,
@@ -149,6 +176,8 @@ export function getStudentHomeWorkspace(
           ? Math.max(visibleMemberships.length, minimumHomeTotalMemberCount)
           : Math.max(fallbackTotalMemberCount, minimumHomeTotalMemberCount),
       whyItMatters:
+        runtime?.currentStep?.whyItMatters ??
+        runtime?.studentPromise ??
         activeCampaign?.studentPromise ??
         "Students should quickly know where to show up, who to meet, and what small action to take next.",
       visibleCampaignCount: visibleCampaigns.length,
@@ -162,7 +191,9 @@ export function getStudentHomeWorkspace(
       {
         label: "Upcoming events",
         value: `${eventPlans.length}`,
-        note: firstEvent ? `Next: ${firstEvent.title}` : "Rush Month events will show here.",
+        note: firstEvent
+          ? `Next: ${firstEvent.title} · RSVP and attendance drive points`
+          : "Rush Month events will show here.",
       },
       {
         label: "Points",
@@ -193,6 +224,7 @@ export function getStudentHomeWorkspace(
       body:
         "\"Great energy this week, UCLA! Focus on Intro GBM follow-ups - this is where we convert interest into members. Keep it up.\"",
     },
+    travelerPrep,
     safetyNote:
       "This student home keeps assignment writes, proof saves, points updates, event syncs, reminders, and external sends turned off until approval.",
   };
@@ -303,22 +335,31 @@ function rsvpPriority(state: "registered" | "open") {
   return state === "open" ? 0 : 1;
 }
 
-function getCampaignStageLabel(weekLabel: string) {
-  if (weekLabel.startsWith("Week 1")) {
+function getCampaignStageLabel(
+  runtime: ReturnType<typeof getSopWorkflowRuntime>,
+  fallbackWeekLabel: string,
+) {
+  if (runtime?.currentPhase?.sequence) {
+    const weekNumber = Math.min(4, Math.max(1, runtime.currentPhase.sequence));
+
+    return `Week ${weekNumber} of 4`;
+  }
+
+  if (fallbackWeekLabel.startsWith("Week 1")) {
     return "Week 1 of 4";
   }
 
-  if (weekLabel.startsWith("Week 2")) {
+  if (fallbackWeekLabel.startsWith("Week 2")) {
     return "Week 2 of 4";
   }
 
-  if (weekLabel.startsWith("Week 3")) {
+  if (fallbackWeekLabel.startsWith("Week 3")) {
     return "Week 3 of 4";
   }
 
-  if (weekLabel.startsWith("Week 4")) {
+  if (fallbackWeekLabel.startsWith("Week 4")) {
     return "Week 4 of 4";
   }
 
-  return weekLabel;
+  return fallbackWeekLabel;
 }

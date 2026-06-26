@@ -9,6 +9,14 @@ describe("slt promotion campaign", () => {
 
     expect(plan.canReadPlan).toBe(true);
     expect(plan.title).toBe("Leader SLT Promotion campaign plan");
+    expect(plan.workflowSource).toBe("template_version");
+    expect(plan.workflowName).toContain("Traveler Conversion");
+    expect(plan.workflowVersionLabel).toBe("v0 reviewed");
+    expect(plan.importStatus).toBe("draft_reviewed");
+    expect(plan.summary).toContain("Current phase objective:");
+    expect(plan.currentPhaseLabel.length).toBeGreaterThan(0);
+    expect(plan.currentPhaseObjective.length).toBeGreaterThan(20);
+    expect(plan.currentPhaseExitSignal.length).toBeGreaterThan(20);
     expect(plan.route).toBe("/campaigns/slt-promotion");
     expect(plan.browserWritesExpected).toBe(0);
     expect(plan.externalWritesExpected).toBe(0);
@@ -77,7 +85,9 @@ describe("slt promotion campaign", () => {
 
     expect(getSltPromotionCampaignPlan(member).canReadPlan).toBe(false);
     expect(getSltPromotionCampaignPlan(member).phases).toEqual([]);
+    expect(getSltPromotionCampaignPlan(member).workflowSource).toBe("hidden");
     expect(getSltPromotionCampaignPlan(dsAdmin).canReadPlan).toBe(false);
     expect(getSltPromotionCampaignPlan(dsAdmin).phases).toEqual([]);
+    expect(getSltPromotionCampaignPlan(dsAdmin).workflowSource).toBe("hidden");
   });
 });
