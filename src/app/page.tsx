@@ -25,6 +25,12 @@ export default async function Home() {
     getReadOnlyAppData(),
     getLocalActorContext(),
   ]);
+
+  if (actor.authSessionStatus !== "signed_in") {
+    redirect("/login");
+    return null;
+  }
+
   const landingRoute = getLandingRouteForActor(actor);
 
   if (!isMemberSurfaceFamily(actor) || (landingRoute !== "/" && landingRoute !== "/app")) {

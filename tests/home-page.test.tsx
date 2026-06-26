@@ -34,7 +34,13 @@ describe("home page", () => {
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getMockLocalActorContext(
+        "member.a@mymedlife.test",
+        undefined,
+        "mock_fallback",
+        "local_actor_email",
+        "signed_in",
+      ),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing member home page."),
@@ -110,7 +116,13 @@ describe("home page", () => {
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("traveler.a@mymedlife.test"),
+      getMockLocalActorContext(
+        "traveler.a@mymedlife.test",
+        undefined,
+        "mock_fallback",
+        "local_actor_email",
+        "signed_in",
+      ),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing traveler home page."),
@@ -131,7 +143,13 @@ describe("home page", () => {
     const navigationModule = await import("next/navigation");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("committee.member@mymedlife.test"),
+      getMockLocalActorContext(
+        "committee.member@mymedlife.test",
+        undefined,
+        "mock_fallback",
+        "local_actor_email",
+        "signed_in",
+      ),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing committee-member home ownership."),
