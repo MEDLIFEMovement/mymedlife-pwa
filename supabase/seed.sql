@@ -20,6 +20,7 @@ insert into auth.users (
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000009', 'authenticated', 'authenticated', 'committee.member@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Nia Committee"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000010', 'authenticated', 'authenticated', 'committee.chair@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Casey Chair"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000011', 'authenticated', 'authenticated', 'eboard.a@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Eli E-Board"}', now(), now()),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000012', 'authenticated', 'authenticated', 'nellis@medlifemovement.org', crypt('6598', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Nellis"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000007', 'authenticated', 'authenticated', 'member.b@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Bea Member"}', now(), now()),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-4000-8000-000000000008', 'authenticated', 'authenticated', 'unrelated@mymedlife.test', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"name":"Una Unrelated"}', now(), now())
 on conflict (id) do nothing;
@@ -34,6 +35,7 @@ insert into app.profiles (id, display_name, email) values
   ('00000000-0000-4000-8000-000000000009', 'Nia Committee', 'committee.member@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000010', 'Casey Chair', 'committee.chair@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000011', 'Eli E-Board', 'eboard.a@mymedlife.test'),
+  ('00000000-0000-4000-8000-000000000012', 'Nellis', 'nellis@medlifemovement.org'),
   ('00000000-0000-4000-8000-000000000007', 'Bea Member', 'member.b@mymedlife.test'),
   ('00000000-0000-4000-8000-000000000008', 'Una Unrelated', 'unrelated@mymedlife.test')
 on conflict (id) do nothing;
@@ -49,6 +51,11 @@ insert into app.memberships (id, user_id, chapter_id, role_key, status, approved
   ('20000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000001', 'e_board_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
   ('20000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000009', '10000000-0000-4000-8000-000000000001', 'action_committee_member', 'approved', now(), '00000000-0000-4000-8000-000000000002'),
   ('20000000-0000-4000-8000-000000000007', '00000000-0000-4000-8000-000000000010', '10000000-0000-4000-8000-000000000001', 'action_committee_chair', 'approved', now(), '00000000-0000-4000-8000-000000000002'),
+  ('20000000-0000-4000-8000-000000000008', '00000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000001', 'general_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
+  ('20000000-0000-4000-8000-000000000009', '00000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000001', 'action_committee_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
+  ('20000000-0000-4000-8000-000000000010', '00000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000001', 'action_committee_chair', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
+  ('20000000-0000-4000-8000-000000000011', '00000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000001', 'e_board_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
+  ('20000000-0000-4000-8000-000000000012', '00000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000001', 'president_vp', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
   ('20000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000007', '10000000-0000-4000-8000-000000000002', 'general_member', 'approved', now(), '00000000-0000-4000-8000-000000000004'),
   ('20000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000008', '10000000-0000-4000-8000-000000000001', 'general_member', 'requested', null, null)
 on conflict (id) do nothing;
@@ -57,7 +64,15 @@ insert into app.staff_role_assignments (id, user_id, role_key, status, assigned_
   ('30000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000003', 'coach', 'active', '00000000-0000-4000-8000-000000000006'),
   ('30000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000004', 'admin', 'active', '00000000-0000-4000-8000-000000000006'),
   ('30000000-0000-4000-8000-000000000003', '00000000-0000-4000-8000-000000000005', 'ds_admin', 'active', '00000000-0000-4000-8000-000000000006'),
-  ('30000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000006', 'super_admin', 'active', '00000000-0000-4000-8000-000000000006')
+  ('30000000-0000-4000-8000-000000000004', '00000000-0000-4000-8000-000000000006', 'super_admin', 'active', '00000000-0000-4000-8000-000000000006'),
+  ('30000000-0000-4000-8000-000000000005', '00000000-0000-4000-8000-000000000012', 'coach', 'active', '00000000-0000-4000-8000-000000000006'),
+  ('30000000-0000-4000-8000-000000000006', '00000000-0000-4000-8000-000000000012', 'admin', 'active', '00000000-0000-4000-8000-000000000006'),
+  ('30000000-0000-4000-8000-000000000007', '00000000-0000-4000-8000-000000000012', 'ds_admin', 'active', '00000000-0000-4000-8000-000000000006'),
+  ('30000000-0000-4000-8000-000000000008', '00000000-0000-4000-8000-000000000012', 'super_admin', 'active', '00000000-0000-4000-8000-000000000006')
+on conflict (id) do nothing;
+
+insert into app.coach_chapter_assignments (id, coach_user_id, chapter_id, coach_type, status, starts_at, assigned_by, handoff_reason) values
+  ('31000000-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000001', 'portfolio', 'active', current_date - 7, '00000000-0000-4000-8000-000000000006', 'Reviewer account has portfolio access for the full workspace tour')
 on conflict (id) do nothing;
 
 insert into app.coach_chapter_assignments (id, coach_user_id, chapter_id, coach_type, status, starts_at, assigned_by, handoff_reason) values

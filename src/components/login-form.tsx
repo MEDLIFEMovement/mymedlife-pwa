@@ -19,6 +19,7 @@ const fakeAccounts = [
   "admin@mymedlife.test",
   "ds.admin@mymedlife.test",
   "super.admin@mymedlife.test",
+  "nellis@medlifemovement.org",
 ];
 
 const initialLoginActionState: LoginActionState = {

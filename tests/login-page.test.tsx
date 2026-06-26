@@ -63,6 +63,8 @@ describe("login page", () => {
     expect(html).toContain("Staff");
     expect(html).toContain("Data Solutions / Admin");
     expect(html).toContain("general.staff@mymedlife.test");
+    expect(html).toContain("nellis@medlifemovement.org");
+    expect(html).toContain("6598");
     expect(html).toContain("Current access boundaries");
     expect(html).toContain("actual role and permission");
     expect(html).toContain("See onboarding flow");

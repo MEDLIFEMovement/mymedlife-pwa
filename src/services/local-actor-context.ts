@@ -236,6 +236,22 @@ export const localActorOptions: LocalActorOption[] = [
     chapterNames: [],
     coachPortfolioChapterNames: [],
   },
+  {
+    email: "nellis@medlifemovement.org",
+    displayName: "Nellis",
+    audience: "super_admin",
+    chapterRoles: [
+      "General Member",
+      "Action Committee Member",
+      "Action Committee Chair",
+      "E-Board Member",
+      "President / VP",
+    ],
+    staffRoles: ["Coach", "Admin", "DS Admin", "Super Admin"],
+    chapterNames: [mockChapter.name],
+    coachPortfolioChapterNames: [mockChapter.name],
+    includeTravelerRole: true,
+  },
 ];
 
 export async function getLocalActorContext(): Promise<LocalActorContext> {

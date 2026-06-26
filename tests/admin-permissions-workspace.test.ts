@@ -9,7 +9,7 @@ describe("admin permissions workspace", () => {
 
     expect(workspace.canReadWorkspace).toBe(true);
     expect(workspace.title).toBe("Admin permission registry");
-    expect(workspace.counts.personas).toBe(14);
+    expect(workspace.counts.personas).toBe(15);
     expect(workspace.counts.backendRoutes).toBe(26);
     expect(workspace.routeFamilies.map((family) => family.key)).toContain(
       "admin_backend",

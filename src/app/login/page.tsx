@@ -129,7 +129,12 @@ export default async function LoginPage(props: LoginPageProps) {
             <h2 className="text-xl font-semibold text-slate-950">Use a seeded account</h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-slate-600">
               <li>Choose one of the seeded emails from the sign-in list below.</li>
-              <li>Use the shared review password <code className="text-[#2563eb]">password</code>.</li>
+              <li>
+                Most seeded accounts use the shared review password{" "}
+                <code className="text-[#2563eb]">password</code>, and the reviewer
+                account <code className="text-[#2563eb]">nellis@medlifemovement.org</code>{" "}
+                uses <code className="text-[#2563eb]">6598</code>.
+              </li>
               <li>After sign-in, continue into the member, leader, staff, admin, or SLT Prep view that matches the account.</li>
               <li>
                 Use <Link href="/admin" className="text-[#2563eb] underline">Admin</Link>{" "}
