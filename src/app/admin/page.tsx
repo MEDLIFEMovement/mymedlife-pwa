@@ -37,6 +37,8 @@ import { getEnvironmentSafetySummary } from "@/services/environment-safety-summa
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { getWriteActivationApprovalPlan } from "@/services/write-activation-approval-plan";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
+import { getLumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
 import { getMvpProgressMap } from "@/services/mvp-progress-map";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
@@ -57,14 +59,16 @@ import { getStakeholderReviewPlan } from "@/services/stakeholder-review-plan";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getWriteActivationReadinessSummary } from "@/services/write-activation-readiness";
 import { getWriteResultStateCoverageSummary } from "@/services/write-result-state-coverage";
+import { LumaEventLoopPilotPanel } from "@/components/luma-event-loop-pilot-panel";
 
 export const metadata = getStaticRouteMetadata("admin");
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [data, actor] = await Promise.all([
+  const [data, actor, lumaSnapshot] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
+    getLumaCalendarReadinessSnapshot(),
   ]);
   const surfaceFamily = getActorSurfaceFamily(actor);
   const canReadAdminBackend =
@@ -88,6 +92,7 @@ export default async function AdminPage() {
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
   const lumaActivation = getStagingLumaEventLoopReadModel("staging");
+  const lumaEventLoop = getLumaEventLoopPilotReadback("admin", lumaSnapshot);
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminAuditLogReview = getAdminAuditLogReview(actor, data);
   const adminSystemHealthReview = getAdminSystemHealthReview(actor, data);
@@ -220,6 +225,8 @@ export default async function AdminPage() {
           </div>
         </div>
       </SurfacePanel>
+
+      <LumaEventLoopPilotPanel readback={lumaEventLoop} compact />
 
       {visiblePanels.length > 0 ? (
         <>

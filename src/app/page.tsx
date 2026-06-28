@@ -2,11 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { EventLoopStrip } from "@/components/event-loop-strip";
+import { LumaEventLoopPilotPanel } from "@/components/luma-event-loop-pilot-panel";
 import { StudentAppShell } from "@/components/student-app-shell";
 import { PanelButton, SurfacePanel, StatCard } from "@/components/visual-primitives";
 import { StatusBadge } from "@/components/status-badge";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
+import { getLumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isMemberSurfaceFamily } from "@/services/role-visibility";
@@ -21,9 +24,10 @@ export const metadata = getStaticRouteMetadata("home");
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [data, actor] = await Promise.all([
+  const [data, actor, lumaSnapshot] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
+    getLumaCalendarReadinessSnapshot(),
   ]);
 
   if (actor.authSessionStatus !== "signed_in") {
@@ -38,6 +42,7 @@ export default async function Home() {
   }
 
   const workspace = getStudentHomeWorkspace(actor, data);
+  const lumaEventLoop = getLumaEventLoopPilotReadback("member", lumaSnapshot);
   const featuredAction = workspace.assignedActions[0];
   const secondaryActions = workspace.assignedActions.slice(1, 3);
   const featuredEvent = workspace.upcomingEvents[0];
@@ -177,6 +182,8 @@ export default async function Home() {
           ))}
         </div>
       </SurfacePanel>
+
+      <LumaEventLoopPilotPanel readback={lumaEventLoop} compact />
 
       {workspace.travelerPrep ? (
         <SurfacePanel tone="info">

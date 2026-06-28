@@ -13,6 +13,8 @@ import {
 import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
+import { getLumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -66,10 +68,11 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
     feedPost?: string;
     quickAction?: string;
   } = {};
-  const [data, actor, search] = await Promise.all([
+  const [data, actor, search, lumaSnapshot] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
     searchParams ?? Promise.resolve(emptySearchParams),
+    getLumaCalendarReadinessSnapshot(),
   ]);
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
   const progress = getProgressCounts(visibleAssignments);
@@ -93,6 +96,7 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
     feedPostId: search.feedPost,
     quickAction: search.quickAction,
   });
+  const lumaEventLoop = getLumaEventLoopPilotReadback("leader", lumaSnapshot);
 
   if (!leaderCommandCenter.canReadCommandCenter && canReadChapterData(actor)) {
     redirect(landingRoute);
@@ -104,7 +108,10 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
       showDebugTools={false}
     >
       {leaderCommandCenter.canReadCommandCenter ? (
-        <ChapterLeaderCommandCenterPanel commandCenter={leaderCommandCenter} />
+        <ChapterLeaderCommandCenterPanel
+          commandCenter={leaderCommandCenter}
+          lumaEventLoop={lumaEventLoop}
+        />
       ) : !canReadChapterData(actor) ? (
         <>
           <DataSourceNotice source={data.source} />

@@ -4,6 +4,8 @@ import { RestrictedState } from "@/components/restricted-state";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { StaffCommandCenterPanel } from "@/components/staff-command-center-panel";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
+import { getLumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -74,10 +76,11 @@ async function renderStaffPage({
     source?: string;
     view?: string;
   } = {};
-  const [data, actor, search] = await Promise.all([
+  const [data, actor, search, lumaSnapshot] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
     searchParams ?? Promise.resolve(emptySearchParams),
+    getLumaCalendarReadinessSnapshot(),
   ]);
   const commandCenter = getStaffCommandCenter(actor, data, {
     routeBase: "/staff",
@@ -104,6 +107,7 @@ async function renderStaffPage({
     source: search.source,
     view: search.view,
   });
+  const lumaEventLoop = getLumaEventLoopPilotReadback("staff", lumaSnapshot);
   const surfaceFamily = getActorSurfaceFamily(actor);
   const restrictedNextHref = getLandingRouteForActor(actor);
   const restrictedNextLabel =
@@ -122,7 +126,10 @@ async function renderStaffPage({
     >
       {commandCenter.canReadCommandCenter ? (
         <>
-          <StaffCommandCenterPanel commandCenter={commandCenter} />
+          <StaffCommandCenterPanel
+            commandCenter={commandCenter}
+            lumaEventLoop={lumaEventLoop}
+          />
 
           {commandCenter.selectedView === "admin" &&
           commandCenter.canReadDetailedOutbox ? (

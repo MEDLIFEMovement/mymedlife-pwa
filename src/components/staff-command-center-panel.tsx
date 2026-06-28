@@ -2,7 +2,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { EventLoopStrip } from "@/components/event-loop-strip";
+import { LumaEventLoopPilotPanel } from "@/components/luma-event-loop-pilot-panel";
 import { StaffPortfolioToolbar } from "@/components/staff-portfolio-toolbar";
+import type { LumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 import type {
   StaffAdminAuditRow,
   StaffAdminIntegrationStatus,
@@ -24,10 +26,12 @@ import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-
 
 type StaffCommandCenterPanelProps = {
   commandCenter: StaffCommandCenter;
+  lumaEventLoop?: LumaEventLoopPilotReadback;
 };
 
 export function StaffCommandCenterPanel({
   commandCenter,
+  lumaEventLoop,
 }: StaffCommandCenterPanelProps) {
   if (!commandCenter.canReadCommandCenter) {
     return null;
@@ -827,6 +831,11 @@ export function StaffCommandCenterPanel({
                 </div>
               </div>
             </div>
+            {lumaEventLoop ? (
+              <div className="mt-4">
+                <LumaEventLoopPilotPanel readback={lumaEventLoop} compact />
+              </div>
+            ) : null}
           </section>
         ) : null}
 

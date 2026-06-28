@@ -5,6 +5,7 @@ import { ChapterLeaderEventCommitteeFilterSelect } from "@/components/chapter-le
 import { ChapterLeaderLeaderboardRegionFilterSelect } from "@/components/chapter-leader-leaderboard-region-filter-select";
 import { ChapterLeaderPipelineFilterSelect } from "@/components/chapter-leader-pipeline-filter-select";
 import { EventLoopStrip } from "@/components/event-loop-strip";
+import { LumaEventLoopPilotPanel } from "@/components/luma-event-loop-pilot-panel";
 import {
   buildChapterLeaderAssignmentFlowHref,
   buildChapterLeaderCommitteeFlowHref,
@@ -23,13 +24,16 @@ import {
   type ChapterLeaderCommandCenterView,
 } from "@/services/chapter-leader-command-center";
 import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
+import type { LumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 
 type ChapterLeaderCommandCenterPanelProps = {
   commandCenter: ChapterLeaderCommandCenter;
+  lumaEventLoop?: LumaEventLoopPilotReadback;
 };
 
 export function ChapterLeaderCommandCenterPanel({
   commandCenter,
+  lumaEventLoop,
 }: ChapterLeaderCommandCenterPanelProps) {
   if (!commandCenter.canReadCommandCenter) {
     return null;
@@ -395,6 +399,10 @@ export function ChapterLeaderCommandCenterPanel({
                 ]}
               />
             </SectionCard>
+
+            {lumaEventLoop ? (
+              <LumaEventLoopPilotPanel readback={lumaEventLoop} compact />
+            ) : null}
 
             <SectionCard eyebrow="Quick Actions" title="Quick Actions">
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">

@@ -29,6 +29,26 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
 });
 
 describe("home page", () => {
+  it("sends signed-out visitors to the login page first", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const navigationModule = await import("next/navigation");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing login-first home page."),
+    );
+    vi.mocked(navigationModule.redirect).mockClear();
+
+    const { default: HomePage } = await import("@/app/page");
+    const html = renderToStaticMarkup(await HomePage());
+
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith("/login");
+    expect(html).toBe("");
+  });
+
   it("keeps the member home focused on the student workspace instead of preview controls", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
