@@ -70,9 +70,7 @@ export function getLumaEventLoopPilotReadback(
       {
         label: "Luma events",
         value: ready ? `${snapshot.eventCount}` : "0",
-        detail: ready
-          ? "Server-side calendar events available for staging review"
-          : "Waiting for staging env configuration before imported events render",
+        detail: getLumaEventsCardDetail(snapshot, ready),
       },
       {
         label: "RSVP path",
@@ -166,6 +164,21 @@ function getRoleSummary(
     case "admin":
       return `${countLabel} are available through the server-only read path. Admin review should verify imported event visibility, audit/outbox posture, and zero external sends before any write is enabled.`;
   }
+}
+
+function getLumaEventsCardDetail(
+  snapshot: LumaCalendarReadinessSnapshot,
+  ready: boolean,
+): string {
+  if (ready) {
+    return "Server-side calendar events available for staging review";
+  }
+
+  if (snapshot.status === "api_error") {
+    return "Luma config exists, but the hosted credential or calendar read needs review before imported events render.";
+  }
+
+  return "Waiting for staging env configuration before imported events render";
 }
 
 function getRoleRsvpDetail(role: LumaEventLoopPilotRole): string {

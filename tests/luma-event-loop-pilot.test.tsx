@@ -109,4 +109,32 @@ describe("luma event loop pilot readback", () => {
     expect(readback.counts.writesEnabled).toBe(0);
     expect(readback.counts.externalSends).toBe(0);
   });
+
+  it("distinguishes rejected hosted credentials from missing Luma config", () => {
+    const readback = getLumaEventLoopPilotReadback("admin", {
+      status: "api_error",
+      calendarId: "cal-7WNftYCpBJclZyG",
+      apiKeyConfigured: true,
+      endpoint:
+        "https://public-api.luma.com/v1/calendar/list-events?calendar_api_id=cal-7WNftYCpBJclZyG&pagination_limit=10",
+      eventCount: 0,
+      hasMore: false,
+      safeEvents: [],
+      writesEnabled: false,
+      externalWritesEnabled: 0,
+      attendeeDataReturned: false,
+      secretReturned: false,
+      detail:
+        "Luma calendar read returned HTTP 401. The server has Luma config, but Luma rejected the staged credential. Refresh LUMA_API_KEY in the Vercel Preview environment before treating imported events as verified.",
+    });
+
+    expect(readback.statusLabel).toBe("Luma read needs review");
+    expect(readback.statusDetail).toContain("Refresh LUMA_API_KEY");
+    expect(readback.cards[0]).toMatchObject({
+      label: "Luma events",
+      value: "0",
+      detail: expect.stringContaining("hosted credential"),
+    });
+    expect(readback.counts.externalSends).toBe(0);
+  });
 });

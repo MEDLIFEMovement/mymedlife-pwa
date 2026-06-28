@@ -116,7 +116,8 @@ describe("luma calendar readiness", () => {
     });
 
     expect(snapshot.status).toBe("api_error");
-    expect(snapshot.detail).toBe("Luma calendar read returned HTTP 401.");
+    expect(snapshot.detail).toContain("Luma calendar read returned HTTP 401.");
+    expect(snapshot.detail).toContain("Refresh LUMA_API_KEY");
     expect(JSON.stringify(snapshot)).not.toContain(
       "secret-example-do-not-return",
     );

@@ -107,7 +107,7 @@ export async function getLumaCalendarReadinessSnapshot(options?: {
         calendarId,
         endpoint,
         apiKeyConfigured: true,
-        detail: `Luma calendar read returned HTTP ${response.status}.`,
+        detail: getLumaApiErrorDetail(response.status),
       });
     }
 
@@ -186,6 +186,14 @@ function apiErrorSnapshot(input: {
     secretReturned: false,
     detail: input.detail,
   };
+}
+
+function getLumaApiErrorDetail(status: number): string {
+  if (status === 401 || status === 403) {
+    return `Luma calendar read returned HTTP ${status}. The server has Luma config, but Luma rejected the staged credential. Refresh LUMA_API_KEY in the Vercel Preview environment before treating imported events as verified.`;
+  }
+
+  return `Luma calendar read returned HTTP ${status}.`;
 }
 
 function stringOrNull(value: unknown): string | null {
