@@ -783,6 +783,8 @@ describe("staff command center", () => {
     expect(defaultHtml).not.toContain("Naomi Outreach Lead");
     expect(defaultHtml).toContain("Evidence Pending");
     expect(defaultHtml).toContain("HubSpot Tasks");
+    expect(defaultHtml).toContain("Staging-safe link attached");
+    expect(defaultHtml).toContain("awarded once while Luma/outbox execution stays off");
     expect(defaultHtml).toContain('aria-label="Risk filter"');
     expect(defaultHtml).toContain('aria-label="Country filter"');
     expect(defaultHtml).toContain('aria-label="Campaign filter"');

@@ -442,13 +442,20 @@ export function resolveActorEmailFromSession(
   fallbackIdentitySource: LocalActorPreviewIdentitySource = "local_actor_email",
 ): ActorEmailResolution {
   if (authSession.status === "signed_in" && authSession.user?.email) {
+    const identitySource: ActorIdentitySource =
+      authSession.user.id.startsWith("preview-")
+        ? "local_preview_cookie"
+        : "local_auth_session";
+
     return {
       email: authSession.user.email,
-      identitySource: "local_auth_session",
+      identitySource,
       authSessionStatus: authSession.status,
       authSessionEmail: authSession.user.email,
       message:
-        "Using the signed-in local Supabase Auth user for role-aware app context.",
+        identitySource === "local_preview_cookie"
+          ? "Using the seeded preview reviewer session for role-aware app context."
+          : "Using the signed-in local Supabase Auth user for role-aware app context.",
     };
   }
 
@@ -487,6 +494,28 @@ async function getLocalAuthSessionState(): Promise<AuthSessionState> {
   const { client, config } = await createLocalSupabaseServerClient();
 
   if (!client) {
+    const cookieStore = await cookies();
+    const previewSelection = resolveLocalActorPreviewSelection(
+      cookieStore.get(localActorPreviewCookieName)?.value,
+      process.env.MYMEDLIFE_LOCAL_ACTOR_EMAIL?.trim() || defaultLocalActorEmail,
+    );
+
+    const previewActor = findKnownLocalActorOption(previewSelection.email);
+
+    if (previewActor) {
+      return {
+        status: "signed_in",
+        isLocalOnly: config.isLocalOnly,
+        message:
+          "Using the seeded preview reviewer session because hosted staging Supabase Auth is disabled.",
+        user: {
+          id: `preview-${previewActor.email}`,
+          email: previewActor.email,
+          displayName: previewActor.displayName,
+        },
+      };
+    }
+
     return getDisabledAuthSessionState(config);
   }
 

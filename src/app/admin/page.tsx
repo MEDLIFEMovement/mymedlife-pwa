@@ -52,6 +52,7 @@ import {
   getActorSurfaceFamily,
   getVisibleAdminPanelsForActor,
 } from "@/services/role-visibility";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getStakeholderReviewPlan } from "@/services/stakeholder-review-plan";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getWriteActivationReadinessSummary } from "@/services/write-activation-readiness";
@@ -86,6 +87,7 @@ export default async function AdminPage() {
 
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
+  const lumaActivation = getStagingLumaEventLoopReadModel("staging");
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminAuditLogReview = getAdminAuditLogReview(actor, data);
   const adminSystemHealthReview = getAdminSystemHealthReview(actor, data);
@@ -198,6 +200,24 @@ export default async function AdminPage() {
             value={`${campaignSummary.disabledIntegrationEvents}`}
             note="No live external writes"
           />
+        </div>
+        <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-white px-4 py-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-950">
+                {lumaActivation.providerStatusLabel}
+              </p>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                The staging loop includes event storage, Luma link/QR posture,
+                feed sharing, member RSVP, attendance, and one points award. External writes remain off.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <StatusPill tone="blue">{`${lumaActivation.summary.rsvpCount} RSVP`}</StatusPill>
+              <StatusPill tone="gold">{`${lumaActivation.summary.attendanceCount} attended`}</StatusPill>
+              <StatusPill tone="blue">{`${lumaActivation.summary.pointsAwarded} pts`}</StatusPill>
+            </div>
+          </div>
         </div>
       </SurfacePanel>
 

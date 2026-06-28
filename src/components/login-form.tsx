@@ -24,7 +24,7 @@ const fakeAccounts = [
 
 const initialLoginActionState: LoginActionState = {
   status: "idle",
-  message: "Choose a seeded myMEDLIFE account to continue.",
+  message: "Use a seeded myMEDLIFE account to continue.",
   email: "member.a@mymedlife.test",
 };
 
@@ -41,13 +41,11 @@ export function LoginForm({ redirectTo = "/app" }: LoginFormProps) {
     >
       <input type="hidden" name="redirectTo" value={redirectTo} />
       <div className="space-y-2">
-        <p className="app-eyebrow app-eyebrow-blue">
-          Seeded account access
-        </p>
-        <h2 className="text-2xl font-semibold text-slate-950">Sign in with a seeded account</h2>
+        <p className="app-eyebrow app-eyebrow-blue">Sign in</p>
+        <h2 className="text-2xl font-semibold text-slate-950">Use a seeded review account</h2>
         <p className="text-sm leading-6 text-slate-600">
-          Choose a member, leader, staff, admin, or traveler account to open the
-          matching myMEDLIFE experience.
+          This staging login uses seeded review accounts. The account you sign in with
+          decides the workspace you see after authentication.
         </p>
       </div>
 

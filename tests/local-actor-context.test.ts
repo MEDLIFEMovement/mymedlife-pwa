@@ -1,14 +1,43 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseReadonlyClient } from "@/lib/supabase-readonly";
 import {
   getMockLocalActorContext,
+  getLocalActorContext,
   getSupabaseLocalActorContext,
   readLocalActorSnapshot,
   resolveActorEmailFromSession,
   resolveLocalActorPreviewSelection,
 } from "@/services/local-actor-context";
 
+let previewCookieValue = "";
+
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(async () => ({
+    get: (name: string) =>
+      name === "mymedlife_preview_actor_email" && previewCookieValue
+        ? { value: previewCookieValue }
+        : undefined,
+  })),
+}));
+
+vi.mock("@/lib/supabase-server", () => ({
+  createLocalSupabaseServerClient: vi.fn(async () => ({
+    client: null,
+    config: {
+      enabled: false,
+      mode: "disabled",
+      reviewEnvironment: "disabled",
+      isLocalOnly: false,
+      reason: "Hosted staging Supabase Auth is disabled for this test.",
+    },
+  })),
+}));
+
 describe("local actor context service", () => {
+  beforeEach(() => {
+    previewCookieValue = "";
+  });
+
   it("keeps a mock local actor fallback available", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
 
@@ -234,6 +263,16 @@ describe("local actor context service", () => {
       email: "leader.a@mymedlife.test",
       identitySource: "local_actor_email",
     });
+  });
+
+  it("treats the preview cookie reviewer as signed in when hosted auth is disabled", async () => {
+    previewCookieValue = "nellis@medlifemovement.org";
+
+    const actor = await getLocalActorContext();
+
+    expect(actor.authSessionStatus).toBe("signed_in");
+    expect(actor.identitySource).toBe("local_preview_cookie");
+    expect(actor.user.email).toBe("nellis@medlifemovement.org");
   });
 });
 

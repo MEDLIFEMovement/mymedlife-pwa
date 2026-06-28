@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import type { MemberActionRouteSource } from "@/services/member-action-route-href";
 import type { RushMonthEventReadinessWorkspace } from "@/services/rush-month-event-readiness";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { EventLoopStrip } from "@/components/event-loop-strip";
 import { PanelButton, SurfacePanel, StatusPill } from "@/components/visual-primitives";
 
@@ -18,6 +19,7 @@ export function MemberRushMonthEventsPanel({
   const comingUpRows = workspace.rows.filter((row) => row.memberSection === "coming_up");
   const visibleRows = [...thisWeekRows, ...comingUpRows];
   const sourceContext = getMemberEventsSourceContext(source);
+  const activation = getStagingLumaEventLoopReadModel("staging");
 
   return (
     <section className="grid gap-3">
@@ -73,6 +75,18 @@ export function MemberRushMonthEventsPanel({
             { label: "Points", detail: "Moves chapter rank", tone: "yellow" },
           ]}
         />
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <EventLoopStatus
+            label="Luma + QR"
+            value={activation.providerStatusLabel}
+            detail={activation.summary.qrReady ? "QR ready for staging review" : "QR disabled"}
+          />
+          <EventLoopStatus
+            label="RSVP + attendance"
+            value={`${activation.summary.rsvpCount} RSVP / ${activation.summary.attendanceCount} attended`}
+            detail={`${activation.summary.pointsAwarded} points awarded once`}
+          />
+        </div>
       </section>
 
       {visibleRows.length > 0 ? (
@@ -86,6 +100,26 @@ export function MemberRushMonthEventsPanel({
       </SurfacePanel>
       ) : null}
     </section>
+  );
+}
+
+function EventLoopStatus({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-[1.1rem] border border-[#bfdbfe] bg-white px-3.5 py-3">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-semibold text-slate-950">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+    </div>
   );
 }
 

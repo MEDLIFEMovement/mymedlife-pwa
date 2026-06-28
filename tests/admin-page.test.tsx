@@ -68,6 +68,8 @@ describe("admin page", () => {
     expect(html).toContain('href="/admin/phase-2"');
     expect(html).toContain("Event loop");
     expect(html).toContain("Luma event creation, RSVP, attendance, and points stay app-owned.");
+    expect(html).toContain("Staging-safe link attached");
+    expect(html).toContain("feed sharing, member RSVP, attendance, and one points award");
     expect(html).toContain('href="/admin/permissions"');
     expect(html).toContain('href="/admin/committees"');
     expect(html).toContain('href="/admin/workflows"');

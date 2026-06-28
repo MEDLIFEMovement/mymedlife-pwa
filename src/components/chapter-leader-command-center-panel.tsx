@@ -22,6 +22,7 @@ import {
   type ChapterLeaderCommandCenterSuccessionCandidate,
   type ChapterLeaderCommandCenterView,
 } from "@/services/chapter-leader-command-center";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 type ChapterLeaderCommandCenterPanelProps = {
   commandCenter: ChapterLeaderCommandCenter;
@@ -52,6 +53,7 @@ export function ChapterLeaderCommandCenterPanel({
   const memberHomeHandoffPreview = showMemberHomeHandoff
     ? commandCenter.sourceContext?.preview ?? null
     : null;
+  const lumaActivation = getStagingLumaEventLoopReadModel("staging");
   const preservedChapterState = {
     source: commandCenter.selectedSource,
     memberId: commandCenter.navigationMemberId,
@@ -418,7 +420,7 @@ export function ChapterLeaderCommandCenterPanel({
           </div>
         ) : null}
 
-        {renderView(commandCenter, preservedChapterState)}
+        {renderView(commandCenter, preservedChapterState, lumaActivation)}
       </div>
     </section>
   );
@@ -436,6 +438,7 @@ function renderView(
     searchQuery: string;
     feedPostId: string | null;
   },
+  lumaActivation: ReturnType<typeof getStagingLumaEventLoopReadModel>,
 ) {
   const selectedMemberAddNoteAction = commandCenter.selectedMember?.leadershipActions.find(
     (action) => action.label === "Add Note",
@@ -1263,6 +1266,50 @@ function renderView(
                 value={`${commandCenter.eventsOverview.followUpsOverdue}`}
                 note="Events that still need human clean-up."
               />
+            </div>
+
+            <div className="rounded-[1.4rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <div>
+                  <p className="app-eyebrow app-eyebrow-blue">Staging Luma activation</p>
+                  <h2 className="mt-2 text-xl font-semibold text-slate-950">
+                    Create the event, attach Luma, share it, confirm attendance, award points.
+                  </h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                    {lumaActivation.providerStatusLabel}. The outbox stays disabled,
+                    but the chapter workflow now follows the event chain reviewers need
+                    to see.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3 xl:w-[28rem]">
+                  <EventDetailMetricPill
+                    label="RSVP"
+                    value={`${lumaActivation.summary.rsvpCount}`}
+                    note="Member intent"
+                  />
+                  <EventDetailMetricPill
+                    label="Attended"
+                    value={`${lumaActivation.summary.attendanceCount}`}
+                    note="Confirmed check-in"
+                  />
+                  <EventDetailMetricPill
+                    label="Points"
+                    value={`${lumaActivation.summary.pointsAwarded}`}
+                    note="Awarded once"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 grid gap-2 lg:grid-cols-5">
+                {lumaActivation.sequence.map((step) => (
+                  <div
+                    key={step.eventType}
+                    className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3"
+                  >
+                    <p className="text-xs font-semibold text-slate-950">{step.label}</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-500">{step.detail}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="overflow-hidden rounded-[1.3rem] border border-slate-200 bg-white">

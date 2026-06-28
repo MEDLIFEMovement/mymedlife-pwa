@@ -15,8 +15,8 @@ export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
         </p>
         <h2 className="app-title mt-2">No signed-in account yet</h2>
         <p className="app-copy mt-2">
-          Choose a workspace card, then use a seeded account to enter the matching role-based
-          experience.
+          Sign in with a seeded account, then myMEDLIFE will route you to the matching
+          role-based workspace.
         </p>
         <p className="app-copy mt-3 text-xs text-slate-500">
           {session.message}

@@ -20,6 +20,7 @@ import type {
   StaffProofReviewItem,
   StaffProofReviewPanel,
 } from "@/services/staff-command-center";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 type StaffCommandCenterPanelProps = {
   commandCenter: StaffCommandCenter;
@@ -78,6 +79,7 @@ export function StaffCommandCenterPanel({
     (total, row) => total + row.pointsPerWeek,
     0,
   );
+  const lumaActivation = getStagingLumaEventLoopReadModel("staging");
   const eventsThisWeekLabel =
     commandCenter.portfolioSummaryCards.find((card) => card.label === "Events This Week")
       ?.value ?? `${Math.max(1, Math.round(totalRsvpCount / 20))}`;
@@ -806,6 +808,24 @@ export function StaffCommandCenterPanel({
                 value={totalPointsPerWeek.toLocaleString()}
                 note="Leaderboard movement signal"
               />
+            </div>
+            <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-white px-4 py-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">
+                    {lumaActivation.providerStatusLabel}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    Staging proves the event is stored, shared, RSVP&apos;d,
+                    checked in, and awarded once while Luma/outbox execution stays off.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Pill tone="good" label={`${lumaActivation.summary.rsvpCount} RSVP`} />
+                  <Pill tone="warning" label={`${lumaActivation.summary.attendanceCount} attended`} />
+                  <Pill tone="good" label={`${lumaActivation.summary.pointsAwarded} pts`} />
+                </div>
+              </div>
             </div>
           </section>
         ) : null}

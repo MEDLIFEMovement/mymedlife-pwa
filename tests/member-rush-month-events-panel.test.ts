@@ -24,6 +24,10 @@ describe("member rush month events panel", () => {
     expect(html).toContain("Member Orientation");
     expect(html).toContain("RSVP&#x27;d");
     expect(html).toContain("Luma");
+    expect(html).toContain("Staging-safe link attached");
+    expect(html).toContain("QR ready for staging review");
+    expect(html).toContain("1 RSVP / 1 attended");
+    expect(html).toContain("20 points awarded once");
     expect(html).toContain("20 pts for attending");
     expect(html).toContain("Bruin Walk Table 7");
     expect(html).toContain("Engineering VI 289");

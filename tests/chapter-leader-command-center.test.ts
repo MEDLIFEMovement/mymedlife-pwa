@@ -1068,6 +1068,10 @@ describe("chapter leader command center", () => {
     expect(commandCenter.activeQuickAction).toBe("create_event");
     expect(markup).toContain("Create Event");
     expect(markup).toContain("Open the chapter event lane with ownership and follow-up in mind.");
+    expect(markup).toContain("Staging Luma activation");
+    expect(markup).toContain("Create the event, attach Luma, share it, confirm attendance, award points.");
+    expect(markup).toContain("Staging-safe link attached");
+    expect(markup).toContain("Awarded once");
     expect(markup).toContain(
       "Track event creation, RSVP, attendance, proof, and point impact across the chapter.",
     );
