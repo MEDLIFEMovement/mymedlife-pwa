@@ -73,7 +73,8 @@ describe("controlled pilot readiness", () => {
     expect(readiness.canReadReadiness).toBe(true);
     expect(readiness.title).toBe("DS Admin controlled pilot safety readiness");
     expect(externalIntegrations?.status).toBe("blocked_before_scale");
-    expect(externalIntegrations?.plainEnglish).toContain("should stay disabled");
+    expect(externalIntegrations?.plainEnglish).toContain("Only the approved Luma event loop");
+    expect(externalIntegrations?.plainEnglish).toContain("non-approved Luma behavior");
   });
 
   it("marks recorded pilot chapter, event posture, and coach owner as ready-now gates", () => {

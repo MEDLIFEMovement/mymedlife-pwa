@@ -217,14 +217,14 @@ const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
     ownerLane: "Data Solutions",
     status: "local_runbook_ready",
     localRunbook:
-      "DS Admin can inspect disabled IntegrationEvent, AutomationOutbox, and AuditLog posture while n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, and AI writes stay off.",
+      "DS Admin can inspect IntegrationEvent, AutomationOutbox, and AuditLog posture while only the approved Luma event loop is rehearsed; n8n, HubSpot, warehouse, Power BI, SMS, email, AI, and non-approved Luma writes stay off.",
     firstResponseSteps: [
       "Treat the app and Supabase as source of truth before retrying any external workflow.",
       "Do not replay outbox rows until idempotency, retry, and dead-letter rules are approved.",
       "Compare the integration event to the audit row before marking a recovery complete.",
     ],
     missingLiveEvidence: [
-      "n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, and AI contracts approved.",
+      "Luma event-loop contract approved for the pilot, while n8n, HubSpot, warehouse, Power BI, SMS, email, AI, and non-approved Luma contracts remain disabled.",
       "Retry, idempotency, dead-letter, and manual recovery procedure documented.",
       "Named DS owner for pausing, replaying, or discarding external messages.",
     ],

@@ -18,12 +18,13 @@ Codex will:
 
 1. Record the approved values in the closeout packet and supporting review docs.
 2. Keep the staging reviewer path, pilot scope, first hosted write, smallest
-   proof/review loop, production ownership, and integration hold aligned across
-   the review surfaces.
+   proof/review loop, Luma event loop, production ownership, and integration
+   hold aligned across the review surfaces.
 3. Prepare the next hosted proof pass with the approved staging path and the
    approved narrow write/review sequence.
-4. Leave live external sends, broad writes, and production launch disabled
-   until the hosted proof is visible and the remaining launch gates are clear.
+4. Leave broad writes, non-approved Luma behavior, live external sends, and
+   production launch disabled until the hosted proof is visible and the
+   remaining launch gates are clear.
 
 ## If the reply changes one or more fields
 
@@ -41,6 +42,7 @@ Codex will:
 - It will not treat the reply as live launch approval.
 - It will not enable external sends.
 - It will not enable broad writes.
+- It will not enable non-approved Luma behavior.
 - It will not change the stack.
 - It will not mark the goal complete until the hosted proof and remaining
   approvals are actually recorded.
@@ -53,6 +55,7 @@ The primary approver has already approved the defaults for:
 - pilot scope
 - first hosted write
 - smallest proof/review loop
+- Luma event loop
 - production environment ownership
 - external integration hold
 - support / pause channel

@@ -26,11 +26,12 @@ Close Phase 2 at the smallest safe real pilot:
 - Pilot cohort size: `5-10 students`
 - First hosted write: `action_started`
 - Smallest real proof loop: `proof metadata submission + leader review`
-- Event/NPS posture: `manual-first`
+- Event/NPS posture: `Luma-backed event / RSVP / attendance / points loop with manual NPS support`
 - Hosted target: `staging.mymedlife.org`
 - Integration hold:
   - HubSpot writes off
-  - Luma writes off
+  - only the approved Luma event loop may be rehearsed
+  - non-approved Luma behavior off
   - n8n off
   - warehouse / Power BI off
   - SMS / email off
@@ -130,7 +131,7 @@ Required proof before any broader write opens:
 - HQ proof decisions
 - coach decisions
 - HubSpot writes
-- Luma writes
+- Luma behavior outside the approved event / RSVP / attendance / points loop
 - n8n writes
 - warehouse / Power BI writes
 - SMS / email / AI actions

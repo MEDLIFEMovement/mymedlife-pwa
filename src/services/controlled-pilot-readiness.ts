@@ -266,11 +266,11 @@ function getPilotGates(
       plainEnglish:
         eventNpsPosture?.status === "recorded_final"
           ? `The first pilot currently records ${eventNpsPosture.value} for event attendance and NPS posture.`
-          : "The first pilot must decide whether event attendance/NPS starts manually or through Luma integration.",
+          : "The first pilot must confirm the Luma event/RSVP/attendance/points loop and keep NPS support manual-first.",
       nextStep:
         eventNpsPosture?.status === "recorded_final"
           ? "Keep the recorded event/NPS posture unless the team explicitly replaces it during pilot approval."
-          : "Choose manual import first or approve a narrow Luma read/import plan.",
+          : "Use the approved Luma event-loop staging proof, then confirm NPS reminders and downstream automation remain off.",
     },
     {
       key: "coach_support",
@@ -293,9 +293,9 @@ function getPilotGates(
       owner: "Data solutions",
       status: "blocked_before_scale",
       plainEnglish:
-        "HubSpot, Luma writes, n8n, warehouse, Power BI, SMS, email, and AI should stay disabled for the first pilot unless separately approved.",
+        "Only the approved Luma event loop may be rehearsed for the first pilot; HubSpot, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior stay disabled.",
       nextStep:
-        "Keep external writes off until the app source-of-truth loop is stable.",
+        "Keep non-approved external writes off until the app source-of-truth loop and Luma event path are stable.",
     },
   ];
 }

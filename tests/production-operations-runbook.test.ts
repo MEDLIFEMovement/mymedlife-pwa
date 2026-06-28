@@ -59,7 +59,11 @@ describe("production operations runbook", () => {
     expect(runbook.title).toBe("DS Admin production operations and recovery runbook");
     expect(integrationRecovery?.ownerLane).toBe("Data Solutions");
     expect(integrationRecovery?.status).toBe("local_runbook_ready");
+    expect(integrationRecovery?.localRunbook).toContain("approved Luma event loop");
     expect(integrationRecovery?.localRunbook).toContain("n8n");
+    expect(integrationRecovery?.missingLiveEvidence.join(" ")).toContain(
+      "non-approved Luma contracts remain disabled",
+    );
     expect(integrationRecovery?.missingLiveEvidence.join(" ")).toContain("dead-letter");
     expect(integrationRecovery?.externalWritesExpected).toBe(0);
   });

@@ -23,7 +23,8 @@ human decisions.
 | Smallest proof/review loop | Chapter / HQ | Approved | Metadata submit -> leader review -> audit trail |
 | Production environment ownership | Platform / Security | Approved | DS/platform owns production Supabase, Vercel, DNS, secrets, and backup/restore; security approval routed through GitHub/Copilot/Codex Security |
 | Monitoring and incident response | Platform / Operations | Approved | One named incident owner, one backup owner, one pilot alert channel, and the existing rollback path as the stop mechanism |
-| External integrations hold | DS | Approved | HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off |
+| Luma event loop | Events / DS | Staging proof required | Event create/update, RSVP writeback, attendance import, points and leaderboard readback, with audit/outbox proof of zero unauthorized sends |
+| External integrations hold | DS | Approved | HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior stay off |
 
 ## What Is Already True
 
@@ -31,7 +32,8 @@ human decisions.
 - Launch readiness surfaces exist for production gate, closeout, system health,
   operations, pilot scope, design QA, auth onboarding, and first write.
 - Tests, lint, and build are green in the current worktree.
-- The repo keeps live external sends and broad writes disabled by default.
+- The repo keeps live external sends and broad writes disabled by default, except
+  for the separately gated Luma event-loop staging proof.
 - The current reviewer has confirmed they are the pilot owner and rollback owner.
 - The approved defaults now cover the staging access path, pilot scope, first hosted write, proof/review loop, production ownership, and the external integration hold.
 
@@ -39,6 +41,7 @@ human decisions.
 
 - No live external sends.
 - No broad writes.
+- No non-approved Luma behavior.
 - No proof uploads or public proof sharing.
 - No production auth claim.
 - No production launch claim.
