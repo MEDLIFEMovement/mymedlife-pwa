@@ -41,6 +41,38 @@ Required before production pilot:
 - Confirm production seed/user provisioning plan for the tiny pilot cohort.
 - Confirm production Auth callback URLs.
 
+## Hosted Staging Control-Layer Evidence
+
+Applied to hosted staging Supabase project `rceupryepjgkdeqgxzrc`:
+
+- `20260628221659 production_control_layer`
+- `20260628221823 fix_control_layer_advisors`
+
+Readback confirmed:
+
+- Control tables exist for step-up sessions, production approvals, feature flag
+  overrides, feature flag audits, theme snapshots, and theme audits.
+- RLS is enabled on all six control tables.
+- DS Admin / Super Admin select policies exist for the control tables.
+- The audited control functions exist with explicit search paths.
+- Existing rows after migration: `0` feature flag overrides, `0` feature flag
+  audit records, `0` theme snapshots, `0` theme audit records, and `0`
+  production approval records.
+
+Hosted Supabase advisor result after the follow-up migration:
+
+- Security advisor: `0` lints.
+- Performance advisor still reports existing broader-schema performance items,
+  plus expected unused-index notices on newly created empty control tables. These
+  do not enable writes or relax RLS.
+
+Local verification after hosted application:
+
+- `supabase test db --local supabase/tests/database/rls_production_control_layer.test.sql`
+  passed: `15` tests.
+- `pnpm vitest run tests/feature-flags-theme-services.test.ts tests/admin-integrations-step-up.test.ts`
+  passed: `2` files, `13` tests.
+
 ## Production Vercel Readiness
 
 Required environment variables:
@@ -62,6 +94,17 @@ Required platform checks:
 - Rollback target and rollback owner named.
 - Logs/alerts destination named.
 - Staging smoke passes before production promotion.
+
+Current Vercel evidence:
+
+- Vercel project `mymedlife-pwa` exists under team
+  `nellis-6036's projects`.
+- PR #126 preview deployment for `feat/modular-flags-theme-admin` is `READY`.
+- This Codex session can read Vercel projects/deployments, but does not have a
+  Vercel env-var list/write tool and the local Vercel CLI is not installed in
+  this checkout. Therefore `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` still needs
+  platform-owner confirmation or manual setting before the deployed app can be
+  treated as using the Supabase-backed control layer.
 
 ## Luma Event Loop Staging Proof
 
