@@ -1,5 +1,6 @@
 import {
   getFeatureResolvedState,
+  getFeatureResolvedStateDurable,
   isFeatureEnabled,
 } from "@/modules/feature-flags";
 
@@ -84,17 +85,23 @@ export type LumaImportedAttendanceRow = {
 };
 
 type LumaJson = Record<string, unknown>;
+type LumaLivePilotGateOptions = {
+  lumaFeatureEnabled?: boolean;
+  lumaFeatureFallback?: string;
+};
 
 const LUMA_API_BASE = "https://public-api.luma.com/v1";
 
 export function getLumaLivePilotGate(
   env: LumaLivePilotEnv = process.env as LumaLivePilotEnv,
+  options: LumaLivePilotGateOptions = {},
 ): LumaLivePilotGate {
   const apiKeyConfigured = Boolean(env.LUMA_API_KEY?.trim());
   const calendarIdConfigured = Boolean(env.LUMA_CALENDAR_ID?.trim());
   const environment = normalizeEnvironment(env);
   const productionBlocked = env.VERCEL_ENV === "production" || environment === "production";
-  const lumaFeatureEnabled = isFeatureEnabled("integration_luma", { env });
+  const lumaFeatureEnabled =
+    options.lumaFeatureEnabled ?? isFeatureEnabled("integration_luma", { env });
   const baseEnabled =
     env.MYMEDLIFE_ENABLE_LUMA_WRITES === "true" &&
     apiKeyConfigured &&
@@ -134,8 +141,20 @@ export function getLumaLivePilotGate(
       attendanceImportEnabled,
       baseWritesFlag: env.MYMEDLIFE_ENABLE_LUMA_WRITES === "true",
       lumaFeatureEnabled,
+      lumaFeatureFallback: options.lumaFeatureFallback,
     }),
   };
+}
+
+export async function getLumaLivePilotGateDurable(
+  env: LumaLivePilotEnv = process.env as LumaLivePilotEnv,
+): Promise<LumaLivePilotGate> {
+  const featureState = await getDurableLumaFeatureState(env);
+
+  return getLumaLivePilotGate(env, {
+    lumaFeatureEnabled: featureState.enabled,
+    lumaFeatureFallback: featureState.gracefulFallback,
+  });
 }
 
 export async function createOrUpdateLumaEvent(
@@ -145,14 +164,16 @@ export async function createOrUpdateLumaEvent(
     fetchImpl?: LumaLivePilotFetch;
   } = {},
 ): Promise<LumaLivePilotResult> {
-  const gate = getLumaLivePilotGate(options.env);
+  const featureState = await getDurableLumaFeatureState(options.env);
+  const gate = getLumaLivePilotGate(options.env, {
+    lumaFeatureEnabled: featureState.enabled,
+    lumaFeatureFallback: featureState.gracefulFallback,
+  });
   const eventId = normalizeOptionalString(input.eventId);
   const operation = eventId ? "event_update" : "event_create";
 
-  if (!isFeatureEnabled("integration_luma", { env: options.env })) {
-    return blockedResult(operation, getFeatureResolvedState("integration_luma", {
-      env: options.env,
-    }).gracefulFallback);
+  if (!featureState.enabled) {
+    return blockedResult(operation, featureState.gracefulFallback);
   }
 
   if (!gate.eventWritesEnabled) {
@@ -173,12 +194,14 @@ export async function writeLumaRsvp(
     fetchImpl?: LumaLivePilotFetch;
   } = {},
 ): Promise<LumaLivePilotResult> {
-  const gate = getLumaLivePilotGate(options.env);
+  const featureState = await getDurableLumaFeatureState(options.env);
+  const gate = getLumaLivePilotGate(options.env, {
+    lumaFeatureEnabled: featureState.enabled,
+    lumaFeatureFallback: featureState.gracefulFallback,
+  });
 
-  if (!isFeatureEnabled("integration_luma", { env: options.env })) {
-    return blockedResult("rsvp_write", getFeatureResolvedState("integration_luma", {
-      env: options.env,
-    }).gracefulFallback);
+  if (!featureState.enabled) {
+    return blockedResult("rsvp_write", featureState.gracefulFallback);
   }
 
   if (!gate.rsvpWritesEnabled) {
@@ -216,12 +239,14 @@ export async function importLumaAttendance(
     fetchImpl?: LumaLivePilotFetch;
   } = {},
 ): Promise<LumaLivePilotResult> {
-  const gate = getLumaLivePilotGate(options.env);
+  const featureState = await getDurableLumaFeatureState(options.env);
+  const gate = getLumaLivePilotGate(options.env, {
+    lumaFeatureEnabled: featureState.enabled,
+    lumaFeatureFallback: featureState.gracefulFallback,
+  });
 
-  if (!isFeatureEnabled("integration_luma", { env: options.env })) {
-    return blockedResult("attendance_import", getFeatureResolvedState("integration_luma", {
-      env: options.env,
-    }).gracefulFallback);
+  if (!featureState.enabled) {
+    return blockedResult("attendance_import", featureState.gracefulFallback);
   }
 
   if (!gate.attendanceImportEnabled) {
@@ -423,13 +448,15 @@ function getGateDetail(input: {
   attendanceImportEnabled: boolean;
   baseWritesFlag: boolean;
   lumaFeatureEnabled: boolean;
+  lumaFeatureFallback?: string;
 }): string {
   if (input.productionBlocked) {
     return "Production Luma setup stays blocked. This live pilot can only run in the staging environment.";
   }
 
   if (!input.lumaFeatureEnabled) {
-    return "The integration_luma feature flag is disabled, so no Luma API calls can run.";
+    return input.lumaFeatureFallback ??
+      "The integration_luma feature flag is disabled, so no Luma API calls can run.";
   }
 
   if (!input.apiKeyConfigured || !input.calendarIdConfigured) {
@@ -450,6 +477,24 @@ function getGateDetail(input: {
     input.attendanceImportEnabled ? "attendance import on" : "attendance import off",
     "n8n and production Luma remain off",
   ].join("; ");
+}
+
+async function getDurableLumaFeatureState(
+  env: LumaLivePilotEnv | undefined,
+) {
+  try {
+    return await getFeatureResolvedStateDurable("integration_luma", { env });
+  } catch {
+    return {
+      ...getFeatureResolvedState("integration_luma", { env }),
+      enabled: false,
+      status: "emergency_disabled" as const,
+      reason:
+        "Luma feature flag could not be verified from durable controls.",
+      gracefulFallback:
+        "Luma feature flag could not be verified from durable controls, so no Luma API calls can run.",
+    };
+  }
 }
 
 function requireApiKey(env: LumaLivePilotEnv = process.env as LumaLivePilotEnv): string {

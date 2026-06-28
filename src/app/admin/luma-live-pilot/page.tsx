@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { RestrictedState } from "@/components/restricted-state";
-import { getLumaLivePilotGate } from "@/services/luma-live-pilot";
+import { getLumaLivePilotGateDurable } from "@/services/luma-live-pilot";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
@@ -29,7 +29,7 @@ export default async function LumaLivePilotPage({
     searchParams ? searchParams : Promise.resolve(undefined),
   ]);
   const canRead = canReadAdminIntegrationsSecurity(actor);
-  const gate = getLumaLivePilotGate();
+  const gate = await getLumaLivePilotGateDurable();
   const eventLoop = getStagingLumaEventLoopReadModel("staging");
   const result = normalizeResult(resolvedSearchParams?.lumaResult);
   const message = resolvedSearchParams?.lumaMessage ?? null;

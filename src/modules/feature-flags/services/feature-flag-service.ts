@@ -188,6 +188,47 @@ export function getFeatureResolvedState(
   };
 }
 
+export async function getFeatureResolvedStateDurable(
+  key: FeatureFlagKey,
+  options: {
+    environment?: FeatureFlagEnvironment;
+    env?: Record<string, string | undefined>;
+  } = {},
+): Promise<FeatureFlagResolvedState> {
+  const environment =
+    options.environment ?? getCurrentFeatureEnvironment(options.env);
+  const { client } = await createSupabaseControlClient(options.env);
+
+  if (!client) {
+    return getFeatureResolvedState(key, { environment, env: options.env });
+  }
+
+  const rows = await client.selectRows<PersistedFeatureFlagOverrideRow>(
+    "feature_flag_overrides",
+    {
+      select: "environment,flag_key,status",
+      query: {
+        environment: `eq.${environment}`,
+        flag_key: `eq.${key}`,
+      },
+      limit: 1,
+    },
+  );
+  const overrides = new Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>();
+  const row = rows[0];
+
+  if (
+    row &&
+    row.flag_key === key &&
+    isFeatureFlagEnvironment(row.environment) &&
+    isFeatureFlagStatus(row.status)
+  ) {
+    overrides.set(storeKey(row.environment, row.flag_key), row.status);
+  }
+
+  return getFeatureResolvedStateFromOverrides(key, environment, overrides);
+}
+
 export function getFeatureResolvedStateFromOverrides(
   key: FeatureFlagKey,
   environment: FeatureFlagEnvironment,

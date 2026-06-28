@@ -28,6 +28,7 @@ export {
   getFeatureFlagDefinitions,
   getFeatureFlagFallbackMessage,
   getFeatureResolvedState,
+  getFeatureResolvedStateDurable,
   getFeatureStatus,
   getModuleFeatureAvailability,
   isFeatureEnabled,
