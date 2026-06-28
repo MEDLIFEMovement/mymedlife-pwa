@@ -109,7 +109,7 @@ Credential transfer / redeploy recheck on 2026-06-28:
   but the supplied Luma credential is still rejected by Luma for calendar
   `cal-7WNftYCpBJclZyG`.
 
-Current hosted result:
+Superseded hosted result before valid key copy:
 
 - `LUMA_API_KEY` and `LUMA_CALENDAR_ID` appear to be present in the Vercel Preview environment.
 - Luma rejects the staged credential with `HTTP 401`.
@@ -130,37 +130,87 @@ Luma UI/key retrieval attempt on 2026-06-28:
 - Chrome was not signed into Luma and the Luma sign-in page did not render usable controls.
 - Local clipboard was checked for key-shaped content without printing values; it did not contain a clean Luma API key candidate.
 
-Current key-retrieval blocker:
+Superseded key-retrieval blocker before valid key copy:
 
 - A valid Luma API key still needs to be generated or copied from the MEDLIFE Luma account.
 - The key should be calendar-scoped for `MEDLIFE Chapters Events Calendar` / `cal-7WNftYCpBJclZyG` if Luma offers that option.
 - Once the key is copied, Codex can safely stream it directly from clipboard into Vercel Preview for the branch, clear the clipboard, redeploy the Git-backed preview, re-alias staging, and rerun the hosted proof.
 
+Resolution on 2026-06-28:
+
+- The existing key created by the current Luma user was copied from the Luma Developer settings list.
+- The key was validated without printing the secret:
+  - `calendar/list-events` returned `HTTP 200`.
+  - The response included `5` entries in the local validation sample.
+- The key was streamed directly from clipboard into Vercel Preview for
+  `feat/MED-494-hosted-staging-read-write-proof` as sensitive env var
+  `LUMA_API_KEY`.
+- The local clipboard was cleared after transfer.
+- The latest Git-backed deployment for commit `c118def` was redeployed after
+  the key update:
+  - deployment id: `dpl_6tjeYh1LpaBuGFjzfP3oeQVWAZhg`
+  - deployment URL: `https://mymedlife-cb7dz3rol-nellis-6036s-projects.vercel.app`
+  - branch alias: `https://mymedlife-pwa-git-feat-med-494-hos-5fb6e4-nellis-6036s-projects.vercel.app`
+  - staging alias: `https://staging.mymedlife.org`
+- Vercel confirms `staging.mymedlife.org` points to that Git-backed Preview deployment.
+
+Hosted staging proof after redeploy:
+
+- Member reviewer:
+  - URL: `https://staging.mymedlife.org/app?verify=luma-valid-key`
+  - Result: `LUMA READ CONNECTED`
+  - Result: `LUMA EVENTS` = `10`
+  - Imported event cards appeared from Luma, including `Test value` and MEDLIFE campaign templates.
+- Leader reviewer:
+  - Identity: `leader.a@mymedlife.test`
+  - URL: `/leader?verify=luma-valid-key`
+  - Result: `LUMA READ CONNECTED`
+  - Result: `10 Luma events are available for leader readback`
+  - Leader view connected event posture, RSVP intent, attendance confirmation, and point validation.
+- Staff/coach reviewer:
+  - Identity: `coach@mymedlife.test`
+  - URL: `/staff?verify=luma-valid-key`
+  - Result: `LUMA READ CONNECTED`
+  - Result: `10 Luma events are available for portfolio review`
+  - Staff view connected chapter event health and leaderboard impact while external systems remained manual/read-only.
+- Admin/DS reviewer:
+  - Identity: `ds.admin@mymedlife.test`
+  - URL: `/admin?verify=luma-valid-key`
+  - Result: `LUMA READ CONNECTED`
+  - Result: `10 Luma events are available through the server-only read path`
+  - Admin view exposed imported event visibility, audit/outbox posture, and zero external sends review language.
+- Admin outbox reviewer:
+  - Identity: `ds.admin@mymedlife.test`
+  - URL: `/admin/integration-outbox?verify=luma-valid-key`
+  - Result: `LIVE SENDS` = `0`
+  - Result: `SECRETS` = `0`
+  - Luma, HubSpot, n8n, warehouse, and internal queues remained mock-safe.
+
+Final hosted result:
+
+- Luma server-side read is connected on staging.
+- Imported Luma events appear across member, leader, staff, and admin role surfaces.
+- The RSVP, attendance, points, and leaderboard loop is visible in role-specific language.
+- Luma writes, attendee writes, reminders, webhooks, n8n, HubSpot, warehouse, Power BI, SMS/email, and AI sends remain disabled.
+- No raw Luma secret is returned to browser-safe UI data.
+
 The app now shows this plainly on the Luma readback panel:
 
-> Luma calendar read returned HTTP 401. The server has Luma config, but Luma rejected the staged credential. Refresh LUMA_API_KEY in the Vercel Preview environment before treating imported events as verified.
+> LUMA READ CONNECTED
+> 10 Luma events are available from the MEDLIFE calendar.
+> Luma read-only calendar access is configured. Event creation, RSVP writes, attendance imports, reminders, webhooks, and external sends remain disabled.
 
-## Required Fix
+## Completion Check
 
-Refresh the Preview-scoped `LUMA_API_KEY` for the
-`feat/MED-494-hosted-staging-read-write-proof` branch, then let Vercel redeploy.
-
-Use the existing safe values:
-
-- `LUMA_CALENDAR_ID`: `cal-7WNftYCpBJclZyG`
-- `LUMA_API_KEY`: generate or copy a valid Luma API key from the MEDLIFE Luma account
-- Environment: Vercel Preview
-- Branch scope: `feat/MED-494-hosted-staging-read-write-proof`
-- Do not add the key to `.env.example`, GitHub, Linear, screenshots, logs, or browser-visible state
-
-After redeploy, re-open `https://staging.mymedlife.org` through Vercel
-protected-preview access and confirm:
+Completed on 2026-06-28:
 
 1. `/app` shows `Luma read connected`.
 2. Imported Luma events appear in the member Luma panel.
 3. `/leader`, `/staff`, and `/admin` show the same imported event readback.
-4. `/admin/integration-outbox` still shows `LIVE SENDS 0` and `SECRETS 0`.
+4. `/admin/integration-outbox` shows `LIVE SENDS 0` and `SECRETS 0`.
 5. No Luma writes, attendee writes, reminders, webhooks, n8n, HubSpot, warehouse, Power BI, SMS/email, or AI actions are enabled.
 
-Do not mark MED-494 or the Luma Event Loop Live Pilot Foundation complete until
-the refreshed credential proves imported Luma events on hosted staging.
+MED-494 can now be treated as hosted-staging readback complete for the
+server-only Luma read/import layer. This does not approve Luma writes, attendee
+imports, reminders, webhooks, n8n execution, HubSpot sync, warehouse export, or
+production rollout.
