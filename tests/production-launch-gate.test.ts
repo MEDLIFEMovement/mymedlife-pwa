@@ -231,6 +231,34 @@ describe("production launch gate", () => {
       ]),
     );
     expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_env_vars",
+      )?.envVarManifest,
+    ).toEqual(
+      expect.arrayContaining([
+        {
+          label: "Browser-safe public values",
+          names: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
+        },
+        {
+          label: "Approved Luma pilot only",
+          names: expect.arrayContaining([
+            "LUMA_API_KEY",
+            "LUMA_CALENDAR_ID",
+            "MYMEDLIFE_ENABLE_LUMA_ATTENDANCE_IMPORT",
+          ]),
+        },
+        {
+          label: "External systems held off",
+          names: expect.arrayContaining([
+            "HUBSPOT_*",
+            "N8N_*",
+            "OPENAI_API_KEY",
+          ]),
+        },
+      ]),
+    );
+    expect(
       gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
         ?.requiredEvidence,
     ).toEqual(expect.arrayContaining([expect.stringContaining("www.mymedlife.org")]));

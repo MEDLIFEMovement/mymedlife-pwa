@@ -236,6 +236,33 @@ function EnvironmentReadinessCard({
         <Checklist title="Safe defaults" items={item.safeDefaults} />
       </div>
 
+      {item.envVarManifest ? (
+        <div className="mt-3 rounded-2xl bg-white/[0.05] p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">
+            Env-var manifest
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {item.envVarManifest.map((group) => (
+              <div key={group.label}>
+                <p className="text-xs font-semibold text-white/58">
+                  {group.label}
+                </p>
+                <ul className="mt-2 grid gap-1">
+                  {group.names.map((name) => (
+                    <li
+                      key={name}
+                      className="font-mono text-[0.72rem] leading-5 text-white/62"
+                    >
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <p className="mt-3 text-xs leading-5 text-white/58">
         Blocked until: {item.blockedUntil}
       </p>

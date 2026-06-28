@@ -61,6 +61,10 @@ export type ProductionEnvironmentReadinessItem = {
   status: ProductionEnvironmentReadinessStatus;
   requiredEvidence: string[];
   safeDefaults: string[];
+  envVarManifest?: {
+    label: string;
+    names: string[];
+  }[];
   blockedUntil: string;
   secretsShown: 0;
 };
@@ -215,6 +219,54 @@ export function getProductionEnvironmentReadinessItems(
         "Never expose service role, Luma API, HubSpot, n8n, warehouse, Power BI, SMS/email, or AI keys through `NEXT_PUBLIC_`.",
         "Keep non-approved integration env vars unset/off.",
         "Record presence and scope only; do not paste secret values into docs, PRs, Linear, or logs.",
+      ],
+      envVarManifest: [
+        {
+          label: "Browser-safe public values",
+          names: [
+            "NEXT_PUBLIC_SUPABASE_URL",
+            "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+          ],
+        },
+        {
+          label: "Server-only Supabase values",
+          names: [
+            "SUPABASE_SERVICE_ROLE_KEY",
+            "SUPABASE_DB_URL",
+          ],
+        },
+        {
+          label: "App data and control-layer mode",
+          names: [
+            "MYMEDLIFE_DATA_SOURCE",
+            "MYMEDLIFE_CONTROL_LAYER_SOURCE",
+            "MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH",
+          ],
+        },
+        {
+          label: "Approved Luma pilot only",
+          names: [
+            "LUMA_API_KEY",
+            "LUMA_CALENDAR_ID",
+            "MYMEDLIFE_LUMA_ENVIRONMENT",
+            "MYMEDLIFE_ENABLE_LUMA_WRITES",
+            "MYMEDLIFE_ENABLE_LUMA_EVENT_WRITES",
+            "MYMEDLIFE_ENABLE_LUMA_RSVP_WRITES",
+            "MYMEDLIFE_ENABLE_LUMA_ATTENDANCE_IMPORT",
+          ],
+        },
+        {
+          label: "External systems held off",
+          names: [
+            "HUBSPOT_*",
+            "N8N_*",
+            "WAREHOUSE_*",
+            "POWER_BI_*",
+            "OPENAI_API_KEY",
+            "SMS_*",
+            "EMAIL_*",
+          ],
+        },
       ],
       blockedUntil:
         "DS/platform confirms production env-var names, scopes, and secret ownership.",
