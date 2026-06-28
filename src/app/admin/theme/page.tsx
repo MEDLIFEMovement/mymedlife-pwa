@@ -207,18 +207,21 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
                 action={publishThemeAction}
                 buttonLabel="Publish theme"
                 includeOverride
+                includeProductionApproval
               />
               <ThemeCommand
                 environment={environment}
                 title="Rollback"
                 action={rollbackThemeAction}
                 buttonLabel="Rollback theme"
+                includeProductionApproval
               />
               <ThemeCommand
                 environment={environment}
                 title="Restore default"
                 action={restoreDefaultThemeAction}
                 buttonLabel="Restore MEDLIFE default"
+                includeProductionApproval
               />
             </aside>
           </section>
@@ -351,12 +354,14 @@ function ThemeCommand({
   action,
   buttonLabel,
   includeOverride = false,
+  includeProductionApproval = false,
 }: {
   environment: FeatureFlagEnvironment;
   title: string;
   action: (formData: FormData) => Promise<void>;
   buttonLabel: string;
   includeOverride?: boolean;
+  includeProductionApproval?: boolean;
 }) {
   return (
     <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
@@ -380,7 +385,7 @@ function ThemeCommand({
             Super Admin contrast override
           </label>
         ) : null}
-        {environment === "production" && includeOverride ? (
+        {environment === "production" && includeProductionApproval ? (
           <div className="rounded-2xl border border-[var(--danger)]/30 bg-rose-50 p-3">
             <label className="flex items-start gap-2 text-xs font-semibold text-rose-700">
               <input
@@ -388,7 +393,7 @@ function ThemeCommand({
                 type="checkbox"
                 className="mt-1"
               />
-              I confirm production theme publishing has explicit approval and a fresh admin step-up session.
+              I confirm this production theme change has explicit approval and a fresh admin step-up session.
             </label>
             <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-rose-700">
               Approval reference

@@ -335,6 +335,8 @@ export async function rollbackThemeDurable(input: {
   actor: ThemeChangeInput["actor"];
   environment: FeatureFlagEnvironment;
   reason: string;
+  approvalReference?: string | null;
+  stepUpSessionId?: string | null;
 }): Promise<ThemeSnapshot> {
   const { client } = await createSupabaseControlClient();
 
@@ -363,8 +365,8 @@ export async function rollbackThemeDurable(input: {
     tokens: previous.tokens,
     reason: input.reason,
     contrastOverride: false,
-    approvalReference: null,
-    stepUpSessionId: null,
+    approvalReference: input.approvalReference ?? null,
+    stepUpSessionId: input.stepUpSessionId ?? null,
     rollbackOfId: current.id,
   });
 
@@ -412,6 +414,8 @@ export async function restoreDefaultThemeDurable(input: {
   actor: ThemeChangeInput["actor"];
   environment: FeatureFlagEnvironment;
   reason: string;
+  approvalReference?: string | null;
+  stepUpSessionId?: string | null;
 }): Promise<ThemeSnapshot> {
   const { client } = await createSupabaseControlClient();
 
@@ -427,8 +431,8 @@ export async function restoreDefaultThemeDurable(input: {
     tokens: restored.tokens,
     reason: input.reason,
     contrastOverride: false,
-    approvalReference: null,
-    stepUpSessionId: null,
+    approvalReference: input.approvalReference ?? null,
+    stepUpSessionId: input.stepUpSessionId ?? null,
     rollbackOfId: null,
   });
 

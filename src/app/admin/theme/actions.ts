@@ -46,34 +46,15 @@ export async function publishThemeAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
 
   try {
-    const approvalReference = normalizeString(formData.get("approvalReference"));
-    let stepUpSessionId: string | null = null;
-
-    if (environment === "production") {
-      if (formData.get("confirmProduction") !== "on") {
-        throw new Error("Production theme publishing requires explicit confirmation.");
-      }
-
-      if (!approvalReference) {
-        throw new Error("Production theme publishing requires an approval reference.");
-      }
-
-      const stepUpState = await getDsSecretStepUpState(actor);
-
-      if (needsFreshProductionStepUp(stepUpState)) {
-        throw new Error("Production theme publishing requires a fresh DS/Admin step-up session.");
-      }
-
-      stepUpSessionId = stepUpState.sessionId;
-    }
+    const approval = await getProductionThemeApproval(formData, actor, environment);
 
     await publishThemeDraftDurable({
       actor,
       environment,
       reason: String(formData.get("reason") ?? ""),
       overrideContrast: formData.get("overrideContrast") === "on",
-      approvalReference,
-      stepUpSessionId,
+      approvalReference: approval.approvalReference,
+      stepUpSessionId: approval.stepUpSessionId,
     });
     redirectWithResult(returnTo, "success", "Theme published and audited.");
   } catch (error) {
@@ -87,10 +68,14 @@ export async function rollbackThemeAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
 
   try {
+    const approval = await getProductionThemeApproval(formData, actor, environment);
+
     await rollbackThemeDurable({
       actor,
       environment,
       reason: String(formData.get("reason") ?? ""),
+      approvalReference: approval.approvalReference,
+      stepUpSessionId: approval.stepUpSessionId,
     });
     redirectWithResult(returnTo, "success", "Theme rolled back and audited.");
   } catch (error) {
@@ -104,10 +89,14 @@ export async function restoreDefaultThemeAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
 
   try {
+    const approval = await getProductionThemeApproval(formData, actor, environment);
+
     await restoreDefaultThemeDurable({
       actor,
       environment,
       reason: String(formData.get("reason") ?? ""),
+      approvalReference: approval.approvalReference,
+      stepUpSessionId: approval.stepUpSessionId,
     });
     redirectWithResult(returnTo, "success", "Default MEDLIFE theme restored and audited.");
   } catch (error) {
@@ -150,6 +139,43 @@ function getSubmittedHex(formData: FormData): string {
   const pickerHex = normalizeString(formData.get("hexPicker"));
 
   return hex ?? pickerHex ?? "";
+}
+
+async function getProductionThemeApproval(
+  formData: FormData,
+  actor: Awaited<ReturnType<typeof getLocalActorContext>>,
+  environment: FeatureFlagEnvironment,
+): Promise<{
+  approvalReference: string | null;
+  stepUpSessionId: string | null;
+}> {
+  if (environment !== "production") {
+    return {
+      approvalReference: normalizeString(formData.get("approvalReference")),
+      stepUpSessionId: null,
+    };
+  }
+
+  const approvalReference = normalizeString(formData.get("approvalReference"));
+
+  if (formData.get("confirmProduction") !== "on") {
+    throw new Error("Production theme changes require explicit confirmation.");
+  }
+
+  if (!approvalReference) {
+    throw new Error("Production theme changes require an approval reference.");
+  }
+
+  const stepUpState = await getDsSecretStepUpState(actor);
+
+  if (needsFreshProductionStepUp(stepUpState)) {
+    throw new Error("Production theme changes require a fresh DS/Admin step-up session.");
+  }
+
+  return {
+    approvalReference,
+    stepUpSessionId: stepUpState.sessionId,
+  };
 }
 
 function redirectWithResult(

@@ -36,6 +36,8 @@ vi.mock("@/modules/theme", async (importOriginal) => {
   return {
     ...actual,
     publishThemeDraftDurable: vi.fn(),
+    restoreDefaultThemeDurable: vi.fn(),
+    rollbackThemeDurable: vi.fn(),
   };
 });
 
@@ -161,7 +163,7 @@ describe("admin control server actions", () => {
 
     expect(vi.mocked(themeModule.publishThemeDraftDurable)).not.toHaveBeenCalled();
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
-      expect.stringContaining("Production+theme+publishing+requires+a+fresh+DS%2FAdmin+step-up+session"),
+      expect.stringContaining("Production+theme+changes+require+a+fresh+DS%2FAdmin+step-up+session"),
     );
   });
 
@@ -209,6 +211,70 @@ describe("admin control server actions", () => {
     );
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
       expect.stringContaining("themeResult=success"),
+    );
+  });
+
+  it("passes approval reference and fresh step-up session into production theme rollback and restore", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const stepUpModule = await import("@/services/admin-integrations-step-up");
+    const themeModule = await import("@/modules/theme");
+    const { rollbackThemeAction, restoreDefaultThemeAction } = await import(
+      "@/app/admin/theme/actions"
+    );
+
+    const actor = getMockLocalActorContext("super.admin@mymedlife.test");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(actor);
+    vi.mocked(stepUpModule.getDsSecretStepUpState).mockResolvedValue({
+      isVerified: true,
+      status: "verified",
+      method: "local_password_reauth",
+      sessionId: "theme-control-step-up",
+      verifiedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+      failureCount: 0,
+      blockedUntil: null,
+      message: "Verified",
+    });
+
+    await expect(
+      rollbackThemeAction(
+        formDataFor({
+          returnTo: "/admin/theme?env=production",
+          environment: "production",
+          reason: "Rollback production theme after approved pilot review.",
+          approvalReference: "NICK-APPROVED",
+          confirmProduction: "on",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/theme?");
+
+    await expect(
+      restoreDefaultThemeAction(
+        formDataFor({
+          returnTo: "/admin/theme?env=production",
+          environment: "production",
+          reason: "Restore production theme after approved pilot review.",
+          approvalReference: "NICK-APPROVED",
+          confirmProduction: "on",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/theme?");
+
+    expect(themeModule.rollbackThemeDurable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor,
+        environment: "production",
+        approvalReference: "NICK-APPROVED",
+        stepUpSessionId: "theme-control-step-up",
+      }),
+    );
+    expect(themeModule.restoreDefaultThemeDurable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor,
+        environment: "production",
+        approvalReference: "NICK-APPROVED",
+        stepUpSessionId: "theme-control-step-up",
+      }),
     );
   });
 });
