@@ -21,6 +21,7 @@ export type ProductionLaunchGateStatus =
   | "blocked_before_live";
 
 export type ProductionLaunchEvidenceStatus = "missing_before_pilot";
+export type ProductionEnvironmentReadinessStatus = "missing_before_pilot";
 
 export type ProductionLaunchGateItem = {
   key: ProductionLaunchGateKey;
@@ -46,6 +47,24 @@ export type ProductionLaunchEvidenceCheck = {
   blockedUntil: string;
 };
 
+export type ProductionEnvironmentReadinessItem = {
+  key:
+    | "production_supabase_project"
+    | "production_vercel_environment"
+    | "production_env_vars"
+    | "auth_callback_urls"
+    | "dns_domain_plan"
+    | "backup_restore_path"
+    | "rollback_support_owners";
+  label: string;
+  ownerLane: string;
+  status: ProductionEnvironmentReadinessStatus;
+  requiredEvidence: string[];
+  safeDefaults: string[];
+  blockedUntil: string;
+  secretsShown: 0;
+};
+
 export type ProductionLaunchGate = {
   canReadGate: boolean;
   title: string;
@@ -59,9 +78,11 @@ export type ProductionLaunchGate = {
     localEvidenceReady: number;
     blockedBeforeLive: number;
     launchEvidenceChecks: number;
+    environmentReadinessItems: number;
   };
   items: ProductionLaunchGateItem[];
   launchEvidenceChecks: ProductionLaunchEvidenceCheck[];
+  environmentReadiness: ProductionEnvironmentReadinessItem[];
   finalReviewPrompt: string;
 };
 
@@ -86,9 +107,11 @@ export function getProductionLaunchGate(
         localEvidenceReady: 0,
         blockedBeforeLive: 0,
         launchEvidenceChecks: 0,
+        environmentReadinessItems: 0,
       },
       items: [],
       launchEvidenceChecks: [],
+      environmentReadiness: [],
       finalReviewPrompt: "",
     };
   }
@@ -96,6 +119,7 @@ export function getProductionLaunchGate(
   const pilotRegistry = getPhase2PilotRegistry(env);
   const items = getProductionLaunchGateItems(pilotRegistry);
   const launchEvidenceChecks = getProductionLaunchEvidenceChecks(pilotRegistry);
+  const environmentReadiness = getProductionEnvironmentReadinessItems(pilotRegistry);
 
   return {
     canReadGate: true,
@@ -113,12 +137,169 @@ export function getProductionLaunchGate(
       blockedBeforeLive: items.filter((item) => item.status === "blocked_before_live")
         .length,
       launchEvidenceChecks: launchEvidenceChecks.length,
+      environmentReadinessItems: environmentReadiness.length,
     },
     items,
     launchEvidenceChecks,
+    environmentReadiness,
     finalReviewPrompt:
       "Approve a live pilot only after every blocked gate has named evidence, owner sign-off, rollback, and a current smoke test. Until then, keep production writes and external sends disabled.",
   };
+}
+
+export function getProductionEnvironmentReadinessItems(
+  pilotRegistry = getPhase2PilotRegistry(),
+): ProductionEnvironmentReadinessItem[] {
+  const rollbackOwner = pilotRegistry.owners.find(
+    (item) => item.key === "rollback_owner",
+  );
+  const supportChannel = pilotRegistry.owners.find(
+    (item) => item.key === "support_pause_channel",
+  );
+  const dsOwner = pilotRegistry.owners.find((item) => item.key === "ds_owner");
+  const hqOwner = pilotRegistry.owners.find((item) => item.key === "hq_admin_owner");
+
+  return [
+    {
+      key: "production_supabase_project",
+      label: "Production Supabase project",
+      ownerLane: "DS / Platform",
+      status: "missing_before_pilot",
+      requiredEvidence: [
+        "Separate production Supabase project reference recorded without printing service keys.",
+        "Approved migration list and migration owner named before any hosted production apply.",
+        "RLS/security advisor output captured after approved migrations.",
+        "Production seed/user provisioning plan limited to the tiny pilot cohort.",
+      ],
+      safeDefaults: [
+        "Staging project remains `rceupryepjgkdeqgxzrc`.",
+        "Production project is separate from staging.",
+        "No production migration is applied from this packet.",
+      ],
+      blockedUntil:
+        "DS/platform records the production project, migration owner, and security proof.",
+      secretsShown: 0,
+    },
+    {
+      key: "production_vercel_environment",
+      label: "Production Vercel environment",
+      ownerLane: "Platform / Security",
+      status: "missing_before_pilot",
+      requiredEvidence: [
+        "Production Vercel project or production target confirmed for `mymedlife-pwa`.",
+        "Production deploy source branch and rollback deployment target recorded.",
+        "Vercel SSO / access posture chosen for pilot reviewers and real users.",
+      ],
+      safeDefaults: [
+        "Preview branch deployments remain the review lane.",
+        "Production env vars stay unset until approved.",
+        "No production promotion is performed by this packet.",
+      ],
+      blockedUntil:
+        "Platform owner confirms production Vercel target, deploy source, and rollback target.",
+      secretsShown: 0,
+    },
+    {
+      key: "production_env_vars",
+      label: "Production environment variables",
+      ownerLane: "DS / Platform",
+      status: "missing_before_pilot",
+      requiredEvidence: [
+        "`NEXT_PUBLIC_SUPABASE_URL` points to production Supabase.",
+        "`NEXT_PUBLIC_SUPABASE_ANON_KEY` is the production browser-safe key.",
+        "Server-only Supabase service key is set without `NEXT_PUBLIC_`.",
+        "`MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` is set only after production control-layer migration approval.",
+        "Luma pilot variables are scoped to the approved pilot calendar only.",
+      ],
+      safeDefaults: [
+        "Never expose service role, Luma API, HubSpot, n8n, warehouse, Power BI, SMS/email, or AI keys through `NEXT_PUBLIC_`.",
+        "Keep non-approved integration env vars unset/off.",
+        "Record presence and scope only; do not paste secret values into docs, PRs, Linear, or logs.",
+      ],
+      blockedUntil:
+        "DS/platform confirms production env-var names, scopes, and secret ownership.",
+      secretsShown: 0,
+    },
+    {
+      key: "auth_callback_urls",
+      label: "Auth callback URLs and role routing",
+      ownerLane: "Security / Student Access",
+      status: "missing_before_pilot",
+      requiredEvidence: [
+        "Production callback URL for `https://www.mymedlife.org` approved.",
+        "Staging callback URL for `https://staging.mymedlife.org` stays separate.",
+        "Role-routing smoke proves member, leader, staff, DS Admin, Super Admin, and eligible traveler paths.",
+        "Wrong-workspace URL access is blocked server-side.",
+      ],
+      safeDefaults: [
+        "One sign-in surface remains the entry point.",
+        "Backend role/scope decides the destination after auth.",
+        "Staff preview remains read-only unless separately approved.",
+      ],
+      blockedUntil:
+        "Security and student-access owners approve callbacks and role-routing proof.",
+      secretsShown: 0,
+    },
+    {
+      key: "dns_domain_plan",
+      label: "DNS and domain plan",
+      ownerLane: "Platform / HQ",
+      status: "missing_before_pilot",
+      requiredEvidence: [
+        "`staging.mymedlife.org` remains the reviewer target until production cutover.",
+        "`www.mymedlife.org` production DNS owner and registrar access are named.",
+        "Cutover, rollback, and cache/DNS propagation plan are documented.",
+      ],
+      safeDefaults: [
+        "Do not repoint production DNS from this packet.",
+        "Keep staging and production hostnames visibly separate.",
+        "Record DNS owner and rollback target before pilot invites.",
+      ],
+      blockedUntil:
+        "Platform/HQ confirms DNS owner, cutover plan, and rollback route.",
+      secretsShown: 0,
+    },
+    {
+      key: "backup_restore_path",
+      label: "Backup and restore path",
+      ownerLane: "DS / Platform",
+      status: "missing_before_pilot",
+      requiredEvidence: [
+        "Production Supabase backup posture confirmed.",
+        "Restore drill owner named.",
+        "Pilot data repair path documented for assignment, RSVP, attendance, points, and audit rows.",
+      ],
+      safeDefaults: [
+        "Do not invite real users until backup posture is named.",
+        "Do not enable irreversible writes without a repair path.",
+        "Keep production proof uploads disabled until storage restore policy is approved.",
+      ],
+      blockedUntil:
+        "Backup/restore owner and drill evidence are recorded for the production project.",
+      secretsShown: 0,
+    },
+    {
+      key: "rollback_support_owners",
+      label: "Rollback and support owners",
+      ownerLane: "Launch / HQ Ops / DS",
+      status: "missing_before_pilot",
+      requiredEvidence: [
+        `Rollback owner: ${rollbackOwner?.value ?? "pending"}.`,
+        `Support/pause channel: ${supportChannel?.value ?? "pending"}.`,
+        `DS owner: ${dsOwner?.value ?? "pending"}.`,
+        `HQ/admin owner: ${hqOwner?.value ?? "pending"}.`,
+        "Stop rules and student communication plan are recorded before invitations.",
+      ],
+      safeDefaults: [
+        "Pilot owner and rollback owner stay visible in the launch packet.",
+        "One support/pause channel is used during the pilot.",
+        "No broad launch happens without day-one support coverage.",
+      ],
+      blockedUntil:
+        "Named launch owners, stop rules, and support coverage are recorded.",
+      secretsShown: 0,
+    },
+  ];
 }
 
 export function getProductionLaunchEvidenceChecks(

@@ -17,8 +17,10 @@ describe("production launch gate", () => {
       localEvidenceReady: 1,
       blockedBeforeLive: 7,
       launchEvidenceChecks: 10,
+      environmentReadinessItems: 7,
     });
     expect(gate.launchEvidenceChecks).toHaveLength(10);
+    expect(gate.environmentReadiness).toHaveLength(7);
     expect(gate.finalReviewPrompt).toContain("production writes");
   });
 
@@ -190,6 +192,69 @@ describe("production launch gate", () => {
     ).toBe("/admin/pilot-scope");
   });
 
+  it("exposes the production Supabase and Vercel readiness packet without secrets", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Nick Ellis",
+      MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
+      MYMEDLIFE_PILOT_DS_OWNER: "DS owner",
+      MYMEDLIFE_PILOT_HQ_ADMIN_OWNER: "HQ owner",
+    });
+    const packetKeys = gate.environmentReadiness.map((item) => item.key);
+
+    expect(packetKeys).toEqual([
+      "production_supabase_project",
+      "production_vercel_environment",
+      "production_env_vars",
+      "auth_callback_urls",
+      "dns_domain_plan",
+      "backup_restore_path",
+      "rollback_support_owners",
+    ]);
+    expect(
+      gate.environmentReadiness.every(
+        (item) =>
+          item.status === "missing_before_pilot" &&
+          item.secretsShown === 0 &&
+          item.requiredEvidence.length >= 3 &&
+          item.safeDefaults.length >= 3,
+      ),
+    ).toBe(true);
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_env_vars",
+      )?.requiredEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("NEXT_PUBLIC_SUPABASE_URL"),
+        expect.stringContaining("MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase"),
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
+        ?.requiredEvidence,
+    ).toEqual(expect.arrayContaining([expect.stringContaining("www.mymedlife.org")]));
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "dns_domain_plan")
+        ?.requiredEvidence,
+    ).toEqual(expect.arrayContaining([expect.stringContaining("staging.mymedlife.org")]));
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "backup_restore_path")
+        ?.requiredEvidence,
+    ).toEqual(expect.arrayContaining([expect.stringContaining("Restore drill owner")]));
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.requiredEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Rollback owner: Nick Ellis.",
+        "Support/pause channel: #mymedlife-pilot-support.",
+        "DS owner: DS owner.",
+        "HQ/admin owner: HQ owner.",
+      ]),
+    );
+  });
+
   it("surfaces recorded pilot answers in the launch gate without claiming approval", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const gate = getProductionLaunchGate(actor, {
@@ -259,5 +324,6 @@ describe("production launch gate", () => {
     expect(getProductionLaunchGate(coach).canReadGate).toBe(false);
     expect(getProductionLaunchGate(member).items).toEqual([]);
     expect(getProductionLaunchGate(member).launchEvidenceChecks).toEqual([]);
+    expect(getProductionLaunchGate(member).environmentReadiness).toEqual([]);
   });
 });

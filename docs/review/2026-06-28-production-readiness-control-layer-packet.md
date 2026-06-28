@@ -117,6 +117,25 @@ Remaining hosted UI proof:
   and `/admin/theme` display Supabase-backed control storage in the hosted UI.
 - Production environment variables remain unset/off for this control layer.
 
+## Production Environment Packet In The App
+
+The `/admin/launch-gate` route now includes a production environment packet for
+DS Admin / Super Admin reviewers. It makes these items visible without setting
+production configuration or exposing secrets:
+
+- production Supabase project
+- production Vercel environment
+- production environment variables
+- auth callback URLs and role routing
+- DNS and domain plan
+- backup and restore path
+- rollback and support owners
+
+The packet records presence, ownership, and evidence requirements only. It must
+show `Secrets 0` for every item. No service role key, Luma API key, HubSpot key,
+n8n credential, warehouse credential, Power BI secret, SMS/email secret, or AI
+key should appear in docs, PR comments, Linear comments, browser HTML, or logs.
+
 ## Luma Event Loop Staging Proof
 
 Approved staging scope:
