@@ -88,6 +88,27 @@ Fresh recheck on 2026-06-28:
   - HubSpot, warehouse, Power BI, SMS/email, and AI actions are off.
   - No Luma secret is returned to browser-safe UI data.
 
+Credential transfer / redeploy recheck on 2026-06-28:
+
+- The approved Luma API key was transferred from the local clipboard into
+  Vercel Preview for `feat/MED-494-hosted-staging-read-write-proof`.
+- The local clipboard was cleared after transfer.
+- A local CLI preview deployment was created, but it did not inherit the
+  branch-scoped Luma variables, so it was not used for final staging proof.
+- The latest Git-backed deployment for commit `dce6fce` was redeployed after
+  the key update:
+  - deployment id: `dpl_7iBTeMqe6T8aXNWtBe2uuswqnxzW`
+  - deployment URL: `https://mymedlife-r6q7mc584-nellis-6036s-projects.vercel.app`
+  - branch alias: `https://mymedlife-pwa-git-feat-med-494-hos-5fb6e4-nellis-6036s-projects.vercel.app`
+  - staging alias: `https://staging.mymedlife.org`
+- Vercel confirms `staging.mymedlife.org` points to that Git-backed branch
+  deployment.
+- The redeployed staging member route still returns `Luma read needs review`
+  with `HTTP 401`.
+- Current conclusion: the app, branch alias, and Vercel env target are wired,
+  but the supplied Luma credential is still rejected by Luma for calendar
+  `cal-7WNftYCpBJclZyG`.
+
 Current hosted result:
 
 - `LUMA_API_KEY` and `LUMA_CALENDAR_ID` appear to be present in the Vercel Preview environment.
