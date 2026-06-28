@@ -1,6 +1,7 @@
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { RestrictedState } from "@/components/restricted-state";
+import { getFeatureFlagAuditEmptyStateCopy } from "@/modules/admin/control-audit-empty-state";
 import {
   canManageFeatureFlags,
   featureFlagEnvironments,
@@ -167,7 +168,10 @@ export default async function FeatureFlagsPage({
                 ))
               ) : (
                 <p className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4 text-sm text-slate-600">
-                  No feature flag changes have been made in this server session.
+                  {getFeatureFlagAuditEmptyStateCopy(
+                    adminState.persistence.mode,
+                    environment,
+                  )}
                 </p>
               )}
             </div>

@@ -17,6 +17,24 @@ vi.mock("@/services/local-actor-context", async (importOriginal) => {
 });
 
 describe("feature flags and theme admin pages", () => {
+  it("uses source-aware audit empty states for memory and Supabase mode", async () => {
+    const { getFeatureFlagAuditEmptyStateCopy, getThemeAuditEmptyStateCopy } =
+      await import("@/modules/admin/control-audit-empty-state");
+
+    expect(getFeatureFlagAuditEmptyStateCopy("memory", "staging")).toContain(
+      "No in-memory feature flag changes have been made for staging",
+    );
+    expect(getFeatureFlagAuditEmptyStateCopy("supabase", "staging")).toContain(
+      "No durable feature flag audit rows exist yet for staging",
+    );
+    expect(getThemeAuditEmptyStateCopy("memory", "staging")).toContain(
+      "No in-memory theme changes have been made for staging",
+    );
+    expect(getThemeAuditEmptyStateCopy("supabase", "staging")).toContain(
+      "No durable theme audit rows exist yet for staging",
+    );
+  });
+
   it("blocks non-DS users from feature flag controls", async () => {
     const actorModule = await import("@/services/local-actor-context");
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
@@ -47,6 +65,10 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("SOP Workflows and Next Action");
     expect(html).toContain("Luma");
     expect(html).toContain("Recent feature flag changes");
+    expect(html).toContain(
+      "No in-memory feature flag changes have been made for local in this local review session.",
+    );
+    expect(html).not.toContain("server session");
   });
 
   it("blocks non-DS users from theme controls", async () => {
@@ -79,5 +101,9 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Rollback theme");
     expect(html).toContain("Restore MEDLIFE default");
     expect(html).toContain("Contrast checks");
+    expect(html).toContain(
+      "No in-memory theme changes have been made for local in this local review session.",
+    );
+    expect(html).not.toContain("server session");
   });
 });

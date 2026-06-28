@@ -1,6 +1,7 @@
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { RestrictedState } from "@/components/restricted-state";
+import { getThemeAuditEmptyStateCopy } from "@/modules/admin/control-audit-empty-state";
 import {
   featureFlagEnvironments,
   getCurrentFeatureEnvironment,
@@ -270,7 +271,7 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
                 ))
               ) : (
                 <p className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4 text-sm text-slate-600">
-                  No theme changes have been made in this server session.
+                  {getThemeAuditEmptyStateCopy(adminState.persistence.mode, environment)}
                 </p>
               )}
             </div>
