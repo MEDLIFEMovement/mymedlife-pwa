@@ -4,11 +4,16 @@ import { redirect } from "next/navigation";
 import {
   featureFlagEnvironments,
   featureFlagStatuses,
-  updateFeatureFlagStatus,
+  getFeatureFlagDefinition,
   type FeatureFlagEnvironment,
   type FeatureFlagKey,
   type FeatureFlagStatus,
+  updateFeatureFlagStatusDurable,
 } from "@/modules/feature-flags";
+import {
+  getDsSecretStepUpState,
+  needsFreshProductionStepUp,
+} from "@/services/admin-integrations-step-up";
 import { getLocalActorContext } from "@/services/local-actor-context";
 
 export async function updateFeatureFlagAction(formData: FormData) {
@@ -16,12 +21,43 @@ export async function updateFeatureFlagAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"));
 
   try {
-    updateFeatureFlagStatus({
+    const environment = parseEnvironment(formData.get("environment"));
+    const key = String(formData.get("flagKey") ?? "") as FeatureFlagKey;
+    const definition = getFeatureFlagDefinition(key);
+    const approvalReference = normalizeString(formData.get("approvalReference"));
+    let stepUpSessionId: string | null = null;
+    const productionSensitive =
+      environment === "production" &&
+      definition.externalApiBoundary &&
+      parseStatus(formData.get("nextStatus")) !== "disabled" &&
+      parseStatus(formData.get("nextStatus")) !== "emergency_disabled";
+
+    if (productionSensitive) {
+      if (formData.get("confirmProduction") !== "on") {
+        throw new Error("Production-sensitive provider flags require explicit confirmation.");
+      }
+
+      if (!approvalReference) {
+        throw new Error("Production-sensitive provider flags require an approval reference.");
+      }
+
+      const stepUpState = await getDsSecretStepUpState(actor);
+
+      if (needsFreshProductionStepUp(stepUpState)) {
+        throw new Error("Production-sensitive provider flags require a fresh DS/Admin step-up session.");
+      }
+
+      stepUpSessionId = stepUpState.sessionId;
+    }
+
+    await updateFeatureFlagStatusDurable({
       actor,
-      environment: parseEnvironment(formData.get("environment")),
-      key: String(formData.get("flagKey") ?? "") as FeatureFlagKey,
+      environment,
+      key,
       nextStatus: parseStatus(formData.get("nextStatus")),
       reason: String(formData.get("reason") ?? ""),
+      approvalReference,
+      stepUpSessionId,
     });
 
     redirectWithResult(returnTo, "success", "Feature flag updated and audited.");
@@ -62,6 +98,12 @@ function normalizeReturnTo(value: FormDataEntryValue | null): string {
   }
 
   return raw;
+}
+
+function normalizeString(value: FormDataEntryValue | null): string | null {
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
 }
 
 function redirectWithResult(

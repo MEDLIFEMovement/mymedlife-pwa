@@ -2,7 +2,9 @@ export { contrastPairs, defaultMedlifeThemeTokens, themeTokenOrder } from "./con
 export type {
   ThemeAuditAction,
   ThemeAuditRecord,
+  ThemeAdminState,
   ThemeChangeInput,
+  ThemeControlPersistence,
   ThemeContrastResult,
   ThemeDraftStatus,
   ThemeSnapshot,
@@ -12,13 +14,18 @@ export type {
 export {
   canManageTheme,
   getPublishedThemeCssVariables,
+  getThemeAdminState,
   getThemeContrastResults,
   getThemeCssVariables,
   getThemeSnapshot,
   listThemeAuditRecords,
   publishThemeDraft,
+  publishThemeDraftDurable,
   resetThemeStoreForTests,
   restoreDefaultTheme,
+  restoreDefaultThemeDurable,
   rollbackTheme,
+  rollbackThemeDurable,
   saveThemeDraft,
+  saveThemeDraftDurable,
 } from "./services/theme-service";

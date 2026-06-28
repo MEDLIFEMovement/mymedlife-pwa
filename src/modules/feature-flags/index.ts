@@ -6,7 +6,9 @@ export {
 } from "./constants";
 export type {
   FeatureFlagAuditRecord,
+  FeatureFlagAdminState,
   FeatureFlagChangeInput,
+  FeatureFlagControlPersistence,
   FeatureFlagDefinition,
   FeatureFlagEnvironment,
   FeatureFlagKey,
@@ -21,6 +23,7 @@ export {
   FeatureDisabledError,
   canManageFeatureFlags,
   getCurrentFeatureEnvironment,
+  getFeatureFlagAdminState,
   getFeatureFlagDefinition,
   getFeatureFlagDefinitions,
   getFeatureFlagFallbackMessage,
@@ -33,4 +36,5 @@ export {
   requireFeature,
   resetFeatureFlagStoreForTests,
   updateFeatureFlagStatus,
+  updateFeatureFlagStatusDurable,
 } from "./services/feature-flag-service";

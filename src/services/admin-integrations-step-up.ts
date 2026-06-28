@@ -1,5 +1,6 @@
 import { createHmac, randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
+import { createSupabaseControlClient } from "@/lib/supabase-control-client";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getAuthSessionState } from "@/services/auth-session";
 import {
@@ -237,11 +238,12 @@ export async function verifyDsSecretStepUpWithPassword(input: {
   const expiresAt = new Date(
     verifiedAt.getTime() + stepUpWindowMinutes * 60 * 1000,
   );
+  const durableSessionId = await recordDurableStepUpSession(method);
   const payload: DsSecretStepUpPayload = {
     userId: actor.user.id,
     email: actor.selectedEmail,
     method,
-    sessionId: randomUUID(),
+    sessionId: durableSessionId ?? randomUUID(),
     verifiedAt: verifiedAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
   };
@@ -292,6 +294,25 @@ export async function verifyDsSecretStepUpWithPassword(input: {
     state: await getDsSecretStepUpState(actor),
     message: "Step-up confirmed. Secure integrations content is now visible for this session.",
   };
+}
+
+async function recordDurableStepUpSession(
+  method: StepUpMethod,
+): Promise<string | null> {
+  const { client } = await createSupabaseControlClient();
+
+  if (!client) {
+    return null;
+  }
+
+  try {
+    return await client.rpc<string>("record_admin_step_up_session", {
+      method,
+      ttl_minutes: stepUpWindowMinutes,
+    });
+  } catch {
+    return null;
+  }
 }
 
 export async function clearDsSecretStepUpSession() {

@@ -94,4 +94,18 @@ export type FeatureFlagChangeInput = {
   key: FeatureFlagKey;
   nextStatus: FeatureFlagStatus;
   reason: string;
+  approvalReference?: string | null;
+  stepUpSessionId?: string | null;
+};
+
+export type FeatureFlagControlPersistence = {
+  mode: "memory" | "supabase";
+  status: "fallback" | "ready";
+  reason: string;
+};
+
+export type FeatureFlagAdminState = {
+  flags: FeatureFlagResolvedState[];
+  auditRecords: FeatureFlagAuditRecord[];
+  persistence: FeatureFlagControlPersistence;
 };

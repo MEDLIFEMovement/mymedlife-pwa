@@ -8,10 +8,9 @@ import {
 } from "@/modules/feature-flags";
 import {
   canManageTheme,
+  getThemeAdminState,
   getThemeContrastResults,
   getThemeCssVariables,
-  getThemeSnapshot,
-  listThemeAuditRecords,
   themeTokenOrder,
   type ThemeTokenValue,
 } from "@/modules/theme";
@@ -41,9 +40,10 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
   ]);
   const canManage = canManageTheme(actor);
   const environment = parseEnvironment(resolvedSearchParams?.env);
-  const snapshot = getThemeSnapshot(environment, "draft");
+  const adminState = await getThemeAdminState({ environment });
+  const snapshot = adminState.snapshot;
   const contrast = getThemeContrastResults(snapshot);
-  const auditRecords = listThemeAuditRecords().slice(0, 10);
+  const auditRecords = adminState.auditRecords;
   const result = resolvedSearchParams?.themeResult;
   const message = resolvedSearchParams?.themeMessage;
 
@@ -114,12 +114,18 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
 
           <section className="grid gap-3 sm:grid-cols-4">
             <MiniStat label="Environment" value={environment} />
+            <MiniStat label="Persistence" value={adminState.persistence.mode} />
             <MiniStat label="Theme status" value={snapshot.status} />
             <MiniStat label="Tokens" value={`${themeTokenOrder.length}`} />
             <MiniStat
               label="Contrast blocks"
               value={`${contrast.filter((item) => item.severity === "block").length}`}
             />
+          </section>
+
+          <section className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4 text-sm text-slate-600">
+            <span className="font-semibold text-slate-950">Control storage:</span>{" "}
+            {adminState.persistence.reason}
           </section>
 
           <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
@@ -372,6 +378,26 @@ function ThemeCommand({
             <input type="checkbox" name="overrideContrast" />
             Super Admin contrast override
           </label>
+        ) : null}
+        {environment === "production" && includeOverride ? (
+          <div className="rounded-2xl border border-[var(--danger)]/30 bg-rose-50 p-3">
+            <label className="flex items-start gap-2 text-xs font-semibold text-rose-700">
+              <input
+                name="confirmProduction"
+                type="checkbox"
+                className="mt-1"
+              />
+              I confirm production theme publishing has explicit approval and a fresh admin step-up session.
+            </label>
+            <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-rose-700">
+              Approval reference
+              <input
+                name="approvalReference"
+                className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm text-slate-800"
+                placeholder="Example: Nick approved in Codex thread on 2026-06-28"
+              />
+            </label>
+          </div>
         ) : null}
         <button className="w-full rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white">
           {buttonLabel}

@@ -6,9 +6,8 @@ import {
   featureFlagEnvironments,
   featureFlagStatuses,
   getCurrentFeatureEnvironment,
+  getFeatureFlagAdminState,
   getFeatureFlagDefinitions,
-  listFeatureFlagAuditRecords,
-  listFeatureFlags,
   type FeatureFlagEnvironment,
   type FeatureFlagResolvedState,
 } from "@/modules/feature-flags";
@@ -35,10 +34,11 @@ export default async function FeatureFlagsPage({
   ]);
   const canManage = canManageFeatureFlags(actor);
   const environment = parseEnvironment(resolvedSearchParams?.env);
-  const flags = listFeatureFlags({ environment });
+  const adminState = await getFeatureFlagAdminState({ environment });
+  const flags = adminState.flags;
   const moduleFlags = flags.filter((flag) => flag.kind === "module");
   const providerFlags = flags.filter((flag) => flag.kind === "provider");
-  const auditRecords = listFeatureFlagAuditRecords().slice(0, 10);
+  const auditRecords = adminState.auditRecords;
   const result = resolvedSearchParams?.featureFlagResult;
   const message = resolvedSearchParams?.featureFlagMessage;
 
@@ -105,12 +105,18 @@ export default async function FeatureFlagsPage({
 
           <section className="grid gap-3 sm:grid-cols-4">
             <MiniStat label="Environment" value={environment} />
+            <MiniStat label="Persistence" value={adminState.persistence.mode} />
             <MiniStat label="Module flags" value={`${moduleFlags.length}`} />
             <MiniStat label="Provider flags" value={`${providerFlags.length}`} />
             <MiniStat
               label="Enabled now"
               value={`${flags.filter((flag) => flag.enabled).length}`}
             />
+          </section>
+
+          <section className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4 text-sm text-slate-600">
+            <span className="font-semibold text-slate-950">Control storage:</span>{" "}
+            {adminState.persistence.reason}
           </section>
 
           <FlagSection title="Module Flags" flags={moduleFlags} environment={environment} />
@@ -245,6 +251,26 @@ function FlagSection({
                     placeholder="Explain the operational reason"
                   />
                 </label>
+                {environment === "production" && flag.externalApiBoundary ? (
+                  <div className="rounded-2xl border border-[var(--danger)]/30 bg-rose-50 p-3 lg:col-span-3">
+                    <label className="flex items-start gap-2 text-xs font-semibold text-rose-700">
+                      <input
+                        name="confirmProduction"
+                        type="checkbox"
+                        className="mt-1"
+                      />
+                      I confirm this production-sensitive provider change has explicit Nick/DS approval and a fresh admin step-up session.
+                    </label>
+                    <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.16em] text-rose-700">
+                      Approval reference
+                      <input
+                        name="approvalReference"
+                        className="mt-2 w-full rounded-xl border border-rose-200 bg-white px-3 py-2 text-sm text-slate-800"
+                        placeholder="Example: Nick approved in Codex thread on 2026-06-28"
+                      />
+                    </label>
+                  </div>
+                ) : null}
                 <button className="self-end rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white">
                   Save
                 </button>

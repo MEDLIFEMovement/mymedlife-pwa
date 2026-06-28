@@ -6,12 +6,16 @@ import {
   type FeatureFlagEnvironment,
 } from "@/modules/feature-flags";
 import {
-  publishThemeDraft,
-  restoreDefaultTheme,
-  rollbackTheme,
-  saveThemeDraft,
+  publishThemeDraftDurable,
+  restoreDefaultThemeDurable,
+  rollbackThemeDurable,
+  saveThemeDraftDurable,
   type ThemeTokenKey,
 } from "@/modules/theme";
+import {
+  getDsSecretStepUpState,
+  needsFreshProductionStepUp,
+} from "@/services/admin-integrations-step-up";
 import { getLocalActorContext } from "@/services/local-actor-context";
 
 export async function saveThemeDraftAction(formData: FormData) {
@@ -20,7 +24,7 @@ export async function saveThemeDraftAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
 
   try {
-    saveThemeDraft({
+    await saveThemeDraftDurable({
       actor,
       environment,
       tokenKey: String(formData.get("tokenKey") ?? "") as ThemeTokenKey,
@@ -42,11 +46,34 @@ export async function publishThemeAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
 
   try {
-    publishThemeDraft({
+    const approvalReference = normalizeString(formData.get("approvalReference"));
+    let stepUpSessionId: string | null = null;
+
+    if (environment === "production") {
+      if (formData.get("confirmProduction") !== "on") {
+        throw new Error("Production theme publishing requires explicit confirmation.");
+      }
+
+      if (!approvalReference) {
+        throw new Error("Production theme publishing requires an approval reference.");
+      }
+
+      const stepUpState = await getDsSecretStepUpState(actor);
+
+      if (needsFreshProductionStepUp(stepUpState)) {
+        throw new Error("Production theme publishing requires a fresh DS/Admin step-up session.");
+      }
+
+      stepUpSessionId = stepUpState.sessionId;
+    }
+
+    await publishThemeDraftDurable({
       actor,
       environment,
       reason: String(formData.get("reason") ?? ""),
       overrideContrast: formData.get("overrideContrast") === "on",
+      approvalReference,
+      stepUpSessionId,
     });
     redirectWithResult(returnTo, "success", "Theme published and audited.");
   } catch (error) {
@@ -60,7 +87,7 @@ export async function rollbackThemeAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
 
   try {
-    rollbackTheme({
+    await rollbackThemeDurable({
       actor,
       environment,
       reason: String(formData.get("reason") ?? ""),
@@ -77,7 +104,7 @@ export async function restoreDefaultThemeAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
 
   try {
-    restoreDefaultTheme({
+    await restoreDefaultThemeDurable({
       actor,
       environment,
       reason: String(formData.get("reason") ?? ""),

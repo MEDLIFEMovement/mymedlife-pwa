@@ -1,3 +1,4 @@
+import { createSupabaseControlClient } from "@/lib/supabase-control-client";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
@@ -8,6 +9,7 @@ import {
 } from "../constants";
 import type {
   FeatureFlagAuditRecord,
+  FeatureFlagAdminState,
   FeatureFlagChangeInput,
   FeatureFlagDefinition,
   FeatureFlagEnvironment,
@@ -23,6 +25,32 @@ type FeatureFlagOverrideStoreKey = `${FeatureFlagEnvironment}:${FeatureFlagKey}`
 type FeatureFlagStore = {
   overrides: Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>;
   auditRecords: FeatureFlagAuditRecord[];
+};
+
+type PersistedFeatureFlagOverrideRow = {
+  environment: FeatureFlagEnvironment;
+  flag_key: FeatureFlagKey;
+  status: FeatureFlagStatus;
+};
+
+type PersistedFeatureFlagAuditRow = {
+  id: string;
+  actor_user_id: string;
+  actor_email: string;
+  actor_role: "ds_admin" | "super_admin";
+  environment: FeatureFlagEnvironment;
+  flag_key: FeatureFlagKey;
+  old_status: FeatureFlagStatus | null;
+  new_status: FeatureFlagStatus;
+  reason: string;
+  created_at: string;
+};
+
+type FeatureFlagRpcResult = {
+  override_id: string;
+  old_status: FeatureFlagStatus | null;
+  new_status: FeatureFlagStatus;
+  audit_log_id: string;
 };
 
 declare global {
@@ -109,6 +137,16 @@ export function getFeatureStatus(
   return override ?? definition.defaultStatusByEnvironment[environment];
 }
 
+export function getFeatureStatusFromOverrides(
+  key: FeatureFlagKey,
+  environment: FeatureFlagEnvironment,
+  overrides: Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>,
+): FeatureFlagStatus {
+  const definition = getFeatureFlagDefinition(key);
+  return overrides.get(storeKey(environment, key)) ??
+    definition.defaultStatusByEnvironment[environment];
+}
+
 export function isFeatureEnabled(
   key: FeatureFlagKey,
   options: {
@@ -133,6 +171,30 @@ export function getFeatureResolvedState(
   const environment =
     options.environment ?? getCurrentFeatureEnvironment(options.env);
   const status = getFeatureStatus(key, { environment, env: options.env });
+  const enabled = isStatusEnabled(status, environment);
+
+  return {
+    key,
+    kind: definition.kind,
+    label: definition.label,
+    status,
+    environment,
+    enabled,
+    reason: enabled
+      ? `${definition.label} is available in ${environment}.`
+      : `${definition.label} is ${status}; using fallback instead.`,
+    gracefulFallback: definition.gracefulFallback,
+    externalApiBoundary: definition.externalApiBoundary,
+  };
+}
+
+export function getFeatureResolvedStateFromOverrides(
+  key: FeatureFlagKey,
+  environment: FeatureFlagEnvironment,
+  overrides: Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>,
+): FeatureFlagResolvedState {
+  const definition = getFeatureFlagDefinition(key);
+  const status = getFeatureStatusFromOverrides(key, environment, overrides);
   const enabled = isStatusEnabled(status, environment);
 
   return {
@@ -210,6 +272,54 @@ export function listFeatureFlags(
   return featureFlagKeys.map((key) => getFeatureResolvedState(key, options));
 }
 
+export async function getFeatureFlagAdminState(
+  options: {
+    environment?: FeatureFlagEnvironment;
+    env?: Record<string, string | undefined>;
+  } = {},
+): Promise<FeatureFlagAdminState> {
+  const environment =
+    options.environment ?? getCurrentFeatureEnvironment(options.env);
+  const { client, persistence } = await createSupabaseControlClient(options.env);
+
+  if (!client) {
+    return {
+      flags: listFeatureFlags({ environment, env: options.env }),
+      auditRecords: listFeatureFlagAuditRecords().slice(0, 10),
+      persistence,
+    };
+  }
+
+  const [overrideRows, auditRows] = await Promise.all([
+    client.selectRows<PersistedFeatureFlagOverrideRow>("feature_flag_overrides", {
+      select: "environment,flag_key,status",
+      query: { environment: `eq.${environment}` },
+    }),
+    client.selectRows<PersistedFeatureFlagAuditRow>("feature_flag_audit_records", {
+      select:
+        "id,actor_user_id,actor_email,actor_role,environment,flag_key,old_status,new_status,reason,created_at",
+      query: { environment: `eq.${environment}` },
+      order: { column: "created_at", ascending: false },
+      limit: 10,
+    }),
+  ]);
+  const overrides = new Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>();
+
+  for (const row of overrideRows) {
+    if (isFeatureFlagEnvironment(row.environment) && isFeatureFlagStatus(row.status)) {
+      overrides.set(storeKey(row.environment, row.flag_key), row.status);
+    }
+  }
+
+  return {
+    flags: featureFlagKeys.map((key) =>
+      getFeatureResolvedStateFromOverrides(key, environment, overrides),
+    ),
+    auditRecords: auditRows.map(toFeatureFlagAuditRecord),
+    persistence,
+  };
+}
+
 export function updateFeatureFlagStatus(
   input: FeatureFlagChangeInput,
 ): FeatureFlagAuditRecord {
@@ -257,6 +367,53 @@ export function updateFeatureFlagStatus(
   getStore().auditRecords.unshift(record);
 
   return record;
+}
+
+export async function updateFeatureFlagStatusDurable(
+  input: FeatureFlagChangeInput,
+): Promise<FeatureFlagAuditRecord> {
+  const { client } = await createSupabaseControlClient();
+
+  if (!client) {
+    return updateFeatureFlagStatus(input);
+  }
+
+  const definition = getFeatureFlagDefinition(input.key);
+  const result = await client.rpc<FeatureFlagRpcResult[]>(
+    "upsert_feature_flag_override",
+    {
+      flag_environment: input.environment,
+      flag_key: input.key,
+      flag_kind: definition.kind,
+      next_status: input.nextStatus,
+      reason: input.reason,
+      approval_reference: input.approvalReference ?? null,
+      step_up_session_uuid: input.stepUpSessionId ?? null,
+    },
+  );
+  const row = result[0];
+
+  if (!row) {
+    throw new Error("Feature flag update did not return an audit result.");
+  }
+
+  return {
+    id: row.audit_log_id,
+    actorUserId: input.actor.user.id,
+    actorEmail: input.actor.selectedEmail,
+    actorRole:
+      getActorSurfaceFamily(input.actor) === "super_admin"
+        ? "super_admin"
+        : "ds_admin",
+    environment: input.environment,
+    key: input.key,
+    oldStatus:
+      row.old_status ??
+      getFeatureFlagDefinition(input.key).defaultStatusByEnvironment[input.environment],
+    newStatus: row.new_status,
+    reason: input.reason.trim(),
+    createdAt: new Date().toISOString(),
+  };
 }
 
 export function listFeatureFlagAuditRecords(): FeatureFlagAuditRecord[] {
@@ -317,4 +474,23 @@ function isFeatureFlagStatus(
   value: string | undefined,
 ): value is FeatureFlagStatus {
   return featureFlagStatuses.includes(value as FeatureFlagStatus);
+}
+
+function toFeatureFlagAuditRecord(
+  row: PersistedFeatureFlagAuditRow,
+): FeatureFlagAuditRecord {
+  return {
+    id: row.id,
+    actorUserId: row.actor_user_id,
+    actorEmail: row.actor_email,
+    actorRole: row.actor_role,
+    environment: row.environment,
+    key: row.flag_key,
+    oldStatus:
+      row.old_status ??
+      getFeatureFlagDefinition(row.flag_key).defaultStatusByEnvironment[row.environment],
+    newStatus: row.new_status,
+    reason: row.reason,
+    createdAt: row.created_at,
+  };
 }

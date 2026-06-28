@@ -82,4 +82,18 @@ export type ThemeChangeInput = {
   pantoneCode?: string | null;
   reason: string;
   overrideContrast?: boolean;
+  approvalReference?: string | null;
+  stepUpSessionId?: string | null;
+};
+
+export type ThemeControlPersistence = {
+  mode: "memory" | "supabase";
+  status: "fallback" | "ready";
+  reason: string;
+};
+
+export type ThemeAdminState = {
+  snapshot: ThemeSnapshot;
+  auditRecords: ThemeAuditRecord[];
+  persistence: ThemeControlPersistence;
 };

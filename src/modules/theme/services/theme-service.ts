@@ -3,8 +3,10 @@ import {
 } from "@/services/role-visibility";
 import { canManageFeatureFlags } from "@/modules/feature-flags";
 import type { FeatureFlagEnvironment } from "@/modules/feature-flags";
+import { createSupabaseControlClient } from "@/lib/supabase-control-client";
 import { contrastPairs, defaultMedlifeThemeTokens } from "../constants";
 import type {
+  ThemeAdminState,
   ThemeAuditAction,
   ThemeAuditRecord,
   ThemeChangeInput,
@@ -19,6 +21,35 @@ type ThemeStore = {
   published: Map<FeatureFlagEnvironment, ThemeSnapshot>;
   history: ThemeSnapshot[];
   auditRecords: ThemeAuditRecord[];
+};
+
+type PersistedThemeSnapshotRow = {
+  id: string;
+  environment: FeatureFlagEnvironment;
+  status: "draft" | "active" | "archived" | "scheduled";
+  tokens: Record<ThemeTokenKey, ThemeTokenValue>;
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+  rollback_of_id: string | null;
+};
+
+type PersistedThemeAuditRow = {
+  id: string;
+  actor_user_id: string;
+  actor_email: string;
+  actor_role: "ds_admin" | "super_admin";
+  environment: FeatureFlagEnvironment;
+  action: ThemeAuditAction;
+  theme_id: string;
+  reason: string;
+  contrast_override: boolean;
+  created_at: string;
+};
+
+type ThemeRpcResult = {
+  theme_id: string;
+  audit_log_id: string;
 };
 
 declare global {
@@ -53,6 +84,46 @@ export function getThemeSnapshot(
       : store.drafts.get(environment) ?? store.published.get(environment);
 
   return existing ?? createDefaultTheme(environment);
+}
+
+export async function getThemeAdminState(input: {
+  environment: FeatureFlagEnvironment;
+  env?: Record<string, string | undefined>;
+}): Promise<ThemeAdminState> {
+  const { client, persistence } = await createSupabaseControlClient(input.env);
+
+  if (!client) {
+    return {
+      snapshot: getThemeSnapshot(input.environment, "draft"),
+      auditRecords: listThemeAuditRecords().slice(0, 10),
+      persistence,
+    };
+  }
+
+  const [snapshotRows, auditRows] = await Promise.all([
+    client.selectRows<PersistedThemeSnapshotRow>("theme_snapshots", {
+      select:
+        "id,environment,status,tokens,created_at,updated_at,published_at,rollback_of_id",
+      query: { environment: `eq.${input.environment}` },
+      order: { column: "updated_at", ascending: false },
+      limit: 1,
+    }),
+    client.selectRows<PersistedThemeAuditRow>("theme_audit_records", {
+      select:
+        "id,actor_user_id,actor_email,actor_role,environment,action,theme_id,reason,contrast_override,created_at",
+      query: { environment: `eq.${input.environment}` },
+      order: { column: "created_at", ascending: false },
+      limit: 10,
+    }),
+  ]);
+
+  return {
+    snapshot: snapshotRows[0]
+      ? toThemeSnapshot(snapshotRows[0])
+      : createDefaultTheme(input.environment),
+    auditRecords: auditRows.map(toThemeAuditRecord),
+    persistence,
+  };
 }
 
 export function saveThemeDraft(input: ThemeChangeInput): ThemeSnapshot {
@@ -92,6 +163,47 @@ export function saveThemeDraft(input: ThemeChangeInput): ThemeSnapshot {
     themeId: next.id,
     reason,
     contrastOverride: Boolean(input.overrideContrast),
+  });
+
+  return next;
+}
+
+export async function saveThemeDraftDurable(
+  input: ThemeChangeInput,
+): Promise<ThemeSnapshot> {
+  const { client } = await createSupabaseControlClient();
+
+  if (!client) {
+    return saveThemeDraft(input);
+  }
+
+  assertCanManageTheme(input.actor);
+  const current = (await getThemeAdminState({ environment: input.environment })).snapshot;
+  const currentToken = current.tokens[input.tokenKey];
+
+  if (!currentToken) {
+    throw new Error("Choose a valid theme token.");
+  }
+
+  const next: ThemeSnapshot = {
+    ...current,
+    id: current.status === "default" ? createThemeId("draft") : current.id,
+    status: "draft",
+    tokens: {
+      ...current.tokens,
+      [input.tokenKey]: updateToken(currentToken, input),
+    },
+    updatedAt: new Date().toISOString(),
+  };
+  await saveThemeSnapshotToSupabase(client, {
+    environment: input.environment,
+    status: "draft",
+    tokens: next.tokens,
+    reason: input.reason,
+    contrastOverride: Boolean(input.overrideContrast),
+    approvalReference: input.approvalReference ?? null,
+    stepUpSessionId: input.stepUpSessionId ?? null,
+    rollbackOfId: null,
   });
 
   return next;
@@ -138,6 +250,51 @@ export function publishThemeDraft(input: {
   return published;
 }
 
+export async function publishThemeDraftDurable(input: {
+  actor: ThemeChangeInput["actor"];
+  environment: FeatureFlagEnvironment;
+  reason: string;
+  overrideContrast?: boolean;
+  approvalReference?: string | null;
+  stepUpSessionId?: string | null;
+}): Promise<ThemeSnapshot> {
+  const { client } = await createSupabaseControlClient();
+
+  if (!client) {
+    return publishThemeDraft(input);
+  }
+
+  assertCanManageTheme(input.actor);
+  const draft = (await getThemeAdminState({ environment: input.environment })).snapshot;
+  const contrast = getThemeContrastResults(draft);
+  const blocked = contrast.some((item) => item.severity === "block");
+  const actorRole = getActorSurfaceFamily(input.actor);
+
+  if (blocked && !(actorRole === "super_admin" && input.overrideContrast)) {
+    throw new Error("Theme cannot publish because contrast checks are blocked.");
+  }
+
+  const result = await saveThemeSnapshotToSupabase(client, {
+    environment: input.environment,
+    status: "active",
+    tokens: draft.tokens,
+    reason: input.reason,
+    contrastOverride: Boolean(input.overrideContrast),
+    approvalReference: input.approvalReference ?? null,
+    stepUpSessionId: input.stepUpSessionId ?? null,
+    rollbackOfId: null,
+  });
+
+  return {
+    ...draft,
+    id: result.theme_id,
+    status: "published",
+    updatedAt: new Date().toISOString(),
+    publishedAt: new Date().toISOString(),
+    rollbackOfId: null,
+  };
+}
+
 export function rollbackTheme(input: {
   actor: ThemeChangeInput["actor"];
   environment: FeatureFlagEnvironment;
@@ -174,6 +331,53 @@ export function rollbackTheme(input: {
   return rolledBack;
 }
 
+export async function rollbackThemeDurable(input: {
+  actor: ThemeChangeInput["actor"];
+  environment: FeatureFlagEnvironment;
+  reason: string;
+}): Promise<ThemeSnapshot> {
+  const { client } = await createSupabaseControlClient();
+
+  if (!client) {
+    return rollbackTheme(input);
+  }
+
+  assertCanManageTheme(input.actor);
+  const current = (await getThemeAdminState({ environment: input.environment })).snapshot;
+  const previousRows = await client.selectRows<PersistedThemeSnapshotRow>("theme_snapshots", {
+    select:
+      "id,environment,status,tokens,created_at,updated_at,published_at,rollback_of_id",
+    query: {
+      environment: `eq.${input.environment}`,
+      status: "eq.archived",
+    },
+    order: { column: "updated_at", ascending: false },
+    limit: 1,
+  });
+  const previous = previousRows[0]
+    ? toThemeSnapshot(previousRows[0])
+    : createDefaultTheme(input.environment);
+  const result = await saveThemeSnapshotToSupabase(client, {
+    environment: input.environment,
+    status: "active",
+    tokens: previous.tokens,
+    reason: input.reason,
+    contrastOverride: false,
+    approvalReference: null,
+    stepUpSessionId: null,
+    rollbackOfId: current.id,
+  });
+
+  return {
+    ...previous,
+    id: result.theme_id,
+    status: "rolled_back",
+    updatedAt: new Date().toISOString(),
+    publishedAt: new Date().toISOString(),
+    rollbackOfId: current.id,
+  };
+}
+
 export function restoreDefaultTheme(input: {
   actor: ThemeChangeInput["actor"];
   environment: FeatureFlagEnvironment;
@@ -202,6 +406,39 @@ export function restoreDefaultTheme(input: {
   });
 
   return restored;
+}
+
+export async function restoreDefaultThemeDurable(input: {
+  actor: ThemeChangeInput["actor"];
+  environment: FeatureFlagEnvironment;
+  reason: string;
+}): Promise<ThemeSnapshot> {
+  const { client } = await createSupabaseControlClient();
+
+  if (!client) {
+    return restoreDefaultTheme(input);
+  }
+
+  assertCanManageTheme(input.actor);
+  const restored = createDefaultTheme(input.environment);
+  const result = await saveThemeSnapshotToSupabase(client, {
+    environment: input.environment,
+    status: "active",
+    tokens: restored.tokens,
+    reason: input.reason,
+    contrastOverride: false,
+    approvalReference: null,
+    stepUpSessionId: null,
+    rollbackOfId: null,
+  });
+
+  return {
+    ...restored,
+    id: result.theme_id,
+    status: "published",
+    updatedAt: new Date().toISOString(),
+    publishedAt: new Date().toISOString(),
+  };
 }
 
 export function getThemeContrastResults(
@@ -362,4 +599,82 @@ function getRelativeLuminance(hex: string): number {
 function createThemeId(prefix: string): string {
   const store = getStore();
   return `${prefix}-${Date.now()}-${store.history.length + store.auditRecords.length + 1}`;
+}
+
+async function saveThemeSnapshotToSupabase(
+  client: Awaited<ReturnType<typeof createSupabaseControlClient>>["client"],
+  input: {
+    environment: FeatureFlagEnvironment;
+    status: "draft" | "active";
+    tokens: Record<ThemeTokenKey, ThemeTokenValue>;
+    reason: string;
+    contrastOverride: boolean;
+    approvalReference: string | null;
+    stepUpSessionId: string | null;
+    rollbackOfId: string | null;
+  },
+): Promise<ThemeRpcResult> {
+  if (!client) {
+    throw new Error("Supabase control client is not available.");
+  }
+
+  const result = await client.rpc<ThemeRpcResult[]>("save_theme_control_snapshot", {
+    theme_environment: input.environment,
+    theme_status: input.status,
+    tokens: input.tokens,
+    reason: input.reason,
+    contrast_override: input.contrastOverride,
+    approval_reference: input.approvalReference,
+    step_up_session_uuid: input.stepUpSessionId,
+    rollback_of_uuid: input.rollbackOfId,
+  });
+  const row = result[0];
+
+  if (!row) {
+    throw new Error("Theme update did not return an audit result.");
+  }
+
+  return row;
+}
+
+function toThemeSnapshot(row: PersistedThemeSnapshotRow): ThemeSnapshot {
+  return {
+    id: row.id,
+    environment: row.environment,
+    status: toThemeDraftStatus(row.status),
+    tokens: row.tokens,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    publishedAt: row.published_at,
+    rollbackOfId: row.rollback_of_id,
+  };
+}
+
+function toThemeDraftStatus(
+  status: PersistedThemeSnapshotRow["status"],
+): ThemeSnapshot["status"] {
+  switch (status) {
+    case "active":
+      return "published";
+    case "archived":
+      return "rolled_back";
+    case "scheduled":
+    case "draft":
+      return "draft";
+  }
+}
+
+function toThemeAuditRecord(row: PersistedThemeAuditRow): ThemeAuditRecord {
+  return {
+    id: row.id,
+    actorUserId: row.actor_user_id,
+    actorEmail: row.actor_email,
+    actorRole: row.actor_role,
+    environment: row.environment,
+    action: row.action,
+    themeId: row.theme_id,
+    reason: row.reason,
+    createdAt: row.created_at,
+    contrastOverride: row.contrast_override,
+  };
 }
