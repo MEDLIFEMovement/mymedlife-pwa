@@ -119,11 +119,12 @@ Remaining hosted UI proof:
 
 ## Luma Event Loop Staging Proof
 
-Already proven on staging for the narrow approved scope:
+Approved staging scope:
 
 - Event create/update from myMEDLIFE to Luma.
 - RSVP writeback to Luma.
 - Attendance import from Luma.
+- Points and leaderboard readback visible in the myMEDLIFE review surface.
 - No n8n execution.
 - No production Luma setup.
 
@@ -137,10 +138,12 @@ Evidence recorded previously:
 
 Remaining before live pilot:
 
-- Readback surfaces must show points/leaderboard impact for member, leader,
-  staff, and admin after the approved staging data path.
+- A signed-in hosted reviewer must visually confirm `/admin/luma-live-pilot`
+  now shows the event, RSVP, attendance, points, leaderboard, audit/outbox, and
+  safety-gate readback together.
 - Audit/outbox must show zero unapproved sends.
-- Production Luma remains blocked.
+- Production Luma remains blocked until production calendar ownership,
+  rollback/disable ownership, and production env variables are approved.
 
 ## Small Live Pilot Gate
 
@@ -156,14 +159,16 @@ Approved-live scope should include only:
 
 - User sign-in and role routing.
 - Event discovery.
+- Luma event create/update for the approved pilot calendar only.
 - RSVP.
-- Attendance readback/import.
+- RSVP writeback to the approved pilot Luma event only.
+- Attendance readback/import from the approved pilot Luma calendar only.
 - Points and leaderboard readback.
 - Admin audit/outbox visibility.
 
 Blocked until separate approval:
 
-- Production Luma writes.
+- Any Luma behavior outside the approved pilot event loop.
 - n8n execution.
 - HubSpot writes.
 - Warehouse / Power BI writes.

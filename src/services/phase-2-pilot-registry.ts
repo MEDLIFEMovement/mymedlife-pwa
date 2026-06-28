@@ -91,19 +91,20 @@ const defaultDefinitions: DefaultDefinition[] = [
   {
     key: "event_nps_posture",
     label: "Event and NPS posture",
-    defaultValue: "manual-first",
+    defaultValue:
+      "Luma-backed event, RSVP, and attendance loop with manual support review",
     envKey: "MYMEDLIFE_PILOT_EVENT_NPS_POSTURE",
     whyThisIsDefault:
-      "Manual attendance and NPS handling keeps the first pilot independent of Luma write automation.",
+      "Events, RSVP, attendance, points, and leaderboard impact are the core pilot loop, while NPS and support review stay manual-first.",
   },
   {
     key: "integration_hold",
     label: "External integration hold",
     defaultValue:
-      "HubSpot, Luma writes, n8n, warehouse, Power BI, SMS, email, and AI actions stay off",
+      "Only the approved Luma event loop may be rehearsed; HubSpot, n8n, warehouse, Power BI, SMS, email, and AI actions stay off",
     envKey: "MYMEDLIFE_PILOT_INTEGRATION_HOLD",
     whyThisIsDefault:
-      "The app/Supabase loop should prove itself before downstream systems react to pilot behavior.",
+      "The Luma event loop is the first approved external-family pilot path; every other downstream system should wait until the app/Supabase loop is proven.",
   },
 ];
 

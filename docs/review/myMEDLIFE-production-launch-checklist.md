@@ -12,7 +12,8 @@ Status:
 - Login and route guards keep workspace access role-aware.
 - Launch-readiness surfaces exist for production gate, release readiness, pilot readiness, design QA, system health, and operations.
 - Tests and build are green in the current worktree.
-- The app keeps HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, and AI writes disabled by default.
+- The app keeps HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior disabled by default.
+- The approved staging exception is the narrow Luma event loop: create/update event, RSVP writeback, attendance import, points/leaderboard readback, and audit/outbox proof.
 
 ## What Still Blocks Live Pilot
 
@@ -20,9 +21,10 @@ Status:
 2. Record the named pilot owners.
 3. Approve the first hosted write.
 4. Prove the smallest hosted proof/review loop.
-5. Confirm the production environment path for Supabase, Vercel, domain/DNS, secrets, and backup/restore.
-6. Confirm monitoring, incident response, and support ownership.
-7. Keep all external integrations disabled until a later approval gate.
+5. Prove the Luma event loop on staging: event create/update, RSVP writeback, attendance import, points/leaderboard readback, and zero unauthorized sends.
+6. Confirm the production environment path for Supabase, Vercel, domain/DNS, secrets, and backup/restore.
+7. Confirm monitoring, incident response, and support ownership.
+8. Keep all non-approved external integrations disabled until a later approval gate.
 
 ## Production Launch Order
 
@@ -50,7 +52,8 @@ Status:
 
 - Approve the narrowest safe first hosted write.
 - Keep the first proof/review loop small.
-- Keep uploads and external sends disabled until explicitly approved.
+- Keep uploads and non-approved external sends disabled until explicitly approved.
+- Treat Luma as the first controlled external-family pilot path only after staging evidence and disable/rollback ownership are recorded.
 
 ### 5. Controlled pilot
 

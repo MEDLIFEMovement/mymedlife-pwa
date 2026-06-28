@@ -16,9 +16,9 @@ describe("production launch gate", () => {
       total: 8,
       localEvidenceReady: 1,
       blockedBeforeLive: 7,
-      launchEvidenceChecks: 9,
+      launchEvidenceChecks: 10,
     });
-    expect(gate.launchEvidenceChecks).toHaveLength(9);
+    expect(gate.launchEvidenceChecks).toHaveLength(10);
     expect(gate.finalReviewPrompt).toContain("production writes");
   });
 
@@ -125,6 +125,7 @@ describe("production launch gate", () => {
       "auth_callbacks",
       "rls_ci",
       "proof_storage",
+      "luma_event_loop",
       "device_qa_signoff",
       "monitoring_backup",
       "outbox_integration_hold",
@@ -140,13 +141,25 @@ describe("production launch gate", () => {
       ),
     ).toBe(true);
     expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.requiredEvidence,
+    ).toContain("create or update the approved Luma event");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.acceptanceSignal,
+    ).toContain("zero unauthorized outbox sends");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.reviewRoute,
+    ).toBe("/admin/luma-live-pilot");
+    expect(
       gate.launchEvidenceChecks.find((check) => check.key === "device_qa_signoff")
         ?.requiredEvidence,
     ).toContain("Goal 149 device/PWA matrix");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "outbox_integration_hold")
         ?.requiredEvidence,
-    ).toContain("HubSpot");
+    ).toContain("non-approved Luma behavior");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
         ?.requiredEvidence,

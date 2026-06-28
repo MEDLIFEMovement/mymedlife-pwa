@@ -196,6 +196,19 @@ export function getProductionLaunchEvidenceChecks(
       blockedUntil: "Proof storage, consent, and moderation policies are approved.",
     },
     {
+      key: "luma_event_loop",
+      label: "Luma event, RSVP, attendance, and points loop",
+      ownerLane: "Events, Data Solutions, and Launch",
+      status: "missing_before_pilot",
+      requiredEvidence:
+        "Hosted staging proof that myMEDLIFE can create or update the approved Luma event, write a member RSVP to Luma, import approved attendance from Luma, and show points plus chapter/organization leaderboard readback without exposing Luma secrets.",
+      reviewRoute: "/admin/luma-live-pilot",
+      acceptanceSignal:
+        "Reviewers can see the event id, RSVP count, attendance import count, points awarded, leaderboard status, audit/readback notes, and zero unauthorized outbox sends in the staged Luma live-pilot surface.",
+      blockedUntil:
+        "The Luma event loop is proven on staging, production Luma calendar ownership is approved, and rollback/disable owners are named before any live pilot event uses it.",
+    },
+    {
       key: "device_qa_signoff",
       label: "Device, PWA, and accessibility QA sign-off",
       ownerLane: "Product Design and Launch",
@@ -221,14 +234,14 @@ export function getProductionLaunchEvidenceChecks(
     },
     {
       key: "outbox_integration_hold",
-      label: "External integration hold",
+      label: "External integration hold outside Luma event loop",
       ownerLane: "Data Solutions",
       status: "missing_before_pilot",
       requiredEvidence:
-        "Explicit confirmation that HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes remain disabled for pilot.",
+        "Explicit confirmation that HubSpot, n8n, warehouse, Power BI, SMS, email, AI writes, and any non-approved Luma behavior remain disabled for pilot.",
       reviewRoute: "/admin/integration-outbox",
       acceptanceSignal:
-        "DS confirms outbox/integration records are review-only and no external destination can send during the pilot.",
+        "DS confirms outbox/integration records are review-only, the Luma pilot path is the only approved external-family exception under review, and no other external destination can send during the pilot.",
       blockedUntil: "Integration hold and future approval path are documented.",
     },
     {
@@ -396,7 +409,7 @@ function getProductionLaunchGateItems(
     localEvidence:
       "IntegrationEvent, AutomationOutbox, AuditLog, disabled destinations, and DS Admin outbox views are visible locally.",
     missingLiveEvidence: [
-      "n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, and AI contracts approved.",
+      "Luma event-loop contract approved for the narrow pilot, while n8n, HubSpot, warehouse, Power BI, SMS, email, and AI contracts remain disabled.",
       "Retry, idempotency, dead-letter, and manual recovery rules documented.",
       firstHostedWrite?.status === "recorded_final"
         ? `First staged app loop proves ${firstHostedWrite.value} as app truth before any external write consumes it.`
