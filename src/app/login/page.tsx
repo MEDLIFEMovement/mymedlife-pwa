@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { AuthSessionPanel } from "@/components/auth-session-panel";
 import { LoginForm } from "@/components/login-form";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
@@ -6,6 +7,8 @@ import {
   getDisabledAuthSessionState,
   normalizeLoginRedirect,
 } from "@/services/auth-session";
+import { getLandingRouteForActor } from "@/services/landing-route";
+import { getLocalActorContext } from "@/services/local-actor-context";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("login");
@@ -20,6 +23,13 @@ type LoginPageProps = {
 export default async function LoginPage(props: LoginPageProps) {
   const query = (await props.searchParams) ?? {};
   const redirectTo = normalizeLoginRedirect(query.redirectTo);
+  const actor = await getLocalActorContext();
+
+  if (actor.authSessionStatus === "signed_in") {
+    redirect(getLandingRouteForActor(actor));
+    return null;
+  }
+
   const { client, config } = await createLocalSupabaseServerClient();
   const session = client
     ? await getAuthSessionState(client, {

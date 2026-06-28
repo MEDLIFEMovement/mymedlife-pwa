@@ -495,12 +495,9 @@ async function getLocalAuthSessionState(): Promise<AuthSessionState> {
 
   if (!client) {
     const cookieStore = await cookies();
-    const previewSelection = resolveLocalActorPreviewSelection(
+    const previewActor = findKnownLocalActorOption(
       cookieStore.get(localActorPreviewCookieName)?.value,
-      process.env.MYMEDLIFE_LOCAL_ACTOR_EMAIL?.trim() || defaultLocalActorEmail,
     );
-
-    const previewActor = findKnownLocalActorOption(previewSelection.email);
 
     if (previewActor) {
       return {

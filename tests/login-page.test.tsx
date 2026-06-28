@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 vi.mock("next/navigation", () => ({
+  redirect: vi.fn(),
   usePathname: () => "/login",
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -49,6 +50,16 @@ vi.mock("@/services/auth-session", () => ({
   }),
 }));
 
+vi.mock("@/services/landing-route", () => ({
+  getLandingRouteForActor: vi.fn(() => "/admin"),
+}));
+
+vi.mock("@/services/local-actor-context", () => ({
+  getLocalActorContext: vi.fn(async () => ({
+    authSessionStatus: "disabled",
+  })),
+}));
+
 describe("login page", () => {
   it("renders a simple sign-in surface for myMEDLIFE", async () => {
     const { default: LoginPage } = await import("@/app/login/page");
@@ -83,5 +94,19 @@ describe("login page", () => {
     );
 
     expect(html).toContain('value="/app/slt-prep"');
+  });
+
+  it("redirects an already signed-in actor to their owned workspace", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const navigationModule = await import("next/navigation");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValueOnce({
+      authSessionStatus: "signed_in",
+    } as Awaited<ReturnType<typeof actorModule.getLocalActorContext>>);
+
+    const { default: LoginPage } = await import("@/app/login/page");
+    const html = renderToStaticMarkup(await LoginPage({}));
+
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith("/admin");
+    expect(html).toBe("");
   });
 });

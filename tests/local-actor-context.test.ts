@@ -265,6 +265,14 @@ describe("local actor context service", () => {
     });
   });
 
+  it("does not treat the configured local actor as signed in without a preview cookie", async () => {
+    const actor = await getLocalActorContext();
+
+    expect(actor.authSessionStatus).toBe("disabled");
+    expect(actor.identitySource).toBe("local_actor_email");
+    expect(actor.user.email).toBe("member.a@mymedlife.test");
+  });
+
   it("treats the preview cookie reviewer as signed in when hosted auth is disabled", async () => {
     previewCookieValue = "nellis@medlifemovement.org";
 
