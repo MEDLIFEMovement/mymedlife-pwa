@@ -72,6 +72,22 @@ All checks passed after commit `18a8916`.
 The hosted app can now be reviewed, but the server-side Luma calendar read is
 not yet successful.
 
+Fresh recheck on 2026-06-28:
+
+- Chrome passed Vercel protected-preview access after Vercel 2FA.
+- `https://staging.mymedlife.org/login` rendered the myMEDLIFE staging login.
+- The seeded member reviewer account reached the member home workspace.
+- The member home Luma panel still shows `Luma read needs review`.
+- The hosted Luma read still returns `HTTP 401`.
+- The page still shows `Luma events 0`, and the RSVP, attendance, points, and
+  leaderboard loop remains visible through the mock-safe path.
+- Safety gates remain visible:
+  - Luma event creation and updates are off.
+  - Luma RSVP and attendee writes are off.
+  - Attendance imports, reminders, webhooks, and n8n sends are off.
+  - HubSpot, warehouse, Power BI, SMS/email, and AI actions are off.
+  - No Luma secret is returned to browser-safe UI data.
+
 Current hosted result:
 
 - `LUMA_API_KEY` and `LUMA_CALENDAR_ID` appear to be present in the Vercel Preview environment.
