@@ -116,6 +116,26 @@ Current hosted result:
 - Imported Luma events do not appear yet.
 - Existing mock event-loop cards still appear, and every write/send remains blocked.
 
+Luma UI/key retrieval attempt on 2026-06-28:
+
+- Safari reached the live calendar at `https://lu.ma/medlife-events`.
+- Calendar ownership/access was confirmed by the visible `Manage` link.
+- The calendar management URL opened for `cal-7WNftYCpBJclZyG`.
+- Settings and likely developer/API key URLs were attempted:
+  - `https://luma.com/calendar/manage/cal-7WNftYCpBJclZyG/settings`
+  - `https://luma.com/calendar/manage/cal-7WNftYCpBJclZyG/settings/developer`
+  - `https://luma.com/calendar/manage/cal-7WNftYCpBJclZyG/settings/api-keys`
+  - `https://lu.ma/home/settings/integrations`
+- Those pages remained in Luma loading-placeholder state, so no API-key control was safely reachable through automation.
+- Chrome was not signed into Luma and the Luma sign-in page did not render usable controls.
+- Local clipboard was checked for key-shaped content without printing values; it did not contain a clean Luma API key candidate.
+
+Current key-retrieval blocker:
+
+- A valid Luma API key still needs to be generated or copied from the MEDLIFE Luma account.
+- The key should be calendar-scoped for `MEDLIFE Chapters Events Calendar` / `cal-7WNftYCpBJclZyG` if Luma offers that option.
+- Once the key is copied, Codex can safely stream it directly from clipboard into Vercel Preview for the branch, clear the clipboard, redeploy the Git-backed preview, re-alias staging, and rerun the hosted proof.
+
 The app now shows this plainly on the Luma readback panel:
 
 > Luma calendar read returned HTTP 401. The server has Luma config, but Luma rejected the staged credential. Refresh LUMA_API_KEY in the Vercel Preview environment before treating imported events as verified.
