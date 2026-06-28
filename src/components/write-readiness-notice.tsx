@@ -18,7 +18,7 @@ export function WriteReadinessNotice({
       <p className="app-copy mt-2">{config.reason}</p>
       <p className="mt-2 text-sm leading-6 text-slate-500">{config.approvalRequired}</p>
       <p className="app-eyebrow app-eyebrow-slate mt-3">Future tables touched after approval</p>
-      <p className="mt-1 font-mono text-xs leading-5 text-blue-700">
+      <p className="mt-1 font-mono text-xs leading-5 text-[var(--mymedlife-info)]">
         {wouldWriteTables.join(" -> ")}
       </p>
     </section>

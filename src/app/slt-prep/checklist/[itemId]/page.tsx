@@ -132,8 +132,8 @@ export default async function SltPrepChecklistDetailPage({
         })}
       />
 
-      <section className="overflow-hidden rounded-[1.8rem] border border-[#1565c0]/12 bg-white shadow-[0_18px_55px_rgba(8,34,76,0.08)]">
-        <div className="bg-[#0b66cc] px-5 pb-5 pt-4 text-white">
+      <section className="overflow-hidden rounded-[1.8rem] border border-[var(--mymedlife-link-blue)]/12 bg-white shadow-[0_18px_55px_rgb(var(--mymedlife-deep-rgb)/0.08)]">
+        <div className="bg-[var(--mymedlife-admin-blue)] px-5 pb-5 pt-4 text-white">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
@@ -158,10 +158,10 @@ export default async function SltPrepChecklistDetailPage({
 
         <div className="space-y-5 px-4 pb-5 pt-4">
           {detailOrigin ? (
-            <section className="rounded-[1.5rem] border border-slate-200 bg-[#fbfdff] p-4">
+            <section className="rounded-[1.5rem] border border-slate-200 bg-[var(--mymedlife-surface-tint)] p-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-2xl">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#0b66cc]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-admin-blue)]">
                     {detailOrigin.eyebrow}
                   </p>
                   <h2 className="mt-2 text-lg font-semibold text-slate-950">
@@ -219,7 +219,7 @@ export default async function SltPrepChecklistDetailPage({
                   <InputField label="Departure Time" placeholder="12:30 PM" />
                 </div>
                 <InputField label="Airport" placeholder="e.g., Lima Jorge Chávez" />
-                <div className="rounded-[1.2rem] border border-dashed border-slate-300 bg-[#dbeafe] px-4 py-6 text-center">
+                <div className="rounded-[1.2rem] border border-dashed border-slate-300 bg-[var(--mymedlife-badge-background)] px-4 py-6 text-center">
                   <p className="text-sm font-medium text-slate-700">
                     Upload Confirmation (Optional)
                   </p>
@@ -234,7 +234,7 @@ export default async function SltPrepChecklistDetailPage({
             <section className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
               <h2 className="text-lg font-semibold text-slate-950">What happens next</h2>
               <p className="mt-3 text-sm leading-6 text-slate-600">{workspace.item.nextStep}</p>
-              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] p-4">
+              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                   Evidence requirement
                 </p>
@@ -248,13 +248,13 @@ export default async function SltPrepChecklistDetailPage({
           <section className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
             <Link
               href={completionPreviewHref}
-              className="inline-flex w-full items-center justify-center rounded-full bg-[#0b66cc] px-4 py-3 text-sm font-semibold text-white"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[var(--mymedlife-admin-blue)] px-4 py-3 text-sm font-semibold text-white"
             >
               {search.preview === "complete" ? "Completion preview open" : `Submit ${detailTitle}`}
             </Link>
             <Link
               href={supportHref}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm font-semibold text-slate-700"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-sm font-semibold text-slate-700"
             >
               Need help? Contact support
             </Link>
@@ -263,9 +263,9 @@ export default async function SltPrepChecklistDetailPage({
           {search.preview === "complete" ? (
             <section
               id="completion-preview"
-              className="rounded-[1.5rem] border border-blue-200 bg-blue-50 p-4"
+              className="rounded-[1.5rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] p-4"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                 Completion preview
               </p>
               <h2 className="mt-2 text-lg font-semibold text-slate-950">
@@ -281,13 +281,13 @@ export default async function SltPrepChecklistDetailPage({
                   href={buildSltTripPrepRouteHref("/slt-prep/staff", {
                     travelerId: search.traveler,
                   })}
-                  className="inline-flex rounded-full border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-700"
+                  className="inline-flex rounded-full border border-[var(--mymedlife-focus-blue)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                 >
                   Open staff dashboard
                 </Link>
                 <Link
                   href={completionBackHref}
-                  className="inline-flex rounded-full border border-transparent bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700"
+                  className="inline-flex rounded-full border border-transparent bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                 >
                   {completionBackLabel}
                 </Link>
@@ -295,14 +295,14 @@ export default async function SltPrepChecklistDetailPage({
             </section>
           ) : null}
 
-          <section className="rounded-[1.5rem] border border-slate-200 bg-[#fbfdff] p-4">
+          <section className="rounded-[1.5rem] border border-slate-200 bg-[var(--mymedlife-surface-tint)] p-4">
             <h2 className="text-lg font-semibold text-slate-950">Related routes</h2>
             <div className="mt-4 grid gap-3">
               {relatedLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 transition hover:bg-[#dbeafe]"
+                  className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 transition hover:bg-[var(--mymedlife-badge-background)]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -335,7 +335,7 @@ function InputField({
         readOnly
         aria-label={label}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-3 py-3 text-sm text-slate-700 outline-none"
+        className="mt-2 w-full rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-3 text-sm text-slate-700 outline-none"
       />
     </label>
   );
@@ -343,7 +343,7 @@ function InputField({
 
 function DetailStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.15rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
+    <div className="rounded-[1.15rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
         {label}
       </p>

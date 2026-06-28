@@ -46,8 +46,8 @@ export function MembershipApprovalServerActionPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]">
         Join approval preview
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -65,12 +65,12 @@ export function MembershipApprovalServerActionPanel({
           className={[
             "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
               : resultState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+                ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
                 : resultState.tone === "error"
-                  ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                  : "border-blue-300/30 bg-blue-300/10 text-blue-100",
+                  ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
+                  : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]",
           ].join(" ")}
           role="status"
         >
@@ -84,10 +84,10 @@ export function MembershipApprovalServerActionPanel({
           className={[
             "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
               : readbackState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                : "border-white/10 bg-[#bfdbfe]/42 text-white/68",
+                ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
+                : "border-white/10 bg-[var(--mymedlife-border)]/42 text-white/68",
           ].join(" ")}
         >
           <p className="font-semibold">Preview readback</p>
@@ -112,7 +112,7 @@ export function MembershipApprovalServerActionPanel({
             />
             <input type="hidden" name="returnTo" value={packet.targetRoute} />
 
-            <div className="grid gap-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/42 p-4 sm:grid-cols-2">
+            <div className="grid gap-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/42 p-4 sm:grid-cols-2">
               <Field label="Applicant" value={packet.applicantName} />
               <Field label="Requested role" value={packet.requestedRoleLabel} />
               <Field label="Email" value={packet.applicantEmail} />
@@ -125,19 +125,19 @@ export function MembershipApprovalServerActionPanel({
             <textarea
               id="membershipAuditReason"
               name="auditReason"
-              className="min-h-28 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
+              className="min-h-28 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
               defaultValue={packet.payload.auditReason}
               disabled={!packet.writeReadiness.canSubmit}
             />
 
-            <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/42 p-4 text-sm leading-6 text-white/72">
+            <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/42 p-4 text-sm leading-6 text-white/72">
               <input
                 type="checkbox"
                 name="accuracyConfirmed"
                 value="yes"
                 defaultChecked
                 disabled={!packet.writeReadiness.canSubmit}
-                className="mt-1 h-4 w-4 rounded border-white/20 bg-[#bfdbfe]/52"
+                className="mt-1 h-4 w-4 rounded border-white/20 bg-[var(--mymedlife-border)]/52"
               />
               <span>
                 I confirmed this join request belongs to the right chapter and the role is
@@ -148,7 +148,7 @@ export function MembershipApprovalServerActionPanel({
             <button
               type="submit"
               disabled={!packet.writeReadiness.canSubmit}
-              className="w-full rounded-full bg-blue-200 px-5 py-3 text-sm font-semibold text-[#08224c] transition hover:bg-[#1e4fd8]lue-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
+              className="w-full rounded-full bg-[var(--mymedlife-border)] px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--mymedlife-action-blue-hover)] disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
             >
               {buttonLabel}
             </button>
@@ -158,7 +158,7 @@ export function MembershipApprovalServerActionPanel({
             {packet.writeReadiness.checks.map((check) => (
               <div
                 key={check.key}
-                className="rounded-2xl border border-white/10 bg-[#bfdbfe]/42 px-3 py-2"
+                className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/42 px-3 py-2"
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
                   {check.passed ? "Ready" : "Blocked"}

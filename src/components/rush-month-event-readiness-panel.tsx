@@ -18,7 +18,7 @@ export function RushMonthEventReadinessPanel({
   return (
     <section className="grid gap-4">
       <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
           Rush Month events
         </p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-950">
@@ -34,7 +34,7 @@ export function RushMonthEventReadinessPanel({
         </div>
       </section>
 
-      <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+      <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
         <section className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <MiniStat label="Events" value={`${workspace.counts.totalEvents}`} />
           <MiniStat
@@ -63,7 +63,7 @@ export function RushMonthEventReadinessPanel({
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
-          <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+          <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
               Future structured events
             </p>
@@ -74,12 +74,12 @@ export function RushMonthEventReadinessPanel({
               {workspace.futureStructuredEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3"
+                  className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="font-semibold text-slate-950">{event.title}</p>
-                      <p className="mt-1 font-mono text-xs text-[#1d4ed8]">
+                      <p className="mt-1 font-mono text-xs text-[var(--mymedlife-info)]">
                         {event.eventType}
                       </p>
                     </div>
@@ -95,8 +95,8 @@ export function RushMonthEventReadinessPanel({
             </div>
           </article>
 
-          <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1d4ed8]">
+          <article className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
               Disabled outbox
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -106,11 +106,11 @@ export function RushMonthEventReadinessPanel({
               {workspace.disabledOutboxItems.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-[#2563eb]/20 bg-white/70 p-3"
+                  className="rounded-2xl border border-[var(--mymedlife-primary-button)]/20 bg-white/70 p-3"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-semibold text-slate-950">{item.destination}</p>
-                    <span className="rounded-full border border-[#2563eb]/20 bg-[#dbeafe] px-2 py-1 text-xs font-semibold text-[#1d4ed8]">
+                    <span className="rounded-full border border-[var(--mymedlife-primary-button)]/20 bg-[var(--mymedlife-badge-background)] px-2 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                       {item.status}
                     </span>
                   </div>
@@ -123,7 +123,7 @@ export function RushMonthEventReadinessPanel({
           </article>
         </section>
 
-        <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
             Safety notes
           </p>
@@ -131,7 +131,7 @@ export function RushMonthEventReadinessPanel({
             {workspace.safetyNotes.map((note) => (
               <p
                 key={note}
-                className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 text-sm leading-6 text-slate-600"
+                className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3 text-sm leading-6 text-slate-600"
               >
                 {note}
               </p>
@@ -145,16 +145,16 @@ export function RushMonthEventReadinessPanel({
 
 function EventReadinessCard({ row }: { row: RushMonthEventReadinessRow }) {
   return (
-    <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+    <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
             <RsvpStatusPill status={row.rsvpStatusTone} label={row.rsvpStatusLabel} />
             <LumaStatusPill status={row.lumaStatusTone} label={row.lumaStatusLabel} />
-            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
               {row.timing}
             </span>
-            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
               {row.eventTypeLabel}
             </span>
           </div>
@@ -165,7 +165,7 @@ function EventReadinessCard({ row }: { row: RushMonthEventReadinessRow }) {
         </div>
         <Link
           href={`/rush-month/events/${row.id}`}
-          className="w-fit rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
+          className="w-fit rounded-full bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-badge-text)]"
         >
           Open event
         </Link>
@@ -184,7 +184,7 @@ function EventReadinessCard({ row }: { row: RushMonthEventReadinessRow }) {
 
 function DetailBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3">
+    <div className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
@@ -202,10 +202,10 @@ function LumaStatusPill({
 }) {
   const className =
     status === "mock_linked"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "future_sync_disabled"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-slate-200 bg-[#dbeafe] text-slate-600";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -223,10 +223,10 @@ function RsvpStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "mocked"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -237,7 +237,7 @@ function RsvpStatusPill({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>

@@ -37,10 +37,10 @@ export default async function AdminDesignQaPage() {
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Figma and mobile QA
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -54,7 +54,7 @@ export default async function AdminDesignQaPage() {
               </div>
               <Link
                 href="/admin/system-health"
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 Open system health
               </Link>
@@ -102,7 +102,7 @@ export default async function AdminDesignQaPage() {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[#bfdbfe] bg-white px-3 py-2">
+    <div className="rounded-2xl border border-[var(--mymedlife-border)] bg-white px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>

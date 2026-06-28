@@ -92,8 +92,8 @@ export function ChapterLeaderCommandCenterPanel({
                   className={[
                     "rounded-full px-4 py-2 text-sm font-semibold transition",
                     action.label === "Student view"
-                      ? "border border-[#2563eb]/40 bg-[#dbeafe] text-[#1d4ed8] hover:border-[#2563eb]/60 hover:bg-[#dbeafe]"
-                      : "border border-[#bfdbfe] bg-white text-[#0b5fc4] hover:border-[#93c5fd] hover:bg-[#eef5ff]",
+                      ? "border border-[var(--mymedlife-primary-button)]/40 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)] hover:border-[var(--mymedlife-primary-button)]/60 hover:bg-[var(--mymedlife-badge-background)]"
+                      : "border border-[var(--mymedlife-border)] bg-white text-[var(--mymedlife-link-blue)] hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]",
                   ].join(" ")}
                 >
                   {action.label}
@@ -105,10 +105,10 @@ export function ChapterLeaderCommandCenterPanel({
       ) : null}
 
       {memberHomeHandoffPreview ? (
-        <section className="rounded-[1.45rem] border border-[#dbeafe] bg-white p-3.5 shadow-[0_12px_30px_rgba(37,99,235,0.08)] xl:col-span-2">
+        <section className="rounded-[1.45rem] border border-[var(--mymedlife-badge-background)] bg-white p-3.5 shadow-[0_12px_30px_rgb(var(--mymedlife-primary-rgb)/0.08)] xl:col-span-2">
           <div className="flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#1d4ed8]">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
                 {memberHomeHandoffPreview.heading}
               </p>
               <h3 className="mt-2 text-[1.7rem] font-semibold leading-tight text-slate-950">
@@ -135,7 +135,7 @@ export function ChapterLeaderCommandCenterPanel({
       ) : null}
 
       <aside className="xl:sticky xl:top-24">
-        <section className="rounded-[2rem] border border-[#0f172a] bg-[#0b1b3a] p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)]">
+        <section className="rounded-[2rem] border border-[var(--foreground)] bg-[var(--mymedlife-deep-blue)] p-4 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.16)]">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-sm font-semibold text-white">
               M
@@ -147,10 +147,10 @@ export function ChapterLeaderCommandCenterPanel({
               </p>
             </div>
           </div>
-          <div className="mt-4 rounded-[1.15rem] border border-white/10 bg-white/5 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.16)]">
+          <div className="mt-4 rounded-[1.15rem] border border-white/10 bg-white/5 p-3 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.16)]">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#93c5fd]">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-focus-blue)]">
                   Active Campaign
                 </p>
                 <p className="mt-2 text-base font-semibold text-white">
@@ -193,8 +193,8 @@ export function ChapterLeaderCommandCenterPanel({
                             className={[
                               "block rounded-[1rem] px-3 py-2.5 pl-11 text-sm font-semibold transition",
                               commandCenter.selectedView === option.key
-                                ? "border border-white/10 bg-[#2563eb] text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)]"
-                                : "border border-white/10 bg-white/5 text-white/80 hover:border-[#93c5fd]/40 hover:bg-white/10 hover:text-white",
+                                ? "border border-white/10 bg-[var(--mymedlife-primary-button)] text-white shadow-[0_10px_24px_rgb(var(--mymedlife-primary-rgb)/0.22)]"
+                                : "border border-white/10 bg-white/5 text-white/80 hover:border-[var(--mymedlife-focus-blue)]/40 hover:bg-white/10 hover:text-white",
                             ].join(" ")}
                           >
                             {option.label}
@@ -226,7 +226,7 @@ export function ChapterLeaderCommandCenterPanel({
 
       <div className="grid gap-4">
         {commandCenter.sourceContext && !showMemberHomeHandoff ? (
-          <section className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+          <section className="rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
             <p className="app-eyebrow app-eyebrow-blue">{commandCenter.sourceContext.eyebrow}</p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">
               {commandCenter.sourceContext.title}
@@ -240,7 +240,7 @@ export function ChapterLeaderCommandCenterPanel({
                   <Link
                     key={action.label}
                     href={action.href}
-                    className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#0b5fc4] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                    className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-link-blue)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
                   >
                     {action.label}
                   </Link>
@@ -255,7 +255,7 @@ export function ChapterLeaderCommandCenterPanel({
             <section className="app-surface-info rounded-[1.85rem] p-5">
               <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                     Leader Overview
                   </p>
                   <div className="mt-3 min-w-0">
@@ -321,7 +321,7 @@ export function ChapterLeaderCommandCenterPanel({
             <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
               <SectionCard eyebrow="Risk Alerts" title="Risk Alerts">
                 <div className="mb-4">
-                  <span className="rounded-full border border-[#dbeafe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                  <span className="rounded-full border border-[var(--mymedlife-badge-background)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                     {commandCenter.riskAlerts.length} active
                   </span>
                 </div>
@@ -344,7 +344,7 @@ export function ChapterLeaderCommandCenterPanel({
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Link
                         href={commandCenter.weeklyPriority.primaryHref}
-                        className="rounded-full border border-[#2563eb]/45 bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
+                        className="rounded-full border border-[var(--mymedlife-primary-button)]/45 bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                       >
                         {commandCenter.weeklyPriority.primaryLabel}
                       </Link>
@@ -477,8 +477,8 @@ function renderView(
               </div>
             </div>
 
-            <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+            <div className="mt-4 rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                 Ideas to try
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -511,7 +511,7 @@ function renderView(
                 </p>
                 <Link
                   href="/chapter/members"
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open roster export
                 </Link>
@@ -532,7 +532,7 @@ function renderView(
                 </p>
                 <Link
                   href="/chapter/members"
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open member intake
                 </Link>
@@ -583,7 +583,7 @@ function renderView(
                         feedPostId: commandCenter.selectedFeedPostId,
                       })
                     }
-                    className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                    className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                   >
                     Open member review
                   </Link>
@@ -609,7 +609,7 @@ function renderView(
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open assignment flow
                 </Link>
@@ -637,14 +637,14 @@ function renderView(
                       searchQuery: commandCenter.pipelineSearchQuery,
                     })
                   }
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open member review
                 </Link>
               </div>
             </SectionCard>
           ) : null}
-          <section className="grid gap-3 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+          <section className="grid gap-3 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-5">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
               <div className="max-w-3xl">
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -678,21 +678,21 @@ function renderView(
                     searchQuery: commandCenter.pipelineSearchQuery,
                     quickAction: "add_member",
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Add Member
                 </Link>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 rounded-[1.25rem] border border-slate-200 bg-[#dbeafe]/90 p-3.5 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-col gap-3 rounded-[1.25rem] border border-slate-200 bg-[var(--mymedlife-badge-background)]/90 p-3.5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex flex-col gap-3 xl:min-w-[34rem] xl:flex-1 xl:flex-row xl:items-center">
                 <form action="/chapter" method="get" className="min-w-0 xl:flex-[1.15]">
                   <input type="hidden" name="view" value="members" />
                   <label className="sr-only" htmlFor="member-pipeline-search">
                     Search members
                   </label>
-                  <div className="rounded-full border border-slate-200 bg-white px-4 py-2.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+                  <div className="rounded-full border border-slate-200 bg-white px-4 py-2.5 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.04)]">
                     <input
                       id="member-pipeline-search"
                       name="q"
@@ -720,7 +720,7 @@ function renderView(
                 />
               </div>
 
-              <div className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+              <div className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.04)]">
                 {commandCenter.pipelineRows.length} of {commandCenter.pipelineTotalCount} members
               </div>
             </div>
@@ -748,10 +748,10 @@ function renderView(
             {renderMemberProfileQuickActionState(commandCenter)}
 
             {commandCenter.selectedMember.reviewContext ? (
-              <div className="rounded-[1.15rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
+              <div className="rounded-[1.15rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-4">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                   <div className="grid gap-2">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       {commandCenter.selectedMember.reviewContext.eyebrow}
                     </p>
                     <p className="text-base font-semibold text-slate-950">
@@ -763,7 +763,7 @@ function renderView(
                   </div>
                   <Link
                     href={commandCenter.selectedMember.reviewContext.actionHref}
-                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                    className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
                   >
                     {commandCenter.selectedMember.reviewContext.actionLabel}
                   </Link>
@@ -772,10 +772,10 @@ function renderView(
             ) : null}
 
             {commandCenter.selectedSource === "feed_analytics" && commandCenter.selectedFeedPost ? (
-              <div className="rounded-[1.15rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
+              <div className="rounded-[1.15rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Post in focus
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -828,10 +828,10 @@ function renderView(
               </div>
             ) : null}
 
-            <section className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
+            <section className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-4">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <div className="max-w-2xl">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                     Member loop
                   </p>
                   <h2 className="mt-2 text-[1.4rem] font-semibold leading-tight text-slate-950">
@@ -870,13 +870,13 @@ function renderView(
                     searchQuery: commandCenter.pipelineSearchQuery,
                     quickAction: "review_members",
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open event context
                 </Link>
                 <Link
                   href="#member-points-history"
-                  className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                  className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
                 >
                   Jump to points history
                 </Link>
@@ -930,7 +930,7 @@ function renderView(
                           key={item.label}
                           className="rounded-[1.1rem] border border-slate-200 bg-white p-4"
                         >
-                          <p className="text-sm font-semibold text-[#1d4ed8]">{item.label}</p>
+                          <p className="text-sm font-semibold text-[var(--mymedlife-info)]">{item.label}</p>
                           <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
                         </div>
                       ))}
@@ -1004,14 +1004,14 @@ function renderView(
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open committee flow
                 </Link>
               </div>
             </SectionCard>
           ) : null}
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1033,7 +1033,7 @@ function renderView(
                   searchQuery: commandCenter.pipelineSearchQuery,
                   quickAction: "add_committee",
                 })}
-                className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+                className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white"
               >
                 Add Committee
               </Link>
@@ -1058,10 +1058,10 @@ function renderView(
             </div>
 
             {commandCenter.selectedCommittee ? (
-              <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="mt-4 rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Committee in focus
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -1071,7 +1071,7 @@ function renderView(
                       {commandCenter.selectedCommittee.summary}
                     </p>
                   </div>
-                  <span className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                  <span className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                     {commandCenter.selectedCommittee.operatingStatusLabel}
                   </span>
                 </div>
@@ -1139,7 +1139,7 @@ function renderView(
 
                 <div className="mt-4 flex flex-col gap-3 rounded-[1rem] border border-white/80 bg-white/80 p-4 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Broader committee workspace
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -1157,7 +1157,7 @@ function renderView(
                         searchQuery: commandCenter.pipelineSearchQuery,
                         quickAction: "add_committee",
                       })}
-                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       Add another committee
                     </Link>
@@ -1169,7 +1169,7 @@ function renderView(
                         pipelineFilter: commandCenter.selectedPipelineFilter,
                         searchQuery: commandCenter.pipelineSearchQuery,
                       })}
-                      className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                      className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                     >
                       Open committee workspace
                     </Link>
@@ -1213,14 +1213,14 @@ function renderView(
                     eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
                     quickAction: "create_event",
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open event flow
                 </Link>
               </div>
             </SectionCard>
           ) : null}
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1242,7 +1242,7 @@ function renderView(
                   eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
                   quickAction: "create_event",
                 })}
-                className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+                className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white"
               >
                 Create Event
               </Link>
@@ -1276,7 +1276,7 @@ function renderView(
               />
             </div>
 
-            <div className="rounded-[1.4rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+            <div className="rounded-[1.4rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <div>
                   <p className="app-eyebrow app-eyebrow-blue">Staging Luma activation</p>
@@ -1345,7 +1345,7 @@ function renderView(
                 title="Keep the selected event in chapter context before you leave this surface."
               >
                 <div className="grid gap-4">
-                  <div className="rounded-[1.25rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+                  <div className="rounded-[1.25rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
                     <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                       <div className="grid gap-3">
                         <div>
@@ -1401,7 +1401,7 @@ function renderView(
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-2">
-                    <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3">
+                    <div className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                         Expected student action
                       </p>
@@ -1409,7 +1409,7 @@ function renderView(
                         {commandCenter.selectedEvent.expectedStudentAction}
                       </p>
                     </div>
-                    <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3">
+                    <div className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
                         Proof prompt
                       </p>
@@ -1429,7 +1429,7 @@ function renderView(
                         eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
                         eventId: commandCenter.selectedEvent.id,
                       })}
-                      className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                      className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                     >
                       Open broader event flow
                     </Link>
@@ -1446,7 +1446,7 @@ function renderView(
               <div className="flex flex-col gap-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <span className="rounded-full border border-[#dbeafe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                    <span className="rounded-full border border-[var(--mymedlife-badge-background)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                       Manual update
                     </span>
                     <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -1504,7 +1504,7 @@ function renderView(
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open story library
                 </Link>
@@ -1536,14 +1536,14 @@ function renderView(
                     pipelineFilter: commandCenter.selectedPipelineFilter,
                     searchQuery: commandCenter.pipelineSearchQuery,
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open bridge-video lane
                 </Link>
               </div>
             </SectionCard>
           ) : null}
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1576,7 +1576,7 @@ function renderView(
                     impactStoryId: commandCenter.selectedImpactHighlightId,
                     quickAction: "create_impact_bridge_video",
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white"
                 >
                   Share Bridge Video
                 </Link>
@@ -1584,10 +1584,10 @@ function renderView(
             </div>
 
             {commandCenter.selectedImpactHighlight ? (
-              <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Story in focus
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -1601,7 +1601,7 @@ function renderView(
                   <div className="flex flex-wrap gap-2">
                     <Link
                       href={commandCenter.selectedImpactHighlight.href}
-                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       {commandCenter.selectedImpactHighlight.actionLabel}
                     </Link>
@@ -1614,7 +1614,7 @@ function renderView(
                         searchQuery: commandCenter.pipelineSearchQuery,
                         quickAction: "share_bridge_video",
                       })}
-                      className="inline-flex rounded-full border border-[#93c5fd] bg-white px-4 py-2 text-sm font-semibold text-[#0b5fc4]"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-focus-blue)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-link-blue)]"
                     >
                       Share Bridge Video
                     </Link>
@@ -1712,7 +1712,7 @@ function renderView(
                         feedPostId: commandCenter.selectedFeedPostId,
                       })
                     }
-                    className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                    className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                   >
                     Share Bridge Video
                   </Link>
@@ -1747,7 +1747,7 @@ function renderView(
                       feedPostId: commandCenter.selectedFeedPostId,
                     })
                   }
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Share Bridge Video
                 </Link>
@@ -1776,7 +1776,7 @@ function renderView(
                     bridgeVideoId: commandCenter.selectedBridgeVideoId,
                     feedPostId: commandCenter.selectedFeedPostId,
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open proof lane
                 </Link>
@@ -1814,14 +1814,14 @@ function renderView(
                     bridgeVideoFilter: commandCenter.selectedBridgeVideoFilter,
                     bridgeVideoId: commandCenter.selectedBridgeVideoId,
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Feature selected video
                 </Link>
               </div>
             </SectionCard>
           ) : null}
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1844,17 +1844,17 @@ function renderView(
                     feedPostId: commandCenter.selectedFeedPostId,
                     quickAction: "submit_bridge_video",
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white"
                 >
                   Submit Bridge Video
                 </Link>
             </div>
 
             {commandCenter.selectedSource === "impact" && commandCenter.selectedImpactHighlight ? (
-              <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Impact story in focus
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -1875,7 +1875,7 @@ function renderView(
                       pipelineFilter: commandCenter.selectedPipelineFilter,
                       searchQuery: commandCenter.pipelineSearchQuery,
                     })}
-                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                   >
                     Back to story
                   </Link>
@@ -1884,10 +1884,10 @@ function renderView(
             ) : null}
 
             {commandCenter.selectedSource === "feed_analytics" && commandCenter.selectedFeedPost ? (
-              <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Post in focus
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -1941,10 +1941,10 @@ function renderView(
             ) : null}
 
             {commandCenter.selectedBridgeVideo ? (
-              <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Selected video
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -1967,7 +1967,7 @@ function renderView(
                         bridgeVideoFilter: commandCenter.selectedBridgeVideoFilter,
                         feedPostId: commandCenter.selectedFeedPostId,
                       })}
-                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       Back to bridge library
                     </Link>
@@ -1983,7 +1983,7 @@ function renderView(
                         bridgeVideoId: commandCenter.selectedBridgeVideo.id,
                         quickAction: "feature_bridge_video",
                       })}
-                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       Feature selected video
                     </Link>
@@ -2027,7 +2027,7 @@ function renderView(
                   />
                 ))
               ) : (
-                <div className="rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] p-4">
+                <div className="rounded-[1.2rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
                     No other bridge videos in this filter
                   </p>
@@ -2043,8 +2043,8 @@ function renderView(
               )}
             </div>
 
-            <div className="mt-4 rounded-[1.2rem] border border-[#2563eb]/35 bg-[#dbeafe] p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+            <div className="mt-4 rounded-[1.2rem] border border-[var(--mymedlife-primary-button)]/35 bg-[var(--mymedlife-badge-background)] p-4">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                 Bridge Culture Reminder
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -2070,14 +2070,14 @@ function renderView(
                 </p>
                 <Link
                   href={buildNominateCandidateHref(commandCenter)}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open candidate review
                 </Link>
               </div>
             </SectionCard>
           ) : null}
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -2099,7 +2099,7 @@ function renderView(
                 </Link>
                 <Link
                   href={buildTransitionPlanHref(commandCenter)}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white"
                 >
                   Start Transition Plan
                 </Link>
@@ -2107,10 +2107,10 @@ function renderView(
             </div>
 
             {commandCenter.hasExplicitMemberSelection && commandCenter.selectedMember ? (
-              <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Selected candidate
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -2123,7 +2123,7 @@ function renderView(
                   </div>
                   <Link
                     href={commandCenter.selectedMember.profileHref}
-                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                   >
                     Open member profile
                   </Link>
@@ -2169,7 +2169,7 @@ function renderView(
                 <div />
                 <Link
                   href={buildChapterLeaderCommandCenterHref("members")}
-                  className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#dbeafe]"
+                  className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-badge-background)]"
                 >
                   Full table
                 </Link>
@@ -2194,7 +2194,7 @@ function renderView(
     case "feed_analytics":
       return (
         <section className="grid gap-4">
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-5">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -2230,7 +2230,7 @@ function renderView(
                     feedPostId: commandCenter.selectedFeedPostId,
                     quickAction: "ask_members_to_respond",
                   })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white"
                 >
                   Ask Members to Respond
                 </Link>
@@ -2238,10 +2238,10 @@ function renderView(
             </div>
 
             {commandCenter.selectedFeedPost ? (
-              <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Impact Analysis
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -2290,13 +2290,13 @@ function renderView(
                         searchQuery: commandCenter.pipelineSearchQuery,
                         bridgeVideoFilter: commandCenter.selectedBridgeVideoFilter,
                       })}
-                      className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       Back to recent posts
                     </Link>
                     <Link
                       href={commandCenter.selectedFeedPost.nextActionHref}
-                      className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                      className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
                     >
                       {commandCenter.selectedFeedPost.nextActionLabel}
                     </Link>
@@ -2306,10 +2306,10 @@ function renderView(
             ) : null}
 
             {commandCenter.feedAnalyticsBridgeContext ? (
-              <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+              <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Bridge Video Context
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -2321,7 +2321,7 @@ function renderView(
                   </div>
                   <Link
                     href={commandCenter.feedAnalyticsBridgeContext.backHref}
-                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                   >
                     Back to bridge library
                   </Link>
@@ -2331,10 +2331,10 @@ function renderView(
 
             {commandCenter.selectedSource === "leaderboard" &&
             commandCenter.selectedBestPracticeChapter ? (
-              <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+              <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       Benchmark chapter in focus
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -2345,14 +2345,14 @@ function renderView(
                         {commandCenter.selectedBestPracticeChapter.chapterName}
                       </h3>
                       {commandCenter.selectedBestPracticeChapter.badgeLabel ? (
-                        <span className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                        <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                           {commandCenter.selectedBestPracticeChapter.badgeLabel}
                         </span>
                       ) : null}
                       <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
                         {commandCenter.selectedBestPracticeChapter.countryLabel}
                       </span>
-                      <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                      <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                         {commandCenter.selectedBestPracticeChapter.healthLabel}
                       </span>
                     </div>
@@ -2372,7 +2372,7 @@ function renderView(
                       leaderboardMetric: commandCenter.selectedLeaderboardMetric,
                       leaderboardRegion: commandCenter.selectedLeaderboardRegion,
                     })}
-                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+                    className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
                   >
                     Back to leaderboard
                   </Link>
@@ -2534,12 +2534,12 @@ function QuickActionLink({
       className={[
         "inline-flex items-center justify-center rounded-[1rem] px-4 py-3 text-center text-sm font-semibold transition",
         action.tone === "primary"
-          ? "bg-[#2563eb] text-white hover:bg-[#2d6cf4]"
+          ? "bg-[var(--mymedlife-primary-button)] text-white hover:bg-[var(--mymedlife-primary-button)]"
           : variant === "hero"
-            ? "border border-white/18 bg-white/[0.12] text-white shadow-[0_10px_26px_rgba(2,14,38,0.16)] hover:border-white/28 hover:bg-white/[0.18]"
+            ? "border border-white/18 bg-white/[0.12] text-white shadow-[0_10px_26px_rgb(var(--mymedlife-deep-rgb)/0.16)] hover:border-white/28 hover:bg-white/[0.18]"
             : variant === "sidebar"
               ? "border border-white/10 bg-white/[0.05] text-white/82 hover:border-white/18 hover:bg-white/[0.1] hover:text-white"
-            : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+            : "border border-slate-200 bg-white text-slate-700 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
       ].join(" ")}
     >
       {action.label}
@@ -2603,16 +2603,16 @@ function HeroProgressStat({
   const progress = getProgressValue(value);
 
   return (
-    <div className="rounded-[1.25rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="rounded-[1.25rem] border border-[var(--mymedlife-border)] bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <div className="flex items-center justify-between gap-3">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
           {label}
         </p>
-        <p className="text-sm font-semibold text-[#2563eb]">{value}</p>
+        <p className="text-sm font-semibold text-[var(--mymedlife-primary-button)]">{value}</p>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#eff6ff]">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--background)]">
         <div
-          className="h-full rounded-full bg-[#2563eb]"
+          className="h-full rounded-full bg-[var(--mymedlife-primary-button)]"
           style={{ width: `${progress * 100}%` }}
         />
       </div>
@@ -2628,7 +2628,7 @@ function HeroStatusStat({
   value: string;
 }) {
   return (
-    <div className="rounded-[1.25rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="rounded-[1.25rem] border border-[var(--mymedlife-border)] bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
@@ -2667,7 +2667,7 @@ function HandoffPreviewStatCard({
   note: string;
 }) {
   return (
-    <section className="rounded-[1.1rem] border border-[#dbeafe] bg-[#f8fbff] px-3.5 py-3">
+    <section className="rounded-[1.1rem] border border-[var(--mymedlife-badge-background)] bg-[var(--background)] px-3.5 py-3">
       <p className="app-eyebrow app-eyebrow-blue">{label}</p>
       <p className="mt-2 text-[1.85rem] font-semibold leading-none text-slate-950">{value}</p>
       <p className="mt-1.5 text-xs leading-5 text-slate-600">{note}</p>
@@ -2687,7 +2687,7 @@ function HandoffPreviewSectionCard({
   hrefLabel: string;
 }) {
   return (
-    <section className="rounded-[1.1rem] border border-slate-200 bg-white px-3.5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+    <section className="rounded-[1.1rem] border border-slate-200 bg-white px-3.5 py-3 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <div className="flex h-full flex-col gap-3">
         <div className="min-w-0">
           <h4 className="text-sm font-semibold text-slate-950">{title}</h4>
@@ -2695,7 +2695,7 @@ function HandoffPreviewSectionCard({
         </div>
         <Link
           href={href}
-          className="inline-flex w-fit rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1.5 text-xs font-semibold text-[#0b5fc4] transition hover:border-[#93c5fd] hover:bg-[#dbeafe]"
+          className="inline-flex w-fit rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-link-blue)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-badge-background)]"
         >
           {hrefLabel}
         </Link>
@@ -2732,7 +2732,7 @@ function ToplineMetricCard({
   note: string;
 }) {
   return (
-    <section className="app-surface rounded-[1.5rem] bg-white/94 p-4 shadow-[0_14px_32px_rgba(15,23,42,0.06)]">
+    <section className="app-surface rounded-[1.5rem] bg-white/94 p-4 shadow-[0_14px_32px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
       <p className="app-eyebrow app-eyebrow-slate">{label}</p>
       <p className="mt-3 text-[2rem] font-semibold leading-none text-slate-950">{value}</p>
       <p className="mt-2 text-sm leading-6 text-slate-600">{note}</p>
@@ -2743,15 +2743,15 @@ function ToplineMetricCard({
 function RiskAlertCard({ alert }: { alert: ChapterLeaderCommandCenterRiskAlert }) {
   const accentClassName =
     alert.severity === "high"
-      ? "border-l-4 border-l-blue-400"
+      ? "border-l-4 border-l-[var(--mymedlife-focus-blue)]"
       : alert.severity === "medium"
-        ? "border-l-4 border-l-blue-400"
-        : "border-l-4 border-l-blue-400";
+        ? "border-l-4 border-l-[var(--mymedlife-focus-blue)]"
+        : "border-l-4 border-l-[var(--mymedlife-focus-blue)]";
 
   return (
     <div
       className={[
-        "rounded-[1.4rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]",
+        "rounded-[1.4rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]",
         accentClassName,
       ].join(" ")}
     >
@@ -2761,7 +2761,7 @@ function RiskAlertCard({ alert }: { alert: ChapterLeaderCommandCenterRiskAlert }
       </div>
       <Link
         href={alert.href}
-        className="mt-3 inline-flex rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-slate-700"
+        className="mt-3 inline-flex rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-slate-700"
       >
         Open
       </Link>
@@ -2775,12 +2775,12 @@ function LeadershipRoleCard({
   role: ChapterLeaderCommandCenterLeadershipRole;
 }) {
   return (
-    <div className="app-surface rounded-[1.4rem] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="app-surface rounded-[1.4rem] p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-base font-semibold text-slate-950">{role.label}</p>
         <TonePill tone={toTone(role.status)} label={role.status} />
       </div>
-      <p className="mt-2 text-sm font-semibold text-[#2563eb]">{role.owner}</p>
+      <p className="mt-2 text-sm font-semibold text-[var(--mymedlife-primary-button)]">{role.owner}</p>
       <p className="mt-2 text-sm leading-6 text-slate-600">{role.note}</p>
     </div>
   );
@@ -2804,7 +2804,7 @@ function ChapterMemberPipelineTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-[61rem] border-collapse">
-        <thead className="bg-[#dbeafe]">
+        <thead className="bg-[var(--mymedlife-badge-background)]">
           <tr>
             {[
               "Member",
@@ -2836,8 +2836,8 @@ function ChapterMemberPipelineTable({
             <tr
               key={row.id}
               className={[
-                "bg-white transition hover:bg-[#dbeafe]",
-                row.isSelected ? "ring-1 ring-inset ring-[#bfdbfe]" : "",
+                "bg-white transition hover:bg-[var(--mymedlife-badge-background)]",
+                row.isSelected ? "ring-1 ring-inset ring-[var(--mymedlife-border)]" : "",
               ].join(" ")}
             >
               <td className="border-b border-slate-200 px-2.5 py-4 align-top">
@@ -2845,11 +2845,11 @@ function ChapterMemberPipelineTable({
                   href={row.profileHref}
                   className="flex min-w-[9.75rem] items-start gap-2.5 rounded-[1rem] transition"
                 >
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-[0.64rem] font-semibold text-white">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--mymedlife-primary-button)] text-[0.64rem] font-semibold text-white">
                     {row.initials}
                   </div>
                   <div>
-                    <p className="text-[0.98rem] font-semibold leading-5 text-[#2563eb]">
+                    <p className="text-[0.98rem] font-semibold leading-5 text-[var(--mymedlife-primary-button)]">
                       {row.displayName}
                     </p>
                     <p className="mt-1 text-[0.68rem] leading-5 text-slate-600">
@@ -2923,29 +2923,29 @@ function formatTableNumber(value: number) {
 function getPipelineValuesBadgeClassName(label: string) {
   const normalized = label.toLowerCase();
   if (normalized.includes("needs interview")) {
-    return "inline-flex rounded-full border border-[#93c5fd] bg-[#dbeafe] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
+    return "inline-flex rounded-full border border-[var(--mymedlife-focus-blue)] bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-[0.68rem] font-semibold text-[var(--mymedlife-info)]";
   }
   if (normalized.includes("watch")) {
-    return "inline-flex rounded-full border border-[#2563eb] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
+    return "inline-flex rounded-full border border-[var(--mymedlife-primary-button)] bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold text-[var(--mymedlife-info)]";
   }
 
-  return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
+  return "inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold text-[var(--mymedlife-info)]";
 }
 
 function getPipelineStageBadgeClassName(label: string) {
   switch (label.toLowerCase()) {
     case "e-board":
-      return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
+      return "inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold text-[var(--mymedlife-info)]";
     case "chair":
-      return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#2563eb]";
+      return "inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold text-[var(--mymedlife-primary-button)]";
     case "chair candidate":
-      return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
+      return "inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold text-[var(--mymedlife-info)]";
     case "active contributor":
-      return "inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
+      return "inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold text-[var(--mymedlife-info)]";
     case "needs follow-up":
-      return "inline-flex rounded-full border border-[#93c5fd] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-[#1d4ed8]";
+      return "inline-flex rounded-full border border-[var(--mymedlife-focus-blue)] bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold text-[var(--mymedlife-info)]";
     default:
-      return "inline-flex rounded-full border border-slate-200 bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold text-slate-700";
+      return "inline-flex rounded-full border border-slate-200 bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold text-slate-700";
   }
 }
 
@@ -2956,7 +2956,7 @@ function MemberProfileSummaryCard({
 }) {
   return (
     <section className="app-surface-info self-start rounded-[1.5rem] p-4">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2563eb] text-lg font-semibold text-white">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--mymedlife-primary-button)] text-lg font-semibold text-white">
         {member.displayName
           .split(" ")
           .slice(0, 2)
@@ -2968,7 +2968,7 @@ function MemberProfileSummaryCard({
         <p>{member.roleLabel}</p>
         <p>{member.committeeLane}</p>
       </div>
-      <div className="mt-3 inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+      <div className="mt-3 inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-info)]">
         {member.badgeLabel}
       </div>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -3009,8 +3009,8 @@ function MemberLeadershipActionsCard({
               className={[
                 "rounded-[1rem] px-4 py-3 text-sm font-semibold transition",
                 action.tone === "primary"
-                  ? "bg-[#2563eb] text-white hover:bg-[#2d6cf4]"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff]",
+                  ? "bg-[var(--mymedlife-primary-button)] text-white hover:bg-[var(--mymedlife-primary-button)]"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]",
               ].join(" ")}
             >
               {action.label}
@@ -3019,7 +3019,7 @@ function MemberLeadershipActionsCard({
           {noteAction ? (
             <Link
               href={noteAction.href}
-              className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+              className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
             >
               {noteAction.label}
             </Link>
@@ -3069,7 +3069,7 @@ function renderMemberProfileQuickActionState(
             </p>
             <Link
               href={successionHref}
-              className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+              className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
             >
               Open chair review
             </Link>
@@ -3089,7 +3089,7 @@ function renderMemberProfileQuickActionState(
             </p>
             <Link
               href={successionHref}
-              className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+              className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
             >
               Open E-Board review
             </Link>
@@ -3116,7 +3116,7 @@ function renderMemberProfileQuickActionState(
             </p>
             <Link
               href={assignmentLaneHref}
-              className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+              className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
             >
               Open leadership action flow
             </Link>
@@ -3222,7 +3222,7 @@ function LoopMetricPill({
   note: string;
 }) {
   return (
-    <article className="rounded-[1.15rem] border border-white/12 bg-white px-3.5 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+    <article className="rounded-[1.15rem] border border-white/12 bg-white px-3.5 py-3 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
@@ -3242,7 +3242,7 @@ function EventDetailMetricPill({
   note: string;
 }) {
   return (
-    <article className="rounded-[1rem] border border-white/70 bg-white px-3.5 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <article className="rounded-[1rem] border border-white/70 bg-white px-3.5 py-3 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
@@ -3266,7 +3266,7 @@ function MemberPointsHistoryChart({
           <div key={point.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
             <div className="flex h-24 items-end">
               <div
-                className="w-full min-w-[0.9rem] rounded-full bg-[#2563eb]"
+                className="w-full min-w-[0.9rem] rounded-full bg-[var(--mymedlife-primary-button)]"
                 style={{ height: `${Math.max(18, Math.round((point.value / maxValue) * 96))}px` }}
               />
             </div>
@@ -3297,7 +3297,7 @@ function ChapterPointsTrendChart({
           <div key={point.label} className="flex min-w-0 flex-1 flex-col items-center gap-2">
             <div className="flex h-28 items-end">
               <div
-                className="w-full min-w-[0.95rem] rounded-full bg-[#2563eb]"
+                className="w-full min-w-[0.95rem] rounded-full bg-[var(--mymedlife-primary-button)]"
                 style={{ height: `${Math.max(28, Math.round((point.value / maxValue) * 112))}px` }}
               />
             </div>
@@ -3323,7 +3323,7 @@ function TimelineItem({
 }) {
   return (
     <div className="flex gap-3 rounded-[1rem] border border-slate-200 bg-white p-4">
-      <div className="mt-1 h-2.5 w-2.5 rounded-full bg-[#2563eb]" />
+      <div className="mt-1 h-2.5 w-2.5 rounded-full bg-[var(--mymedlife-primary-button)]" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
           {dateLabel}
@@ -3344,7 +3344,7 @@ function EventOpsStat({
   note: string;
 }) {
   return (
-    <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
@@ -3388,7 +3388,7 @@ function EventAttendanceComparisonChart({
                   {row.lane} · {row.dateLabel}
                 </p>
               </div>
-              <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+              <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
                 {row.attendanceRateLabel}
               </span>
             </div>
@@ -3397,13 +3397,13 @@ function EventAttendanceComparisonChart({
                 label="RSVP"
                 value={row.rsvpCount ?? 0}
                 width={rsvpWidth}
-                toneClassName="bg-[#93c5fd]"
+                toneClassName="bg-[var(--mymedlife-focus-blue)]"
               />
               <AttendanceBarRow
                 label="Attended"
                 value={row.attendedCount ?? 0}
                 width={attendedWidth}
-                toneClassName="bg-[#2563eb]"
+                toneClassName="bg-[var(--mymedlife-primary-button)]"
               />
             </div>
           </div>
@@ -3432,7 +3432,7 @@ function AttendanceBarRow({
         </p>
         <p className="text-sm font-semibold text-slate-950">{value}</p>
       </div>
-      <div className="h-2.5 overflow-hidden rounded-full bg-[#eff6ff]">
+      <div className="h-2.5 overflow-hidden rounded-full bg-[var(--background)]">
         <div className={["h-full rounded-full", toneClassName].join(" ")} style={{ width }} />
       </div>
     </div>
@@ -3445,7 +3445,7 @@ function SocialRecruitingMetricTile({
   metric: ChapterLeaderCommandCenter["socialRecruitingMetrics"][number];
 }) {
   return (
-    <div className="rounded-[1.15rem] border border-slate-200 bg-[#dbeafe]/80 p-4">
+    <div className="rounded-[1.15rem] border border-slate-200 bg-[var(--mymedlife-badge-background)]/80 p-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {metric.label}
       </p>
@@ -3500,7 +3500,7 @@ function ChapterEventsTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-left text-sm text-slate-700">
-        <thead className="bg-[#dbeafe] text-xs uppercase tracking-[0.18em] text-slate-500">
+        <thead className="bg-[var(--mymedlife-badge-background)] text-xs uppercase tracking-[0.18em] text-slate-500">
           <tr>
             <th className="px-4 py-3">Event</th>
             <th className="px-4 py-3">Date</th>
@@ -3519,14 +3519,14 @@ function ChapterEventsTable({
             <tr
               key={event.id}
               className={`border-t border-slate-200 ${
-                event.id === selectedEventId ? "bg-[#eff6ff]" : ""
+                event.id === selectedEventId ? "bg-[var(--background)]" : ""
               }`}
             >
               <td className="px-4 py-3 font-semibold text-slate-950">
                 <Link
                   href={event.href}
-                  className={`hover:text-[#1d4ed8] ${
-                    event.id === selectedEventId ? "text-[#1d4ed8]" : ""
+                  className={`hover:text-[var(--mymedlife-info)] ${
+                    event.id === selectedEventId ? "text-[var(--mymedlife-info)]" : ""
                   }`}
                 >
                   {event.title}
@@ -3570,9 +3570,9 @@ function CommitteeOperatingRow({
       href={committee.href}
       aria-current={isSelected ? "page" : undefined}
       className={[
-        "rounded-[1.35rem] border bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition hover:border-[#bfdbfe] hover:bg-[#f8fbff]",
+        "rounded-[1.35rem] border bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)] transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)]",
         isSelected
-          ? "border-[#60a5fa] bg-[#f8fbff] shadow-[0_14px_32px_rgba(37,99,235,0.12)]"
+          ? "border-[var(--mymedlife-focus-blue)] bg-[var(--background)] shadow-[0_14px_32px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
           : "border-slate-200",
         accentClassName,
       ].join(" ")}
@@ -3610,7 +3610,7 @@ function CommitteeOperatingRow({
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
               KPI {committee.kpiLabel}
             </p>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#eff6ff]">
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[var(--background)]">
               <div
                 className={["h-full rounded-full", getCommitteeKpiBarClassName(committee.operatingStatusLabel)].join(" ")}
                 style={{ width: `${kpiValue}%` }}
@@ -3620,7 +3620,7 @@ function CommitteeOperatingRow({
           <div className="flex justify-end">
             <div className="flex items-center gap-2">
               {isSelected ? (
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#1d4ed8]">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--mymedlife-info)]">
                   Selected
                 </span>
               ) : null}
@@ -3644,7 +3644,7 @@ function renderCommitteeOwnerBadges(ownerLabel: string) {
     return [
       <span
         key={ownerLabel}
-        className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-[var(--mymedlife-info)]"
       >
         <span aria-hidden="true">⚠</span>
         No chair assigned
@@ -3655,9 +3655,9 @@ function renderCommitteeOwnerBadges(ownerLabel: string) {
   return owners.map((owner) => (
     <span
       key={owner}
-      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-600"
+      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-600"
     >
-      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2563eb] text-[0.58rem] font-semibold text-white">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--mymedlife-primary-button)] text-[0.58rem] font-semibold text-white">
         {getInitials(owner)}
       </span>
       {owner}
@@ -3761,12 +3761,12 @@ function TableTonePill({
 }) {
   const className =
     tone === "green"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : tone === "yellow"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
         : tone === "red"
-          ? "border-blue-200 bg-blue-50 text-blue-700"
-          : "border-slate-200 bg-[#dbeafe] text-slate-600";
+          ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+          : "border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600";
 
   return (
     <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${className}`}>
@@ -3787,21 +3787,21 @@ function SelectedMemberContextBanner({
   member: ChapterLeaderCommandCenterMemberProfile;
 }) {
   return (
-    <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#eef5ff] p-4">
+    <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] p-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
             {eyebrow}
           </p>
           <h3 className="mt-2 text-lg font-semibold text-slate-950">{title}</h3>
           <div className="mt-3 flex flex-wrap gap-2">
-            <span className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+            <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
               {member.roleLabel}
             </span>
-            <span className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-xs font-semibold text-slate-600">
               {member.committeeLane}
             </span>
-            <span className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-xs font-semibold text-slate-600">
               {member.pipelineLabel}
             </span>
           </div>
@@ -3809,7 +3809,7 @@ function SelectedMemberContextBanner({
         </div>
         <Link
           href={member.profileHref}
-          className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8]"
+          className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)]"
         >
           Open member profile
         </Link>
@@ -3825,13 +3825,13 @@ function ImpactHighlightCard({
 }) {
   const toneClassName =
     highlight.tone === "blue"
-      ? "bg-[linear-gradient(160deg,#2563eb_0%,#1d4ed8_100%)] text-white"
+      ? "bg-[linear-gradient(160deg,var(--mymedlife-primary-button)_0%,var(--mymedlife-info)_100%)] text-white"
       : highlight.tone === "purple"
-        ? "bg-[linear-gradient(160deg,#2563eb_0%,#1d4ed8_100%)] text-white"
-        : "bg-[linear-gradient(160deg,#93c5fd_0%,#3b82f6_100%)] text-white";
+        ? "bg-[linear-gradient(160deg,var(--mymedlife-primary-button)_0%,var(--mymedlife-info)_100%)] text-white"
+        : "bg-[linear-gradient(160deg,var(--mymedlife-focus-blue)_0%,var(--mymedlife-primary-button)_100%)] text-white";
 
   return (
-    <div className={["rounded-[1.6rem] p-5 shadow-[0_18px_48px_rgba(15,23,42,0.12)]", toneClassName].join(" ")}>
+    <div className={["rounded-[1.6rem] p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.12)]", toneClassName].join(" ")}>
       {highlight.icon ? (
         <p className="text-2xl leading-none" aria-hidden="true">
           {highlight.icon}
@@ -3906,8 +3906,8 @@ function CampaignImpactCard({
         <p className="text-sm font-semibold text-slate-700">{overview.progressLabel}</p>
       </div>
 
-      <div className="h-3 overflow-hidden rounded-full bg-[#eff6ff]">
-        <div className="h-full w-[70%] rounded-full bg-blue-500" />
+      <div className="h-3 overflow-hidden rounded-full bg-[var(--background)]">
+        <div className="h-full w-[70%] rounded-full bg-[var(--mymedlife-primary-button)]" />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -3917,9 +3917,9 @@ function CampaignImpactCard({
 
       <div className="grid grid-cols-4 gap-3">
         {overview.pillars.map((pillar, index) => (
-          <div key={pillar.label} className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] p-3">
+          <div key={pillar.label} className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3">
             <div
-              className="h-12 rounded-[0.8rem] bg-[#2563eb]"
+              className="h-12 rounded-[0.8rem] bg-[var(--mymedlife-primary-button)]"
               style={{ opacity: 1 - index * 0.12 }}
             />
             <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
@@ -3945,17 +3945,17 @@ function FeedEngagementChart({
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-500">
-        <LegendPill label="Likes" colorClassName="bg-blue-200" />
-        <LegendPill label="Comments" colorClassName="bg-blue-500" />
-        <LegendPill label="Actions After" colorClassName="bg-blue-400" />
+        <LegendPill label="Likes" colorClassName="bg-[var(--mymedlife-border)]" />
+        <LegendPill label="Comments" colorClassName="bg-[var(--mymedlife-primary-button)]" />
+        <LegendPill label="Actions After" colorClassName="bg-[var(--mymedlife-focus-blue)]" />
       </div>
       <div className="grid gap-3 rounded-[1.25rem] border border-slate-200 bg-white p-4">
         <div className="flex h-48 items-end gap-4">
           {rows.map((row) => (
             <div key={row.label} className="flex min-w-0 flex-1 items-end justify-center gap-1">
-              <FeedChartBar value={row.likes} maxValue={maxValue} colorClassName="bg-blue-200" />
-              <FeedChartBar value={row.comments} maxValue={maxValue} colorClassName="bg-blue-500" />
-              <FeedChartBar value={row.actionsAfter} maxValue={maxValue} colorClassName="bg-blue-400" />
+              <FeedChartBar value={row.likes} maxValue={maxValue} colorClassName="bg-[var(--mymedlife-border)]" />
+              <FeedChartBar value={row.comments} maxValue={maxValue} colorClassName="bg-[var(--mymedlife-primary-button)]" />
+              <FeedChartBar value={row.actionsAfter} maxValue={maxValue} colorClassName="bg-[var(--mymedlife-focus-blue)]" />
             </div>
           ))}
         </div>
@@ -4033,7 +4033,7 @@ function FeedPostsTable({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-left text-sm text-slate-700">
-        <thead className="bg-[#dbeafe] text-[0.68rem] uppercase tracking-[0.16em] text-slate-500">
+        <thead className="bg-[var(--mymedlife-badge-background)] text-[0.68rem] uppercase tracking-[0.16em] text-slate-500">
           <tr>
             {["Post", "Type", "Author", "Views", "Likes", "Comments", "Shares", "Actions After", "RSVPs", "Date"].map((label) => (
               <th key={label} className="px-4 py-3">
@@ -4048,11 +4048,11 @@ function FeedPostsTable({
               key={row.id}
               className={[
                 "border-t border-slate-200",
-                row.isSelected ? "bg-[#eef5ff]" : "",
+                row.isSelected ? "bg-[var(--mymedlife-surface-hover)]" : "",
               ].join(" ")}
             >
               <td className="px-4 py-3 font-semibold text-slate-950">
-                <Link href={row.href} className="transition hover:text-[#1d4ed8]">
+                <Link href={row.href} className="transition hover:text-[var(--mymedlife-info)]">
                   {row.title}
                 </Link>
               </td>
@@ -4064,7 +4064,7 @@ function FeedPostsTable({
               <td className="px-4 py-3">{row.likesLabel}</td>
               <td className="px-4 py-3">{row.commentsLabel}</td>
               <td className="px-4 py-3">{row.sharesLabel}</td>
-              <td className="px-4 py-3 font-semibold text-blue-700">{row.actionsAfterLabel}</td>
+              <td className="px-4 py-3 font-semibold text-[var(--mymedlife-info)]">{row.actionsAfterLabel}</td>
               <td className="px-4 py-3">{row.rsvpsLabel}</td>
               <td className="px-4 py-3">{row.dateLabel}</td>
             </tr>
@@ -4080,14 +4080,14 @@ function getFeedPostBadgeClassName(label: string) {
     "inline-flex rounded-full border px-3 py-1 text-xs font-semibold";
 
   if (label === "Bridge Video") {
-    return `${baseClassName} border-[#bfdbfe] bg-[#eef5ff] text-[#1d4ed8]`;
+    return `${baseClassName} border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] text-[var(--mymedlife-info)]`;
   }
 
   if (label === "Best Practice") {
-    return `${baseClassName} border-blue-200 bg-blue-50 text-blue-700`;
+    return `${baseClassName} border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]`;
   }
 
-  return `${baseClassName} border-slate-200 bg-[#dbeafe] text-slate-600`;
+  return `${baseClassName} border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600`;
 }
 
 function FeedMemberRow({
@@ -4098,7 +4098,7 @@ function FeedMemberRow({
   return (
     <div className="flex items-center justify-between gap-3 rounded-[1.1rem] border border-slate-200 bg-white p-3">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-xs font-semibold text-white">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--mymedlife-primary-button)] text-xs font-semibold text-white">
           {member.initials}
         </div>
         <p className="truncate text-sm font-semibold text-slate-950">{member.displayName}</p>
@@ -4109,12 +4109,12 @@ function FeedMemberRow({
           member.actionHref ? (
             <Link
               href={member.actionHref}
-              className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+              className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
             >
               {member.actionLabel}
             </Link>
           ) : (
-            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
               {member.actionLabel}
             </span>
           )
@@ -4136,8 +4136,8 @@ function BridgeVideoFilterPill({
       className={[
         "rounded-full px-3 py-1.5 text-xs font-semibold",
         filter.isActive
-          ? "bg-[#2563eb] text-white"
-          : "border border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+          ? "bg-[var(--mymedlife-primary-button)] text-white"
+          : "border border-slate-200 bg-white text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
       ].join(" ")}
     >
       {filter.label}
@@ -4151,7 +4151,7 @@ function BridgeVideoMetricTile({
   metric: ChapterLeaderCommandCenter["bridgeVideoMetrics"][number];
 }) {
   return (
-    <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="text-3xl font-semibold text-slate-950">{metric.value}</p>
       <p className="mt-2 text-sm font-medium text-slate-500">{metric.label}</p>
     </div>
@@ -4170,9 +4170,9 @@ function BridgeVideoHubCard({
   return (
     <div
       className={[
-        "rounded-[1.35rem] border bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]",
+        "rounded-[1.35rem] border bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]",
         selected
-          ? "border-[#2563eb] bg-[#f8fbff] shadow-[0_16px_40px_rgba(37,99,235,0.12)]"
+          ? "border-[var(--mymedlife-primary-button)] bg-[var(--background)] shadow-[0_16px_40px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
           : "border-slate-200",
       ].join(" ")}
     >
@@ -4182,8 +4182,8 @@ function BridgeVideoHubCard({
             className={[
               "flex h-16 w-16 shrink-0 items-center justify-center rounded-[1rem] text-xl font-semibold",
               isFeatured
-                ? "bg-[linear-gradient(160deg,#2563eb_0%,#1d4ed8_100%)] text-white"
-                : "bg-[#dbeafe] text-slate-400",
+                ? "bg-[linear-gradient(160deg,var(--mymedlife-primary-button)_0%,var(--mymedlife-info)_100%)] text-white"
+                : "bg-[var(--mymedlife-badge-background)] text-slate-400",
             ].join(" ")}
           >
             &gt;
@@ -4192,11 +4192,11 @@ function BridgeVideoHubCard({
             <div className="flex flex-wrap items-center gap-2">
               <p className="truncate text-lg font-semibold text-slate-950">{entry.title}</p>
               {entry.badgeLabel ? (
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                   {entry.badgeLabel}
                 </span>
               ) : null}
-              <span className="rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+              <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                 {entry.categoryLabel}
               </span>
             </div>
@@ -4208,7 +4208,7 @@ function BridgeVideoHubCard({
               <span>Likes {entry.likesLabel}</span>
               <span>Comments {entry.commentsLabel}</span>
               <span>Shares {entry.sharesLabel}</span>
-              <span className="text-blue-700">{entry.chaptersUsingLabel}</span>
+              <span className="text-[var(--mymedlife-info)]">{entry.chaptersUsingLabel}</span>
             </div>
           </div>
         </div>
@@ -4241,10 +4241,10 @@ function SuccessionGapCard({
       className={[
         "rounded-[1.25rem] border p-4",
         gap.severity === "high"
-          ? "border-blue-200 bg-blue-50"
+          ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]"
           : gap.severity === "medium"
-            ? "border-blue-200 bg-blue-50"
-            : "border-slate-200 bg-[#dbeafe]",
+            ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]"
+            : "border-slate-200 bg-[var(--mymedlife-badge-background)]",
       ].join(" ")}
     >
       <div className="flex flex-wrap items-center gap-3">
@@ -4266,14 +4266,14 @@ function SuccessionPipelineRow({
     <Link
       href={candidate.href}
       className={[
-        "flex items-center justify-between gap-3 rounded-[1.1rem] border bg-white p-3 transition hover:border-[#bfdbfe] hover:bg-[#f8fbff]",
+        "flex items-center justify-between gap-3 rounded-[1.1rem] border bg-white p-3 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)]",
         candidate.isSelected
-          ? "border-[#2563eb] bg-[#f8fbff] shadow-[0_12px_30px_rgba(37,99,235,0.12)]"
+          ? "border-[var(--mymedlife-primary-button)] bg-[var(--background)] shadow-[0_12px_30px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
           : "border-slate-200",
       ].join(" ")}
     >
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-xs font-semibold text-white">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--mymedlife-primary-button)] text-xs font-semibold text-white">
           {getInitials(candidate.displayName)}
         </div>
         <div className="min-w-0">
@@ -4282,7 +4282,7 @@ function SuccessionPipelineRow({
             {candidate.committeeLabel} · {candidate.pointsLabel}
           </p>
           {candidate.isSelected ? (
-            <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#1d4ed8]">
+            <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--mymedlife-info)]">
               Selected now
             </p>
           ) : null}
@@ -4292,8 +4292,8 @@ function SuccessionPipelineRow({
         className={[
           "shrink-0 rounded-full px-3 py-1 text-xs font-semibold",
           candidate.badgeLabel.toLowerCase().includes("candidate")
-            ? "border border-blue-200 bg-blue-50 text-blue-700"
-            : "border border-blue-200 bg-blue-50 text-blue-700",
+            ? "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+            : "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]",
         ].join(" ")}
       >
         {candidate.badgeLabel}
@@ -4357,7 +4357,7 @@ function LeaderboardFilterPill({
       className={[
         "rounded-full px-2.5 py-1 text-[0.72rem] font-semibold",
         filter.isActive
-          ? "bg-[#2563eb] text-white"
+          ? "bg-[var(--mymedlife-primary-button)] text-white"
           : "border border-slate-200 bg-white text-slate-600",
       ].join(" ")}
     >
@@ -4376,8 +4376,8 @@ function ChapterBenchmarkCard({
   return (
     <div
       className={[
-        "rounded-[1.45rem] border bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]",
-        isCurrentChapter ? "border-[#93c5fd] ring-1 ring-[#bfdbfe]" : "border-slate-200",
+        "rounded-[1.45rem] border bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]",
+        isCurrentChapter ? "border-[var(--mymedlife-focus-blue)] ring-1 ring-[var(--mymedlife-border)]" : "border-slate-200",
       ].join(" ")}
     >
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -4386,18 +4386,18 @@ function ChapterBenchmarkCard({
             <span className="text-lg">{chapter.rankLabel}</span>
             <p className="text-lg font-semibold text-slate-950">{chapter.chapterName}</p>
             {chapter.badgeLabel ? (
-              <span className="rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+              <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                 {chapter.badgeLabel}
               </span>
             ) : null}
-            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
               {chapter.countryLabel}
             </span>
           </div>
           <p className="mt-2 text-sm italic text-slate-500">{chapter.quote}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+          <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
             {chapter.healthLabel}
           </span>
           <Link
@@ -4409,9 +4409,9 @@ function ChapterBenchmarkCard({
         </div>
       </div>
 
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-[#eff6ff]">
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--background)]">
         <div
-          className={["h-full rounded-full", isCurrentChapter ? "bg-[#2563eb]" : "bg-[#bfdbfe]"].join(" ")}
+          className={["h-full rounded-full", isCurrentChapter ? "bg-[var(--mymedlife-primary-button)]" : "bg-[var(--mymedlife-border)]"].join(" ")}
           style={{
             width:
               chapter.healthLabel === "Health 96"
@@ -4451,10 +4451,10 @@ function TonePill({
       className={[
         "rounded-full px-3 py-1 text-xs font-semibold capitalize",
         tone === "green"
-          ? "border border-blue-200 bg-blue-50 text-blue-700"
+          ? "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
           : tone === "yellow"
-            ? "border border-blue-200 bg-blue-50 text-blue-700"
-            : "border border-blue-200 bg-blue-50 text-blue-700",
+            ? "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+            : "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]",
       ].join(" ")}
     >
       {label}
@@ -4528,11 +4528,11 @@ function getWeeklyMovementClassName(value: string) {
   const numericValue = Number.parseInt(value, 10);
 
   if (numericValue >= 50) {
-    return "text-blue-700";
+    return "text-[var(--mymedlife-info)]";
   }
 
   if (numericValue >= 30) {
-    return "text-blue-600";
+    return "text-[var(--mymedlife-info)]";
   }
 
   return "text-slate-700";
@@ -4544,11 +4544,11 @@ function getCommitteeAccentClassName(value: string) {
   }
 
   if (value === "Fundraising") {
-    return "border-l-4 border-l-blue-400";
+    return "border-l-4 border-l-[var(--mymedlife-focus-blue)]";
   }
 
   if (value === "Events") {
-    return "border-l-4 border-l-blue-500";
+    return "border-l-4 border-l-[var(--mymedlife-primary-button)]";
   }
 
   if (value === "SLT Promotion") {
@@ -4560,22 +4560,22 @@ function getCommitteeAccentClassName(value: string) {
   }
 
   if (value === "Service / Local Volunteering") {
-    return "border-l-4 border-l-blue-500";
+    return "border-l-4 border-l-[var(--mymedlife-primary-button)]";
   }
 
-  return "border-l-4 border-l-blue-400";
+  return "border-l-4 border-l-[var(--mymedlife-focus-blue)]";
 }
 
 function getCommitteeKpiBarClassName(value: string) {
   if (value.toLowerCase() === "strong") {
-    return "bg-[#2563eb]";
+    return "bg-[var(--mymedlife-primary-button)]";
   }
 
   if (value.toLowerCase() === "inactive") {
-    return "bg-blue-400";
+    return "bg-[var(--mymedlife-focus-blue)]";
   }
 
-  return "bg-blue-400";
+  return "bg-[var(--mymedlife-focus-blue)]";
 }
 
 function getPercentValue(value: string) {

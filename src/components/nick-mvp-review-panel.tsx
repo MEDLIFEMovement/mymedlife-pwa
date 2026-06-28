@@ -17,7 +17,7 @@ export function NickMvpReviewPanel({ packet }: NickMvpReviewPanelProps) {
     <section className="app-surface-info rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
             Final local review
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">{packet.title}</h2>
@@ -52,7 +52,7 @@ export function NickMvpReviewPanel({ packet }: NickMvpReviewPanelProps) {
               </div>
               <Link
                 href={item.route}
-                className="w-fit shrink-0 rounded-full bg-[#2563eb] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit shrink-0 rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 Open {item.route}
               </Link>
@@ -87,7 +87,7 @@ export function NickMvpReviewPanel({ packet }: NickMvpReviewPanelProps) {
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
         {label}
       </p>
       <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
@@ -98,8 +98,8 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: NickMvpReviewStatus }) {
   const className =
     status === "ready_for_nick_review"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
-      : "border-blue-200 bg-blue-50 text-blue-700";
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+      : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

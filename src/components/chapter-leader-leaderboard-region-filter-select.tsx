@@ -30,7 +30,7 @@ export function ChapterLeaderLeaderboardRegionFilterSelect({
         aria-label="Leaderboard region filter"
         value={selectedKey}
         onChange={handleChange}
-        className="appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-xs font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-[#5d8ff6]/40"
+        className="appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-xs font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-[var(--accent)]/40"
       >
         {options.map((option) => (
           <option key={option.key} value={option.key}>

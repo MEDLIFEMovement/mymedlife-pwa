@@ -43,7 +43,7 @@ export default async function AdminIntegrationsPage() {
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-3xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   DS/Admin integrations
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -60,7 +60,7 @@ export default async function AdminIntegrationsPage() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   href={workspace.nextStep.href}
-                  className="rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                  className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                 >
                   {workspace.nextStep.label}
                 </Link>
@@ -68,7 +68,7 @@ export default async function AdminIntegrationsPage() {
                   <input type="hidden" name="returnTo" value="/admin/integrations" />
                   <button
                     type="submit"
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                   >
                     Lock secure area
                   </button>
@@ -95,7 +95,7 @@ export default async function AdminIntegrationsPage() {
             />
           </section>
 
-          <section className="rounded-[1.6rem] border border-blue-200/20 bg-[#dbeafe] px-4 py-3 text-sm leading-6 text-slate-700">
+          <section className="rounded-[1.6rem] border border-[var(--mymedlife-border)]/20 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-sm leading-6 text-slate-700">
             Secrets are write-only. Raw values are never shown after save. All changes are audited and production edits require extra confirmation.
           </section>
 
@@ -117,16 +117,16 @@ export default async function AdminIntegrationsPage() {
                   </div>
                   <Link
                     href={`/admin/integrations/${card.provider.key}`}
-                    className="rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                    className="rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                   >
                     Configure
                   </Link>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-600">
+                  <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-600">
                     {card.configuredCount} configured
                   </span>
-                  <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                  <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                     {card.errorCount} with errors
                   </span>
                   <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-500">
@@ -137,7 +137,7 @@ export default async function AdminIntegrationsPage() {
                   {card.environments.map((environment) => (
                     <div
                       key={`${card.provider.key}-${environment.environment}`}
-                      className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 shadow-[0_8px_20px_rgba(15,23,42,0.04)]"
+                      className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3 shadow-[0_8px_20px_rgb(var(--mymedlife-shadow-rgb)/0.04)]"
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                         {environment.environment}
@@ -158,7 +158,7 @@ export default async function AdminIntegrationsPage() {
                   {card.provider.risks.map((risk) => (
                     <span
                       key={`${card.provider.key}-${risk}`}
-                      className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-600"
+                      className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-600"
                     >
                       {risk}
                       </span>

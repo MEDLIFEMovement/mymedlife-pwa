@@ -15,10 +15,10 @@ export function DesignQaReadinessPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             Figma and mobile QA
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -66,7 +66,7 @@ export function DesignQaReadinessPanel({
         {readiness.items.map((item) => (
           <article
             key={item.key}
-            className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4"
+            className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -89,17 +89,17 @@ export function DesignQaReadinessPanel({
             <p className="mt-4 text-sm leading-6 text-white/66">
               {item.plainEnglish}
             </p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
+            <p className="mt-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/54">
               Review prompt: {item.reviewerPrompt}
             </p>
           </article>
         ))}
       </div>
 
-      <article className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      <article className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
               Phone-sized route smoke
             </p>
             <h3 className="mt-2 text-xl font-semibold text-white">
@@ -120,11 +120,11 @@ export function DesignQaReadinessPanel({
           {readiness.mobileSmokeChecks.map((check) => (
             <div
               key={check.key}
-              className="rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-4"
+              className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="break-all text-sm font-semibold text-blue-100">
+                  <p className="break-all text-sm font-semibold text-[var(--mymedlife-badge-background)]">
                     {check.route}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-white/46">
@@ -161,10 +161,10 @@ export function DesignQaReadinessPanel({
         </div>
       </article>
 
-      <article className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      <article className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
               Keyboard and screen-reader smoke
             </p>
             <h3 className="mt-2 text-xl font-semibold text-white">
@@ -186,11 +186,11 @@ export function DesignQaReadinessPanel({
           {readiness.accessibilitySmokeChecks.map((check) => (
             <div
               key={check.key}
-              className="rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-4"
+              className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="break-all text-sm font-semibold text-blue-100">
+                  <p className="break-all text-sm font-semibold text-[var(--mymedlife-badge-background)]">
                     {check.route}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-white/46">
@@ -227,10 +227,10 @@ export function DesignQaReadinessPanel({
         </div>
       </article>
 
-      <article className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      <article className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
               Device and PWA release smoke
             </p>
             <h3 className="mt-2 text-xl font-semibold text-white">
@@ -251,11 +251,11 @@ export function DesignQaReadinessPanel({
           {readiness.devicePwaSmokeChecks.map((check) => (
             <div
               key={check.key}
-              className="rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-4"
+              className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="break-all text-sm font-semibold text-blue-100">
+                  <p className="break-all text-sm font-semibold text-[var(--mymedlife-badge-background)]">
                     {check.route}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-white/46">
@@ -292,7 +292,7 @@ export function DesignQaReadinessPanel({
         </div>
       </article>
 
-      <div className="mt-4 grid gap-2 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-2 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4 sm:grid-cols-2">
         <MiniStat
           label="Browser writes"
           value={`${readiness.counts.browserWritesExpected}`}
@@ -308,7 +308,7 @@ export function DesignQaReadinessPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -320,10 +320,10 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: DesignQaStatus }) {
   const className =
     status === "ready_for_local_review"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "needs_visual_review"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

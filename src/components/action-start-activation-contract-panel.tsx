@@ -13,8 +13,8 @@ export function ActionStartActivationContractPanel({
   attempt,
 }: ActionStartActivationContractPanelProps) {
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
         Action-start activation contract
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -27,9 +27,9 @@ export function ActionStartActivationContractPanel({
       </p>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        <div className="rounded-2xl bg-[#bfdbfe]/40 p-3">
+        <div className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
           <p className="text-sm font-semibold text-white">Future server action</p>
-          <p className="mt-2 font-mono text-xs text-blue-100/80">
+          <p className="mt-2 font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
             {contract.serverActionName}
             {" -> "}
             {contract.localFunction}
@@ -43,7 +43,7 @@ export function ActionStartActivationContractPanel({
           </p>
         </div>
 
-        <div className="rounded-2xl bg-[#bfdbfe]/40 p-3">
+        <div className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
           <p className="text-sm font-semibold text-white">Disabled attempt now</p>
           <p className="mt-2 text-xs leading-5 text-white/58">
             Request: assignmentId = {attempt.request.assignmentId}.
@@ -57,7 +57,7 @@ export function ActionStartActivationContractPanel({
         </div>
       </div>
 
-      <div className="mt-4 rounded-2xl bg-[#bfdbfe]/40 p-3">
+      <div className="mt-4 rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
         <p className="text-sm font-semibold text-white">Required before save button</p>
         <div className="mt-2 grid gap-2 md:grid-cols-2">
           {contract.approvalRequirements.map((requirement) => (

@@ -1,4 +1,5 @@
 import { getSopCampaignDefinition } from "@/data/mock-sop-builder";
+import { getModuleFeatureAvailability } from "@/modules/feature-flags";
 import {
   buildOutboxPreviewRecords,
   getPreferredCampaignVersion,
@@ -217,6 +218,10 @@ export type WorkflowRuntimeSnapshot = {
 export function getSopWorkflowRuntime(
   campaignSlug: string,
 ): WorkflowRuntimeSnapshot | null {
+  if (!getModuleFeatureAvailability("sop_workflows_next_action").enabled) {
+    return null;
+  }
+
   const template = getSopTemplateBySlug(campaignSlug);
   const preferredVersion = template
     ? getPreferredCampaignVersion(template)

@@ -45,7 +45,7 @@ export default async function AdminAuditLogPage() {
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Admin audit log
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -59,7 +59,7 @@ export default async function AdminAuditLogPage() {
               </div>
               <Link
                 href={nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {nextStep.label}
               </Link>

@@ -52,7 +52,7 @@ export default async function ProfilePage() {
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Profile
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -66,7 +66,7 @@ export default async function ProfilePage() {
                   <MiniToken label={getActorSurfaceLabel(actor)} />
                 </div>
               </div>
-              <div className="w-fit rounded-[1.4rem] border border-slate-200 bg-white px-4 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+              <div className="w-fit rounded-[1.4rem] border border-slate-200 bg-white px-4 py-3 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Current role
                 </p>
@@ -77,11 +77,11 @@ export default async function ProfilePage() {
             </div>
           </section>
 
-          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
-            <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#eaf2ff] p-5">
+          <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
+            <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                     Next focus
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -95,7 +95,7 @@ export default async function ProfilePage() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href={workspace.nextStep.href}
-                    className="w-fit rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
+                    className="w-fit rounded-full bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-badge-text)]"
                   >
                     {workspace.nextStep.label}
                   </Link>
@@ -155,7 +155,7 @@ function ProfilePanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>

@@ -58,7 +58,7 @@ export function LoginForm({ redirectTo = "/app" }: LoginFormProps) {
             defaultValue={state.email}
             list="fake-local-accounts"
             autoComplete="email"
-            className="rounded-2xl border border-slate-200 bg-[#dbeafe] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
+            className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--accent)]"
           />
         </label>
         <datalist id="fake-local-accounts">
@@ -74,7 +74,7 @@ export function LoginForm({ redirectTo = "/app" }: LoginFormProps) {
             type="password"
             defaultValue="password"
             autoComplete="current-password"
-            className="rounded-2xl border border-slate-200 bg-[#dbeafe] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
+            className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--accent)]"
           />
         </label>
       </div>
@@ -84,10 +84,10 @@ export function LoginForm({ redirectTo = "/app" }: LoginFormProps) {
         className={[
           "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
           state.status === "error"
-            ? "border-blue-200 bg-blue-50 text-blue-700"
+            ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
             : state.status === "disabled"
-              ? "border-blue-200 bg-blue-50 text-blue-700"
-              : "border-slate-200 bg-[#dbeafe] text-slate-600",
+              ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+              : "border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600",
         ].join(" ")}
       >
         {state.message}
@@ -105,7 +105,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="mt-5 w-full rounded-full bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-wait disabled:opacity-70"
+      className="mt-5 w-full rounded-full bg-[var(--mymedlife-primary-button)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)] disabled:cursor-wait disabled:opacity-70"
     >
       {pending ? "Signing in..." : "Continue"}
     </button>

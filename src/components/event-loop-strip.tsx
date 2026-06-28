@@ -9,11 +9,11 @@ type EventLoopPillProps = {
 export function EventLoopPill({ label, detail, tone }: EventLoopPillProps) {
   const toneClasses =
     tone === "blue"
-      ? "border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]"
+      ? "border-[var(--mymedlife-border)] bg-[var(--background)] text-[var(--mymedlife-primary-button)]"
       : tone === "yellow"
-        ? "border-[#2563eb] bg-[#dbeafe] text-[#1d4ed8]"
+        ? "border-[var(--mymedlife-primary-button)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
         : tone === "gold"
-          ? "border-[#2563eb]/40 bg-[#dbeafe] text-[#1d4ed8]"
+          ? "border-[var(--mymedlife-primary-button)]/40 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
           : "border-slate-200 bg-white text-slate-700";
 
   return (

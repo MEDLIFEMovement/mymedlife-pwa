@@ -70,7 +70,7 @@ export default async function RushMonthEventsPage({
       ) : (
         <>
           {chapterEventContext ? (
-            <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+            <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
               <p className="app-eyebrow app-eyebrow-blue">{chapterEventContext.eyebrow}</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950">
                 {chapterEventContext.title}
@@ -80,7 +80,7 @@ export default async function RushMonthEventsPage({
               </p>
               <a
                 href={chapterEventContext.href}
-                className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 {chapterEventContext.backLabel}
               </a>

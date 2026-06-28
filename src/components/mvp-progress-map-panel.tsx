@@ -14,10 +14,10 @@ export function MvpProgressMapPanel({ progressMap }: MvpProgressMapPanelProps) {
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             MVP progress map
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -42,7 +42,7 @@ export function MvpProgressMapPanel({ progressMap }: MvpProgressMapPanelProps) {
         {progressMap.subprojects.map((subproject) => (
           <article
             key={subproject.key}
-            className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4"
+            className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -72,20 +72,20 @@ export function MvpProgressMapPanel({ progressMap }: MvpProgressMapPanelProps) {
             <p className="mt-4 text-sm leading-6 text-white/66">
               {subproject.plainEnglish}
             </p>
-            <p className="mt-3 text-xs leading-5 text-blue-100/70">
+            <p className="mt-3 text-xs leading-5 text-[var(--mymedlife-badge-background)]/70">
               Tech evidence: {subproject.technicalEvidence}
             </p>
             <p className="mt-3 text-sm leading-6 text-white/56">
               Remaining: {subproject.remainingWork}
             </p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
+            <p className="mt-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/54">
               Next review step: {subproject.nextReviewStep}
             </p>
           </article>
         ))}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      <div className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <p className="text-sm font-semibold text-white">Best next steps</p>
         <ul className="mt-3 grid gap-2">
           {progressMap.nextBestSteps.map((step) => (
@@ -101,7 +101,7 @@ export function MvpProgressMapPanel({ progressMap }: MvpProgressMapPanelProps) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -113,12 +113,12 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: MvpProgressStatus }) {
   const className =
     status === "local_review_ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "partially_ready"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
         : status === "needs_approval"
-          ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-          : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+          ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+          : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -130,10 +130,10 @@ function StatusPill({ status }: { status: MvpProgressStatus }) {
 function RiskPill({ risk }: { risk: MvpProgressRisk }) {
   const className =
     risk === "low"
-      ? "border-blue-300/20 bg-blue-300/10 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
       : risk === "medium"
-        ? "border-blue-300/20 bg-blue-300/10 text-blue-100"
-        : "border-blue-300/20 bg-blue-300/10 text-blue-100";
+        ? "border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

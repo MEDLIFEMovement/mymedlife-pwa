@@ -8,8 +8,8 @@ export function WriteResultStateCoveragePanel({
   summary,
 }: WriteResultStateCoveragePanelProps) {
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
         Result-state coverage
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -27,7 +27,7 @@ export function WriteResultStateCoveragePanel({
         <Metric label="Missing" value={`${summary.missingCount}`} />
       </div>
 
-      <div className="mt-4 rounded-2xl bg-[#bfdbfe]/40 p-3">
+      <div className="mt-4 rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
         <p className="text-sm font-semibold text-white">Activation posture</p>
         <p className="mt-2 text-xs leading-5 text-white/58">
           Browser writes enabled: {summary.browserWritesEnabled ? "yes" : "no"}.
@@ -40,7 +40,7 @@ export function WriteResultStateCoveragePanel({
         {summary.items.map((item) => (
           <article
             key={item.operation}
-            className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4"
+            className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -73,7 +73,7 @@ export function WriteResultStateCoveragePanel({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-[#bfdbfe]/40 p-3">
+    <div className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
         {label}
       </p>
@@ -84,8 +84,8 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function statusClass(status: "covered" | "missing"): string {
   if (status === "covered") {
-    return "bg-blue-300/20 text-blue-100";
+    return "bg-[var(--mymedlife-focus-blue)]/20 text-[var(--mymedlife-badge-background)]";
   }
 
-  return "bg-blue-300/20 text-blue-100";
+  return "bg-[var(--mymedlife-focus-blue)]/20 text-[var(--mymedlife-badge-background)]";
 }

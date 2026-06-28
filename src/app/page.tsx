@@ -60,7 +60,7 @@ export default async function Home() {
         <div className="p-4 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                 {workspace.chapterName}
               </p>
               <h1 className="mt-2 text-[2rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
@@ -74,9 +74,9 @@ export default async function Home() {
                 {workspace.chapterMeta}
               </p>
               {workspace.travelerPrep ? (
-                <div className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-[#bfdbfe] bg-[#eff6ff] px-4 py-3">
+                <div className="mt-4 inline-flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-3">
                   <div>
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
                       Traveler access
                     </p>
                     <p className="mt-1 text-sm font-semibold text-slate-950">
@@ -89,7 +89,7 @@ export default async function Home() {
                 </div>
               ) : null}
             </div>
-            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] text-[var(--mymedlife-primary-button)] shadow-[inset_0_1px_0_rgb(var(--mymedlife-white-rgb)/0.6)]">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -104,8 +104,8 @@ export default async function Home() {
             </span>
           </div>
 
-          <article className="mt-4 rounded-[1.5rem] border border-[#bfdbfe] bg-[#fbfdff] p-3.5 sm:p-4">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+          <article className="mt-4 rounded-[1.5rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)] p-3.5 sm:p-4">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
               This Week&apos;s Priority
             </p>
             <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950">
@@ -207,16 +207,16 @@ export default async function Home() {
       <SurfacePanel>
         <div
           aria-label={`Open ${workspace.campaign.name} campaign`}
-          className="block rounded-[1.4rem] transition hover:bg-[#f8fbff]"
+          className="block rounded-[1.4rem] transition hover:bg-[var(--background)]"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="app-eyebrow app-eyebrow-blue">Active Campaign</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                   Active
                 </span>
-                <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                <span className="rounded-full border border-[var(--mymedlife-badge-background)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                   {workspace.campaign.stageLabel}
                 </span>
               </div>
@@ -234,9 +234,9 @@ export default async function Home() {
               <span>Your progress</span>
               <span>{workspace.campaign.progressCountLabel}</span>
             </div>
-            <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#f8fbff]">
+            <div className="mt-2 h-3 overflow-hidden rounded-full bg-[var(--background)]">
               <div
-                className="h-full rounded-full bg-[#2b5fb4]"
+                className="h-full rounded-full bg-[var(--mymedlife-action-blue)]"
                 style={{ width: `${workspace.campaign.progressPercent}%` }}
               />
             </div>
@@ -375,8 +375,8 @@ function ActionRow({
       className={[
         "rounded-[1.35rem] border p-4 transition",
         featured
-          ? "border-[#bfdbfe] bg-[#f8fbff] shadow-[0_10px_26px_rgba(15,23,42,0.06)]"
-          : "border-slate-200 bg-white hover:border-[#bfdbfe] hover:bg-[#f8fbff]",
+          ? "border-[var(--mymedlife-border)] bg-[var(--background)] shadow-[0_10px_26px_rgb(var(--mymedlife-shadow-rgb)/0.06)]"
+          : "border-slate-200 bg-white hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)]",
       ].join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
@@ -386,14 +386,14 @@ function ActionRow({
             className={[
               "mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition",
               isSelected
-                ? "border-[#2b5fb4] bg-white text-[#2b5fb4]"
-                : "border-slate-300 bg-[#dbeafe] text-transparent",
+                ? "border-[var(--mymedlife-action-blue)] bg-white text-[var(--mymedlife-action-blue)]"
+                : "border-slate-300 bg-[var(--mymedlife-badge-background)] text-transparent",
             ].join(" ")}
           >
             <span
               className={[
                 "h-2.5 w-2.5 rounded-full transition",
-                isSelected ? "bg-[#2b5fb4]" : "bg-transparent",
+                isSelected ? "bg-[var(--mymedlife-action-blue)]" : "bg-transparent",
               ].join(" ")}
             />
           </span>
@@ -414,20 +414,20 @@ function EventRow({ event }: { event: StudentHomeEventCard }) {
   const isRegistered = event.rsvpState === "registered";
 
   return (
-    <article className="rounded-[1.35rem] border border-slate-200 bg-white p-4 transition hover:border-[#bfdbfe] hover:bg-[#f8fbff]">
+    <article className="rounded-[1.35rem] border border-slate-200 bg-white p-4 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#2563eb]">
+            <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--mymedlife-primary-button)]">
               Luma
             </span>
-            <span className="rounded-full border border-[#dbeafe] bg-[#dbeafe] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[#1d4ed8]">
+            <span className="rounded-full border border-[var(--mymedlife-badge-background)] bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[var(--mymedlife-info)]">
               RSVP
             </span>
           </div>
           <Link
             href={event.href}
-            className="mt-2 block text-base font-semibold text-slate-950 transition hover:text-[#1d4ed8]"
+            className="mt-2 block text-base font-semibold text-slate-950 transition hover:text-[var(--mymedlife-info)]"
           >
             {event.title}
           </Link>
@@ -438,13 +438,13 @@ function EventRow({ event }: { event: StudentHomeEventCard }) {
           </p>
         </div>
         {isRegistered ? (
-          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
+          <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-sm font-semibold text-[var(--mymedlife-info)]">
             {event.rsvpLabel}
           </span>
         ) : (
           <Link
             href={event.href}
-            className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb]"
+            className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)]"
           >
             {event.rsvpLabel}
           </Link>
@@ -471,8 +471,8 @@ function LeaderboardRowCard({
       className={[
         "flex items-center justify-between rounded-[1.2rem] border px-4 py-3",
         isCurrentUser
-          ? "border-[#2563eb]/35 bg-[#dbeafe]"
-          : "border-slate-200 bg-[#dbeafe]",
+          ? "border-[var(--mymedlife-primary-button)]/35 bg-[var(--mymedlife-badge-background)]"
+          : "border-slate-200 bg-[var(--mymedlife-badge-background)]",
       ].join(" ")}
     >
       <div className="flex items-center gap-3">
@@ -485,7 +485,7 @@ function LeaderboardRowCard({
           </p>
         </div>
       </div>
-      <p className="text-sm font-semibold text-[#1d4ed8]">{row.points} pts</p>
+      <p className="text-sm font-semibold text-[var(--mymedlife-info)]">{row.points} pts</p>
     </div>
   );
 }

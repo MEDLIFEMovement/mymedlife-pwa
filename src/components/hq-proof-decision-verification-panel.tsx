@@ -35,7 +35,7 @@ export function HqProofDecisionVerificationPanel({
             </Link>
             <Link
               href="/rush-month/review"
-              className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#10223f]"
+              className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
             >
               Open HQ review
             </Link>
@@ -110,9 +110,9 @@ export function HqProofDecisionVerificationPanel({
               {packet.verificationPacket.envSettings.map((setting) => (
                 <div
                   key={setting.key}
-                  className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)]"
+                  className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgb(var(--mymedlife-shadow-rgb)/0.04)]"
                 >
-                  <p className="font-mono text-xs text-[#2563eb]">
+                  <p className="font-mono text-xs text-[var(--mymedlife-primary-button)]">
                     {setting.key}={setting.value}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-slate-500">
@@ -125,7 +125,7 @@ export function HqProofDecisionVerificationPanel({
 
           <article className="app-surface-soft rounded-[1.4rem] p-4">
             <p className="text-sm font-semibold text-slate-950">Default HQ decision</p>
-            <p className="mt-3 rounded-[1.05rem] bg-white p-3 font-mono text-xs text-[#2563eb] shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+            <p className="mt-3 rounded-[1.05rem] bg-white p-3 font-mono text-xs text-[var(--mymedlife-primary-button)] shadow-[0_6px_20px_rgb(var(--mymedlife-shadow-rgb)/0.04)]">
               decision={packet.defaultInput.decision}
             </p>
             <p className="mt-3 text-xs leading-5 text-slate-500">
@@ -188,8 +188,8 @@ export function HqProofDecisionVerificationPanel({
             <p
               className={
                 check.passed
-                  ? "app-eyebrow text-blue-700"
-                  : "app-eyebrow text-blue-700"
+                  ? "app-eyebrow text-[var(--mymedlife-info)]"
+                  : "app-eyebrow text-[var(--mymedlife-info)]"
               }
             >
               {check.passed ? "Ready" : "Blocked"}
@@ -253,16 +253,16 @@ function packetStatusClassName(status: HqProofDecisionPacketStatus): string {
   switch (status) {
     case "ready_for_local_hq_decision":
     case "evidence_observed":
-      return "border border-blue-200 bg-blue-50 text-blue-700";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "needs_manual_audit_check":
-      return "border border-blue-200 bg-blue-50 text-blue-700";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "blocked_until_local_supabase":
     case "blocked_until_proof_metadata":
     case "blocked_until_flags":
     case "blocked_until_auth":
-      return "border border-blue-200 bg-blue-50 text-blue-700";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "hidden":
-      return "border border-slate-200 bg-[#dbeafe] text-slate-500";
+      return "border border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-500";
   }
 }
 
@@ -270,9 +270,9 @@ function readbackStatusClassName(status: HqProofDecisionReadbackStatus): string 
   switch (status) {
     case "observed":
     case "disabled_outbox_observed":
-      return "app-eyebrow text-blue-700";
+      return "app-eyebrow text-[var(--mymedlife-info)]";
     case "manual_check_needed":
-      return "app-eyebrow text-blue-700";
+      return "app-eyebrow text-[var(--mymedlife-info)]";
     case "missing":
     case "blocked":
       return "app-eyebrow text-slate-500";

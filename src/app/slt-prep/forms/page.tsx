@@ -79,7 +79,7 @@ export default async function SltPrepFormsPage({
       ) : (
         <>
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Required forms
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -102,7 +102,7 @@ export default async function SltPrepFormsPage({
             </div>
           </section>
 
-          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+          <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
             <section className="grid gap-4 lg:grid-cols-[1.02fr_0.98fr]">
               <article className="app-surface-info rounded-[2rem] p-5">
                 <p className="app-eyebrow app-eyebrow-blue">Review queue</p>
@@ -153,7 +153,7 @@ export default async function SltPrepFormsPage({
                       source: "forms",
                       travelerId: search.traveler,
                     })}
-                    className="rounded-full bg-[#0b66cc] px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-full bg-[var(--mymedlife-admin-blue)] px-4 py-2 text-sm font-semibold text-white"
                   >
                     Open medical clearance detail
                   </Link>
@@ -230,7 +230,7 @@ export default async function SltPrepFormsPage({
                       source: "forms",
                       travelerId: search.traveler,
                     })}
-                    className="rounded-full bg-[#0b66cc] px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-full bg-[var(--mymedlife-admin-blue)] px-4 py-2 text-sm font-semibold text-white"
                   >
                     Open medical clearance detail
                   </Link>

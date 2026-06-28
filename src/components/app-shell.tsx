@@ -66,7 +66,7 @@ export function AppShell({
             losing your place in the app.
           </p>
         </div>
-        <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+        <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
           Browser only
         </span>
       </summary>
@@ -90,7 +90,7 @@ export function AppShell({
     >
       <a
         href="#main-content"
-        className="sr-only rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+        className="sr-only rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
       >
         Skip to main content
       </a>
@@ -153,7 +153,7 @@ export function AppShell({
                 className={shellVariant === "compact" ? "space-y-1.5" : "space-y-1"}
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                     {shellCopy.eyebrow}
                   </p>
                   {shellBadge ? (
@@ -188,7 +188,7 @@ export function AppShell({
                         .map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-600"
+                            className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-600"
                           >
                             {tag}
                           </span>
@@ -262,23 +262,23 @@ function getHeaderChromeClasses(
   isCommandSurface: boolean,
 ): string {
   if (!isCommandSurface) {
-    return "border-slate-200 bg-white/92 shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
+    return "border-slate-200 bg-white/92 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.08)]";
   }
 
   switch (surfaceFamily) {
     case "leader":
-      return "border-[#bfdbfe]/90 bg-[#fbfdff]/90 shadow-[0_12px_28px_rgba(37,99,235,0.06)]";
+      return "border-[var(--mymedlife-border)]/90 bg-[var(--mymedlife-surface-tint)]/90 shadow-[0_12px_28px_rgb(var(--mymedlife-primary-rgb)/0.06)]";
     case "coach":
-      return "border-[#dbeafe]/90 bg-white/88 shadow-[0_12px_28px_rgba(37,99,235,0.05)]";
+      return "border-[var(--mymedlife-badge-background)]/90 bg-white/88 shadow-[0_12px_28px_rgb(var(--mymedlife-primary-rgb)/0.05)]";
     case "staff":
-      return "border-slate-200/90 bg-white/86 shadow-[0_10px_24px_rgba(15,23,42,0.05)]";
+      return "border-slate-200/90 bg-white/86 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]";
     case "ds_admin":
-      return "border-slate-200/90 bg-[#fbfdff]/94 shadow-[0_10px_24px_rgba(15,23,42,0.05)]";
+      return "border-slate-200/90 bg-[var(--mymedlife-surface-tint)]/94 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]";
     case "super_admin":
-      return "border-slate-200/90 bg-[#fafcff]/94 shadow-[0_10px_24px_rgba(15,23,42,0.05)]";
+      return "border-slate-200/90 bg-[var(--mymedlife-surface-tint)]/94 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]";
     case "member":
     default:
-      return "border-slate-200/90 bg-white/92 shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
+      return "border-slate-200/90 bg-white/92 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.08)]";
   }
 }
 
@@ -288,27 +288,27 @@ function getMainChromeClasses(
   isCommandSurface: boolean,
 ): string {
   if (resolvedChromeMode === "mobile-app") {
-    return "bg-[radial-gradient(circle_at_top_left,rgba(93,143,246,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#fbfdff_43%,#f3f8ff_100%)]";
+    return "bg-[radial-gradient(circle_at_top_left,rgb(var(--mymedlife-accent-rgb)/0.08),transparent_22%),radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.05),transparent_20%),linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--mymedlife-surface-tint)_43%,var(--background)_100%)]";
   }
 
   if (!isCommandSurface) {
-    return "bg-[radial-gradient(circle_at_top_left,rgba(93,143,246,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#fbfdff_43%,#f3f8ff_100%)]";
+    return "bg-[radial-gradient(circle_at_top_left,rgb(var(--mymedlife-accent-rgb)/0.08),transparent_22%),radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.05),transparent_20%),linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--mymedlife-surface-tint)_43%,var(--background)_100%)]";
   }
 
   switch (surfaceFamily) {
     case "leader":
-      return "bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.06),transparent_24%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#fbfdff_48%,#f4f8ff_100%)]";
+      return "bg-[radial-gradient(circle_at_top_left,rgb(var(--mymedlife-primary-rgb)/0.06),transparent_24%),radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.05),transparent_20%),linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--mymedlife-surface-tint)_48%,var(--background)_100%)]";
     case "coach":
-      return "bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.04),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.04),transparent_18%),linear-gradient(180deg,#ffffff_0%,#fcfdff_50%,#f7fbff_100%)]";
+      return "bg-[radial-gradient(circle_at_top_left,rgb(var(--mymedlife-primary-rgb)/0.04),transparent_22%),radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.04),transparent_18%),linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--mymedlife-surface-tint)_50%,var(--background)_100%)]";
     case "staff":
-      return "bg-[radial-gradient(circle_at_top_left,rgba(93,143,246,0.04),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.035),transparent_18%),linear-gradient(180deg,#ffffff_0%,#fcfdff_50%,#f7fbff_100%)]";
+      return "bg-[radial-gradient(circle_at_top_left,rgb(var(--mymedlife-accent-rgb)/0.04),transparent_22%),radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.035),transparent_18%),linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--mymedlife-surface-tint)_50%,var(--background)_100%)]";
     case "ds_admin":
-      return "bg-[radial-gradient(circle_at_top_left,rgba(100,116,139,0.04),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.03),transparent_18%),linear-gradient(180deg,#ffffff_0%,#fcfdff_50%,#f7fbff_100%)]";
+      return "bg-[radial-gradient(circle_at_top_left,rgb(var(--mymedlife-shadow-rgb)/0.04),transparent_22%),radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.03),transparent_18%),linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--mymedlife-surface-tint)_50%,var(--background)_100%)]";
     case "super_admin":
-      return "bg-[radial-gradient(circle_at_top_left,rgba(15,23,42,0.04),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.03),transparent_18%),linear-gradient(180deg,#ffffff_0%,#fcfdff_50%,#f7fbff_100%)]";
+      return "bg-[radial-gradient(circle_at_top_left,rgb(var(--mymedlife-shadow-rgb)/0.04),transparent_22%),radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.03),transparent_18%),linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--mymedlife-surface-tint)_50%,var(--background)_100%)]";
     case "member":
     default:
-      return "bg-[radial-gradient(circle_at_top_left,rgba(93,143,246,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#fbfdff_43%,#f3f8ff_100%)]";
+      return "bg-[radial-gradient(circle_at_top_left,rgb(var(--mymedlife-accent-rgb)/0.08),transparent_22%),radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.05),transparent_20%),linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--mymedlife-surface-tint)_43%,var(--background)_100%)]";
   }
 }
 
@@ -435,7 +435,7 @@ function getShellBadge(actor?: LocalActorContext): ShellBadge | null {
     return {
       label: "Role-aware",
       className:
-        "rounded-full border border-[#2563eb]/35 bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+        "rounded-full border border-[var(--mymedlife-primary-button)]/35 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]",
     };
   }
 
@@ -445,13 +445,13 @@ function getShellBadge(actor?: LocalActorContext): ShellBadge | null {
       return {
         label: "Member app",
         className:
-          "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+          "rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]",
       };
     case "traveler":
       return {
         label: "SLT prep",
         className:
-          "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+          "rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]",
       };
     case "committee_chair":
     case "eboard_officer":
@@ -460,33 +460,33 @@ function getShellBadge(actor?: LocalActorContext): ShellBadge | null {
       return {
         label: "Leader shell",
         className:
-          "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+          "rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]",
       };
     case "coach":
     case "sales_coach":
       return {
         label: "Coach surface",
         className:
-          "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+          "rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]",
       };
     case "department_staff":
     case "sales_admin":
       return {
         label: "Staff surface",
         className:
-          "rounded-full border border-slate-200 bg-[#eef4ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
+          "rounded-full border border-slate-200 bg-[var(--mymedlife-surface-hover)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
       };
     case "ds_admin":
       return {
         label: "DS backend",
         className:
-          "rounded-full border border-slate-200 bg-[#eef4ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
+          "rounded-full border border-slate-200 bg-[var(--mymedlife-surface-hover)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
       };
     case "super_admin":
       return {
         label: "Super admin",
         className:
-          "rounded-full border border-slate-200 bg-[#eef4ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
+          "rounded-full border border-slate-200 bg-[var(--mymedlife-surface-hover)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
       };
   }
 }

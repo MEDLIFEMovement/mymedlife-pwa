@@ -42,7 +42,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
             <form action={clearLocalActorPreviewAction}>
               <button
                 type="submit"
-                className="rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 Use configured default
               </button>
@@ -75,7 +75,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
                   <p className="text-sm font-semibold text-slate-950">{option.displayName}</p>
                   <p className="mt-1 text-xs text-slate-500">{option.email}</p>
                 </div>
-                <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2 py-1 text-xs text-slate-500">
+                <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2 py-1 text-xs text-slate-500">
                   {option.audience.replace("_", " ")}
                 </span>
               </div>
@@ -84,7 +84,7 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
               </p>
               <p className="mt-1 text-xs leading-5 text-slate-500">{scopeSummary}</p>
               {isUsingAuthSession ? (
-                <p className="mt-3 rounded-xl border border-slate-200 bg-[#dbeafe] px-3 py-2 text-xs text-slate-500">
+                <p className="mt-3 rounded-xl border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-2 text-xs text-slate-500">
                   Local auth is active, so the browser session controls this route.
                 </p>
               ) : (
@@ -96,8 +96,8 @@ export function LocalRoleSwitcher({ actor }: LocalRoleSwitcherProps) {
                     className={[
                       "w-full rounded-xl px-3 py-2 text-sm font-semibold transition",
                       isSelected
-                        ? "cursor-default bg-[#2563eb] text-[#08224c]"
-                        : "border border-slate-200 bg-[#dbeafe] text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                        ? "cursor-default bg-[var(--mymedlife-primary-button)] text-[var(--foreground)]"
+                        : "border border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-700 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
                     ].join(" ")}
                   >
                     {isSelected

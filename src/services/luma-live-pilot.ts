@@ -1,3 +1,8 @@
+import {
+  getFeatureResolvedState,
+  isFeatureEnabled,
+} from "@/modules/feature-flags";
+
 export type LumaLivePilotEnv = {
   LUMA_API_KEY?: string;
   LUMA_CALENDAR_ID?: string;
@@ -89,12 +94,14 @@ export function getLumaLivePilotGate(
   const calendarIdConfigured = Boolean(env.LUMA_CALENDAR_ID?.trim());
   const environment = normalizeEnvironment(env);
   const productionBlocked = env.VERCEL_ENV === "production" || environment === "production";
+  const lumaFeatureEnabled = isFeatureEnabled("integration_luma", { env });
   const baseEnabled =
     env.MYMEDLIFE_ENABLE_LUMA_WRITES === "true" &&
     apiKeyConfigured &&
     calendarIdConfigured &&
     environment === "staging" &&
-    !productionBlocked;
+    !productionBlocked &&
+    lumaFeatureEnabled;
 
   const eventWritesEnabled =
     baseEnabled && env.MYMEDLIFE_ENABLE_LUMA_EVENT_WRITES === "true";
@@ -126,6 +133,7 @@ export function getLumaLivePilotGate(
       rsvpWritesEnabled,
       attendanceImportEnabled,
       baseWritesFlag: env.MYMEDLIFE_ENABLE_LUMA_WRITES === "true",
+      lumaFeatureEnabled,
     }),
   };
 }
@@ -140,6 +148,12 @@ export async function createOrUpdateLumaEvent(
   const gate = getLumaLivePilotGate(options.env);
   const eventId = normalizeOptionalString(input.eventId);
   const operation = eventId ? "event_update" : "event_create";
+
+  if (!isFeatureEnabled("integration_luma", { env: options.env })) {
+    return blockedResult(operation, getFeatureResolvedState("integration_luma", {
+      env: options.env,
+    }).gracefulFallback);
+  }
 
   if (!gate.eventWritesEnabled) {
     return blockedResult(operation, "Luma event create/update is not enabled for this staging environment.");
@@ -160,6 +174,12 @@ export async function writeLumaRsvp(
   } = {},
 ): Promise<LumaLivePilotResult> {
   const gate = getLumaLivePilotGate(options.env);
+
+  if (!isFeatureEnabled("integration_luma", { env: options.env })) {
+    return blockedResult("rsvp_write", getFeatureResolvedState("integration_luma", {
+      env: options.env,
+    }).gracefulFallback);
+  }
 
   if (!gate.rsvpWritesEnabled) {
     return blockedResult("rsvp_write", "Luma RSVP writeback is not enabled for this staging environment.");
@@ -197,6 +217,12 @@ export async function importLumaAttendance(
   } = {},
 ): Promise<LumaLivePilotResult> {
   const gate = getLumaLivePilotGate(options.env);
+
+  if (!isFeatureEnabled("integration_luma", { env: options.env })) {
+    return blockedResult("attendance_import", getFeatureResolvedState("integration_luma", {
+      env: options.env,
+    }).gracefulFallback);
+  }
 
   if (!gate.attendanceImportEnabled) {
     return blockedResult("attendance_import", "Luma attendance import is not enabled for this staging environment.");
@@ -396,9 +422,14 @@ function getGateDetail(input: {
   rsvpWritesEnabled: boolean;
   attendanceImportEnabled: boolean;
   baseWritesFlag: boolean;
+  lumaFeatureEnabled: boolean;
 }): string {
   if (input.productionBlocked) {
     return "Production Luma setup stays blocked. This live pilot can only run in the staging environment.";
+  }
+
+  if (!input.lumaFeatureEnabled) {
+    return "The integration_luma feature flag is disabled, so no Luma API calls can run.";
   }
 
   if (!input.apiKeyConfigured || !input.calendarIdConfigured) {

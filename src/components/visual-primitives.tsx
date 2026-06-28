@@ -48,16 +48,16 @@ type StatusPillProps = {
 export function StatusPill({ children, tone = "blue", className }: StatusPillProps) {
   const toneClass =
     tone === "blue"
-      ? "border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]"
+      ? "border-[var(--mymedlife-border)] bg-[var(--background)] text-[var(--mymedlife-primary-button)]"
       : tone === "amber"
-        ? "border-[#bfdbfe] bg-[#eef5ff] text-[#1d4ed8]"
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] text-[var(--mymedlife-info)]"
       : tone === "yellow"
-        ? "border-[#2563eb]/40 bg-[#dbeafe] text-[#1d4ed8]"
+        ? "border-[var(--mymedlife-primary-button)]/40 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : tone === "gold"
-          ? "border-[#dbeafe] bg-[#dbeafe] text-[#1d4ed8]"
+          ? "border-[var(--mymedlife-badge-background)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
         : tone === "white"
               ? "border-white/16 bg-white/10 text-white/78"
-              : "border-[#dbeafe] bg-[#dbeafe] text-[#1d4ed8]";
+              : "border-[var(--mymedlife-badge-background)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span
@@ -93,9 +93,9 @@ export function PanelButton({
     "inline-flex rounded-full px-4 py-2 text-sm font-semibold transition min-h-10 items-center justify-center";
   const variantClass =
     variant === "primary"
-      ? "bg-[#2563eb] text-white hover:bg-[#1d4ed8]"
+      ? "bg-[var(--mymedlife-primary-button)] text-white hover:bg-[var(--mymedlife-info)]"
       : variant === "secondary"
-        ? "border border-[#bfdbfe] bg-white text-[#2563eb] hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+        ? "border border-[var(--mymedlife-border)] bg-white text-[var(--mymedlife-primary-button)] hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
         : "border border-slate-200 bg-white text-slate-700";
 
   return (
@@ -127,8 +127,8 @@ export function StatCard({ label, value, note, tone = "default", className, chil
     tone === "soft"
       ? "app-surface-soft border border-slate-200 bg-white/95"
       : tone === "highlight"
-        ? "rounded-[1.4rem] border border-[#2563eb]/28 bg-[#dbeafe]"
-        : "rounded-[1.3rem] border border-[#bfdbfe] bg-[#fbfdff]";
+        ? "rounded-[1.4rem] border border-[var(--mymedlife-primary-button)]/28 bg-[var(--mymedlife-badge-background)]"
+        : "rounded-[1.3rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)]";
 
   return (
     <article className={`${toneClass} ${className ?? "p-3.5"}`}>
@@ -172,8 +172,8 @@ export function VisualTabStrip({
           aria-current={item.active ? "page" : undefined}
           className={
             item.active
-              ? "inline-flex min-h-11 items-center rounded-[1.35rem] border-[#bfdbfe] bg-[#fbfdff] px-4 py-2.5 text-sm font-semibold text-[#2563eb]"
-              : "inline-flex min-h-11 items-center rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#fbfdff]"
+              ? "inline-flex min-h-11 items-center rounded-[1.35rem] border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)] px-4 py-2.5 text-sm font-semibold text-[var(--mymedlife-primary-button)]"
+              : "inline-flex min-h-11 items-center rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-tint)]"
           }
         >
           {item.icon ? (
@@ -214,7 +214,7 @@ export function SurfaceTable({
 
 export function SurfaceTh({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <th className={`border-b border-slate-200 bg-[#dbeafe] px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 ${className ?? ""}`.trim()}>
+    <th className={`border-b border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 ${className ?? ""}`.trim()}>
       {children}
     </th>
   );

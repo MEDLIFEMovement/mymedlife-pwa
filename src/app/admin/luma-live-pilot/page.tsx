@@ -60,7 +60,7 @@ export default async function LumaLivePilotPage({
               </div>
               <a
                 href="/admin/integration-outbox?source=luma-live-pilot"
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 Open outbox
               </a>
@@ -71,7 +71,7 @@ export default async function LumaLivePilotPage({
             <section
               className={`rounded-2xl border p-4 text-sm font-semibold ${
                 result === "success"
-                  ? "border-[#bfdbfe] bg-[#eff6ff] text-[#1d4ed8]"
+                  ? "border-[var(--mymedlife-border)] bg-[var(--background)] text-[var(--mymedlife-info)]"
                   : "border-rose-200 bg-rose-50 text-rose-700"
               }`}
             >
@@ -95,7 +95,7 @@ export default async function LumaLivePilotPage({
             <MiniStat label="Production" value={gate.productionBlocked ? "Blocked" : "Off"} />
           </section>
 
-          <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="app-eyebrow app-eyebrow-blue">Current gate</p>
@@ -240,7 +240,7 @@ export default async function LumaLivePilotPage({
               ].map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border border-slate-200 bg-[#f8fbff] px-3 py-1 text-xs font-semibold text-slate-600"
+                  className="rounded-full border border-slate-200 bg-[var(--background)] px-3 py-1 text-xs font-semibold text-slate-600"
                 >
                   {item}
                 </span>
@@ -254,7 +254,7 @@ export default async function LumaLivePilotPage({
 }
 
 const inputClassName =
-  "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[#2563eb] focus:ring-2 focus:ring-[#bfdbfe]";
+  "mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-[var(--mymedlife-primary-button)] focus:ring-2 focus:ring-[var(--mymedlife-border)]";
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
@@ -269,7 +269,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function Pill({ children }: { children: string }) {
   return (
-    <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+    <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
       {children}
     </span>
   );
@@ -319,7 +319,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={disabled}
-      className="w-full rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:bg-slate-300"
+      className="w-full rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)] disabled:cursor-not-allowed disabled:bg-slate-300"
     >
       {children}
     </button>

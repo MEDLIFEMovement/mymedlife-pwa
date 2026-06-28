@@ -137,10 +137,10 @@ export default async function AdminPage() {
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] xl:items-start">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                 Admin permission proof
               </p>
-              <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[#1d4ed8]">
+              <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--mymedlife-info)]">
                 DS / Super Admin backend
               </span>
             </div>
@@ -178,7 +178,7 @@ export default async function AdminPage() {
         </div>
       </SurfacePanel>
 
-      <SurfacePanel as="section" className="rounded-[2rem] border border-[#5d8ff6]/25 bg-[#f4f8ff] p-5">
+      <SurfacePanel as="section" className="rounded-[2rem] border border-[var(--accent)]/25 bg-[var(--background)] p-5">
         <p className="app-eyebrow app-eyebrow-blue">Event loop</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-950">
           Luma event creation, RSVP, attendance, and points stay app-owned.
@@ -206,7 +206,7 @@ export default async function AdminPage() {
             note="No live external writes"
           />
         </div>
-        <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-white px-4 py-3">
+        <div className="mt-4 rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-white px-4 py-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-950">

@@ -28,11 +28,11 @@ export function MemberProfilePanel({
 
   return (
     <section className="grid gap-4">
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] shadow-[0_24px_80px_rgba(2,14,38,0.12)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] shadow-[0_24px_80px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
         <div className="p-5 sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                 {chapterName}
               </p>
               <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
@@ -50,7 +50,7 @@ export function MemberProfilePanel({
           <SurfacePanel tone="info" className="mt-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                   Profile snapshot
                 </p>
                 <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950">
@@ -60,7 +60,7 @@ export function MemberProfilePanel({
                   {workspace.profileLabel} · {chapterName}
                 </p>
               </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#bfdbfe] bg-white text-xl font-semibold text-[#2563eb]">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[var(--mymedlife-border)] bg-white text-xl font-semibold text-[var(--mymedlife-primary-button)]">
               {firstName.slice(0, 1)}
               </div>
             </div>
@@ -93,7 +93,7 @@ export function MemberProfilePanel({
           <SurfacePanel tone="info" className="mt-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                   Event loop
                 </p>
                 <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950">
@@ -279,7 +279,7 @@ function ProfileHeroCard({
 function ProfilePulseCard({ label, value }: { label: string; value: string }) {
   return (
     <article className="rounded-[1.2rem] border border-white/12 bg-white/12 px-4 py-3">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]">
         {label}
       </p>
       <p className="mt-2 text-sm font-semibold text-white">{value}</p>
@@ -290,12 +290,12 @@ function ProfilePulseCard({ label, value }: { label: string; value: string }) {
 function getBadgeClassName(tone: MemberRecognitionSummary["badges"][number]["tone"]) {
   switch (tone) {
     case "gold":
-      return "rounded-full border border-[#2563eb]/40 bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]";
+      return "rounded-full border border-[var(--mymedlife-primary-button)]/40 bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]";
     case "blue":
-      return "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-sm font-semibold text-[#2563eb]";
+      return "rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-primary-button)]";
     case "green":
-      return "rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700";
+      return "rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]";
     case "slate":
-      return "rounded-full border border-slate-200 bg-[#eff6ff] px-3 py-1.5 text-sm font-semibold text-slate-700";
+      return "rounded-full border border-slate-200 bg-[var(--background)] px-3 py-1.5 text-sm font-semibold text-slate-700";
   }
 }

@@ -142,7 +142,7 @@ export default async function AdminSopBuilderPage(
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   SOP builder
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -197,7 +197,7 @@ export default async function AdminSopBuilderPage(
                 </Link>
                 <Link
                   href={`/admin/sop-builder/${workspace.definition.slug}?tab=version&focus=current-version`}
-                  className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                  className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                 >
                   Publish
                 </Link>
@@ -219,7 +219,7 @@ export default async function AdminSopBuilderPage(
           <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                   {workspace.definition.version.currentLabel}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -236,7 +236,7 @@ export default async function AdminSopBuilderPage(
                       aria-hidden="true"
                       className={[
                         "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transition",
-                        tab.selected ? "text-[#2563eb]" : "text-slate-400",
+                        tab.selected ? "text-[var(--mymedlife-primary-button)]" : "text-slate-400",
                       ].join(" ")}
                     >
                       <BuilderTabIcon tab={tab.key} />
@@ -245,7 +245,7 @@ export default async function AdminSopBuilderPage(
                       href={tab.href}
                       className={
                       tab.selected
-                          ? "block rounded-full bg-[#2563eb] px-3 py-1.5 pl-9 text-sm font-semibold text-white"
+                          ? "block rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 pl-9 text-sm font-semibold text-white"
                           : "block rounded-full border border-slate-200 bg-white px-3 py-1.5 pl-9 text-sm font-semibold text-slate-700"
                       }
                     >
@@ -261,7 +261,7 @@ export default async function AdminSopBuilderPage(
             <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                     Tab workbench
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -275,7 +275,7 @@ export default async function AdminSopBuilderPage(
                   {workspace.workbench.defaultFocusHref ? (
                     <Link
                       href={workspace.workbench.defaultFocusHref}
-                      className="rounded-full bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
+                      className="rounded-full bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       Open default focus
                     </Link>
@@ -298,9 +298,9 @@ export default async function AdminSopBuilderPage(
                     {workspace.workbench.stats.map((stat) => (
                       <article
                         key={stat.label}
-                        className="rounded-[1.35rem] border border-slate-200 bg-[#eff6ff] p-4"
+                        className="rounded-[1.35rem] border border-slate-200 bg-[var(--background)] p-4"
                       >
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                           {stat.label}
                         </p>
                         <p className="mt-2 text-2xl font-semibold text-slate-950">
@@ -314,13 +314,13 @@ export default async function AdminSopBuilderPage(
                   </div>
 
                   {focusWorkspace?.selected ? (
-                    <article className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                    <article className="rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)] p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                         Current workbench focus
                       </p>
                       <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="max-w-3xl">
-                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                             {focusWorkspace.selected.eyebrow}
                           </p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -335,7 +335,7 @@ export default async function AdminSopBuilderPage(
                           {focusWorkspace.selected.previewHref ? (
                             <Link
                               href={focusWorkspace.selected.previewHref}
-                              className="inline-flex rounded-full bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
+                              className="inline-flex rounded-full bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                             >
                               {focusWorkspace.selected.previewLabel ?? "Open role preview"}
                             </Link>
@@ -354,8 +354,8 @@ export default async function AdminSopBuilderPage(
                   ) : null}
                 </div>
 
-                <article className="rounded-[1.35rem] border border-slate-200 bg-[#fbfdff] p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                <article className="rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-surface-tint)] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                     Guardrails
                   </p>
                   <ul className="mt-3 grid gap-3">
@@ -380,7 +380,7 @@ export default async function AdminSopBuilderPage(
             <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                     Structured import review
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -429,10 +429,10 @@ export default async function AdminSopBuilderPage(
 
               <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                     Sensitive data warnings
                   </p>
-                  <p className="mt-3 rounded-[1rem] border border-slate-200 bg-[#eff6ff] px-3 py-3 text-sm leading-6 text-slate-700">
+                  <p className="mt-3 rounded-[1rem] border border-slate-200 bg-[var(--background)] px-3 py-3 text-sm leading-6 text-slate-700">
                     {workspace.templateReview.provenanceLabel ===
                     "package-backed structured draft"
                       ? "This template is grounded in the rollout package and mapped SOP source coverage."
@@ -450,7 +450,7 @@ export default async function AdminSopBuilderPage(
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                     Unresolved import warnings
                   </p>
                   <div className="mt-3 grid gap-2">
@@ -467,14 +467,14 @@ export default async function AdminSopBuilderPage(
               </div>
 
               <div className="mt-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                   Source perspectives
                 </p>
                 <div className="mt-3 grid gap-3 lg:grid-cols-2">
                   {workspace.templateReview.sourcePerspectives.map((perspective) => (
                     <article
                       key={perspective.key}
-                      className="rounded-[1rem] border border-slate-200 bg-[#fbfdff] p-4"
+                      className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-surface-tint)] p-4"
                     >
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-semibold text-slate-950">
@@ -1158,7 +1158,7 @@ function BuilderFocusLink(props: {
       aria-current={props.selected ? "page" : undefined}
       className={
         props.selected
-          ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+          ? "inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-on-gold)]"
           : "inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
       }
     >
@@ -1440,7 +1440,7 @@ function StepsBuilderSection(props: {
   return (
     <section className="grid gap-4 xl:grid-cols-[260px_minmax(0,1.2fr)_minmax(0,0.92fr)]">
       <aside className="rounded-[2rem] border border-slate-200 bg-white p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
           Sections
         </p>
         <div className="mt-3 grid gap-2">
@@ -1459,7 +1459,7 @@ function StepsBuilderSection(props: {
           ))}
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
           Versions
         </p>
         <div className="mt-3 grid gap-2">
@@ -1474,7 +1474,7 @@ function StepsBuilderSection(props: {
             <p className="text-sm font-semibold text-slate-950">
               {props.definition.version.currentLabel}
             </p>
-            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-700">
+            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
               {props.definition.libraryStatus}
             </p>
           </Link>
@@ -1488,17 +1488,17 @@ function StepsBuilderSection(props: {
                   (candidate) => candidate.label === entry.label,
                 )}`,
               )}
-              className="rounded-[1.2rem] border border-blue-200 bg-blue-50 px-3 py-3 text-left"
+              className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-3 text-left"
             >
               <p className="text-sm font-semibold text-slate-950">{entry.label}</p>
-              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-700">
+              <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
                 {entry.updatedLabel}
               </p>
             </Link>
           ))}
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
           Settings
         </p>
         <div className="mt-3 grid gap-2">
@@ -1545,7 +1545,7 @@ function StepsBuilderSection(props: {
                   className={[
                     "rounded-[1.5rem] border p-4",
                     isSelected
-                      ? "border-blue-200/30 bg-blue-50"
+                      ? "border-[var(--mymedlife-border)]/30 bg-[var(--mymedlife-badge-background)]"
                       : "border-slate-200 bg-white",
                   ].join(" ")}
                 >
@@ -1579,7 +1579,7 @@ function StepsBuilderSection(props: {
                       aria-current={isSelected ? "page" : undefined}
                       className={
                         isSelected
-                          ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                          ? "inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-on-gold)]"
                           : "inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                       }
                     >
@@ -1593,7 +1593,7 @@ function StepsBuilderSection(props: {
                     </Link>
                     <Link
                       href={step.linkedRoute}
-                      className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       Open linked route
                     </Link>
@@ -1638,7 +1638,7 @@ function StepsBuilderSection(props: {
               {selectedStep.stepNumber}
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-info)]">
                 Step Details
               </p>
               <p className="mt-1 text-sm font-semibold text-slate-950">
@@ -1669,7 +1669,7 @@ function StepsBuilderSection(props: {
                 selectedStep.id,
                 "disable_step",
               )}
-              className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
+              className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
             >
               Disable Step
             </Link>
@@ -1693,7 +1693,7 @@ function StepsBuilderSection(props: {
           <DetailBlock label="Due Timing">{selectedStep.dueTiming}</DetailBlock>
 
           <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-info)]">
               Rules
             </p>
             <div className="mt-3 grid gap-2">
@@ -1738,7 +1738,7 @@ function RoleMatrixSection(props: {
       <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
               Step-level workflow behavior
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">Role Matrix</h2>
@@ -1784,11 +1784,11 @@ function RoleMatrixSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === rule.id;
 
                 return (
-                  <tr key={rule.id} className={isSelected ? "bg-blue-200/10" : "bg-transparent"}>
+                  <tr key={rule.id} className={isSelected ? "bg-[var(--mymedlife-border)]/10" : "bg-transparent"}>
                     <td className="border-t border-slate-200 px-4 py-4 align-top">
                       <div>
                         <p className="font-semibold text-slate-950">{toReadableRole(rule.role)}</p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-700">
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
                           {rule.scope.replaceAll("_", " ")}
                         </p>
                       </div>
@@ -1814,7 +1814,7 @@ function RoleMatrixSection(props: {
                           </Link>
                           <Link
                             href={rule.route}
-                            className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700"
+                            className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-info)]"
                           >
                             Open route
                           </Link>
@@ -1869,7 +1869,7 @@ function TemplateStepsBuilderSection(props: {
   return (
     <section className="grid gap-4 xl:grid-cols-[260px_minmax(0,1.2fr)_minmax(0,0.92fr)]">
       <aside className="rounded-[2rem] border border-slate-200 bg-white p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
           Sections
         </p>
         <div className="mt-3 grid gap-2">
@@ -1888,7 +1888,7 @@ function TemplateStepsBuilderSection(props: {
           ))}
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
           Versions
         </p>
         <div className="mt-3 grid gap-2">
@@ -1899,13 +1899,13 @@ function TemplateStepsBuilderSection(props: {
             <p className="text-sm font-semibold text-slate-950">
               {props.templateBuilderSurface.versionLabel}
             </p>
-            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-700">
+            <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
               {props.templateBuilderSurface.importStatus.replaceAll("_", " ")}
             </p>
           </Link>
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
           Settings
         </p>
         <div className="mt-3 grid gap-2">
@@ -1920,10 +1920,10 @@ function TemplateStepsBuilderSection(props: {
           ))}
         </div>
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
           Workflow
         </p>
-        <div className="mt-3 rounded-[1.2rem] border border-slate-200 bg-blue-50 px-3 py-3">
+        <div className="mt-3 rounded-[1.2rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-3">
           <p className="text-sm font-semibold text-slate-950">
             {props.templateBuilderSurface.workflowName}
           </p>
@@ -1964,7 +1964,7 @@ function TemplateStepsBuilderSection(props: {
                   className={[
                     "rounded-[1.5rem] border p-4",
                     isSelected
-                      ? "border-blue-200/30 bg-blue-50"
+                      ? "border-[var(--mymedlife-border)]/30 bg-[var(--mymedlife-badge-background)]"
                       : "border-slate-200 bg-white",
                   ].join(" ")}
                 >
@@ -1998,7 +1998,7 @@ function TemplateStepsBuilderSection(props: {
                       aria-current={isSelected ? "page" : undefined}
                       className={
                         isSelected
-                          ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                          ? "inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-on-gold)]"
                           : "inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                       }
                     >
@@ -2015,7 +2015,7 @@ function TemplateStepsBuilderSection(props: {
                     {step.route ? (
                       <Link
                         href={step.route}
-                        className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
+                        className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                       >
                         Open linked route
                       </Link>
@@ -2058,7 +2058,7 @@ function TemplateStepsBuilderSection(props: {
               {selectedStep.sequence}
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-info)]">
                 Step Details
               </p>
               <p className="mt-1 text-sm font-semibold text-slate-950">
@@ -2089,7 +2089,7 @@ function TemplateStepsBuilderSection(props: {
                 selectedStep.id,
                 "disable_step",
               )}
-              className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-700"
+              className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
             >
               Disable Step
             </Link>
@@ -2163,10 +2163,10 @@ function TemplateRoleMatrixSection(props: {
 }) {
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Imported workflow behavior
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">Role Matrix</h2>
@@ -2193,10 +2193,10 @@ function TemplateRoleMatrixSection(props: {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-white shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1200px] w-full">
-            <thead className="bg-[#dbeafe]">
+            <thead className="bg-[var(--mymedlife-badge-background)]">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Visible</th>
@@ -2216,7 +2216,7 @@ function TemplateRoleMatrixSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === rule.id;
 
                 return (
-                  <tr key={rule.id} className={isSelected ? "bg-[#f8fbff]" : "bg-transparent"}>
+                  <tr key={rule.id} className={isSelected ? "bg-[var(--background)]" : "bg-transparent"}>
                     <td className="border-t border-slate-200 px-4 py-4 align-top">
                       <div>
                         <p className="font-semibold text-slate-950">{toReadableRole(rule.role)}</p>
@@ -2243,7 +2243,7 @@ function TemplateRoleMatrixSection(props: {
                           {rule.visibleRoutes[0] ? (
                             <Link
                               href={buildSopRolePreviewHref(rule.role, rule.visibleRoutes[0])}
-                              className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                              className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-primary-button)]"
                             >
                               Preview
                             </Link>
@@ -2251,7 +2251,7 @@ function TemplateRoleMatrixSection(props: {
                           {rule.visibleRoutes[0] ? (
                             <Link
                               href={rule.visibleRoutes[0]}
-                              className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                              className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-primary-button)]"
                             >
                               Open route
                             </Link>
@@ -2339,10 +2339,10 @@ function CompletionSection(props: {
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Completion / Proof / Approval
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -2368,7 +2368,7 @@ function CompletionSection(props: {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <article className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Completion types
           </p>
@@ -2376,7 +2376,7 @@ function CompletionSection(props: {
             {completionTypes.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[1.3rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
+                className="rounded-[1.3rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-base font-semibold text-slate-950">{item.label}</h3>
@@ -2388,7 +2388,7 @@ function CompletionSection(props: {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <article className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Imported completion rows
           </p>
@@ -2397,7 +2397,7 @@ function CompletionSection(props: {
             {evidenceTypes.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[1.3rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
+                className="rounded-[1.3rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-base font-semibold text-slate-950">{item.label}</h3>
@@ -2410,10 +2410,10 @@ function CompletionSection(props: {
         </article>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-white shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1120px] w-full">
-            <thead className="bg-[#dbeafe]">
+            <thead className="bg-[var(--mymedlife-badge-background)]">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Rule</th>
                 <th className="px-4 py-3">Completion Type</th>
@@ -2430,11 +2430,11 @@ function CompletionSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === row.id;
 
                 return (
-                  <tr key={row.id} className={isSelected ? "bg-blue-200/10" : "bg-transparent"}>
+                  <tr key={row.id} className={isSelected ? "bg-[var(--mymedlife-border)]/10" : "bg-transparent"}>
                     <td className="border-t border-white/10 px-4 py-4 align-top">
                       <div>
                         <p className="font-semibold text-white">{row.label}</p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                           {row.family}
                         </p>
                       </div>
@@ -2464,7 +2464,7 @@ function CompletionSection(props: {
                           {row.previewHref ? (
                             <Link
                               href={row.previewHref}
-                              className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                              className="inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-on-gold)]"
                             >
                               {row.previewLabel ?? "Open role preview"}
                             </Link>
@@ -2473,7 +2473,7 @@ function CompletionSection(props: {
                             href={row.focusHref}
                             className={
                               isSelected
-                                ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                                ? "inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-on-gold)]"
                                 : "inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white"
                             }
                           >
@@ -2481,7 +2481,7 @@ function CompletionSection(props: {
                           </Link>
                           <Link
                             href={row.route}
-                            className="inline-flex rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1.5 text-xs font-semibold text-white"
+                            className="inline-flex rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-1.5 text-xs font-semibold text-white"
                           >
                             Open route
                           </Link>
@@ -2538,10 +2538,10 @@ function TemplateCompletionSection(props: {
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Completion / Proof / Approval
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -2592,7 +2592,7 @@ function TemplateCompletionSection(props: {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <article className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Completion types
           </p>
@@ -2600,7 +2600,7 @@ function TemplateCompletionSection(props: {
             {completionTypes.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[1.3rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
+                className="rounded-[1.3rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-base font-semibold text-slate-950">{item.label}</h3>
@@ -2612,7 +2612,7 @@ function TemplateCompletionSection(props: {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+        <article className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Imported completion rows
           </p>
@@ -2621,7 +2621,7 @@ function TemplateCompletionSection(props: {
             {evidenceTypes.map((item) => (
               <div
                 key={item.label}
-                className="rounded-[1.3rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
+                className="rounded-[1.3rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="text-base font-semibold text-slate-950">{item.label}</h3>
@@ -2634,10 +2634,10 @@ function TemplateCompletionSection(props: {
         </article>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-white shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1120px] w-full">
-            <thead className="bg-[#dbeafe]">
+            <thead className="bg-[var(--mymedlife-badge-background)]">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Rule</th>
                 <th className="px-4 py-3">Completion Type</th>
@@ -2654,7 +2654,7 @@ function TemplateCompletionSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === row.id;
 
                 return (
-                  <tr key={row.id} className={isSelected ? "bg-[#f8fbff]" : "bg-white"}>
+                  <tr key={row.id} className={isSelected ? "bg-[var(--background)]" : "bg-white"}>
                     <td className="border-t border-slate-200 px-4 py-4 align-top">
                       <div>
                         <p className="font-semibold text-slate-950">{row.label}</p>
@@ -2688,7 +2688,7 @@ function TemplateCompletionSection(props: {
                           {row.previewHref ? (
                             <Link
                               href={row.previewHref}
-                              className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                              className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-primary-button)]"
                             >
                               {row.previewLabel ?? "Open role preview"}
                             </Link>
@@ -2697,15 +2697,15 @@ function TemplateCompletionSection(props: {
                             href={row.focusHref}
                             className={
                               isSelected
-                                ? "inline-flex rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8]"
-                                : "inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                                ? "inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-info)]"
+                                : "inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-primary-button)]"
                             }
                           >
                             {isSelected ? "Selected" : "Open in workspace"}
                           </Link>
                           <Link
                             href={row.route}
-                            className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+                            className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-primary-button)]"
                           >
                             Open route
                           </Link>
@@ -2721,7 +2721,7 @@ function TemplateCompletionSection(props: {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-3">
-        <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+        <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
             Imported risk posture
           </p>
@@ -2729,7 +2729,7 @@ function TemplateCompletionSection(props: {
             {props.templateBuilderSurface.riskRows.map((row) => (
               <div
                 key={row.id}
-                className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                className="rounded-[1.3rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -2757,7 +2757,7 @@ function TemplateCompletionSection(props: {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+        <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
             Escalation follow-through
           </p>
@@ -2765,7 +2765,7 @@ function TemplateCompletionSection(props: {
             {props.templateBuilderSurface.escalationRows.map((row) => (
               <div
                 key={row.id}
-                className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                className="rounded-[1.3rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -2795,7 +2795,7 @@ function TemplateCompletionSection(props: {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+        <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
             Closeout requirements
           </p>
@@ -2803,7 +2803,7 @@ function TemplateCompletionSection(props: {
             {props.templateBuilderSurface.closeoutRows.map((row) => (
               <div
                 key={row.id}
-                className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                className="rounded-[1.3rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -2857,10 +2857,10 @@ function PointsKpiSection(props: {
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Points & KPI Impact
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -2893,10 +2893,10 @@ function PointsKpiSection(props: {
         <MiniStat label="Leaderboard visible" value="Member-facing" />
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-white shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1120px] w-full">
-            <thead className="bg-[#dbeafe]">
+            <thead className="bg-[var(--mymedlife-badge-background)]">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Point Value</th>
@@ -2967,10 +2967,10 @@ function CommsSection(props: {
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+      <section className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
               Comms
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -3001,10 +3001,10 @@ function CommsSection(props: {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b66cc]/90">
+      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90">
         <div className="overflow-x-auto">
           <table className="min-w-[1160px] w-full">
-            <thead className="bg-[#bfdbfe]/40">
+            <thead className="bg-[var(--mymedlife-border)]/40">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
                 <th className="px-4 py-3">Enabled</th>
                 <th className="px-4 py-3">Trigger Condition</th>
@@ -3022,7 +3022,7 @@ function CommsSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === rule.id;
 
                 return (
-                <tr key={rule.id} className={isSelected ? "bg-blue-200/10" : "bg-transparent"}>
+                <tr key={rule.id} className={isSelected ? "bg-[var(--mymedlife-border)]/10" : "bg-transparent"}>
                   <td className="border-t border-white/10 px-4 py-4 align-top text-sm text-white/72">
                     {rule.enabled ? "Yes" : "No"}
                   </td>
@@ -3072,8 +3072,8 @@ function CommsSection(props: {
             className={[
               "rounded-[1.5rem] border p-5",
               props.focusWorkspace.selected?.id === getWorkflowIntegrationBoundaryFocusId(boundary.system)
-                ? "border-blue-200/28 bg-blue-200/10"
-                : "border-white/10 bg-[#0b66cc]/90",
+                ? "border-[var(--mymedlife-border)]/28 bg-[var(--mymedlife-border)]/10"
+                : "border-white/10 bg-[var(--mymedlife-admin-blue)]/90",
             ].join(" ")}
           >
             <div className="flex items-start justify-between gap-3">
@@ -3117,10 +3117,10 @@ function TemplatePointsKpiSection(props: {
 }) {
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Points & KPI Impact
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -3167,10 +3167,10 @@ function TemplatePointsKpiSection(props: {
         <MiniStat label="Chapter points" value="Visible in chapter totals" />
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-white shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1120px] w-full">
-            <thead className="bg-[#dbeafe]">
+            <thead className="bg-[var(--mymedlife-badge-background)]">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Point Value</th>
@@ -3212,8 +3212,8 @@ function TemplatePointsKpiSection(props: {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
-        <div className="border-b border-[#bfdbfe] px-5 py-4">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-white shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
+        <div className="border-b border-[var(--mymedlife-border)] px-5 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
             Imported KPI rules
           </p>
@@ -3225,7 +3225,7 @@ function TemplatePointsKpiSection(props: {
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-[1180px] w-full">
-            <thead className="bg-[#dbeafe]">
+            <thead className="bg-[var(--mymedlife-badge-background)]">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">KPI rule</th>
                 <th className="px-4 py-3">Metric key</th>
@@ -3241,7 +3241,7 @@ function TemplatePointsKpiSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === row.id;
 
                 return (
-                  <tr key={row.id} className={isSelected ? "bg-[#f8fbff]" : "bg-white"}>
+                  <tr key={row.id} className={isSelected ? "bg-[var(--background)]" : "bg-white"}>
                     <td className="border-t border-slate-200 px-4 py-4 align-top">
                       <p className="font-semibold text-slate-950">{row.label}</p>
                     </td>
@@ -3292,10 +3292,10 @@ function TemplateCommsSection(props: {
 }) {
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Comms
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -3323,10 +3323,10 @@ function TemplateCommsSection(props: {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-white shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <div className="overflow-x-auto">
           <table className="min-w-[1160px] w-full">
-            <thead className="bg-[#dbeafe]">
+            <thead className="bg-[var(--mymedlife-badge-background)]">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <th className="px-4 py-3">Enabled</th>
                 <th className="px-4 py-3">Trigger Condition</th>
@@ -3344,7 +3344,7 @@ function TemplateCommsSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === row.id;
 
                 return (
-                  <tr key={row.id} className={isSelected ? "bg-[#f8fbff]" : "bg-white"}>
+                  <tr key={row.id} className={isSelected ? "bg-[var(--background)]" : "bg-white"}>
                     <td className="border-t border-slate-200 px-4 py-4 align-top text-sm text-slate-600">
                       {row.mockStatus === "approval_required" ? "No" : "Yes"}
                     </td>
@@ -3393,10 +3393,10 @@ function TemplateCommsSection(props: {
           <article
             key={boundary.id}
             className={[
-              "rounded-[1.5rem] border p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]",
+              "rounded-[1.5rem] border p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]",
               props.focusWorkspace.selected?.id === boundary.id
-                ? "border-[#bfdbfe] bg-[#f8fbff]"
-                : "border-[#bfdbfe] bg-white",
+                ? "border-[var(--mymedlife-border)] bg-[var(--background)]"
+                : "border-[var(--mymedlife-border)] bg-white",
             ].join(" ")}
           >
             <div className="flex items-start justify-between gap-3">
@@ -3450,10 +3450,10 @@ function RolePreviewSection(props: {
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+      <section className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
               Preview
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -3478,10 +3478,10 @@ function RolePreviewSection(props: {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b66cc]/90">
+      <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90">
         <div className="overflow-x-auto">
           <table className="min-w-[1320px] w-full">
-            <thead className="bg-[#bfdbfe]/40">
+            <thead className="bg-[var(--mymedlife-border)]/40">
               <tr className="text-left text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Screen / Page Changes</th>
@@ -3499,14 +3499,14 @@ function RolePreviewSection(props: {
                 const isSelected = props.focusWorkspace.selected?.id === row.id;
 
                 return (
-                <tr key={row.id} className={isSelected ? "bg-blue-200/10" : "bg-transparent"}>
+                <tr key={row.id} className={isSelected ? "bg-[var(--mymedlife-border)]/10" : "bg-transparent"}>
                   <td className="border-t border-white/10 px-4 py-4 align-top">
                     <div className="flex flex-col gap-2">
                       <div>
                         <p className="font-semibold text-white">
                           {toReadableRole(row.primaryRole)}
                         </p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                        <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                           {row.title}
                         </p>
                       </div>
@@ -3516,13 +3516,13 @@ function RolePreviewSection(props: {
                             row.primaryRole,
                             row.route,
                           )}
-                          className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                          className="inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-on-gold)]"
                         >
                           Preview as {toReadableRole(row.primaryRole)}
                         </Link>
                         <Link
                           href={row.route}
-                          className="inline-flex rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1.5 text-xs font-semibold text-white"
+                          className="inline-flex rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-1.5 text-xs font-semibold text-white"
                         >
                           Open raw route
                         </Link>
@@ -3588,10 +3588,10 @@ function VersionReviewSection(props: {
 
   return (
     <section className="grid gap-4">
-      <section className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+      <section className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
               Compare live vs draft
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -3616,7 +3616,7 @@ function VersionReviewSection(props: {
                 props.focusWorkspace.selected?.id ?? "current-version",
                 "publish",
               )}
-              className="rounded-full bg-blue-200 px-4 py-2 text-sm font-semibold text-[#26180d]"
+              className="rounded-full bg-[var(--mymedlife-border)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-on-gold)]"
             >
               Publish now
             </Link>
@@ -3638,7 +3638,7 @@ function VersionReviewSection(props: {
                 props.focusWorkspace.selected?.id ?? "current-version",
                 "rollback",
               )}
-              className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-4 py-2 text-sm font-semibold text-white"
+              className="rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-4 py-2 text-sm font-semibold text-white"
             >
               Rollback
             </Link>
@@ -3647,8 +3647,8 @@ function VersionReviewSection(props: {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <article className="rounded-[2rem] border border-blue-200/18 bg-blue-200/10 p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100/80">
+        <article className="rounded-[2rem] border border-[var(--mymedlife-border)]/18 bg-[var(--mymedlife-border)]/10 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-badge-background)]/80">
             Current draft
           </p>
           <h3 className="mt-2 text-2xl font-semibold text-white">
@@ -3672,7 +3672,7 @@ function VersionReviewSection(props: {
           </div>
         </article>
 
-        <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+        <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/54">
             Current live version
           </p>
@@ -3700,8 +3700,8 @@ function VersionReviewSection(props: {
 
       {localDraftSession ? (
         <section className="grid gap-4 xl:grid-cols-2">
-          <article className="rounded-[2rem] border border-blue-200/18 bg-blue-200/10 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100/80">
+          <article className="rounded-[2rem] border border-[var(--mymedlife-border)]/18 bg-[var(--mymedlife-border)]/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-badge-background)]/80">
               Local draft session
             </p>
             <h3 className="mt-2 text-2xl font-semibold text-white">
@@ -3730,14 +3730,14 @@ function VersionReviewSection(props: {
                   localDraftSession.id,
                   "edit_draft_session",
                 )}
-                className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                className="inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-on-gold)]"
               >
                 Edit draft session
               </Link>
             </div>
           </article>
 
-          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/54">
               Draft session comparison
             </p>
@@ -3750,8 +3750,8 @@ function VersionReviewSection(props: {
               builder mutation path exists.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <article className="rounded-[1.2rem] border border-white/10 bg-[#bfdbfe]/40 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/72">
+              <article className="rounded-[1.2rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                   Current draft baseline
                 </p>
                 <p className="mt-2 text-sm font-semibold text-white">
@@ -3762,8 +3762,8 @@ function VersionReviewSection(props: {
                   {" "}{props.definition.communicationRules.length} communication lanes.
                 </p>
               </article>
-              <article className="rounded-[1.2rem] border border-blue-200/18 bg-blue-200/10 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/72">
+              <article className="rounded-[1.2rem] border border-[var(--mymedlife-border)]/18 bg-[var(--mymedlife-border)]/10 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                   Draft session package
                 </p>
                 <p className="mt-2 text-sm font-semibold text-white">
@@ -3780,7 +3780,7 @@ function VersionReviewSection(props: {
       ) : null}
 
       {localDraftSession ? (
-        <section className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+        <section className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/54">
@@ -3801,11 +3801,11 @@ function VersionReviewSection(props: {
             {localDraftSession.groups.map((group) => (
               <article
                 key={group.id}
-                className="rounded-[1.35rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                className="rounded-[1.35rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                    <p className="text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                       Review lane
                     </p>
                     <h4 className="mt-2 text-lg font-semibold text-white">{group.title}</h4>
@@ -3845,7 +3845,7 @@ function VersionReviewSection(props: {
 
       {props.templateBuilderSurface ? (
         <section className="grid gap-4 xl:grid-cols-2">
-          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
@@ -3866,7 +3866,7 @@ function VersionReviewSection(props: {
               {props.templateBuilderSurface.featureFlagRows.map((flag) => (
                 <div
                   key={flag.id}
-                  className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                  className="rounded-[1.3rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -3886,7 +3886,7 @@ function VersionReviewSection(props: {
             </div>
           </article>
 
-          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
@@ -3910,7 +3910,7 @@ function VersionReviewSection(props: {
               {props.templateBuilderSurface.integrationBoundaries.map((boundary) => (
                 <div
                   key={boundary.id}
-                  className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                  className="rounded-[1.3rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -3926,7 +3926,7 @@ function VersionReviewSection(props: {
               {props.templateBuilderSurface.auditRows.map((record) => (
                 <div
                   key={record.id}
-                  className="rounded-[1.3rem] border border-blue-200/18 bg-blue-200/10 p-4"
+                  className="rounded-[1.3rem] border border-[var(--mymedlife-border)]/18 bg-[var(--mymedlife-border)]/10 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -3947,7 +3947,7 @@ function VersionReviewSection(props: {
             </div>
           </article>
 
-          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
@@ -3963,7 +3963,7 @@ function VersionReviewSection(props: {
               {props.templateBuilderSurface.scriptTemplates.map((template) => (
                 <div
                   key={template.id}
-                  className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                  className="rounded-[1.3rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -3988,7 +3988,7 @@ function VersionReviewSection(props: {
             </div>
           </article>
 
-          <article className="rounded-[2rem] border border-white/10 bg-[#0b66cc]/90 p-5">
+          <article className="rounded-[2rem] border border-white/10 bg-[var(--mymedlife-admin-blue)]/90 p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/44">
@@ -4004,7 +4004,7 @@ function VersionReviewSection(props: {
               {props.templateBuilderSurface.resourceLinks.map((resource) => (
                 <div
                   key={resource.id}
-                  className="rounded-[1.3rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                  className="rounded-[1.3rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -4037,10 +4037,10 @@ function VersionReviewSection(props: {
       ) : null}
 
       {localDraftProposals.length ? (
-        <section className="rounded-[2rem] border border-blue-200/18 bg-blue-200/10 p-5">
+        <section className="rounded-[2rem] border border-[var(--mymedlife-border)]/18 bg-[var(--mymedlife-border)]/10 p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100/80">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-badge-background)]/80">
                 Local draft proposals
               </p>
               <h3 className="mt-2 text-2xl font-semibold text-white">
@@ -4055,10 +4055,10 @@ function VersionReviewSection(props: {
             <Pill>{localDraftProposals.length}</Pill>
           </div>
           {localDraftSession ? (
-            <article className="mt-4 rounded-[1.35rem] border border-blue-200/24 bg-[#bfdbfe]/40 p-4">
+            <article className="mt-4 rounded-[1.35rem] border border-[var(--mymedlife-border)]/24 bg-[var(--mymedlife-border)]/40 p-4">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                  <p className="text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                     Draft session package
                   </p>
                   <h4 className="mt-2 text-xl font-semibold text-white">
@@ -4088,7 +4088,7 @@ function VersionReviewSection(props: {
                       localDraftSession.id,
                       "edit_draft_session",
                     )}
-                    className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                    className="inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-on-gold)]"
                   >
                     Edit draft session
                   </Link>
@@ -4101,11 +4101,11 @@ function VersionReviewSection(props: {
               {localDraftSession.groups.map((group) => (
                 <article
                   key={`session-group-${group.id}`}
-                  className="rounded-[1.2rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+                  className="rounded-[1.2rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                      <p className="text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                         Review lane
                       </p>
                       <h4 className="mt-2 text-base font-semibold text-white">{group.title}</h4>
@@ -4124,13 +4124,13 @@ function VersionReviewSection(props: {
                 className={[
                   "rounded-[1.35rem] border p-4",
                   props.focusWorkspace.selected?.id === proposal.id
-                    ? "border-blue-200/28 bg-blue-200/10"
-                    : "border-white/10 bg-[#bfdbfe]/40",
+                    ? "border-[var(--mymedlife-border)]/28 bg-[var(--mymedlife-border)]/10"
+                    : "border-white/10 bg-[var(--mymedlife-border)]/40",
                 ].join(" ")}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-blue-100/72">
+                    <p className="text-xs uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                       {proposal.sourceLabel}
                     </p>
                     <p className="mt-2 text-base font-semibold text-white">{proposal.title}</p>
@@ -4138,7 +4138,7 @@ function VersionReviewSection(props: {
                   <Pill>{proposal.status.replaceAll("_", " ")}</Pill>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-white/72">{proposal.summary}</p>
-                <p className="mt-3 text-sm leading-6 text-blue-100/78">{proposal.rationale}</p>
+                <p className="mt-3 text-sm leading-6 text-[var(--mymedlife-badge-background)]/78">{proposal.rationale}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {proposal.affectedRoles.slice(0, 4).map((role) => (
                     <Pill key={`${proposal.id}-${role}`}>{toReadableRole(role)}</Pill>
@@ -4158,7 +4158,7 @@ function VersionReviewSection(props: {
                       proposal.id,
                       "edit_proposal",
                     )}
-                    className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-xs font-semibold text-[#26180d]"
+                    className="inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-on-gold)]"
                   >
                     Edit draft proposal
                   </Link>
@@ -4171,7 +4171,7 @@ function VersionReviewSection(props: {
                   {proposal.builderRoleMatrixHref ? (
                     <Link
                       href={proposal.builderRoleMatrixHref}
-                      className="inline-flex rounded-full border border-blue-200/24 bg-blue-200/12 px-3 py-1.5 text-xs font-semibold text-blue-100"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)]/24 bg-[var(--mymedlife-border)]/12 px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-badge-background)]"
                     >
                       Open role matrix
                     </Link>
@@ -4183,7 +4183,7 @@ function VersionReviewSection(props: {
         </section>
       ) : null}
 
-      <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+      <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
           Change log
         </p>
@@ -4194,8 +4194,8 @@ function VersionReviewSection(props: {
               className={[
                 "rounded-[1.35rem] border p-4",
                 props.focusWorkspace.selected?.id === `version-${index}`
-                  ? "border-[#bfdbfe] bg-[#f8fbff]"
-                  : "border-[#bfdbfe] bg-white",
+                  ? "border-[var(--mymedlife-border)] bg-[var(--background)]"
+                  : "border-[var(--mymedlife-border)] bg-white",
               ].join(" ")}
             >
               <div className="flex items-start justify-between gap-3">
@@ -4239,13 +4239,13 @@ function FocusedTabSection(props: {
     <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
       <h2 className="text-2xl font-semibold text-slate-950">{props.title}</h2>
       {props.focusWorkspace.selected ? (
-        <section className="mt-4 rounded-[1.5rem] border border-blue-200/30 bg-blue-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+        <section className="mt-4 rounded-[1.5rem] border border-[var(--mymedlife-border)]/30 bg-[var(--mymedlife-badge-background)] p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-info)]">
             Selected in workspace
           </p>
           <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-blue-700">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
                 {props.focusWorkspace.selected.eyebrow}
               </p>
               <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -4254,7 +4254,7 @@ function FocusedTabSection(props: {
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 {props.focusWorkspace.selected.detail}
               </p>
-              <p className="mt-3 text-sm leading-6 text-blue-700">
+              <p className="mt-3 text-sm leading-6 text-[var(--mymedlife-info)]">
                 {props.focusWorkspace.selected.footer}
               </p>
               {props.focusWorkspace.selected.pills?.length ? (
@@ -4270,7 +4270,7 @@ function FocusedTabSection(props: {
               {props.focusWorkspace.selected.previewHref ? (
                 <Link
                   href={props.focusWorkspace.selected.previewHref}
-                  className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-on-gold)]"
                 >
                   {props.focusWorkspace.selected.previewLabel ?? "Open role preview"}
                 </Link>
@@ -4320,10 +4320,10 @@ function BuilderModeNotice(props: {
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-200/30 bg-blue-50 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-border)]/30 bg-[var(--mymedlife-badge-background)] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
             Mock-safe builder action
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -4340,7 +4340,7 @@ function BuilderModeNotice(props: {
         </div>
         <Link
           href={props.notice.clearHref}
-          className="w-fit rounded-full bg-blue-200 px-4 py-2 text-sm font-semibold text-[#26180d]"
+          className="w-fit rounded-full bg-[var(--mymedlife-border)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-on-gold)]"
         >
           Return to workflow
         </Link>
@@ -4362,7 +4362,7 @@ function BuilderModeNotice(props: {
               key={row.label}
               className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
                 {row.label}
               </p>
               <p className="mt-2 text-sm font-semibold text-slate-950">{row.value}</p>
@@ -4384,13 +4384,13 @@ function SelectableRuleCard(props: {
       className={[
         "rounded-2xl border p-4",
         props.selected
-          ? "border-blue-200/30 bg-blue-50"
+          ? "border-[var(--mymedlife-border)]/30 bg-[var(--mymedlife-badge-background)]"
           : "border-slate-200 bg-white",
       ].join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-blue-700">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
             {props.card.eyebrow}
           </p>
           <h3 className="mt-2 text-base font-semibold text-slate-950">{props.card.title}</h3>
@@ -4398,13 +4398,13 @@ function SelectableRuleCard(props: {
         <Pill>{props.card.status.replaceAll("_", " ")}</Pill>
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-600">{props.card.detail}</p>
-      <p className="mt-3 text-sm leading-6 text-blue-700">{props.card.footer}</p>
+      <p className="mt-3 text-sm leading-6 text-[var(--mymedlife-info)]">{props.card.footer}</p>
       {props.card.pills?.length ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {props.card.pills.map((pill) => (
             <span
               key={`${props.card.id}-${pill}`}
-              className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700"
+              className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-[var(--mymedlife-info)]"
             >
               {pill}
             </span>
@@ -4417,7 +4417,7 @@ function SelectableRuleCard(props: {
           aria-current={props.selected ? "page" : undefined}
           className={
             props.selected
-              ? "inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+              ? "inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-on-gold)]"
               : "inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
           }
         >
@@ -4426,7 +4426,7 @@ function SelectableRuleCard(props: {
         {props.card.previewHref ? (
           <Link
             href={props.card.previewHref}
-            className="inline-flex rounded-full bg-blue-200 px-3 py-1.5 text-sm font-semibold text-[#26180d]"
+            className="inline-flex rounded-full bg-[var(--mymedlife-border)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-on-gold)]"
           >
             {props.card.previewLabel ?? "Open role preview"}
           </Link>
@@ -4447,7 +4447,7 @@ function SelectableRuleCard(props: {
 function MiniStat(props: { label: string; value: string }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-700">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
         {props.label}
       </p>
       <p className="mt-2 text-2xl font-semibold text-slate-950">{props.value}</p>
@@ -4462,7 +4462,7 @@ function ToplineFocusCard(props: {
 }) {
   return (
     <article className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-info)]">
         {props.label}
       </p>
       <p className="mt-2 text-lg font-semibold text-slate-950">{props.value}</p>
@@ -4473,7 +4473,7 @@ function ToplineFocusCard(props: {
 
 function Pill(props: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+    <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
       {props.children}
     </span>
   );
@@ -4481,7 +4481,7 @@ function Pill(props: { children: ReactNode }) {
 
 function SmallChip(props: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-blue-200 bg-white px-2.5 py-1 text-xs font-semibold text-blue-700">
+    <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-2.5 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
       {props.children}
     </span>
   );
@@ -4490,7 +4490,7 @@ function SmallChip(props: { children: ReactNode }) {
 function DetailBlock(props: { label: string; children: ReactNode }) {
   return (
     <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-info)]">
         {props.label}
       </p>
       <p className="mt-2 text-sm leading-6 text-slate-600">{props.children}</p>
@@ -4516,7 +4516,7 @@ function RuleRow(props: { label: string; enabled: boolean }) {
         className={[
           "rounded-full px-2.5 py-1 text-xs font-semibold",
           props.enabled
-            ? "bg-blue-200 text-[#26180d]"
+            ? "bg-[var(--mymedlife-border)] text-[var(--mymedlife-on-gold)]"
             : "border border-slate-200 bg-slate-50 text-slate-500",
         ].join(" ")}
       >

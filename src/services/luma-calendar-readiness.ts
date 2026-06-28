@@ -1,7 +1,13 @@
+import {
+  getFeatureResolvedState,
+  isFeatureEnabled,
+} from "@/modules/feature-flags";
+
 export type LumaCalendarReadinessStatus =
   | "missing_config"
   | "ready"
-  | "api_error";
+  | "api_error"
+  | "feature_disabled";
 
 export type LumaCalendarReadinessEvent = {
   id: string;
@@ -73,6 +79,25 @@ export async function getLumaCalendarReadinessSnapshot(options?: {
   const apiKey = env.LUMA_API_KEY?.trim();
   const calendarId = env.LUMA_CALENDAR_ID?.trim() || null;
   const limit = clampLimit(options?.limit ?? 10);
+  const lumaFeature = getFeatureResolvedState("integration_luma", { env });
+
+  if (!isFeatureEnabled("integration_luma", { env })) {
+    return {
+      status: "feature_disabled",
+      calendarId,
+      apiKeyConfigured: Boolean(apiKey),
+      endpoint: null,
+      eventCount: 0,
+      hasMore: false,
+      safeEvents: [],
+      writesEnabled: false,
+      externalWritesEnabled: 0,
+      attendeeDataReturned: false,
+      secretReturned: false,
+      detail:
+        lumaFeature.gracefulFallback,
+    };
+  }
 
   if (!apiKey || !calendarId) {
     return {

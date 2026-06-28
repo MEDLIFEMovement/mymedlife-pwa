@@ -16,10 +16,10 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
   }
 
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+    <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
             Coach notes
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">{workspace.title}</h2>
@@ -41,7 +41,7 @@ export function CoachSupportNotesPanel({ workspace }: CoachSupportNotesPanelProp
         <MiniToken label="Coach-private" value={`${workspace.counts.coachPrivate}`} />
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-[#dbeafe] p-4">
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -103,10 +103,10 @@ function InterventionChecklistCard({
         </div>
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-700">{item.question}</p>
-      <p className="mt-2 text-xs leading-5 text-[#2563eb]">
+      <p className="mt-2 text-xs leading-5 text-[var(--mymedlife-primary-button)]">
         Next: {item.action}
       </p>
-      <p className="mt-3 rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 text-xs leading-5 text-slate-500">
+      <p className="mt-3 rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3 text-xs leading-5 text-slate-500">
         Signal: {item.sourceSignal}
       </p>
     </article>
@@ -115,7 +115,7 @@ function InterventionChecklistCard({
 
 function SupportNoteCard({ note }: { note: CoachSupportNote }) {
   return (
-    <article className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4">
+    <article className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -132,7 +132,7 @@ function SupportNoteCard({ note }: { note: CoachSupportNote }) {
       </div>
 
       <p className="mt-3 text-sm leading-6 text-slate-600">{note.note}</p>
-      <p className="mt-3 text-xs leading-5 text-[#2563eb]">
+      <p className="mt-3 text-xs leading-5 text-[var(--mymedlife-primary-button)]">
         Next: {note.nextStep}
       </p>
 
@@ -155,10 +155,10 @@ function SupportNoteCard({ note }: { note: CoachSupportNote }) {
 function ChecklistStatusPill({ status }: { status: CoachInterventionChecklistStatus }) {
   const className =
     status === "ready"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "watch"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -189,10 +189,10 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: CoachSupportNoteStatus }) {
   const className =
     status === "ready_for_check_in"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "needs_follow_up"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

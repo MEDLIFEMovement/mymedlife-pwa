@@ -60,7 +60,7 @@ export default async function AdminIntegrationProviderPage(
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
             <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-3xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Provider detail
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -94,7 +94,7 @@ export default async function AdminIntegrationProviderPage(
               </div>
               <Link
                 href={workspace.nextStep.href}
-                className="rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {workspace.nextStep.label}
               </Link>
@@ -131,7 +131,7 @@ export default async function AdminIntegrationProviderPage(
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:text-slate-950"
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:text-slate-950"
                 >
                   {tab.label}
                 </Link>
@@ -144,10 +144,10 @@ export default async function AdminIntegrationProviderPage(
               className={[
                 "rounded-[1.6rem] border px-4 py-3 text-sm leading-6",
                 workspace.resultBanner.tone === "success"
-                  ? "border-blue-200 bg-blue-50 text-blue-700"
+                  ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
                   : workspace.resultBanner.tone === "warning"
-                    ? "border-blue-200 bg-blue-50 text-blue-700"
-                    : "border-blue-200 bg-blue-50 text-blue-700",
+                    ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+                    : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]",
               ].join(" ")}
             >
               <p className="font-semibold">{workspace.resultBanner.title}</p>
@@ -186,7 +186,7 @@ export default async function AdminIntegrationProviderPage(
                       <p className="app-eyebrow app-eyebrow-slate">
                         {environment.environment}
                       </p>
-                      <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500">
+                      <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-500">
                         {environment.status}
                       </span>
                     </div>
@@ -198,7 +198,7 @@ export default async function AdminIntegrationProviderPage(
                     </p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 xl:w-[31rem]">
-                    <div className="rounded-2xl border border-slate-200 bg-[#eef5ff] px-4 py-3 text-sm leading-6 text-slate-600">
+                    <div className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-surface-hover)] px-4 py-3 text-sm leading-6 text-slate-600">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                         Masked hint
                       </p>
@@ -207,7 +207,7 @@ export default async function AdminIntegrationProviderPage(
                       </p>
                       <p className="mt-1 text-xs text-slate-500">Version: {environment.secretVersion}</p>
                     </div>
-                    <div className="rounded-2xl border border-slate-200 bg-[#eef5ff] px-4 py-3 text-sm leading-6 text-slate-600">
+                    <div className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-surface-hover)] px-4 py-3 text-sm leading-6 text-slate-600">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                         Ownership
                       </p>
@@ -220,7 +220,7 @@ export default async function AdminIntegrationProviderPage(
                   <div className="mt-4 grid gap-4 xl:grid-cols-[1.5fr_1fr_1fr]">
                     <form
                       action={submitIntegrationCredentialAction}
-                    className="rounded-[1.4rem] border border-slate-200 bg-[#eef5ff] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)]"
+                    className="rounded-[1.4rem] border border-slate-200 bg-[var(--mymedlife-surface-hover)] p-4 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.04)]"
                     >
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                         Credentials
@@ -327,7 +327,7 @@ export default async function AdminIntegrationProviderPage(
                       </label>
                       <button
                         type="submit"
-                        className="rounded-full bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                        className="rounded-full bg-[var(--mymedlife-primary-button)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                       >
                         Save write-only credential
                       </button>
@@ -336,7 +336,7 @@ export default async function AdminIntegrationProviderPage(
 
                     <form
                       action={testIntegrationConnectionAction}
-                      className="rounded-[1.4rem] border border-slate-200 bg-[#dbeafe] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)]"
+                      className="rounded-[1.4rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.04)]"
                     >
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                         Health check
@@ -359,7 +359,7 @@ export default async function AdminIntegrationProviderPage(
                     />
                     <button
                       type="submit"
-                      className="mt-4 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:text-slate-950"
+                      className="mt-4 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:text-slate-950"
                     >
                       Run safe test
                     </button>
@@ -370,9 +370,9 @@ export default async function AdminIntegrationProviderPage(
 
                     <form
                       action={disableIntegrationConnectionAction}
-                      className="rounded-[1.4rem] border border-blue-200 bg-blue-50 p-4 shadow-[0_10px_24px_rgba(15,23,42,0.04)]"
+                      className="rounded-[1.4rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] p-4 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.04)]"
                     >
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-blue-600">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
                         Disable path
                       </p>
                       <input
@@ -399,12 +399,12 @@ export default async function AdminIntegrationProviderPage(
                         Reason for disable
                         <textarea
                           name="reason"
-                          className="min-h-24 rounded-2xl border border-blue-200 bg-white px-4 py-3 text-sm text-slate-950 outline-none"
+                          className="min-h-24 rounded-2xl border border-[var(--mymedlife-border)] bg-white px-4 py-3 text-sm text-slate-950 outline-none"
                         />
                       </label>
                       <button
                         type="submit"
-                        className="mt-4 rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                        className="mt-4 rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                       >
                         Disable connector
                       </button>
@@ -428,7 +428,7 @@ export default async function AdminIntegrationProviderPage(
               {workspace.auditRows.slice(0, 6).map((row) => (
                 <article
                   key={row.id}
-                  className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
+                  className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
                 >
                   <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                     <span>{row.action.replaceAll("_", " ")}</span>
@@ -474,7 +474,7 @@ function StatusSummaryChip({
   value: string;
 }) {
   return (
-    <article className="rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] px-4 py-3">
+    <article className="rounded-[1.2rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>

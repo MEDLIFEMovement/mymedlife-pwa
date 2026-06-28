@@ -51,7 +51,7 @@ export default async function AdminSopLibraryPage({
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Campaign SOP Library
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -71,7 +71,7 @@ export default async function AdminSopLibraryPage({
               </div>
               <Link
                 href={workspace.nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {workspace.nextStep.label}
               </Link>
@@ -82,7 +82,7 @@ export default async function AdminSopLibraryPage({
             <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                     Current library focus
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -172,7 +172,7 @@ export default async function AdminSopLibraryPage({
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                   Library controls
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -215,7 +215,7 @@ export default async function AdminSopLibraryPage({
               <div className="flex items-end">
                 <button
                   type="submit"
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                 >
                   Apply search
                 </button>
@@ -223,7 +223,7 @@ export default async function AdminSopLibraryPage({
             </form>
 
             <div className="mt-4 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                 Status filters
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -233,7 +233,7 @@ export default async function AdminSopLibraryPage({
                     href={option.href}
                     className={
                       option.isActive
-                        ? "rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white"
+                        ? "rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white"
                         : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                     }
                   >
@@ -244,14 +244,14 @@ export default async function AdminSopLibraryPage({
             </div>
 
             <div className="mt-4 rounded-[1.4rem] border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                 Active result set
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 {workspace.filters.activeSummary}
               </p>
               {workspace.filters.query ? (
-                <p className="mt-2 text-sm leading-6 text-[#2563eb]">
+                <p className="mt-2 text-sm leading-6 text-[var(--mymedlife-primary-button)]">
                   Search query: {workspace.filters.query}
                 </p>
               ) : null}
@@ -259,13 +259,13 @@ export default async function AdminSopLibraryPage({
           </section>
 
           {workspace.selectedEntry ? (
-            <section className="rounded-[2rem] border border-blue-200/18 bg-blue-200/10 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100/80">
+            <section className="rounded-[2rem] border border-[var(--mymedlife-border)]/18 bg-[var(--mymedlife-border)]/10 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-badge-background)]/80">
                 Selected in library
               </p>
               <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-blue-100/72">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                     {workspace.selectedEntry.slug}
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -291,7 +291,7 @@ export default async function AdminSopLibraryPage({
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={workspace.selectedEntry.builderHref}
-                    className="inline-flex rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                    className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                   >
                     Open builder
                   </Link>
@@ -302,7 +302,7 @@ export default async function AdminSopLibraryPage({
 
           {workspace.selectedEntry?.templateImportStatus ? (
             <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                 Structured import review
               </p>
               <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
@@ -382,7 +382,7 @@ export default async function AdminSopLibraryPage({
                       return (
                         <tr
                           key={entry.slug}
-                          className={isSelected ? "bg-blue-50" : "bg-transparent"}
+                          className={isSelected ? "bg-[var(--mymedlife-badge-background)]" : "bg-transparent"}
                         >
                           <td className="border-t border-slate-200 px-5 py-4 align-top">
                             <div className="max-w-md">
@@ -422,7 +422,7 @@ export default async function AdminSopLibraryPage({
                                 aria-current={isSelected ? "page" : undefined}
                                 className={
                                   isSelected
-                                    ? "inline-flex rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white"
+                                    ? "inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white"
                                     : "inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                                 }
                               >
@@ -444,7 +444,7 @@ export default async function AdminSopLibraryPage({
               </div>
             ) : (
               <section className="px-5 py-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                   No matching campaigns
                 </p>
                 <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -456,7 +456,7 @@ export default async function AdminSopLibraryPage({
                 </p>
                 <Link
                   href={workspace.filters.clearHref}
-                  className="mt-4 inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                  className="mt-4 inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                 >
                   Reset library filters
                 </Link>
@@ -466,7 +466,7 @@ export default async function AdminSopLibraryPage({
 
           {workspace.selectedEntry ? (
             <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                 Builder entry points
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -491,7 +491,7 @@ export default async function AdminSopLibraryPage({
 function MiniStat(props: { label: string; value: string }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
         {props.label}
       </p>
       <p className="mt-2 text-2xl font-semibold text-slate-950">{props.value}</p>
@@ -502,7 +502,7 @@ function MiniStat(props: { label: string; value: string }) {
 function FocusStat(props: { label: string; value: string; note: string }) {
   return (
     <article className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
         {props.label}
       </p>
       <p className="mt-2 text-2xl font-semibold text-slate-950">{props.value}</p>

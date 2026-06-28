@@ -45,18 +45,18 @@ export default async function LoginPage(props: LoginPageProps) {
     <main className="min-h-screen px-4 py-4 sm:px-6 lg:px-8">
       <a
         href="#main-content"
-        className="sr-only rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+        className="sr-only rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
       >
         Skip to sign in
       </a>
 
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-4xl items-stretch">
-        <section className="relative flex w-full flex-col justify-center overflow-hidden rounded-[2.25rem] border border-[#bfdbfe] bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(93,143,246,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(191,219,254,0.34),transparent_34%)]" />
+        <section className="relative flex w-full flex-col justify-center overflow-hidden rounded-[2.25rem] border border-[var(--mymedlife-border)] bg-white p-6 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.08)] sm:p-8 lg:p-10">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgb(var(--mymedlife-accent-rgb)/0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgb(var(--mymedlife-primary-rgb)/0.34),transparent_34%)]" />
           <div className="relative grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                   myMEDLIFE
                 </span>
                 <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600">
@@ -90,7 +90,7 @@ export default async function LoginPage(props: LoginPageProps) {
             <div
               id="main-content"
               tabIndex={-1}
-              className="flex flex-col gap-4 rounded-[2rem] border border-slate-200 bg-white/96 p-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)] sm:p-6"
+              className="flex flex-col gap-4 rounded-[2rem] border border-slate-200 bg-white/96 p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.08)] sm:p-6"
             >
               <LoginForm redirectTo={redirectTo} />
               <AuthSessionPanel session={session} />

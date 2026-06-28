@@ -37,8 +37,8 @@ export function LeaderAssignmentServerActionPanel({
   );
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]">
         Local leader assignment creation
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -53,12 +53,12 @@ export function LeaderAssignmentServerActionPanel({
           className={[
             "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
               : resultState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+                ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
                 : resultState.tone === "error"
-                  ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                  : "border-blue-300/30 bg-blue-300/10 text-blue-100",
+                  ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
+                  : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]",
           ].join(" ")}
           role="status"
         >
@@ -72,10 +72,10 @@ export function LeaderAssignmentServerActionPanel({
           className={[
             "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
               : readbackState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                : "border-white/10 bg-[#bfdbfe]/42 text-white/68",
+                ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
+                : "border-white/10 bg-[var(--mymedlife-border)]/42 text-white/68",
           ].join(" ")}
         >
           <p className="font-semibold">Local readback</p>
@@ -94,7 +94,7 @@ export function LeaderAssignmentServerActionPanel({
         <input
           id="title"
           name="title"
-          className="w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+          className="w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
           defaultValue={input.title}
           disabled={!readiness.canSubmit}
         />
@@ -105,7 +105,7 @@ export function LeaderAssignmentServerActionPanel({
         <textarea
           id="instructions"
           name="instructions"
-          className="min-h-28 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+          className="min-h-28 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
           defaultValue={input.instructions}
           disabled={!readiness.canSubmit}
         />
@@ -118,7 +118,7 @@ export function LeaderAssignmentServerActionPanel({
             <select
               id="ownerRole"
               name="ownerRole"
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+              className="mt-2 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
               defaultValue={input.ownerRole}
               disabled={!readiness.canSubmit}
             >
@@ -142,7 +142,7 @@ export function LeaderAssignmentServerActionPanel({
               type="number"
               min={0}
               max={1000}
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+              className="mt-2 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
               defaultValue={input.points}
               disabled={!readiness.canSubmit}
             />
@@ -158,7 +158,7 @@ export function LeaderAssignmentServerActionPanel({
         <textarea
           id="evidenceRequired"
           name="evidenceRequired"
-          className="min-h-24 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+          className="min-h-24 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
           defaultValue={input.evidenceRequired}
           disabled={!readiness.canSubmit}
         />
@@ -171,7 +171,7 @@ export function LeaderAssignmentServerActionPanel({
             <input
               id="kpi"
               name="kpi"
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+              className="mt-2 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
               defaultValue={input.kpi}
               disabled={!readiness.canSubmit}
             />
@@ -184,7 +184,7 @@ export function LeaderAssignmentServerActionPanel({
             <input
               id="dueLabel"
               name="dueLabel"
-              className="mt-2 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+              className="mt-2 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
               defaultValue={input.dueLabel}
               disabled={!readiness.canSubmit}
             />
@@ -194,7 +194,7 @@ export function LeaderAssignmentServerActionPanel({
         <button
           type="submit"
           disabled={!readiness.canSubmit}
-          className="w-full rounded-full bg-blue-200 px-5 py-3 text-sm font-semibold text-[#08224c] transition hover:bg-[#1e4fd8]lue-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
+          className="w-full rounded-full bg-[var(--mymedlife-border)] px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--mymedlife-action-blue-hover)] disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
         >
           {readiness.canSubmit ? "Create assignment locally" : "Assignment save locked"}
         </button>
@@ -204,7 +204,7 @@ export function LeaderAssignmentServerActionPanel({
         {readiness.checks.map((check) => (
           <div
             key={check.key}
-            className="rounded-2xl border border-white/10 bg-[#bfdbfe]/42 px-3 py-2"
+            className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/42 px-3 py-2"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
               {check.passed ? "Ready" : "Blocked"}

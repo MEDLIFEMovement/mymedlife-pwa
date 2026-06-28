@@ -15,7 +15,7 @@ export function LeaderFollowUpBoardPanel({ board }: LeaderFollowUpBoardPanelProp
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/70">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/70">
             Read-only queue
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{board.title}</h2>
@@ -31,13 +31,13 @@ export function LeaderFollowUpBoardPanel({ board }: LeaderFollowUpBoardPanelProp
       </div>
 
       {board.rows.length === 0 ? (
-        <p className="mt-4 rounded-2xl bg-[#bfdbfe]/40 p-3 text-sm leading-6 text-white/64">
+        <p className="mt-4 rounded-2xl bg-[var(--mymedlife-border)]/40 p-3 text-sm leading-6 text-white/64">
           {board.emptyMessage}
         </p>
       ) : (
         <div className="mt-5 grid gap-3">
           {board.rows.map((row) => (
-            <article key={row.assignmentId} className="rounded-2xl bg-[#bfdbfe]/40 p-4">
+            <article key={row.assignmentId} className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -56,12 +56,12 @@ export function LeaderFollowUpBoardPanel({ board }: LeaderFollowUpBoardPanelProp
                 </div>
                 <Link
                   href={row.nextHref}
-                  className="shrink-0 rounded-full border border-blue-300/20 bg-blue-300/10 px-4 py-2 text-sm font-semibold text-blue-100"
+                  className="shrink-0 rounded-full border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 px-4 py-2 text-sm font-semibold text-[var(--mymedlife-badge-background)]"
                 >
                   Open next step
                 </Link>
               </div>
-              <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/54">
                 Reminder send posture: {row.reminderPosture}. No email, SMS, n8n,
                 HubSpot, or Luma automation is triggered.
               </p>
@@ -75,7 +75,7 @@ export function LeaderFollowUpBoardPanel({ board }: LeaderFollowUpBoardPanelProp
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>

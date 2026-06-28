@@ -218,7 +218,7 @@ function ProofUploadStoragePacketPanel({
           {packet.blockedControls.map((control) => (
             <span
               key={control}
-              className="rounded-full border border-[#2563eb]/28 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]"
+              className="rounded-full border border-[var(--mymedlife-primary-button)]/28 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]"
             >
               Held {control}
             </span>
@@ -238,8 +238,8 @@ function ReadinessCheck({ check }: { check: ProofUploadIntakeCheck }) {
           className={[
             "rounded-full border px-2.5 py-1 text-xs font-semibold",
             check.passed
-              ? "border-blue-200 bg-blue-50 text-blue-700"
-              : "border-blue-200 bg-blue-50 text-blue-700",
+              ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+              : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]",
           ].join(" ")}
         >
           {check.passed ? "ready" : "blocked"}
@@ -278,7 +278,7 @@ function PacketToken({ label, value }: { label: string; value: string }) {
   return (
     <div className="app-surface-soft rounded-[1.05rem] px-3 py-2">
       <p className="app-eyebrow app-eyebrow-slate">{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold text-[#2563eb]">
+      <p className="mt-1 break-words text-sm font-semibold text-[var(--mymedlife-primary-button)]">
         {value}
       </p>
     </div>

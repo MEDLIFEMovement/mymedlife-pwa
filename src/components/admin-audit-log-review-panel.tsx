@@ -83,7 +83,7 @@ export function AdminAuditLogReviewPanel({
           {review.auditPreflight.blockedControls.map((control) => (
             <span
               key={control}
-              className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500"
+              className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-500"
             >
               Locked {control}
             </span>
@@ -141,7 +141,7 @@ function AuditPreflightCard({ item }: { item: AdminAuditPreflightItem }) {
         </div>
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-600">{item.question}</p>
-      <p className="mt-2 text-xs leading-5 text-[#2563eb]">
+      <p className="mt-2 text-xs leading-5 text-[var(--mymedlife-primary-button)]">
         Required: {item.requiredEvidence}
       </p>
       <p className="app-surface-soft mt-3 rounded-[1.05rem] p-3 text-xs leading-5 text-slate-500">
@@ -151,7 +151,7 @@ function AuditPreflightCard({ item }: { item: AdminAuditPreflightItem }) {
         {item.routeEvidence.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -190,7 +190,7 @@ function AuditRowCard({ row }: { row: AdminAuditLogReviewRow }) {
 
 function MiniToken({ label, value }: { label: string; value: string }) {
   return (
-    <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500">
+    <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-500">
       {label} {value}
     </span>
   );
@@ -198,7 +198,7 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 
 function MiniFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-white p-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+    <div className="rounded-xl bg-white p-3 shadow-[0_6px_20px_rgb(var(--mymedlife-shadow-rgb)/0.04)]">
       <p className="app-eyebrow app-eyebrow-slate">{label}</p>
       <p className="mt-1 break-words text-xs text-slate-600">{value}</p>
     </div>
@@ -221,10 +221,10 @@ function AuditPreflightStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "watch"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -236,10 +236,10 @@ function AuditPreflightStatusPill({
 function StatusPill({ posture }: { posture: AdminAuditLogPosture }) {
   const className =
     posture === "persisted_readback_visible"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : posture === "mock_intent_only"
-        ? "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] text-[var(--mymedlife-primary-button)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

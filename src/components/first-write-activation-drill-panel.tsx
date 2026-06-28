@@ -18,11 +18,11 @@ export function FirstWriteActivationDrillPanel({
   return (
     <SurfacePanel
       as="section"
-      className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5"
+      className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5"
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             First write drill
           </p>
           <h1 className="mt-2 text-3xl font-semibold text-white">{drill.title}</h1>
@@ -36,7 +36,7 @@ export function FirstWriteActivationDrillPanel({
             {drill.candidateAssignment ? (
               <PanelButton
                 href={drill.candidateAssignment.route}
-                className="bg-blue-300 text-[#08224c]"
+                className="bg-[var(--mymedlife-focus-blue)] text-[var(--foreground)]"
               >
                 Open candidate action
               </PanelButton>
@@ -44,7 +44,7 @@ export function FirstWriteActivationDrillPanel({
             <PanelButton
               href="/login"
               variant="secondary"
-              className="border-white/12 bg-[#bfdbfe]/40 text-white/78"
+              className="border-white/12 bg-[var(--mymedlife-border)]/40 text-white/78"
             >
               Open local sign-in
             </PanelButton>
@@ -60,7 +60,7 @@ export function FirstWriteActivationDrillPanel({
       </div>
 
       {drill.candidateAssignment ? (
-        <article className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+        <article className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/42">
             Candidate action
           </p>
@@ -77,7 +77,7 @@ export function FirstWriteActivationDrillPanel({
           </div>
         </article>
       ) : (
-        <article className="mt-5 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
+        <article className="mt-5 rounded-3xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
           <h2 className="text-xl font-semibold text-white">
             No candidate assignment found
           </h2>
@@ -89,11 +89,11 @@ export function FirstWriteActivationDrillPanel({
 
       <SurfacePanel
         as="section"
-        className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4"
+        className="mt-5 rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4"
       >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em]  text-blue-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em]  text-[var(--mymedlife-badge-background)]/80">
               Operator packet
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -109,7 +109,7 @@ export function FirstWriteActivationDrillPanel({
         </div>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.9fr]">
-          <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+          <article className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
             <p className="text-sm font-semibold text-white">
               Required local env settings
             </p>
@@ -117,9 +117,9 @@ export function FirstWriteActivationDrillPanel({
               {drill.verificationPacket.envSettings.map((setting) => (
                 <div
                   key={setting.key}
-                  className="rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3"
+                  className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-3"
                 >
-                  <p className="font-mono text-xs text-blue-100/80">
+                  <p className="font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
                     {setting.key}={setting.value}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-white/52">
@@ -130,17 +130,17 @@ export function FirstWriteActivationDrillPanel({
             </div>
           </article>
 
-          <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+          <article className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
             <p className="text-sm font-semibold text-white">Fake member sign-in</p>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3 font-mono text-xs text-blue-100/80">
+            <p className="mt-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-3 font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
               {drill.verificationPacket.fakeMemberCredential.email}
             </p>
-            <p className="mt-2 rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3 font-mono text-xs text-blue-100/80">
+            <p className="mt-2 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-3 font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
               password={drill.verificationPacket.fakeMemberCredential.passwordLabel}
             </p>
             <PanelButton
               href={drill.verificationPacket.fakeMemberCredential.route}
-              className="mt-3 bg-blue-300 text-[#08224c]"
+              className="mt-3 bg-[var(--mymedlife-focus-blue)] text-[var(--foreground)]"
             >
               Open local sign-in
             </PanelButton>
@@ -155,11 +155,11 @@ export function FirstWriteActivationDrillPanel({
           {drill.verificationPacket.operatorSequence.map((step, index) => (
             <article
               key={`${step.label}-${step.route}`}
-              className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
+              className="rounded-3xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em]  text-blue-100/70">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em]  text-[var(--mymedlife-badge-background)]/70">
                     Packet step {index + 1}
                   </p>
                   <h3 className="mt-2 text-lg font-semibold text-white">
@@ -169,7 +169,7 @@ export function FirstWriteActivationDrillPanel({
                 <PanelButton
                   href={step.route}
                   variant="secondary"
-                  className="border-white/12 bg-[#bfdbfe]/40 text-white/72"
+                  className="border-white/12 bg-[var(--mymedlife-border)]/40 text-white/72"
                 >
                   Open {step.route}
                 </PanelButton>
@@ -181,7 +181,7 @@ export function FirstWriteActivationDrillPanel({
           ))}
         </div>
 
-        <article className="mt-4 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
+        <article className="mt-4 rounded-3xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
           <p className="text-sm font-semibold text-white">Stop conditions</p>
           <ul className="mt-3 grid gap-2">
             {drill.verificationPacket.safetyStops.map((stop) => (
@@ -197,13 +197,13 @@ export function FirstWriteActivationDrillPanel({
         {drill.checks.map((check) => (
           <article
             key={check.key}
-            className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
+            className="rounded-3xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-4"
           >
             <p
               className={
                 check.passed
-                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100"
-                  : "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100"
+                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]"
+                  : "text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]"
               }
             >
               {check.passed ? "Ready" : "Blocked"}
@@ -216,7 +216,7 @@ export function FirstWriteActivationDrillPanel({
 
       <SurfacePanel
         as="section"
-        className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4"
+        className="mt-5 rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4"
       >
         <h2 className="text-2xl font-semibold text-white">
           Post-drill readback evidence
@@ -230,7 +230,7 @@ export function FirstWriteActivationDrillPanel({
           {drill.readbackEvidence.map((item) => (
             <article
               key={item.key}
-              className="rounded-3xl border border-white/10 bg-[#0b66cc]/80 p-4"
+              className="rounded-3xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/80 p-4"
             >
               <StatusPill tone={readbackStatusTone(item.status)}>
                 {item.status.replaceAll("_", " ")}
@@ -248,7 +248,7 @@ export function FirstWriteActivationDrillPanel({
 
       <SurfacePanel
         as="section"
-        className="mt-5 rounded-[2rem] border border-white/10 bg-[#bfdbfe]/40 p-4"
+        className="mt-5 rounded-[2rem] border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
       >
         <h2 className="text-2xl font-semibold text-white">
           Staff drill sequence
@@ -261,11 +261,11 @@ export function FirstWriteActivationDrillPanel({
           {drill.steps.map((step, index) => (
             <article
               key={step.key}
-              className="rounded-3xl border border-white/10 bg-[#0b66cc]/80 p-4"
+              className="rounded-3xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/80 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
                     Step {index + 1}
                   </p>
                   <h3 className="mt-2 text-lg font-semibold text-white">
@@ -275,7 +275,7 @@ export function FirstWriteActivationDrillPanel({
                 <PanelButton
                   href={step.route}
                   variant="secondary"
-                  className="border-white/12 bg-[#bfdbfe]/40 text-white/72"
+                  className="border-white/12 bg-[var(--mymedlife-border)]/40 text-white/72"
                 >
                   Open {step.route}
                 </PanelButton>
@@ -283,7 +283,7 @@ export function FirstWriteActivationDrillPanel({
               <p className="mt-3 text-sm leading-6 text-white/64">
                 {step.plainEnglish}
               </p>
-              <p className="mt-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3 font-mono text-xs text-blue-100/76">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3 font-mono text-xs text-[var(--mymedlife-badge-background)]/76">
                 MYMEDLIFE_LOCAL_ACTOR_EMAIL={step.localActorEmail}
               </p>
               <p className="mt-3 text-xs leading-5 text-white/56">
@@ -294,14 +294,14 @@ export function FirstWriteActivationDrillPanel({
                   {step.structuredEvents.map((eventName) => (
                     <span
                       key={`${step.key}-${eventName}`}
-                      className="rounded-full border border-blue-200/15 bg-blue-200/10 px-3 py-1 font-mono text-[0.68rem] text-blue-100/80"
+                      className="rounded-full border border-[var(--mymedlife-border)]/15 bg-[var(--mymedlife-border)]/10 px-3 py-1 font-mono text-[0.68rem] text-[var(--mymedlife-badge-background)]/80"
                     >
                       {eventName}
                     </span>
                   ))}
                 </div>
               ) : null}
-              <p className="mt-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3 text-xs leading-5 text-white/52">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3 text-xs leading-5 text-white/52">
                 Safety: {step.safetyBoundary}
               </p>
             </article>
@@ -311,7 +311,7 @@ export function FirstWriteActivationDrillPanel({
 
       <SurfacePanel
         as="section"
-        className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4"
+        className="mt-5 rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4"
       >
         <h2 className="text-2xl font-semibold text-white">Proof to collect</h2>
         <ul className="mt-4 grid gap-2">
@@ -325,11 +325,11 @@ export function FirstWriteActivationDrillPanel({
 
       <SurfacePanel
         as="section"
-        className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4"
+        className="mt-5 rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4"
       >
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
               Phase 2 closeout
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -346,7 +346,7 @@ export function FirstWriteActivationDrillPanel({
         </div>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
-          <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+          <article className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
             <p className="text-sm font-semibold text-white">Required hosted readback</p>
             <ul className="mt-3 grid gap-2">
               {drill.hostedCloseout.requiredReadback.map((item) => (
@@ -357,13 +357,13 @@ export function FirstWriteActivationDrillPanel({
             </ul>
           </article>
 
-          <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+          <article className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
             <p className="text-sm font-semibold text-white">Review surfaces</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {drill.hostedCloseout.reviewSurfaces.map((route) => (
                 <span
                   key={route}
-                  className="rounded-full border border-blue-200/15 bg-blue-200/10 px-3 py-1 font-mono text-[0.68rem] text-blue-100/80"
+                  className="rounded-full border border-[var(--mymedlife-border)]/15 bg-[var(--mymedlife-border)]/10 px-3 py-1 font-mono text-[0.68rem] text-[var(--mymedlife-badge-background)]/80"
                 >
                   {route}
                 </span>
@@ -379,9 +379,9 @@ export function FirstWriteActivationDrillPanel({
           {drill.hostedCloseout.namedOwnersStillNeeded.map((item) => (
             <article
               key={item.key}
-              className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
+              className="rounded-3xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-4"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/72">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/72">
                 {item.label}
               </p>
               <p className="mt-2 text-sm font-semibold text-white">
@@ -392,15 +392,15 @@ export function FirstWriteActivationDrillPanel({
         </div>
 
         {drill.hostedCloseout.recordedOwnerAnswers.length > 0 ? (
-          <article className="mt-4 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
+          <article className="mt-4 rounded-3xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
             <p className="text-sm font-semibold text-white">Recorded approval answers</p>
             <div className="mt-3 grid gap-3 lg:grid-cols-2">
               {drill.hostedCloseout.recordedOwnerAnswers.map((item) => (
                 <div
                   key={item.key}
-                  className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3"
+                  className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-blue-100/72">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-badge-background)]/72">
                     {item.label}
                   </p>
                   <p className="mt-2 text-sm font-semibold text-white">{item.value}</p>
@@ -410,20 +410,20 @@ export function FirstWriteActivationDrillPanel({
           </article>
         ) : null}
 
-        <article className="mt-4 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+        <article className="mt-4 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
           <p className="text-sm font-semibold text-white">Copy-paste approval reply</p>
-          <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-blue-100/82">
+          <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--mymedlife-badge-background)]/82">
             {drill.hostedCloseout.approvalReplyBlock.join("\n")}
           </pre>
         </article>
 
-        <article className="mt-4 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
+        <article className="mt-4 rounded-3xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
           <p className="text-sm font-semibold text-white">Still blocked in this step</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {drill.hostedCloseout.blockedScope.map((item) => (
               <span
                 key={item}
-                className="rounded-full border border-blue-200/15 bg-blue-200/10 px-3 py-1 text-xs font-semibold text-blue-100/80"
+                className="rounded-full border border-[var(--mymedlife-border)]/15 bg-[var(--mymedlife-border)]/10 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-badge-background)]/80"
               >
                 {item}
               </span>
@@ -437,7 +437,7 @@ export function FirstWriteActivationDrillPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>

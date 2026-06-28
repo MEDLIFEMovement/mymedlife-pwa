@@ -16,7 +16,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
           <h2 className="mt-2 text-xl font-semibold text-slate-950">{campaign.name}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">{campaign.summary}</p>
         </div>
-        <span className="shrink-0 rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+        <span className="shrink-0 rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
           {campaign.primaryKpis.length} KPIs
         </span>
       </div>
@@ -52,7 +52,7 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
       <div className="mt-auto pt-4">
         <Link
           href={`/campaigns/${campaign.slug}`}
-          className="inline-flex w-full items-center justify-center rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-[#08224c] transition hover:bg-[#93c5fd] sm:w-auto"
+          className="inline-flex w-full items-center justify-center rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--mymedlife-focus-blue)] sm:w-auto"
         >
           Open campaign shell
         </Link>

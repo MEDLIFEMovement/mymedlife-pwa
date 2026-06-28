@@ -48,10 +48,10 @@ export default async function AdminCommitteesPage({
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-100">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-badge-background)]">
                   Admin committees
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-white">
@@ -63,7 +63,7 @@ export default async function AdminCommitteesPage({
               </div>
               <Link
                 href={workspace.nextStep.href}
-                className="w-fit rounded-full bg-blue-200 px-4 py-2 text-sm font-semibold text-[#08224c]"
+                className="w-fit rounded-full bg-[var(--mymedlife-border)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
               >
                 {workspace.nextStep.label}
               </Link>
@@ -84,7 +84,7 @@ export default async function AdminCommitteesPage({
             <MiniStat label="External writes" value="0" />
           </section>
 
-          <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h2 className="text-2xl font-semibold text-slate-950">Registry controls</h2>
@@ -102,8 +102,8 @@ export default async function AdminCommitteesPage({
                     aria-current={option.selected ? "page" : undefined}
                     className={
                       option.selected
-                        ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
-                        : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                        ? "rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
+                        : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                     }
                   >
                     {option.label}
@@ -113,7 +113,7 @@ export default async function AdminCommitteesPage({
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-2xl font-semibold text-slate-950">
                 {workspace.focusedSection.title}
@@ -125,8 +125,8 @@ export default async function AdminCommitteesPage({
             </p>
 
             {workspace.focusedSection.selectedCard ? (
-              <section className="mt-4 rounded-[1.5rem] border border-[#bfdbfe] bg-white p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+              <section className="mt-4 rounded-[1.5rem] border border-[var(--mymedlife-border)] bg-white p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                   Selected in registry
                 </p>
                 <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -148,7 +148,7 @@ export default async function AdminCommitteesPage({
                         {workspace.focusedSection.selectedCard.pills.map((pill) => (
                           <span
                             key={`${workspace.focusedSection.selectedCard?.key}-${pill}`}
-                            className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-xs font-semibold text-slate-600"
+                            className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-2.5 py-1 text-xs font-semibold text-slate-600"
                           >
                             {pill}
                           </span>
@@ -156,15 +156,15 @@ export default async function AdminCommitteesPage({
                       </div>
                     ) : null}
                     {workspace.focusedSection.selectedCard.workflowSnapshot ? (
-                      <div className="mt-4 rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                      <div className="mt-4 rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                           Current workflow state
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-                          <span className="rounded-full border border-[#bfdbfe] bg-white px-2.5 py-1">
+                          <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-2.5 py-1">
                             {workspace.focusedSection.selectedCard.workflowSnapshot.versionLabel}
                           </span>
-                          <span className="rounded-full border border-[#bfdbfe] bg-white px-2.5 py-1">
+                          <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-2.5 py-1">
                             source{" "}
                             {workspace.focusedSection.selectedCard.workflowSnapshot.sourceKind.replaceAll(
                               "_",
@@ -190,7 +190,7 @@ export default async function AdminCommitteesPage({
                     {workspace.focusedSection.selectedCard.href ? (
                       <Link
                         href={workspace.focusedSection.selectedCard.href}
-                        className="inline-flex rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white"
+                        className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white"
                       >
                         {workspace.focusedSection.selectedCard.hrefLabel ?? "Open route"}
                       </Link>
@@ -198,7 +198,7 @@ export default async function AdminCommitteesPage({
                     {workspace.focusedSection.selectedCard.secondaryHref ? (
                       <Link
                         href={workspace.focusedSection.selectedCard.secondaryHref}
-                        className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
+                        className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                       >
                         {workspace.focusedSection.selectedCard.secondaryLabel ?? "Open secondary route"}
                       </Link>
@@ -206,7 +206,7 @@ export default async function AdminCommitteesPage({
                     {workspace.focusedSection.selectedCard.configureHref ? (
                       <Link
                         href={workspace.focusedSection.selectedCard.configureHref}
-                        className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
+                        className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                       >
                         {workspace.focusedSection.selectedCard.configureLabel ?? "Review config"}
                       </Link>
@@ -223,8 +223,8 @@ export default async function AdminCommitteesPage({
                   className={[
                     "rounded-2xl border p-4",
                     workspace.focusedSection.selectedKey === card.key
-                      ? "border-[#bfdbfe] bg-white"
-                      : "border-[#bfdbfe] bg-[#f8fbff]",
+                      ? "border-[var(--mymedlife-border)] bg-white"
+                      : "border-[var(--mymedlife-border)] bg-[var(--background)]",
                   ].join(" ")}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -250,8 +250,8 @@ export default async function AdminCommitteesPage({
                       aria-current={workspace.focusedSection.selectedKey === card.key ? "page" : undefined}
                       className={
                         workspace.focusedSection.selectedKey === card.key
-                          ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
-                          : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                          ? "rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
+                          : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                       }
                     >
                       {workspace.focusedSection.selectedKey === card.key
@@ -261,7 +261,7 @@ export default async function AdminCommitteesPage({
                     {card.href ? (
                       <Link
                         href={card.href}
-                        className="rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white"
+                        className="rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white"
                       >
                         {card.hrefLabel ?? "Open route"}
                       </Link>
@@ -269,7 +269,7 @@ export default async function AdminCommitteesPage({
                     {card.secondaryHref ? (
                       <Link
                         href={card.secondaryHref}
-                        className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
+                        className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                       >
                         {card.secondaryLabel ?? "Open secondary route"}
                       </Link>
@@ -277,7 +277,7 @@ export default async function AdminCommitteesPage({
                     {card.configureHref ? (
                       <Link
                         href={card.configureHref}
-                        className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
+                        className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                       >
                         {card.configureLabel ?? "Review config"}
                       </Link>
@@ -289,10 +289,10 @@ export default async function AdminCommitteesPage({
           </section>
 
           {workspace.configState ? (
-            <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+            <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                     Mock-safe configuration
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -310,14 +310,14 @@ export default async function AdminCommitteesPage({
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={workspace.configState.returnHref}
-                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
+                    className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                   >
                     Return to registry
                   </Link>
                   {workspace.configState.primaryHref ? (
                     <Link
                       href={workspace.configState.primaryHref}
-                      className="inline-flex rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white"
+                      className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white"
                     >
                       {workspace.configState.primaryLabel ?? "Open primary route"}
                     </Link>
@@ -325,7 +325,7 @@ export default async function AdminCommitteesPage({
                   {workspace.configState.secondaryHref ? (
                     <Link
                       href={workspace.configState.secondaryHref}
-                      className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       {workspace.configState.secondaryLabel ?? "Open secondary route"}
                     </Link>
@@ -333,7 +333,7 @@ export default async function AdminCommitteesPage({
                   {workspace.configState.proposalHref ? (
                     <Link
                       href={workspace.configState.proposalHref}
-                      className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8]"
+                      className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)]"
                     >
                       {workspace.configState.proposalLabel ?? "Open proposal in builder"}
                     </Link>
@@ -345,7 +345,7 @@ export default async function AdminCommitteesPage({
                 {workspace.configState.rows.map((row) => (
                   <article
                     key={row.label}
-                    className="rounded-2xl border border-[#bfdbfe] bg-white p-4"
+                    className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4"
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                       {row.label}
@@ -360,7 +360,7 @@ export default async function AdminCommitteesPage({
                 {workspace.configState.guardrails.map((item) => (
                   <p
                     key={item}
-                    className="rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] p-3 text-sm leading-6 text-slate-600"
+                    className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3 text-sm leading-6 text-slate-600"
                   >
                     {item}
                   </p>
@@ -369,15 +369,15 @@ export default async function AdminCommitteesPage({
             </section>
           ) : null}
 
-          <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Guardrails
             </p>
             <div className="mt-4 grid gap-2">
               {workspace.guardrails.map((item) => (
                 <p
                   key={item}
-                  className="rounded-2xl border border-[#bfdbfe] bg-white p-3 text-sm leading-6 text-slate-600"
+                  className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-3 text-sm leading-6 text-slate-600"
                 >
                   {item}
                 </p>
@@ -392,7 +392,7 @@ export default async function AdminCommitteesPage({
 
 function MiniStat(props: { label: string; value: string }) {
   return (
-    <article className="rounded-2xl border border-[#bfdbfe] bg-white p-4">
+    <article className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
         {props.label}
       </p>
@@ -403,7 +403,7 @@ function MiniStat(props: { label: string; value: string }) {
 
 function Pill(props: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-slate-600">
+    <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-slate-600">
       {props.children}
     </span>
   );

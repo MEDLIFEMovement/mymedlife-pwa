@@ -133,7 +133,7 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Leader command center
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">{data.chapter.name}</h1>
@@ -146,7 +146,7 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
                 </p>
               </div>
               <div className="grid min-w-[18rem] gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-white px-4 py-3">
+                <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-white px-4 py-3">
                   <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Chapter focus
                   </p>
@@ -154,7 +154,7 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
                     {data.campaign.name}
                   </p>
                 </div>
-                <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-white px-4 py-3">
+                <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-white px-4 py-3">
                   <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Leadership lane
                   </p>
@@ -222,7 +222,7 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
                 as="article"
                 key={item.href}
                 tone="info"
-                className="rounded-[1.75rem] transition hover:border-[#2563eb]/35 hover:bg-[#eff6ff] p-4"
+                className="rounded-[1.75rem] transition hover:border-[var(--mymedlife-primary-button)]/35 hover:bg-[var(--background)] p-4"
               >
                 <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{item.copy}</p>

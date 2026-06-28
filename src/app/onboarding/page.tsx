@@ -26,7 +26,7 @@ export default async function OnboardingPage() {
     <main className="min-h-screen px-4 py-4 sm:px-6 lg:px-8">
       <a
         href="#main-content"
-        className="sr-only rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+        className="sr-only rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
       >
         Skip to onboarding content
       </a>
@@ -35,7 +35,7 @@ export default async function OnboardingPage() {
         <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                 Auth and onboarding
               </p>
               <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -67,7 +67,7 @@ export default async function OnboardingPage() {
               </div>
               <Link
                 href={workspace.nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {workspace.nextStep.label}
               </Link>
@@ -108,7 +108,7 @@ export default async function OnboardingPage() {
                     </div>
                   </div>
                   <p className="mt-3 text-sm leading-6 text-slate-600">{step.notes}</p>
-                  <p className="mt-3 font-mono text-xs text-[#2563eb]">
+                  <p className="mt-3 font-mono text-xs text-[var(--mymedlife-primary-button)]">
                     {step.futureEventType}
                   </p>
                 </article>
@@ -128,7 +128,7 @@ export default async function OnboardingPage() {
               {workspace.blockedWrites.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1e40af]"
+                  className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-badge-text)]"
                 >
                   {item}
                 </span>
@@ -202,7 +202,7 @@ function AuthLaunchPreflightPanel({
         {preflight.blockedControls.map((control) => (
           <span
             key={control}
-            className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-500"
           >
             Later: {control}
           </span>
@@ -230,7 +230,7 @@ function AuthPreflightCard({ item }: { item: AuthOnboardingPreflightItem }) {
       </div>
 
       <p className="mt-3 text-sm leading-6 text-slate-600">{item.question}</p>
-      <p className="mt-2 text-xs leading-5 text-[#2563eb]">
+      <p className="mt-2 text-xs leading-5 text-[var(--mymedlife-primary-button)]">
         Required: {item.requiredEvidence}
       </p>
       <p className="app-surface-soft mt-3 rounded-[1.05rem] p-3 text-xs leading-5 text-slate-500">
@@ -241,7 +241,7 @@ function AuthPreflightCard({ item }: { item: AuthOnboardingPreflightItem }) {
         {item.routeEvidence.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -258,10 +258,10 @@ function AuthPreflightStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "watch"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -281,7 +281,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function MiniToken({ label, value }: { label: string; value: string }) {
   return (
-    <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500">
+    <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-500">
       {label} {value}
     </span>
   );
@@ -296,10 +296,10 @@ function Pill({
 }) {
   const className =
     tone === "ready"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : tone === "locked"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-slate-200 bg-[#dbeafe] text-slate-500";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-500";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

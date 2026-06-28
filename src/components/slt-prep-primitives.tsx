@@ -61,11 +61,11 @@ export function SltPrepSectionCard({
 export function getToneClassName(tone: "red" | "yellow" | "blue" | "green") {
   switch (tone) {
     case "red":
-      return "border-blue-200 bg-blue-50 text-blue-700";
+      return "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "yellow":
-      return "border-[#2563eb]/30 bg-[#dbeafe] text-[#1d4ed8]";
+      return "border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "blue":
     case "green":
-      return "border-blue-200 bg-blue-50 text-blue-700";
+      return "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
   }
 }

@@ -33,11 +33,11 @@ export function MemberRushMonthCampaignPanel({
   return (
     <section className="grid gap-3">
       <section className="app-surface-info overflow-hidden rounded-[2rem] p-4">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
           {overview.chapterName}
         </p>
         <div className="mt-2.5 flex flex-wrap gap-2">
-          <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+          <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
             {overview.statusLabel}
           </span>
           <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
@@ -55,15 +55,15 @@ export function MemberRushMonthCampaignPanel({
             <span>{overview.chapterProgressLabel}</span>
             <span>{overview.chapterProgressPercent}%</span>
           </div>
-          <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#dbeafe]">
+          <div className="mt-2 h-3 overflow-hidden rounded-full bg-[var(--mymedlife-badge-background)]">
             <div
-              className="h-full rounded-full bg-[#2563eb]"
+              className="h-full rounded-full bg-[var(--mymedlife-primary-button)]"
               style={{ width: `${overview.chapterProgressPercent}%` }}
             />
           </div>
         </div>
         {sourceContext ? (
-          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-3.5 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-xl">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -75,7 +75,7 @@ export function MemberRushMonthCampaignPanel({
               </div>
               <Link
                 href={sourceContext.href}
-                className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 {sourceContext.backLabel}
               </Link>
@@ -105,7 +105,7 @@ export function MemberRushMonthCampaignPanel({
 
       <SurfacePanel>
         <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2b5fb4] text-base text-white">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--mymedlife-action-blue)] text-base text-white">
             ⚑
           </div>
           <div className="min-w-0">
@@ -128,9 +128,9 @@ export function MemberRushMonthCampaignPanel({
               value={`${kpi.value} / ${kpi.goal}`}
               note={kpi.progressLabel}
             >
-              <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-[#f8fbff]">
+              <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-[var(--background)]">
                 <div
-                  className="h-full rounded-full bg-[#2b5fb4]"
+                  className="h-full rounded-full bg-[var(--mymedlife-action-blue)]"
                   style={{
                     width: `${Math.max(
                       8,
@@ -162,10 +162,10 @@ export function MemberRushMonthCampaignPanel({
           {overview.whatGoodLooksLike.items.map((item, index) => (
             <article
               key={item}
-              className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-3.5"
+              className="rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3.5"
             >
               <div className="flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[#bfdbfe] bg-white text-xs font-semibold text-[#2563eb]">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--mymedlife-border)] bg-white text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                   {index + 1}
                 </span>
                 <p className="text-sm leading-6 text-slate-700">{item}</p>
@@ -180,12 +180,12 @@ export function MemberRushMonthCampaignPanel({
           <div>
             <Link
               href={overview.featuredEvent.href}
-              className="text-xl font-semibold text-slate-950 transition hover:text-[#1d4ed8]"
+              className="text-xl font-semibold text-slate-950 transition hover:text-[var(--mymedlife-info)]"
             >
               {overview.featuredEvent.title}
             </Link>
             <div className="mt-2 flex flex-wrap gap-2">
-              <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#2563eb]">
+              <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                 {overview.featuredEvent.sourceLabel}
               </span>
             </div>

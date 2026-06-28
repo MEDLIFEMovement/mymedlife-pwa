@@ -48,7 +48,7 @@ export default async function RushMonthLeaderboardPage({
       {!workspace.canReadLeaderboard ? (
         <>
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               {workspace.eyebrow}
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">{workspace.title}</h1>
@@ -80,7 +80,7 @@ export default async function RushMonthLeaderboardPage({
       ) : (
         <>
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               {workspace.eyebrow}
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">{workspace.title}</h1>
@@ -96,7 +96,7 @@ export default async function RushMonthLeaderboardPage({
 
           <DataSourceNotice source={data.source} />
 
-          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+          <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
             <section className="app-surface-info rounded-[2rem] p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -110,7 +110,7 @@ export default async function RushMonthLeaderboardPage({
                 </div>
                 <Link
                   href={workspace.nextStep.href}
-                  className="inline-flex rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
+                  className="inline-flex rounded-full bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-badge-text)]"
                 >
                   {workspace.nextStep.ctaLabel}
                 </Link>
@@ -126,7 +126,7 @@ export default async function RushMonthLeaderboardPage({
               {workspace.safetyNotes.map((note) => (
                 <p
                   key={note}
-                  className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 text-sm leading-6 text-slate-600"
+                  className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3 text-sm leading-6 text-slate-600"
                 >
                   {note}
                 </p>

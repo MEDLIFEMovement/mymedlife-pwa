@@ -19,7 +19,7 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
     <section className="app-surface-info rounded-[2rem] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
             First pilot scope
           </p>
           <h1 className="mt-2 text-3xl font-semibold text-slate-950">{planner.title}</h1>
@@ -32,7 +32,7 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/admin/staff-dry-run"
-              className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+              className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
             >
               Open staff dry run
             </Link>
@@ -75,7 +75,7 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
                   item.status === "recorded_final" ? "staff_ready" : "needs_decision"
                 }
               />
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                 {item.label}
               </p>
               <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -231,7 +231,7 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
           ))}
         </ul>
         <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
             Copy-paste reply block
           </p>
           <pre className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
@@ -320,7 +320,7 @@ function Checklist({ label, values }: { label: string; values: string[] }) {
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
         {label}
       </p>
       <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>
@@ -331,12 +331,12 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: PilotScopeCandidateStatus }) {
   const className =
     status === "ready_for_staff_only"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "recommended_after_gates"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
         : status === "later"
-          ? "border-blue-200 bg-blue-50 text-blue-700"
-          : "border-blue-200 bg-blue-50 text-blue-700";
+          ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+          : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -348,10 +348,10 @@ function StatusPill({ status }: { status: PilotScopeCandidateStatus }) {
 function DecisionPill({ status }: { status: PilotScopeDecisionStatus }) {
   const className =
     status === "staff_ready"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "needs_decision"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

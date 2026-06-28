@@ -68,7 +68,7 @@ export default async function CampaignsPage({
       ) : (
         <>
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               Campaign library
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -82,7 +82,7 @@ export default async function CampaignsPage({
             </p>
           </section>
 
-          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+          <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
             <section className="grid gap-3 sm:grid-cols-3">
               <MetricCard
                 label="Active"

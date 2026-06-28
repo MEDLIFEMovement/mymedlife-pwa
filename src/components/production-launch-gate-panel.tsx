@@ -16,10 +16,10 @@ export function ProductionLaunchGatePanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             Production launch gate
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{gate.title}</h2>
@@ -45,10 +45,10 @@ export function ProductionLaunchGatePanel({
         ))}
       </div>
 
-      <article className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      <article className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
               Staging and pilot proof
             </p>
             <h3 className="mt-2 text-xl font-semibold text-white">
@@ -73,7 +73,7 @@ export function ProductionLaunchGatePanel({
         </div>
       </article>
 
-      <p className="mt-4 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/58">
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/58">
         {gate.finalReviewPrompt}
       </p>
     </section>
@@ -82,7 +82,7 @@ export function ProductionLaunchGatePanel({
 
 function GateItemCard({ item }: { item: ProductionLaunchGateItem }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+    <article className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -118,14 +118,14 @@ function GateItemCard({ item }: { item: ProductionLaunchGateItem }) {
         {item.reviewRoutes.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-2.5 py-1 text-xs font-semibold text-white/58"
+            className="rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-2.5 py-1 text-xs font-semibold text-white/58"
           >
             {route}
           </span>
         ))}
       </div>
 
-      <p className="mt-3 text-xs leading-5 text-blue-100/70">
+      <p className="mt-3 text-xs leading-5 text-[var(--mymedlife-badge-background)]/70">
         Approval: {item.approvalRequired}
       </p>
     </article>
@@ -134,10 +134,10 @@ function GateItemCard({ item }: { item: ProductionLaunchGateItem }) {
 
 function LaunchEvidenceCard({ check }: { check: ProductionLaunchEvidenceCheck }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-4">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <span className="rounded-full border border-blue-300/30 bg-blue-300/15 px-3 py-1 text-xs font-semibold text-blue-100">
+          <span className="rounded-full border border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-badge-background)]">
             {check.status.replaceAll("_", " ")}
           </span>
           <h4 className="mt-3 text-base font-semibold text-white">
@@ -178,7 +178,7 @@ function LaunchEvidenceCard({ check }: { check: ProductionLaunchEvidenceCheck })
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -198,8 +198,8 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: ProductionLaunchGateItem["status"] }) {
   const className =
     status === "local_evidence_ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-      : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+      : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

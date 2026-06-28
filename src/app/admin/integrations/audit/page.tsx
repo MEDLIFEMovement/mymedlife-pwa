@@ -37,8 +37,8 @@ export default async function AdminIntegrationAuditPage() {
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               Integrations audit
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -76,7 +76,7 @@ export default async function AdminIntegrationAuditPage() {
                     {Object.entries(row.metadataSummary).map(([key, value]) => (
                       <span
                         key={`${row.id}-${key}`}
-                        className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-600"
+                        className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-600"
                       >
                         {key.replaceAll("_", " ")}: {value}
                       </span>

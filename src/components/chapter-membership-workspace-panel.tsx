@@ -68,7 +68,7 @@ export function ChapterMembershipWorkspacePanel({
                     <p className="mt-1 text-sm text-slate-500">{member.email}</p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <p className="text-sm font-semibold text-[#2563eb]">
+                    <p className="text-sm font-semibold text-[var(--mymedlife-primary-button)]">
                       {member.roleLabel}
                     </p>
                     <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
@@ -111,7 +111,7 @@ export function ChapterMembershipWorkspacePanel({
                   >
                     <p className="font-semibold text-slate-950">{request.displayName}</p>
                     <p className="mt-1 text-sm text-slate-500">{request.email}</p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
                       {request.requestedRoleLabel} / {request.source.replaceAll("_", " ")}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -161,7 +161,7 @@ export function ChapterMembershipWorkspacePanel({
                 <p className="mt-1 text-sm leading-6 text-slate-600">
                   {control.reason}
                 </p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                   Future trail: {control.futureEventType}
                 </p>
               </div>
@@ -260,7 +260,7 @@ function MembershipApprovalPacketPanel({
             {packet.futureRecords.map((record) => (
               <div
                 key={record.label}
-                className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)]"
+                className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgb(var(--mymedlife-shadow-rgb)/0.04)]"
               >
                 <p className="app-eyebrow app-eyebrow-slate">{record.label}</p>
                 <p className="mt-1 text-sm font-semibold text-slate-950">
@@ -339,7 +339,7 @@ function PacketToken({ label, value }: { label: string; value: string }) {
   return (
     <div className="app-surface-soft rounded-[1.05rem] px-3 py-2">
       <p className="app-eyebrow app-eyebrow-slate">{label}</p>
-      <p className="mt-1 break-words text-sm font-semibold text-[#2563eb]">{value}</p>
+      <p className="mt-1 break-words text-sm font-semibold text-[var(--mymedlife-primary-button)]">{value}</p>
     </div>
   );
 }
@@ -347,12 +347,12 @@ function PacketToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: ChapterMembershipStatus }) {
   const className =
     status === "approved"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "requested"
-        ? "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]"
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] text-[var(--mymedlife-primary-button)]"
         : status === "needs_follow_up"
-          ? "border-blue-200 bg-blue-50 text-blue-700"
-          : "border-slate-200 bg-[#dbeafe] text-slate-600";
+          ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+          : "border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -364,10 +364,10 @@ function StatusPill({ status }: { status: ChapterMembershipStatus }) {
 function RoleCoverageCard({ item }: { item: RoleCoverageItem }) {
   const className =
     item.status === "covered"
-      ? "border-blue-200 bg-blue-50"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]"
       : item.status === "thin"
-        ? "border-blue-200 bg-blue-50"
-        : "border-blue-200 bg-blue-50";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]";
 
   return (
     <div className={`rounded-2xl border p-3 ${className}`}>

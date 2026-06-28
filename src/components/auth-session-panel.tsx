@@ -38,14 +38,14 @@ export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/"
-          className="rounded-full bg-[#2563eb] px-4 py-2 text-center text-sm font-semibold text-[#10223f]"
+          className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-center text-sm font-semibold text-[var(--foreground)]"
         >
           Continue into myMEDLIFE
         </Link>
         <form action={signOut}>
           <button
             type="submit"
-            className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-[#5d8ff6]/28 hover:text-slate-950 sm:w-auto"
+            className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-[var(--accent)]/28 hover:text-slate-950 sm:w-auto"
           >
             Sign out
           </button>

@@ -1,4 +1,5 @@
 import type { AssignmentCreateResultCode } from "@/services/assignment-create-result-states";
+import { getModuleFeatureAvailability } from "@/modules/feature-flags";
 import {
   canCreateChapterAssignment,
   type ChapterAssignmentInput,
@@ -96,6 +97,18 @@ export type AssignmentCreateReadbackState = {
 export function getAssignmentCreateWriteConfig(
   env: EnvSource = process.env,
 ): AssignmentCreateWriteConfig {
+  const taskAssignment = getModuleFeatureAvailability("task_assignment", { env });
+
+  if (!taskAssignment.enabled) {
+    return {
+      enabled: false,
+      isLocalOnly: true,
+      externalWritesEnabled: false,
+      remindersEnabled: false,
+      reason: taskAssignment.gracefulFallback,
+    };
+  }
+
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
     return {
       enabled: false,

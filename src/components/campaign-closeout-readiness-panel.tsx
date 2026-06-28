@@ -16,10 +16,10 @@ export function CampaignCloseoutReadinessPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             Phase closeout
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{closeout.title}</h2>
@@ -44,7 +44,7 @@ export function CampaignCloseoutReadinessPanel({
 
       <div className="mt-5 grid gap-3">
         {closeout.rows.map((row) => (
-          <article key={row.key} className="rounded-2xl bg-[#bfdbfe]/40 p-4">
+          <article key={row.key} className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2">
@@ -63,7 +63,7 @@ export function CampaignCloseoutReadinessPanel({
         ))}
       </div>
 
-      <p className="mt-4 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/54">
         Closeout writes and external exports are disabled. This panel does not
         advance phases, send coach packets, update warehouse rows, or trigger n8n.
       </p>
@@ -73,7 +73,7 @@ export function CampaignCloseoutReadinessPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -85,10 +85,10 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function ReadinessPill({ state }: { state: CampaignReadinessState }) {
   const className =
     state === "advance_ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : state === "hold_for_follow_up"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -100,12 +100,12 @@ function ReadinessPill({ state }: { state: CampaignReadinessState }) {
 function StatusPill({ status }: { status: CampaignCloseoutStatus }) {
   const className =
     status === "ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "mocked"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
         : status === "needs_work"
-          ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-          : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+          ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+          : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

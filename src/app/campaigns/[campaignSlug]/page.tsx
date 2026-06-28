@@ -98,7 +98,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       ) : (
         <>
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               {campaign.status} campaign
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">{campaign.name}</h1>
@@ -109,27 +109,27 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
               {campaign.slug === "rush-month" ? (
                 <Link
                   href="/rush-month"
-                  className="rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
+                  className="rounded-full bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-badge-text)]"
                 >
                   Open active Rush Month loop
                 </Link>
               ) : null}
               <Link
                 href="/action-committees"
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 See action committees
               </Link>
               <Link
                 href="/proof-library"
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 See proof library
               </Link>
             </div>
           </section>
 
-          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+          <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
             <section className="grid gap-3 sm:grid-cols-3">
               <MetricCard
                 label="Action lanes"
@@ -149,7 +149,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
             </section>
 
             <section className="grid gap-3 lg:grid-cols-2">
-              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
                 <h2 className="text-2xl font-semibold text-slate-950">Why students care</h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600">
                   {campaign.studentPromise}
@@ -162,7 +162,7 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
                 </p>
               </article>
 
-              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
                 <h2 className="text-2xl font-semibold text-slate-950">Proof and coaching</h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600">{campaign.proofUse}</p>
                 <h3 className="mt-5 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
@@ -200,13 +200,13 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
               <StartAChapterCampaignPanel plan={startAChapterPlan} />
             ) : null}
 
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
               <h2 className="text-2xl font-semibold text-slate-950">Primary KPIs</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {campaign.primaryKpis.map((kpi) => (
                   <span
                     key={kpi}
-                    className="rounded-full border border-[#2563eb]/30 bg-[#dbeafe] px-3 py-1 text-sm text-[#1d4ed8]"
+                    className="rounded-full border border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-sm text-[var(--mymedlife-info)]"
                   >
                     {kpi.replaceAll("_", " ")}
                   </span>
@@ -214,15 +214,15 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
               </div>
             </section>
 
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
               <h2 className="text-2xl font-semibold text-slate-950">Chapter event examples</h2>
               <div className="mt-4 grid gap-3">
                 {eventPlans.map((eventPlan) => (
                   <article
                     key={eventPlan.id}
-                    className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
+                    className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
                   >
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                       {eventPlan.eventType.replaceAll("_", " ")} / {eventPlan.lumaStatus.replaceAll("_", " ")}
                     </p>
                     <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -239,8 +239,8 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
               </div>
             </section>
 
-            <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#eaf2ff] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+            <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                 Ecosystem boundaries
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -259,11 +259,11 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-950">{event.title}</p>
-                        <p className="mt-1 font-mono text-xs text-[#1d4ed8]">
+                        <p className="mt-1 font-mono text-xs text-[var(--mymedlife-info)]">
                           {event.eventType} / {event.destination}
                         </p>
                       </div>
-                      <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2 py-1 text-xs text-slate-600">
+                      <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2 py-1 text-xs text-slate-600">
                         {event.status}
                       </span>
                     </div>

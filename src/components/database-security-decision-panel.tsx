@@ -73,7 +73,7 @@ function ComparisonCard({ item }: { item: DatabasePlatformComparison }) {
         <DecisionPill status={item.status} />
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-600">{item.fit}</p>
-      <p className="mt-3 text-sm leading-6 text-[#1d4ed8]">
+      <p className="mt-3 text-sm leading-6 text-[var(--mymedlife-info)]">
         {item.securityImpact}
       </p>
       <p className="mt-3 text-xs leading-5 text-slate-500">{item.tradeoff}</p>
@@ -84,8 +84,8 @@ function ComparisonCard({ item }: { item: DatabasePlatformComparison }) {
 function ControlCard({ item }: { item: DatabaseSecurityControl }) {
   const statusClass =
     item.status === "local_evidence_ready"
-      ? "border-blue-300/60 bg-blue-50 text-blue-700"
-      : "border-blue-300/60 bg-blue-50 text-blue-700";
+      ? "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+      : "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <article className="app-surface rounded-2xl p-4">
@@ -101,7 +101,7 @@ function ControlCard({ item }: { item: DatabaseSecurityControl }) {
         </span>
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-600">{item.localEvidence}</p>
-      <p className="mt-3 text-xs leading-5 text-[#1d4ed8]">
+      <p className="mt-3 text-xs leading-5 text-[var(--mymedlife-info)]">
         Required: {item.requiredBeforeLive}
       </p>
     </article>
@@ -130,10 +130,10 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function DecisionPill({ status }: { status: DatabaseDecisionStatus }) {
   const className =
     status === "preferred_for_mvp"
-      ? "border-blue-300/60 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "reviewed_tradeoff"
-        ? "border-blue-300/60 bg-blue-50 text-blue-700"
-        : "border-blue-300/60 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

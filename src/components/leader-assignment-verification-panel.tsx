@@ -17,10 +17,10 @@ export function LeaderAssignmentVerificationPanel({
   }
 
   return (
-    <SurfacePanel as="section" className="rounded-[2rem] border border-blue-300/20 bg-[#eff6ff] p-5">
+    <SurfacePanel as="section" className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--background)] p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             Leader assignment packet
           </p>
           <h1 className="mt-2 text-3xl font-semibold text-white">
@@ -35,13 +35,13 @@ export function LeaderAssignmentVerificationPanel({
             </StatusPill>
             <PanelButton
               href="/admin/hq-proof-write"
-              className="border-white/12 bg-[#bfdbfe]/40 text-white/78"
+              className="border-white/12 bg-[var(--mymedlife-border)]/40 text-white/78"
             >
               Check HQ packet
             </PanelButton>
             <PanelButton
               href="/rush-month/actions"
-              className="bg-[#2563eb] text-[#08224c]"
+              className="bg-[var(--mymedlife-primary-button)] text-[var(--foreground)]"
             >
               Open assignments
             </PanelButton>
@@ -56,7 +56,7 @@ export function LeaderAssignmentVerificationPanel({
         </div>
       </div>
 
-      <SurfacePanel as="article" className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      <SurfacePanel as="article" className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/42">
           Default local assignment
         </p>
@@ -74,8 +74,8 @@ export function LeaderAssignmentVerificationPanel({
         </div>
       </SurfacePanel>
 
-      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
           Leader responsibility map
         </p>
         <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -91,9 +91,9 @@ export function LeaderAssignmentVerificationPanel({
             <SurfacePanel
               as="article"
               key={item.roleLabel}
-              className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4"
+              className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
                 {item.responsibility}
               </p>
               <h3 className="mt-2 text-lg font-semibold text-white">
@@ -102,13 +102,13 @@ export function LeaderAssignmentVerificationPanel({
               <p className="mt-2 text-sm leading-6 text-white/62">
                 {item.reviewPrompt}
               </p>
-              <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3 text-xs leading-5 text-white/54">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-3 text-xs leading-5 text-white/54">
                 {item.safetyBoundary}
               </p>
               <PanelButton
                 href={item.route}
                 variant="secondary"
-                className="mt-3 border-white/12 bg-[#bfdbfe]/40 text-white/72"
+                className="mt-3 border-white/12 bg-[var(--mymedlife-border)]/40 text-white/72"
               >
                 Open {item.route}
               </PanelButton>
@@ -117,10 +117,10 @@ export function LeaderAssignmentVerificationPanel({
         </div>
       </SurfacePanel>
 
-      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-4">
+      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
               Operator packet
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -136,7 +136,7 @@ export function LeaderAssignmentVerificationPanel({
         </div>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.9fr]">
-          <SurfacePanel as="article" className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+          <SurfacePanel as="article" className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
             <p className="text-sm font-semibold text-white">
               Required local env settings
             </p>
@@ -144,9 +144,9 @@ export function LeaderAssignmentVerificationPanel({
               {packet.verificationPacket.envSettings.map((setting) => (
                 <div
                   key={setting.key}
-                  className="rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3"
+                  className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-3"
                 >
-                  <p className="font-mono text-xs text-blue-100/80">
+                  <p className="font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
                     {setting.key}={setting.value}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-white/52">
@@ -157,9 +157,9 @@ export function LeaderAssignmentVerificationPanel({
             </div>
           </SurfacePanel>
 
-          <SurfacePanel as="article" className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+          <SurfacePanel as="article" className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
             <p className="text-sm font-semibold text-white">Assignment proof</p>
-              <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/78 p-3 font-mono text-xs text-blue-100/80">
+              <p className="mt-3 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-3 font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
               chapter={packet.chapterId}
               <br />
               campaign={packet.campaignId}
@@ -167,7 +167,7 @@ export function LeaderAssignmentVerificationPanel({
             <p className="mt-3 text-xs leading-5 text-white/56">
               Proof required: {packet.defaultInput.evidenceRequired}
             </p>
-            <p className="mt-3 rounded-2xl border border-blue-300/20 bg-blue-300/10 p-3 text-xs leading-5 text-blue-100/78">
+            <p className="mt-3 rounded-2xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-3 text-xs leading-5 text-[var(--mymedlife-badge-background)]/78">
               This packet must not send reminder emails, SMS, HubSpot handoffs,
               n8n workflows, Luma writes, or any external automation.
             </p>
@@ -179,11 +179,11 @@ export function LeaderAssignmentVerificationPanel({
             <SurfacePanel
               as="article"
               key={`${step.label}-${step.route}`}
-              className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
+              className="rounded-3xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-4"
             >
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
                     Packet step {index + 1}
                   </p>
                   <h3 className="mt-2 text-lg font-semibold text-white">
@@ -193,7 +193,7 @@ export function LeaderAssignmentVerificationPanel({
               <PanelButton
                 href={step.route}
                 variant="secondary"
-                className="border-white/12 bg-[#bfdbfe]/40 text-white/72"
+                className="border-white/12 bg-[var(--mymedlife-border)]/40 text-white/72"
               >
                 Open {step.route}
               </PanelButton>
@@ -205,7 +205,7 @@ export function LeaderAssignmentVerificationPanel({
           ))}
         </div>
 
-        <SurfacePanel as="article" className="mt-4 rounded-3xl border border-blue-300/20 bg-blue-300/10 p-4">
+        <SurfacePanel as="article" className="mt-4 rounded-3xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
           <p className="text-sm font-semibold text-white">Stop conditions</p>
           <ul className="mt-3 grid gap-2">
             {packet.verificationPacket.safetyStops.map((stop) => (
@@ -222,13 +222,13 @@ export function LeaderAssignmentVerificationPanel({
           <SurfacePanel
             as="article"
             key={check.key}
-            className="rounded-3xl border border-white/10 bg-[#0b66cc]/78 p-4"
+            className="rounded-3xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/78 p-4"
           >
             <p
               className={
                 check.passed
-                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100"
-                  : "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100"
+                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]"
+                  : "text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]"
               }
             >
               {check.passed ? "Ready" : "Blocked"}
@@ -239,7 +239,7 @@ export function LeaderAssignmentVerificationPanel({
         ))}
       </div>
 
-      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-blue-300/20 bg-[#eff6ff] p-4">
+      <SurfacePanel as="section" className="mt-5 rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--background)] p-4">
         <h2 className="text-2xl font-semibold text-white">
           Post-assignment readback evidence
         </h2>
@@ -253,7 +253,7 @@ export function LeaderAssignmentVerificationPanel({
             <SurfacePanel
               as="article"
               key={item.key}
-              className="rounded-3xl border border-white/10 bg-[#0b66cc]/80 p-4"
+              className="rounded-3xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/80 p-4"
             >
               <p className={readbackStatusClassName(item.status)}>
                 {item.status.replaceAll("_", " ")}
@@ -274,7 +274,7 @@ export function LeaderAssignmentVerificationPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -323,9 +323,9 @@ function readbackStatusClassName(status: LeaderAssignmentReadbackStatus): string
   switch (status) {
     case "observed":
     case "disabled_outbox_observed":
-      return "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100";
+      return "text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]";
     case "manual_check_needed":
-      return "text-xs font-semibold uppercase tracking-[0.18em] text-blue-100";
+      return "text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]";
     case "missing":
     case "blocked":
       return "text-xs font-semibold uppercase tracking-[0.18em] text-white/42";
