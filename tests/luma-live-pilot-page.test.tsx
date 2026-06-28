@@ -40,6 +40,14 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("event_rsvp_recorded");
     expect(html).toContain("event_points_awarded");
     expect(html).toContain("Audit/outbox review remains visible before pilot expansion.");
+    expect(html).toContain("Hosted reviewer proof");
+    expect(html).toContain("Use this route as the staging evidence checklist.");
+    expect(html).toContain("Open staging.mymedlife.org, pass Vercel SSO");
+    expect(html).toContain("Luma event create/update");
+    expect(html).toContain("RSVP writeback");
+    expect(html).toContain("Attendance import");
+    expect(html).toContain("Points and leaderboard readback");
+    expect(html).toContain("Audit/outbox safety");
     expect(html).not.toContain("secret-example");
   });
 

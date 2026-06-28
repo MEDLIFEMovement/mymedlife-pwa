@@ -194,6 +194,74 @@ export default async function LumaLivePilotPage({
             </div>
           </section>
 
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="app-eyebrow app-eyebrow-blue">Hosted reviewer proof</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  Use this route as the staging evidence checklist.
+                </h2>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                  A reviewer should complete these checks on staging.mymedlife.org
+                  from a signed-in Vercel SSO session, then record screenshots or
+                  route evidence before any live pilot approval.
+                </p>
+              </div>
+              <a
+                href="/admin/audit-log"
+                className="w-fit rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:bg-[var(--mymedlife-surface-hover)]"
+              >
+                Open audit log
+              </a>
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+              {[
+                {
+                  label: "Reviewer access path",
+                  detail:
+                    "Open staging.mymedlife.org, pass Vercel SSO, sign in as an approved DS/Admin reviewer, then open /admin/luma-live-pilot.",
+                },
+                {
+                  label: "Luma event create/update",
+                  detail:
+                    "Run the event form only when the staging gate says event writes are On, then record the returned Luma event id.",
+                },
+                {
+                  label: "RSVP writeback",
+                  detail:
+                    "Write the approved reviewer RSVP to that event with Luma email sending suppressed.",
+                },
+                {
+                  label: "Attendance import",
+                  detail:
+                    "Import the guest list for the same event and confirm the page returns attendance rows without QR codes or secrets.",
+                },
+                {
+                  label: "Points and leaderboard readback",
+                  detail:
+                    "Confirm this page, member surfaces, leader surfaces, and staff/admin surfaces show the same event-to-points story.",
+                },
+                {
+                  label: "Audit/outbox safety",
+                  detail:
+                    "Open /admin/audit-log and /admin/integration-outbox to confirm audit visibility and zero unapproved external sends.",
+                },
+              ].map((item) => (
+                <article
+                  key={item.label}
+                  className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4"
+                >
+                  <h3 className="text-sm font-semibold text-slate-950">
+                    {item.label}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {item.detail}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+
           <section className="grid gap-4 xl:grid-cols-3">
             <LivePilotForm title="Create or update Luma event" detail="Leave event id blank to create a staging event. Add an event id to update an existing Luma event with notifications suppressed.">
               <form action={runLumaEventUpsertAction} className="space-y-3">
