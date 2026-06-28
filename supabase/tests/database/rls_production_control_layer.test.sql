@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(15);
+select plan(19);
 
 set local role authenticated;
 
@@ -202,6 +202,48 @@ select is(
   ),
   1,
   'Staging theme snapshot creates a durable theme audit row'
+);
+
+select lives_ok(
+  $$
+    select * from app.save_theme_control_snapshot(
+      'staging',
+      'active',
+      '{"font":{"hex":"#10223f"},"background":{"hex":"#ffffff"}}'::jsonb,
+      'Publish reviewed staging theme for signed-in reviewers.'
+    )
+  $$,
+  'DS Admin can publish a staging theme snapshot through the audited function'
+);
+
+set local "request.jwt.claim.sub" = '00000000-0000-4000-8000-000000000001';
+set local "request.jwt.claim.role" = 'authenticated';
+
+select is(
+  (select count(*)::int from app.theme_snapshots where environment = 'staging'),
+  1,
+  'Member can read only the active staging theme snapshot'
+);
+
+select is(
+  (
+    select status::text
+    from app.theme_snapshots
+    where environment = 'staging'
+    limit 1
+  ),
+  'active',
+  'Member-visible theme snapshot is the published active theme'
+);
+
+select is(
+  (
+    select count(*)::int
+    from app.theme_audit_records
+    where environment = 'staging'
+  ),
+  0,
+  'Member cannot read theme audit history'
 );
 
 reset role;

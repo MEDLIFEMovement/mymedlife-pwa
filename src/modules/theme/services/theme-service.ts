@@ -480,6 +480,39 @@ export function getPublishedThemeCssVariables(
   return getThemeCssVariables(getThemeSnapshot(environment, "published"));
 }
 
+export async function getPublishedThemeCssVariablesDurable(
+  environment: FeatureFlagEnvironment = "preview",
+  env: Record<string, string | undefined> = process.env,
+): Promise<string> {
+  const { client } = await createSupabaseControlClient(env);
+
+  if (!client) {
+    return getPublishedThemeCssVariables(environment);
+  }
+
+  try {
+    const rows = await client.selectRows<PersistedThemeSnapshotRow>("theme_snapshots", {
+      select:
+        "id,environment,status,tokens,created_at,updated_at,published_at,rollback_of_id",
+      query: {
+        environment: `eq.${environment}`,
+        status: "eq.active",
+      },
+      order: { column: "updated_at", ascending: false },
+      limit: 1,
+    });
+    const row = rows[0];
+
+    if (!row) {
+      return getPublishedThemeCssVariables(environment);
+    }
+
+    return getThemeCssVariables(toThemeSnapshot(row));
+  } catch {
+    return getPublishedThemeCssVariables(environment);
+  }
+}
+
 export function listThemeAuditRecords(): ThemeAuditRecord[] {
   return [...getStore().auditRecords];
 }

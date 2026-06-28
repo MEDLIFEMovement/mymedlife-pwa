@@ -14,6 +14,7 @@ export type {
 export {
   canManageTheme,
   getPublishedThemeCssVariables,
+  getPublishedThemeCssVariablesDurable,
   getThemeAdminState,
   getThemeContrastResults,
   getThemeCssVariables,

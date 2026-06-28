@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 import { getCurrentFeatureEnvironment } from "@/modules/feature-flags";
-import { getPublishedThemeCssVariables } from "@/modules/theme";
+import { getPublishedThemeCssVariablesDurable } from "@/modules/theme";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -35,12 +35,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const themeCss = getPublishedThemeCssVariables(getCurrentFeatureEnvironment());
+  const themeCss = await getPublishedThemeCssVariablesDurable(
+    getCurrentFeatureEnvironment(),
+  );
 
   return (
     <html
