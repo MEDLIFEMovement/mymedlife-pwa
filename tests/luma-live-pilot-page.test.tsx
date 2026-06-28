@@ -1,0 +1,59 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
+import { getMockLocalActorContext } from "@/services/local-actor-context";
+
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn((target: string) => {
+    throw new Error(`redirect:${target}`);
+  }),
+  usePathname: () => "/admin/luma-live-pilot",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("@/services/local-actor-context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services/local-actor-context")>();
+
+  return {
+    ...actual,
+    getLocalActorContext: vi.fn(),
+  };
+});
+
+describe("Luma live pilot admin page", () => {
+  it("shows DS Admin the event, RSVP, attendance, points, leaderboard, and outbox proof path", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
+    );
+
+    const { default: LumaLivePilotPage } = await import("@/app/admin/luma-live-pilot/page");
+    const html = renderToStaticMarkup(await LumaLivePilotPage({}));
+
+    expect(html).toContain("Staging Luma pilot");
+    expect(html).toContain("Event and points evidence");
+    expect(html).toContain("RSVP, attendance, and leaderboard impact stay tied together.");
+    expect(html).toContain("RSVPs");
+    expect(html).toContain("Attendance");
+    expect(html).toContain("Points");
+    expect(html).toContain("Leaderboard");
+    expect(html).toContain("Outbox sends");
+    expect(html).toContain("event_rsvp_recorded");
+    expect(html).toContain("event_points_awarded");
+    expect(html).toContain("Audit/outbox review remains visible before pilot expansion.");
+    expect(html).not.toContain("secret-example");
+  });
+
+  it("blocks non-DS users from staging Luma write and import controls", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("coach@mymedlife.test"),
+    );
+
+    const { default: LumaLivePilotPage } = await import("@/app/admin/luma-live-pilot/page");
+    const html = renderToStaticMarkup(await LumaLivePilotPage({}));
+
+    expect(html).toContain("Luma live pilot restricted");
+    expect(html).toContain("Only DS Admin and Super Admin can run staging Luma write or import controls.");
+    expect(html).not.toContain("Create/update Luma event");
+  });
+});

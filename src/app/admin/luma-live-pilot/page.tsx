@@ -5,6 +5,7 @@ import { RestrictedState } from "@/components/restricted-state";
 import { getLumaLivePilotGate } from "@/services/luma-live-pilot";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import {
   runLumaAttendanceImportAction,
   runLumaEventUpsertAction,
@@ -29,6 +30,7 @@ export default async function LumaLivePilotPage({
   ]);
   const canRead = canReadAdminIntegrationsSecurity(actor);
   const gate = getLumaLivePilotGate();
+  const eventLoop = getStagingLumaEventLoopReadModel("staging");
   const result = normalizeResult(resolvedSearchParams?.lumaResult);
   const message = resolvedSearchParams?.lumaMessage ?? null;
 
@@ -93,6 +95,81 @@ export default async function LumaLivePilotPage({
               value={gate.attendanceImportEnabled ? "On" : "Off"}
             />
             <MiniStat label="Production" value={gate.productionBlocked ? "Blocked" : "Off"} />
+          </section>
+
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="app-eyebrow app-eyebrow-blue">Event and points evidence</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  RSVP, attendance, and leaderboard impact stay tied together.
+                </h2>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                  This readback is the staging pilot proof path reviewers should compare
+                  against the live Luma controls below: one chapter event, one member RSVP,
+                  one confirmed attendance row, one points award, disabled outbox posture,
+                  and audit visibility before any broader launch.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs font-semibold">
+                <Pill>{eventLoop.providerStatusLabel}</Pill>
+                <Pill>{eventLoop.summary.duplicatePointsPrevented ? "deduped points" : "review points"}</Pill>
+                <Pill>{eventLoop.summary.externalWritesEnabled ? "external writes on" : "external sends off"}</Pill>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              <MiniStat
+                label="RSVPs"
+                value={`${eventLoop.summary.rsvpCount}`}
+              />
+              <MiniStat
+                label="Attendance"
+                value={`${eventLoop.summary.attendanceCount}`}
+              />
+              <MiniStat
+                label="Points"
+                value={`${eventLoop.summary.pointsAwarded}`}
+              />
+              <MiniStat
+                label="Leaderboard"
+                value={eventLoop.summary.pointsAwarded > 0 ? "Updated" : "Pending"}
+              />
+              <MiniStat
+                label="Outbox sends"
+                value={eventLoop.summary.externalWritesEnabled ? "Review" : "0"}
+              />
+            </div>
+            <div className="mt-4 grid gap-3 lg:grid-cols-5">
+              {eventLoop.sequence.map((step) => (
+                <article
+                  key={step.eventType}
+                  className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
+                    {step.eventType}
+                  </p>
+                  <h3 className="mt-2 text-sm font-semibold text-slate-950">
+                    {step.label}
+                  </h3>
+                  <p className="mt-2 text-xs leading-5 text-slate-600">
+                    {step.detail}
+                  </p>
+                </article>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                ...eventLoop.safetyNotes,
+                "Audit/outbox review remains visible before pilot expansion.",
+              ].map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-slate-200 bg-[var(--background)] px-3 py-1 text-xs font-semibold text-slate-600"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
           </section>
 
           <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
