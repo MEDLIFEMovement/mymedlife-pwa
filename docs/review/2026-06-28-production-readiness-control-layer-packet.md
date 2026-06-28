@@ -100,11 +100,22 @@ Current Vercel evidence:
 - Vercel project `mymedlife-pwa` exists under team
   `nellis-6036's projects`.
 - PR #126 preview deployment for `feat/modular-flags-theme-admin` is `READY`.
-- This Codex session can read Vercel projects/deployments, but does not have a
-  Vercel env-var list/write tool and the local Vercel CLI is not installed in
-  this checkout. Therefore `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` still needs
-  platform-owner confirmation or manual setting before the deployed app can be
-  treated as using the Supabase-backed control layer.
+- Vercel CLI access was confirmed as `nellis-6036`.
+- `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` was added as a non-secret Preview
+  variable for both active staging branches:
+  - `feat/modular-flags-theme-admin`
+  - `feat/MED-494-hosted-staging-read-write-proof`
+- PR #126 was redeployed after the env-var change:
+  - deployment id: `dpl_9qCR3LiMyvWnfTxdTsZRSxFssdAz`
+  - preview URL: `https://mymedlife-65dsx90wr-nellis-6036s-projects.vercel.app`
+  - deployment state: `READY`
+
+Remaining hosted UI proof:
+
+- Protected preview fetches still redirect through Vercel SSO, so a signed-in
+  reviewer session is still required to visually confirm `/admin/feature-flags`
+  and `/admin/theme` display Supabase-backed control storage in the hosted UI.
+- Production environment variables remain unset/off for this control layer.
 
 ## Luma Event Loop Staging Proof
 
