@@ -123,6 +123,9 @@ export function getPhase2CloseoutReview(
   });
   const pilotReadiness = getControlledPilotReadiness(actor, {
     lumaReadModel,
+    hostedStagingEvidenceObserved:
+      data.source.mode === "supabase" &&
+      lumaReadModel.providerStatusLabel === "Staging evidence rows recorded",
   });
   const pilotScope = getPilotScopePlanner(actor);
   const pilotRegistry = getPhase2PilotRegistry();

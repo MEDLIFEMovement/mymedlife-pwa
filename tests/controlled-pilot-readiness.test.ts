@@ -97,6 +97,33 @@ describe("controlled pilot readiness", () => {
     ).toBe("ready_now");
   });
 
+  it("treats hosted staging as a review/signoff step once Supabase-backed proof exists", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const readiness = getControlledPilotReadiness(actor, {
+      lumaReadModel: getStagingLumaEventLoopReadModel("staging"),
+      hostedStagingEvidenceObserved: true,
+    });
+
+    expect(
+      readiness.stages.find((stage) => stage.key === "staging_review")?.status,
+    ).toBe("needs_decision");
+    expect(
+      readiness.stages.find((stage) => stage.key === "staging_review")
+        ?.plainEnglish,
+    ).toContain("Hosted staging now exists");
+    expect(
+      readiness.gates.find((gate) => gate.key === "staging_environment")?.status,
+    ).toBe("needs_decision");
+    expect(
+      readiness.gates.find((gate) => gate.key === "staging_environment")
+        ?.plainEnglish,
+    ).toContain("already exist");
+    expect(
+      readiness.gates.find((gate) => gate.key === "staging_environment")
+        ?.nextStep,
+    ).toContain("recorded staging reviewer path");
+  });
+
   it("keeps DS Admin eligible without making external integrations live", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const readiness = getControlledPilotReadiness(actor);

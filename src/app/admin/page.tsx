@@ -104,6 +104,9 @@ export default async function AdminPage() {
   const adminGlossary = getAdminGlossary(actor);
   const controlledPilotReadiness = getControlledPilotReadiness(actor, {
     lumaReadModel: lumaActivation,
+    hostedStagingEvidenceObserved:
+      data.source.mode === "supabase" &&
+      lumaActivation.providerStatusLabel === "Staging evidence rows recorded",
   });
   const designQaReadiness = getDesignQaReadiness(actor);
   const environmentSafetySummary = getEnvironmentSafetySummary(actor);

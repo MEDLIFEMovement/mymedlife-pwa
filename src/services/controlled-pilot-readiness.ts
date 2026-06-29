@@ -61,6 +61,7 @@ export function getControlledPilotReadiness(
   actor: LocalActorContext,
   options: {
     lumaReadModel?: StagingLumaEventLoopReadModel;
+    hostedStagingEvidenceObserved?: boolean;
   } = {},
 ): ControlledPilotReadiness {
   const surfaceFamily = getActorSurfaceFamily(actor);
@@ -81,8 +82,15 @@ export function getControlledPilotReadiness(
   }
 
   const pilotRegistry = getPhase2PilotRegistry();
-  const stages = getPilotStages(pilotRegistry);
-  const gates = getPilotGates(pilotRegistry, options.lumaReadModel);
+  const stages = getPilotStages(
+    pilotRegistry,
+    Boolean(options.hostedStagingEvidenceObserved),
+  );
+  const gates = getPilotGates(
+    pilotRegistry,
+    options.lumaReadModel,
+    Boolean(options.hostedStagingEvidenceObserved),
+  );
   const statuses = [...stages, ...gates].map((item) => item.status);
   const lumaProofGate = gates.find((gate) => gate.key === "luma_points_proof");
   const lumaProofMissing = lumaProofGate?.status === "blocked_before_pilot";
@@ -124,6 +132,7 @@ export function getControlledPilotReadiness(
 
 function getPilotStages(
   pilotRegistry: ReturnType<typeof getPhase2PilotRegistry>,
+  hostedStagingEvidenceObserved: boolean,
 ): PilotReadinessStage[] {
   const pilotChapter = pilotRegistry.defaults.find(
     (item) => item.key === "pilot_chapter",
@@ -157,12 +166,18 @@ function getPilotStages(
     {
       key: "staging_review",
       label: "Staging deployment review",
-      status: "blocked_before_pilot",
+      status: hostedStagingEvidenceObserved ? "needs_decision" : "blocked_before_pilot",
       plainEnglish:
-        "The app still needs an approved staging environment, staging Supabase posture, and mobile/Figma smoke pass before student pilot use.",
+        hostedStagingEvidenceObserved
+          ? "Hosted staging now exists with role-routed and Luma readback proof, but the team still needs the final device/Figma/accessibility smoke pass and human signoff before student pilot use."
+          : "The app still needs an approved staging environment, staging Supabase posture, and mobile/Figma smoke pass before student pilot use.",
       requiredProof: [
-        "Staging URL exists.",
-        "Secrets and environment flags are reviewed.",
+        hostedStagingEvidenceObserved
+          ? "Hosted staging alias and reviewer access path are already proven."
+          : "Staging URL exists.",
+        hostedStagingEvidenceObserved
+          ? "Secrets and environment flags stay aligned with the recorded hosted proof."
+          : "Secrets and environment flags are reviewed.",
         "Mobile and accessibility smoke checks pass.",
         "Hosted `/admin/luma-live-pilot` proof includes one checked-in attendee creating points and leaderboard readback.",
       ],
@@ -205,6 +220,7 @@ function getPilotStages(
 function getPilotGates(
   pilotRegistry: ReturnType<typeof getPhase2PilotRegistry>,
   lumaReadModel?: StagingLumaEventLoopReadModel,
+  hostedStagingEvidenceObserved = false,
 ): PilotReadinessGate[] {
   const pilotChapter = pilotRegistry.defaults.find(
     (item) => item.key === "pilot_chapter",
@@ -234,11 +250,15 @@ function getPilotGates(
       key: "staging_environment",
       label: "Staging environment",
       owner: "Kiomi",
-      status: "blocked_before_pilot",
+      status: hostedStagingEvidenceObserved ? "needs_decision" : "blocked_before_pilot",
       plainEnglish:
-        "A real pilot needs a staging deployment and reviewed Supabase/environment settings.",
+        hostedStagingEvidenceObserved
+          ? "Hosted staging, Supabase-backed readback, and the reviewer login path already exist; the remaining work is final reviewer confirmation, not initial staging setup."
+          : "A real pilot needs a staging deployment and reviewed Supabase/environment settings.",
       nextStep:
-        "Create staging hosting and Supabase projects after secrets/access ownership is approved.",
+        hostedStagingEvidenceObserved
+          ? "Use the recorded staging reviewer path and hosted route bundle to finish device/accessibility smoke and final pilot signoff."
+          : "Create staging hosting and Supabase projects after secrets/access ownership is approved.",
     },
     {
       key: "auth_onboarding",
