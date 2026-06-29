@@ -125,6 +125,7 @@ export default async function AdminPage() {
   const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
   const mvpProgressMap = getMvpProgressMap(actor);
   const releaseReadiness = getMvpReleaseReadinessSummary(actor, {
+    data,
     env: process.env,
     lumaReadModel: lumaActivation,
     hostedStagingEvidenceObserved,

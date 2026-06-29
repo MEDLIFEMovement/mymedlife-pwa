@@ -30,6 +30,7 @@ export default async function AdminReleaseReadinessPage() {
     data,
   });
   const summary = getMvpReleaseReadinessSummary(actor, {
+    data,
     env: process.env,
     lumaReadModel: lumaActivation,
     hostedStagingEvidenceObserved:

@@ -1,9 +1,12 @@
+import { getFirstWriteActivationDrill } from "@/services/first-write-activation-drill";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
+import { getProofMetadataPacket } from "@/services/proof-metadata-verification-packet";
 import {
   getProductionEnvironmentReadinessItems,
   getProductionLaunchEvidenceChecks,
 } from "@/services/production-launch-gate";
+import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
@@ -85,6 +88,7 @@ export type MvpReleaseReadinessSummary = {
 export function getMvpReleaseReadinessSummary(
   actor: LocalActorContext,
   options: {
+    data?: ReadOnlyAppData;
     env?: Record<string, string | undefined>;
     lumaReadModel?: StagingLumaEventLoopReadModel;
     hostedStagingEvidenceObserved?: boolean;
@@ -577,7 +581,7 @@ export function getMvpReleaseReadinessSummary(
       },
     ],
     roleModelReviewCheckpoint: getRoleModelReviewCheckpoint(),
-    phase2Closeout: getPhase2CloseoutSnapshot(),
+    phase2Closeout: getPhase2CloseoutSnapshot(actor, options),
     productionReadiness: getProductionReadinessSnapshot(options),
     nextApprovals: [
       "Review `docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md` together with the production launch checklist, then either accept the current hosted staging proof as written or replace only the chapter, cohort size, owner slots, event/NPS posture, support channel, or rollback owner.",
@@ -644,6 +648,7 @@ export function getMvpReleaseReadinessSummary(
 
 function getProductionReadinessSnapshot(
   options: {
+    data?: ReadOnlyAppData;
     env?: Record<string, string | undefined>;
     lumaReadModel?: StagingLumaEventLoopReadModel;
     hostedStagingEvidenceObserved?: boolean;
@@ -707,7 +712,13 @@ function getProductionReadinessSnapshot(
   };
 }
 
-function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
+function getPhase2CloseoutSnapshot(
+  actor: LocalActorContext,
+  options: {
+    data?: ReadOnlyAppData;
+    env?: Record<string, string | undefined>;
+  },
+): Phase2CloseoutSnapshot {
   const pilotRegistry = getPhase2PilotRegistry();
   const pendingOwnerLabels = pilotRegistry.owners
     .filter((item) => item.status === "pending_named_owner")
@@ -715,6 +726,32 @@ function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
   const firstHostedWrite =
     pilotRegistry.defaults.find((item) => item.key === "first_hosted_write")?.value ??
     "`action_started`";
+  const env = options.env ?? process.env;
+  const firstWrite = options.data
+    ? getFirstWriteActivationDrill(actor, options.data, env)
+    : null;
+  const proofPacket = options.data
+    ? getProofMetadataPacket(actor, options.data, env)
+    : null;
+  const firstWriteEvidence = firstWrite?.hostedCloseout.currentObservedEvidence ?? null;
+  const proofLoopEvidence = proofPacket?.hostedCloseout.currentObservedEvidence ?? null;
+  const provenNow = [
+    "Pilot scope defaults are visible in `/admin/pilot-scope`.",
+    "Named owner slots are visible and explicitly still pending in `/admin/pilot-scope`.",
+    "Onboarding preflight now recommends manual pre-provisioning for the first hosted cohort.",
+    `The first hosted write recommendation is explicitly ${firstHostedWrite}.`,
+    firstWriteEvidence
+      ? `Hosted \`action_started\` proof is currently anchored to assignment ${firstWriteEvidence.assignmentId} (${firstWriteEvidence.assignmentTitle}), event ${firstWriteEvidence.eventId}, integration event ${firstWriteEvidence.integrationEventId}, and audit log ${firstWriteEvidence.auditLogId}, with zero outbox sends still recorded.`
+      : "Hosted `action_started` proof remains defined in `/admin/first-write`, even when the current release summary is being viewed without the staging evidence rows loaded.",
+    proofLoopEvidence
+      ? `Hosted proof-loop evidence is currently anchored to assignment ${proofLoopEvidence.assignmentId} (${proofLoopEvidence.assignmentTitle}), evidence item ${proofLoopEvidence.evidenceItemId}, summary "${proofLoopEvidence.evidenceSummary}", event ${proofLoopEvidence.eventId}, integration event ${proofLoopEvidence.integrationEventId}, audit log ${proofLoopEvidence.auditLogId}, and disabled outbox row ${proofLoopEvidence.outboxId}.`
+      : "The proof metadata packet now frames the smallest hosted proof loop as proof metadata submission plus leader review readback only.",
+    "Leader, staff, DS/admin, audit, and outbox review surfaces are named for the hosted proof loop.",
+    proofLoopEvidence
+      ? `Reviewer note recorded with the current hosted proof loop: ${proofLoopEvidence.reviewerNote}`
+      : "The current hosted proof note now records the authoritative staging route, write, audit, outbox, and Luma loop evidence bundle.",
+    "External integrations remain explicitly disabled for the first pilot.",
+  ];
 
   return {
     title: "Phase 2 live MVP pilot closeout",
@@ -722,16 +759,7 @@ function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
       "Phase 2 should now be read as a controlled hosted pilot closeout, not just local MVP review. The repo has the hosted proof packet, pilot planner, onboarding preflight, first-write closeout framing, and production launch checklist. The remaining blockers are named owners, final human signoff, and the production foundation for a tiny live pilot, not rediscovering whether hosted staging works.",
     packetPath:
       "docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md",
-    provenNow: [
-      "Pilot scope defaults are visible in `/admin/pilot-scope`.",
-      "Named owner slots are visible and explicitly still pending in `/admin/pilot-scope`.",
-      "Onboarding preflight now recommends manual pre-provisioning for the first hosted cohort.",
-      `The first hosted write recommendation is explicitly ${firstHostedWrite}.`,
-      "The proof metadata packet now frames the smallest hosted proof loop as proof metadata submission plus leader review readback only.",
-      "Leader, staff, DS/admin, audit, and outbox review surfaces are named for the hosted proof loop.",
-      "The current hosted proof note now records the authoritative staging route, write, audit, outbox, and Luma loop evidence bundle.",
-      "External integrations remain explicitly disabled for the first pilot.",
-    ],
+    provenNow,
     stillBlocked: [
       "Named pilot owners and rollback owner",
       "Hosted auth approval for the pilot cohort",

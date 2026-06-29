@@ -116,16 +116,22 @@ export function getPhase2CloseoutReview(
     };
   }
 
-  const releaseReadiness = getMvpReleaseReadinessSummary(actor);
   const lumaReadModel = getStagingLumaEventLoopReadModel({
     mode: "staging",
     data,
   });
+  const hostedStagingEvidenceObserved =
+    data.source.mode === "supabase" &&
+    lumaReadModel.providerStatusLabel === "Staging evidence rows recorded";
+  const releaseReadiness = getMvpReleaseReadinessSummary(actor, {
+    data,
+    env: process.env,
+    lumaReadModel,
+    hostedStagingEvidenceObserved,
+  });
   const pilotReadiness = getControlledPilotReadiness(actor, {
     lumaReadModel,
-    hostedStagingEvidenceObserved:
-      data.source.mode === "supabase" &&
-      lumaReadModel.providerStatusLabel === "Staging evidence rows recorded",
+    hostedStagingEvidenceObserved,
   });
   const pilotScope = getPilotScopePlanner(actor);
   const pilotRegistry = getPhase2PilotRegistry();
@@ -137,8 +143,7 @@ export function getPhase2CloseoutReview(
   const hostedActionStartProof = findHostedActionStartProof(data);
   const hostedProofLoopEvidence = findHostedProofLoopEvidence(data);
   const hostedLumaEvidenceObserved =
-    data.source.mode === "supabase" &&
-    lumaReadModel.providerStatusLabel === "Staging evidence rows recorded" &&
+    hostedStagingEvidenceObserved &&
     lumaReadModel.summary.rsvpCount > 0 &&
     lumaReadModel.summary.attendanceCount > 0 &&
     lumaReadModel.summary.pointsAwarded > 0;
