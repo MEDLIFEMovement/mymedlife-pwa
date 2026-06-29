@@ -36,6 +36,7 @@ export default async function LumaLivePilotPage({
     mode: "staging",
     data,
   });
+  const proofEvidence = eventLoop.proofEvidence;
   const pendingHostCheckIn = eventLoop.pendingHostCheckIn;
   const hasHostedPointsProof =
     eventLoop.summary.attendanceCount > 0 && eventLoop.summary.pointsAwarded > 0;
@@ -127,7 +128,7 @@ export default async function LumaLivePilotPage({
                 <Pill>{eventLoop.summary.externalWritesEnabled ? "external writes on" : "external sends off"}</Pill>
               </div>
             </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
               <MiniStat
                 label="RSVPs"
                 value={`${eventLoop.summary.rsvpCount}`}
@@ -145,10 +146,28 @@ export default async function LumaLivePilotPage({
                 value={eventLoop.summary.pointsAwarded > 0 ? "Updated" : "Pending"}
               />
               <MiniStat
+                label="Proof rows"
+                value={proofEvidence ? "Ready" : "Pending"}
+              />
+              <MiniStat
                 label="Outbox sends"
-                value={eventLoop.summary.externalWritesEnabled ? "Review" : "0"}
+                value={
+                  proofEvidence
+                    ? `${proofEvidence.sentOutboxRows}`
+                    : eventLoop.summary.externalWritesEnabled
+                      ? "Review"
+                      : "0"
+                }
               />
             </div>
+            {proofEvidence ? (
+              <p className="mt-4 text-sm leading-6 text-slate-600">
+                Proof footprint: {proofEvidence.integrationRows} integration row(s),{" "}
+                {proofEvidence.disabledOutboxRows} disabled outbox row(s),{" "}
+                {proofEvidence.auditRows} audit row(s), and{" "}
+                {proofEvidence.sentOutboxRows} sent row(s).
+              </p>
+            ) : null}
             <div className="mt-4 grid gap-3 lg:grid-cols-5">
               {eventLoop.sequence.map((step) => (
                 <article

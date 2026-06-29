@@ -140,6 +140,7 @@ export type StagingLumaEventLoopEvidenceSnapshot = {
   automationOutboxRows: AutomationOutboxRow[];
   pointsEventRows: PointsEventRow[];
   auditLogRows?: AuditLogRow[];
+  auditLogs?: AuditLogRow[];
 };
 
 type PendingRunCandidate = {
@@ -698,7 +699,7 @@ function deriveProofEvidence(
   const allRelevantEventRows = data.eventRows.filter(isRelevantEventRow);
   const allRelevantIntegrationRows = data.integrationEventRows.filter(isRelevantIntegrationRow);
   const allRelevantOutboxRows = data.automationOutboxRows.filter(isRelevantOutboxRow);
-  const allRelevantAuditRows = (data.auditLogRows ?? []).filter(isRelevantAuditRow);
+  const allRelevantAuditRows = getAuditRows(data).filter(isRelevantAuditRow);
   const pilotEventRows = allRelevantEventRows.filter(isPilotEventRow);
   const pilotIntegrationRows = allRelevantIntegrationRows.filter(isPilotIntegrationRow);
   const pilotOutboxRows = allRelevantOutboxRows.filter(isPilotOutboxRow);
@@ -734,6 +735,10 @@ function deriveProofEvidence(
     auditRows: relevantAuditRows.length,
     zeroUnapprovedSendsConfirmed: sentOutboxRows === 0,
   };
+}
+
+function getAuditRows(data: StagingLumaEventLoopEvidenceSnapshot) {
+  return data.auditLogRows ?? data.auditLogs ?? [];
 }
 
 function derivePendingHostCheckInCandidates(

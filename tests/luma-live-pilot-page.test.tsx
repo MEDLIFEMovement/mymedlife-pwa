@@ -38,6 +38,42 @@ describe("Luma live pilot admin page", () => {
     const baseData = dataModule.getMockReadOnlyAppData("Testing pending host check-in.");
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
       ...baseData,
+      automationOutboxRows: [
+        {
+          id: "outbox-1",
+          source_event_id: "pilot-rsvp",
+          integration_event_id: "pilot-link",
+          chapter_id: "chapter-1",
+          destination: "n8n",
+          event_type: "event_rsvp_recorded",
+          payload: {
+            source: "luma_live_pilot",
+          },
+          idempotency_key: "luma-pilot:rsvp:evt-bJE178Q02N5DaLH:user-1",
+          status: "disabled",
+          attempt_count: 0,
+          available_at: "2026-06-29T03:17:53.728Z",
+          sent_at: null,
+          locked_at: null,
+          last_error: null,
+          created_at: "2026-06-29T03:17:53.728Z",
+          updated_at: "2026-06-29T03:17:53.728Z",
+        },
+      ],
+      auditLogs: [
+        {
+          id: "audit-1",
+          actor_user_id: "pilot-user",
+          chapter_id: "chapter-1",
+          action: "luma_attendance_import_recorded",
+          target_table: "chapter_events",
+          target_id: "pilot-chapter-event",
+          before_value: {},
+          after_value: {},
+          reason: "Recorded the staging Luma attendance proof in app tables.",
+          created_at: "2026-06-29T11:09:00.000Z",
+        },
+      ],
       eventRows: [
         {
           id: "pilot-rsvp",
@@ -106,7 +142,12 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("Attendance");
     expect(html).toContain("Points");
     expect(html).toContain("Leaderboard");
+    expect(html).toContain("Proof rows");
+    expect(html).toContain("Ready");
     expect(html).toContain("Outbox sends");
+    expect(html).toContain(
+      "Proof footprint: 1 integration row(s), 1 disabled outbox row(s), 1 audit row(s), and 0 sent row(s).",
+    );
     expect(html).toContain("event_rsvp_recorded");
     expect(html).toContain("event_points_awarded");
     expect(html).toContain("Audit/outbox review remains visible before pilot expansion.");
