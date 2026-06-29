@@ -5,6 +5,7 @@ import {
 } from "@/services/campaign-ops-service";
 import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getPreferredLeaderboardRows } from "@/services/read-only-leaderboard";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadChapterData,
@@ -44,7 +45,10 @@ export function getRushMonthDashboardForActor(
   const eventPlans = canReadTruth ? getEventPlansForCampaign("rush-month") : [];
   const proofItems = canReadTruth ? getProofLibraryItemsForCampaign("rush-month") : [];
   const risks = getVisibleRiskFlagsForActor(actor, data.riskFlags);
-  const leaderboard = getVisibleLeaderboardForActor(actor, rushMonthLeaderboard);
+  const leaderboard = getVisibleLeaderboardForActor(
+    actor,
+    getPreferredLeaderboardRows(data, rushMonthLeaderboard),
+  );
   const integrationEvents = canReadIntegrationOutbox(actor) ? data.integrationEvents : [];
   const outboxItems = canReadIntegrationOutbox(actor) ? data.outboxItems : [];
 

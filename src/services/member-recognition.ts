@@ -1,6 +1,7 @@
 import { rushMonthLeaderboard } from "@/data/mock-leaderboard";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { buildMemberActionRouteHref } from "@/services/member-action-route-href";
+import { getPreferredLeaderboardRows } from "@/services/read-only-leaderboard";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   getActorSurfaceFamily,
@@ -64,7 +65,7 @@ export type MemberRecognitionSummary = {
     ctaLabel: string;
     ctaHref: string;
   };
-  pointsLedgerPosture: "mock_read_only";
+  pointsLedgerPosture: "mock_read_only" | "points_event_read_only";
 };
 
 export function getMemberRecognitionSummary(
@@ -73,6 +74,7 @@ export function getMemberRecognitionSummary(
   leaderboard: LeaderboardRow[] = rushMonthLeaderboard,
 ): MemberRecognitionSummary {
   const surfaceFamily = getActorSurfaceFamily(actor);
+  const resolvedLeaderboard = getPreferredLeaderboardRows(data, leaderboard);
 
   if (surfaceFamily === "ds_admin") {
     return {
@@ -96,7 +98,7 @@ export function getMemberRecognitionSummary(
     };
   }
 
-  const sortedLeaderboard = sortLeaderboard(leaderboard);
+  const sortedLeaderboard = sortLeaderboard(resolvedLeaderboard);
   const selectedRow = findSelectedMember(actor, sortedLeaderboard) ?? sortedLeaderboard[0];
   const nextVisibleAssignment = getVisibleAssignmentsForActor(actor, data.assignments)[0];
   const selectedMember = selectedRow
@@ -188,7 +190,10 @@ export function getMemberRecognitionSummary(
         ? buildMemberActionRouteHref(nextVisibleAssignment.id, { source: "points" })
         : "/rush-month/actions",
     },
-    pointsLedgerPosture: "mock_read_only",
+    pointsLedgerPosture:
+      data.source.mode === "supabase" && data.metricsPosture.points === "points_events"
+        ? "points_event_read_only"
+        : "mock_read_only",
   };
 }
 

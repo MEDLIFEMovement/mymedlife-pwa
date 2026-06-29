@@ -95,6 +95,10 @@ Captured on `2026-06-29T02:30:40Z` with a signed-in DS Admin staging session.
   - staff `/staff?view=chapters` shows the event-and-points pulse
   - admin `/admin/luma-live-pilot`, `/admin/audit-log`, and
     `/admin/integration-outbox` show the hosted proof and safety posture
+- The visible leaderboard surfaces now prefer durable Supabase-backed points rows
+  when they exist, instead of always falling back to mock leaderboard data.
+  That means a real attended Luma import can now show up in reviewer-visible
+  member and leader leaderboard UI once a checked-in attendee is imported.
 
 ## What this still does not prove
 

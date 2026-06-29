@@ -161,4 +161,127 @@ describe("member recognition", () => {
       expect.objectContaining({ label: "Events linked", value: "Unknown" }),
     ]);
   });
+
+  it("prefers Supabase-backed leaderboard rows when durable points events are visible", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const recognition = getMemberRecognitionSummary(actor, {
+      ...data,
+      source: {
+        mode: "supabase",
+        status: "supabase_ready",
+        message: "Testing durable leaderboard rows.",
+      },
+      profiles: [
+        {
+          id: "member-live",
+          display_name: "Nellis",
+          email: "nellis@medlifemovement.org",
+          status: "active",
+          created_at: "2026-06-01T00:00:00Z",
+          updated_at: "2026-06-01T00:00:00Z",
+        },
+        {
+          id: "member-seeded",
+          display_name: "Sofia Alvarez",
+          email: "member.a@mymedlife.test",
+          status: "active",
+          created_at: "2026-06-01T00:00:00Z",
+          updated_at: "2026-06-01T00:00:00Z",
+        },
+      ],
+      memberships: [
+        {
+          id: "membership-1",
+          user_id: "member-live",
+          chapter_id: data.chapter.id,
+          role_key: "general_member",
+          status: "approved",
+          requested_at: "2026-06-01T00:00:00Z",
+          approved_at: "2026-06-01T00:00:00Z",
+          approved_by: null,
+          created_at: "2026-06-01T00:00:00Z",
+          updated_at: "2026-06-01T00:00:00Z",
+        },
+        {
+          id: "membership-2",
+          user_id: "member-seeded",
+          chapter_id: data.chapter.id,
+          role_key: "general_member",
+          status: "approved",
+          requested_at: "2026-06-01T00:00:00Z",
+          approved_at: "2026-06-01T00:00:00Z",
+          approved_by: null,
+          created_at: "2026-06-01T00:00:00Z",
+          updated_at: "2026-06-01T00:00:00Z",
+        },
+      ],
+      pointsEventRows: [
+        {
+          id: "points-live-1",
+          chapter_id: data.chapter.id,
+          campaign_id: data.campaign.id,
+          assignment_id: null,
+          chapter_event_id: "chapter-event-live",
+          evidence_item_id: null,
+          approval_id: null,
+          awarded_to_user_id: "member-live",
+          points_delta: 20,
+          reason: "Luma pilot attendance confirmed",
+          created_by: "ds.admin@mymedlife.test",
+          created_at: "2026-06-29T02:27:19.000Z",
+        },
+        {
+          id: "points-live-2",
+          chapter_id: data.chapter.id,
+          campaign_id: data.campaign.id,
+          assignment_id: "member-push",
+          chapter_event_id: null,
+          evidence_item_id: null,
+          approval_id: null,
+          awarded_to_user_id: "member-seeded",
+          points_delta: 15,
+          reason: "Invite push completed",
+          created_by: "leader.a@mymedlife.test",
+          created_at: "2026-06-20T14:03:21.000Z",
+        },
+      ],
+      pointsEvents: [
+        {
+          id: "points-live-1",
+          assignmentId: "chapter-event-live",
+          userId: "member-live",
+          points: 20,
+          reason: "Luma pilot attendance confirmed",
+        },
+        {
+          id: "points-live-2",
+          assignmentId: "member-push",
+          userId: "member-seeded",
+          points: 15,
+          reason: "Invite push completed",
+        },
+      ],
+      metricsPosture: {
+        points: "points_events",
+        kpis: data.metricsPosture.kpis,
+        leaderboard: "mock_safe",
+      },
+      pointsSummary: {
+        earned: 35,
+        available: data.pointsSummary.available,
+        approvedActions: 2,
+      },
+    });
+
+    expect(recognition.pointsLedgerPosture).toBe("points_event_read_only");
+    expect(recognition.leaderboard.map((row) => row.displayName)).toEqual([
+      "Nellis",
+      "Sofia Alvarez",
+    ]);
+    expect(recognition.leaderboard[0]).toMatchObject({
+      points: 20,
+      recognition: "Invite push starter",
+    });
+    expect(recognition.impacts[0]?.note).toContain("points event rows");
+  });
 });
