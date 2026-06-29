@@ -53,6 +53,10 @@ type PersistedFeatureFlagAuditRow = {
   created_at: string;
 };
 
+type PersistedIdRow = {
+  id: string;
+};
+
 type FeatureFlagRpcResult = {
   override_id: string;
   old_status: FeatureFlagStatus | null;
@@ -301,11 +305,23 @@ export async function getFeatureFlagAdminState(
       flags: listFeatureFlags({ environment, env: options.env }),
       auditRecords: listFeatureFlagAuditRecords().slice(0, 10),
       productionApprovalRecords: [],
+      controlReadback: {
+        overrideRowCount: 0,
+        auditRowCount: 0,
+        stepUpSessionCount: 0,
+        productionApprovalCount: 0,
+      },
       persistence,
     };
   }
 
-  const [overrideRows, auditRows, productionApprovalRecords] = await Promise.all([
+  const [
+    overrideRows,
+    auditRows,
+    auditCountRows,
+    stepUpSessionRows,
+    productionApprovalRecords,
+  ] = await Promise.all([
     client.selectRows<PersistedFeatureFlagOverrideRow>("feature_flag_overrides", {
       select: "environment,flag_key,status",
       query: { environment: `eq.${environment}` },
@@ -316,6 +332,13 @@ export async function getFeatureFlagAdminState(
       query: { environment: `eq.${environment}` },
       order: { column: "created_at", ascending: false },
       limit: 10,
+    }),
+    client.selectRows<PersistedIdRow>("feature_flag_audit_records", {
+      select: "id",
+      query: { environment: `eq.${environment}` },
+    }),
+    client.selectRows<PersistedIdRow>("admin_step_up_sessions", {
+      select: "id",
     }),
     listRecentProductionControlApprovals({
       scopes: ["feature_flag"],
@@ -337,6 +360,12 @@ export async function getFeatureFlagAdminState(
     ),
     auditRecords: auditRows.map(toFeatureFlagAuditRecord),
     productionApprovalRecords,
+    controlReadback: {
+      overrideRowCount: overrideRows.length,
+      auditRowCount: auditCountRows.length,
+      stepUpSessionCount: stepUpSessionRows.length,
+      productionApprovalCount: productionApprovalRecords.length,
+    },
     persistence,
   };
 }

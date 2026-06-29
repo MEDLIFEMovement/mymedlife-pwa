@@ -19,8 +19,10 @@ describe("production control approval readback", () => {
     const supabaseControl = await import("@/lib/supabase-control-client");
     const selectRows: SupabaseControlClient["selectRows"] = async <TRow,>(
       tableName: string,
-      _options?: SupabaseControlSelectOptions,
+      options?: SupabaseControlSelectOptions,
     ) => {
+      void options;
+
       if (tableName === "production_control_approvals") {
         return [
           {
@@ -83,6 +85,12 @@ describe("production control approval readback", () => {
         createdAt: "2026-06-29T12:00:00.000Z",
       },
     ]);
+    expect(state.controlReadback).toEqual({
+      overrideRowCount: 0,
+      auditRowCount: 0,
+      stepUpSessionCount: 0,
+      productionApprovalCount: 1,
+    });
   });
 
   it("filters production approval rows to theme publish and rollback scopes in the theme admin state", async () => {
@@ -194,5 +202,11 @@ describe("production control approval readback", () => {
         createdAt: "2026-06-29T10:00:00.000Z",
       },
     ]);
+    expect(state.controlReadback).toEqual({
+      snapshotRowCount: 1,
+      auditRowCount: 0,
+      stepUpSessionCount: 0,
+      productionApprovalCount: 2,
+    });
   });
 });

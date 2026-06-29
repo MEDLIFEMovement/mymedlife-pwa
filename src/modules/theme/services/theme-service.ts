@@ -54,6 +54,10 @@ type PersistedThemeAuditRow = {
   created_at: string;
 };
 
+type PersistedIdRow = {
+  id: string;
+};
+
 type ThemeRpcResult = {
   theme_id: string;
   audit_log_id: string;
@@ -104,11 +108,24 @@ export async function getThemeAdminState(input: {
       snapshot: getThemeSnapshot(input.environment, "draft"),
       auditRecords: listThemeAuditRecords().slice(0, 10),
       productionApprovalRecords: [],
+      controlReadback: {
+        snapshotRowCount: 0,
+        auditRowCount: 0,
+        stepUpSessionCount: 0,
+        productionApprovalCount: 0,
+      },
       persistence,
     };
   }
 
-  const [snapshotRows, auditRows, productionApprovalRecords] = await Promise.all([
+  const [
+    snapshotRows,
+    snapshotCountRows,
+    auditRows,
+    auditCountRows,
+    stepUpSessionRows,
+    productionApprovalRecords,
+  ] = await Promise.all([
     client.selectRows<PersistedThemeSnapshotRow>("theme_snapshots", {
       select:
         "id,environment,status,tokens,created_at,updated_at,published_at,rollback_of_id",
@@ -116,12 +133,23 @@ export async function getThemeAdminState(input: {
       order: { column: "updated_at", ascending: false },
       limit: 1,
     }),
+    client.selectRows<PersistedIdRow>("theme_snapshots", {
+      select: "id",
+      query: { environment: `eq.${input.environment}` },
+    }),
     client.selectRows<PersistedThemeAuditRow>("theme_audit_records", {
       select:
         "id,actor_user_id,actor_email,actor_role,environment,action,theme_id,reason,contrast_override,created_at",
       query: { environment: `eq.${input.environment}` },
       order: { column: "created_at", ascending: false },
       limit: 10,
+    }),
+    client.selectRows<PersistedIdRow>("theme_audit_records", {
+      select: "id",
+      query: { environment: `eq.${input.environment}` },
+    }),
+    client.selectRows<PersistedIdRow>("admin_step_up_sessions", {
+      select: "id",
     }),
     listRecentProductionControlApprovals({
       scopes: ["theme_publish", "rollback"],
@@ -136,6 +164,12 @@ export async function getThemeAdminState(input: {
       : createDefaultTheme(input.environment),
     auditRecords: auditRows.map(toThemeAuditRecord),
     productionApprovalRecords,
+    controlReadback: {
+      snapshotRowCount: snapshotCountRows.length,
+      auditRowCount: auditCountRows.length,
+      stepUpSessionCount: stepUpSessionRows.length,
+      productionApprovalCount: productionApprovalRecords.length,
+    },
     persistence,
   };
 }

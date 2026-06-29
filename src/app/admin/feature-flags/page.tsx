@@ -52,14 +52,17 @@ export default async function FeatureFlagsPage({
   const moduleFlags = flags.filter((flag) => flag.kind === "module");
   const providerFlags = flags.filter((flag) => flag.kind === "provider");
   const auditRecords = adminState.auditRecords;
+  const controlReadback = adminState.controlReadback;
   const productionApprovalRecords = adminState.productionApprovalRecords;
   const result = resolvedSearchParams?.featureFlagResult;
   const message = resolvedSearchParams?.featureFlagMessage;
   const reviewSnapshot = getFeatureFlagReviewSnapshot({
     environment,
     persistence: adminState.persistence,
-    auditRowCount: auditRecords.length,
-    productionApprovalCount: productionApprovalRecords.length,
+    overrideRowCount: controlReadback.overrideRowCount,
+    auditRowCount: controlReadback.auditRowCount,
+    stepUpSessionCount: controlReadback.stepUpSessionCount,
+    productionApprovalCount: controlReadback.productionApprovalCount,
     productionStepUpReady,
     stepUpMessage:
       stepUpState?.message ?? "Step-up status is unavailable for this role.",
@@ -130,7 +133,7 @@ export default async function FeatureFlagsPage({
             </section>
           ) : null}
 
-          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-8">
+          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-11">
             <MiniStat label="Environment" value={environment} />
             <MiniStat label="Persistence" value={adminState.persistence.mode} />
             <MiniStat label="Module flags" value={`${moduleFlags.length}`} />
@@ -139,10 +142,21 @@ export default async function FeatureFlagsPage({
               label="Enabled now"
               value={`${flags.filter((flag) => flag.enabled).length}`}
             />
-            <MiniStat label="Audit rows" value={`${auditRecords.length}`} />
+            <MiniStat
+              label="Override rows"
+              value={`${controlReadback.overrideRowCount}`}
+            />
+            <MiniStat
+              label="Audit rows"
+              value={`${controlReadback.auditRowCount}`}
+            />
+            <MiniStat
+              label="Step-up rows"
+              value={`${controlReadback.stepUpSessionCount}`}
+            />
             <MiniStat
               label="Prod approvals"
-              value={`${productionApprovalRecords.length}`}
+              value={`${controlReadback.productionApprovalCount}`}
             />
             <MiniStat
               label="Step-up"
@@ -414,7 +428,9 @@ function getFeatureFlagReviewSnapshot(input: {
     availability?: "disabled" | "unavailable" | "missing_session" | "ready";
     reason: string;
   };
+  overrideRowCount: number;
   auditRowCount: number;
+  stepUpSessionCount: number;
   productionApprovalCount: number;
   productionStepUpReady: boolean;
   stepUpMessage: string;
@@ -446,11 +462,20 @@ function getFeatureFlagReviewSnapshot(input: {
           label: "Local review posture is still active",
           detail: `Feature flag controls for ${input.environment} are still using in-memory review state until Supabase-backed control storage and a signed-in control session are available.`,
         },
+    input.persistence.mode === "supabase"
+      ? {
+          label: "Visible durable control rows",
+          detail: `${input.overrideRowCount} feature flag override row(s), ${input.auditRowCount} durable feature flag audit row(s), ${input.stepUpSessionCount} admin step-up session row(s), and ${input.productionApprovalCount} production approval row(s) are visible for ${input.environment}.`,
+        }
+      : {
+          label: "Visible durable control rows",
+          detail: `Durable hosted feature flag readback is not active for ${input.environment} yet, so override rows, audit rows, step-up rows, and approval rows are still zero in this review lane.`,
+        },
     {
       label: "Feature flag audit trail",
       detail:
         input.auditRowCount > 0
-          ? `${input.auditRowCount} recent feature flag audit row(s) are visible for reviewer readback.`
+          ? `${input.auditRowCount} durable feature flag audit row(s) are visible for reviewer readback.`
           : `No feature flag audit rows are currently visible for ${input.environment}.`,
     },
     {

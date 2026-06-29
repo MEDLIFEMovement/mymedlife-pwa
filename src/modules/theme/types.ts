@@ -99,5 +99,11 @@ export type ThemeAdminState = {
   snapshot: ThemeSnapshot;
   auditRecords: ThemeAuditRecord[];
   productionApprovalRecords: ProductionControlApprovalRecord[];
+  controlReadback: {
+    snapshotRowCount: number;
+    auditRowCount: number;
+    stepUpSessionCount: number;
+    productionApprovalCount: number;
+  };
   persistence: ThemeControlPersistence;
 };

@@ -57,14 +57,17 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
   const snapshot = adminState.snapshot;
   const contrast = getThemeContrastResults(snapshot);
   const auditRecords = adminState.auditRecords;
+  const controlReadback = adminState.controlReadback;
   const productionApprovalRecords = adminState.productionApprovalRecords;
   const result = resolvedSearchParams?.themeResult;
   const message = resolvedSearchParams?.themeMessage;
   const reviewSnapshot = getThemeReviewSnapshot({
     environment,
     persistence: adminState.persistence,
-    auditRowCount: auditRecords.length,
-    productionApprovalCount: productionApprovalRecords.length,
+    snapshotRowCount: controlReadback.snapshotRowCount,
+    auditRowCount: controlReadback.auditRowCount,
+    stepUpSessionCount: controlReadback.stepUpSessionCount,
+    productionApprovalCount: controlReadback.productionApprovalCount,
     productionStepUpReady,
     stepUpMessage:
       stepUpState?.message ?? "Step-up status is unavailable for this role.",
@@ -139,7 +142,7 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
             </section>
           ) : null}
 
-          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-8">
+          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-11">
             <MiniStat label="Environment" value={environment} />
             <MiniStat label="Persistence" value={adminState.persistence.mode} />
             <MiniStat label="Theme status" value={snapshot.status} />
@@ -148,10 +151,21 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
               label="Contrast blocks"
               value={`${contrast.filter((item) => item.severity === "block").length}`}
             />
-            <MiniStat label="Audit rows" value={`${auditRecords.length}`} />
+            <MiniStat
+              label="Snapshot rows"
+              value={`${controlReadback.snapshotRowCount}`}
+            />
+            <MiniStat
+              label="Audit rows"
+              value={`${controlReadback.auditRowCount}`}
+            />
+            <MiniStat
+              label="Step-up rows"
+              value={`${controlReadback.stepUpSessionCount}`}
+            />
             <MiniStat
               label="Prod approvals"
-              value={`${productionApprovalRecords.length}`}
+              value={`${controlReadback.productionApprovalCount}`}
             />
             <MiniStat
               label="Step-up"
@@ -525,7 +539,9 @@ function getThemeReviewSnapshot(input: {
     availability?: "disabled" | "unavailable" | "missing_session" | "ready";
     reason: string;
   };
+  snapshotRowCount: number;
   auditRowCount: number;
+  stepUpSessionCount: number;
   productionApprovalCount: number;
   productionStepUpReady: boolean;
   stepUpMessage: string;
@@ -557,11 +573,20 @@ function getThemeReviewSnapshot(input: {
           label: "Local theme review posture is still active",
           detail: `Theme controls for ${input.environment} are still using in-memory review state until Supabase-backed control storage and a signed-in control session are available.`,
         },
+    input.persistence.mode === "supabase"
+      ? {
+          label: "Visible durable control rows",
+          detail: `${input.snapshotRowCount} theme snapshot row(s), ${input.auditRowCount} durable theme audit row(s), ${input.stepUpSessionCount} admin step-up session row(s), and ${input.productionApprovalCount} production approval row(s) are visible for ${input.environment}.`,
+        }
+      : {
+          label: "Visible durable control rows",
+          detail: `Durable hosted theme readback is not active for ${input.environment} yet, so snapshot rows, audit rows, step-up rows, and approval rows are still zero in this review lane.`,
+        },
     {
       label: "Theme audit trail",
       detail:
         input.auditRowCount > 0
-          ? `${input.auditRowCount} recent theme audit row(s) are visible for reviewer readback.`
+          ? `${input.auditRowCount} durable theme audit row(s) are visible for reviewer readback.`
           : `No theme audit rows are currently visible for ${input.environment}.`,
     },
     {

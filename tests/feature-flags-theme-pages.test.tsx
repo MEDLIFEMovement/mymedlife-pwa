@@ -130,7 +130,9 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Luma");
     expect(html).toContain("Recent feature flag changes");
     expect(html).toContain("Recent production provider approvals");
+    expect(html).toContain("Override rows");
     expect(html).toContain("Audit rows");
+    expect(html).toContain("Step-up rows");
     expect(html).toContain("Prod approvals");
     expect(html).toContain("Step-up");
     expect(html).toContain("Prod gate");
@@ -140,7 +142,11 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Recorded now");
     expect(html).toContain("Still blocked");
     expect(html).toContain("Local review posture is still active");
+    expect(html).toContain("Visible durable control rows");
     expect(html).toContain("Durable control storage is not active yet");
+    expect(html).toContain(
+      "Durable hosted feature flag readback is not active for local yet, so override rows, audit rows, step-up rows, and approval rows are still zero in this review lane.",
+    );
     expect(html).toContain(
       "No in-memory feature flag changes have been made for local in this local review session.",
     );
@@ -199,7 +205,9 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Restore MEDLIFE default");
     expect(html).toContain("Contrast checks");
     expect(html).toContain("Recent production theme approvals");
+    expect(html).toContain("Snapshot rows");
     expect(html).toContain("Audit rows");
+    expect(html).toContain("Step-up rows");
     expect(html).toContain("Prod approvals");
     expect(html).toContain("Step-up");
     expect(html).toContain("Prod gate");
@@ -209,7 +217,11 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Recorded now");
     expect(html).toContain("Still blocked");
     expect(html).toContain("Local theme review posture is still active");
+    expect(html).toContain("Visible durable control rows");
     expect(html).toContain("Production theme actions remain step-up locked");
+    expect(html).toContain(
+      "Durable hosted theme readback is not active for local yet, so snapshot rows, audit rows, step-up rows, and approval rows are still zero in this review lane.",
+    );
     expect(html).toContain(
       "No in-memory theme changes have been made for local in this local review session.",
     );

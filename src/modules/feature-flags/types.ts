@@ -111,5 +111,11 @@ export type FeatureFlagAdminState = {
   flags: FeatureFlagResolvedState[];
   auditRecords: FeatureFlagAuditRecord[];
   productionApprovalRecords: ProductionControlApprovalRecord[];
+  controlReadback: {
+    overrideRowCount: number;
+    auditRowCount: number;
+    stepUpSessionCount: number;
+    productionApprovalCount: number;
+  };
   persistence: FeatureFlagControlPersistence;
 };
