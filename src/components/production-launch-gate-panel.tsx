@@ -27,6 +27,17 @@ export function ProductionLaunchGatePanel({
           <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
             {gate.summary}
           </p>
+          <p className="mt-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs leading-5 text-white/62">
+            Packet source:{" "}
+            <span className="font-semibold text-white">
+              {gate.packetSource.mode === "supabase" ? "Supabase review records" : "env/default fallback"}
+            </span>
+            {" · "}
+            {gate.packetSource.recordCount} recorded row
+            {gate.packetSource.recordCount === 1 ? "" : "s"}
+            {" · "}
+            {gate.packetSource.reason}
+          </p>
         </div>
         <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-6">
           <MiniStat label="Launch" value={gate.launchReady ? "yes" : "no"} />

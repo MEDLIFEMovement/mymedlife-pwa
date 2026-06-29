@@ -1,5 +1,12 @@
+import { createSupabaseAppClient } from "@/lib/supabase-app-client";
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
+import {
+  getPhase2PilotRegistry,
+  getPhase2PilotRegistryDurable,
+  type Phase2PilotRegistry,
+} from "@/services/phase-2-pilot-registry";
+import type { ReviewPacketSource } from "@/services/review-packet-registry";
+import { getReviewPacketRegistry } from "@/services/review-packet-registry";
 import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
@@ -82,6 +89,7 @@ export type ProductionLaunchGate = {
   canReadGate: boolean;
   title: string;
   verdict: "not_live_ready";
+  packetSource: ReviewPacketSource;
   summary: string;
   launchReady: false;
   browserWritesEnabled: 0;
@@ -118,6 +126,57 @@ export function getProductionLaunchGate(
     hostedStagingEvidenceObserved?: boolean;
   } = {},
 ): ProductionLaunchGate {
+  const pilotRegistry = getPhase2PilotRegistry(env);
+
+  return buildProductionLaunchGate(actor, pilotRegistry, env, {
+    packetSource: {
+      mode: "env",
+      reason:
+        "Using env-backed production packet values because no Supabase production-launch review rows have been requested for this read path.",
+      recordCount: 0,
+    },
+    recordedPacketValues: new Map(),
+    ...options,
+  });
+}
+
+export async function getProductionLaunchGateDurable(
+  actor: LocalActorContext,
+  env: Record<string, string | undefined> = process.env,
+  options: {
+    lumaReadModel?: StagingLumaEventLoopReadModel;
+    hostedStagingEvidenceObserved?: boolean;
+  } = {},
+  deps: {
+    createClient?: typeof createSupabaseAppClient;
+  } = {},
+): Promise<ProductionLaunchGate> {
+  const [pilotRegistry, packetRegistry] = await Promise.all([
+    getPhase2PilotRegistryDurable(env, deps),
+    getReviewPacketRegistry({
+      category: "production_launch",
+      env,
+    }, deps),
+  ]);
+
+  return buildProductionLaunchGate(actor, pilotRegistry, env, {
+    packetSource: packetRegistry.source,
+    recordedPacketValues: packetRegistry.values,
+    ...options,
+  });
+}
+
+function buildProductionLaunchGate(
+  actor: LocalActorContext,
+  pilotRegistry: Phase2PilotRegistry,
+  env: Record<string, string | undefined>,
+  options: {
+    lumaReadModel?: StagingLumaEventLoopReadModel;
+    hostedStagingEvidenceObserved?: boolean;
+    packetSource: ReviewPacketSource;
+    recordedPacketValues: Map<string, string>;
+  },
+): ProductionLaunchGate {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
   if (!canReadAdminReviewSurface(actor)) {
@@ -125,6 +184,11 @@ export function getProductionLaunchGate(
       canReadGate: false,
       title: "Production launch gate hidden for this role",
       verdict: "not_live_ready",
+      packetSource: {
+        mode: "env",
+        reason: "Production launch gate is hidden for this role.",
+        recordCount: 0,
+      },
       summary:
         "Production launch gating is an HQ/security review surface, not a chapter operating view.",
       launchReady: false,
@@ -149,7 +213,6 @@ export function getProductionLaunchGate(
     };
   }
 
-  const pilotRegistry = getPhase2PilotRegistry(env);
   const items = getProductionLaunchGateItems(pilotRegistry);
   const launchEvidenceChecks = getProductionLaunchEvidenceChecks(
     pilotRegistry,
@@ -159,6 +222,7 @@ export function getProductionLaunchGate(
   const environmentReadiness = getProductionEnvironmentReadinessItems(
     pilotRegistry,
     env,
+    options.recordedPacketValues,
   );
   const reviewSnapshot = getProductionLaunchReviewSnapshot(
     launchEvidenceChecks,
@@ -170,6 +234,7 @@ export function getProductionLaunchGate(
     canReadGate: true,
     title: getTitle(surfaceFamily),
     verdict: "not_live_ready",
+    packetSource: options.packetSource,
     summary:
       lumaProofMissing
         ? "This gate gathers the local evidence that exists today and the exact evidence still missing before myMEDLIFE can move from local MVP review to a live student pilot. The sharpest remaining loop blocker is still one real Luma host-side check-in flowing through attendance import into points and leaderboard readback."
@@ -203,6 +268,7 @@ export function getProductionLaunchGate(
 export function getProductionEnvironmentReadinessItems(
   pilotRegistry = getPhase2PilotRegistry(),
   env: Record<string, string | undefined> = process.env,
+  recordedPacketValues?: Map<string, string>,
 ): ProductionEnvironmentReadinessItem[] {
   const rollbackOwner = pilotRegistry.owners.find(
     (item) => item.key === "rollback_owner",
@@ -218,86 +284,107 @@ export function getProductionEnvironmentReadinessItems(
   const productionSupabaseProjectRef = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+    recordedPacketValues,
   );
   const productionSupabaseMigrationOwner = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+    recordedPacketValues,
   );
   const productionSecurityProofNote = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_SECURITY_PROOF_NOTE",
+    recordedPacketValues,
   );
   const productionVercelProject = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_VERCEL_PROJECT",
+    recordedPacketValues,
   );
   const productionDeploySource = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE",
+    recordedPacketValues,
   );
   const productionRollbackTarget = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET",
+    recordedPacketValues,
   );
   const productionAccessPosture = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_ACCESS_POSTURE",
+    recordedPacketValues,
   );
   const productionEnvPacketStatus = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS",
+    recordedPacketValues,
   );
   const productionSecretOwner = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_SECRET_OWNER",
+    recordedPacketValues,
   );
   const productionLumaScope = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_LUMA_SCOPE",
+    recordedPacketValues,
   );
   const productionControlLayerStatus = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS",
+    recordedPacketValues,
   );
   const productionControlLayerProofNote = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE",
+    recordedPacketValues,
   );
   const productionAuthCallbackUrl = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+    recordedPacketValues,
   );
   const stagingAuthCallbackUrl = readRecordedPacketValue(
     env,
     "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+    recordedPacketValues,
   );
   const productionRoleRoutingNote = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_ROLE_ROUTING_NOTE",
+    recordedPacketValues,
   );
   const productionDnsOwner = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_DNS_OWNER",
+    recordedPacketValues,
   );
   const productionRegistrar = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_REGISTRAR",
+    recordedPacketValues,
   );
   const productionCutoverPlan = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_CUTOVER_PLAN",
+    recordedPacketValues,
   );
   const productionBackupOwner = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
+    recordedPacketValues,
   );
   const productionRestorePath = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
+    recordedPacketValues,
   );
   const productionRestoreDrillNote = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_RESTORE_DRILL_NOTE",
+    recordedPacketValues,
   );
   const supabasePacketRecorded =
     Boolean(productionSupabaseProjectRef) &&
@@ -670,7 +757,14 @@ export function getProductionEnvironmentReadinessItems(
 function readRecordedPacketValue(
   env: Record<string, string | undefined>,
   key: string,
+  recordedPacketValues?: Map<string, string>,
 ): string | null {
+  const packetValue = recordedPacketValues?.get(key)?.trim();
+
+  if (packetValue) {
+    return packetValue;
+  }
+
   const value = env[key]?.trim();
   return value ? value : null;
 }

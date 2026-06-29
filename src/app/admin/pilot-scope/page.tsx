@@ -4,7 +4,7 @@ import { DataSourceNotice } from "@/components/data-source-notice";
 import { PilotScopePlannerPanel } from "@/components/pilot-scope-planner-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import { getPilotScopePlanner } from "@/services/pilot-scope-planner";
+import { getPilotScopePlannerDurable } from "@/services/pilot-scope-planner";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -17,7 +17,7 @@ export default async function PilotScopePage() {
     getReadOnlyAppData(),
     getLocalActorContext(),
   ]);
-  const planner = getPilotScopePlanner(actor);
+  const planner = await getPilotScopePlannerDurable(actor);
 
   return (
     <AdminAppShell actor={actor}>

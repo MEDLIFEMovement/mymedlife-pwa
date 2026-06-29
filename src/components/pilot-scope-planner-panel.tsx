@@ -27,6 +27,19 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
             {planner.plainEnglishSummary}
           </p>
+          <p className="mt-3 max-w-3xl rounded-2xl border border-slate-200 bg-white p-3 text-xs leading-5 text-slate-600">
+            Packet source:{" "}
+            <span className="font-semibold text-slate-950">
+              {planner.packetSource.mode === "supabase"
+                ? "Supabase review records"
+                : "env/default fallback"}
+            </span>
+            {" · "}
+            {planner.packetSource.recordCount} recorded row
+            {planner.packetSource.recordCount === 1 ? "" : "s"}
+            {" · "}
+            {planner.packetSource.reason}
+          </p>
           <p className="mt-3 max-w-3xl rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
             Recommended scope: {planner.recommendedScope}
           </p>

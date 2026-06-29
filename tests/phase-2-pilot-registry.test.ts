@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
+import {
+  getPhase2PilotRegistry,
+  getPhase2PilotRegistryDurable,
+} from "@/services/phase-2-pilot-registry";
 
 describe("phase 2 pilot registry", () => {
   it("starts with recommended defaults and pending owner slots", () => {
@@ -19,6 +22,7 @@ describe("phase 2 pilot registry", () => {
       registry.owners.find((item) => item.key === "rollback_owner")?.value,
     ).toBe("pending Kiomi");
     expect(registry.approvalReplyBlock[0]).toBe("approved as written");
+    expect(registry.source.mode).toBe("env");
   });
 
   it("records final answers when explicit pilot values are supplied", () => {
@@ -53,5 +57,65 @@ describe("phase 2 pilot registry", () => {
     expect(registry.approvalReplyBlock.join("\n")).toContain(
       "Support owner: Maya Support",
     );
+  });
+
+  it("prefers Supabase review packet rows when the durable packet exists", async () => {
+    const registry = await getPhase2PilotRegistryDurable(
+      {},
+      {
+        createClient: (async () => ({
+          persistence: {
+            mode: "supabase",
+            status: "ready",
+            reason: "test",
+            isLocalOnly: false,
+          },
+          client: {
+            persistence: {
+              mode: "supabase",
+              status: "ready",
+              reason: "test",
+              isLocalOnly: false,
+            },
+            selectRows: async <TRow>() =>
+              [
+              {
+                id: "row-1",
+                category: "pilot_scope" as const,
+                record_key: "MYMEDLIFE_PILOT_CHAPTER",
+                value: "Boston College MEDLIFE",
+                reason: "Approved pilot chapter.",
+                actor_role: "admin" as const,
+                updated_by: "user-1",
+                updated_at: "2026-06-29T22:00:00.000Z",
+              },
+              {
+                id: "row-2",
+                category: "pilot_scope" as const,
+                record_key: "MYMEDLIFE_PILOT_ROLLBACK_OWNER",
+                value: "Kiomi Matsukawa",
+                reason: "Approved rollback owner.",
+                actor_role: "admin" as const,
+                updated_by: "user-1",
+                updated_at: "2026-06-29T22:00:00.000Z",
+              },
+            ] as TRow[],
+            rpc: async <TResult>() => [] as TResult,
+            insertRows: async <TRow>() => [] as TRow[],
+            upsertRows: async <TRow>() => [] as TRow[],
+            updateRows: async <TRow>() => [] as TRow[],
+          },
+        })) as any,
+      },
+    );
+
+    expect(registry.source.mode).toBe("supabase");
+    expect(registry.source.recordCount).toBe(2);
+    expect(
+      registry.defaults.find((item) => item.key === "pilot_chapter")?.value,
+    ).toBe("Boston College MEDLIFE");
+    expect(
+      registry.owners.find((item) => item.key === "rollback_owner")?.value,
+    ).toBe("Kiomi Matsukawa");
   });
 });

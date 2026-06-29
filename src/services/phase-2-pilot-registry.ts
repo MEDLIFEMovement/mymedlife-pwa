@@ -1,3 +1,9 @@
+import { createSupabaseAppClient } from "@/lib/supabase-app-client";
+import {
+  getReviewPacketRegistry,
+  type ReviewPacketSource,
+} from "@/services/review-packet-registry";
+
 type EnvSource = Record<string, string | undefined>;
 
 export type Phase2PilotDefaultStatus = "recommended_default" | "recorded_final";
@@ -28,6 +34,7 @@ export type Phase2PilotOwnerRecord = {
 };
 
 export type Phase2PilotRegistry = {
+  source: ReviewPacketSource;
   defaults: Phase2PilotDefaultRecord[];
   owners: Phase2PilotOwnerRecord[];
   approvalReplyBlock: string[];
@@ -177,8 +184,62 @@ const ownerDefinitions: OwnerDefinition[] = [
 export function getPhase2PilotRegistry(
   env: EnvSource = process.env,
 ): Phase2PilotRegistry {
+  return buildPhase2PilotRegistry({
+    env,
+    source: {
+      mode: "env",
+      reason:
+        "Using env-backed pilot scope defaults and owner slots because no Supabase review packet rows have been requested for this read path.",
+      recordCount: countRecordedEnvValues(env),
+    },
+    packetValues: new Map(),
+  });
+}
+
+export async function getPhase2PilotRegistryDurable(
+  env: EnvSource = process.env,
+  deps: {
+    createClient?: typeof createSupabaseAppClient;
+  } = {},
+): Promise<Phase2PilotRegistry> {
+  const registry = await getReviewPacketRegistry(
+    {
+      category: "pilot_scope",
+      env,
+    },
+    deps,
+  );
+
+  return buildPhase2PilotRegistry({
+    env,
+    source: registry.source,
+    packetValues: registry.values,
+  });
+}
+
+function buildApprovalReplyBlock(
+  defaults: Phase2PilotDefaultRecord[],
+  owners: Phase2PilotOwnerRecord[],
+): string[] {
+  return [
+    "approved as written",
+    "",
+    ...defaults.map((item) => `${item.label}: ${item.value}`),
+    ...owners.map((item) => `${item.label}: ${item.value}`),
+  ];
+}
+
+function buildPhase2PilotRegistry(input: {
+  env: EnvSource;
+  source: ReviewPacketSource;
+  packetValues: Map<string, string>;
+}): Phase2PilotRegistry {
   const defaults = defaultDefinitions.map((definition) => {
-    const recordedValue = readRecordedValue(env, definition.envKey);
+    const recordedValue = readRecordedValue(
+      input.env,
+      definition.envKey,
+      input.packetValues,
+    );
 
     return {
       key: definition.key,
@@ -191,7 +252,11 @@ export function getPhase2PilotRegistry(
   });
 
   const owners = ownerDefinitions.map((definition) => {
-    const recordedValue = readRecordedValue(env, definition.envKey);
+    const recordedValue = readRecordedValue(
+      input.env,
+      definition.envKey,
+      input.packetValues,
+    );
 
     return {
       key: definition.key,
@@ -205,6 +270,7 @@ export function getPhase2PilotRegistry(
   });
 
   return {
+    source: input.source,
     defaults,
     owners,
     approvalReplyBlock: buildApprovalReplyBlock(defaults, owners),
@@ -222,27 +288,37 @@ export function getPhase2PilotRegistry(
   };
 }
 
-function buildApprovalReplyBlock(
-  defaults: Phase2PilotDefaultRecord[],
-  owners: Phase2PilotOwnerRecord[],
-): string[] {
-  return [
-    "approved as written",
-    "",
-    ...defaults.map((item) => `${item.label}: ${item.value}`),
-    ...owners.map((item) => `${item.label}: ${item.value}`),
-  ];
-}
-
 function readRecordedValue(
   env: EnvSource,
   key: string | undefined,
+  packetValues?: Map<string, string>,
 ): string | null {
   if (!key) {
     return null;
   }
 
+  const packetValue = packetValues?.get(key)?.trim();
+
+  if (packetValue) {
+    return packetValue;
+  }
+
   const value = env[key]?.trim();
 
   return value ? value : null;
+}
+
+function countRecordedEnvValues(env: EnvSource): number {
+  const keys = [
+    ...defaultDefinitions.map((definition) => definition.envKey),
+    ...ownerDefinitions.map((definition) => definition.envKey),
+  ];
+
+  return keys.reduce((count, key) => {
+    if (!key) {
+      return count;
+    }
+
+    return env[key]?.trim() ? count + 1 : count;
+  }, 0);
 }

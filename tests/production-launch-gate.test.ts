@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
-import { getProductionLaunchGate } from "@/services/production-launch-gate";
+import {
+  getProductionLaunchGate,
+  getProductionLaunchGateDurable,
+} from "@/services/production-launch-gate";
 import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 describe("production launch gate", () => {
@@ -13,6 +16,7 @@ describe("production launch gate", () => {
     expect(gate.launchReady).toBe(false);
     expect(gate.browserWritesEnabled).toBe(0);
     expect(gate.externalWritesEnabled).toBe(0);
+    expect(gate.packetSource.mode).toBe("env");
     expect(gate.counts).toEqual({
       total: 8,
       localEvidenceReady: 1,
@@ -516,6 +520,143 @@ describe("production launch gate", () => {
         "Support/pause channel: #mymedlife-pilot-support.",
       ]),
     );
+  });
+
+  it("prefers durable Supabase packet rows for production readiness when available", async () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = await getProductionLaunchGateDurable(
+      actor,
+      {},
+      {},
+      {
+        createClient: (async () => ({
+          persistence: {
+            mode: "supabase",
+            status: "ready",
+            reason: "test",
+            isLocalOnly: false,
+          },
+          client: {
+            persistence: {
+              mode: "supabase",
+              status: "ready",
+              reason: "test",
+              isLocalOnly: false,
+            },
+            selectRows: async <TRow>(
+              tableName: string,
+              options?: { query?: Record<string, string> },
+            ) => {
+              if (tableName === "review_packet_records") {
+                const pilotRows = [
+                  {
+                    id: "row-1",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_ROLLBACK_OWNER",
+                    value: "Nick Ellis",
+                    reason: "Named rollback owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-2",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_SUPPORT_OWNER",
+                    value: "Maya Support",
+                    reason: "Named support owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-3",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL",
+                    value: "#mymedlife-pilot-support",
+                    reason: "Named pause channel.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-4",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_DS_OWNER",
+                    value: "DS owner",
+                    reason: "Named DS owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-5",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_HQ_ADMIN_OWNER",
+                    value: "HQ owner",
+                    reason: "Named HQ owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                ];
+                const productionRows = [
+                  {
+                    id: "row-6",
+                    category: "production_launch",
+                    record_key: "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+                    value: "prod-abc123",
+                    reason: "Recorded production Supabase ref.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-7",
+                    category: "production_launch",
+                    record_key: "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+                    value: "Kiomi",
+                    reason: "Recorded migration owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                ];
+
+                if (options?.query?.category === "eq.pilot_scope") {
+                  return pilotRows as TRow[];
+                }
+
+                if (options?.query?.category === "eq.production_launch") {
+                  return productionRows as TRow[];
+                }
+
+                return [...pilotRows, ...productionRows] as TRow[];
+              }
+
+              return [] as TRow[];
+            },
+            rpc: async <TResult>() => [] as TResult,
+            insertRows: async <TRow>() => [] as TRow[],
+            upsertRows: async <TRow>() => [] as TRow[],
+            updateRows: async <TRow>() => [] as TRow[],
+          },
+        })) as any,
+      },
+    );
+
+    expect(gate.packetSource.mode).toBe("supabase");
+    expect(gate.packetSource.recordCount).toBe(2);
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollback_support_owners",
+      )?.status,
+    ).toBe("recorded_for_review");
   });
 
   it("surfaces recorded pilot answers in the launch gate without claiming approval", () => {

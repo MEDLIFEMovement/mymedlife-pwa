@@ -6,7 +6,7 @@ import { ProductionLaunchGatePanel } from "@/components/production-launch-gate-p
 import { RestrictedState } from "@/components/restricted-state";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import { getProductionLaunchGate } from "@/services/production-launch-gate";
+import { getProductionLaunchGateDurable } from "@/services/production-launch-gate";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadAdminIntegrationsSecurity,
@@ -27,7 +27,7 @@ export default async function AdminLaunchGatePage() {
     mode: "staging",
     data,
   });
-  const gate = getProductionLaunchGate(actor, process.env, {
+  const gate = await getProductionLaunchGateDurable(actor, process.env, {
     lumaReadModel: lumaActivation,
     hostedStagingEvidenceObserved:
       data.source.mode === "supabase" &&
