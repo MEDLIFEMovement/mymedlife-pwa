@@ -4,7 +4,10 @@ import {
 import { canManageFeatureFlags } from "@/modules/feature-flags";
 import type { FeatureFlagEnvironment } from "@/modules/feature-flags";
 import { createSupabaseControlClient } from "@/lib/supabase-control-client";
-import { recordProductionControlApproval } from "@/services/production-control-approvals";
+import {
+  listRecentProductionControlApprovals,
+  recordProductionControlApproval,
+} from "@/services/production-control-approvals";
 import { contrastPairs, defaultMedlifeThemeTokens } from "../constants";
 import type {
   ThemeAdminState,
@@ -97,11 +100,12 @@ export async function getThemeAdminState(input: {
     return {
       snapshot: getThemeSnapshot(input.environment, "draft"),
       auditRecords: listThemeAuditRecords().slice(0, 10),
+      productionApprovalRecords: [],
       persistence,
     };
   }
 
-  const [snapshotRows, auditRows] = await Promise.all([
+  const [snapshotRows, auditRows, productionApprovalRecords] = await Promise.all([
     client.selectRows<PersistedThemeSnapshotRow>("theme_snapshots", {
       select:
         "id,environment,status,tokens,created_at,updated_at,published_at,rollback_of_id",
@@ -116,6 +120,11 @@ export async function getThemeAdminState(input: {
       order: { column: "created_at", ascending: false },
       limit: 10,
     }),
+    listRecentProductionControlApprovals({
+      scopes: ["theme_publish", "rollback"],
+      limit: 10,
+      env: input.env,
+    }),
   ]);
 
   return {
@@ -123,6 +132,7 @@ export async function getThemeAdminState(input: {
       ? toThemeSnapshot(snapshotRows[0])
       : createDefaultTheme(input.environment),
     auditRecords: auditRows.map(toThemeAuditRecord),
+    productionApprovalRecords,
     persistence,
   };
 }

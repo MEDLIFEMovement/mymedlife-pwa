@@ -65,8 +65,12 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("SOP Workflows and Next Action");
     expect(html).toContain("Luma");
     expect(html).toContain("Recent feature flag changes");
+    expect(html).toContain("Recent production provider approvals");
     expect(html).toContain(
       "No in-memory feature flag changes have been made for local in this local review session.",
+    );
+    expect(html).toContain(
+      "Production approval rows will appear here once Supabase-backed control storage is active.",
     );
     expect(html).not.toContain("server session");
   });
@@ -101,8 +105,12 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Rollback theme");
     expect(html).toContain("Restore MEDLIFE default");
     expect(html).toContain("Contrast checks");
+    expect(html).toContain("Recent production theme approvals");
     expect(html).toContain(
       "No in-memory theme changes have been made for local in this local review session.",
+    );
+    expect(html).toContain(
+      "Production approval rows will appear here once Supabase-backed control storage is active.",
     );
     expect(html).not.toContain("server session");
   });

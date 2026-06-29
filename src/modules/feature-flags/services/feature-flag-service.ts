@@ -1,7 +1,10 @@
 import { createSupabaseControlClient } from "@/lib/supabase-control-client";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { recordProductionControlApproval } from "@/services/production-control-approvals";
+import {
+  listRecentProductionControlApprovals,
+  recordProductionControlApproval,
+} from "@/services/production-control-approvals";
 import {
   featureFlagEnvironments,
   featureFlagKeys,
@@ -328,11 +331,12 @@ export async function getFeatureFlagAdminState(
     return {
       flags: listFeatureFlags({ environment, env: options.env }),
       auditRecords: listFeatureFlagAuditRecords().slice(0, 10),
+      productionApprovalRecords: [],
       persistence,
     };
   }
 
-  const [overrideRows, auditRows] = await Promise.all([
+  const [overrideRows, auditRows, productionApprovalRecords] = await Promise.all([
     client.selectRows<PersistedFeatureFlagOverrideRow>("feature_flag_overrides", {
       select: "environment,flag_key,status",
       query: { environment: `eq.${environment}` },
@@ -343,6 +347,11 @@ export async function getFeatureFlagAdminState(
       query: { environment: `eq.${environment}` },
       order: { column: "created_at", ascending: false },
       limit: 10,
+    }),
+    listRecentProductionControlApprovals({
+      scopes: ["feature_flag"],
+      limit: 10,
+      env: options.env,
     }),
   ]);
   const overrides = new Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>();
@@ -358,6 +367,7 @@ export async function getFeatureFlagAdminState(
       getFeatureResolvedStateFromOverrides(key, environment, overrides),
     ),
     auditRecords: auditRows.map(toFeatureFlagAuditRecord),
+    productionApprovalRecords,
     persistence,
   };
 }

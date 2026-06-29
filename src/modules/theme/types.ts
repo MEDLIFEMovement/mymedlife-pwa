@@ -1,5 +1,6 @@
 import type { FeatureFlagEnvironment } from "@/modules/feature-flags";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { ProductionControlApprovalRecord } from "@/services/production-control-approvals";
 
 export type ThemeTokenKey =
   | "background"
@@ -95,5 +96,6 @@ export type ThemeControlPersistence = {
 export type ThemeAdminState = {
   snapshot: ThemeSnapshot;
   auditRecords: ThemeAuditRecord[];
+  productionApprovalRecords: ProductionControlApprovalRecord[];
   persistence: ThemeControlPersistence;
 };

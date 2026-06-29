@@ -1,5 +1,6 @@
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
+import { ProductionControlApprovalTrail } from "@/components/production-control-approval-trail";
 import { RestrictedState } from "@/components/restricted-state";
 import { getFeatureFlagAuditEmptyStateCopy } from "@/modules/admin/control-audit-empty-state";
 import {
@@ -40,6 +41,7 @@ export default async function FeatureFlagsPage({
   const moduleFlags = flags.filter((flag) => flag.kind === "module");
   const providerFlags = flags.filter((flag) => flag.kind === "provider");
   const auditRecords = adminState.auditRecords;
+  const productionApprovalRecords = adminState.productionApprovalRecords;
   const result = resolvedSearchParams?.featureFlagResult;
   const message = resolvedSearchParams?.featureFlagMessage;
 
@@ -176,6 +178,17 @@ export default async function FeatureFlagsPage({
               )}
             </div>
           </section>
+
+          <ProductionControlApprovalTrail
+            title="Recent production provider approvals"
+            description="Production-sensitive provider flags should leave a separate approval record before the durable flag change runs. Review these rows alongside the feature-flag audit log before treating a production toggle as approved."
+            emptyMessage={
+              adminState.persistence.mode === "supabase"
+                ? "No durable production provider approval rows have been recorded yet."
+                : "Production approval rows will appear here once Supabase-backed control storage is active."
+            }
+            records={productionApprovalRecords}
+          />
         </main>
       )}
     </AdminAppShell>

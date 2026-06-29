@@ -24,6 +24,9 @@ audited, and approval-gated.
 - Production theme rollback / restore now records the same explicit approval trail before the durable snapshot change runs.
 - `/admin/feature-flags` and `/admin/theme` now report whether they are using
   in-memory fallback or Supabase-backed control storage.
+- `/admin/feature-flags` and `/admin/theme` now expose a reviewable production
+  approval trail section so DS/HQ can see recent durable
+  `production_control_approvals` rows in the app, not only in Supabase.
 
 ## Production Supabase Readiness
 

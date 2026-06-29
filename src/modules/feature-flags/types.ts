@@ -1,4 +1,5 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { ProductionControlApprovalRecord } from "@/services/production-control-approvals";
 
 export type FeatureFlagEnvironment =
   | "local"
@@ -107,5 +108,6 @@ export type FeatureFlagControlPersistence = {
 export type FeatureFlagAdminState = {
   flags: FeatureFlagResolvedState[];
   auditRecords: FeatureFlagAuditRecord[];
+  productionApprovalRecords: ProductionControlApprovalRecord[];
   persistence: FeatureFlagControlPersistence;
 };
