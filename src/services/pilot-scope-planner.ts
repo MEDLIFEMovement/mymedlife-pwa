@@ -82,6 +82,16 @@ export type PilotScopePlanner = {
   verdict: "pilot_scope_not_approved";
   plainEnglishSummary: string;
   recommendedScope: string;
+  reviewSnapshot: {
+    recordedNow: Array<{
+      label: string;
+      detail: string;
+    }>;
+    stillMissing: Array<{
+      label: string;
+      detail: string;
+    }>;
+  };
   closeoutDefaults: PilotCloseoutDefault[];
   ownerSlots: PilotCloseoutOwnerSlot[];
   approvalReplyGuide: string[];
@@ -112,6 +122,10 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
       plainEnglishSummary:
         "Pilot planning is an HQ review surface, not a student or chapter operating view.",
       recommendedScope: "Use the student, leader, or coach operating routes instead.",
+      reviewSnapshot: {
+        recordedNow: [],
+        stillMissing: [],
+      },
       closeoutDefaults: [],
       ownerSlots: [],
       approvalReplyGuide: [],
@@ -151,6 +165,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
       "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
     recommendedScope:
       "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-15 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one named support owner, one support/pause channel, `action_started` as the first hosted write, and the approved Luma event/RSVP/attendance/points loop as the only external-family pilot path.",
+    reviewSnapshot: getPilotReviewSnapshot(closeoutDefaults, ownerSlots, decisions),
     closeoutDefaults,
     ownerSlots,
     approvalReplyGuide: [
@@ -477,5 +492,97 @@ function emptyCounts(): PilotScopePlanner["counts"] {
     pendingNamedOwners: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
+  };
+}
+
+function getPilotReviewSnapshot(
+  closeoutDefaults: PilotCloseoutDefault[],
+  ownerSlots: PilotCloseoutOwnerSlot[],
+  decisions: PilotScopeDecision[],
+): PilotScopePlanner["reviewSnapshot"] {
+  const recordedDefaults = closeoutDefaults.filter(
+    (item) => item.status === "recorded_final",
+  );
+  const pendingDefaults = closeoutDefaults.filter(
+    (item) => item.status !== "recorded_final",
+  );
+  const recordedOwners = ownerSlots.filter(
+    (slot) => slot.status === "recorded_owner",
+  );
+  const pendingOwners = ownerSlots.filter(
+    (slot) => slot.status !== "recorded_owner",
+  );
+  const staffReadyDecisions = decisions.filter(
+    (decision) => decision.status === "staff_ready",
+  );
+  const needsDecision = decisions.filter(
+    (decision) => decision.status === "needs_decision",
+  );
+  const blockedDecisions = decisions.filter(
+    (decision) => decision.status === "blocked_before_pilot",
+  );
+
+  const recordedNow = [
+    {
+      label: "Planning default scope is defined",
+      detail:
+        "The current planning default stays one chapter, Rush Month only, a 5-15 user pilot, one narrow write lane, and the approved Luma event loop only.",
+    },
+    {
+      label: "Recorded closeout defaults",
+      detail:
+        recordedDefaults.length > 0
+          ? `${recordedDefaults.length} closeout default(s) are already recorded: ${recordedDefaults.map((item) => item.label).join(", ")}.`
+          : "No Phase 2 closeout defaults have been explicitly recorded yet.",
+    },
+    {
+      label: "Named owners already recorded",
+      detail:
+        recordedOwners.length > 0
+          ? `${recordedOwners.length} owner slot(s) are already named: ${recordedOwners.map((slot) => slot.label).join(", ")}.`
+          : "No owner slots have been explicitly named yet.",
+    },
+  ];
+
+  if (staffReadyDecisions.length > 0) {
+    recordedNow.push({
+      label: "Staff-ready pilot decisions",
+      detail: `${staffReadyDecisions.length} pilot decision(s) are already staff-ready: ${staffReadyDecisions.map((item) => item.label).join(", ")}.`,
+    });
+  }
+
+  const stillMissing = [];
+
+  if (pendingDefaults.length > 0) {
+    stillMissing.push({
+      label: "Closeout defaults still need confirmation",
+      detail: `${pendingDefaults.length} closeout default(s) still need explicit confirmation: ${pendingDefaults.map((item) => item.label).join(", ")}.`,
+    });
+  }
+
+  if (pendingOwners.length > 0) {
+    stillMissing.push({
+      label: "Named owners are still missing",
+      detail: `${pendingOwners.length} owner slot(s) still need a named human owner: ${pendingOwners.map((slot) => slot.label).join(", ")}.`,
+    });
+  }
+
+  if (needsDecision.length > 0) {
+    stillMissing.push({
+      label: "Pilot decisions still need approval",
+      detail: `${needsDecision.length} decision(s) still need approval: ${needsDecision.map((item) => item.label).join(", ")}.`,
+    });
+  }
+
+  if (blockedDecisions.length > 0) {
+    stillMissing.push({
+      label: "Pilot decisions are still blocked by gating work",
+      detail: `${blockedDecisions.length} decision(s) remain blocked before pilot use: ${blockedDecisions.map((item) => item.label).join(", ")}.`,
+    });
+  }
+
+  return {
+    recordedNow,
+    stillMissing,
   };
 }

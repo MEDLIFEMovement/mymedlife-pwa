@@ -15,6 +15,12 @@ describe("pilot scope planner", () => {
     expect(planner.counts.pendingNamedOwners).toBe(7);
     expect(planner.counts.browserWritesExpected).toBe(0);
     expect(planner.counts.externalWritesExpected).toBe(0);
+    expect(planner.reviewSnapshot.recordedNow.map((item) => item.label)).toContain(
+      "Planning default scope is defined",
+    );
+    expect(planner.reviewSnapshot.stillMissing.map((item) => item.label)).toContain(
+      "Named owners are still missing",
+    );
     expect(planner.recommendedScope).toContain("one chapter");
     expect(
       planner.closeoutDefaults.find((item) => item.key === "first_hosted_write")
@@ -127,6 +133,9 @@ describe("pilot scope planner", () => {
       expect(
         planner.ownerSlots.find((slot) => slot.key === "rollback_owner")?.status,
       ).toBe("recorded_owner");
+      expect(
+        planner.reviewSnapshot.recordedNow.map((item) => item.label),
+      ).toContain("Named owners already recorded");
       expect(planner.approvalReplyBlock.join("\n")).toContain(
         "Rollback owner: Kiomi Matsukawa",
       );

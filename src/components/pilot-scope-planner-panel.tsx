@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ControlReviewSnapshotSection } from "@/components/control-review-snapshot-section";
 import type {
   MinimumPilotPath,
   PilotScopeCandidateStatus,
@@ -129,6 +130,13 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
           ))}
         </div>
       </section>
+
+      <ControlReviewSnapshotSection
+        title="Pilot readiness"
+        description="Use this snapshot to separate what is already recorded in the pilot packet from the defaults, owners, and decisions that still block the smallest safe live pilot."
+        recordedNow={planner.reviewSnapshot.recordedNow}
+        stillBlocked={planner.reviewSnapshot.stillMissing}
+      />
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {planner.candidates.map((candidate) => (
