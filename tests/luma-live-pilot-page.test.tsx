@@ -170,6 +170,16 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("approved guest list");
     expect(html).toContain("Points and leaderboard readback");
     expect(html).toContain("Audit/outbox safety");
+    expect(html).toContain("Workspace readback routes");
+    expect(html).toContain("Verify the same event loop in every workspace.");
+    expect(html).toContain("General member workspace");
+    expect(html).toContain("Student leader workspace");
+    expect(html).toContain("Sales coach / staff workspace");
+    expect(html).toContain("DS / admin workspace");
+    expect(html).toContain("Open /app");
+    expect(html).toContain("Open /leader");
+    expect(html).toContain("Open /staff");
+    expect(html).toContain("Open /admin");
     expect(html).toContain("the public API does not expose a public attendee check-in write");
     expect(html).not.toContain("secret-example");
   });

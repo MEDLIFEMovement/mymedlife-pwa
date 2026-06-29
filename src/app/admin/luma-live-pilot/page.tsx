@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { RestrictedState } from "@/components/restricted-state";
+import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
+import { getLumaEventLoopProofSurfaces } from "@/services/luma-event-loop-proof-surfaces";
 import { getLumaLivePilotGateDurable } from "@/services/luma-live-pilot";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -25,9 +27,10 @@ type LumaLivePilotPageProps = {
 export default async function LumaLivePilotPage({
   searchParams,
 }: LumaLivePilotPageProps) {
-  const [actor, data, resolvedSearchParams] = await Promise.all([
+  const [actor, data, lumaSnapshot, resolvedSearchParams] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),
+    getLumaCalendarReadinessSnapshot(),
     searchParams ? searchParams : Promise.resolve(undefined),
   ]);
   const canRead = canReadAdminIntegrationsSecurity(actor);
@@ -35,6 +38,10 @@ export default async function LumaLivePilotPage({
   const eventLoop = getStagingLumaEventLoopReadModel({
     mode: "staging",
     data,
+  });
+  const proofSurfaces = getLumaEventLoopProofSurfaces({
+    snapshot: lumaSnapshot,
+    activation: eventLoop,
   });
   const proofEvidence = eventLoop.proofEvidence;
   const pendingHostCheckIn = eventLoop.pendingHostCheckIn;
@@ -396,6 +403,82 @@ export default async function LumaLivePilotPage({
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     {item.detail}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="app-eyebrow app-eyebrow-blue">Workspace readback routes</p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                  Verify the same event loop in every workspace.
+                </h2>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                  After the control run succeeds, reviewers should open these exact routes
+                  so member, leader, staff, and admin surfaces all show the same
+                  RSVP, attendance, points, and leaderboard story.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              {proofSurfaces.map((surface) => (
+                <article
+                  key={surface.key}
+                  className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
+                        {surface.label}
+                      </p>
+                      <h3 className="mt-2 text-lg font-semibold text-slate-950">
+                        {surface.title}
+                      </h3>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+                        {surface.statusLabel}
+                      </span>
+                      <a
+                        href={surface.route}
+                        className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-primary-button)] transition hover:bg-[var(--background)]"
+                      >
+                        Open {surface.route}
+                      </a>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    {surface.summary}
+                  </p>
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Route {surface.route}
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                    {surface.facts.map((fact) => (
+                      <div
+                        key={`${surface.key}:${fact.label}`}
+                        className="rounded-2xl border border-slate-200 bg-white p-3"
+                      >
+                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          {fact.label}
+                        </p>
+                        <p className="mt-2 text-lg font-semibold text-slate-950">
+                          {fact.value}
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-slate-500">
+                          {fact.detail}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="mt-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs leading-5 text-slate-600">
+                    {surface.reviewGoal}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    {surface.note}
                   </p>
                 </article>
               ))}
