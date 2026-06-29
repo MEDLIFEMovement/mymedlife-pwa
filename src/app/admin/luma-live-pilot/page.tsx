@@ -37,6 +37,8 @@ export default async function LumaLivePilotPage({
     data,
   });
   const pendingHostCheckIn = eventLoop.pendingHostCheckIn;
+  const hasHostedPointsProof =
+    eventLoop.summary.attendanceCount > 0 && eventLoop.summary.pointsAwarded > 0;
   const result = normalizeResult(resolvedSearchParams?.lumaResult);
   const message = resolvedSearchParams?.lumaMessage ?? null;
 
@@ -319,9 +321,9 @@ export default async function LumaLivePilotPage({
                   Use this route as the staging evidence checklist.
                 </h2>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-                  A reviewer should complete these checks on staging.mymedlife.org
-                  from a signed-in Vercel SSO session, then record screenshots or
-                  route evidence before any live pilot approval.
+                  {hasHostedPointsProof
+                    ? "Hosted sign-in, RSVP, attendance, points, and leaderboard proof already exist here. Reviewers can record the current counters and route evidence, or rerun a fresh proof from the same signed-in staging path before any live pilot approval."
+                    : "A reviewer should complete these checks on staging.mymedlife.org from a signed-in Vercel SSO session, then record screenshots or route evidence before any live pilot approval."}
                 </p>
               </div>
               <a
@@ -351,7 +353,9 @@ export default async function LumaLivePilotPage({
                 {
                   label: "Attendance import",
                   detail:
-                    "After the approved guest is visible in Luma, complete a real host-side Luma check-in for that guest, then import the same event and confirm the page returns attendance rows without QR codes or secrets.",
+                    hasHostedPointsProof
+                      ? "The current hosted counters already prove attendance-to-points once. If you rerun the proof, verify the approved guest is visible in Luma, complete a real host-side Luma check-in, then import the same event and confirm the page returns attendance rows without QR codes or secrets."
+                      : "After the approved guest is visible in Luma, complete a real host-side Luma check-in for that guest, then import the same event and confirm the page returns attendance rows without QR codes or secrets.",
                 },
                 {
                   label: "Points and leaderboard readback",
@@ -472,7 +476,7 @@ export default async function LumaLivePilotPage({
               </form>
             </LivePilotForm>
 
-            <LivePilotForm title="Import attendance from Luma" detail="Reads approved guests and checked_in_at state into a browser-safe summary. Raw secrets and QR codes are not returned. To prove points, first verify the RSVP guest is visible in Luma, then complete a host-side Luma check-in because the public API does not expose a public attendee check-in write.">
+            <LivePilotForm title="Import attendance from Luma" detail={hasHostedPointsProof ? "Reads approved guests and checked_in_at state into a browser-safe summary. Raw secrets and QR codes are not returned. This route already has one honest points proof. To replay it, first verify the RSVP guest is visible in Luma, then complete a host-side Luma check-in because the public API does not expose a public attendee check-in write." : "Reads approved guests and checked_in_at state into a browser-safe summary. Raw secrets and QR codes are not returned. To prove points, first verify the RSVP guest is visible in Luma, then complete a host-side Luma check-in because the public API does not expose a public attendee check-in write."}>
               <form action={runLumaAttendanceImportAction} className="space-y-3">
                 <input type="hidden" name="returnTo" value="/admin/luma-live-pilot" />
                 <Field label="Luma event id">
@@ -501,10 +505,11 @@ export default async function LumaLivePilotPage({
               </form>
               <p className="mt-3 text-xs leading-5 text-slate-500">
                 Review note: Luma&apos;s public API lets myMEDLIFE create events, add RSVP
-                guests, update guest status, and read <code>checked_in_at</code>, but the
-                pilot still relies on a human host check-in inside Luma, and the RSVP guest
-                must actually appear in Luma&apos;s approved guest list, before this import
-                can create attendance-backed points proof.
+                guests, update guest status, and read <code>checked_in_at</code>. The
+                current staging counters already include one honest attendance-backed
+                points proof, but any replay still relies on a human host check-in inside
+                Luma, and the RSVP guest must actually appear in Luma&apos;s approved guest
+                list, before this import can create another attendance-backed proof run.
               </p>
             </LivePilotForm>
           </section>
