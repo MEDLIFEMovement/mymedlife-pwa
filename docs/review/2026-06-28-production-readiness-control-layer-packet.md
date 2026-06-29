@@ -112,8 +112,8 @@ Current Vercel evidence:
   - preview URL: `https://mymedlife-65dsx90wr-nellis-6036s-projects.vercel.app`
   - deployment state: `READY`
 - PR #126 latest preview after the durable feature-flag fix:
-  - deployment id: `dpl_3GzDLUBgwRthJf3YavLUvC69Ef2X`
-  - preview URL: `https://mymedlife-72h1cwc7s-nellis-6036s-projects.vercel.app`
+  - deployment id: `dpl_C7GvE4sT5iW8duKuTGyQBbdShMXN`
+  - preview URL: `https://mymedlife-phse4yfjs-nellis-6036s-projects.vercel.app`
   - deployment state: `READY`
 
 Remaining hosted UI proof:
@@ -121,18 +121,31 @@ Remaining hosted UI proof:
 - Protected preview fetches still redirect through Vercel SSO, so a signed-in
   reviewer session is still required to visually confirm `/admin/feature-flags`
   and `/admin/theme` display Supabase-backed control storage in the hosted UI.
-- Hosted preview proof now exists for durable control readback:
+- Hosted preview proof now exists for durable control readback and form submits:
   - `/admin/feature-flags` shows `Control storage: Reading and writing ... from Supabase.`
-  - a DS Admin hosted save created `1` staging feature flag override row,
-    `1` feature flag audit row, and `1` `audit_logs` row.
-  - `/admin/theme` shows the same Supabase-backed control storage posture and
-    now reads back `1` staging theme snapshot row, `1` theme audit row, and
-    `1` `audit_logs` row after a safe seeded draft save.
-- The remaining gap inside this control slice is narrower than before:
-  browser automation proved the feature-flag save end to end, but the theme
-  draft form still needs either a human click-through or further debugging to
-  prove the browser-triggered submit path itself. The durable theme function and
-  hosted readback are both confirmed.
+  - a DS Admin hosted feature-flag save created a durable override row, a
+    feature-flag audit row, and an `audit_logs` row with reason
+    `Hosted preview feature flag proof save`.
+  - `/admin/theme` shows the same Supabase-backed control storage posture and a
+    DS Admin hosted theme draft save now creates a durable theme snapshot, a
+    theme audit row, and an `audit_logs` row with reason
+    `Hosted preview theme proof save`.
+- Current hosted staging Supabase totals after the preview proof:
+  - `app.feature_flag_overrides`: `1`
+  - `app.feature_flag_audit_records`: `2`
+  - `app.theme_snapshots`: `3`
+  - `app.theme_audit_records`: `3`
+- The remaining gap inside this control slice is now about promotion, not core
+  behavior:
+  the end-to-end save path is proven on the current signed-in preview
+  deployment, but `staging.mymedlife.org` still needs the same build promoted or
+  re-pointed before this can be claimed as staging-alias proof.
+- Hosted route-level reviewer proof was re-checked on `2026-06-29T02:30:40Z`:
+  - `/admin/feature-flags` shows `Control storage: Reading and writing ... from Supabase.`
+  - `/admin/theme` shows the same Supabase-backed control-storage posture.
+  - `/admin/audit-log`, `/admin/integration-outbox`, `/admin/pilot-scope`, and
+    `/admin/first-write` all render against the signed-in hosted staging
+    session.
 - Production environment variables remain unset/off for this control layer.
 
 ## Production Environment Packet In The App
@@ -165,20 +178,47 @@ Approved staging scope:
 - No n8n execution.
 - No production Luma setup.
 
-Evidence recorded previously:
+Hosted proof recorded on `2026-06-29T02:30:40Z`:
 
-- Created Luma event id: `evt-T1xyktFsTCpCWY5`
-- RSVP writeback succeeded for `nellis@medlifemovement.org`
-- Attendance import returned `1` approved guest row
-- GitHub PR #125 comment recorded evidence
-- Linear `MED-494` recorded evidence
+- Signed in to `staging.mymedlife.org` as seeded DS Admin
+  `ds.admin@mymedlife.test` through the hosted login route.
+- Created a staging Luma event from myMEDLIFE:
+  - event id `evt-rJGC5r3lDtjktGY`
+  - redirect proof: `Created a Luma event from myMEDLIFE staging ... Staging proof recorded.`
+- Wrote one RSVP back to Luma for `nellis@medlifemovement.org` with Luma email
+  sending suppressed.
+- Imported attendance for the same event:
+  - `1` approved guest row imported
+  - `0` rows included check-in attendance
+  - no secrets returned
+- Durable staging rows now prove the hosted loop:
+  - `app.luma_event_links`: `1` linked row for `evt-rJGC5r3lDtjktGY`
+  - `app.audit_logs`: `luma_event_upsert_recorded`,
+    `luma_rsvp_recorded`, and `luma_attendance_import_recorded`
+  - `app.integration_events`: `luma_event_linked`, `event_shared_to_feed`,
+    `luma_rsvp_recorded`, and `luma_attendance_imported`
+  - `app.automation_outbox`: `3` disabled rows for blocked downstream sends
+    (`luma_event_external_send_blocked`,
+    `luma_rsvp_external_send_blocked`,
+    `luma_attendance_external_send_blocked`)
+- Role-surface readback was re-checked on hosted staging:
+  - member `/app`: Luma, RSVP, points, leaderboard, and attendance copy visible
+  - leader `/leader`: Luma-backed events, RSVP conversion, attendance, and
+    points validation copy visible
+  - coach/staff `/staff?view=chapters`: event-and-points pulse visible
+  - admin `/admin/luma-live-pilot`, `/admin/audit-log`, and
+    `/admin/integration-outbox`: hosted proof and safety routes visible
+- Existing earlier event proof for `evt-R40luOuH0eVQ0FB` remains in staging audit
+  history from the first hosted create pass.
 
 Remaining before live pilot:
 
-- A signed-in hosted reviewer must visually confirm `/admin/luma-live-pilot`
-  now shows the event, RSVP, attendance, points, leaderboard, audit/outbox, and
-  safety-gate readback together.
-- Audit/outbox must show zero unapproved sends.
+- Because the imported guest row did not include a Luma check-in, the hosted
+  event above created `0` points rows for that event. One reviewed example with
+  checked-in attendance is still required before claiming fully live
+  attendance-to-points materialization.
+- Audit/outbox proof now shows blocked downstream rows only; no unapproved send
+  execution was enabled.
 - Production Luma remains blocked until production calendar ownership,
   rollback/disable ownership, and production env variables are approved.
 

@@ -35,6 +35,7 @@ vi.mock("@/modules/theme", async (importOriginal) => {
 
   return {
     ...actual,
+    saveThemeDraftDurable: vi.fn(),
     publishThemeDraftDurable: vi.fn(),
     restoreDefaultThemeDurable: vi.fn(),
     rollbackThemeDurable: vi.fn(),
@@ -122,8 +123,45 @@ describe("admin control server actions", () => {
         stepUpSessionId: "step-up-session-123",
       }),
     );
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
       expect.stringContaining("featureFlagResult=success"),
+    );
+  });
+
+  it("keeps a successful staging theme draft save on the success redirect path", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const themeModule = await import("@/modules/theme");
+    const navigationModule = await import("next/navigation");
+    const { saveThemeDraftAction } = await import("@/app/admin/theme/actions");
+
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(actor);
+
+    await expect(
+      saveThemeDraftAction(
+        formDataFor({
+          returnTo: "/admin/theme?env=staging",
+          environment: "staging",
+          tokenKey: "background",
+          hex: "#f6fbff",
+          reason: "Hosted preview theme proof save",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/theme?");
+
+    expect(themeModule.saveThemeDraftDurable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor,
+        environment: "staging",
+        tokenKey: "background",
+        hex: "#f6fbff",
+        reason: "Hosted preview theme proof save",
+      }),
+    );
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
+      expect.stringContaining("themeResult=success"),
     );
   });
 
@@ -209,6 +247,7 @@ describe("admin control server actions", () => {
         stepUpSessionId: "theme-step-up-session",
       }),
     );
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
       expect.stringContaining("themeResult=success"),
     );

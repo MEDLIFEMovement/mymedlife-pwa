@@ -22,6 +22,8 @@ export async function saveThemeDraftAction(formData: FormData) {
   const actor = await getLocalActorContext();
   const environment = parseEnvironment(formData.get("environment"));
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
+  let result: "success" | "error" = "success";
+  let message = "Theme draft saved and audited.";
 
   try {
     await saveThemeDraftDurable({
@@ -34,16 +36,20 @@ export async function saveThemeDraftAction(formData: FormData) {
       reason: String(formData.get("reason") ?? ""),
       overrideContrast: formData.get("overrideContrast") === "on",
     });
-    redirectWithResult(returnTo, "success", "Theme draft saved and audited.");
   } catch (error) {
-    redirectWithResult(returnTo, "error", errorMessage(error));
+    result = "error";
+    message = errorMessage(error);
   }
+
+  redirectWithResult(returnTo, result, message);
 }
 
 export async function publishThemeAction(formData: FormData) {
   const actor = await getLocalActorContext();
   const environment = parseEnvironment(formData.get("environment"));
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
+  let result: "success" | "error" = "success";
+  let message = "Theme published and audited.";
 
   try {
     const approval = await getProductionThemeApproval(formData, actor, environment);
@@ -56,16 +62,20 @@ export async function publishThemeAction(formData: FormData) {
       approvalReference: approval.approvalReference,
       stepUpSessionId: approval.stepUpSessionId,
     });
-    redirectWithResult(returnTo, "success", "Theme published and audited.");
   } catch (error) {
-    redirectWithResult(returnTo, "error", errorMessage(error));
+    result = "error";
+    message = errorMessage(error);
   }
+
+  redirectWithResult(returnTo, result, message);
 }
 
 export async function rollbackThemeAction(formData: FormData) {
   const actor = await getLocalActorContext();
   const environment = parseEnvironment(formData.get("environment"));
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
+  let result: "success" | "error" = "success";
+  let message = "Theme rolled back and audited.";
 
   try {
     const approval = await getProductionThemeApproval(formData, actor, environment);
@@ -77,16 +87,20 @@ export async function rollbackThemeAction(formData: FormData) {
       approvalReference: approval.approvalReference,
       stepUpSessionId: approval.stepUpSessionId,
     });
-    redirectWithResult(returnTo, "success", "Theme rolled back and audited.");
   } catch (error) {
-    redirectWithResult(returnTo, "error", errorMessage(error));
+    result = "error";
+    message = errorMessage(error);
   }
+
+  redirectWithResult(returnTo, result, message);
 }
 
 export async function restoreDefaultThemeAction(formData: FormData) {
   const actor = await getLocalActorContext();
   const environment = parseEnvironment(formData.get("environment"));
   const returnTo = normalizeReturnTo(formData.get("returnTo"), environment);
+  let result: "success" | "error" = "success";
+  let message = "Default MEDLIFE theme restored and audited.";
 
   try {
     const approval = await getProductionThemeApproval(formData, actor, environment);
@@ -98,10 +112,12 @@ export async function restoreDefaultThemeAction(formData: FormData) {
       approvalReference: approval.approvalReference,
       stepUpSessionId: approval.stepUpSessionId,
     });
-    redirectWithResult(returnTo, "success", "Default MEDLIFE theme restored and audited.");
   } catch (error) {
-    redirectWithResult(returnTo, "error", errorMessage(error));
+    result = "error";
+    message = errorMessage(error);
   }
+
+  redirectWithResult(returnTo, result, message);
 }
 
 function parseEnvironment(value: FormDataEntryValue | null): FeatureFlagEnvironment {

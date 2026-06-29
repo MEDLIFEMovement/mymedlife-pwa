@@ -19,6 +19,8 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 export async function updateFeatureFlagAction(formData: FormData) {
   const actor = await getLocalActorContext();
   const returnTo = normalizeReturnTo(formData.get("returnTo"));
+  let result: "success" | "error" = "success";
+  let message = "Feature flag updated and audited.";
 
   try {
     const environment = parseEnvironment(formData.get("environment"));
@@ -59,15 +61,13 @@ export async function updateFeatureFlagAction(formData: FormData) {
       approvalReference,
       stepUpSessionId,
     });
-
-    redirectWithResult(returnTo, "success", "Feature flag updated and audited.");
   } catch (error) {
-    redirectWithResult(
-      returnTo,
-      "error",
-      error instanceof Error ? error.message : "Feature flag update failed.",
-    );
+    result = "error";
+    message =
+      error instanceof Error ? error.message : "Feature flag update failed.";
   }
+
+  redirectWithResult(returnTo, result, message);
 }
 
 function parseEnvironment(value: FormDataEntryValue | null): FeatureFlagEnvironment {

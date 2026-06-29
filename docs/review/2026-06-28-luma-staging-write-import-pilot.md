@@ -68,3 +68,39 @@ Existing server-only values must also remain configured:
 - `pnpm eslint src/services/luma-live-pilot.ts src/app/admin/luma-live-pilot/page.tsx src/app/admin/luma-live-pilot/actions.ts tests/luma-live-pilot.test.ts`
 - `pnpm typecheck`
 - `pnpm build`
+
+## Hosted staging proof captured
+
+Captured on `2026-06-29T02:30:40Z` with a signed-in DS Admin staging session.
+
+- Hosted login succeeded for `ds.admin@mymedlife.test`.
+- Event create/update succeeded:
+  - latest event id: `evt-rJGC5r3lDtjktGY`
+- RSVP writeback succeeded for `nellis@medlifemovement.org`.
+- Attendance import succeeded for the same event:
+  - `1` approved guest row imported
+  - `0` rows marked checked in
+  - no secrets returned
+- Durable app proof written in Supabase:
+  - `1` linked `luma_event_links` row for `evt-rJGC5r3lDtjktGY`
+  - `3` Luma audit rows
+  - `4` integration-event rows
+  - `3` disabled outbox rows blocking downstream automation
+- Points rows for that specific hosted event remain `0` because Luma returned no
+  checked-in attendance row yet.
+- Reviewer-visible readback is still in place for the broader loop:
+  - member `/app` shows the event, RSVP, attendance, points, and leaderboard
+    story
+  - leader `/leader` shows the same event-to-points flow in leader review terms
+  - staff `/staff?view=chapters` shows the event-and-points pulse
+  - admin `/admin/luma-live-pilot`, `/admin/audit-log`, and
+    `/admin/integration-outbox` show the hosted proof and safety posture
+
+## What this still does not prove
+
+- It does not yet prove a hosted checked-in attendee can create a real
+  `points_events` row from Luma attendance import.
+- That is now the main honest blocker between "hosted staging event loop exists"
+  and "hosted staging event loop is fully proven for a live pilot."
+- It does not enable n8n, HubSpot, warehouse, Power BI, SMS/email, AI, or
+  production Luma behavior.
