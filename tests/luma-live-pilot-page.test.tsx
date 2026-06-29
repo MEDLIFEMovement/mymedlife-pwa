@@ -171,6 +171,8 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("Review the proof candidates in completion order.");
     expect(html).toContain("Hosted reviewer proof");
     expect(html).toContain("Use this route as the staging evidence checklist.");
+    expect(html).toContain('href="/admin/luma-live-pilot"');
+    expect(html).toContain('aria-current="page"');
     expect(html).toContain('href="/admin/integration-outbox?source=luma-live-pilot"');
     expect(html).toContain('href="/admin/audit-log?source=luma-live-pilot"');
     expect(html).toContain("Open staging.mymedlife.org, pass Vercel SSO");

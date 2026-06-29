@@ -9,7 +9,7 @@ describe("route smoke manifest", () => {
 
     expect(manifest.canReadManifest).toBe(true);
     expect(manifest.title).toBe("Admin route smoke manifest");
-    expect(manifest.counts.totalRoutes).toBe(48);
+    expect(manifest.counts.totalRoutes).toBe(49);
     expect(manifest.counts.criticalRoutes).toBeGreaterThan(0);
     expect(manifest.counts.mobileVisualChecks).toBe(8);
     expect(manifest.counts.browserWritesExpected).toBe(0);
@@ -50,6 +50,7 @@ describe("route smoke manifest", () => {
         "/admin/launch-gate",
         "/admin/audit-log",
         "/admin/integration-outbox",
+        "/admin/luma-live-pilot",
         "/admin/master-data",
         "/admin/permissions",
         "/admin/committees",
@@ -253,6 +254,22 @@ describe("route smoke manifest", () => {
       manifest.routes.find((route) => route.path === "/admin/integration-outbox")
         ?.safetyAssertion,
     ).toContain("external workers");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/luma-live-pilot")
+        ?.expectedResult,
+    ).toContain("hosted staging Luma proof lane");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/luma-live-pilot")
+        ?.expectedResult,
+    ).toContain("points and leaderboard readback");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/luma-live-pilot")
+        ?.safetyAssertion,
+    ).toContain("Production Luma");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/luma-live-pilot")
+        ?.safetyAssertion,
+    ).toContain("non-approved external sends");
     expect(
       manifest.routes.find((route) => route.path === "/admin/master-data")
         ?.expectedResult,

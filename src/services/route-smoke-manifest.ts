@@ -429,6 +429,16 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "Queue mutations, live-send approvals, retries, payload edits, integration secrets, external workers, exports, AI summaries, and external sends remain disabled.",
   },
   {
+    path: "/admin/luma-live-pilot",
+    label: "Admin Luma live pilot",
+    priority: "critical",
+    audiences: ["ds_admin", "super_admin"],
+    expectedResult:
+      "DS reviewers see the hosted staging Luma proof lane with event create or update, RSVP writeback, attendance import, points and leaderboard readback, audit or outbox proof, and the next host-side check-in candidate.",
+    safetyAssertion:
+      "Production Luma, n8n execution, HubSpot, warehouse, Power BI, SMS, email, AI actions, queue edits, and any non-approved external sends remain disabled.",
+  },
+  {
     path: "/admin/master-data",
     label: "Admin master data inventory",
     priority: "critical",

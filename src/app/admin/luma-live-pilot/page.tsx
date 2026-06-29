@@ -10,6 +10,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
   runLumaAttendanceImportAction,
   runLumaEventUpsertAction,
@@ -17,6 +18,7 @@ import {
 } from "./actions";
 
 export const dynamic = "force-dynamic";
+export const metadata = getStaticRouteMetadata("adminLumaLivePilot");
 
 type LumaLivePilotPageProps = {
   searchParams?: Promise<{
@@ -61,7 +63,7 @@ export default async function LumaLivePilotPage({
 
   return (
     <AdminAppShell actor={actor}>
-      <AdminBackendLaneNav current="integration_outbox" showIntegrations={canRead} />
+      <AdminBackendLaneNav current="luma_live_pilot" showIntegrations={canRead} />
 
       {!canRead ? (
         <RestrictedState

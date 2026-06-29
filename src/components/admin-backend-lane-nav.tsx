@@ -7,6 +7,7 @@ type AdminBackendLaneKey =
   | "integrations"
   | "feature_flags"
   | "theme"
+  | "luma_live_pilot"
   | "permissions"
   | "committees"
   | "workflows"
@@ -61,6 +62,11 @@ const baseLanes = [
     key: "theme",
     label: "Theme",
     href: "/admin/theme",
+  },
+  {
+    key: "luma_live_pilot",
+    label: "Luma Pilot",
+    href: "/admin/luma-live-pilot",
   },
   {
     key: "permissions",
@@ -360,6 +366,16 @@ function AdminLaneIcon({ lane }: { lane: AdminBackendLaneKey }) {
           <path d="M12 19v-2.5" />
           <path d="M7 12H4.5" />
           <path d="M19.5 12H17" />
+        </svg>
+      );
+    case "luma_live_pilot":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M12 3.5v6" />
+          <path d="m9.2 6.3 2.8-2.8 2.8 2.8" />
+          <path d="M5 12.5h14" />
+          <path d="M7 18.5h10" />
+          <rect x="6" y="10" width="12" height="10" rx="2" />
         </svg>
       );
     case "integration_outbox":
