@@ -62,12 +62,12 @@ Readback confirmed:
 - DS Admin / Super Admin select policies exist for the control tables.
 - The audited control functions exist with explicit search paths.
 - Current hosted staging totals after reviewer-visible proof:
-  - `app.feature_flag_overrides`: `1`
-  - `app.feature_flag_audit_records`: `2`
+  - `app.feature_flag_overrides`: `2`
+  - `app.feature_flag_audit_records`: `3`
   - `app.theme_snapshots`: `3`
   - `app.theme_audit_records`: `3`
-  - `app.admin_step_up_sessions`: `0`
-  - `app.production_control_approvals`: `0`
+  - `app.admin_step_up_sessions`: `1`
+  - `app.production_control_approvals`: `1`
 
 Hosted Supabase advisor result after the follow-up migration:
 
@@ -159,7 +159,25 @@ Remaining hosted UI proof:
     `/admin/integration-outbox?source=luma-live-pilot`,
     `/admin/audit-log?source=luma-live-pilot`, and `/admin/pilot-scope`
 - The control layer is no longer waiting on staging alias promotion. The
-  remaining blocker is now the separate hosted `action_started` packet,
+  remaining blocker is no longer whether the dangerous control path exists.
+  That hosted proof now exists too:
+  - DS Admin re-auth on `/admin/integrations` created
+    `app.admin_step_up_sessions` row
+    `d7d8dc57-e628-4fdd-bf69-c0428d6711a8`
+  - a production-environment provider save on `/admin/feature-flags?env=production`
+    recorded `app.production_control_approvals` row
+    `3b918432-f843-4051-a040-9c9b90601ecc`
+  - the same save wrote production override row
+    `c16f5f52-9269-44be-a8c7-8adef1859ff8`
+    for `integration_luma`
+  - the save used `scheduled`, not `enabled`, so the hosted proof stayed
+    non-live while still exercising confirmation, approval reference, fresh
+    step-up, and durable audit behavior
+  - matching audit log rows now exist for:
+    - `admin_step_up_verified`
+    - `production_control_approval_recorded`
+    - `feature_flag_status_changed`
+- The remaining blocker is now the separate hosted `action_started` packet,
   proof-metadata-to-leader-review packet, and the separate production
   environment and owner decisions.
 - Production environment variables remain unset/off for this control layer.

@@ -192,12 +192,12 @@ Read-only Supabase inspection against staging project
 `rceupryepjgkdeqgxzrc` on 2026-06-29 confirmed:
 
 - control-layer tables
-  - `app.feature_flag_overrides`: `1`
-  - `app.feature_flag_audit_records`: `2`
+  - `app.feature_flag_overrides`: `2`
+  - `app.feature_flag_audit_records`: `3`
   - `app.theme_snapshots`: `3`
   - `app.theme_audit_records`: `3`
-  - `app.admin_step_up_sessions`: `0`
-  - `app.production_control_approvals`: `0`
+  - `app.admin_step_up_sessions`: `1`
+  - `app.production_control_approvals`: `1`
 - hosted write / proof counts
   - `app.events`
     - `action_started`: `1`
@@ -246,17 +246,42 @@ review concept:
   - `app.feature_flag_audit_records`
   - `app.theme_snapshots`
   - `app.theme_audit_records`
-- the current staging packet still shows:
-  - `app.admin_step_up_sessions`: `0`
-  - `app.production_control_approvals`: `0`
+- a protected hosted replay on `2026-06-29` also proved the production-sensitive
+  control path without enabling live behavior:
+  - DS Admin re-auth created `app.admin_step_up_sessions` row
+    `d7d8dc57-e628-4fdd-bf69-c0428d6711a8`
+  - the next hosted provider save recorded
+    `app.production_control_approvals` row
+    `3b918432-f843-4051-a040-9c9b90601ecc`
+  - the same hosted save created production-environment
+    `app.feature_flag_overrides` row
+    `c16f5f52-9269-44be-a8c7-8adef1859ff8`
+    for `integration_luma`
+  - that provider flag is set to `scheduled`, which keeps it non-live while the
+    approval and audit path is being proven on staging
+  - matching durable audit rows now exist in:
+    - `app.feature_flag_audit_records`
+      `4287ded6-5ece-43c8-953e-a803e4178bc2`
+    - `app.audit_logs`
+      `376fb49e-9657-4c9e-bfc4-a8648b1e45c3`
+      (`admin_step_up_verified`)
+    - `app.audit_logs`
+      `2a3700d7-573e-41fb-9b0b-3580ac44493f`
+      (`production_control_approval_recorded`)
+    - `app.audit_logs`
+      `476bf78f-cff4-4949-a5df-8ef8334089e7`
+      (`feature_flag_status_changed`)
 
 What this proves:
 
 - feature-flag and theme review is attached to Supabase-backed tables on
   staging, not only in-memory local review state
 - durable audit rows already exist for control changes
-- production-sensitive control paths are still honestly unproven and should
-  remain locked until fresh step-up plus approval-row readback is captured
+- production-sensitive provider controls now have one honest hosted staging
+  proof with fresh step-up, explicit approval, durable override, and durable
+  audit rows
+- the proven provider save still keeps Luma non-live because the production
+  environment flag was written as `scheduled`, not `enabled`
 
 ## What is now honestly proven
 

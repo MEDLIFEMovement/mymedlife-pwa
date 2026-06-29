@@ -43,6 +43,12 @@ Status:
   - `app.theme_audit_records`
   - `app.admin_step_up_sessions`
   - `app.production_control_approvals`
+- Hosted staging now also proves the production-sensitive admin-control path:
+  - DS Admin step-up re-auth succeeds
+  - one production approval row is recorded
+  - one production-environment provider override row is recorded for
+    `integration_luma`
+  - that provider flag is set to `scheduled`, so the proof stays non-live
 
 ## What Still Blocks Live Pilot
 
@@ -75,12 +81,17 @@ Status:
      `app.feature_flag_audit_records`, `app.theme_snapshots`,
      `app.theme_audit_records`, `app.admin_step_up_sessions`, and
      `app.production_control_approvals`.
-   - `/admin/feature-flags` and `/admin/theme` still must load without the persistence warning.
-   - One DS/Admin feature-flag save and one theme-token save must record visible audit rows.
+   - Hosted staging now also has one honest production-sensitive provider proof:
+     fresh DS/Admin step-up, approval row, override row, and audit rows for
+     `integration_luma`, with status `scheduled`.
+   - `/admin/feature-flags` and `/admin/theme` must be promoted with the same
+     posture in the actual production environment before the pilot is treated as
+     live-ready.
    - Record the packet with names-only values such as
      `MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS` and
      `MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE`.
-   - `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` should only be treated as ready after that proof exists.
+   - `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` should only be treated as ready
+     in production after equivalent environment proof exists there too.
 5. Confirm monitoring, incident response, named support owner, support/pause channel, and rollback ownership.
 6. Keep all external integrations disabled until a later approval gate.
 
