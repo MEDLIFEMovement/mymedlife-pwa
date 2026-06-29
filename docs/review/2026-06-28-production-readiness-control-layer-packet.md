@@ -45,8 +45,9 @@ Required before production pilot:
 
 Applied to hosted staging Supabase project `rceupryepjgkdeqgxzrc`:
 
-- `20260628221659 production_control_layer`
-- `20260628221823 fix_control_layer_advisors`
+- `20260628215346 production_control_layer`
+- `20260628221748 fix_control_layer_advisors`
+- `20260628232529 allow_authenticated_active_theme_reads`
 
 Readback confirmed:
 
@@ -55,9 +56,13 @@ Readback confirmed:
 - RLS is enabled on all six control tables.
 - DS Admin / Super Admin select policies exist for the control tables.
 - The audited control functions exist with explicit search paths.
-- Existing rows immediately after migration: `0` feature flag overrides, `0`
-  feature flag audit records, `0` theme snapshots, `0` theme audit records,
-  and `0` production approval records.
+- Current hosted staging totals after reviewer-visible proof:
+  - `app.feature_flag_overrides`: `1`
+  - `app.feature_flag_audit_records`: `2`
+  - `app.theme_snapshots`: `3`
+  - `app.theme_audit_records`: `3`
+  - `app.admin_step_up_sessions`: `0`
+  - `app.production_control_approvals`: `0`
 
 Hosted Supabase advisor result after the follow-up migration:
 
@@ -101,26 +106,24 @@ Current Vercel evidence:
 
 - Vercel project `mymedlife-pwa` exists under team
   `nellis-6036's projects`.
-- PR #126 preview deployment for `feat/modular-flags-theme-admin` is `READY`.
+- The current signed-in staging target is the latest `READY` deployment for
+  `feat/modular-flags-theme-admin`:
+  - deployment id: `dpl_H7c9SpH2zJhmZvZBbaR5YEVaowg9`
+  - commit: `23ad353`
+  - branch: `feat/modular-flags-theme-admin`
+  - PR: `#126`
+  - alias: `staging.mymedlife.org`
 - Vercel CLI access was confirmed as `nellis-6036`.
 - `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` was added as a non-secret Preview
   variable for both active staging branches:
   - `feat/modular-flags-theme-admin`
   - `feat/MED-494-hosted-staging-read-write-proof`
-- PR #126 was redeployed after the env-var change:
-  - deployment id: `dpl_9qCR3LiMyvWnfTxdTsZRSxFssdAz`
-  - preview URL: `https://mymedlife-65dsx90wr-nellis-6036s-projects.vercel.app`
-  - deployment state: `READY`
-- PR #126 latest preview after the durable feature-flag fix:
-  - deployment id: `dpl_C7GvE4sT5iW8duKuTGyQBbdShMXN`
-  - preview URL: `https://mymedlife-phse4yfjs-nellis-6036s-projects.vercel.app`
-  - deployment state: `READY`
 
 Remaining hosted UI proof:
 
-- Protected preview fetches still redirect through Vercel SSO, so a signed-in
-  reviewer session is still required to visually confirm `/admin/feature-flags`
-  and `/admin/theme` display Supabase-backed control storage in the hosted UI.
+- `https://staging.mymedlife.org/login` still redirects through Vercel SSO, so
+  a signed-in reviewer session is still required to visually confirm hosted UI
+  state.
 - Hosted preview proof now exists for durable control readback and form submits:
   - `/admin/feature-flags` shows `Control storage: Reading and writing ... from Supabase.`
   - a DS Admin hosted feature-flag save created a durable override row, a
@@ -130,22 +133,15 @@ Remaining hosted UI proof:
     DS Admin hosted theme draft save now creates a durable theme snapshot, a
     theme audit row, and an `audit_logs` row with reason
     `Hosted preview theme proof save`.
-- Current hosted staging Supabase totals after the preview proof:
-  - `app.feature_flag_overrides`: `1`
-  - `app.feature_flag_audit_records`: `2`
-  - `app.theme_snapshots`: `3`
-  - `app.theme_audit_records`: `3`
-- The remaining gap inside this control slice is now about promotion, not core
-  behavior:
-  the end-to-end save path is proven on the current signed-in preview
-  deployment, but `staging.mymedlife.org` still needs the same build promoted or
-  re-pointed before this can be claimed as staging-alias proof.
 - Hosted route-level reviewer proof was re-checked on `2026-06-29T02:30:40Z`:
   - `/admin/feature-flags` shows `Control storage: Reading and writing ... from Supabase.`
   - `/admin/theme` shows the same Supabase-backed control-storage posture.
   - `/admin/audit-log`, `/admin/integration-outbox`, `/admin/pilot-scope`, and
     `/admin/first-write` all render against the signed-in hosted staging
     session.
+- The control layer is no longer waiting on staging alias promotion. The
+  remaining blocker is the still-incomplete Luma attendance-to-points proof plus
+  the separate production environment and owner decisions.
 - Production environment variables remain unset/off for this control layer.
 
 ## Production Environment Packet In The App
@@ -183,7 +179,7 @@ Hosted proof recorded on `2026-06-29T02:30:40Z`:
 - Signed in to `staging.mymedlife.org` as seeded DS Admin
   `ds.admin@mymedlife.test` through the hosted login route.
 - Created a staging Luma event from myMEDLIFE:
-  - event id `evt-rJGC5r3lDtjktGY`
+  - event id `evt-bJE178Q02N5DaLH`
   - redirect proof: `Created a Luma event from myMEDLIFE staging ... Staging proof recorded.`
 - Wrote one RSVP back to Luma for `nellis@medlifemovement.org` with Luma email
   sending suppressed.
@@ -192,11 +188,15 @@ Hosted proof recorded on `2026-06-29T02:30:40Z`:
   - `0` rows included check-in attendance
   - no secrets returned
 - Durable staging rows now prove the hosted loop:
-  - `app.luma_event_links`: `1` linked row for `evt-rJGC5r3lDtjktGY`
-  - `app.audit_logs`: `luma_event_upsert_recorded`,
-    `luma_rsvp_recorded`, and `luma_attendance_import_recorded`
-  - `app.integration_events`: `luma_event_linked`, `event_shared_to_feed`,
-    `luma_rsvp_recorded`, and `luma_attendance_imported`
+  - `app.luma_event_links`: `1` linked row for `evt-bJE178Q02N5DaLH`
+  - `app.chapter_events`: `1` linked chapter event row for the hosted pilot
+  - `app.events`: `3` rows for the event create, RSVP, and attendance-import
+    sequence
+  - `app.audit_logs`: `2` rows mentioning `evt-bJE178Q02N5DaLH`
+    (`luma_event_upsert_recorded` and `luma_rsvp_recorded`)
+  - `app.integration_events`: `3` recorded rows
+    (`luma_event_linked`, `luma_rsvp_recorded`,
+    `luma_attendance_imported`)
   - `app.automation_outbox`: `3` disabled rows for blocked downstream sends
     (`luma_event_external_send_blocked`,
     `luma_rsvp_external_send_blocked`,
@@ -208,8 +208,10 @@ Hosted proof recorded on `2026-06-29T02:30:40Z`:
   - coach/staff `/staff?view=chapters`: event-and-points pulse visible
   - admin `/admin/luma-live-pilot`, `/admin/audit-log`, and
     `/admin/integration-outbox`: hosted proof and safety routes visible
-- Existing earlier event proof for `evt-R40luOuH0eVQ0FB` remains in staging audit
-  history from the first hosted create pass.
+- The linked chapter event for `evt-bJE178Q02N5DaLH` is still
+  `published` with `attendance_count = 0` and `points_rows = 0`.
+- Existing earlier event proof remains in staging audit history from the first
+  hosted create pass.
 
 Remaining before live pilot:
 
