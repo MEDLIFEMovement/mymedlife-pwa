@@ -22,6 +22,7 @@ export type ActionStartWriteConfig =
 
 export type ActionStartWriteReadiness = {
   operation: "action_started";
+  environmentLabel: "Local review lane" | "Hosted staging lane";
   canSubmit: boolean;
   resultCodeIfSubmitted: ActionStartResultCode;
   reason: string;
@@ -196,6 +197,9 @@ export function getActionStartWriteReadiness(
 
   return {
     operation: "action_started",
+    environmentLabel: config.isLocalOnly
+      ? "Local review lane"
+      : "Hosted staging lane",
     canSubmit: config.enabled && !failedCheck,
     resultCodeIfSubmitted:
       config.enabled && !failedCheck
@@ -232,7 +236,7 @@ export function getActionStartReadbackState(
       confirmsStarted: true,
       tone: "success",
       message:
-        "Local readback confirms this assignment is now in progress in Supabase.",
+        "Readback confirms this assignment is now in progress in Supabase.",
     };
   }
 
@@ -257,7 +261,7 @@ export function mapActionStartRpcSuccess(
     integrationEventId: row.integration_event_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "Action started locally. The app recorded the assignment status, event, integration event, and audit log. No external send happened.",
+      "Action started. The app recorded the assignment status, event, integration event, and audit log. No external send happened.",
   };
 }
 

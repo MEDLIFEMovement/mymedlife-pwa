@@ -297,11 +297,19 @@ export default async function ActionDetailPage({
           ) : null}
 
           {!showMemberSubmitState ? (
-            <MemberActionDetailPanel
-              workspace={memberWorkspace}
-              actionHref={submitEvidenceHref}
-              sourceContext={memberActionSourceContext}
-            />
+            <section className="grid gap-3">
+              <ActionStartServerActionPanel
+                assignment={assignment}
+                readiness={actionStartWriteReadiness}
+                resultCode={actionStartResultCode}
+                returnToHref={defaultActionHref}
+              />
+              <MemberActionDetailPanel
+                workspace={memberWorkspace}
+                actionHref={submitEvidenceHref}
+                sourceContext={memberActionSourceContext}
+              />
+            </section>
           ) : null}
         </section>
       </StudentAppShell>
