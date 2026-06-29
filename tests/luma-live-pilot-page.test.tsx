@@ -32,6 +32,7 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("Staging Luma pilot");
     expect(html).toContain("Event and points evidence");
     expect(html).toContain("RSVP, attendance, and leaderboard impact stay tied together.");
+    expect(html).toContain("These counters are cumulative staging proof totals");
     expect(html).toContain("RSVPs");
     expect(html).toContain("Attendance");
     expect(html).toContain("Points");

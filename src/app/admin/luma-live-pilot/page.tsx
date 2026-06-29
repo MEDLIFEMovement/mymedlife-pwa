@@ -111,9 +111,9 @@ export default async function LumaLivePilotPage({
                 </h2>
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                   This readback is the staging pilot proof path reviewers should compare
-                  against the live Luma controls below: one chapter event, one member RSVP,
-                  one confirmed attendance row, one points award, disabled outbox posture,
-                  and audit visibility before any broader launch.
+                  against the live Luma controls below. These counters are cumulative staging
+                  proof totals, while the success banner above is the latest event-specific
+                  result. Review both before treating a single import as points-ready.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2 text-xs font-semibold">

@@ -71,23 +71,29 @@ Existing server-only values must also remain configured:
 
 ## Hosted staging proof captured
 
-Captured on `2026-06-29T02:30:40Z` with a signed-in DS Admin staging session.
+Captured on `2026-06-29` with a signed-in DS Admin staging session.
 
 - Hosted login succeeded for `ds.admin@mymedlife.test`.
 - Event create/update succeeded:
-  - latest event id: `evt-rJGC5r3lDtjktGY`
+  - latest event id: `evt-bJE178Q02N5DaLH`
 - RSVP writeback succeeded for `nellis@medlifemovement.org`.
 - Attendance import succeeded for the same event:
   - `1` approved guest row imported
   - `0` rows marked checked in
   - no secrets returned
-- Durable app proof written in Supabase:
-  - `1` linked `luma_event_links` row for `evt-rJGC5r3lDtjktGY`
-  - `3` Luma audit rows
-  - `4` integration-event rows
-  - `3` disabled outbox rows blocking downstream automation
+- Durable app proof written in Supabase for `evt-bJE178Q02N5DaLH`:
+  - `1` linked `luma_event_links` row
+  - `1` linked `chapter_events` row
+  - `3` `app.events` rows for the create, RSVP, and attendance-import sequence
+  - `4` `app.integration_events` rows for the linked event flow
+  - `3` disabled `app.automation_outbox` rows blocking downstream automation
+  - `2` audit rows that mention the Luma event id in the before/after payload
 - Points rows for that specific hosted event remain `0` because Luma returned no
   checked-in attendance row yet.
+- The chapter event tied to `evt-bJE178Q02N5DaLH` is still:
+  - `published`
+  - `attendance_count = 0`
+  - `points_rows = 0`
 - Reviewer-visible readback is still in place for the broader loop:
   - member `/app` shows the event, RSVP, attendance, points, and leaderboard
     story
@@ -99,6 +105,8 @@ Captured on `2026-06-29T02:30:40Z` with a signed-in DS Admin staging session.
   when they exist, instead of always falling back to mock leaderboard data.
   That means a real attended Luma import can now show up in reviewer-visible
   member and leader leaderboard UI once a checked-in attendee is imported.
+- On `/admin/luma-live-pilot`, the headline counters are cumulative staging proof
+  totals. The success banner is the authoritative latest event-specific result.
 
 ## What this still does not prove
 
