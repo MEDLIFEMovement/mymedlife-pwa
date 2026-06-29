@@ -129,6 +129,40 @@ describe("admin control server actions", () => {
     );
   });
 
+  it("rejects placeholder approval references before production-sensitive feature flag writes", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const featureFlagModule = await import("@/modules/feature-flags");
+    const navigationModule = await import("next/navigation");
+    const { updateFeatureFlagAction } = await import("@/app/admin/feature-flags/actions");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
+    );
+
+    await expect(
+      updateFeatureFlagAction(
+        formDataFor({
+          returnTo: "/admin/feature-flags?env=production",
+          environment: "production",
+          flagKey: "integration_luma",
+          nextStatus: "enabled",
+          reason: "Enable production Luma for the approved pilot event loop.",
+          approvalReference: "pending DS approval",
+          confirmProduction: "on",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/feature-flags?");
+
+    expect(
+      vi.mocked(featureFlagModule.updateFeatureFlagStatusDurable),
+    ).not.toHaveBeenCalled();
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Production-sensitive+provider+flags+require+a+concrete+approval+reference",
+      ),
+    );
+  });
+
   it("blocks non-DS users from feature flag actions before any durable write runs", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const featureFlagModule = await import("@/modules/feature-flags");
@@ -308,6 +342,36 @@ describe("admin control server actions", () => {
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
       expect.stringContaining("themeResult=success"),
+    );
+  });
+
+  it("rejects placeholder approval references before production theme publishing", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const themeModule = await import("@/modules/theme");
+    const navigationModule = await import("next/navigation");
+    const { publishThemeAction } = await import("@/app/admin/theme/actions");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("super.admin@mymedlife.test"),
+    );
+
+    await expect(
+      publishThemeAction(
+        formDataFor({
+          returnTo: "/admin/theme?env=production",
+          environment: "production",
+          reason: "Publish production theme for pilot review.",
+          approvalReference: "TBD after DS review",
+          confirmProduction: "on",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/theme?");
+
+    expect(vi.mocked(themeModule.publishThemeDraftDurable)).not.toHaveBeenCalled();
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Production+theme+changes+require+a+concrete+approval+reference",
+      ),
     );
   });
 

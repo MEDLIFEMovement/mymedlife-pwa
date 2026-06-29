@@ -18,6 +18,7 @@ import {
   needsFreshProductionStepUp,
 } from "@/services/admin-integrations-step-up";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { isResolvedReviewPacketValue } from "@/services/review-packet-value";
 
 export async function saveThemeDraftAction(formData: FormData) {
   const actor = await getLocalActorContext();
@@ -189,6 +190,12 @@ async function getProductionThemeApproval(
 
   if (!approvalReference) {
     throw new Error("Production theme changes require an approval reference.");
+  }
+
+  if (!isResolvedReviewPacketValue(approvalReference)) {
+    throw new Error(
+      "Production theme changes require a concrete approval reference.",
+    );
   }
 
   const stepUpState = await getDsSecretStepUpState(actor);
