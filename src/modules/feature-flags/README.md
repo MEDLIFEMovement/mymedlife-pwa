@@ -1,7 +1,7 @@
 # Feature Flags Module
 
 ## What This Owns
-- Central module/provider feature registry, environment-aware status evaluation, server-side helpers, and feature flag audit records.
+- Central module/provider feature registry, environment-aware status evaluation, server-side helpers, feature flag audit records, and Supabase-backed control-layer persistence when enabled.
 
 ## What This Does Not Own
 - Live provider credentials, rollout decisions, or external side effects.
@@ -29,9 +29,12 @@
 ## Tests
 - `tests/feature-flags-theme-services.test.ts`
 - `tests/feature-flags-theme-pages.test.tsx`
+- `tests/feature-flag-durable-update.test.ts`
+- `tests/admin-control-actions.test.ts`
 
 ## Safe Modification
 - Add new flags in `types.ts` and `constants.ts`, then cover their default behavior in tests.
 
 ## TODOs
-- Replace in-memory overrides with audited persistence after DS approves hosted storage.
+- Keep the memory fallback limited to review sessions where the control layer is intentionally off or no Supabase session is active.
+- Add coverage whenever a new flag needs a durable RPC payload, approval rule, or server-side dependency.
