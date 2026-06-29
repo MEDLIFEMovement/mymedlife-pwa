@@ -494,6 +494,8 @@ function drillStatusTone(status: FirstWriteDrillStatus): "amber" | "blue" | "whi
   switch (status) {
     case "ready_for_local_action_start":
       return "blue";
+    case "evidence_recorded":
+      return "white";
     case "blocked_until_local_supabase":
       return "amber";
     case "blocked_until_flags":
