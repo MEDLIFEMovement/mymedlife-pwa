@@ -207,12 +207,12 @@ function buildLaunchPreflight(
       key: "callback_url_plan",
       label: "Approve auth callback URLs",
       ownerLane: "Security and Student Access",
-      status: "blocked",
+      status: "watch",
       question: "Can a real user sign in and return to the correct myMEDLIFE route?",
       requiredEvidence:
         "Production and staging callback URLs, invite redirect URLs, restricted-state fallback routes, and the approved staging reviewer access path must be confirmed before live auth.",
       currentPosture:
-        "Local preview still uses fake actor email selection; production callbacks are not enabled. On 2026-06-24, anonymous staging requests redirected to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path before the app, and direct `/login` requests were intercepted by the same gate.",
+        "Local preview still uses fake actor email selection, and production callbacks are not enabled. Hosted staging reviewer proof already exists through the Vercel SSO-gated `/login?next=/sso-api...` handoff, but the team still needs final callback approval, invite redirect approval, and confirmation that this remains the approved reviewer access path.",
       routeEvidence: ["/login", "/onboarding", "/admin/launch-gate"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -242,7 +242,7 @@ function buildLaunchPreflight(
       requiredEvidence:
         "Supabase Auth user id, profile row, membership row, and staff/coach assignment reads must agree before real users are invited.",
       currentPosture:
-        "Local auth-derived actor context exists, but production Auth/profile mapping still needs staging proof and an explicitly approved reviewer access path through the current Vercel-SSO-gated `/login?next=/sso-api...` handoff.",
+        "Local auth-derived actor context exists, and a seeded DS/Admin reviewer has already completed the current staged Vercel SSO handoff. Production Auth/profile mapping still needs final callback approval, role-routing confirmation, and cross-role pilot-cohort readback before real users are invited.",
       routeEvidence: ["/profile", "/onboarding", "/admin/system-health"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,

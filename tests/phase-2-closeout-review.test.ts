@@ -63,6 +63,9 @@ describe("phase 2 closeout review", () => {
       review.lanes.find((lane) => lane.key === "auth_onboarding")?.evidence.join(" "),
     ).toContain("/login?next=/sso-api");
     expect(
+      review.lanes.find((lane) => lane.key === "auth_onboarding")?.status,
+    ).toBe("awaiting_human_confirmation");
+    expect(
       review.lanes.find((lane) => lane.key === "first_hosted_write")?.summary,
     ).toContain("action_started");
     expect(

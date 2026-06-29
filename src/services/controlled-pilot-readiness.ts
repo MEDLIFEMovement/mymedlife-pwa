@@ -264,11 +264,15 @@ function getPilotGates(
       key: "auth_onboarding",
       label: "Production auth and onboarding",
       owner: "Kiomi",
-      status: "blocked_before_pilot",
+      status: hostedStagingEvidenceObserved ? "needs_decision" : "blocked_before_pilot",
       plainEnglish:
-        "Real students cannot be invited until sign-in, profile creation, chapter join, role approval, and coach assignment boundaries are approved.",
+        hostedStagingEvidenceObserved
+          ? "Hosted reviewer auth and role-routed staging landing proof already exist, but real students still cannot be invited until sign-in, profile creation, chapter join, role approval, and coach assignment boundaries are finally approved."
+          : "Real students cannot be invited until sign-in, profile creation, chapter join, role approval, and coach assignment boundaries are approved.",
       nextStep:
-        "Approve the auth/onboarding plan and implement the minimum pilot path.",
+        hostedStagingEvidenceObserved
+          ? "Use `/onboarding`, `/admin/phase-2`, and `/admin/launch-gate` to confirm the recorded reviewer path and sign off the minimum pilot auth path."
+          : "Approve the auth/onboarding plan and implement the minimum pilot path.",
     },
     {
       key: "pilot_writes",

@@ -100,8 +100,8 @@ describe("auth onboarding workspace", () => {
     expect(workspace.launchPreflight?.counts).toEqual({
       total: 10,
       ready: 2,
-      watch: 7,
-      blocked: 1,
+      watch: 8,
+      blocked: 0,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
       productionUsersEnabled: 0,
@@ -132,7 +132,17 @@ describe("auth onboarding workspace", () => {
       workspace.launchPreflight?.items.find(
         (item) => item.key === "callback_url_plan",
       )?.status,
-    ).toBe("blocked");
+    ).toBe("watch");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "callback_url_plan",
+      )?.currentPosture,
+    ).toContain("Hosted staging reviewer proof already exists");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "auth_profile_mapping",
+      )?.currentPosture,
+    ).toContain("seeded DS/Admin reviewer");
     expect(
       workspace.launchPreflight?.items.find(
         (item) => item.key === "role_coverage_matrix",

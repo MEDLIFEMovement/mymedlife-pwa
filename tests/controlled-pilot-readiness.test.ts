@@ -122,6 +122,16 @@ describe("controlled pilot readiness", () => {
       readiness.gates.find((gate) => gate.key === "staging_environment")
         ?.nextStep,
     ).toContain("recorded staging reviewer path");
+    expect(
+      readiness.gates.find((gate) => gate.key === "auth_onboarding")?.status,
+    ).toBe("needs_decision");
+    expect(
+      readiness.gates.find((gate) => gate.key === "auth_onboarding")
+        ?.plainEnglish,
+    ).toContain("Hosted reviewer auth");
+    expect(
+      readiness.gates.find((gate) => gate.key === "auth_onboarding")?.nextStep,
+    ).toContain("/onboarding");
   });
 
   it("keeps DS Admin eligible without making external integrations live", () => {
