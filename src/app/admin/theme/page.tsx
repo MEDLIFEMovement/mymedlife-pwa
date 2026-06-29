@@ -21,6 +21,7 @@ import {
   getDsSecretStepUpState,
   needsFreshProductionStepUp,
 } from "@/services/admin-integrations-step-up";
+import { getHostedReviewerSigninRequirement } from "@/services/hosted-reviewer-signin";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
@@ -47,6 +48,12 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
   ]);
   const canManage = canManageTheme(actor);
   const environment = parseEnvironment(resolvedSearchParams?.env);
+  const signinRequirement = getHostedReviewerSigninRequirement(
+    actor,
+    `/admin/theme?env=${environment}`,
+    "Sign in to review durable theme controls.",
+    "No signed-in hosted staging reviewer session is active for this DS-only route. Use a seeded DS Admin or Super Admin account, then come back here to read Supabase-backed theme snapshots, audit rows, and step-up posture honestly.",
+  );
   const stepUpState = canManage
     ? await getDsSecretStepUpState(actor)
     : null;
@@ -81,7 +88,15 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
     <AdminAppShell actor={actor}>
       <AdminBackendLaneNav current="theme" showIntegrations={canManage} />
 
-      {!canManage ? (
+      {!canManage && signinRequirement ? (
+        <RestrictedState
+          eyebrow={signinRequirement.eyebrow}
+          title={signinRequirement.title}
+          message={signinRequirement.message}
+          nextHref={signinRequirement.loginHref}
+          nextLabel={signinRequirement.nextLabel}
+        />
+      ) : !canManage ? (
         <RestrictedState
           title="Theme admin is restricted."
           message="Only DS Admin and Super Admin can edit, publish, rollback, or restore theme tokens."

@@ -100,6 +100,33 @@ describe("feature flags and theme admin pages", () => {
     expect(html).not.toContain("Module Flags");
   });
 
+  it("sends hosted preview fallbacks back through staging sign-in for feature flags", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext(
+        "leader.a@mymedlife.test",
+        "Using MYMEDLIFE_LOCAL_ACTOR_EMAIL because no signed-in hosted staging reviewer session is active.",
+        "mock_fallback",
+        "local_actor_email",
+        "signed_out",
+        false,
+      ),
+    );
+
+    const { default: FeatureFlagsPage } = await import("@/app/admin/feature-flags/page");
+    const html = renderToStaticMarkup(
+      await FeatureFlagsPage({
+        searchParams: Promise.resolve({ env: "staging" }),
+      }),
+    );
+
+    expect(html).toContain("Hosted reviewer sign-in required");
+    expect(html).toContain("Sign in to review durable feature flags.");
+    expect(html).toContain("Use a seeded DS Admin or Super Admin account");
+    expect(html).toContain("/login?redirectTo=%2Fadmin%2Ffeature-flags%3Fenv%3Dstaging");
+    expect(html).not.toContain("Feature flags are restricted.");
+  });
+
   it("renders the feature flag registry for DS Admin", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const stepUpModule = await import("@/services/admin-integrations-step-up");
@@ -174,6 +201,33 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Theme admin is restricted.");
     expect(html).toContain("Only DS Admin and Super Admin can edit, publish, rollback, or restore theme tokens.");
     expect(html).not.toContain("Theme tokens");
+  });
+
+  it("sends hosted preview fallbacks back through staging sign-in for theme controls", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext(
+        "leader.a@mymedlife.test",
+        "Using MYMEDLIFE_LOCAL_ACTOR_EMAIL because no signed-in hosted staging reviewer session is active.",
+        "mock_fallback",
+        "local_actor_email",
+        "signed_out",
+        false,
+      ),
+    );
+
+    const { default: ThemePage } = await import("@/app/admin/theme/page");
+    const html = renderToStaticMarkup(
+      await ThemePage({
+        searchParams: Promise.resolve({ env: "staging" }),
+      }),
+    );
+
+    expect(html).toContain("Hosted reviewer sign-in required");
+    expect(html).toContain("Sign in to review durable theme controls.");
+    expect(html).toContain("Use a seeded DS Admin or Super Admin account");
+    expect(html).toContain("/login?redirectTo=%2Fadmin%2Ftheme%3Fenv%3Dstaging");
+    expect(html).not.toContain("Theme admin is restricted.");
   });
 
   it("renders audited theme controls for Super Admin", async () => {

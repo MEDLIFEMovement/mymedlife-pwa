@@ -18,6 +18,7 @@ import {
   getDsSecretStepUpState,
   needsFreshProductionStepUp,
 } from "@/services/admin-integrations-step-up";
+import { getHostedReviewerSigninRequirement } from "@/services/hosted-reviewer-signin";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { updateFeatureFlagAction } from "./actions";
@@ -41,6 +42,12 @@ export default async function FeatureFlagsPage({
   ]);
   const canManage = canManageFeatureFlags(actor);
   const environment = parseEnvironment(resolvedSearchParams?.env);
+  const signinRequirement = getHostedReviewerSigninRequirement(
+    actor,
+    `/admin/feature-flags?env=${environment}`,
+    "Sign in to review durable feature flags.",
+    "No signed-in hosted staging reviewer session is active for this DS-only route. Use a seeded DS Admin or Super Admin account, then come back here to read Supabase-backed control rows, audit rows, and step-up posture honestly.",
+  );
   const stepUpState = canManage
     ? await getDsSecretStepUpState(actor)
     : null;
@@ -76,7 +83,15 @@ export default async function FeatureFlagsPage({
     <AdminAppShell actor={actor}>
       <AdminBackendLaneNav current="feature_flags" showIntegrations={canManage} />
 
-      {!canManage ? (
+      {!canManage && signinRequirement ? (
+        <RestrictedState
+          eyebrow={signinRequirement.eyebrow}
+          title={signinRequirement.title}
+          message={signinRequirement.message}
+          nextHref={signinRequirement.loginHref}
+          nextLabel={signinRequirement.nextLabel}
+        />
+      ) : !canManage ? (
         <RestrictedState
           title="Feature flags are restricted."
           message="Only DS Admin and Super Admin can manage module and provider feature flags."
