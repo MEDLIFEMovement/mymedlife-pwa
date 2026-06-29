@@ -80,7 +80,9 @@ export default async function LumaLivePilotPage({
               className={`rounded-2xl border p-4 text-sm font-semibold ${
                 result === "success"
                   ? "border-[var(--mymedlife-border)] bg-[var(--background)] text-[var(--mymedlife-info)]"
-                  : "border-rose-200 bg-rose-50 text-rose-700"
+                  : result === "warning"
+                    ? "border-amber-200 bg-amber-50 text-amber-800"
+                    : "border-rose-200 bg-rose-50 text-rose-700"
               }`}
             >
               {message}
@@ -606,7 +608,13 @@ function SubmitButton({
 }
 
 function normalizeResult(value: string | undefined) {
-  return value === "success" ? "success" : value === "error" ? "error" : null;
+  return value === "success"
+    ? "success"
+    : value === "warning"
+      ? "warning"
+      : value === "error"
+        ? "error"
+        : null;
 }
 
 function PendingFact({

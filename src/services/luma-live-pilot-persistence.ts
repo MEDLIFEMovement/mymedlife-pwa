@@ -286,6 +286,7 @@ export async function persistLumaRsvpProof(
   const context = await loadPilotContext(deps);
   const now = getNow(deps);
   const eventId = requireEventId(input.result, input.request.eventId);
+  const verificationPending = input.result.status === "pending_verification";
   const link = await requireLumaEventLink(context.client, eventId);
   const chapterEventId = requireLinkedChapterEventId(link);
   const existingEventRows = await context.client.selectRows<EventRow>("events", {
@@ -330,6 +331,8 @@ export async function persistLumaRsvpProof(
       userEmailHint: maskEmail(input.request.email),
       lumaEventId: eventId,
       rsvpCount: 1,
+      verificationStatus: verificationPending ? "pending" : "confirmed",
+      verificationPending,
     },
     correlation_id: `luma-pilot:rsvp:${eventId}:${matchingProfile?.id ?? maskEmail(input.request.email)}`,
     occurred_at: now,
@@ -346,6 +349,8 @@ export async function persistLumaRsvpProof(
     payload: {
       source: pilotSource,
       userEmailHint: maskEmail(input.request.email),
+      verificationStatus: verificationPending ? "pending" : "confirmed",
+      verificationPending,
     },
     created_by: input.actor.user.id,
   });
@@ -375,6 +380,7 @@ export async function persistLumaRsvpProof(
       source: pilotSource,
       userEmailHint: maskEmail(input.request.email),
       recorded: false,
+      verificationStatus: "not_recorded",
     },
     after_value: {
       source: pilotSource,
@@ -382,8 +388,12 @@ export async function persistLumaRsvpProof(
       userEmailHint: maskEmail(input.request.email),
       lumaEventId: eventId,
       recorded: true,
+      verificationStatus: verificationPending ? "pending" : "confirmed",
+      verificationPending,
     },
-    reason: "Recorded the staging Luma RSVP proof in app tables.",
+    reason: verificationPending
+      ? "Recorded the staging Luma RSVP proof in app tables while approved-guest verification is still pending."
+      : "Recorded the staging Luma RSVP proof in app tables.",
   });
 
   return {

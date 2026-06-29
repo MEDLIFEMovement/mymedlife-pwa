@@ -175,6 +175,80 @@ describe("luma live pilot persistence", () => {
     ).toHaveLength(1);
   });
 
+  it("records pending RSVP verification evidence when Luma accepted the write but guest-list verification is still settling", async () => {
+    const db = createFakeSupabaseAppClient();
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const deps = createPersistenceDeps(db.client);
+
+    await persistLumaEventUpsertProof(
+      {
+        actor,
+        request: {
+          name: "Pilot event",
+          startAt: "2026-07-20T23:00:00.000Z",
+          endAt: null,
+          timezone: "America/Los_Angeles",
+          address: null,
+          descriptionMd: null,
+        },
+        result: {
+          ok: true,
+          operation: "event_create",
+          status: "executed",
+          safeMessage: "Created Luma event.",
+          externalWrites: 1,
+          externalReads: 0,
+          eventId: "evt-rsvp-pending",
+          eventUrl: "https://lu.ma/evt-rsvp-pending",
+          attendanceRows: [],
+          secretsReturned: false,
+        },
+      },
+      deps,
+    );
+
+    const result = await persistLumaRsvpProof(
+      {
+        actor,
+        request: {
+          eventId: "evt-rsvp-pending",
+          email: "nellis@medlifemovement.org",
+          name: "Nick Ellis",
+        },
+        result: {
+          ok: false,
+          operation: "rsvp_write",
+          status: "pending_verification",
+          safeMessage: "Luma accepted the RSVP request, but approved guest verification is still pending.",
+          externalWrites: 1,
+          externalReads: 3,
+          eventId: "evt-rsvp-pending",
+          eventUrl: null,
+          attendanceRows: [],
+          secretsReturned: false,
+        },
+      },
+      deps,
+    );
+
+    expect(result.rsvpRecorded).toBe(true);
+    expect(
+      db.tables.events.find((row) => row.event_type === "event_rsvp_recorded")?.payload,
+    ).toMatchObject({
+      verificationStatus: "pending",
+      verificationPending: true,
+    });
+    expect(
+      db.tables.integration_events.find((row) => row.event_type === "luma_rsvp_recorded")?.payload,
+    ).toMatchObject({
+      verificationStatus: "pending",
+      verificationPending: true,
+    });
+    expect(
+      db.tables.audit_logs.find((row) => row.action === "luma_rsvp_recorded")?.reason,
+    ).toContain("verification is still pending");
+  });
+
   it("creates attendance points once per matched member across repeated imports", async () => {
     const db = createFakeSupabaseAppClient();
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");

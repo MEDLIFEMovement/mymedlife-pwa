@@ -82,7 +82,7 @@ export async function runLumaRsvpWriteAction(formData: FormData) {
     name: normalizeString(formData.get("name")),
   });
 
-  if (result.ok) {
+  if (shouldPersistRsvpProof(result)) {
     try {
       await persistLumaRsvpProof({
         actor,
@@ -106,8 +106,14 @@ export async function runLumaRsvpWriteAction(formData: FormData) {
 
   redirectWithResult(
     returnTo,
-    result.ok ? "success" : "error",
-    result.ok ? `${result.safeMessage} Staging proof recorded.` : result.safeMessage,
+    result.ok
+      ? "success"
+      : result.status === "pending_verification"
+        ? "warning"
+        : "error",
+    shouldPersistRsvpProof(result)
+      ? `${result.safeMessage} Staging proof recorded.`
+      : result.safeMessage,
   );
 }
 
@@ -163,7 +169,7 @@ export async function runLumaAttendanceImportAction(formData: FormData) {
 
 function redirectWithResult(
   returnTo: string,
-  status: "success" | "error",
+  status: "success" | "warning" | "error",
   message: string,
 ): never {
   const url = new URL(returnTo, "https://staging.mymedlife.org");
@@ -186,4 +192,8 @@ function normalizeString(value: FormDataEntryValue | null): string | null {
   return typeof value === "string" && value.trim().length > 0
     ? value.trim()
     : null;
+}
+
+function shouldPersistRsvpProof(result: Awaited<ReturnType<typeof writeLumaRsvp>>) {
+  return result.ok || result.status === "pending_verification";
 }

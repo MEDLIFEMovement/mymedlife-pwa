@@ -65,7 +65,7 @@ export type LumaAttendanceImportInput = {
 export type LumaLivePilotResult = {
   ok: boolean;
   operation: "event_create" | "event_update" | "rsvp_write" | "attendance_import";
-  status: "executed" | "blocked" | "failed";
+  status: "executed" | "blocked" | "failed" | "pending_verification";
   safeMessage: string;
   externalWrites: number;
   externalReads: number;
@@ -258,10 +258,22 @@ export async function writeLumaRsvp(
   );
 
   if (!verification.verified) {
+    if (verification.pendingVerification) {
+      return pendingVerificationResult(
+        "rsvp_write",
+        verification.failedReason ??
+          "Luma accepted the RSVP request, but the guest did not appear in the approved guest list yet. Review guest visibility before treating this as a live pilot pass.",
+        {
+          eventId: input.eventId,
+          externalReads: verification.externalReads,
+        },
+      );
+    }
+
     return failedResult(
       "rsvp_write",
       verification.failedReason ??
-        "Luma accepted the RSVP request, but the guest did not appear in the approved guest list. Retry after the event settles or review the event's guest settings before treating this as a live pilot pass.",
+        "Luma RSVP verification failed before the approved guest list could be checked safely.",
     );
   }
 
@@ -412,6 +424,7 @@ async function verifyLumaGuestAfterRsvp(
 ): Promise<{
   verified: boolean;
   externalReads: number;
+  pendingVerification?: boolean;
   failedReason?: string;
 }> {
   const endpoint = buildLumaGuestListEndpoint(input.eventId, 100);
@@ -469,8 +482,9 @@ async function verifyLumaGuestAfterRsvp(
   return {
     verified: false,
     externalReads,
+    pendingVerification: true,
     failedReason:
-      "Luma accepted the RSVP request, but the guest did not appear in the approved guest list. Retry after the event settles or review the event's guest settings before treating this as a live pilot pass.",
+      "Luma accepted the RSVP request, but the guest did not appear in the approved guest list yet. Retry after the event settles or review the event's guest settings before treating this as a live pilot pass.",
   };
 }
 
@@ -659,6 +673,28 @@ function failedResult(
   return {
     ...blockedResult(operation, safeMessage),
     status: "failed",
+  };
+}
+
+function pendingVerificationResult(
+  operation: LumaLivePilotResult["operation"],
+  safeMessage: string,
+  input: {
+    eventId: string | null;
+    externalReads: number;
+  },
+): LumaLivePilotResult {
+  return {
+    ok: false,
+    operation,
+    status: "pending_verification",
+    safeMessage,
+    externalWrites: 1,
+    externalReads: input.externalReads,
+    eventId: input.eventId,
+    eventUrl: null,
+    attendanceRows: [],
+    secretsReturned: false,
   };
 }
 

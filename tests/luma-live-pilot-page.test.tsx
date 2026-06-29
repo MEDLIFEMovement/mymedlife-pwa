@@ -150,4 +150,28 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("Only DS Admin and Super Admin can run staging Luma write or import controls.");
     expect(html).not.toContain("Create/update Luma event");
   });
+
+  it("renders a warning banner when RSVP proof is recorded but guest verification is still pending", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      dataModule.getMockReadOnlyAppData("Testing warning banner."),
+    );
+
+    const { default: LumaLivePilotPage } = await import("@/app/admin/luma-live-pilot/page");
+    const html = renderToStaticMarkup(
+      await LumaLivePilotPage({
+        searchParams: Promise.resolve({
+          lumaResult: "warning",
+          lumaMessage:
+            "Luma accepted the RSVP request, but the approved guest list has not settled yet. Staging proof recorded.",
+        }),
+      }),
+    );
+
+    expect(html).toContain("approved guest list has not settled yet");
+  });
 });

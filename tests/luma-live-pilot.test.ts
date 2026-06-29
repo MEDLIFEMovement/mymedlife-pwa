@@ -190,7 +190,7 @@ describe("luma live pilot gateway", () => {
     expect(result.externalReads).toBe(1);
   });
 
-  it("fails the RSVP lane if Luma never shows the guest in the approved list", async () => {
+  it("keeps the RSVP proof as pending verification if Luma accepts the guest but the approved list never settles", async () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce({
@@ -222,11 +222,12 @@ describe("luma live pilot gateway", () => {
     expect(result).toMatchObject({
       ok: false,
       operation: "rsvp_write",
-      status: "failed",
-      externalWrites: 0,
-      eventId: null,
+      status: "pending_verification",
+      externalWrites: 1,
+      externalReads: 3,
+      eventId: "evt-existing",
     });
-    expect(result.safeMessage).toContain("did not appear in the approved guest list");
+    expect(result.safeMessage).toContain("did not appear in the approved guest list yet");
   });
 
   it("imports attendance without returning QR codes or raw secrets", async () => {
