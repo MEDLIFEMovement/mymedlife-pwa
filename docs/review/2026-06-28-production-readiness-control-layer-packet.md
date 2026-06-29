@@ -53,13 +53,20 @@ Applied to hosted staging Supabase project `rceupryepjgkdeqgxzrc`:
 - `20260628215346 production_control_layer`
 - `20260628221748 fix_control_layer_advisors`
 - `20260628232529 allow_authenticated_active_theme_reads`
+- `20260629223000 review_packet_records`
 
 Readback confirmed:
 
 - Control tables exist for step-up sessions, production approvals, feature flag
   overrides, feature flag audits, theme snapshots, and theme audits.
+- The review-packet table now also exists on staging:
+  - `app.review_packet_records`
 - RLS is enabled on all six control tables.
+- RLS is also enabled on `app.review_packet_records`.
 - DS Admin / Super Admin select policies exist for the control tables.
+- The packet functions now exist with explicit search paths:
+  - `app.current_review_packet_role()`
+  - `app.upsert_review_packet_record(app.review_packet_category, text, text, text)`
 - The audited control functions exist with explicit search paths.
 - Current hosted staging totals after reviewer-visible proof:
   - `app.feature_flag_overrides`: `2`
@@ -68,6 +75,18 @@ Readback confirmed:
   - `app.theme_audit_records`: `3`
   - `app.admin_step_up_sessions`: `1`
   - `app.production_control_approvals`: `1`
+  - `app.review_packet_records`: `2`
+
+Durable packet rows now recorded on staging:
+
+- pilot scope:
+  - `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE` = `` `action_started` ``
+- production launch:
+  - `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF` = `fnlhontvvprwgooevzdl`
+- both rows were recorded through the audited
+  `app.upsert_review_packet_record(...)` function with DS-admin identity and
+  produced matching `app.audit_logs` rows with action
+  `review_packet_recorded`
 
 Hosted Supabase advisor result after the follow-up migration:
 
@@ -178,7 +197,8 @@ Remaining hosted UI proof:
     - `production_control_approval_recorded`
     - `feature_flag_status_changed`
 - The remaining blocker is now the separate hosted `action_started` packet,
-  proof-metadata-to-leader-review packet, and the separate production
+  proof-metadata-to-leader-review packet, the clean signed-in readback replay on
+  `/admin/pilot-scope` and `/admin/launch-gate`, and the separate production
   environment and owner decisions.
 - Production environment variables remain unset/off for this control layer.
 

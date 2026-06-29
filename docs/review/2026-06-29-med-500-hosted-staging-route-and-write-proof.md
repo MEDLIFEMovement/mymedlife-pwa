@@ -283,6 +283,46 @@ What this proves:
 - the proven provider save still keeps Luma non-live because the production
   environment flag was written as `scheduled`, not `enabled`
 
+## Hosted review-packet storage proof
+
+The packet-storage migration is now applied on hosted staging too:
+
+- `app.review_packet_records` exists on staging with RLS enabled
+- the packet functions now exist on staging:
+  - `app.current_review_packet_role()`
+  - `app.upsert_review_packet_record(...)`
+- the Supabase security advisor is still clean after this follow-up migration:
+  - security advisor: `0` lints
+
+Durable packet rows now recorded on staging:
+
+- pilot scope:
+  - `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE` = `` `action_started` ``
+  - row id: `e5ed5380-caa9-4bac-bda9-8ea944bfbe6e`
+- production launch:
+  - `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF` = `fnlhontvvprwgooevzdl`
+  - row id: `6090cd26-e1be-4098-bfd6-22b1380aeb14`
+
+Audit proof from the same write pass:
+
+- `review_packet_recorded`
+  - target id: `e5ed5380-caa9-4bac-bda9-8ea944bfbe6e`
+  - reason: `Primary approver approved action_started as the first hosted write.`
+- `review_packet_recorded`
+  - target id: `6090cd26-e1be-4098-bfd6-22b1380aeb14`
+  - reason:
+    `Production Supabase project shell exists and still needs approved app migrations.`
+
+What this proves:
+
+- pilot-scope and production-launch packet values are no longer env-only
+  placeholders on staging
+- the packet lane now has its own durable table, audited write function, and
+  matching audit rows
+- the remaining packet gap is a clean signed-in replay on `/admin/pilot-scope`
+  and `/admin/launch-gate`, not uncertainty about whether the storage path
+  exists
+
 ## What is now honestly proven
 
 - the signed-in reviewer path through `staging.mymedlife.org` is real

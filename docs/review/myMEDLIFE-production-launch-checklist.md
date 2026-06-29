@@ -43,6 +43,15 @@ Status:
   - `app.theme_audit_records`
   - `app.admin_step_up_sessions`
   - `app.production_control_approvals`
+- The review-packet lane is now durable on hosted staging too:
+  - `app.review_packet_records`
+  - `app.current_review_packet_role()`
+  - `app.upsert_review_packet_record(...)`
+  - one pilot-scope row is recorded:
+    `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE =` `` `action_started` ``
+  - one production-launch row is recorded:
+    `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF = fnlhontvvprwgooevzdl`
+  - both rows have matching `review_packet_recorded` audit rows
 - Hosted staging now also proves the production-sensitive admin-control path:
   - DS Admin step-up re-auth succeeds
   - one production approval row is recorded
@@ -57,7 +66,8 @@ Status:
      Vercel SSO -> myMEDLIFE login -> seeded reviewer -> role-routed workspace.
    - Confirm `/admin/luma-live-pilot`, `/admin/audit-log?source=luma-live-pilot`,
      `/admin/integration-outbox?source=luma-live-pilot`, `/admin/feature-flags`,
-     and `/admin/theme` still match the current hosted proof packet.
+     `/admin/theme`, `/admin/pilot-scope`, and `/admin/launch-gate` still match
+     the current hosted proof packet.
    - Confirm the hosted proof is recorded in the review systems before any live
      pilot claim is made.
 2. Execute the already-approved first hosted write and proof sequence on hosted staging.
@@ -76,6 +86,9 @@ Status:
    - Production Supabase project `fnlhontvvprwgooevzdl` already exists, but it
      still needs approved app migrations, auth callback configuration, env vars,
      backup/restore ownership, and a tiny pilot seed plan.
+   - The durable packet storage itself is already proven on staging; the
+     remaining gap is reviewer-facing confirmation of the signed-in readback and
+     the missing owner decisions, not another unknown storage dependency.
 4. Confirm the rollout-control layer is actually live in the target environment.
    - Hosted staging already has `app.feature_flag_overrides`,
      `app.feature_flag_audit_records`, `app.theme_snapshots`,
