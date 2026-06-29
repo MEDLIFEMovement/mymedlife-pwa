@@ -7,6 +7,7 @@ import type {
   PointsEvent,
 } from "@/shared/types/domain";
 import type {
+  AuditLogRow,
   AutomationOutboxRow,
   EventRow,
   IntegrationEventRow,
@@ -95,6 +96,14 @@ export type StagingLumaEventLoopSummary = {
 export type StagingLumaEventLoopReadModel = {
   summary: StagingLumaEventLoopSummary;
   providerStatusLabel: string;
+  proofEvidence: null | {
+    integrationRows: number;
+    outboxRows: number;
+    disabledOutboxRows: number;
+    sentOutboxRows: number;
+    auditRows: number;
+    zeroUnapprovedSendsConfirmed: boolean;
+  };
   pendingHostCheckIn: null | {
     eventId: string;
     guestEmail: string | null;
@@ -130,6 +139,7 @@ export type StagingLumaEventLoopEvidenceSnapshot = {
   integrationEventRows: IntegrationEventRow[];
   automationOutboxRows: AutomationOutboxRow[];
   pointsEventRows: PointsEventRow[];
+  auditLogRows?: AuditLogRow[];
 };
 
 type PendingRunCandidate = {
@@ -470,6 +480,7 @@ export function getStagingLumaEventLoopReadModel(
   const { mode, data } = normalizeReadModelInput(input);
   const providerEnabled = mode === "mock" || mode === "staging";
   const evidenceSummary = data ? deriveEvidenceSummary(data) : null;
+  const proofEvidence = data ? deriveProofEvidence(data) : null;
   const summary = evidenceSummary ?? {
     mode,
     eventStored: true,
@@ -501,6 +512,7 @@ export function getStagingLumaEventLoopReadModel(
   return {
     summary,
     providerStatusLabel,
+    proofEvidence,
     pendingHostCheckIn,
     recentRuns,
     sequence: buildReadModelSequence(providerEnabled),
@@ -677,6 +689,50 @@ function deriveEvidenceSummary(
     pointsAwarded,
     duplicatePointsPrevented: uniquePointKeys.size === relevantPointsRows.length,
     externalWritesEnabled: false,
+  };
+}
+
+function deriveProofEvidence(
+  data: StagingLumaEventLoopEvidenceSnapshot,
+) {
+  const allRelevantEventRows = data.eventRows.filter(isRelevantEventRow);
+  const allRelevantIntegrationRows = data.integrationEventRows.filter(isRelevantIntegrationRow);
+  const allRelevantOutboxRows = data.automationOutboxRows.filter(isRelevantOutboxRow);
+  const allRelevantAuditRows = (data.auditLogRows ?? []).filter(isRelevantAuditRow);
+  const pilotEventRows = allRelevantEventRows.filter(isPilotEventRow);
+  const pilotIntegrationRows = allRelevantIntegrationRows.filter(isPilotIntegrationRow);
+  const pilotOutboxRows = allRelevantOutboxRows.filter(isPilotOutboxRow);
+  const pilotAuditRows = allRelevantAuditRows.filter(isPilotAuditRow);
+  const usePilotRows =
+    pilotEventRows.length > 0 ||
+    pilotIntegrationRows.length > 0 ||
+    pilotOutboxRows.length > 0;
+  const relevantIntegrationRows = usePilotRows
+    ? pilotIntegrationRows
+    : allRelevantIntegrationRows;
+  const relevantOutboxRows = usePilotRows ? pilotOutboxRows : allRelevantOutboxRows;
+  const relevantAuditRows =
+    usePilotRows && pilotAuditRows.length > 0 ? pilotAuditRows : allRelevantAuditRows;
+
+  if (
+    relevantIntegrationRows.length === 0 &&
+    relevantOutboxRows.length === 0 &&
+    relevantAuditRows.length === 0
+  ) {
+    return null;
+  }
+
+  const sentOutboxRows = relevantOutboxRows.filter(
+    (row) => row.status === "sent" || row.sent_at !== null,
+  ).length;
+
+  return {
+    integrationRows: relevantIntegrationRows.length,
+    outboxRows: relevantOutboxRows.length,
+    disabledOutboxRows: relevantOutboxRows.filter((row) => row.status === "disabled").length,
+    sentOutboxRows,
+    auditRows: relevantAuditRows.length,
+    zeroUnapprovedSendsConfirmed: sentOutboxRows === 0,
   };
 }
 
@@ -865,6 +921,12 @@ function isRelevantOutboxRow(row: AutomationOutboxRow) {
     row.event_type.includes("points");
 }
 
+function isRelevantAuditRow(row: AuditLogRow) {
+  return row.action.includes("luma") ||
+    row.target_table === "luma_event_links" ||
+    (typeof row.reason === "string" && row.reason.includes("Luma"));
+}
+
 function isRelevantPointsRow(row: PointsEventRow) {
   return row.chapter_event_id !== null ||
     row.reason.toLowerCase().includes("attendance");
@@ -888,6 +950,13 @@ function isPilotIntegrationRow(row: IntegrationEventRow) {
 
 function isPilotOutboxRow(row: AutomationOutboxRow) {
   return row.idempotency_key.startsWith("luma-pilot:") || hasPilotSource(row.payload);
+}
+
+function isPilotAuditRow(row: AuditLogRow) {
+  return (
+    row.action.startsWith("luma_") ||
+    (typeof row.reason === "string" && row.reason.includes("staging Luma"))
+  );
 }
 
 function isPilotPointsRow(row: PointsEventRow, chapterEventIds: Set<string>) {

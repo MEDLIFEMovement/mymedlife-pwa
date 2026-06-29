@@ -306,7 +306,13 @@ function getStatusDetail(
     return snapshot.detail;
   }
 
-  const base = `${activation.providerStatusLabel}. Current staging evidence shows ${activation.summary.rsvpCount} RSVP, ${activation.summary.attendanceCount} attendance, ${activation.summary.pointsAwarded} points, and ${activation.summary.externalWritesEnabled ? "review-required external writes" : "zero external sends"}.`;
+  const proofEvidence = activation.proofEvidence;
+  const evidenceFootprint = proofEvidence
+    ? `${proofEvidence.disabledOutboxRows} disabled outbox row(s), ${proofEvidence.auditRows} audit row(s), and ${proofEvidence.sentOutboxRows} sent row(s)`
+    : activation.summary.externalWritesEnabled
+      ? "review-required external writes"
+      : "zero external sends";
+  const base = `${activation.providerStatusLabel}. Current staging evidence shows ${activation.summary.rsvpCount} RSVP, ${activation.summary.attendanceCount} attendance, ${activation.summary.pointsAwarded} points, and ${evidenceFootprint}.`;
 
   if (snapshot.status === "ready") {
     return `${base} ${snapshot.detail}`;

@@ -207,6 +207,20 @@ describe("luma event loop pilot readback", () => {
             updated_at: "2026-06-28T10:01:00Z",
           },
         ],
+        auditLogRows: [
+          {
+            id: "audit-1",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            action: "luma_attendance_import_recorded",
+            target_table: "chapter_events",
+            target_id: "chapter-event-1",
+            before_value: {},
+            after_value: {},
+            reason: "Recorded the staging Luma attendance proof in app tables.",
+            created_at: "2026-06-28T10:09:00Z",
+          },
+        ],
         pointsEventRows: [
           {
             id: "points-1",
@@ -250,6 +264,7 @@ describe("luma event loop pilot readback", () => {
     expect(readback.statusLabel).toBe("Staging proof recorded");
     expect(readback.statusDetail).toContain("Staging evidence rows recorded");
     expect(readback.summary).toContain("3 RSVP, 2 attendance, and 35 points");
+    expect(readback.statusDetail).toContain("1 disabled outbox row(s), 1 audit row(s), and 0 sent row(s)");
     expect(readback.cards[1]).toMatchObject({ label: "RSVP path", value: "3" });
     expect(readback.cards[2]).toMatchObject({ label: "Attendance", value: "2" });
     expect(readback.cards[3]).toMatchObject({ label: "Points", value: "35 pts" });

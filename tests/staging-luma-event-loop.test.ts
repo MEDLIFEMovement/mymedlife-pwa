@@ -268,6 +268,20 @@ describe("staging Luma event loop", () => {
             updated_at: "2026-06-28T10:01:00Z",
           },
         ],
+        auditLogRows: [
+          {
+            id: "audit-1",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            action: "luma_attendance_import_recorded",
+            target_table: "chapter_events",
+            target_id: "chapter-event-1",
+            before_value: {},
+            after_value: {},
+            reason: "Recorded the staging Luma attendance proof in app tables.",
+            created_at: "2026-06-28T10:09:00Z",
+          },
+        ],
         pointsEventRows: [
           {
             id: "points-1",
@@ -312,6 +326,14 @@ describe("staging Luma event loop", () => {
       pointsAwarded: 35,
       duplicatePointsPrevented: true,
       externalWritesEnabled: false,
+    });
+    expect(readModel.proofEvidence).toMatchObject({
+      integrationRows: 1,
+      outboxRows: 1,
+      disabledOutboxRows: 1,
+      sentOutboxRows: 0,
+      auditRows: 1,
+      zeroUnapprovedSendsConfirmed: true,
     });
   });
 
