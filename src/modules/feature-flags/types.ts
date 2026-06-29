@@ -102,6 +102,8 @@ export type FeatureFlagChangeInput = {
 export type FeatureFlagControlPersistence = {
   mode: "memory" | "supabase";
   status: "fallback" | "ready";
+  requested?: boolean;
+  availability?: "disabled" | "unavailable" | "missing_session" | "ready";
   reason: string;
 };
 

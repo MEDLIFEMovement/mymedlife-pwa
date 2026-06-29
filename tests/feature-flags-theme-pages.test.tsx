@@ -34,12 +34,56 @@ describe("feature flags and theme admin pages", () => {
     expect(getFeatureFlagAuditEmptyStateCopy("supabase", "staging")).toContain(
       "No durable feature flag audit rows exist yet for staging",
     );
+    expect(
+      getFeatureFlagAuditEmptyStateCopy(
+        {
+          mode: "memory",
+          status: "fallback",
+          requested: true,
+          availability: "missing_session",
+        },
+        "staging",
+      ),
+    ).toContain("not signed in to the Supabase control layer yet");
+    expect(
+      getFeatureFlagAuditEmptyStateCopy(
+        {
+          mode: "memory",
+          status: "fallback",
+          requested: true,
+          availability: "unavailable",
+        },
+        "staging",
+      ),
+    ).toContain("requested but not available in this environment yet");
     expect(getThemeAuditEmptyStateCopy("memory", "staging")).toContain(
       "No in-memory theme changes have been made for staging",
     );
     expect(getThemeAuditEmptyStateCopy("supabase", "staging")).toContain(
       "No durable theme audit rows exist yet for staging",
     );
+    expect(
+      getThemeAuditEmptyStateCopy(
+        {
+          mode: "memory",
+          status: "fallback",
+          requested: true,
+          availability: "missing_session",
+        },
+        "staging",
+      ),
+    ).toContain("not signed in to the Supabase control layer yet");
+    expect(
+      getThemeAuditEmptyStateCopy(
+        {
+          mode: "memory",
+          status: "fallback",
+          requested: true,
+          availability: "unavailable",
+        },
+        "staging",
+      ),
+    ).toContain("requested but not available in this environment yet");
   });
 
   it("blocks non-DS users from feature flag controls", async () => {

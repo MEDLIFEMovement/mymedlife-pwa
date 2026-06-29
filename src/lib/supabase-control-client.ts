@@ -6,11 +6,15 @@ export type SupabaseControlPersistence =
   | {
       mode: "supabase";
       status: "ready";
+      requested?: true;
+      availability?: "ready";
       reason: string;
     }
   | {
       mode: "memory";
       status: "fallback";
+      requested?: boolean;
+      availability?: "disabled" | "unavailable" | "missing_session";
       reason: string;
     };
 
@@ -57,6 +61,8 @@ export async function createSupabaseControlClient(
 > {
   if (!isSupabaseControlLayerRequested(env)) {
     return memoryPersistence(
+      false,
+      "disabled",
       "Using in-memory admin controls because MYMEDLIFE_CONTROL_LAYER_SOURCE is not set to supabase.",
     );
   }
@@ -64,19 +70,25 @@ export async function createSupabaseControlClient(
   const { client: authClient, config } = await createLocalSupabaseServerClient(env);
 
   if (!authClient || !config.enabled) {
-    return memoryPersistence(config.reason);
+    return memoryPersistence(true, "unavailable", config.reason);
   }
 
   const sessionResult = await authClient.auth.getSession();
   const accessToken = sessionResult.data.session?.access_token;
 
   if (sessionResult.error || !accessToken) {
-    return memoryPersistence("Using in-memory admin controls because no Supabase session token is active.");
+    return memoryPersistence(
+      true,
+      "missing_session",
+      "Using in-memory admin controls because no Supabase session token is active.",
+    );
   }
 
   const persistence = {
     mode: "supabase",
     status: "ready",
+    requested: true,
+    availability: "ready",
     reason:
       "Reading and writing feature flags, theme snapshots, approvals, step-up sessions, and audit rows from Supabase.",
   } as const;
@@ -142,11 +154,17 @@ export async function createSupabaseControlClient(
   return { persistence, client: restClient };
 }
 
-function memoryPersistence(reason: string) {
+function memoryPersistence(
+  requested: boolean,
+  availability: "disabled" | "unavailable" | "missing_session",
+  reason: string,
+) {
   return {
     persistence: {
       mode: "memory",
       status: "fallback",
+      requested,
+      availability,
       reason,
     } as const,
     client: null,

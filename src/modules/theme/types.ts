@@ -90,6 +90,8 @@ export type ThemeChangeInput = {
 export type ThemeControlPersistence = {
   mode: "memory" | "supabase";
   status: "fallback" | "ready";
+  requested?: boolean;
+  availability?: "disabled" | "unavailable" | "missing_session" | "ready";
   reason: string;
 };
 

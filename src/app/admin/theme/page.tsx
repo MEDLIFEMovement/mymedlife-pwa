@@ -62,7 +62,7 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
   const message = resolvedSearchParams?.themeMessage;
   const reviewSnapshot = getThemeReviewSnapshot({
     environment,
-    persistenceMode: adminState.persistence.mode,
+    persistence: adminState.persistence,
     auditRowCount: auditRecords.length,
     productionApprovalCount: productionApprovalRecords.length,
     productionStepUpReady,
@@ -340,7 +340,7 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
                 ))
               ) : (
                 <p className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4 text-sm text-slate-600">
-                  {getThemeAuditEmptyStateCopy(adminState.persistence.mode, environment)}
+                  {getThemeAuditEmptyStateCopy(adminState.persistence, environment)}
                 </p>
               )}
             </div>
@@ -519,18 +519,40 @@ function parseEnvironment(value: string | undefined): FeatureFlagEnvironment {
 
 function getThemeReviewSnapshot(input: {
   environment: FeatureFlagEnvironment;
-  persistenceMode: "memory" | "supabase";
+  persistence: {
+    mode: "memory" | "supabase";
+    requested?: boolean;
+    availability?: "disabled" | "unavailable" | "missing_session" | "ready";
+    reason: string;
+  };
   auditRowCount: number;
   productionApprovalCount: number;
   productionStepUpReady: boolean;
   stepUpMessage: string;
 }) {
+  const persistenceAvailability =
+    input.persistence.availability ??
+    (input.persistence.mode === "supabase"
+      ? "ready"
+      : input.persistence.requested
+        ? "missing_session"
+        : "disabled");
   const recordedNow = [
-    input.persistenceMode === "supabase"
+    input.persistence.mode === "supabase"
       ? {
           label: "Supabase-backed theme storage is active",
           detail: `Theme controls for ${input.environment} are reading durable theme snapshots and writing audited theme changes through Supabase.`,
         }
+      : persistenceAvailability === "missing_session"
+        ? {
+            label: "Supabase-backed theme storage is requested",
+            detail: `Theme controls for ${input.environment} are configured for durable Supabase theme snapshots, but this reviewer session is not signed in for durable control reads or writes yet.`,
+          }
+        : persistenceAvailability === "unavailable"
+          ? {
+              label: "Supabase-backed theme storage is requested",
+              detail: `Theme controls for ${input.environment} are pointed at the durable control layer, but this environment is not yet ready to open a Supabase control session.`,
+            }
       : {
           label: "Local theme review posture is still active",
           detail: `Theme controls for ${input.environment} are still using in-memory review state until Supabase-backed control storage and a signed-in control session are available.`,
@@ -560,11 +582,20 @@ function getThemeReviewSnapshot(input: {
 
   const stillBlocked = [];
 
-  if (input.persistenceMode !== "supabase") {
+  if (input.persistence.mode !== "supabase") {
     stillBlocked.push({
-      label: "Durable theme storage is not active yet",
+      label:
+        persistenceAvailability === "missing_session"
+          ? "Reviewer Supabase control session is missing"
+          : persistenceAvailability === "unavailable"
+            ? "Supabase control layer is requested but unavailable"
+            : "Durable theme storage is not active yet",
       detail:
-        "Supabase-backed control storage and a signed-in control session are still required before this environment can claim durable theme readiness.",
+        persistenceAvailability === "missing_session"
+          ? "Durable theme storage is configured, but this reviewer still needs to sign in through the approved myMEDLIFE auth path before the app can read or write real theme rows."
+          : persistenceAvailability === "unavailable"
+            ? input.persistence.reason
+            : "Supabase-backed control storage and a signed-in control session are still required before this environment can claim durable theme readiness.",
     });
   }
 
