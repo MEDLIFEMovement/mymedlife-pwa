@@ -65,6 +65,7 @@ export type ProductionEnvironmentReadinessItem = {
   label: string;
   ownerLane: string;
   status: ProductionEnvironmentReadinessStatus;
+  reviewRoutes: string[];
   recordedEvidence?: string[];
   requiredEvidence: string[];
   safeDefaults: string[];
@@ -337,6 +338,11 @@ export function getProductionEnvironmentReadinessItems(
         "Production project is separate from staging.",
         "No production migration is applied from this packet.",
       ],
+      reviewRoutes: [
+        "/admin/launch-gate",
+        "/admin/database-security",
+        "/admin/system-health",
+      ],
       blockedUntil:
         supabasePacketRecorded
           ? "Final DS/platform review still needs the current migration list, security proof refresh, and pilot-seed plan before live writes."
@@ -367,6 +373,11 @@ export function getProductionEnvironmentReadinessItems(
         "Preview branch deployments remain the review lane.",
         "Production env vars stay unset until approved.",
         "No production promotion is performed by this packet.",
+      ],
+      reviewRoutes: [
+        "/admin/launch-gate",
+        "/admin/system-health",
+        "/admin/operations",
       ],
       blockedUntil:
         vercelPacketRecorded
@@ -399,6 +410,12 @@ export function getProductionEnvironmentReadinessItems(
         "Never expose service role, Luma API, HubSpot, n8n, warehouse, Power BI, SMS/email, or AI keys through `NEXT_PUBLIC_`.",
         "Keep non-approved integration env vars unset/off.",
         "Record presence and scope only; do not paste secret values into docs, PRs, Linear, or logs.",
+      ],
+      reviewRoutes: [
+        "/admin/launch-gate",
+        "/admin/database-security",
+        "/admin/feature-flags",
+        "/admin/theme",
       ],
       envVarManifest: [
         {
@@ -479,6 +496,11 @@ export function getProductionEnvironmentReadinessItems(
         "Backend role/scope decides the destination after auth.",
         "Staff preview remains read-only unless separately approved.",
       ],
+      reviewRoutes: [
+        "/login",
+        "/onboarding",
+        "/admin/launch-gate",
+      ],
       blockedUntil:
         authPacketRecorded
           ? "Final security and student-access signoff still needs role-routing smoke proof and blocked wrong-workspace access verification."
@@ -509,6 +531,10 @@ export function getProductionEnvironmentReadinessItems(
         "Keep staging and production hostnames visibly separate.",
         "Record DNS owner and rollback target before pilot invites.",
       ],
+      reviewRoutes: [
+        "/admin/launch-gate",
+        "/admin/operations",
+      ],
       blockedUntil:
         dnsPacketRecorded
           ? "Final platform/HQ review still needs exact cutover timing, rollback route, and propagation plan."
@@ -538,6 +564,11 @@ export function getProductionEnvironmentReadinessItems(
         "Do not invite real users until backup posture is named.",
         "Do not enable irreversible writes without a repair path.",
         "Keep production proof uploads disabled until storage restore policy is approved.",
+      ],
+      reviewRoutes: [
+        "/admin/launch-gate",
+        "/admin/system-health",
+        "/admin/operations",
       ],
       blockedUntil:
         backupPacketRecorded
@@ -572,6 +603,11 @@ export function getProductionEnvironmentReadinessItems(
         "One named support owner is responsible for day-one triage.",
         "One support/pause channel is used during the pilot.",
         "No broad launch happens without day-one support coverage.",
+      ],
+      reviewRoutes: [
+        "/admin/pilot-scope",
+        "/admin/launch-gate",
+        "/admin/operations",
       ],
       blockedUntil:
         ownerPacketRecorded

@@ -291,9 +291,42 @@ describe("production launch gate", () => {
       ]),
     );
     expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/launch-gate",
+        "/admin/database-security",
+        "/admin/system-health",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_env_vars",
+      )?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/launch-gate",
+        "/admin/database-security",
+        "/admin/feature-flags",
+        "/admin/theme",
+      ]),
+    );
+    expect(
       gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
         ?.requiredEvidence,
     ).toEqual(expect.arrayContaining([expect.stringContaining("www.mymedlife.org")]));
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
+        ?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/login",
+        "/onboarding",
+        "/admin/launch-gate",
+      ]),
+    );
     expect(
       gate.environmentReadiness.find((item) => item.key === "dns_domain_plan")
         ?.requiredEvidence,
@@ -312,6 +345,16 @@ describe("production launch gate", () => {
         "Support/pause channel: #mymedlife-pilot-support.",
         "DS owner: DS owner.",
         "HQ/admin owner: HQ owner.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/pilot-scope",
+        "/admin/launch-gate",
+        "/admin/operations",
       ]),
     );
   });

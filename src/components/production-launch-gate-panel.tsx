@@ -260,6 +260,19 @@ function EnvironmentReadinessCard({
         <MiniToken label="Secrets" value={`${item.secretsShown}`} />
       </div>
 
+      {item.reviewRoutes.length ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {item.reviewRoutes.map((route) => (
+            <span
+              key={`${item.key}-${route}`}
+              className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58"
+            >
+              {route}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {item.recordedEvidence?.length ? (
           <Checklist title="Recorded now" items={item.recordedEvidence} />
