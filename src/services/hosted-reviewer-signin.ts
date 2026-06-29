@@ -1,4 +1,7 @@
-import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getMockLocalActorContext,
+  type LocalActorContext,
+} from "@/services/local-actor-context";
 import { normalizeLoginRedirect } from "@/services/auth-session";
 
 export type HostedReviewerSigninRequirement = {
@@ -31,4 +34,22 @@ export function getHostedReviewerSigninRequirement(
     message,
     nextLabel: "Open staging sign-in",
   };
+}
+
+export function getHostedReviewerShellActor(
+  actor: LocalActorContext,
+  shellEmail: string,
+): LocalActorContext {
+  if (actor.isLocalOnly || actor.authSessionStatus === "signed_in") {
+    return actor;
+  }
+
+  return getMockLocalActorContext(
+    shellEmail,
+    actor.source.message,
+    actor.source.status,
+    actor.identitySource,
+    actor.authSessionStatus,
+    actor.isLocalOnly,
+  );
 }

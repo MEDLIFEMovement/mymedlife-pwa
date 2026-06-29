@@ -53,6 +53,8 @@ describe("hosted reviewer sign-in admin pages", () => {
     expect(html).toContain("Sign in to review the first hosted write.");
     expect(html).toContain("Use a seeded Admin, DS Admin, or Super Admin review account");
     expect(html).toContain("/login?redirectTo=%2Fadmin%2Ffirst-write");
+    expect(html).toContain("Admin navigation");
+    expect(html).not.toContain("Leader navigation");
     expect(html).not.toContain("First-write activation is hidden for this role.");
   });
 
@@ -82,6 +84,8 @@ describe("hosted reviewer sign-in admin pages", () => {
     expect(html).toContain("Sign in to review the hosted proof loop.");
     expect(html).toContain("Use a seeded Admin, DS Admin, or Super Admin review account");
     expect(html).toContain("/login?redirectTo=%2Fadmin%2Fproof-write");
+    expect(html).toContain("Admin navigation");
+    expect(html).not.toContain("Leader navigation");
     expect(html).not.toContain("Proof metadata activation is hidden for this role.");
   });
 });

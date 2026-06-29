@@ -21,7 +21,10 @@ import {
   getDsSecretStepUpState,
   needsFreshProductionStepUp,
 } from "@/services/admin-integrations-step-up";
-import { getHostedReviewerSigninRequirement } from "@/services/hosted-reviewer-signin";
+import {
+  getHostedReviewerShellActor,
+  getHostedReviewerSigninRequirement,
+} from "@/services/hosted-reviewer-signin";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
@@ -54,6 +57,9 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
     "Sign in to review durable theme controls.",
     "No signed-in hosted staging reviewer session is active for this DS-only route. Use a seeded DS Admin or Super Admin account, then come back here to read Supabase-backed theme snapshots, audit rows, and step-up posture honestly.",
   );
+  const shellActor = signinRequirement
+    ? getHostedReviewerShellActor(actor, "ds.admin@mymedlife.test")
+    : actor;
   const stepUpState = canManage
     ? await getDsSecretStepUpState(actor)
     : null;
@@ -85,7 +91,7 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
       : "Production theme changes stay blocked until Supabase-backed control storage and approval rows are available.";
 
   return (
-    <AdminAppShell actor={actor}>
+    <AdminAppShell actor={shellActor}>
       <AdminBackendLaneNav current="theme" showIntegrations={canManage} />
 
       {!canManage && signinRequirement ? (

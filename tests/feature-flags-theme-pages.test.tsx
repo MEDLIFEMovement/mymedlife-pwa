@@ -124,6 +124,8 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Sign in to review durable feature flags.");
     expect(html).toContain("Use a seeded DS Admin or Super Admin account");
     expect(html).toContain("/login?redirectTo=%2Fadmin%2Ffeature-flags%3Fenv%3Dstaging");
+    expect(html).toContain("Admin navigation");
+    expect(html).not.toContain("Leader navigation");
     expect(html).not.toContain("Feature flags are restricted.");
   });
 
@@ -227,6 +229,8 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Sign in to review durable theme controls.");
     expect(html).toContain("Use a seeded DS Admin or Super Admin account");
     expect(html).toContain("/login?redirectTo=%2Fadmin%2Ftheme%3Fenv%3Dstaging");
+    expect(html).toContain("Admin navigation");
+    expect(html).not.toContain("Leader navigation");
     expect(html).not.toContain("Theme admin is restricted.");
   });
 

@@ -18,7 +18,10 @@ import {
   getDsSecretStepUpState,
   needsFreshProductionStepUp,
 } from "@/services/admin-integrations-step-up";
-import { getHostedReviewerSigninRequirement } from "@/services/hosted-reviewer-signin";
+import {
+  getHostedReviewerShellActor,
+  getHostedReviewerSigninRequirement,
+} from "@/services/hosted-reviewer-signin";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { updateFeatureFlagAction } from "./actions";
@@ -48,6 +51,9 @@ export default async function FeatureFlagsPage({
     "Sign in to review durable feature flags.",
     "No signed-in hosted staging reviewer session is active for this DS-only route. Use a seeded DS Admin or Super Admin account, then come back here to read Supabase-backed control rows, audit rows, and step-up posture honestly.",
   );
+  const shellActor = signinRequirement
+    ? getHostedReviewerShellActor(actor, "ds.admin@mymedlife.test")
+    : actor;
   const stepUpState = canManage
     ? await getDsSecretStepUpState(actor)
     : null;
@@ -80,7 +86,7 @@ export default async function FeatureFlagsPage({
       : "Production provider flags stay blocked until Supabase-backed control storage and approval rows are available.";
 
   return (
-    <AdminAppShell actor={actor}>
+    <AdminAppShell actor={shellActor}>
       <AdminBackendLaneNav current="feature_flags" showIntegrations={canManage} />
 
       {!canManage && signinRequirement ? (

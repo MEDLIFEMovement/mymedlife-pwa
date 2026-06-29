@@ -4,7 +4,10 @@ import { DataSourceNotice } from "@/components/data-source-notice";
 import { FirstWriteActivationDrillPanel } from "@/components/first-write-activation-drill-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { getFirstWriteActivationDrill } from "@/services/first-write-activation-drill";
-import { getHostedReviewerSigninRequirement } from "@/services/hosted-reviewer-signin";
+import {
+  getHostedReviewerShellActor,
+  getHostedReviewerSigninRequirement,
+} from "@/services/hosted-reviewer-signin";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
@@ -25,9 +28,12 @@ export default async function FirstWritePage() {
     "Sign in to review the first hosted write.",
     "No signed-in hosted staging reviewer session is active for this route. Use a seeded Admin, DS Admin, or Super Admin review account, then come back here to inspect the hosted `action_started` packet, audit readback, and zero-send posture honestly.",
   );
+  const shellActor = signinRequirement
+    ? getHostedReviewerShellActor(actor, "super.admin@mymedlife.test")
+    : actor;
 
   return (
-    <AdminAppShell actor={actor}>
+    <AdminAppShell actor={shellActor}>
       <DataSourceNotice source={data.source} />
       <AdminBackendLaneNav
         current="first_write"
