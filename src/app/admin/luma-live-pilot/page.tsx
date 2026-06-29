@@ -353,7 +353,7 @@ export default async function LumaLivePilotPage({
                 </p>
               </div>
               <a
-                href="/admin/audit-log"
+                href="/admin/audit-log?source=luma-live-pilot"
                 className="w-fit rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:bg-[var(--mymedlife-surface-hover)]"
               >
                 Open audit log

@@ -9,6 +9,10 @@ import {
   type AdminLiveSendPreflightItem,
   type AdminLiveSendPreflightStatus,
 } from "@/services/admin-integration-outbox-workspace";
+import {
+  applyAdminReviewFocus,
+  resolveAdminReviewFocus,
+} from "@/services/admin-review-focus";
 import type { IntegrationContractStatus } from "@/services/integration-contract-review";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -18,12 +22,27 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("adminIntegrationOutbox");
 export const dynamic = "force-dynamic";
 
-export default async function AdminIntegrationOutboxPage() {
-  const [actor, data] = await Promise.all([
+type AdminIntegrationOutboxPageProps = {
+  searchParams?: Promise<{
+    source?: string;
+  }>;
+};
+
+export default async function AdminIntegrationOutboxPage({
+  searchParams,
+}: AdminIntegrationOutboxPageProps) {
+  const [actor, data, resolvedSearchParams] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),
+    searchParams ? searchParams : Promise.resolve(undefined),
   ]);
-  const workspace = getAdminIntegrationOutboxWorkspace(actor, data);
+  const focus = resolveAdminReviewFocus(resolvedSearchParams?.source);
+  const workspace = getAdminIntegrationOutboxWorkspace(
+    actor,
+    applyAdminReviewFocus(data, focus),
+  );
+  const nextStepHref = focus ? "/admin/luma-live-pilot" : workspace.nextStep.href;
+  const nextStepLabel = focus ? "Back to Luma pilot" : workspace.nextStep.label;
 
   return (
     <AdminAppShell actor={actor}>
@@ -56,13 +75,27 @@ export default async function AdminIntegrationOutboxPage() {
                 </p>
               </div>
               <Link
-                href={workspace.nextStep.href}
+                href={nextStepHref}
                 className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
-                {workspace.nextStep.label}
+                {nextStepLabel}
               </Link>
             </div>
           </section>
+
+          {focus ? (
+            <section className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
+                Current focus
+              </p>
+              <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                {focus.label}
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                {focus.summary}
+              </p>
+            </section>
+          ) : null}
 
           <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <MiniStat
