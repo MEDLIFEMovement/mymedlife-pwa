@@ -9,8 +9,7 @@ import {
   pointsEventRows as mockPointsEventRows,
 } from "@/data/mock-rush-month";
 import {
-  createSupabaseReadonlyClient,
-  getSupabaseReadConfig,
+  createSupabaseReadonlyAccess,
   type SupabaseReadonlyClient,
 } from "@/lib/supabase-readonly";
 import {
@@ -95,17 +94,14 @@ export type ReadOnlyAppData = {
 };
 
 export async function getReadOnlyAppData(): Promise<ReadOnlyAppData> {
-  const config = getSupabaseReadConfig();
+  const access = await createSupabaseReadonlyAccess();
 
-  if (!config.enabled) {
-    return getMockReadOnlyAppData(config.reason);
+  if (!access.enabled) {
+    return getMockReadOnlyAppData(access.reason);
   }
 
   try {
-    return await getSupabaseReadOnlyAppData(
-      createSupabaseReadonlyClient(config),
-      config.reason,
-    );
+    return await getSupabaseReadOnlyAppData(access.client, access.reason);
   } catch (error) {
     return getMockReadOnlyAppData(
       error instanceof Error

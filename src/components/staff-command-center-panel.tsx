@@ -27,11 +27,13 @@ import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-
 type StaffCommandCenterPanelProps = {
   commandCenter: StaffCommandCenter;
   lumaEventLoop?: LumaEventLoopPilotReadback;
+  lumaActivation?: ReturnType<typeof getStagingLumaEventLoopReadModel>;
 };
 
 export function StaffCommandCenterPanel({
   commandCenter,
   lumaEventLoop,
+  lumaActivation,
 }: StaffCommandCenterPanelProps) {
   if (!commandCenter.canReadCommandCenter) {
     return null;
@@ -83,7 +85,8 @@ export function StaffCommandCenterPanel({
     (total, row) => total + row.pointsPerWeek,
     0,
   );
-  const lumaActivation = getStagingLumaEventLoopReadModel("staging");
+  const resolvedLumaActivation =
+    lumaActivation ?? getStagingLumaEventLoopReadModel("staging");
   const eventsThisWeekLabel =
     commandCenter.portfolioSummaryCards.find((card) => card.label === "Events This Week")
       ?.value ?? `${Math.max(1, Math.round(totalRsvpCount / 20))}`;
@@ -817,7 +820,7 @@ export function StaffCommandCenterPanel({
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-slate-950">
-                    {lumaActivation.providerStatusLabel}
+                    {resolvedLumaActivation.providerStatusLabel}
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
                     Staging proves the event is stored, shared, RSVP&apos;d,
@@ -825,9 +828,9 @@ export function StaffCommandCenterPanel({
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Pill tone="good" label={`${lumaActivation.summary.rsvpCount} RSVP`} />
-                  <Pill tone="warning" label={`${lumaActivation.summary.attendanceCount} attended`} />
-                  <Pill tone="good" label={`${lumaActivation.summary.pointsAwarded} pts`} />
+                  <Pill tone="good" label={`${resolvedLumaActivation.summary.rsvpCount} RSVP`} />
+                  <Pill tone="warning" label={`${resolvedLumaActivation.summary.attendanceCount} attended`} />
+                  <Pill tone="good" label={`${resolvedLumaActivation.summary.pointsAwarded} pts`} />
                 </div>
               </div>
             </div>

@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
 import { mockChapter } from "@/data/mock-rush-month";
 import {
-  createSupabaseReadonlyClient,
-  getSupabaseReadConfig,
+  createSupabaseReadonlyAccess,
   type SupabaseReadonlyClient,
 } from "@/lib/supabase-readonly";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
@@ -262,25 +261,27 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
     previewSelection.email,
     previewSelection.identitySource,
   );
-  const config = getSupabaseReadConfig();
+  const access = await createSupabaseReadonlyAccess();
 
-  if (!config.enabled) {
+  if (!access.enabled) {
     return getMockLocalActorContext(
       resolvedActor.email,
-      actorContextMessage(resolvedActor, config.reason),
+      actorContextMessage(resolvedActor, access.reason),
       "mock_fallback",
       resolvedActor.identitySource,
       resolvedActor.authSessionStatus,
+      access.isLocalOnly,
     );
   }
 
   try {
     return await getSupabaseLocalActorContext(
-      createSupabaseReadonlyClient(config),
+      access.client,
       resolvedActor.email,
-      actorContextMessage(resolvedActor, config.reason),
+      actorContextMessage(resolvedActor, access.reason),
       resolvedActor.identitySource,
       resolvedActor.authSessionStatus,
+      access.isLocalOnly,
     );
   } catch (error) {
     return getMockLocalActorContext(
@@ -294,6 +295,7 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
       "supabase_error",
       resolvedActor.identitySource,
       resolvedActor.authSessionStatus,
+      access.isLocalOnly,
     );
   }
 }
@@ -304,6 +306,7 @@ export async function getSupabaseLocalActorContext(
   message = "Reading local Supabase actor context in read-only mode.",
   identitySource: ActorIdentitySource = "local_actor_email",
   authSessionStatus: AuthSessionStatus = "disabled",
+  isLocalOnly = true,
 ): Promise<LocalActorContext> {
   const snapshot = await readLocalActorSnapshot(client);
   const normalizedEmail = selectedEmail.toLowerCase();
@@ -382,7 +385,7 @@ export async function getSupabaseLocalActorContext(
     defaultLandingSurface: getCanonicalLandingSurface(primaryCanonicalRole),
     chapterNames,
     coachPortfolioChapterNames,
-    isLocalOnly: true,
+    isLocalOnly,
   };
 }
 
@@ -392,6 +395,7 @@ export function getMockLocalActorContext(
   status: DataSourceStatus = "mock_fallback",
   identitySource: ActorIdentitySource = "local_actor_email",
   authSessionStatus: AuthSessionStatus = "disabled",
+  isLocalOnly = true,
 ): LocalActorContext {
   const option = findLocalActorOption(selectedEmail);
   const canonicalRoleAssignments = getCanonicalRoleAssignments({
@@ -432,7 +436,7 @@ export function getMockLocalActorContext(
     defaultLandingSurface: getCanonicalLandingSurface(primaryCanonicalRole),
     chapterNames: option.chapterNames,
     coachPortfolioChapterNames: option.coachPortfolioChapterNames,
-    isLocalOnly: true,
+    isLocalOnly,
   };
 }
 
@@ -455,7 +459,9 @@ export function resolveActorEmailFromSession(
       message:
         identitySource === "local_preview_cookie"
           ? "Using the seeded preview reviewer session for role-aware app context."
-          : "Using the signed-in local Supabase Auth user for role-aware app context.",
+          : authSession.isLocalOnly
+            ? "Using the signed-in local Supabase Auth user for role-aware app context."
+            : "Using the signed-in hosted staging reviewer session for role-aware app context.",
     };
   }
 
@@ -467,7 +473,9 @@ export function resolveActorEmailFromSession(
     message:
       fallbackIdentitySource === "local_preview_cookie"
         ? "Using the local preview role switch because no signed-in local auth user is active."
-        : "Using MYMEDLIFE_LOCAL_ACTOR_EMAIL because no signed-in local auth user is active.",
+        : authSession.isLocalOnly
+          ? "Using MYMEDLIFE_LOCAL_ACTOR_EMAIL because no signed-in local auth user is active."
+          : "Using MYMEDLIFE_LOCAL_ACTOR_EMAIL because no signed-in hosted staging reviewer session is active.",
   };
 }
 
@@ -516,7 +524,12 @@ async function getLocalAuthSessionState(): Promise<AuthSessionState> {
     return getDisabledAuthSessionState(config);
   }
 
-  return getAuthSessionState(client);
+  return getAuthSessionState(client, {
+    isLocalOnly: config.isLocalOnly,
+    sessionLabel: config.isLocalOnly
+      ? "local Supabase Auth"
+      : "hosted staging Supabase Auth",
+  });
 }
 
 function actorContextMessage(resolution: ActorEmailResolution, dataSourceReason: string) {

@@ -91,7 +91,10 @@ export default async function AdminPage() {
 
   const visiblePanels = getVisibleAdminPanelsForActor(actor);
   const campaignSummary = getCampaignReadinessSummary();
-  const lumaActivation = getStagingLumaEventLoopReadModel("staging");
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
   const lumaEventLoop = getLumaEventLoopPilotReadback("admin", lumaSnapshot);
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminAuditLogReview = getAdminAuditLogReview(actor, data);

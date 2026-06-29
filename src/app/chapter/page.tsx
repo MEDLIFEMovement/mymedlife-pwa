@@ -16,6 +16,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
 import { getLumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import {
@@ -97,6 +98,10 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
     quickAction: search.quickAction,
   });
   const lumaEventLoop = getLumaEventLoopPilotReadback("leader", lumaSnapshot);
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
 
   if (!leaderCommandCenter.canReadCommandCenter && canReadChapterData(actor)) {
     redirect(landingRoute);
@@ -111,6 +116,7 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
         <ChapterLeaderCommandCenterPanel
           commandCenter={leaderCommandCenter}
           lumaEventLoop={lumaEventLoop}
+          lumaActivation={lumaActivation}
         />
       ) : !canReadChapterData(actor) ? (
         <>

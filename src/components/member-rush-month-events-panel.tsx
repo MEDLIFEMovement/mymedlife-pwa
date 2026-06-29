@@ -9,17 +9,19 @@ import { PanelButton, SurfacePanel, StatusPill } from "@/components/visual-primi
 type MemberRushMonthEventsPanelProps = {
   workspace: RushMonthEventReadinessWorkspace;
   source?: MemberActionRouteSource | null;
+  lumaActivation?: ReturnType<typeof getStagingLumaEventLoopReadModel>;
 };
 
 export function MemberRushMonthEventsPanel({
   workspace,
   source,
+  lumaActivation,
 }: MemberRushMonthEventsPanelProps) {
   const thisWeekRows = workspace.rows.filter((row) => row.memberSection === "this_week");
   const comingUpRows = workspace.rows.filter((row) => row.memberSection === "coming_up");
   const visibleRows = [...thisWeekRows, ...comingUpRows];
   const sourceContext = getMemberEventsSourceContext(source);
-  const activation = getStagingLumaEventLoopReadModel("staging");
+  const activation = lumaActivation ?? getStagingLumaEventLoopReadModel("staging");
 
   return (
     <section className="grid gap-3">

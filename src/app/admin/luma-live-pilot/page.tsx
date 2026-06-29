@@ -4,6 +4,7 @@ import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLumaLivePilotGateDurable } from "@/services/luma-live-pilot";
 import { getLocalActorContext } from "@/services/local-actor-context";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import {
@@ -24,13 +25,17 @@ type LumaLivePilotPageProps = {
 export default async function LumaLivePilotPage({
   searchParams,
 }: LumaLivePilotPageProps) {
-  const [actor, resolvedSearchParams] = await Promise.all([
+  const [actor, data, resolvedSearchParams] = await Promise.all([
     getLocalActorContext(),
+    getReadOnlyAppData(),
     searchParams ? searchParams : Promise.resolve(undefined),
   ]);
   const canRead = canReadAdminIntegrationsSecurity(actor);
   const gate = await getLumaLivePilotGateDurable();
-  const eventLoop = getStagingLumaEventLoopReadModel("staging");
+  const eventLoop = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
   const result = normalizeResult(resolvedSearchParams?.lumaResult);
   const message = resolvedSearchParams?.lumaMessage ?? null;
 

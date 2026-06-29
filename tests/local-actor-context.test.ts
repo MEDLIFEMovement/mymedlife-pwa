@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SupabaseReadonlyClient } from "@/lib/supabase-readonly";
+import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import {
   getMockLocalActorContext,
   getLocalActorContext,
@@ -10,6 +11,8 @@ import {
 } from "@/services/local-actor-context";
 
 let previewCookieValue = "";
+const originalDataSource = process.env.MYMEDLIFE_DATA_SOURCE;
+const originalFetch = global.fetch;
 
 vi.mock("next/headers", () => ({
   cookies: vi.fn(async () => ({
@@ -36,6 +39,27 @@ vi.mock("@/lib/supabase-server", () => ({
 describe("local actor context service", () => {
   beforeEach(() => {
     previewCookieValue = "";
+    delete process.env.MYMEDLIFE_DATA_SOURCE;
+    vi.mocked(createLocalSupabaseServerClient).mockResolvedValue({
+      client: null,
+      config: {
+        enabled: false,
+        mode: "disabled",
+        reviewEnvironment: "disabled",
+        isLocalOnly: false,
+        reason: "Hosted staging Supabase Auth is disabled for this test.",
+      },
+    });
+    global.fetch = originalFetch;
+  });
+
+  afterEach(() => {
+    if (originalDataSource === undefined) {
+      delete process.env.MYMEDLIFE_DATA_SOURCE;
+    } else {
+      process.env.MYMEDLIFE_DATA_SOURCE = originalDataSource;
+    }
+    global.fetch = originalFetch;
   });
 
   it("keeps a mock local actor fallback available", () => {
@@ -281,6 +305,66 @@ describe("local actor context service", () => {
     expect(actor.authSessionStatus).toBe("signed_in");
     expect(actor.identitySource).toBe("local_preview_cookie");
     expect(actor.user.email).toBe("nellis@medlifemovement.org");
+  });
+
+  it("reads hosted staging actor context from the signed-in reviewer session", async () => {
+    process.env.MYMEDLIFE_DATA_SOURCE = "supabase";
+
+    vi.mocked(createLocalSupabaseServerClient).mockResolvedValue({
+      client: {
+        auth: {
+          getUser: async () => ({
+            data: {
+              user: {
+                id: "user-2",
+                email: "leader.a@mymedlife.test",
+                user_metadata: { full_name: "Priya President" },
+              },
+            },
+            error: null,
+          }),
+          getSession: async () => ({
+            data: {
+              session: {
+                access_token: "reviewer-token",
+              },
+            },
+            error: null,
+          }),
+        },
+      } as never,
+      config: {
+        enabled: true,
+        mode: "staging_supabase",
+        reviewEnvironment: "staging",
+        url: "https://example.supabase.co",
+        anonKey: "anon-key",
+        isLocalOnly: false,
+        reason: "Hosted staging Supabase Auth is enabled for approved pilot review.",
+      },
+    });
+
+    global.fetch = vi.fn(async (input) => {
+      const requestUrl =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url;
+      const url = new URL(requestUrl);
+      const tableName = url.pathname.split("/").pop() ?? "";
+      return Response.json(fakeActorRows[tableName] ?? []);
+    }) as typeof fetch;
+
+    const actor = await getLocalActorContext();
+
+    expect(actor.source.status).toBe("supabase_ready");
+    expect(actor.authSessionStatus).toBe("signed_in");
+    expect(actor.identitySource).toBe("local_auth_session");
+    expect(actor.isLocalOnly).toBe(false);
+    expect(actor.user.email).toBe("leader.a@mymedlife.test");
+    expect(actor.audience).toBe("chapter_leader");
+    expect(actor.chapterRoles).toEqual(["President / VP"]);
   });
 });
 

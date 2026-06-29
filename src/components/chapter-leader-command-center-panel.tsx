@@ -29,11 +29,13 @@ import type { LumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilo
 type ChapterLeaderCommandCenterPanelProps = {
   commandCenter: ChapterLeaderCommandCenter;
   lumaEventLoop?: LumaEventLoopPilotReadback;
+  lumaActivation?: ReturnType<typeof getStagingLumaEventLoopReadModel>;
 };
 
 export function ChapterLeaderCommandCenterPanel({
   commandCenter,
   lumaEventLoop,
+  lumaActivation,
 }: ChapterLeaderCommandCenterPanelProps) {
   if (!commandCenter.canReadCommandCenter) {
     return null;
@@ -57,7 +59,8 @@ export function ChapterLeaderCommandCenterPanel({
   const memberHomeHandoffPreview = showMemberHomeHandoff
     ? commandCenter.sourceContext?.preview ?? null
     : null;
-  const lumaActivation = getStagingLumaEventLoopReadModel("staging");
+  const resolvedLumaActivation =
+    lumaActivation ?? getStagingLumaEventLoopReadModel("staging");
   const preservedChapterState = {
     source: commandCenter.selectedSource,
     memberId: commandCenter.navigationMemberId,
@@ -428,7 +431,7 @@ export function ChapterLeaderCommandCenterPanel({
           </div>
         ) : null}
 
-        {renderView(commandCenter, preservedChapterState, lumaActivation)}
+        {renderView(commandCenter, preservedChapterState, resolvedLumaActivation)}
       </div>
     </section>
   );

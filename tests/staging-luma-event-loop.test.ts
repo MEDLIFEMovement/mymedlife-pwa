@@ -199,4 +199,119 @@ describe("staging Luma event loop", () => {
     ]);
     expect(readModel.safetyNotes.join(" ")).not.toContain("key=");
   });
+
+  it("can derive the staging read model from stored evidence rows", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "event-1",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            payload: { rsvpCount: 3 },
+            correlation_id: null,
+            occurred_at: "2026-06-28T10:00:00Z",
+            created_at: "2026-06-28T10:00:00Z",
+          },
+          {
+            id: "event-2",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            payload: { attendanceCount: 2 },
+            correlation_id: null,
+            occurred_at: "2026-06-28T10:05:00Z",
+            created_at: "2026-06-28T10:05:00Z",
+          },
+        ],
+        integrationEventRows: [
+          {
+            id: "integration-1",
+            source_event_id: "event-1",
+            chapter_id: "chapter-1",
+            event_type: "luma_event_linked",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt_123",
+            status: "recorded",
+            payload: {},
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:01:00Z",
+            updated_at: "2026-06-28T10:01:00Z",
+          },
+        ],
+        automationOutboxRows: [
+          {
+            id: "outbox-1",
+            source_event_id: "event-1",
+            integration_event_id: "integration-1",
+            chapter_id: "chapter-1",
+            destination: "luma",
+            event_type: "luma_event_linked",
+            payload: {},
+            idempotency_key: "luma-1",
+            status: "disabled",
+            attempt_count: 0,
+            available_at: "2026-06-28T10:01:00Z",
+            locked_at: null,
+            sent_at: null,
+            last_error: null,
+            created_at: "2026-06-28T10:01:00Z",
+            updated_at: "2026-06-28T10:01:00Z",
+          },
+        ],
+        pointsEventRows: [
+          {
+            id: "points-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            evidence_item_id: null,
+            approval_id: null,
+            awarded_to_user_id: "member-1",
+            points_delta: 20,
+            reason: "Attendance confirmed for Intro GBM",
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:07:00Z",
+          },
+          {
+            id: "points-2",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            evidence_item_id: null,
+            approval_id: null,
+            awarded_to_user_id: "member-2",
+            points_delta: 15,
+            reason: "Attendance confirmed for Intro GBM",
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:08:00Z",
+          },
+        ],
+      },
+    });
+
+    expect(readModel.providerStatusLabel).toBe("Staging evidence rows recorded");
+    expect(readModel.summary).toMatchObject({
+      eventStored: true,
+      lumaLinkReady: true,
+      qrReady: true,
+      sharedToFeed: false,
+      rsvpCount: 3,
+      attendanceCount: 2,
+      pointsAwarded: 35,
+      duplicatePointsPrevented: true,
+      externalWritesEnabled: false,
+    });
+  });
 });

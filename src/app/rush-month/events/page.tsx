@@ -8,8 +8,10 @@ import { getEventProofBridgeWorkspace } from "@/services/rush-month-event-proof-
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { type MemberActionRouteSource } from "@/services/member-action-route-href";
 import { getRushMonthEventsRouteRedirectHref } from "@/services/owned-route-redirect";
+import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRushMonthEventReadinessWorkspace } from "@/services/rush-month-event-readiness";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { redirect } from "next/navigation";
 
@@ -26,7 +28,10 @@ type RushMonthEventsPageProps = {
 export default async function RushMonthEventsPage({
   searchParams,
 }: RushMonthEventsPageProps) {
-  const actor = await getLocalActorContext();
+  const [actor, data] = await Promise.all([
+    getLocalActorContext(),
+    getReadOnlyAppData(),
+  ]);
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const memberEventSource = parseMemberEventSource(resolvedSearchParams?.source);
   const redirectHref = getRushMonthEventsRouteRedirectHref(actor, {
@@ -45,6 +50,10 @@ export default async function RushMonthEventsPage({
   const bridgeWorkspace = getEventProofBridgeWorkspace(actor);
   const isMemberWorkspace =
     getActorSurfaceFamily(actor) === "member" && workspace.canReadWorkspace;
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
 
   return (
     <StudentAppShell
@@ -65,6 +74,7 @@ export default async function RushMonthEventsPage({
           <MemberRushMonthEventsPanel
             workspace={workspace}
             source={memberEventSource}
+            lumaActivation={lumaActivation}
           />
         </>
       ) : (
