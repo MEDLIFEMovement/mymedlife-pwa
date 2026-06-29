@@ -5,6 +5,7 @@ import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
+import type { StagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 export type ProductionLaunchGateKey =
   | "production_auth"
@@ -93,6 +94,9 @@ export type ProductionLaunchGate = {
 export function getProductionLaunchGate(
   actor: LocalActorContext,
   env: Record<string, string | undefined> = process.env,
+  options: {
+    lumaReadModel?: StagingLumaEventLoopReadModel;
+  } = {},
 ): ProductionLaunchGate {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
@@ -122,15 +126,21 @@ export function getProductionLaunchGate(
 
   const pilotRegistry = getPhase2PilotRegistry(env);
   const items = getProductionLaunchGateItems(pilotRegistry);
-  const launchEvidenceChecks = getProductionLaunchEvidenceChecks(pilotRegistry);
+  const launchEvidenceChecks = getProductionLaunchEvidenceChecks(
+    pilotRegistry,
+    options.lumaReadModel,
+  );
   const environmentReadiness = getProductionEnvironmentReadinessItems(pilotRegistry);
+  const lumaProofMissing = isHostedLumaPointsProofMissing(options.lumaReadModel);
 
   return {
     canReadGate: true,
     title: getTitle(surfaceFamily),
     verdict: "not_live_ready",
     summary:
-      "This gate gathers the local evidence that exists today and the exact evidence still missing before myMEDLIFE can move from local MVP review to a live student pilot.",
+      lumaProofMissing
+        ? "This gate gathers the local evidence that exists today and the exact evidence still missing before myMEDLIFE can move from local MVP review to a live student pilot. The sharpest remaining loop blocker is still one real Luma host-side check-in flowing through attendance import into points and leaderboard readback."
+        : "This gate gathers the local evidence that exists today and the exact evidence still missing before myMEDLIFE can move from local MVP review to a live student pilot.",
     launchReady: false,
     browserWritesEnabled: 0,
     externalWritesEnabled: 0,
@@ -147,7 +157,9 @@ export function getProductionLaunchGate(
     launchEvidenceChecks,
     environmentReadiness,
     finalReviewPrompt:
-      "Approve a live pilot only after every blocked gate has named evidence, owner sign-off, rollback, and a current smoke test. Until then, keep production writes and external sends disabled.",
+      lumaProofMissing
+        ? "Approve a live pilot only after every blocked gate has named evidence, owner sign-off, rollback, and a current smoke test. Until then, keep production writes and external sends disabled, and do not treat the Luma loop as proven until one checked-in attendee creates points and leaderboard readback."
+        : "Approve a live pilot only after every blocked gate has named evidence, owner sign-off, rollback, and a current smoke test. Until then, keep production writes and external sends disabled.",
   };
 }
 
@@ -356,6 +368,7 @@ export function getProductionEnvironmentReadinessItems(
 
 export function getProductionLaunchEvidenceChecks(
   pilotRegistry = getPhase2PilotRegistry(),
+  lumaReadModel?: StagingLumaEventLoopReadModel,
 ): ProductionLaunchEvidenceCheck[] {
   const pilotChapter = pilotRegistry.defaults.find(
     (item) => item.key === "pilot_chapter",
@@ -433,13 +446,10 @@ export function getProductionLaunchEvidenceChecks(
       label: "Luma event, RSVP, attendance, and points loop",
       ownerLane: "Events, Data Solutions, and Launch",
       status: "missing_before_pilot",
-      requiredEvidence:
-        "Hosted staging proof that myMEDLIFE can create or update the approved Luma event, write a member RSVP to Luma, import approved attendance from Luma, and show points plus chapter/organization leaderboard readback without exposing Luma secrets.",
+      requiredEvidence: getLumaLaunchRequiredEvidence(lumaReadModel),
       reviewRoute: "/admin/luma-live-pilot",
-      acceptanceSignal:
-        "Reviewers can see the event id, RSVP count, attendance import count, points awarded, leaderboard status, audit/readback notes, and zero unauthorized outbox sends in the staged Luma live-pilot surface.",
-      blockedUntil:
-        "The Luma event loop is proven on staging, production Luma calendar ownership is approved, and rollback/disable owners are named before any live pilot event uses it.",
+      acceptanceSignal: getLumaLaunchAcceptanceSignal(lumaReadModel),
+      blockedUntil: getLumaLaunchBlockedUntil(lumaReadModel),
     },
     {
       key: "device_qa_signoff",
@@ -494,6 +504,53 @@ export function getProductionLaunchEvidenceChecks(
       blockedUntil: "Pilot scope, support ownership, and stop rules are approved.",
     },
   ];
+}
+
+function isHostedLumaPointsProofMissing(
+  lumaReadModel?: StagingLumaEventLoopReadModel,
+) {
+  if (!lumaReadModel) {
+    return true;
+  }
+
+  return !(
+    lumaReadModel.summary.attendanceCount > 0 &&
+    lumaReadModel.summary.pointsAwarded > 0
+  );
+}
+
+function getLumaLaunchRequiredEvidence(
+  lumaReadModel?: StagingLumaEventLoopReadModel,
+) {
+  if (!lumaReadModel) {
+    return "Hosted staging proof that myMEDLIFE can create or update the approved Luma event, write a member RSVP to Luma, import approved attendance from Luma, and show points plus chapter/organization leaderboard readback without exposing Luma secrets.";
+  }
+
+  if (isHostedLumaPointsProofMissing(lumaReadModel)) {
+    return `Hosted staging already shows the Luma event and RSVP path, but it still needs one real host-side Luma check-in so attendance import can produce points and chapter/organization leaderboard readback. Current staging summary: ${lumaReadModel.summary.rsvpCount} RSVP(s), ${lumaReadModel.summary.attendanceCount} attendance row(s), ${lumaReadModel.summary.pointsAwarded} point(s).`;
+  }
+
+  return `Hosted staging shows the approved Luma loop with ${lumaReadModel.summary.rsvpCount} RSVP(s), ${lumaReadModel.summary.attendanceCount} attendance row(s), and ${lumaReadModel.summary.pointsAwarded} point(s). Reviewers still need the final launch packet, owner signoff, and rollback proof before a live pilot invite.`;
+}
+
+function getLumaLaunchAcceptanceSignal(
+  lumaReadModel?: StagingLumaEventLoopReadModel,
+) {
+  if (!lumaReadModel || isHostedLumaPointsProofMissing(lumaReadModel)) {
+    return "Reviewers can see the event id, RSVP count, attendance import count, points awarded, leaderboard status, audit/readback notes, and zero unauthorized outbox sends in the staged Luma live-pilot surface after one checked-in attendee has been imported.";
+  }
+
+  return `Reviewers can see the staged Luma live-pilot surface with ${lumaReadModel.summary.attendanceCount} attendance row(s), ${lumaReadModel.summary.pointsAwarded} point(s), leaderboard readback, audit notes, and zero unauthorized outbox sends.`;
+}
+
+function getLumaLaunchBlockedUntil(
+  lumaReadModel?: StagingLumaEventLoopReadModel,
+) {
+  if (!lumaReadModel || isHostedLumaPointsProofMissing(lumaReadModel)) {
+    return "The Luma event loop stays blocked until one checked-in attendee is proven on staging, production Luma calendar ownership is approved, and rollback/disable owners are named before any live pilot event uses it.";
+  }
+
+  return "The hosted Luma loop evidence exists, but live-pilot use still waits on production Luma calendar ownership, rollback/disable owners, and final launch approval.";
 }
 
 function getProductionLaunchGateItems(

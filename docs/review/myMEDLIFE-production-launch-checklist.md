@@ -28,17 +28,22 @@ Status:
      rollout-control migration warning. If they do, the Supabase control-layer
      tables are still not readable in that environment and persisted rollout or
      theme review is not ready there yet.
-2. Record the named pilot owners.
-3. Approve the first hosted write.
-4. Prove the smallest hosted proof/review loop.
-5. Confirm the production environment path for Supabase, Vercel, domain/DNS, secrets, and backup/restore.
-6. Confirm the rollout-control layer is actually live in the target environment.
+2. Execute the already-approved first hosted write and proof sequence on hosted staging.
+   - The primary approver has already approved:
+     - `staging.mymedlife.org` as the reviewer target
+     - one small, one-chapter pilot
+     - `action_started` as the first hosted write
+     - metadata submit -> leader review -> audit trail as the smallest proof loop
+     - external systems staying off for now
+   - What is still missing is the hosted evidence itself, not another blank approval field.
+3. Confirm the production environment path for Supabase, Vercel, domain/DNS, secrets, and backup/restore.
+4. Confirm the rollout-control layer is actually live in the target environment.
    - Hosted staging already has `app.feature_flags` and `app.theme_settings`.
    - `/admin/feature-flags` and `/admin/theme` still must load without the persistence warning.
    - One DS/Admin feature-flag save and one theme-token save must record visible audit rows.
    - `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` should only be treated as ready after that proof exists.
-7. Confirm monitoring, incident response, and support ownership.
-8. Keep all external integrations disabled until a later approval gate.
+5. Confirm monitoring, incident response, and support ownership.
+6. Keep all external integrations disabled until a later approval gate.
 
 ## Production Launch Order
 

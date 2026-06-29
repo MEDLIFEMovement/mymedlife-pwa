@@ -84,11 +84,12 @@
 - The original handoff was local-first, but this is no longer an in-memory-only
   slice. Feature flags and theme controls now have a Supabase-backed control
   layer in staging with audit rows and DS/Super Admin protections.
-- The remaining review risk is hosted proof completeness, not storage design:
-  feature-flag browser saves are now proven on hosted preview, while the theme
-  browser-submit path still needs one more debugging pass or a human click
-  confirmation even though durable theme rows and hosted readback are already
-  visible.
+- The remaining review risk is hosted pilot completeness, not control-layer
+  storage design. Hosted preview proof now exists for both feature-flag saves
+  and theme draft saves, and the durable Supabase rows plus `app.audit_logs`
+  readback are visible in staging. The open production-moving gap is still the
+  separate Luma attendance-to-points proof and the production environment owner
+  decisions.
 - Some JSX still uses legacy Tailwind color class names for readability, but the common neutral/error classes now route through the theme variables in `src/app/globals.css`. New work should prefer semantic `app-*` classes or explicit `var(--mymedlife-*)` utilities.
 - Module READMEs map ownership and safe-change rules; they do not move every legacy service/component file yet.
 
@@ -100,6 +101,9 @@
 - Moving every legacy service/component file into `src/modules/<module>`.
 
 ## Next PR
-- Finish the hosted theme draft-submit proof path so `/admin/theme` has the same
-  browser-driven evidence level as `/admin/feature-flags`.
-- Move legacy services into `src/modules/<module>` incrementally after review.
+- Finish the still-missing hosted pilot proof that requires one real checked-in
+  Luma attendee so attendance import can materialize points and leaderboard
+  readback.
+- Keep production Supabase/Vercel ownership, rollback/support ownership, and
+  production-only env vars as a separate approval packet instead of widening the
+  staging control layer.

@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { AuthSessionPanel } from "@/components/auth-session-panel";
 import { LoginForm } from "@/components/login-form";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
@@ -24,11 +23,6 @@ export default async function LoginPage(props: LoginPageProps) {
   const query = (await props.searchParams) ?? {};
   const redirectTo = normalizeLoginRedirect(query.redirectTo);
   const actor = await getLocalActorContext();
-
-  if (actor.authSessionStatus === "signed_in") {
-    redirect(getLandingRouteForActor(actor));
-    return null;
-  }
 
   const { client, config } = await createLocalSupabaseServerClient();
   const session = client
@@ -92,8 +86,26 @@ export default async function LoginPage(props: LoginPageProps) {
               tabIndex={-1}
               className="flex flex-col gap-4 rounded-[2rem] border border-slate-200 bg-white/96 p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.08)] sm:p-6"
             >
-              <LoginForm redirectTo={redirectTo} />
-              <AuthSessionPanel session={session} />
+              {session.status === "signed_in" ? (
+                <AuthSessionPanel
+                  session={session}
+                  continueHref={
+                    redirectTo !== "/"
+                      ? redirectTo
+                      : getLandingRouteForActor(actor)
+                  }
+                  continueLabel={
+                    redirectTo !== "/"
+                      ? "Continue to requested route"
+                      : "Continue into myMEDLIFE"
+                  }
+                />
+              ) : (
+                <>
+                  <LoginForm redirectTo={redirectTo} />
+                  <AuthSessionPanel session={session} />
+                </>
+              )}
             </div>
           </div>
         </section>

@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 vi.mock("next/navigation", () => ({
-  redirect: vi.fn(),
   usePathname: () => "/login",
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -96,17 +95,102 @@ describe("login page", () => {
     expect(html).toContain('value="/app/slt-prep"');
   });
 
-  it("redirects an already signed-in actor to their owned workspace", async () => {
+  it("lets an already signed-in reviewer continue or sign out instead of redirecting away", async () => {
     const actorModule = await import("@/services/local-actor-context");
-    const navigationModule = await import("next/navigation");
+    const supabaseServerModule = await import("@/lib/supabase-server");
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValueOnce({
+      user: {
+        id: "reviewer-1",
+        email: "ds.admin@mymedlife.test",
+        displayName: "Dee Systems",
+      },
       authSessionStatus: "signed_in",
     } as Awaited<ReturnType<typeof actorModule.getLocalActorContext>>);
+    const authSessionModule = await import("@/services/auth-session");
+    vi.mocked(supabaseServerModule.createLocalSupabaseServerClient).mockResolvedValueOnce({
+      client: {
+        auth: {
+          getUser: vi.fn(),
+        },
+      } as never,
+      config: {
+        enabled: true,
+        mode: "staging_supabase",
+        reviewEnvironment: "staging",
+        url: "https://example.supabase.co",
+        anonKey: "anon-key",
+        isLocalOnly: false,
+        reason: "Hosted staging Supabase Auth is enabled for approved pilot review.",
+      },
+    });
+    vi.mocked(authSessionModule.getAuthSessionState).mockResolvedValueOnce({
+      status: "signed_in",
+      isLocalOnly: false,
+      message: "Hosted staging Supabase Auth session is active.",
+      user: {
+        id: "reviewer-1",
+        email: "ds.admin@mymedlife.test",
+        displayName: "Dee Systems",
+      },
+    });
 
     const { default: LoginPage } = await import("@/app/login/page");
     const html = renderToStaticMarkup(await LoginPage({}));
 
-    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith("/admin");
-    expect(html).toBe("");
+    expect(html).toContain("Current workspace");
+    expect(html).toContain("Dee Systems");
+    expect(html).toContain("ds.admin@mymedlife.test");
+    expect(html).toContain("Continue into myMEDLIFE");
+    expect(html).toContain("Sign out");
+  });
+
+  it("keeps the requested route available for a signed-in reviewer", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const supabaseServerModule = await import("@/lib/supabase-server");
+    const authSessionModule = await import("@/services/auth-session");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValueOnce({
+      user: {
+        id: "reviewer-2",
+        email: "leader.a@mymedlife.test",
+        displayName: "Priya President",
+      },
+      authSessionStatus: "signed_in",
+    } as Awaited<ReturnType<typeof actorModule.getLocalActorContext>>);
+    vi.mocked(supabaseServerModule.createLocalSupabaseServerClient).mockResolvedValueOnce({
+      client: {
+        auth: {
+          getUser: vi.fn(),
+        },
+      } as never,
+      config: {
+        enabled: true,
+        mode: "staging_supabase",
+        reviewEnvironment: "staging",
+        url: "https://example.supabase.co",
+        anonKey: "anon-key",
+        isLocalOnly: false,
+        reason: "Hosted staging Supabase Auth is enabled for approved pilot review.",
+      },
+    });
+    vi.mocked(authSessionModule.getAuthSessionState).mockResolvedValueOnce({
+      status: "signed_in",
+      isLocalOnly: false,
+      message: "Hosted staging Supabase Auth session is active.",
+      user: {
+        id: "reviewer-2",
+        email: "leader.a@mymedlife.test",
+        displayName: "Priya President",
+      },
+    });
+
+    const { default: LoginPage } = await import("@/app/login/page");
+    const html = renderToStaticMarkup(
+      await LoginPage({
+        searchParams: Promise.resolve({ redirectTo: "/admin/luma-live-pilot" }),
+      }),
+    );
+
+    expect(html).toContain("Continue to requested route");
+    expect(html).toContain('href="/admin/luma-live-pilot"');
   });
 });
