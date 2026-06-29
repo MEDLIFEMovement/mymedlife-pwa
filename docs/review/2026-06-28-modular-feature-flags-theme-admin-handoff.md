@@ -81,17 +81,25 @@
 - Disabled Luma is enforced in service code before `fetch`.
 
 ## Risks
-- Flag and theme stores are in-memory for this phase. They are suitable for local/staging review, not durable production configuration.
+- The original handoff was local-first, but this is no longer an in-memory-only
+  slice. Feature flags and theme controls now have a Supabase-backed control
+  layer in staging with audit rows and DS/Super Admin protections.
+- The remaining review risk is hosted proof completeness, not storage design:
+  feature-flag browser saves are now proven on hosted preview, while the theme
+  browser-submit path still needs one more debugging pass or a human click
+  confirmation even though durable theme rows and hosted readback are already
+  visible.
 - Some JSX still uses legacy Tailwind color class names for readability, but the common neutral/error classes now route through the theme variables in `src/app/globals.css`. New work should prefer semantic `app-*` classes or explicit `var(--mymedlife-*)` utilities.
 - Module READMEs map ownership and safe-change rules; they do not move every legacy service/component file yet.
 
 ## Not Included
-- Production persistence for feature flag or theme audit records.
+- Production migration application or production control-layer activation.
 - Production Luma setup.
 - n8n execution.
 - HubSpot, Shopify, GiveLively, BigQuery, Power BI, OpenAI, SMS, email, warehouse, or AI writes.
 - Moving every legacy service/component file into `src/modules/<module>`.
 
 ## Next PR
-- Persist feature flag and theme snapshots once DS approves the storage model.
+- Finish the hosted theme draft-submit proof path so `/admin/theme` has the same
+  browser-driven evidence level as `/admin/feature-flags`.
 - Move legacy services into `src/modules/<module>` incrementally after review.

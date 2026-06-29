@@ -55,9 +55,9 @@ Readback confirmed:
 - RLS is enabled on all six control tables.
 - DS Admin / Super Admin select policies exist for the control tables.
 - The audited control functions exist with explicit search paths.
-- Existing rows after migration: `0` feature flag overrides, `0` feature flag
-  audit records, `0` theme snapshots, `0` theme audit records, and `0`
-  production approval records.
+- Existing rows immediately after migration: `0` feature flag overrides, `0`
+  feature flag audit records, `0` theme snapshots, `0` theme audit records,
+  and `0` production approval records.
 
 Hosted Supabase advisor result after the follow-up migration:
 
@@ -72,6 +72,8 @@ Local verification after hosted application:
   passed: `15` tests.
 - `pnpm vitest run tests/feature-flags-theme-services.test.ts tests/admin-integrations-step-up.test.ts`
   passed: `2` files, `13` tests.
+- `pnpm vitest run tests/feature-flag-durable-update.test.ts tests/theme-published-css-durable.test.ts tests/luma-live-pilot-durable-control.test.ts tests/admin-integrations-step-up.test.ts`
+  passed: `4` files, `9` tests.
 
 ## Production Vercel Readiness
 
@@ -109,12 +111,28 @@ Current Vercel evidence:
   - deployment id: `dpl_9qCR3LiMyvWnfTxdTsZRSxFssdAz`
   - preview URL: `https://mymedlife-65dsx90wr-nellis-6036s-projects.vercel.app`
   - deployment state: `READY`
+- PR #126 latest preview after the durable feature-flag fix:
+  - deployment id: `dpl_3GzDLUBgwRthJf3YavLUvC69Ef2X`
+  - preview URL: `https://mymedlife-72h1cwc7s-nellis-6036s-projects.vercel.app`
+  - deployment state: `READY`
 
 Remaining hosted UI proof:
 
 - Protected preview fetches still redirect through Vercel SSO, so a signed-in
   reviewer session is still required to visually confirm `/admin/feature-flags`
   and `/admin/theme` display Supabase-backed control storage in the hosted UI.
+- Hosted preview proof now exists for durable control readback:
+  - `/admin/feature-flags` shows `Control storage: Reading and writing ... from Supabase.`
+  - a DS Admin hosted save created `1` staging feature flag override row,
+    `1` feature flag audit row, and `1` `audit_logs` row.
+  - `/admin/theme` shows the same Supabase-backed control storage posture and
+    now reads back `1` staging theme snapshot row, `1` theme audit row, and
+    `1` `audit_logs` row after a safe seeded draft save.
+- The remaining gap inside this control slice is narrower than before:
+  browser automation proved the feature-flag save end to end, but the theme
+  draft form still needs either a human click-through or further debugging to
+  prove the browser-triggered submit path itself. The durable theme function and
+  hosted readback are both confirmed.
 - Production environment variables remain unset/off for this control layer.
 
 ## Production Environment Packet In The App
