@@ -239,7 +239,7 @@ export default async function LumaLivePilotPage({
                 {
                   label: "Attendance import",
                   detail:
-                    "Import the guest list for the same event and confirm the page returns attendance rows without QR codes or secrets.",
+                    "First complete a real host-side Luma check-in for one approved guest, then import the same event and confirm the page returns attendance rows without QR codes or secrets.",
                 },
                 {
                   label: "Points and leaderboard readback",
@@ -354,7 +354,7 @@ export default async function LumaLivePilotPage({
               </form>
             </LivePilotForm>
 
-            <LivePilotForm title="Import attendance from Luma" detail="Reads approved guests and check-in status into a browser-safe summary. Raw secrets and QR codes are not returned.">
+            <LivePilotForm title="Import attendance from Luma" detail="Reads approved guests and checked_in_at state into a browser-safe summary. Raw secrets and QR codes are not returned. To prove points, complete a host-side Luma check-in first because the public API does not expose a public attendee check-in write.">
               <form action={runLumaAttendanceImportAction} className="space-y-3">
                 <input type="hidden" name="returnTo" value="/admin/luma-live-pilot" />
                 <Field label="Luma event id">
@@ -375,6 +375,12 @@ export default async function LumaLivePilotPage({
                   Import attendance
                 </SubmitButton>
               </form>
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+                Review note: Luma&apos;s public API lets myMEDLIFE create events, add RSVP
+                guests, update guest status, and read <code>checked_in_at</code>, but the
+                pilot still relies on a human host check-in inside Luma before this import
+                can create attendance-backed points proof.
+              </p>
             </LivePilotForm>
           </section>
 

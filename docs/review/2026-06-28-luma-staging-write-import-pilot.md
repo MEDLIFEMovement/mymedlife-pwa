@@ -50,6 +50,9 @@ Existing server-only values must also remain configured:
 4. Create a staging event or update an existing Luma event id.
 5. Copy the returned event id into the RSVP card and write one test RSVP.
 6. Copy the same event id into the attendance card and import approved guests.
+   - To prove points, first check in one approved guest in Luma's host tools.
+     The public Luma API returns `checked_in_at` on guest readback, but it does
+     not expose a public attendee check-in write for myMEDLIFE to call directly.
 7. Confirm `/admin/integration-outbox` still shows no n8n execution, no HubSpot
    write, and no production send posture.
 8. Review the new "Event and points evidence" section on
@@ -81,6 +84,12 @@ Captured on `2026-06-29` with a signed-in DS Admin staging session.
   - `1` approved guest row imported
   - `0` rows marked checked in
   - no secrets returned
+- Official Luma API review confirmed the current pilot constraint:
+  - public endpoints exist for event create/update, guest add, guest status
+    update, and guest list readback with `checked_in_at`
+  - no public attendee check-in write endpoint is currently documented
+  - the live pilot therefore still depends on a human host-side Luma check-in
+    before attendance import can produce points proof
 - Durable app proof written in Supabase for `evt-bJE178Q02N5DaLH`:
   - `1` linked `luma_event_links` row
   - `1` linked `chapter_events` row

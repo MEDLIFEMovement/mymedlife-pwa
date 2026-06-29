@@ -187,6 +187,13 @@ Hosted proof recorded on `2026-06-29T02:30:40Z`:
   - `1` approved guest row imported
   - `0` rows included check-in attendance
   - no secrets returned
+- Luma's public API documentation now explains the remaining pilot gap more
+  precisely:
+  - myMEDLIFE can call public endpoints for event create/update, guest add,
+    guest status updates, and guest list readback with `checked_in_at`
+  - the public API does not document a public attendee check-in write endpoint
+  - for the controlled pilot, a human host must still check in one attendee in
+    Luma before attendance import can prove points materialization
 - Durable staging rows now prove the hosted loop:
   - `app.luma_event_links`: `1` linked row for `evt-bJE178Q02N5DaLH`
   - `app.chapter_events`: `1` linked chapter event row for the hosted pilot
@@ -219,6 +226,10 @@ Remaining before live pilot:
   event above created `0` points rows for that event. One reviewed example with
   checked-in attendance is still required before claiming fully live
   attendance-to-points materialization.
+- That remaining proof is now understood as an operational step, not an unknown
+  app bug: someone with Luma host access must perform one real check-in in Luma,
+  then rerun `/admin/luma-live-pilot` attendance import and confirm the
+  resulting points/leaderboard readback.
 - Audit/outbox proof now shows blocked downstream rows only; no unapproved send
   execution was enabled.
 - Production Luma remains blocked until production calendar ownership,
