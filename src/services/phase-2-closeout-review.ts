@@ -102,7 +102,7 @@ export function getPhase2CloseoutReview(
       title: "Phase 2 closeout review hidden for this role",
       summary:
         "Phase 2 closeout is an HQ review surface, not a student or chapter operating view.",
-      packetPath: "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+      packetPath: "docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md",
       reviewerAction: "Use the student, leader, or coach operating routes instead.",
       approvalReplyHint: "",
       recordedAnswers: [],
@@ -148,7 +148,7 @@ export function getPhase2CloseoutReview(
     hostedLumaEvidenceObserved;
   const packetPath =
     releaseReadiness.phase2Closeout?.packetPath ??
-    "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md";
+    "docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md";
   const recordedAnswers = [
     ...pilotRegistry.defaults
       .filter((item) => item.status === "recorded_final")
@@ -170,7 +170,7 @@ export function getPhase2CloseoutReview(
       (item) => item.key === "hosted_write_approver",
     )
       ? [
-          "Approve `action_started` as the first hosted write, or replace it with a narrower approved lane.",
+          "Confirm the current hosted `action_started` proof as the first live-pilot write lane and record the final approver / rollback trail.",
         ]
       : []),
     "Confirm the smallest hosted proof/review loop is limited to proof metadata submission plus leader review readback, while leader decision writes, uploads, and public proof stay blocked.",

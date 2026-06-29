@@ -16,7 +16,7 @@ describe("phase 2 closeout review", () => {
     expect(review.canReadReview).toBe(true);
     expect(review.title).toBe("Admin Phase 2 closeout review");
     expect(review.packetPath).toBe(
-      "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+      "docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md",
     );
     expect(review.counts.lanes).toBe(8);
     expect(review.counts.reviewNow).toBeGreaterThan(0);

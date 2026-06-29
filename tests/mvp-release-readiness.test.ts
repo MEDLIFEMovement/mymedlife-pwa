@@ -269,13 +269,13 @@ describe("mvp release readiness", () => {
     ).toContain("membership approval");
     expect(blockerLabels).toContain("Named pilot owners and rollback");
     expect(summary.phase2Closeout?.packetPath).toBe(
-      "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+      "docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md",
     );
     expect(summary.phase2Closeout?.provenNow.join(" ")).toContain(
       "action_started",
     );
     expect(summary.phase2Closeout?.stillBlocked).toContain(
-      "Hosted `action_started` signoff and approval recording",
+      "External acceptance of the hosted `action_started` proof and approval recording",
     );
     expect(summary.phase2Closeout?.namedOwnersStillNeeded).toContain(
       "rollback owner",
@@ -377,7 +377,7 @@ describe("mvp release readiness", () => {
     expect(summary.nextApprovals.join(" ")).toContain("Goal 157");
     expect(summary.nextApprovals.join(" ")).toContain("production auth preflight");
     expect(summary.nextApprovals.join(" ")).toContain(
-      "2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+      "2026-06-29-med-500-hosted-staging-route-and-write-proof.md",
     );
     expect(summary.nextApprovals.join(" ")).toContain("/admin/pilot-scope");
     expect(summary.nextApprovals.join(" ")).toContain("/admin/first-write");

@@ -549,7 +549,7 @@ export function getMvpReleaseReadinessSummary(
         label: "Browser writes",
         status: "blocked_for_live_launch",
         plainEnglish:
-          "Hosted `action_started` is the recommended first narrow write, but no hosted write is approved yet. Production assignment, proof, membership approval, leader proof decision, HQ decision, coach decision, and admin mutation writes remain disabled; localhost rehearsals still require explicit local flags.",
+          "Hosted staging now has proof for `action_started` and the smallest proof metadata loop, but no browser write path is approved for live pilot use yet. Production assignment, proof, membership approval, leader proof decision, HQ decision, coach decision, and admin mutation writes remain disabled; localhost rehearsals still require explicit local flags.",
       },
       {
         label: "Proof uploads and public proof sharing",
@@ -561,7 +561,7 @@ export function getMvpReleaseReadinessSummary(
         label: "External integrations",
         status: "blocked_for_live_launch",
         plainEnglish:
-          "HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes remain disabled.",
+          "HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes remain disabled. The only approved exception under hosted review is the narrow staging-only Luma event loop.",
       },
       {
         label: "Named pilot owners and rollback",
@@ -580,7 +580,7 @@ export function getMvpReleaseReadinessSummary(
     phase2Closeout: getPhase2CloseoutSnapshot(),
     productionReadiness: getProductionReadinessSnapshot(options),
     nextApprovals: [
-      "Review `docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md` and either approve it as written or replace only the chapter, cohort size, owner slots, event/NPS posture, support channel, or rollback owner.",
+      "Review `docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md` together with the production launch checklist, then either accept the current hosted staging proof as written or replace only the chapter, cohort size, owner slots, event/NPS posture, support channel, or rollback owner.",
       "Use `/admin/pilot-scope` to name the pilot chapter, chapter leader owner, coach owner, HQ/admin owner, DS owner, support/pause channel, and rollback owner before calling Phase 2 complete.",
       "Use `/onboarding` to confirm the manually pre-provisioned staging cohort posture before opening any broader join or onboarding writes.",
       "Use `/admin/first-write` to approve the hosted `action_started` proof as the first staging write before any broader hosted write path opens.",
@@ -719,9 +719,9 @@ function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
   return {
     title: "Phase 2 live MVP pilot closeout",
     summary:
-      "Phase 2 should now be read as a controlled hosted pilot closeout, not just local MVP review. The repo has the default packet, pilot planner, onboarding preflight, first-write closeout framing, and hosted proof-loop framing. The remaining blockers are named owners, final human signoff, and the production foundation for a tiny live pilot, not rediscovering whether hosted staging works.",
+      "Phase 2 should now be read as a controlled hosted pilot closeout, not just local MVP review. The repo has the hosted proof packet, pilot planner, onboarding preflight, first-write closeout framing, and production launch checklist. The remaining blockers are named owners, final human signoff, and the production foundation for a tiny live pilot, not rediscovering whether hosted staging works.",
     packetPath:
-      "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+      "docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md",
     provenNow: [
       "Pilot scope defaults are visible in `/admin/pilot-scope`.",
       "Named owner slots are visible and explicitly still pending in `/admin/pilot-scope`.",
@@ -729,13 +729,14 @@ function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
       `The first hosted write recommendation is explicitly ${firstHostedWrite}.`,
       "The proof metadata packet now frames the smallest hosted proof loop as proof metadata submission plus leader review readback only.",
       "Leader, staff, DS/admin, audit, and outbox review surfaces are named for the hosted proof loop.",
+      "The current hosted proof note now records the authoritative staging route, write, audit, outbox, and Luma loop evidence bundle.",
       "External integrations remain explicitly disabled for the first pilot.",
     ],
     stillBlocked: [
       "Named pilot owners and rollback owner",
       "Hosted auth approval for the pilot cohort",
-      "Hosted `action_started` signoff and approval recording",
-      "Smallest hosted proof/review loop signoff and approval recording",
+      "External acceptance of the hosted `action_started` proof and approval recording",
+      "External acceptance of the smallest hosted proof/review loop and approval recording",
       "Final support/pause channel confirmation",
       "Explicit external-integration hold signoff",
     ],
