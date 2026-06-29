@@ -158,7 +158,7 @@ export function getPhase2CloseoutReview(
       .map((item) => `${item.label}: ${item.value}`),
   ];
   const requiredHumanDecisions = [
-    "Confirm the intended staging review target and reviewer access path; anonymous requests currently redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path before the app.",
+    "Confirm the current staging reviewer path and whether the Vercel-SSO-gated `/login?next=/sso-api...` handoff remains the approved pilot reviewer path.",
     "Confirm the staff dry-run pass and note any confusing copy that should stay visible in the packet.",
     "Complete one human device and accessibility smoke pass before pilot approval.",
     ...(pilotRegistry.counts.ownersPending > 0
@@ -194,12 +194,12 @@ export function getPhase2CloseoutReview(
     {
       key: "hosted_auth",
       label: "Hosted auth works for the pilot cohort",
-      status: "awaiting_hosted_proof",
+      status: "awaiting_human_confirmation",
       evidence: [
         "Repo support exists for staging review auth and manual pre-provisioning of the first cohort.",
         "Observed on 2026-06-24 and again on 2026-06-29: anonymous staging requests redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path.",
         "Hosted reviewer sign-in proof now exists for a seeded DS/Admin staging session after that Vercel handoff.",
-        "Cross-role pilot-cohort sign-in and final role-routed landing proof still need to be captured from the approved hosted session.",
+        "Cross-role pilot-cohort sign-in and final role-routed landing proof still need reviewer confirmation from the approved hosted session.",
       ],
     },
     {
@@ -280,7 +280,7 @@ export function getPhase2CloseoutReview(
 
   const hostedEvidenceChecklist = [
     "Capture the approved staging reviewer path, including the real access gate reviewers are expected to use before the Vercel-hosted `/login?next=/sso-api...` handoff.",
-    "Capture proof that the pilot user can sign in through that staging path and lands in the correct role-scoped app surface.",
+    "Record the current pilot user sign-in path from the approved hosted session and confirm the landing route matches the correct role-scoped app surface.",
     hostedActionStartProof
       ? `Record the current hosted \`action_started\` proof for assignment ${hostedActionStartProof.assignmentId}, including event ${hostedActionStartProof.eventId}, integration event ${hostedActionStartProof.integrationEventId}, audit log ${hostedActionStartProof.auditLogId}, and zero outbox sends.`
       : "Capture before/after evidence for the hosted `action_started` write from the signed-in student route.",

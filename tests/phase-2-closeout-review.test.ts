@@ -78,7 +78,7 @@ describe("phase 2 closeout review", () => {
     expect(
       review.doneCriteria.find((criterion) => criterion.key === "hosted_auth")
         ?.status,
-    ).toBe("awaiting_hosted_proof");
+    ).toBe("awaiting_human_confirmation");
     expect(
       review.doneCriteria.find((criterion) => criterion.key === "named_owners")
         ?.status,
@@ -88,6 +88,9 @@ describe("phase 2 closeout review", () => {
     );
     expect(review.hostedEvidenceChecklist.join(" ")).toContain(
       "/login?next=/sso-api",
+    );
+    expect(review.hostedEvidenceChecklist.join(" ")).toContain(
+      "Record the current pilot user sign-in path",
     );
     expect(review.hostedEvidenceChecklist.join(" ")).toContain(
       "hosted `action_started` write",
@@ -166,6 +169,10 @@ describe("phase 2 closeout review", () => {
 
     expect(
       review.doneCriteria.find((criterion) => criterion.key === "first_hosted_write")
+        ?.status,
+    ).toBe("awaiting_human_confirmation");
+    expect(
+      review.doneCriteria.find((criterion) => criterion.key === "hosted_auth")
         ?.status,
     ).toBe("awaiting_human_confirmation");
     expect(
