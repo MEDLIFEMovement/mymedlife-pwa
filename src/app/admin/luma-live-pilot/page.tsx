@@ -36,6 +36,7 @@ export default async function LumaLivePilotPage({
     mode: "staging",
     data,
   });
+  const pendingHostCheckIn = eventLoop.pendingHostCheckIn;
   const result = normalizeResult(resolvedSearchParams?.lumaResult);
   const message = resolvedSearchParams?.lumaMessage ?? null;
 
@@ -176,6 +177,53 @@ export default async function LumaLivePilotPage({
               ))}
             </div>
           </section>
+
+          {pendingHostCheckIn ? (
+            <section className="rounded-[2rem] border border-amber-200 bg-amber-50 p-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="app-eyebrow text-amber-700">Pending host step</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                    One Luma guest still needs a real host-side check-in.
+                  </h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
+                    {pendingHostCheckIn.detail}
+                  </p>
+                </div>
+                <a
+                  href={`https://luma.com/event/manage/${pendingHostCheckIn.eventId}/guests`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-fit rounded-full border border-amber-300 bg-white px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100"
+                >
+                  Open Luma guest list
+                </a>
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <PendingFact label="Event id" value={pendingHostCheckIn.eventId} mono />
+                <PendingFact
+                  label="Guest"
+                  value={
+                    pendingHostCheckIn.guestEmail ??
+                    pendingHostCheckIn.guestEmailHint ??
+                    "Review RSVP row"
+                  }
+                />
+                <PendingFact
+                  label="Last RSVP"
+                  value={formatShortTimestamp(pendingHostCheckIn.lastRsvpRecordedAt)}
+                />
+                <PendingFact
+                  label="Last import"
+                  value={
+                    pendingHostCheckIn.lastAttendanceImportAt
+                      ? formatShortTimestamp(pendingHostCheckIn.lastAttendanceImportAt)
+                      : "Not imported yet"
+                  }
+                />
+              </div>
+            </section>
+          ) : null}
 
           <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -330,7 +378,13 @@ export default async function LumaLivePilotPage({
               <form action={runLumaRsvpWriteAction} className="space-y-3">
                 <input type="hidden" name="returnTo" value="/admin/luma-live-pilot" />
                 <Field label="Luma event id">
-                  <input required name="eventId" className={inputClassName} placeholder="evt-..." />
+                  <input
+                    required
+                    name="eventId"
+                    className={inputClassName}
+                    placeholder="evt-..."
+                    defaultValue={pendingHostCheckIn?.eventId ?? ""}
+                  />
                 </Field>
                 <Field label="Guest email">
                   <input
@@ -338,7 +392,7 @@ export default async function LumaLivePilotPage({
                     name="email"
                     type="email"
                     className={inputClassName}
-                    defaultValue="nellis@medlifemovement.org"
+                    defaultValue={pendingHostCheckIn?.guestEmail ?? "nellis@medlifemovement.org"}
                   />
                 </Field>
                 <Field label="Guest name">
@@ -358,7 +412,13 @@ export default async function LumaLivePilotPage({
               <form action={runLumaAttendanceImportAction} className="space-y-3">
                 <input type="hidden" name="returnTo" value="/admin/luma-live-pilot" />
                 <Field label="Luma event id">
-                  <input required name="eventId" className={inputClassName} placeholder="evt-..." />
+                  <input
+                    required
+                    name="eventId"
+                    className={inputClassName}
+                    placeholder="evt-..."
+                    defaultValue={pendingHostCheckIn?.eventId ?? ""}
+                  />
                 </Field>
                 <Field label="Rows to inspect">
                   <input
@@ -485,4 +545,45 @@ function SubmitButton({
 
 function normalizeResult(value: string | undefined) {
   return value === "success" ? "success" : value === "error" ? "error" : null;
+}
+
+function PendingFact({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-white p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
+        {label}
+      </p>
+      <p
+        className={[
+          "mt-2 break-words text-sm font-semibold text-slate-950",
+          mono ? "font-mono" : "",
+        ].join(" ")}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function formatShortTimestamp(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Review timestamp";
+  }
+
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }

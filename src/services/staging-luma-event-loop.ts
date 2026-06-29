@@ -95,6 +95,14 @@ export type StagingLumaEventLoopSummary = {
 export type StagingLumaEventLoopReadModel = {
   summary: StagingLumaEventLoopSummary;
   providerStatusLabel: string;
+  pendingHostCheckIn: null | {
+    eventId: string;
+    guestEmail: string | null;
+    guestEmailHint: string | null;
+    lastRsvpRecordedAt: string;
+    lastAttendanceImportAt: string | null;
+    detail: string;
+  };
   sequence: {
     label: string;
     detail: string;
@@ -456,10 +464,14 @@ export function getStagingLumaEventLoopReadModel(
       : mode === "live_ready_not_enabled"
         ? "Live-ready, not enabled"
         : "Disabled";
+  const pendingHostCheckIn = data
+    ? derivePendingHostCheckIn(data, summary.pointsAwarded)
+    : null;
 
   return {
     summary,
     providerStatusLabel,
+    pendingHostCheckIn,
     sequence: buildReadModelSequence(providerEnabled),
     safetyNotes: [
       "No production Luma write is enabled.",
@@ -637,6 +649,62 @@ function deriveEvidenceSummary(
   };
 }
 
+function derivePendingHostCheckIn(
+  data: StagingLumaEventLoopEvidenceSnapshot,
+  pointsAwarded: number,
+) {
+  if (pointsAwarded > 0) {
+    return null;
+  }
+
+  const allRelevantEventRows = data.eventRows.filter(isRelevantEventRow);
+  const pilotEventRows = allRelevantEventRows.filter(isPilotEventRow);
+  const relevantEventRows = pilotEventRows.length > 0 ? pilotEventRows : allRelevantEventRows;
+  const latestRsvpRow = [...relevantEventRows]
+    .filter((row) => row.event_type === "event_rsvp_recorded")
+    .sort(compareEventRowsNewestFirst)[0];
+
+  if (!latestRsvpRow) {
+    return null;
+  }
+
+  const payload = asRecord(latestRsvpRow.payload);
+  const eventId = stringFromPayload(payload, ["lumaEventId"]);
+  if (!eventId) {
+    return null;
+  }
+
+  const sameChapterEventRows = relevantEventRows.filter(
+    (row) => row.chapter_event_id === latestRsvpRow.chapter_event_id,
+  );
+  const latestAttendanceRow = [...sameChapterEventRows]
+    .filter((row) => isAttendanceEventType(row.event_type))
+    .sort(compareEventRowsNewestFirst)[0];
+
+  const attendancePayload = latestAttendanceRow
+    ? asRecord(latestAttendanceRow.payload)
+    : null;
+  const importedGuestCount = numberFromPayload(attendancePayload, [
+    "importedGuestCount",
+  ]);
+  const attendanceCount = numberFromPayload(attendancePayload, ["attendanceCount"]);
+  const guestEmail = stringFromPayload(payload, ["userEmail"]);
+  const guestEmailHint = stringFromPayload(payload, ["userEmailHint"]);
+
+  return {
+    eventId,
+    guestEmail,
+    guestEmailHint,
+    lastRsvpRecordedAt: latestRsvpRow.occurred_at,
+    lastAttendanceImportAt: latestAttendanceRow?.occurred_at ?? null,
+    detail: attendanceCount > 0
+      ? "Attendance is already visible in app evidence, but points have not materialized yet. Recheck the import proof before widening the pilot."
+      : importedGuestCount > 0
+        ? "The RSVP is already in Luma and the guest list has been imported, but no host-side check-in has been seen yet. Mark this guest checked in inside Luma, then rerun attendance import here."
+        : "The RSVP is recorded in myMEDLIFE, but the host-side Luma check-in still has not happened. Open the Luma guest list, mark this guest checked in, then rerun attendance import here."
+  };
+}
+
 function buildReadModelSequence(providerEnabled: boolean) {
   return [
     {
@@ -727,6 +795,16 @@ function isPilotPointsRow(row: PointsEventRow, chapterEventIds: Set<string>) {
   );
 }
 
+function compareEventRowsNewestFirst(a: EventRow, b: EventRow) {
+  return sortIsoDescending(a.occurred_at, b.occurred_at);
+}
+
+function sortIsoDescending(a: string | null, b: string | null) {
+  const left = a ? Date.parse(a) : 0;
+  const right = b ? Date.parse(b) : 0;
+  return right - left;
+}
+
 function sumPayloadMetric(
   rows: Array<{ payload: unknown }>,
   keys: string[],
@@ -756,6 +834,42 @@ function getPayloadMetric(payload: unknown, keys: string[]) {
   return 0;
 }
 
+function numberFromPayload(
+  payload: Record<string, unknown> | null,
+  keys: string[],
+) {
+  if (!payload) {
+    return 0;
+  }
+
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+  }
+
+  return 0;
+}
+
+function stringFromPayload(
+  payload: Record<string, unknown> | null,
+  keys: string[],
+) {
+  if (!payload) {
+    return null;
+  }
+
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
 function payloadHasAnyMetric(payload: unknown, keys: string[]) {
   if (!isRecord(payload)) {
     return false;
@@ -769,6 +883,10 @@ function payloadHasAnyMetric(payload: unknown, keys: string[]) {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asRecord(value: unknown) {
+  return isRecord(value) ? value : null;
 }
 
 function hasPilotSource(payload: unknown) {

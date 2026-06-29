@@ -503,4 +503,94 @@ describe("staging Luma event loop", () => {
     expect(readModel.summary.attendanceCount).toBe(0);
     expect(readModel.summary.pointsAwarded).toBe(0);
   });
+
+  it("surfaces the exact pending host-side check-in when RSVP exists but points do not", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "pilot-rsvp",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            payload: {
+              source: "luma_live_pilot",
+              lumaEventId: "evt-bJE178Q02N5DaLH",
+              userEmail: "nellis@medlifemovement.org",
+              userEmailHint: "ne***@medlifemovement.org",
+              rsvpCount: 1,
+            },
+            correlation_id: "luma-pilot:rsvp:evt-bJE178Q02N5DaLH:user-1",
+            occurred_at: "2026-06-29T03:17:53.728Z",
+            created_at: "2026-06-29T03:17:53.728Z",
+          },
+          {
+            id: "pilot-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 1,
+            },
+            correlation_id: "luma-pilot:attendance:evt-bJE178Q02N5DaLH:1",
+            occurred_at: "2026-06-29T11:07:42.137Z",
+            created_at: "2026-06-29T11:07:42.137Z",
+          },
+        ],
+        integrationEventRows: [
+          {
+            id: "pilot-link",
+            source_event_id: "pilot-rsvp",
+            chapter_id: "chapter-1",
+            event_type: "luma_event_linked",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt-bJE178Q02N5DaLH",
+            status: "recorded",
+            payload: { source: "luma_live_pilot" },
+            created_by: "pilot-user",
+            created_at: "2026-06-29T03:17:33.923Z",
+            updated_at: "2026-06-29T03:17:33.923Z",
+          },
+          {
+            id: "pilot-attendance-imported",
+            source_event_id: "pilot-attendance",
+            chapter_id: "chapter-1",
+            event_type: "luma_attendance_imported",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt-bJE178Q02N5DaLH",
+            status: "recorded",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 1,
+            },
+            created_by: "pilot-user",
+            created_at: "2026-06-29T11:07:42.137Z",
+            updated_at: "2026-06-29T11:07:42.137Z",
+          },
+        ],
+        automationOutboxRows: [],
+        pointsEventRows: [],
+      },
+    });
+
+    expect(readModel.pendingHostCheckIn).toMatchObject({
+      eventId: "evt-bJE178Q02N5DaLH",
+      guestEmail: "nellis@medlifemovement.org",
+      guestEmailHint: "ne***@medlifemovement.org",
+      lastAttendanceImportAt: "2026-06-29T11:07:42.137Z",
+    });
+    expect(readModel.pendingHostCheckIn?.detail).toContain("Mark this guest checked in");
+  });
 });
