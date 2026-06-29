@@ -1,6 +1,5 @@
 import {
-  getFeatureResolvedState,
-  isFeatureEnabled,
+  getFeatureResolvedStateDurable,
 } from "@/modules/feature-flags";
 
 export type LumaCalendarReadinessStatus =
@@ -79,9 +78,11 @@ export async function getLumaCalendarReadinessSnapshot(options?: {
   const apiKey = env.LUMA_API_KEY?.trim();
   const calendarId = env.LUMA_CALENDAR_ID?.trim() || null;
   const limit = clampLimit(options?.limit ?? 10);
-  const lumaFeature = getFeatureResolvedState("integration_luma", { env });
+  const lumaFeature = await getFeatureResolvedStateDurable("integration_luma", {
+    env,
+  });
 
-  if (!isFeatureEnabled("integration_luma", { env })) {
+  if (!lumaFeature.enabled) {
     return {
       status: "feature_disabled",
       calendarId,
