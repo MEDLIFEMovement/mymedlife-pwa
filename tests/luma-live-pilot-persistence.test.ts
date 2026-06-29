@@ -4,6 +4,7 @@ import type {
   SupabaseAppMutateOptions,
   SupabaseAppSelectOptions,
 } from "@/lib/supabase-app-client";
+import type { PointsEventRow } from "@/shared/types/persistence";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
   getMockReadOnlyAppData,
@@ -361,6 +362,38 @@ function createFakeSupabaseAppClient() {
       const rows = [...(tables[tableName] ?? [])];
       const filtered = rows.filter((row) => matchesQuery(row, options.query ?? {}));
       return filtered.slice(0, options.limit ?? filtered.length) as TRow[];
+    },
+    async rpc<TResult>(functionName: string, payload: Record<string, unknown>) {
+      if (functionName !== "record_luma_attendance_points_event") {
+        throw new Error(`Unexpected rpc ${functionName}`);
+      }
+
+      const existingRow = (tables.points_events ?? []).find(
+        (row) =>
+          row.chapter_event_id === payload.chapter_event_uuid &&
+          row.awarded_to_user_id === payload.awarded_to_user_uuid,
+      );
+
+      if (existingRow) {
+        return [existingRow] as TResult;
+      }
+
+      const [insertedRow] = await this.insertRows<PointsEventRow>("points_events", [
+        {
+          chapter_id: "10000000-0000-4000-8000-000000000001",
+          campaign_id: "40000000-0000-4000-8000-000000000001",
+          assignment_id: null,
+          chapter_event_id: payload.chapter_event_uuid,
+          evidence_item_id: null,
+          approval_id: null,
+          awarded_to_user_id: payload.awarded_to_user_uuid,
+          points_delta: payload.points_delta_input,
+          reason: payload.reason_text,
+          created_by: "00000000-0000-4000-8000-000000000005",
+        },
+      ]);
+
+      return [insertedRow] as TResult;
     },
     async insertRows<TRow>(tableName: string, rows: Record<string, unknown>[]) {
       const nextRows = rows.map((row) => {

@@ -432,12 +432,15 @@ export async function persistLumaAttendanceImportProof(
   const existingAwardedUserIds = new Set(
     existingPointsRows.map((row) => row.awarded_to_user_id),
   );
+  const seenAwardedUserIds = new Set(existingAwardedUserIds);
   const nextPointsRows = attendedRows.flatMap((row) => {
     const profile = row.email ? matchingProfiles.get(normalizeEmail(row.email)) : undefined;
 
-    if (!profile || existingAwardedUserIds.has(profile.id)) {
+    if (!profile || seenAwardedUserIds.has(profile.id)) {
       return [];
     }
+
+    seenAwardedUserIds.add(profile.id);
 
     return [
       {
@@ -455,8 +458,18 @@ export async function persistLumaAttendanceImportProof(
     ];
   });
 
+  const insertedPointsRows: PointsEventRow[] = [];
   if (nextPointsRows.length > 0) {
-    await context.client.insertRows<PointsEventRow>("points_events", nextPointsRows);
+    for (const row of nextPointsRows) {
+      insertedPointsRows.push(
+        await recordLumaAttendancePointsEvent(context.client, {
+          chapterEventId,
+          awardedToUserId: row.awarded_to_user_id,
+          pointsDelta: row.points_delta,
+          reason: row.reason,
+        }),
+      );
+    }
   }
 
   await updateChapterEvent(context.client, chapterEventId, {
@@ -481,8 +494,8 @@ export async function persistLumaAttendanceImportProof(
       lumaEventId: input.eventId,
       attendanceCount: attendedRows.length,
       importedGuestCount: input.attendanceRows.length,
-      matchedUserCount: nextPointsRows.length,
-      pointsCreatedCount: nextPointsRows.length,
+      matchedUserCount: insertedPointsRows.length,
+      pointsCreatedCount: insertedPointsRows.length,
     },
     correlation_id: `luma-pilot:attendance:${input.eventId}:${now}`,
     occurred_at: now,
@@ -533,7 +546,7 @@ export async function persistLumaAttendanceImportProof(
       source: pilotSource,
       attendanceCount: attendedRows.length,
       importedGuestCount: input.attendanceRows.length,
-      pointsCreatedCount: nextPointsRows.length,
+      pointsCreatedCount: insertedPointsRows.length,
     },
     reason: "Recorded the staging Luma attendance proof in app tables.",
   });
@@ -543,7 +556,7 @@ export async function persistLumaAttendanceImportProof(
     lumaEventLinkId: link.id,
     eventId: input.eventId,
     auditLogId: auditLog.id,
-    pointsCreated: nextPointsRows.length,
+    pointsCreated: insertedPointsRows.length,
     attendanceCount: attendedRows.length,
     rsvpRecorded: false,
   };
@@ -624,6 +637,30 @@ async function findChapterEventById(
   });
 
   return rows[0] ?? null;
+}
+
+async function recordLumaAttendancePointsEvent(
+  client: SupabaseAppClient,
+  input: {
+    chapterEventId: string;
+    awardedToUserId: string;
+    pointsDelta: number;
+    reason: string;
+  },
+): Promise<PointsEventRow> {
+  const rows = await client.rpc<PointsEventRow[]>("record_luma_attendance_points_event", {
+    chapter_event_uuid: input.chapterEventId,
+    awarded_to_user_uuid: input.awardedToUserId,
+    points_delta_input: input.pointsDelta,
+    reason_text: input.reason,
+  });
+  const row = rows[0];
+
+  if (!row) {
+    throw new Error("Supabase did not return the recorded Luma attendance points row.");
+  }
+
+  return row;
 }
 
 async function createChapterEvent(

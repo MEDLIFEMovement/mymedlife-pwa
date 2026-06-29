@@ -38,6 +38,10 @@ export type SupabaseAppClient = {
     tableName: string,
     options?: SupabaseAppSelectOptions,
   ) => Promise<TRow[]>;
+  rpc: <TResult>(
+    functionName: string,
+    payload: Record<string, unknown>,
+  ) => Promise<TResult>;
   insertRows: <TRow>(
     tableName: string,
     rows: Record<string, unknown>[],
@@ -172,6 +176,26 @@ function createRestAppClient(input: {
     persistence: input.persistence,
     selectRows<TRow>(tableName: string, options: SupabaseAppSelectOptions = {}) {
       return request<TRow>("GET", tableName, options);
+    },
+    async rpc<TResult>(
+      functionName: string,
+      payload: Record<string, unknown>,
+    ): Promise<TResult> {
+      const response = await input.fetchFn(`${input.url}/rest/v1/rpc/${functionName}`, {
+        method: "POST",
+        headers: {
+          ...appHeaders(input.anonKey, input.accessToken),
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(await safeAppError(response, functionName));
+      }
+
+      return (await response.json()) as TResult;
     },
     insertRows<TRow>(
       tableName: string,
