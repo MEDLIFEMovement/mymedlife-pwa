@@ -72,7 +72,7 @@ export function getAdminSystemHealthReview(
   }
 
   const environmentSafety = getEnvironmentSafetySummary(actor, env);
-  const checks = getSystemHealthChecks(data, environmentSafety.counts);
+  const checks = getSystemHealthChecks(data, environmentSafety.counts, env);
 
   return {
     canReadReview: true,
@@ -97,11 +97,32 @@ function getSystemHealthChecks(
     blocked: number;
     watch: number;
   },
+  env?: EnvironmentSafetyInput,
 ): AdminSystemHealthCheck[] {
   const routeCount = getAppRouteRegistry().length;
   const disabledOutboxCount = data.outboxItems.filter((item) => {
     return item.status === "disabled";
   }).length;
+  const productionCallback = readPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+  );
+  const stagingCallback = readPacketValue(
+    env,
+    "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+  );
+  const backupOwner = readPacketValue(env, "MYMEDLIFE_PRODUCTION_BACKUP_OWNER");
+  const restorePath = readPacketValue(env, "MYMEDLIFE_PRODUCTION_RESTORE_PATH");
+  const supportOwner = readPacketValue(env, "MYMEDLIFE_PILOT_SUPPORT_OWNER");
+  const supportChannel = readPacketValue(
+    env,
+    "MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL",
+  );
+  const rollbackOwner = readPacketValue(env, "MYMEDLIFE_PILOT_ROLLBACK_OWNER");
+  const productionAuthRecorded = Boolean(productionCallback && stagingCallback);
+  const operationsRecorded = Boolean(
+    backupOwner || restorePath || supportOwner || supportChannel || rollbackOwner,
+  );
 
   return [
     {
@@ -173,10 +194,14 @@ function getSystemHealthChecks(
       key: "production_auth",
       label: "Production auth",
       ownerLane: "Security and Student Access",
-      status: "blocked_before_live",
-      signal: "Production auth and real users are not enabled.",
+      status: productionAuthRecorded ? "needs_review" : "blocked_before_live",
+      signal: productionAuthRecorded
+        ? `Recorded callback plan exists for ${productionCallback} and ${stagingCallback}, but production auth and real users are still not enabled.`
+        : "Production auth and real users are not enabled.",
       nextStep:
-        "Approve Supabase Auth project setup, callbacks, onboarding, and membership approval flow.",
+        productionAuthRecorded
+          ? "Use the recorded callback plan to finish role-routing proof, onboarding approval, and membership approval review."
+          : "Approve Supabase Auth project setup, callbacks, onboarding, and membership approval flow.",
       routeEvidence: ["/login", "/chapter/members"],
     },
     {
@@ -204,14 +229,25 @@ function getSystemHealthChecks(
       key: "monitoring_backup",
       label: "Monitoring, backup, and incident ownership",
       ownerLane: "Platform and Security",
-      status: "blocked_before_live",
-      signal:
-        "A local production operations runbook exists, but production monitoring, backup checks, and incident ownership are not connected yet.",
+      status: operationsRecorded ? "needs_review" : "blocked_before_live",
+      signal: operationsRecorded
+        ? `Recorded production-ops packet values now exist for backup owner ${backupOwner ?? "pending"}, restore path ${restorePath ?? "pending"}, support owner ${supportOwner ?? "pending"}, support channel ${supportChannel ?? "pending"}, and rollback owner ${rollbackOwner ?? "pending"}, but release-build proof and final operations approval are still missing.`
+        : "A local production operations runbook exists, but production monitoring, backup checks, and incident ownership are not connected yet.",
       nextStep:
-        "Review the operations runbook, assign owners, define alerts, prove backups, and document rollback before pilot launch.",
+        operationsRecorded
+          ? "Review the recorded production-ops packet on the launch gate, then finish alerting, backup proof, and rollback signoff before pilot launch."
+          : "Review the operations runbook, assign owners, define alerts, prove backups, and document rollback before pilot launch.",
       routeEvidence: ["/admin", "/admin/pilot-scope"],
     },
   ];
+}
+
+function readPacketValue(
+  env: EnvironmentSafetyInput | undefined,
+  key: string,
+) {
+  const value = env?.[key]?.trim();
+  return value ? value : null;
 }
 
 function countChecks(

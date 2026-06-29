@@ -106,6 +106,54 @@ describe("admin system health review", () => {
     ).toBe("needs_review");
   });
 
+  it("moves auth and ops checks into review state when production packet values are recorded", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const review = getAdminSystemHealthReview(
+      actor,
+      getMockReadOnlyAppData("Recorded production packet context."),
+      {
+        MYMEDLIFE_DATA_SOURCE: "mock",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS: "false",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "false",
+        MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+        MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL:
+          "https://www.mymedlife.org/auth/callback",
+        MYMEDLIFE_STAGING_AUTH_CALLBACK_URL:
+          "https://staging.mymedlife.org/auth/callback",
+        MYMEDLIFE_PRODUCTION_BACKUP_OWNER: "DS on-call",
+        MYMEDLIFE_PRODUCTION_RESTORE_PATH:
+          "Supabase PITR plus manual app repair runbook",
+        MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
+        MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
+        MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Nick Ellis",
+      },
+    );
+
+    expect(
+      review.checks.find((check) => check.key === "production_auth"),
+    ).toEqual(
+      expect.objectContaining({
+        status: "needs_review",
+        signal: expect.stringContaining("Recorded callback plan exists"),
+      }),
+    );
+    expect(
+      review.checks.find((check) => check.key === "monitoring_backup"),
+    ).toEqual(
+      expect.objectContaining({
+        status: "needs_review",
+        signal: expect.stringContaining("Recorded production-ops packet values now exist"),
+      }),
+    );
+    expect(review.counts).toEqual({
+      total: 9,
+      localReady: 3,
+      mockSafe: 2,
+      needsReview: 2,
+      blockedBeforeLive: 2,
+    });
+  });
+
   it("hides system health from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");

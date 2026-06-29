@@ -94,7 +94,7 @@ function getNextStep(actor: LocalActorContext) {
 
   return {
     label: "Open operations runbook",
-    href: "/admin",
+    href: "/admin/operations",
   };
 }
 

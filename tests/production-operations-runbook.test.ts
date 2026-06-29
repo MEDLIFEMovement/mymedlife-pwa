@@ -68,6 +68,33 @@ describe("production operations runbook", () => {
     expect(integrationRecovery?.externalWritesExpected).toBe(0);
   });
 
+  it("surfaces recorded production packet context inside the runbook without exposing secrets", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const runbook = getProductionOperationsRunbook(actor, {
+      MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL:
+        "https://www.mymedlife.org/auth/callback",
+      MYMEDLIFE_STAGING_AUTH_CALLBACK_URL:
+        "https://staging.mymedlife.org/auth/callback",
+      MYMEDLIFE_PRODUCTION_BACKUP_OWNER: "DS on-call",
+      MYMEDLIFE_PRODUCTION_RESTORE_PATH:
+        "Supabase PITR plus manual app repair runbook",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
+      MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Nick Ellis",
+      MYMEDLIFE_PILOT_CHAPTER: "UCLA MEDLIFE",
+      MYMEDLIFE_PILOT_DS_OWNER: "DS owner",
+    });
+    const authAccess = runbook.items.find((item) => item.key === "auth_access_incident");
+    const writeRollback = runbook.items.find((item) => item.key === "write_rollback");
+    const pilotComms = runbook.items.find((item) => item.key === "pilot_communications");
+
+    expect(runbook.summary).toContain("recorded production packet answers");
+    expect(authAccess?.localRunbook).toContain("https://www.mymedlife.org/auth/callback");
+    expect(writeRollback?.missingLiveEvidence.join(" ")).toContain("Nick Ellis");
+    expect(pilotComms?.localRunbook).toContain("UCLA MEDLIFE");
+    expect(pilotComms?.missingLiveEvidence.join(" ")).toContain("#mymedlife-pilot-support");
+  });
+
   it("names offline PWA support without clearing mobile launch approval", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const runbook = getProductionOperationsRunbook(actor);
