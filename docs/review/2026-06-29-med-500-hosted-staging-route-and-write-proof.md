@@ -206,6 +206,30 @@ one attendance-backed points award, and zero unauthorized sends. The current
 disabled outbox rows are still held on internal destinations, not released as
 live downstream traffic.
 
+## Hosted DS/Admin control-layer proof
+
+Hosted staging also proves the DS/Admin control layer is no longer only a local
+review concept:
+
+- `/admin/feature-flags` and `/admin/theme` are part of the signed-in reviewer
+  route bundle
+- the staging database already contains durable rows for:
+  - `app.feature_flag_overrides`
+  - `app.feature_flag_audit_records`
+  - `app.theme_snapshots`
+  - `app.theme_audit_records`
+- the current staging packet still shows:
+  - `app.admin_step_up_sessions`: `0`
+  - `app.production_control_approvals`: `0`
+
+What this proves:
+
+- feature-flag and theme review is attached to Supabase-backed tables on
+  staging, not only in-memory local review state
+- durable audit rows already exist for control changes
+- production-sensitive control paths are still honestly unproven and should
+  remain locked until fresh step-up plus approval-row readback is captured
+
 ## What is now honestly proven
 
 - the signed-in reviewer path through `staging.mymedlife.org` is real
@@ -216,6 +240,8 @@ live downstream traffic.
 - leader review readback exists without opening leader decision writes
 - the outbox stays blocked for the first hosted write and disabled for the proof
   metadata loop
+- the DS/Admin feature-flag and theme routes now have hosted Supabase-backed
+  control-layer readback with durable audit posture
 - the Luma event / RSVP / attendance / points / leaderboard loop is separately
   proven on hosted staging
 - the focused DS admin review routes now point at the exact Luma pilot evidence

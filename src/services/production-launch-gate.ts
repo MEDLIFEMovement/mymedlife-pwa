@@ -796,6 +796,29 @@ export function getProductionLaunchEvidenceChecks(
         : "Production auth, role routing, and the staging access path are approved.",
     },
     {
+      key: "rollout_control_layer",
+      label: "Rollout control layer readback",
+      ownerLane: "DS Admin and Platform",
+      status: hostedStagingEvidenceObserved
+        ? "staging_evidence_recorded"
+        : "missing_before_pilot",
+      requiredEvidence: hostedStagingEvidenceObserved
+        ? "Hosted staging already shows `/admin/feature-flags` and `/admin/theme` reading from the Supabase-backed control layer with durable feature-flag and theme audit rows visible in the reviewer path. Final DS/platform signoff still needs to confirm the current routes, durable row counts, and the production-sensitive step-up/approval lock posture."
+        : "Hosted staging proof that `/admin/feature-flags` and `/admin/theme` read from Supabase-backed control tables, show durable audit rows, and keep production-sensitive changes locked behind step-up plus approval requirements.",
+      reviewRoute: "/admin/feature-flags",
+      supportingRoutes: [
+        "/admin/theme",
+        "/admin/audit-log",
+        "/admin/launch-gate",
+      ],
+      acceptanceSignal: hostedStagingEvidenceObserved
+        ? "DS/Admin reviewers can open `/admin/feature-flags` and `/admin/theme`, see durable audit posture instead of in-memory review mode, confirm the current feature-flag/theme rows are visible, and verify production-sensitive changes still stay locked behind fresh step-up plus approval."
+        : "DS/Admin reviewers can confirm feature flags and theme tokens are no longer in in-memory review mode, durable audit rows are visible, and production-sensitive control changes stay step-up/approval locked on staging.",
+      blockedUntil: hostedStagingEvidenceObserved
+        ? "Final DS/platform acceptance still needs the current control-layer readback packet, durable row counts, and reviewer confirmation that production-sensitive control changes remain locked."
+        : "Hosted DS/Admin control-layer readback, durable audit rows, and the step-up/approval lock posture are captured on staging.",
+    },
+    {
       key: "rls_ci",
       label: "RLS and CI proof",
       ownerLane: "Data and Security",

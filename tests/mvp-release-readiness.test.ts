@@ -312,7 +312,7 @@ describe("mvp release readiness", () => {
     expect(summary.productionReadiness).not.toBeNull();
     expect(summary.productionReadiness?.recordedEnvironmentCount).toBe(7);
     expect(summary.productionReadiness?.missingEnvironmentCount).toBe(1);
-    expect(summary.productionReadiness?.stagingEvidenceRecordedCount).toBe(3);
+    expect(summary.productionReadiness?.stagingEvidenceRecordedCount).toBe(4);
     expect(summary.productionReadiness?.missingEvidenceCount).toBe(7);
     expect(
       summary.productionReadiness?.recordedNow.map((item) => item.label),
@@ -323,6 +323,9 @@ describe("mvp release readiness", () => {
     expect(
       summary.productionReadiness?.recordedNow.map((item) => item.label),
     ).toContain("Rollout control layer readiness");
+    expect(
+      summary.productionReadiness?.recordedNow.map((item) => item.label),
+    ).toContain("Rollout control layer readback");
     expect(
       summary.productionReadiness?.stillMissing.map((item) => item.label),
     ).toContain("Rollback and support owners");

@@ -18,13 +18,13 @@ describe("production launch gate", () => {
       localEvidenceReady: 1,
       stagingEvidenceRecorded: 0,
       blockedBeforeLive: 7,
-      launchEvidenceChecks: 10,
+      launchEvidenceChecks: 11,
       environmentReadinessItems: 8,
     });
-    expect(gate.launchEvidenceChecks).toHaveLength(10);
+    expect(gate.launchEvidenceChecks).toHaveLength(11);
     expect(gate.environmentReadiness).toHaveLength(8);
     expect(gate.reviewSnapshot.recordedNow).toEqual([]);
-    expect(gate.reviewSnapshot.stillMissing).toHaveLength(18);
+    expect(gate.reviewSnapshot.stillMissing).toHaveLength(19);
     expect(gate.finalReviewPrompt).toContain("production writes");
   });
 
@@ -129,6 +129,7 @@ describe("production launch gate", () => {
       "staging_url",
       "staging_supabase",
       "auth_callbacks",
+      "rollout_control_layer",
       "rls_ci",
       "proof_storage",
       "luma_event_loop",
@@ -147,9 +148,31 @@ describe("production launch gate", () => {
       ),
     ).toBe(true);
     expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.requiredEvidence,
+    ).toContain("Supabase-backed control tables");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.supportingRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/theme",
+        "/admin/audit-log",
+        "/admin/launch-gate",
+      ]),
+    );
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.reviewRoute,
+    ).toBe("/admin/feature-flags");
+    expect(
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.requiredEvidence,
     ).toContain("create or update the approved Luma event");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.requiredEvidence,
+    ).toContain("/app, /leader, /staff, /admin, and /rush-month/leaderboard");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.requiredEvidence,
@@ -559,6 +582,10 @@ describe("production launch gate", () => {
         ?.status,
     ).toBe("staging_evidence_recorded");
     expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.status,
     ).toBe("staging_evidence_recorded");
@@ -575,6 +602,14 @@ describe("production launch gate", () => {
         ?.blockedUntil,
     ).toContain("still need final approval");
     expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.acceptanceSignal,
+    ).toContain("durable audit posture");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.blockedUntil,
+    ).toContain("durable row counts");
+    expect(
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.acceptanceSignal,
     ).toContain("leaderboard readback");
@@ -582,7 +617,7 @@ describe("production launch gate", () => {
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.acceptanceSignal,
     ).toContain("/app, /leader, /staff, /admin, and /rush-month/leaderboard");
-    expect(gate.counts.stagingEvidenceRecorded).toBe(4);
+    expect(gate.counts.stagingEvidenceRecorded).toBe(5);
     expect(
       gate.reviewSnapshot.recordedNow.map((item) => item.label),
     ).toEqual(
@@ -590,6 +625,7 @@ describe("production launch gate", () => {
         "Staging deployment URL",
         "Staging Supabase posture",
         "Auth callback and role routing",
+        "Rollout control layer readback",
         "Luma event, RSVP, attendance, and points loop",
       ]),
     );
