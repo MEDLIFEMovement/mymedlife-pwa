@@ -388,6 +388,48 @@ export function FirstWriteActivationDrillPanel({
           </article>
         </div>
 
+        {drill.hostedCloseout.currentObservedEvidence ? (
+          <article className="mt-4 rounded-3xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
+            <p className="text-sm font-semibold text-white">Current hosted evidence</p>
+            <p className="mt-2 text-sm leading-6 text-white/64">
+              {drill.hostedCloseout.currentObservedEvidence.reviewerNote}
+            </p>
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-badge-background)]/72">
+                  Assignment
+                </p>
+                <p className="mt-2 text-sm font-semibold text-white">
+                  {drill.hostedCloseout.currentObservedEvidence.assignmentTitle}
+                </p>
+                <p className="mt-2 font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
+                  {drill.hostedCloseout.currentObservedEvidence.assignmentId}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-white/58">
+                  Status: {drill.hostedCloseout.currentObservedEvidence.assignmentStatus}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-badge-background)]/72">
+                  Durable row anchors
+                </p>
+                <p className="mt-2 font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
+                  event={drill.hostedCloseout.currentObservedEvidence.eventId}
+                </p>
+                <p className="mt-2 font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
+                  integration={drill.hostedCloseout.currentObservedEvidence.integrationEventId}
+                </p>
+                <p className="mt-2 font-mono text-xs text-[var(--mymedlife-badge-background)]/80">
+                  audit={drill.hostedCloseout.currentObservedEvidence.auditLogId}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-white/58">
+                  Outbox sends: {drill.hostedCloseout.currentObservedEvidence.zeroOutboxSends ? "0" : "review needed"}
+                </p>
+              </div>
+            </div>
+          </article>
+        ) : null}
+
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {drill.hostedCloseout.namedOwnersStillNeeded.map((item) => (
             <article

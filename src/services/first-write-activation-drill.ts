@@ -91,6 +91,16 @@ export type FirstWriteHostedCloseout = {
   stagingTarget: string;
   recommendedHostedWrite: string;
   hostedDecision: string;
+  currentObservedEvidence: {
+    assignmentId: string;
+    assignmentTitle: string;
+    assignmentStatus: string;
+    eventId: string;
+    integrationEventId: string;
+    auditLogId: string;
+    zeroOutboxSends: true;
+    reviewerNote: string;
+  } | null;
   requiredReadback: string[];
   reviewSurfaces: string[];
   namedOwnersStillNeeded: Array<{
@@ -166,7 +176,8 @@ export function getFirstWriteActivationDrill(
     };
   }
 
-  const candidateAssignment = findEvidenceBackedAssignment(data) ??
+  const observedEvidence = findObservedFirstWriteEvidence(data);
+  const candidateAssignment = observedEvidence?.assignment ??
     findCandidateAssignment(data.assignments);
   const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const targetActor = getMockLocalActorContext(
@@ -205,7 +216,7 @@ export function getFirstWriteActivationDrill(
     steps: buildSteps(candidate, env),
     readbackEvidence,
     verificationPacket,
-    hostedCloseout: buildHostedCloseout(env),
+    hostedCloseout: buildHostedCloseout(env, observedEvidence),
     proofToCollect: [
       "Screenshot of `/admin/first-write` before the test showing every required check green.",
       "Screenshot of the selected action detail route before clicking Start this action.",
@@ -226,7 +237,12 @@ export function getFirstWriteActivationDrill(
   };
 }
 
-function findEvidenceBackedAssignment(data: ReadOnlyAppData): Assignment | null {
+function findObservedFirstWriteEvidence(data: ReadOnlyAppData): {
+  assignment: Assignment;
+  eventId: string;
+  integrationEventId: string;
+  auditLogId: string;
+} | null {
   const actionStartedEvents = [...data.eventRows]
     .filter((event) => event.event_type === "action_started" && event.assignment_id)
     .sort((left, right) => {
@@ -258,7 +274,12 @@ function findEvidenceBackedAssignment(data: ReadOnlyAppData): Assignment | null 
       continue;
     }
 
-    return assignment;
+    return {
+      assignment,
+      eventId: event.id,
+      integrationEventId: integrationEvent.id,
+      auditLogId: auditLog.id,
+    };
   }
 
   return null;
@@ -898,7 +919,15 @@ function buildHiddenVerificationPacket(): FirstWriteVerificationPacket {
   };
 }
 
-function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedCloseout {
+function buildHostedCloseout(
+  env: EnvSource = process.env,
+  observedEvidence: {
+    assignment: Assignment;
+    eventId: string;
+    integrationEventId: string;
+    auditLogId: string;
+  } | null = null,
+): FirstWriteHostedCloseout {
   const pilotRegistry = getPhase2PilotRegistry(env);
   const firstHostedWrite =
     pilotRegistry.defaults.find((item) => item.key === "first_hosted_write")?.value ??
@@ -958,6 +987,23 @@ function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedClos
     recommendedHostedWrite: firstHostedWrite,
     hostedDecision:
       `If the team approves one hosted write first, it should be ${firstHostedWrite} on staging only. That proves real auth identity, assignment status change, internal event, integration event, audit row, and zero external sends before any broader proof or workflow write opens.`,
+    currentObservedEvidence: observedEvidence
+      ? {
+          assignmentId: observedEvidence.assignment.id,
+          assignmentTitle: observedEvidence.assignment.title,
+          assignmentStatus: observedEvidence.assignment.status,
+          eventId: observedEvidence.eventId,
+          integrationEventId: observedEvidence.integrationEventId,
+          auditLogId: observedEvidence.auditLogId,
+          zeroOutboxSends: true,
+          reviewerNote:
+            observedEvidence.assignment.status === "submitted" ||
+              observedEvidence.assignment.status === "approved" ||
+              observedEvidence.assignment.status === "changes_requested"
+              ? "This assignment has already moved beyond the first write, so reviewers should use the event, integration, and audit chain as the authoritative start proof."
+              : "This assignment still reflects the narrow first-write posture. Reviewers can use the event, integration, and audit chain as the authoritative hosted start proof.",
+        }
+      : null,
     requiredReadback: [
       "Before-and-after route evidence from the signed-in student path.",
       "Assignment status changes to `in_progress`.",

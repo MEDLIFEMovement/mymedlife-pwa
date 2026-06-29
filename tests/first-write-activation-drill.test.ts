@@ -268,6 +268,16 @@ describe("first-write activation drill", () => {
     expect(drill.verificationPacket.status).toBe("evidence_observed");
     expect(drill.verificationPacket.canPromoteToStagingReview).toBe(true);
     expect(drill.plainEnglishSummary).toContain("Hosted staging already contains first-write readback evidence");
+    expect(drill.hostedCloseout.currentObservedEvidence).toEqual(
+      expect.objectContaining({
+        assignmentId: drill.candidateAssignment?.id,
+        assignmentStatus: "submitted",
+        zeroOutboxSends: true,
+      }),
+    );
+    expect(drill.hostedCloseout.currentObservedEvidence?.reviewerNote).toContain(
+      "already moved beyond the first write",
+    );
   });
 
   it("does not claim a startable assignment exists when the candidate is already in progress", () => {

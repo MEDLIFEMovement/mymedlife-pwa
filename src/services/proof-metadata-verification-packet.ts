@@ -95,6 +95,18 @@ export type ProofMetadataPacket = {
     stagingTarget: string;
     recommendedProofLoop: string;
     hostedDecision: string;
+    currentObservedEvidence: {
+      assignmentId: string;
+      assignmentTitle: string;
+      assignmentStatus: string;
+      evidenceItemId: string;
+      evidenceSummary: string;
+      eventId: string;
+      integrationEventId: string;
+      auditLogId: string;
+      outboxId: string;
+      reviewerNote: string;
+    } | null;
     requiredReadback: string[];
     reviewSurfaces: string[];
     namedOwnersStillNeeded: Array<{
@@ -156,9 +168,9 @@ export function getProofMetadataPacket(
   }
 
   const candidateAssignment = findCandidateAssignment(data.assignments);
-  const evidenceBackedAssignment = findEvidenceBackedAssignment(data);
+  const observedEvidence = findObservedProofMetadataEvidence(data);
+  const evidenceBackedAssignment = observedEvidence?.assignment ?? null;
   const resolvedAssignment = evidenceBackedAssignment ?? candidateAssignment;
-  const hostedStaging = isHostedStagingLane(env);
   const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const targetActor = getMockLocalActorContext(
     "member.a@mymedlife.test",
@@ -215,7 +227,7 @@ export function getProofMetadataPacket(
     checks,
     readbackEvidence,
     verificationPacket,
-    hostedCloseout: buildHostedCloseout(env),
+    hostedCloseout: buildHostedCloseout(env, observedEvidence),
     proofToCollect: [
       "Screenshot of `/admin/proof-write` before the test showing the packet is ready.",
       "Screenshot of the target action detail route with the proof form enabled.",
@@ -238,7 +250,15 @@ export function getProofMetadataPacket(
   };
 }
 
-function findEvidenceBackedAssignment(data: ReadOnlyAppData): Assignment | null {
+function findObservedProofMetadataEvidence(data: ReadOnlyAppData): {
+  assignment: Assignment;
+  evidenceItemId: string;
+  evidenceSummary: string;
+  eventId: string;
+  integrationEventId: string;
+  auditLogId: string;
+  outboxId: string;
+} | null {
   const proofEvents = [...data.eventRows]
     .filter((event) => event.event_type === "evidence_submitted" && event.assignment_id)
     .sort((left, right) => {
@@ -269,7 +289,25 @@ function findEvidenceBackedAssignment(data: ReadOnlyAppData): Assignment | null 
       continue;
     }
 
-    return assignment;
+    const auditLog = data.auditLogs.find((item) => {
+      return item.action === "evidence_submitted" &&
+        item.target_table === "evidence_items" &&
+        item.target_id === evidenceItem.id;
+    });
+
+    if (!auditLog) {
+      continue;
+    }
+
+    return {
+      assignment,
+      evidenceItemId: evidenceItem.id,
+      evidenceSummary: evidenceItem.summary,
+      eventId: event.id,
+      integrationEventId: integrationEvent.id,
+      auditLogId: auditLog.id,
+      outboxId: outbox.id,
+    };
   }
 
   return null;
@@ -924,6 +962,15 @@ function buildHiddenVerificationPacket(): ProofMetadataVerificationPacket {
 
 function buildHostedCloseout(
   env: EnvSource = process.env,
+  observedEvidence: {
+    assignment: Assignment;
+    evidenceItemId: string;
+    evidenceSummary: string;
+    eventId: string;
+    integrationEventId: string;
+    auditLogId: string;
+    outboxId: string;
+  } | null = null,
 ): ProofMetadataPacket["hostedCloseout"] {
   const pilotRegistry = getPhase2PilotRegistry(env);
   const proofLoop = pilotRegistry.defaults.find(
@@ -964,6 +1011,25 @@ function buildHostedCloseout(
       proofLoop?.status === "recorded_final"
         ? `Recorded Phase 2 proof loop: ${proofLoop.value}. Hosted proof metadata can be proven on staging with leader review readback visible, but leader decision writes, HQ proof decisions, uploads, and public sharing must stay blocked until later approval.`
         : "Recommended Phase 2 proof loop: proof metadata submission plus leader review only. Hosted proof metadata can be proven on staging with leader review readback visible, but leader decision writes, HQ proof decisions, uploads, and public sharing stay blocked.",
+    currentObservedEvidence: observedEvidence
+      ? {
+          assignmentId: observedEvidence.assignment.id,
+          assignmentTitle: observedEvidence.assignment.title,
+          assignmentStatus: observedEvidence.assignment.status,
+          evidenceItemId: observedEvidence.evidenceItemId,
+          evidenceSummary: observedEvidence.evidenceSummary,
+          eventId: observedEvidence.eventId,
+          integrationEventId: observedEvidence.integrationEventId,
+          auditLogId: observedEvidence.auditLogId,
+          outboxId: observedEvidence.outboxId,
+          reviewerNote:
+            observedEvidence.assignment.status === "submitted" ||
+              observedEvidence.assignment.status === "approved" ||
+              observedEvidence.assignment.status === "changes_requested"
+              ? "This assignment has already advanced into proof review posture, so reviewers should use the evidence item, event, audit, and disabled outbox chain as the authoritative hosted proof-loop anchor."
+              : "This assignment still reflects the narrow hosted proof-loop posture. Reviewers can use the evidence item, event, audit, and disabled outbox chain as the authoritative anchor.",
+        }
+      : null,
     requiredReadback: [
       "Student route shows a successful `proof_submitted` result without file upload.",
       "Assignment status reads back as `submitted`.",

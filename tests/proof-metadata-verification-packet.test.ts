@@ -231,6 +231,16 @@ describe("proof metadata verification packet", () => {
     expect(packet.candidateAssignment?.status).toBe("submitted");
     expect(packet.candidateAssignment?.readyForProof).toBe(true);
     expect(packet.status).toBe("evidence_observed");
+    expect(packet.hostedCloseout.currentObservedEvidence).toEqual(
+      expect.objectContaining({
+        assignmentId: "50000000-0000-4000-8000-000000000002",
+        assignmentStatus: "submitted",
+        evidenceItemId: "3e7b2ab6-8770-488f-9637-90cbaa863b62",
+      }),
+    );
+    expect(packet.hostedCloseout.currentObservedEvidence?.reviewerNote).toContain(
+      "advanced into proof review posture",
+    );
     expect(
       packet.checks.find((check) => check.key === "candidate_assignment")?.passed,
     ).toBe(true);
