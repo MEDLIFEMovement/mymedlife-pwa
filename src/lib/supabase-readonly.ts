@@ -108,60 +108,62 @@ export async function createSupabaseReadonlyAccess(
     };
   }
 
+  const createServerClient = options.createServerClient ?? createLocalSupabaseServerClient;
+  const { client: authClient, config: authConfig } = await createServerClient(env);
+
+  if (authClient && authConfig.enabled) {
+    const sessionResult = await authClient.auth.getSession();
+    const accessToken = sessionResult.data.session?.access_token;
+
+    if (!sessionResult.error && accessToken) {
+      const reason = authConfig.isLocalOnly
+        ? "Reading local Supabase data with the signed-in auth session."
+        : "Reading hosted staging Supabase data with the signed-in reviewer session.";
+
+      return {
+        enabled: true,
+        client: createSupabaseReadonlyClient(
+          {
+            enabled: true,
+            url: authConfig.url,
+            key: authConfig.anonKey,
+            accessToken,
+            reason,
+          },
+          fetchFn,
+        ),
+        reason,
+        isLocalOnly: authConfig.isLocalOnly,
+        mode: "auth_session",
+      };
+    }
+
+    if (env.MYMEDLIFE_DATA_SOURCE === "supabase") {
+      return {
+        enabled: false,
+        reason: authConfig.isLocalOnly
+          ? "Using mock data because no signed-in local Supabase session is active."
+          : "Using mock data because no signed-in hosted staging reviewer session is active.",
+        isLocalOnly: authConfig.isLocalOnly,
+        mode: "mock_fallback",
+      };
+    }
+  }
+
   if (env.MYMEDLIFE_DATA_SOURCE !== "supabase") {
     return {
       enabled: false,
       reason: config.reason,
-      isLocalOnly: true,
-      mode: "mock_fallback",
-    };
-  }
-
-  const createServerClient = options.createServerClient ?? createLocalSupabaseServerClient;
-  const { client: authClient, config: authConfig } = await createServerClient(env);
-
-  if (!authClient || !authConfig.enabled) {
-    return {
-      enabled: false,
-      reason: authConfig.reason,
       isLocalOnly: authConfig.isLocalOnly,
       mode: "mock_fallback",
     };
   }
-
-  const sessionResult = await authClient.auth.getSession();
-  const accessToken = sessionResult.data.session?.access_token;
-
-  if (sessionResult.error || !accessToken) {
-    return {
-      enabled: false,
-      reason: authConfig.isLocalOnly
-        ? "Using mock data because no signed-in local Supabase session is active."
-        : "Using mock data because no signed-in hosted staging reviewer session is active.",
-      isLocalOnly: authConfig.isLocalOnly,
-      mode: "mock_fallback",
-    };
-  }
-
-  const reason = authConfig.isLocalOnly
-    ? "Reading local Supabase data with the signed-in auth session."
-    : "Reading hosted staging Supabase data with the signed-in reviewer session.";
 
   return {
-    enabled: true,
-    client: createSupabaseReadonlyClient(
-      {
-        enabled: true,
-        url: authConfig.url,
-        key: authConfig.anonKey,
-        accessToken,
-        reason,
-      },
-      fetchFn,
-    ),
-    reason,
+    enabled: false,
+    reason: authConfig.reason,
     isLocalOnly: authConfig.isLocalOnly,
-    mode: "auth_session",
+    mode: "mock_fallback",
   };
 }
 

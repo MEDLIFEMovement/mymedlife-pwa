@@ -72,9 +72,7 @@ describe("supabase read-only client", () => {
     };
 
     const access = await createSupabaseReadonlyAccess(
-      {
-        MYMEDLIFE_DATA_SOURCE: "supabase",
-      },
+      {},
       fetchFn,
       {
         createServerClient: async () => ({
@@ -124,6 +122,41 @@ describe("supabase read-only client", () => {
     );
     expect(requests[0]?.headers.get("apikey")).toBe("anon-key");
     expect(requests[0]?.headers.get("authorization")).toBe("Bearer reviewer-token");
+  });
+
+  it("keeps anonymous staging preview on mock fallback when no reviewer session exists", async () => {
+    const access = await createSupabaseReadonlyAccess(
+      {},
+      fetch,
+      {
+        createServerClient: async () => ({
+          client: {
+            auth: {
+              getSession: async () => ({
+                data: { session: null },
+                error: null,
+              }),
+            },
+          } as never,
+          config: {
+            enabled: true,
+            mode: "staging_supabase",
+            reviewEnvironment: "staging",
+            url: "https://example.supabase.co",
+            anonKey: "anon-key",
+            isLocalOnly: false,
+            reason: "Hosted staging Supabase Auth is enabled for approved pilot review.",
+          } as const,
+        }),
+      },
+    );
+
+    expect(access).toEqual({
+      enabled: false,
+      isLocalOnly: false,
+      mode: "mock_fallback",
+      reason: "Using mock data because MYMEDLIFE_DATA_SOURCE is not set to supabase.",
+    });
   });
 
   it("falls back when staged Supabase auth is available but no reviewer session token exists", async () => {
