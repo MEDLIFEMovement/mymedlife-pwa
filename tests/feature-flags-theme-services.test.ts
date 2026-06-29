@@ -5,6 +5,7 @@ import {
   featureFlagEnvironments,
   featureFlagStatuses,
   getFeatureFlagDefinitions,
+  getFeatureResolvedState,
   getFeatureStatus,
   getModuleFeatureAvailability,
   isFeatureEnabled,
@@ -212,6 +213,40 @@ describe("feature flag services", () => {
 
     expect(result.status).toBe("blocked");
     expect(result.externalWrites).toBe(0);
+    expect(result.safeMessage).toContain("manual RSVP posture");
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("blocks dependent provider flags when the parent event loop is disabled", async () => {
+    updateFeatureFlagStatus({
+      actor: dsAdmin(),
+      environment: "staging",
+      key: "events_luma_points",
+      nextStatus: "disabled",
+      reason: "Pause the broader event loop during pilot review.",
+    });
+
+    const lumaState = getFeatureResolvedState("integration_luma", {
+      environment: "staging",
+    });
+    const fetchImpl = vi.fn();
+
+    const result = await createOrUpdateLumaEvent(
+      {
+        name: "Should stay blocked by dependency",
+        startAt: "2026-07-20T23:00:00.000Z",
+        timezone: "America/Los_Angeles",
+      },
+      { env: lumaEnabledEnv, fetchImpl },
+    );
+
+    expect(lumaState.status).toBe("staging_only");
+    expect(lumaState.enabled).toBe(false);
+    expect(lumaState.reason).toContain("blocked because Events, Luma, and Points");
+    expect(isFeatureEnabled("integration_luma", { environment: "staging" })).toBe(
+      false,
+    );
+    expect(result.status).toBe("blocked");
     expect(result.safeMessage).toContain("manual RSVP posture");
     expect(fetchImpl).not.toHaveBeenCalled();
   });

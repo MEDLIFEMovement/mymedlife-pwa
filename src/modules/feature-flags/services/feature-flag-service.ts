@@ -133,12 +133,9 @@ export function getFeatureStatus(
     env?: Record<string, string | undefined>;
   } = {},
 ): FeatureFlagStatus {
-  const definition = getFeatureFlagDefinition(key);
   const environment =
     options.environment ?? getCurrentFeatureEnvironment(options.env);
-  const override = getStore().overrides.get(storeKey(environment, key));
-
-  return override ?? definition.defaultStatusByEnvironment[environment];
+  return getRawFeatureStatus(key, environment);
 }
 
 export function getFeatureStatusFromOverrides(
@@ -146,9 +143,7 @@ export function getFeatureStatusFromOverrides(
   environment: FeatureFlagEnvironment,
   overrides: Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>,
 ): FeatureFlagStatus {
-  const definition = getFeatureFlagDefinition(key);
-  return overrides.get(storeKey(environment, key)) ??
-    definition.defaultStatusByEnvironment[environment];
+  return getRawFeatureStatusFromOverrides(key, environment, overrides);
 }
 
 export function isFeatureEnabled(
@@ -158,10 +153,7 @@ export function isFeatureEnabled(
     env?: Record<string, string | undefined>;
   } = {},
 ): boolean {
-  const environment =
-    options.environment ?? getCurrentFeatureEnvironment(options.env);
-  const status = getFeatureStatus(key, { environment, env: options.env });
-  return isStatusEnabled(status, environment);
+  return getFeatureResolvedState(key, options).enabled;
 }
 
 export function getFeatureResolvedState(
@@ -171,25 +163,13 @@ export function getFeatureResolvedState(
     env?: Record<string, string | undefined>;
   } = {},
 ): FeatureFlagResolvedState {
-  const definition = getFeatureFlagDefinition(key);
   const environment =
     options.environment ?? getCurrentFeatureEnvironment(options.env);
-  const status = getFeatureStatus(key, { environment, env: options.env });
-  const enabled = isStatusEnabled(status, environment);
-
-  return {
+  return resolveFeatureState(
     key,
-    kind: definition.kind,
-    label: definition.label,
-    status,
     environment,
-    enabled,
-    reason: enabled
-      ? `${definition.label} is available in ${environment}.`
-      : `${definition.label} is ${status}; using fallback instead.`,
-    gracefulFallback: definition.gracefulFallback,
-    externalApiBoundary: definition.externalApiBoundary,
-  };
+    (requestedKey) => getRawFeatureStatus(requestedKey, environment),
+  );
 }
 
 export async function getFeatureResolvedStateDurable(
@@ -213,21 +193,18 @@ export async function getFeatureResolvedStateDurable(
       select: "environment,flag_key,status",
       query: {
         environment: `eq.${environment}`,
-        flag_key: `eq.${key}`,
       },
-      limit: 1,
     },
   );
   const overrides = new Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>();
-  const row = rows[0];
 
-  if (
-    row &&
-    row.flag_key === key &&
-    isFeatureFlagEnvironment(row.environment) &&
-    isFeatureFlagStatus(row.status)
-  ) {
-    overrides.set(storeKey(row.environment, row.flag_key), row.status);
+  for (const row of rows) {
+    if (
+      isFeatureFlagEnvironment(row.environment) &&
+      isFeatureFlagStatus(row.status)
+    ) {
+      overrides.set(storeKey(row.environment, row.flag_key), row.status);
+    }
   }
 
   return getFeatureResolvedStateFromOverrides(key, environment, overrides);
@@ -238,23 +215,12 @@ export function getFeatureResolvedStateFromOverrides(
   environment: FeatureFlagEnvironment,
   overrides: Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>,
 ): FeatureFlagResolvedState {
-  const definition = getFeatureFlagDefinition(key);
-  const status = getFeatureStatusFromOverrides(key, environment, overrides);
-  const enabled = isStatusEnabled(status, environment);
-
-  return {
+  return resolveFeatureState(
     key,
-    kind: definition.kind,
-    label: definition.label,
-    status,
     environment,
-    enabled,
-    reason: enabled
-      ? `${definition.label} is available in ${environment}.`
-      : `${definition.label} is ${status}; using fallback instead.`,
-    gracefulFallback: definition.gracefulFallback,
-    externalApiBoundary: definition.externalApiBoundary,
-  };
+    (requestedKey) =>
+      getRawFeatureStatusFromOverrides(requestedKey, environment, overrides),
+  );
 }
 
 export function requireFeature(
@@ -528,6 +494,90 @@ function isStatusEnabled(
     case "emergency_disabled":
       return false;
   }
+}
+
+function getRawFeatureStatus(
+  key: FeatureFlagKey,
+  environment: FeatureFlagEnvironment,
+): FeatureFlagStatus {
+  const definition = getFeatureFlagDefinition(key);
+  const override = getStore().overrides.get(storeKey(environment, key));
+
+  return override ?? definition.defaultStatusByEnvironment[environment];
+}
+
+function getRawFeatureStatusFromOverrides(
+  key: FeatureFlagKey,
+  environment: FeatureFlagEnvironment,
+  overrides: Map<FeatureFlagOverrideStoreKey, FeatureFlagStatus>,
+): FeatureFlagStatus {
+  const definition = getFeatureFlagDefinition(key);
+  return overrides.get(storeKey(environment, key)) ??
+    definition.defaultStatusByEnvironment[environment];
+}
+
+function resolveFeatureState(
+  key: FeatureFlagKey,
+  environment: FeatureFlagEnvironment,
+  getStatus: (key: FeatureFlagKey) => FeatureFlagStatus,
+  dependencyPath: FeatureFlagKey[] = [],
+): FeatureFlagResolvedState {
+  const definition = getFeatureFlagDefinition(key);
+  const status = getStatus(key);
+  const enabledByStatus = isStatusEnabled(status, environment);
+
+  if (!enabledByStatus) {
+    return {
+      key,
+      kind: definition.kind,
+      label: definition.label,
+      status,
+      environment,
+      enabled: false,
+      reason: `${definition.label} is ${status}; using fallback instead.`,
+      gracefulFallback: definition.gracefulFallback,
+      externalApiBoundary: definition.externalApiBoundary,
+    };
+  }
+
+  for (const dependencyKey of definition.dependencies) {
+    if (dependencyPath.includes(dependencyKey)) {
+      continue;
+    }
+
+    const dependencyState = resolveFeatureState(
+      dependencyKey,
+      environment,
+      getStatus,
+      [...dependencyPath, key],
+    );
+
+    if (!dependencyState.enabled) {
+      return {
+        key,
+        kind: definition.kind,
+        label: definition.label,
+        status,
+        environment,
+        enabled: false,
+        reason: `${definition.label} is blocked because ${dependencyState.label} is unavailable in ${environment}.`,
+        gracefulFallback: definition.gracefulFallback,
+        externalApiBoundary: definition.externalApiBoundary,
+      };
+    }
+  }
+
+  return {
+    key,
+    kind: definition.kind,
+    label: definition.label,
+    status,
+    environment,
+    enabled: true,
+    reason: `${definition.label} is available in ${environment}.`,
+    gracefulFallback: definition.gracefulFallback,
+    externalApiBoundary: definition.externalApiBoundary,
+  };
 }
 
 function storeKey(

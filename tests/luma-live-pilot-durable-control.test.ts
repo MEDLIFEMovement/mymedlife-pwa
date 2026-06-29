@@ -86,9 +86,7 @@ describe("Luma live pilot durable feature-flag control", () => {
       select: "environment,flag_key,status",
       query: {
         environment: "eq.staging",
-        flag_key: "eq.integration_luma",
       },
-      limit: 1,
     }]);
     expect(result).toMatchObject({
       status: "blocked",

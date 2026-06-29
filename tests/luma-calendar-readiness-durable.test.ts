@@ -130,13 +130,62 @@ describe("luma calendar readiness durable controls", () => {
       select: "environment,flag_key,status",
       query: {
         environment: "eq.local",
-        flag_key: "eq.integration_luma",
       },
-      limit: 1,
     });
     expect(fetchImpl).toHaveBeenCalledOnce();
     expect(snapshot.status).toBe("ready");
     expect(snapshot.eventCount).toBe(1);
     expect(snapshot.safeEvents[0]?.title).toBe("Local Luma Review Night");
+  });
+
+  it("blocks the durable Luma read path when the parent events module is disabled", async () => {
+    const supabaseControl = await import("@/lib/supabase-control-client");
+    const fetchImpl = vi.fn() satisfies LumaCalendarFetch;
+    const selectRows: SupabaseControlClient["selectRows"] = async <TRow,>() =>
+      [
+        {
+          environment: "staging",
+          flag_key: "events_luma_points",
+          status: "disabled",
+        },
+        {
+          environment: "staging",
+          flag_key: "integration_luma",
+          status: "enabled",
+        },
+      ] as TRow[];
+
+    vi.mocked(supabaseControl.createSupabaseControlClient).mockResolvedValue({
+      persistence: {
+        mode: "supabase",
+        status: "ready",
+        reason: "Durable feature flag control available.",
+      },
+      client: {
+        persistence: {
+          mode: "supabase",
+          status: "ready",
+          reason: "Durable feature flag control available.",
+        },
+        selectRows,
+        rpc: vi.fn(),
+      } satisfies SupabaseControlClient,
+    });
+
+    const snapshot = await getLumaCalendarReadinessSnapshot({
+      env: {
+        MYMEDLIFE_CONTROL_LAYER_SOURCE: "supabase",
+        MYMEDLIFE_LUMA_ENVIRONMENT: "staging",
+        LUMA_API_KEY: "secret-example-do-not-return",
+        LUMA_CALENDAR_ID: "cal-7WNftYCpBJclZyG",
+      },
+      fetchImpl,
+    });
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(snapshot.status).toBe("feature_disabled");
+    expect(snapshot.detail).toBe(
+      "Use app-owned events, manual RSVP posture, and no external attendee calls.",
+    );
   });
 });
