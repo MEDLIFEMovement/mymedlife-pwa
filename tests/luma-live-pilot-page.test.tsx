@@ -69,7 +69,7 @@ describe("Luma live pilot admin page", () => {
           payload: {
             source: "luma_live_pilot",
             attendanceCount: 0,
-            importedGuestCount: 1,
+            importedGuestCount: 0,
           },
           correlation_id: "luma-pilot:attendance:evt-bJE178Q02N5DaLH:1",
           occurred_at: "2026-06-29T11:07:42.137Z",
@@ -115,6 +115,8 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("Open Luma guest list");
     expect(html).toContain("evt-bJE178Q02N5DaLH");
     expect(html).toContain("nellis@medlifemovement.org");
+    expect(html).toContain("Approved guests returned");
+    expect(html).toContain("0 approved guests");
     expect(html).toContain("Hosted reviewer proof");
     expect(html).toContain("Use this route as the staging evidence checklist.");
     expect(html).toContain("Open staging.mymedlife.org, pass Vercel SSO");

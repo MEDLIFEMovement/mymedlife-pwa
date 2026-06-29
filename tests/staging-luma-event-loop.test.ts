@@ -539,7 +539,7 @@ describe("staging Luma event loop", () => {
             payload: {
               source: "luma_live_pilot",
               attendanceCount: 0,
-              importedGuestCount: 1,
+              importedGuestCount: 0,
             },
             correlation_id: "luma-pilot:attendance:evt-bJE178Q02N5DaLH:1",
             occurred_at: "2026-06-29T11:07:42.137Z",
@@ -573,7 +573,7 @@ describe("staging Luma event loop", () => {
             payload: {
               source: "luma_live_pilot",
               attendanceCount: 0,
-              importedGuestCount: 1,
+              importedGuestCount: 0,
             },
             created_by: "pilot-user",
             created_at: "2026-06-29T11:07:42.137Z",
@@ -590,7 +590,8 @@ describe("staging Luma event loop", () => {
       guestEmail: "nellis@medlifemovement.org",
       guestEmailHint: "ne***@medlifemovement.org",
       lastAttendanceImportAt: "2026-06-29T11:07:42.137Z",
+      importedGuestCount: 0,
     });
-    expect(readModel.pendingHostCheckIn?.detail).toContain("Mark this guest checked in");
+    expect(readModel.pendingHostCheckIn?.detail).toContain("0 approved guests");
   });
 });

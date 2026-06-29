@@ -101,6 +101,7 @@ export type StagingLumaEventLoopReadModel = {
     guestEmailHint: string | null;
     lastRsvpRecordedAt: string;
     lastAttendanceImportAt: string | null;
+    importedGuestCount: number;
     detail: string;
   };
   sequence: {
@@ -697,11 +698,14 @@ function derivePendingHostCheckIn(
     guestEmailHint,
     lastRsvpRecordedAt: latestRsvpRow.occurred_at,
     lastAttendanceImportAt: latestAttendanceRow?.occurred_at ?? null,
+    importedGuestCount,
     detail: attendanceCount > 0
       ? "Attendance is already visible in app evidence, but points have not materialized yet. Recheck the import proof before widening the pilot."
-      : importedGuestCount > 0
-        ? "The RSVP is already in Luma and the guest list has been imported, but no host-side check-in has been seen yet. Mark this guest checked in inside Luma, then rerun attendance import here."
-        : "The RSVP is recorded in myMEDLIFE, but the host-side Luma check-in still has not happened. Open the Luma guest list, mark this guest checked in, then rerun attendance import here."
+      : latestAttendanceRow && importedGuestCount === 0
+        ? "The RSVP is recorded in myMEDLIFE, but the last Luma import returned 0 approved guests. First verify this guest appears in Luma's approved guest list, then mark them checked in and rerun attendance import here."
+        : importedGuestCount > 0
+          ? "The RSVP is already in Luma and the guest list has been imported, but no host-side check-in has been seen yet. Mark this guest checked in inside Luma, then rerun attendance import here."
+          : "The RSVP is recorded in myMEDLIFE, but the guest still needs to appear in Luma and receive a real host-side check-in before attendance import can create points proof."
   };
 }
 

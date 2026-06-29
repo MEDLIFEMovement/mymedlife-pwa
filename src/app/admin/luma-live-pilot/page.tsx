@@ -199,7 +199,7 @@ export default async function LumaLivePilotPage({
                   Open Luma guest list
                 </a>
               </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
                 <PendingFact label="Event id" value={pendingHostCheckIn.eventId} mono />
                 <PendingFact
                   label="Guest"
@@ -220,6 +220,10 @@ export default async function LumaLivePilotPage({
                       ? formatShortTimestamp(pendingHostCheckIn.lastAttendanceImportAt)
                       : "Not imported yet"
                   }
+                />
+                <PendingFact
+                  label="Approved guests returned"
+                  value={`${pendingHostCheckIn.importedGuestCount}`}
                 />
               </div>
             </section>
