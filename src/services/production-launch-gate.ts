@@ -169,6 +169,9 @@ export function getProductionEnvironmentReadinessItems(
   const rollbackOwner = pilotRegistry.owners.find(
     (item) => item.key === "rollback_owner",
   );
+  const supportOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_owner",
+  );
   const supportChannel = pilotRegistry.owners.find(
     (item) => item.key === "support_pause_channel",
   );
@@ -349,6 +352,7 @@ export function getProductionEnvironmentReadinessItems(
       status: "missing_before_pilot",
       requiredEvidence: [
         `Rollback owner: ${rollbackOwner?.value ?? "pending"}.`,
+        `Support owner: ${supportOwner?.value ?? "pending"}.`,
         `Support/pause channel: ${supportChannel?.value ?? "pending"}.`,
         `DS owner: ${dsOwner?.value ?? "pending"}.`,
         `HQ/admin owner: ${hqOwner?.value ?? "pending"}.`,
@@ -356,6 +360,7 @@ export function getProductionEnvironmentReadinessItems(
       ],
       safeDefaults: [
         "Pilot owner and rollback owner stay visible in the launch packet.",
+        "One named support owner is responsible for day-one triage.",
         "One support/pause channel is used during the pilot.",
         "No broad launch happens without day-one support coverage.",
       ],
@@ -372,6 +377,9 @@ export function getProductionLaunchEvidenceChecks(
 ): ProductionLaunchEvidenceCheck[] {
   const pilotChapter = pilotRegistry.defaults.find(
     (item) => item.key === "pilot_chapter",
+  );
+  const supportOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_owner",
   );
   const supportChannel = pilotRegistry.owners.find(
     (item) => item.key === "support_pause_channel",
@@ -494,9 +502,10 @@ export function getProductionLaunchEvidenceChecks(
       status: "missing_before_pilot",
       requiredEvidence:
         pilotChapter?.status === "recorded_final" ||
+        supportOwner?.status === "recorded_owner" ||
         supportChannel?.status === "recorded_owner" ||
         rollbackOwner?.status === "recorded_owner"
-          ? `Recorded pilot defaults now need final launch evidence: pilot group ${pilotChapter?.value ?? "still pending"}, support/pause channel ${supportChannel?.value ?? "still pending"}, rollback owner ${rollbackOwner?.value ?? "still pending"}, plus coach support lane, stop conditions, and student communication plan.`
+          ? `Recorded pilot defaults now need final launch evidence: pilot group ${pilotChapter?.value ?? "still pending"}, support owner ${supportOwner?.value ?? "still pending"}, support/pause channel ${supportChannel?.value ?? "still pending"}, rollback owner ${rollbackOwner?.value ?? "still pending"}, plus coach support lane, stop conditions, and student communication plan.`
           : "Named pilot group, day-one support owner, coach support lane, stop conditions, and student communication plan.",
       reviewRoute: "/admin/pilot-scope",
       acceptanceSignal:
@@ -564,6 +573,9 @@ function getProductionLaunchGateItems(
   );
   const supportChannel = pilotRegistry.owners.find(
     (item) => item.key === "support_pause_channel",
+  );
+  const supportOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_owner",
   );
   const rollbackOwner = pilotRegistry.owners.find(
     (item) => item.key === "rollback_owner",
@@ -750,8 +762,9 @@ function getProductionLaunchGateItems(
     localEvidence:
       pilotChapter?.status === "recorded_final" ||
       supportChannel?.status === "recorded_owner" ||
+      supportOwner?.status === "recorded_owner" ||
       coachOwner?.status === "recorded_owner"
-        ? `Pilot scope route, stakeholder review plan, review-path docs, and the production operations runbook exist locally. Recorded pilot answers currently name ${pilotChapter?.value ?? "the pilot chapter as pending"}, ${supportChannel?.value ?? "the support channel as pending"}, and ${coachOwner?.value ?? "the coach owner as pending"}.`
+        ? `Pilot scope route, stakeholder review plan, review-path docs, and the production operations runbook exist locally. Recorded pilot answers currently name ${pilotChapter?.value ?? "the pilot chapter as pending"}, ${supportOwner?.value ?? "the support owner as pending"}, ${supportChannel?.value ?? "the support channel as pending"}, and ${coachOwner?.value ?? "the coach owner as pending"}.`
         : "Pilot scope route, stakeholder review plan, review-path docs, and the production operations runbook exist locally.",
     missingLiveEvidence: [
       pilotChapter?.status === "recorded_final" &&

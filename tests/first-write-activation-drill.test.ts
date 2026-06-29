@@ -158,16 +158,18 @@ describe("first-write activation drill", () => {
     expect(drill.proofToCollect.join(" ")).toContain("audit log");
     expect(drill.proofToCollect.join(" ")).toContain("external writes stayed at zero");
     expect(drill.hostedCloseout.reviewSurfaces).toContain("/admin/audit-log");
-    expect(drill.hostedCloseout.namedOwnersStillNeeded).toHaveLength(3);
+    expect(drill.hostedCloseout.namedOwnersStillNeeded).toHaveLength(4);
   });
 
   it("uses recorded pilot approvals to shrink the hosted-write owner gap", () => {
     const originalWrite = process.env.MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE;
     const originalRollback = process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER;
+    const originalSupportOwner = process.env.MYMEDLIFE_PILOT_SUPPORT_OWNER;
     const originalSupport = process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL;
 
     process.env.MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE = "`action_started`";
     process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER = "Kiomi Matsukawa";
+    process.env.MYMEDLIFE_PILOT_SUPPORT_OWNER = "Maya Support";
     process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL = "#mymedlife-pilot-watch";
 
     try {
@@ -183,6 +185,10 @@ describe("first-write activation drill", () => {
           expect.objectContaining({
             key: "rollback_owner",
             value: "Kiomi Matsukawa",
+          }),
+          expect.objectContaining({
+            key: "support_owner",
+            value: "Maya Support",
           }),
           expect.objectContaining({
             key: "support_pause_channel",
@@ -201,6 +207,7 @@ describe("first-write activation drill", () => {
     } finally {
       restoreEnv("MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE", originalWrite);
       restoreEnv("MYMEDLIFE_PILOT_ROLLBACK_OWNER", originalRollback);
+      restoreEnv("MYMEDLIFE_PILOT_SUPPORT_OWNER", originalSupportOwner);
       restoreEnv("MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL", originalSupport);
     }
   });

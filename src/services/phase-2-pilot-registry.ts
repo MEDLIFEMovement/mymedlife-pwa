@@ -146,6 +146,15 @@ const ownerDefinitions: OwnerDefinition[] = [
       "A DS owner is needed for audit/outbox inspection, staging posture, and explicit integration hold confirmation.",
   },
   {
+    key: "support_owner",
+    label: "Support owner",
+    defaultValue: "pending HQ ops",
+    envKey: "MYMEDLIFE_PILOT_SUPPORT_OWNER",
+    confirmationNeededFrom: "HQ ops",
+    whyItMatters:
+      "One named person must own day-one pilot triage, wrong-role fixes, student support handoff, and pause decisions during the first live pilot.",
+  },
+  {
     key: "support_pause_channel",
     label: "Support and pause channel",
     defaultValue: "pending HQ ops",

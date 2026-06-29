@@ -160,7 +160,7 @@ export function getPhase2CloseoutReview(
     "Complete one human device and accessibility smoke pass before pilot approval.",
     ...(pilotRegistry.counts.ownersPending > 0
       ? [
-          "Name the pilot chapter owners, DS owner, support/pause channel, and rollback owner.",
+          "Name the pilot chapter owners, DS owner, support owner, support/pause channel, and rollback owner.",
         ]
       : []),
     ...(firstWrite.hostedCloseout.namedOwnersStillNeeded.some(
@@ -177,7 +177,7 @@ export function getPhase2CloseoutReview(
   const doneCriteria: Phase2DoneCriterion[] = [
     {
       key: "named_owners",
-      label: "Named pilot owners, rollback owner, and support/pause channel are recorded",
+      label: "Named pilot owners, support owner, support/pause channel, and rollback owner are recorded",
       status:
         pilotRegistry.counts.ownersPending === 0
           ? "review_ready_in_repo"
@@ -386,7 +386,7 @@ export function getPhase2CloseoutReview(
           pilotRegistry.defaults.find((item) => item.key === "pilot_chapter")?.value ??
           "UCLA MEDLIFE"
         }.`,
-        "Rush Month only, 5-10 students, and one support/pause channel remain the recommended minimum unless final approvals replace them.",
+        "Rush Month only, 5-10 students, one support owner, and one support/pause channel remain the recommended minimum unless final approvals replace them.",
       ],
     },
     {

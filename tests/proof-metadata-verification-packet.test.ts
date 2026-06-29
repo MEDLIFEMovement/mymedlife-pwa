@@ -168,6 +168,7 @@ describe("proof metadata verification packet", () => {
       MYMEDLIFE_PILOT_CHAPTER_LEADER_OWNER: "Jordan Chapter",
       MYMEDLIFE_PILOT_HQ_ADMIN_OWNER: "Maya HQ",
       MYMEDLIFE_PILOT_DS_OWNER: "Renato DS",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
       MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-watch",
       MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Kiomi Matsukawa",
     });
@@ -178,6 +179,7 @@ describe("proof metadata verification packet", () => {
         expect.objectContaining({ label: "Chapter leader owner", value: "Jordan Chapter" }),
         expect.objectContaining({ label: "HQ/admin owner", value: "Maya HQ" }),
         expect.objectContaining({ label: "DS owner", value: "Renato DS" }),
+        expect.objectContaining({ label: "Support owner", value: "Maya Support" }),
         expect.objectContaining({
           label: "Support and pause channel",
           value: "#mymedlife-pilot-watch",

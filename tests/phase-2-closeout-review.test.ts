@@ -100,6 +100,7 @@ describe("phase 2 closeout review", () => {
 
   it("shrinks the remaining human-decision list when pilot owners are already recorded", () => {
     const originalRollback = process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER;
+    const originalSupportOwner = process.env.MYMEDLIFE_PILOT_SUPPORT_OWNER;
     const originalSupport = process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL;
     const originalCoach = process.env.MYMEDLIFE_PILOT_COACH_OWNER;
     const originalDs = process.env.MYMEDLIFE_PILOT_DS_OWNER;
@@ -107,6 +108,7 @@ describe("phase 2 closeout review", () => {
     const originalChapterLeader = process.env.MYMEDLIFE_PILOT_CHAPTER_LEADER_OWNER;
 
     process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER = "Kiomi Matsukawa";
+    process.env.MYMEDLIFE_PILOT_SUPPORT_OWNER = "Maya Support";
     process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL = "#mymedlife-pilot-watch";
     process.env.MYMEDLIFE_PILOT_COACH_OWNER = "Priya Coach";
     process.env.MYMEDLIFE_PILOT_DS_OWNER = "Renato DS";
@@ -122,6 +124,7 @@ describe("phase 2 closeout review", () => {
       expect(review.recordedAnswers).toEqual(
         expect.arrayContaining([
           "Rollback owner: Kiomi Matsukawa",
+          "Support owner: Maya Support",
           "Support and pause channel: #mymedlife-pilot-watch",
         ]),
       );
@@ -133,6 +136,7 @@ describe("phase 2 closeout review", () => {
       ).toContain("approval answers are already recorded");
     } finally {
       restoreEnv("MYMEDLIFE_PILOT_ROLLBACK_OWNER", originalRollback);
+      restoreEnv("MYMEDLIFE_PILOT_SUPPORT_OWNER", originalSupportOwner);
       restoreEnv("MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL", originalSupport);
       restoreEnv("MYMEDLIFE_PILOT_COACH_OWNER", originalCoach);
       restoreEnv("MYMEDLIFE_PILOT_DS_OWNER", originalDs);

@@ -184,6 +184,9 @@ function buildLaunchPreflight(
     (item) => item.key === "campaign_scope",
   );
   const coachOwner = pilotRegistry.owners.find((item) => item.key === "coach_owner");
+  const supportOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_owner",
+  );
   const supportChannel = pilotRegistry.owners.find(
     (item) => item.key === "support_pause_channel",
   );
@@ -195,6 +198,7 @@ function buildLaunchPreflight(
     cohortSize?.status === "recorded_final" &&
     campaignScope?.status === "recorded_final";
   const supportOwnersRecorded =
+    supportOwner?.status === "recorded_owner" &&
     supportChannel?.status === "recorded_owner" &&
     rollbackOwner?.status === "recorded_owner";
 
@@ -334,7 +338,7 @@ function buildLaunchPreflight(
     },
     {
       key: "support_rollback",
-      label: "Name support and rollback owner",
+      label: "Name support owner, channel, and rollback owner",
       ownerLane: "Launch and HQ Operations",
       status: supportOwnersRecorded ? "ready" : "watch",
       question: "If a real user lands in the wrong role, who fixes it and how?",
@@ -342,7 +346,7 @@ function buildLaunchPreflight(
         "Pilot support owner, wrong-role correction path, rollback process, and student communication fallback must be named.",
       currentPosture:
         supportOwnersRecorded
-          ? `Recorded pilot owners: support/pause channel is ${supportChannel?.value} and rollback owner is ${rollbackOwner?.value}. Operations and pilot-scope surfaces still need the wrong-role correction path and student communication fallback recorded alongside those owners.`
+          ? `Recorded pilot owners: support owner is ${supportOwner?.value}, support/pause channel is ${supportChannel?.value}, and rollback owner is ${rollbackOwner?.value}. Operations and pilot-scope surfaces still need the wrong-role correction path and student communication fallback recorded alongside those owners.`
           : "Operations and pilot-scope surfaces describe support needs, but owner sign-off is still missing before pilot.",
       routeEvidence: ["/admin/pilot-scope", "/admin/operations", "/admin/launch-gate"],
       browserWritesExpected: 0,

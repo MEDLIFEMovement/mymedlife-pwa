@@ -824,6 +824,9 @@ function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedClos
   const firstHostedWrite =
     pilotRegistry.defaults.find((item) => item.key === "first_hosted_write")?.value ??
     "`action_started`";
+  const supportOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_owner",
+  );
   const supportPauseOwner = pilotRegistry.owners.find(
     (item) => item.key === "support_pause_channel",
   );
@@ -843,6 +846,14 @@ function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedClos
       key: "rollback_owner",
       label: "Rollback owner",
       recommendedDefault: rollbackOwner?.value ?? "pending Kiomi",
+    });
+  }
+
+  if (supportOwner?.status !== "recorded_owner") {
+    namedOwnersStillNeeded.push({
+      key: "support_owner",
+      label: "Support owner",
+      recommendedDefault: supportOwner?.value ?? "pending HQ ops",
     });
   }
 

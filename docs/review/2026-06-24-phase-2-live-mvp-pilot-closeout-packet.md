@@ -61,6 +61,7 @@ the same answers:
 - `MYMEDLIFE_PILOT_COACH_OWNER`
 - `MYMEDLIFE_PILOT_HQ_ADMIN_OWNER`
 - `MYMEDLIFE_PILOT_DS_OWNER`
+- `MYMEDLIFE_PILOT_SUPPORT_OWNER`
 - `MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL`
 - `MYMEDLIFE_PILOT_ROLLBACK_OWNER`
 
@@ -73,6 +74,7 @@ pending owner slots rather than implying final approval.
 - Coach owner: pending Coach lead
 - HQ/admin owner: pending HQ ops
 - DS owner: pending Data Solutions
+- Support owner: pending HQ ops
 - Support/pause channel: pending HQ ops
 - Rollback owner: pending Kiomi
 
@@ -168,6 +170,7 @@ Or replace only these fields:
 - cohort size
 - named owners
 - event/NPS posture
+- support owner
 - support/pause channel
 - rollback owner
 
@@ -187,6 +190,7 @@ As of 2026-06-24, the closeout criteria separate into three buckets:
 ### Awaiting human recording or signoff
 
 - final named pilot owners are not all recorded yet
+- final support owner is not fully confirmed yet
 - final support/pause channel is not fully confirmed yet
 - final rollback owner is not fully confirmed yet
 - final cross-role pilot reviewer posture is not yet fully confirmed

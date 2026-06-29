@@ -45,7 +45,7 @@ Status:
    - `/admin/feature-flags` and `/admin/theme` still must load without the persistence warning.
    - One DS/Admin feature-flag save and one theme-token save must record visible audit rows.
    - `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` should only be treated as ready after that proof exists.
-5. Confirm monitoring, incident response, and support ownership.
+5. Confirm monitoring, incident response, named support owner, support/pause channel, and rollback ownership.
 6. Keep all external integrations disabled until a later approval gate.
 
 ## Production Launch Order

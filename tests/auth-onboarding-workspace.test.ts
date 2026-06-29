@@ -158,6 +158,7 @@ describe("auth onboarding workspace", () => {
       MYMEDLIFE_PILOT_CAMPAIGN_SCOPE: "Rush Month only",
       MYMEDLIFE_PILOT_COHORT_SIZE: "8 students",
       MYMEDLIFE_PILOT_COACH_OWNER: "Coach Renee",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
       MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
       MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Kiomi Matsukawa",
     });
@@ -186,7 +187,17 @@ describe("auth onboarding workspace", () => {
       workspace.launchPreflight?.items.find(
         (item) => item.key === "support_rollback",
       )?.currentPosture,
+    ).toContain("Maya Support");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "support_rollback",
+      )?.currentPosture,
     ).toContain("#mymedlife-pilot-support");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "support_rollback",
+      )?.label,
+    ).toBe("Name support owner, channel, and rollback owner");
     expect(
       workspace.launchPreflight?.items.find(
         (item) => item.key === "support_rollback",

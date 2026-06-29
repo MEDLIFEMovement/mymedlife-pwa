@@ -150,7 +150,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
     plainEnglishSummary:
       "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
     recommendedScope:
-      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-10 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one support/pause channel, `action_started` as the first hosted write, and the approved Luma event/RSVP/attendance/points loop as the only external-family pilot path.",
+      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-10 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one named support owner, one support/pause channel, `action_started` as the first hosted write, and the approved Luma event/RSVP/attendance/points loop as the only external-family pilot path.",
     closeoutDefaults,
     ownerSlots,
     approvalReplyGuide: [
@@ -239,7 +239,7 @@ function getPilotCandidates(): PilotScopeCandidate[] {
         "first write path via /admin/first-write",
         "Luma event-loop proof via /admin/luma-live-pilot",
         "proof consent/storage posture",
-        "named coach/support owner",
+        "named coach owner and support owner",
       ],
       mustStayManualOrDisabled: [
         "non-approved Luma behavior",
@@ -432,13 +432,13 @@ function getPilotDecisions(): PilotScopeDecision[] {
     },
     {
       key: "coach_owner",
-      label: "Name the coach/support owner",
+      label: "Name the coach owner",
       owner: "Coach lead",
       status: "needs_decision",
       recommendation:
         "Assign one person who owns pilot questions, risk review, and intervention decisions.",
       whyItMatters:
-        "A pilot without named support ownership turns product bugs and chapter confusion into invisible churn.",
+        "A pilot without a named coach owner turns chapter risk and intervention decisions into invisible churn.",
     },
     {
       key: "external_writes",

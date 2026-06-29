@@ -8,10 +8,13 @@ describe("phase 2 pilot registry", () => {
     expect(registry.counts.defaultsRecorded).toBe(0);
     expect(registry.counts.defaultsPending).toBe(7);
     expect(registry.counts.ownersRecorded).toBe(0);
-    expect(registry.counts.ownersPending).toBe(6);
+    expect(registry.counts.ownersPending).toBe(7);
     expect(
       registry.defaults.find((item) => item.key === "pilot_chapter")?.value,
     ).toBe("UCLA MEDLIFE");
+    expect(
+      registry.owners.find((item) => item.key === "support_owner")?.value,
+    ).toBe("pending HQ ops");
     expect(
       registry.owners.find((item) => item.key === "rollback_owner")?.value,
     ).toBe("pending Kiomi");
@@ -23,11 +26,12 @@ describe("phase 2 pilot registry", () => {
       MYMEDLIFE_PILOT_CHAPTER: "Boston College MEDLIFE",
       MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE: "`action_started`",
       MYMEDLIFE_PILOT_COACH_OWNER: "Priya Coach",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
       MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-watch",
     });
 
     expect(registry.counts.defaultsRecorded).toBe(2);
-    expect(registry.counts.ownersRecorded).toBe(2);
+    expect(registry.counts.ownersRecorded).toBe(3);
     expect(
       registry.defaults.find((item) => item.key === "pilot_chapter")?.status,
     ).toBe("recorded_final");
@@ -38,10 +42,16 @@ describe("phase 2 pilot registry", () => {
       registry.owners.find((item) => item.key === "coach_owner")?.status,
     ).toBe("recorded_owner");
     expect(
+      registry.owners.find((item) => item.key === "support_owner")?.value,
+    ).toBe("Maya Support");
+    expect(
       registry.owners.find((item) => item.key === "support_pause_channel")?.value,
     ).toBe("#mymedlife-pilot-watch");
     expect(registry.approvalReplyBlock.join("\n")).toContain(
       "Coach owner: Priya Coach",
+    );
+    expect(registry.approvalReplyBlock.join("\n")).toContain(
+      "Support owner: Maya Support",
     );
   });
 });

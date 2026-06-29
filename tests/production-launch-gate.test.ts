@@ -196,6 +196,7 @@ describe("production launch gate", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const gate = getProductionLaunchGate(actor, {
       MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Nick Ellis",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
       MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
       MYMEDLIFE_PILOT_DS_OWNER: "DS owner",
       MYMEDLIFE_PILOT_HQ_ADMIN_OWNER: "HQ owner",
@@ -276,6 +277,7 @@ describe("production launch gate", () => {
     ).toEqual(
       expect.arrayContaining([
         "Rollback owner: Nick Ellis.",
+        "Support owner: Maya Support.",
         "Support/pause channel: #mymedlife-pilot-support.",
         "DS owner: DS owner.",
         "HQ/admin owner: HQ owner.",
@@ -289,6 +291,7 @@ describe("production launch gate", () => {
       MYMEDLIFE_PILOT_CHAPTER: "UCLA MEDLIFE",
       MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE: "`action_started`",
       MYMEDLIFE_PILOT_COACH_OWNER: "Coach Ana",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
       MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
       MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Kiomi Matsukawa",
     });
@@ -312,11 +315,18 @@ describe("production launch gate", () => {
     ).toContain("UCLA MEDLIFE");
     expect(
       gate.items.find((item) => item.key === "pilot_operations")?.localEvidence,
+    ).toContain("Maya Support");
+    expect(
+      gate.items.find((item) => item.key === "pilot_operations")?.localEvidence,
     ).toContain("#mymedlife-pilot-support");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "pilot_support_owner")
         ?.requiredEvidence,
     ).toContain("UCLA MEDLIFE");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "pilot_support_owner")
+        ?.requiredEvidence,
+    ).toContain("Maya Support");
   });
 
   it("keeps every gate write-safe and approval-bound", () => {

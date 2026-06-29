@@ -819,6 +819,9 @@ function buildHostedCloseout(
     (item) => item.key === "hq_admin_owner",
   );
   const dsOwner = pilotRegistry.owners.find((item) => item.key === "ds_owner");
+  const supportOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_owner",
+  );
   const supportChannel = pilotRegistry.owners.find(
     (item) => item.key === "support_pause_channel",
   );
@@ -830,6 +833,7 @@ function buildHostedCloseout(
     chapterLeaderOwner,
     hqOwner,
     dsOwner,
+    supportOwner,
     supportChannel,
     rollbackOwner,
   ].filter(Boolean);
