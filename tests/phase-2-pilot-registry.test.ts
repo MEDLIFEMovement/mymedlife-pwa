@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { createSupabaseAppClient } from "@/lib/supabase-app-client";
 import {
   getPhase2PilotRegistry,
   getPhase2PilotRegistryDurable,
@@ -105,7 +106,7 @@ describe("phase 2 pilot registry", () => {
             upsertRows: async <TRow>() => [] as TRow[],
             updateRows: async <TRow>() => [] as TRow[],
           },
-        })) as any,
+        })) as unknown as typeof createSupabaseAppClient,
       },
     );
 

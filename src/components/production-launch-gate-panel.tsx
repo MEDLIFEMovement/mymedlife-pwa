@@ -1,3 +1,4 @@
+import { recordProductionLaunchPacketAction } from "@/app/admin/launch-gate/actions";
 import type {
   ProductionLaunchGate,
   ProductionLaunchEvidenceCheck,
@@ -7,10 +8,14 @@ import type {
 
 type ProductionLaunchGatePanelProps = {
   gate: ProductionLaunchGate;
+  packetResult?: string;
+  packetMessage?: string;
 };
 
 export function ProductionLaunchGatePanel({
   gate,
+  packetResult,
+  packetMessage,
 }: ProductionLaunchGatePanelProps) {
   if (!gate.canReadGate) {
     return null;
@@ -55,6 +60,18 @@ export function ProductionLaunchGatePanel({
           <MiniStat label="Sends" value={`${gate.externalWritesEnabled}`} />
         </div>
       </div>
+
+      {packetMessage ? (
+        <div
+          className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
+            packetResult === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
+        >
+          {packetMessage}
+        </div>
+      ) : null}
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {gate.items.map((item) => (
@@ -314,6 +331,62 @@ function EnvironmentReadinessCard({
                   ))}
                 </ul>
               </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {item.editableFields?.length ? (
+        <div className="mt-3 rounded-2xl bg-white/[0.05] p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">
+            Record names-only packet values
+          </p>
+          <div className="mt-3 grid gap-3">
+            {item.editableFields.map((field) => (
+              <form
+                key={`${item.key}-${field.recordKey}`}
+                action={recordProductionLaunchPacketAction}
+                className="rounded-2xl border border-white/10 bg-white/[0.06] p-3"
+              >
+                <input type="hidden" name="recordKey" value={field.recordKey} />
+                <input type="hidden" name="returnTo" value="/admin/launch-gate" />
+                <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
+                  {field.label}
+                </label>
+                {field.multiline ? (
+                  <textarea
+                    name="value"
+                    defaultValue={field.value}
+                    rows={3}
+                    className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-3 py-2 text-sm text-white"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    name="value"
+                    defaultValue={field.value}
+                    className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-3 py-2 text-sm text-white"
+                  />
+                )}
+                <p className="mt-2 text-xs leading-5 text-white/50">
+                  {field.description}
+                </p>
+                <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
+                  Reason
+                </label>
+                <textarea
+                  name="reason"
+                  rows={2}
+                  placeholder={`Why does this ${field.label.toLowerCase()} answer belong in the packet now?`}
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-3 py-2 text-sm text-white"
+                />
+                <button
+                  type="submit"
+                  className="mt-3 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+                >
+                  Save packet value
+                </button>
+              </form>
             ))}
           </div>
         </div>

@@ -27,6 +27,10 @@ describe("pilot scope planner", () => {
         ?.recommendedDefault,
     ).toBe("`action_started`");
     expect(
+      planner.closeoutDefaults.find((item) => item.key === "pilot_chapter")
+        ?.recordKey,
+    ).toBe("MYMEDLIFE_PILOT_CHAPTER");
+    expect(
       planner.ownerSlots.find((slot) => slot.key === "rollback_owner")
         ?.recommendedDefault,
     ).toContain("Kiomi");
@@ -133,6 +137,10 @@ describe("pilot scope planner", () => {
       expect(
         planner.ownerSlots.find((slot) => slot.key === "rollback_owner")?.status,
       ).toBe("recorded_owner");
+      expect(
+        planner.ownerSlots.find((slot) => slot.key === "rollback_owner")
+          ?.recordKey,
+      ).toBe("MYMEDLIFE_PILOT_ROLLBACK_OWNER");
       expect(
         planner.reviewSnapshot.recordedNow.map((item) => item.label),
       ).toContain("Named owners already recorded");

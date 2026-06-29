@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { recordPilotScopePacketAction } from "@/app/admin/pilot-scope/actions";
 import { ControlReviewSnapshotSection } from "@/components/control-review-snapshot-section";
 import type {
   MinimumPilotPath,
@@ -9,9 +10,15 @@ import type {
 
 type PilotScopePlannerPanelProps = {
   planner: PilotScopePlanner;
+  packetResult?: string;
+  packetMessage?: string;
 };
 
-export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps) {
+export function PilotScopePlannerPanel({
+  planner,
+  packetResult,
+  packetMessage,
+}: PilotScopePlannerPanelProps) {
   if (!planner.canReadPlanner) {
     return null;
   }
@@ -72,6 +79,18 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
         </div>
       </div>
 
+      {packetMessage ? (
+        <div
+          className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
+            packetResult === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
+        >
+          {packetMessage}
+        </div>
+      ) : null}
+
       <section className="mt-5 rounded-[2rem] border border-slate-200 bg-slate-50 p-4">
         <h2 className="text-2xl font-semibold text-slate-950">Phase 2 closeout defaults</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -98,6 +117,11 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 {item.whyThisIsDefault}
               </p>
+              <ReviewPacketValueForm
+                recordKey={item.recordKey}
+                value={item.recommendedDefault}
+                label={item.label}
+              />
             </article>
           ))}
         </div>
@@ -139,6 +163,11 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
               <p className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs leading-5 text-slate-600">
                 Why it matters: {slot.whyItMatters}
               </p>
+              <ReviewPacketValueForm
+                recordKey={slot.recordKey}
+                value={slot.recommendedDefault}
+                label={slot.label}
+              />
             </article>
           ))}
         </div>
@@ -261,6 +290,64 @@ export function PilotScopePlannerPanel({ planner }: PilotScopePlannerPanelProps)
         </div>
       </section>
     </section>
+  );
+}
+
+function ReviewPacketValueForm({
+  recordKey,
+  value,
+  label,
+}: {
+  recordKey: string;
+  value: string;
+  label: string;
+}) {
+  const multiline = value.length > 60;
+
+  return (
+    <form
+      action={recordPilotScopePacketAction}
+      className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3"
+    >
+      <input type="hidden" name="recordKey" value={recordKey} />
+      <input type="hidden" name="returnTo" value="/admin/pilot-scope" />
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        Record/update this answer
+      </p>
+      <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+        {label}
+      </label>
+      {multiline ? (
+        <textarea
+          name="value"
+          defaultValue={value}
+          rows={3}
+          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+        />
+      ) : (
+        <input
+          type="text"
+          name="value"
+          defaultValue={value}
+          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+        />
+      )}
+      <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+        Reason
+      </label>
+      <textarea
+        name="reason"
+        rows={2}
+        placeholder={`Why is this the right recorded answer for ${label.toLowerCase()}?`}
+        className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+      />
+      <button
+        type="submit"
+        className="mt-3 rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
+      >
+        Save packet value
+      </button>
+    </form>
   );
 }
 

@@ -12,11 +12,19 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("adminPilotScope");
 export const dynamic = "force-dynamic";
 
-export default async function PilotScopePage() {
+export default async function PilotScopePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    pilotPacketResult?: string;
+    pilotPacketMessage?: string;
+  }>;
+}) {
   const [data, actor] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
   ]);
+  const resolvedSearchParams = await searchParams;
   const planner = await getPilotScopePlannerDurable(actor);
 
   return (
@@ -27,7 +35,11 @@ export default async function PilotScopePage() {
         showIntegrations={canReadAdminIntegrationsSecurity(actor)}
       />
       {planner.canReadPlanner ? (
-        <PilotScopePlannerPanel planner={planner} />
+        <PilotScopePlannerPanel
+          planner={planner}
+          packetResult={resolvedSearchParams?.pilotPacketResult}
+          packetMessage={resolvedSearchParams?.pilotPacketMessage}
+        />
       ) : (
         <RestrictedState
           title="Pilot scope planning is hidden for this role."

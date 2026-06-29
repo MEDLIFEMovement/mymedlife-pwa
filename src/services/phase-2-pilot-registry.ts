@@ -15,7 +15,7 @@ export type Phase2PilotDefaultRecord = {
   value: string;
   status: Phase2PilotDefaultStatus;
   whyThisIsDefault: string;
-  envKey?: string;
+  envKey: string;
 };
 
 export type Phase2PilotOwnerRecord = {
@@ -181,6 +181,11 @@ const ownerDefinitions: OwnerDefinition[] = [
   },
 ];
 
+const phase2PilotPacketKeys = [
+  ...defaultDefinitions.map((definition) => definition.envKey),
+  ...ownerDefinitions.map((definition) => definition.envKey),
+] as const;
+
 export function getPhase2PilotRegistry(
   env: EnvSource = process.env,
 ): Phase2PilotRegistry {
@@ -309,16 +314,15 @@ function readRecordedValue(
 }
 
 function countRecordedEnvValues(env: EnvSource): number {
-  const keys = [
-    ...defaultDefinitions.map((definition) => definition.envKey),
-    ...ownerDefinitions.map((definition) => definition.envKey),
-  ];
-
-  return keys.reduce((count, key) => {
-    if (!key) {
-      return count;
-    }
-
+  return phase2PilotPacketKeys.reduce((count, key) => {
     return env[key]?.trim() ? count + 1 : count;
   }, 0);
+}
+
+export type Phase2PilotPacketKey = (typeof phase2PilotPacketKeys)[number];
+
+export function isPhase2PilotPacketKey(
+  key: string,
+): key is Phase2PilotPacketKey {
+  return (phase2PilotPacketKeys as readonly string[]).includes(key);
 }

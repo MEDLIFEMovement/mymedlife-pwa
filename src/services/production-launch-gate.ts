@@ -35,6 +35,14 @@ export type ProductionEnvironmentReadinessStatus =
   | "missing_before_pilot"
   | "recorded_for_review";
 
+export type ProductionLaunchPacketField = {
+  recordKey: string;
+  label: string;
+  value: string;
+  description: string;
+  multiline?: boolean;
+};
+
 export type ProductionLaunchGateItem = {
   key: ProductionLaunchGateKey;
   label: string;
@@ -81,6 +89,7 @@ export type ProductionEnvironmentReadinessItem = {
     label: string;
     names: string[];
   }[];
+  editableFields?: ProductionLaunchPacketField[];
   blockedUntil: string;
   secretsShown: 0;
 };
@@ -336,7 +345,7 @@ export function getProductionEnvironmentReadinessItems(
     "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS",
     recordedPacketValues,
   );
-  const productionControlLayerProofNote = readRecordedPacketValue(
+const productionControlLayerProofNote = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE",
     recordedPacketValues,
@@ -442,6 +451,27 @@ export function getProductionEnvironmentReadinessItems(
         "/admin/database-security",
         "/admin/system-health",
       ],
+      editableFields: [
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+          "Project ref",
+          productionSupabaseProjectRef,
+          "Record the production Supabase project reference only, never the keys.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+          "Migration owner",
+          productionSupabaseMigrationOwner,
+          "Name who owns the approved production migration apply.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_SECURITY_PROOF_NOTE",
+          "Security proof note",
+          productionSecurityProofNote,
+          "Summarize the approved security/RLS proof needed before pilot use.",
+          true,
+        ),
+      ],
       blockedUntil:
         supabasePacketRecorded
           ? "Final DS/platform review still needs the current migration list, security proof refresh, and pilot-seed plan before live writes."
@@ -477,6 +507,33 @@ export function getProductionEnvironmentReadinessItems(
         "/admin/launch-gate",
         "/admin/system-health",
         "/admin/operations",
+      ],
+      editableFields: [
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_VERCEL_PROJECT",
+          "Vercel project/target",
+          productionVercelProject,
+          "Record the production Vercel project or target name.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE",
+          "Deploy source",
+          productionDeploySource,
+          "Record the approved production deploy source branch or workflow.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET",
+          "Rollback target",
+          productionRollbackTarget,
+          "Record the last-known-good deployment or rollback destination.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_ACCESS_POSTURE",
+          "Access posture",
+          productionAccessPosture,
+          "Record how pilot reviewers and live users will access production.",
+          true,
+        ),
       ],
       blockedUntil:
         vercelPacketRecorded
@@ -564,6 +621,27 @@ export function getProductionEnvironmentReadinessItems(
           ],
         },
       ],
+      editableFields: [
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS",
+          "Names-only env packet status",
+          productionEnvPacketStatus,
+          "Record whether the names-only production env manifest has been reviewed.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_SECRET_OWNER",
+          "Secret owner",
+          productionSecretOwner,
+          "Name the human/team responsible for production env vars and secret handling.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_LUMA_SCOPE",
+          "Approved Luma scope",
+          productionLumaScope,
+          "Record the exact Luma scope allowed for the pilot.",
+          true,
+        ),
+      ],
       blockedUntil:
         envPacketRecorded
           ? "Final DS/platform review still needs current secret presence checks and confirmation that non-approved integration keys remain unset."
@@ -601,6 +679,21 @@ export function getProductionEnvironmentReadinessItems(
         "/admin/launch-gate",
         "/admin/audit-log",
       ],
+      editableFields: [
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS",
+          "Control-layer status",
+          productionControlLayerStatus,
+          "Record whether the target environment control layer is only staged, applied, or still blocked.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE",
+          "Control-layer proof note",
+          productionControlLayerProofNote,
+          "Summarize the latest DS/Admin proof for feature flags, theme, step-up, and approvals.",
+          true,
+        ),
+      ],
       blockedUntil:
         controlLayerPacketRecorded
           ? "Final DS/platform review still needs current feature-flag save, theme save, durable step-up, and approval-row readback in the target environment."
@@ -637,6 +730,27 @@ export function getProductionEnvironmentReadinessItems(
         "/onboarding",
         "/admin/launch-gate",
       ],
+      editableFields: [
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+          "Production callback URL",
+          productionAuthCallbackUrl,
+          "Record the approved production auth callback URL.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+          "Staging callback URL",
+          stagingAuthCallbackUrl,
+          "Record the approved staging auth callback URL.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_ROLE_ROUTING_NOTE",
+          "Role-routing note",
+          productionRoleRoutingNote,
+          "Summarize the approved post-login routing behavior for live users.",
+          true,
+        ),
+      ],
       blockedUntil:
         authPacketRecorded
           ? "Final security and student-access signoff still needs role-routing smoke proof and blocked wrong-workspace access verification."
@@ -670,6 +784,27 @@ export function getProductionEnvironmentReadinessItems(
       reviewRoutes: [
         "/admin/launch-gate",
         "/admin/operations",
+      ],
+      editableFields: [
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_DNS_OWNER",
+          "DNS owner",
+          productionDnsOwner,
+          "Name the human or team responsible for production DNS updates.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_REGISTRAR",
+          "Registrar",
+          productionRegistrar,
+          "Record the production registrar or domain-management system.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_CUTOVER_PLAN",
+          "Cutover plan",
+          productionCutoverPlan,
+          "Summarize the production cutover and rollback plan.",
+          true,
+        ),
       ],
       blockedUntil:
         dnsPacketRecorded
@@ -705,6 +840,28 @@ export function getProductionEnvironmentReadinessItems(
         "/admin/launch-gate",
         "/admin/system-health",
         "/admin/operations",
+      ],
+      editableFields: [
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
+          "Backup owner",
+          productionBackupOwner,
+          "Name who owns production backup posture.",
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
+          "Restore path",
+          productionRestorePath,
+          "Record the approved production restore path.",
+          true,
+        ),
+        buildProductionLaunchPacketField(
+          "MYMEDLIFE_PRODUCTION_RESTORE_DRILL_NOTE",
+          "Restore drill note",
+          productionRestoreDrillNote,
+          "Summarize the latest restore drill plan or evidence.",
+          true,
+        ),
       ],
       blockedUntil:
         backupPacketRecorded
@@ -773,6 +930,22 @@ function compactRecordedEvidence(
   items: Array<string | null | undefined>,
 ): string[] {
   return items.filter((item): item is string => Boolean(item));
+}
+
+function buildProductionLaunchPacketField(
+  recordKey: ProductionLaunchPacketKey,
+  label: string,
+  value: string | null,
+  description: string,
+  multiline = false,
+): ProductionLaunchPacketField {
+  return {
+    recordKey,
+    label,
+    value: value ?? "",
+    description,
+    multiline,
+  };
 }
 
 function getProductionLaunchReviewSnapshot(
@@ -1301,4 +1474,37 @@ function getTitle(surfaceFamily: ActorSurfaceFamily): string {
     case "coach":
       return "Production launch gate hidden for this role";
   }
+}
+
+const productionLaunchPacketKeys = [
+  "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+  "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+  "MYMEDLIFE_PRODUCTION_SECURITY_PROOF_NOTE",
+  "MYMEDLIFE_PRODUCTION_VERCEL_PROJECT",
+  "MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE",
+  "MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET",
+  "MYMEDLIFE_PRODUCTION_ACCESS_POSTURE",
+  "MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS",
+  "MYMEDLIFE_PRODUCTION_SECRET_OWNER",
+  "MYMEDLIFE_PRODUCTION_LUMA_SCOPE",
+  "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS",
+  "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE",
+  "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+  "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+  "MYMEDLIFE_PRODUCTION_ROLE_ROUTING_NOTE",
+  "MYMEDLIFE_PRODUCTION_DNS_OWNER",
+  "MYMEDLIFE_PRODUCTION_REGISTRAR",
+  "MYMEDLIFE_PRODUCTION_CUTOVER_PLAN",
+  "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
+  "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
+  "MYMEDLIFE_PRODUCTION_RESTORE_DRILL_NOTE",
+] as const;
+
+export type ProductionLaunchPacketKey =
+  (typeof productionLaunchPacketKeys)[number];
+
+export function isProductionLaunchPacketKey(
+  key: string,
+): key is ProductionLaunchPacketKey {
+  return (productionLaunchPacketKeys as readonly string[]).includes(key);
 }

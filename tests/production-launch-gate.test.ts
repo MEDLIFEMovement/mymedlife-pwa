@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { createSupabaseAppClient } from "@/lib/supabase-app-client";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
   getProductionLaunchGate,
@@ -316,6 +317,16 @@ describe("production launch gate", () => {
             "OPENAI_API_KEY",
           ]),
         },
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.editableFields?.map((field) => field.recordKey),
+    ).toEqual(
+      expect.arrayContaining([
+        "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+        "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
       ]),
     );
     expect(
@@ -641,7 +652,7 @@ describe("production launch gate", () => {
             upsertRows: async <TRow>() => [] as TRow[],
             updateRows: async <TRow>() => [] as TRow[],
           },
-        })) as any,
+        })) as unknown as typeof createSupabaseAppClient,
       },
     );
 

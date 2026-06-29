@@ -39,7 +39,7 @@ describe("pilot scope page", () => {
     );
 
     const { default: PilotScopePage } = await import("@/app/admin/pilot-scope/page");
-    const html = renderToStaticMarkup(await PilotScopePage());
+    const html = renderToStaticMarkup(await PilotScopePage({}));
 
     expect(html).toContain("First pilot scope");
     expect(html).toContain("Control review snapshot");
@@ -47,5 +47,8 @@ describe("pilot scope page", () => {
     expect(html).toContain("Still blocked");
     expect(html).toContain("Planning default scope is defined");
     expect(html).toContain("Named owners are still missing");
+    expect(html).toContain("Packet source:");
+    expect(html).toContain("Record/update this answer");
+    expect(html).toContain("Save packet value");
   });
 });

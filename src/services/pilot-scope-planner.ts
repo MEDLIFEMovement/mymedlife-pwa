@@ -64,6 +64,7 @@ export type PilotScopeDecision = {
 export type PilotCloseoutOwnerSlot = {
   key: string;
   label: string;
+  recordKey: string;
   status: Phase2PilotOwnerStatus;
   recommendedDefault: string;
   confirmationNeededFrom: "Nick/team" | "Kiomi" | "HQ ops" | "Coach lead" | "Data solutions";
@@ -73,6 +74,7 @@ export type PilotCloseoutOwnerSlot = {
 export type PilotCloseoutDefault = {
   key: string;
   label: string;
+  recordKey: string;
   status: Phase2PilotDefaultStatus;
   recommendedDefault: string;
   whyThisIsDefault: string;
@@ -152,6 +154,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
   const closeoutDefaults = registry.defaults.map((item) => ({
     key: item.key,
     label: item.label,
+    recordKey: item.envKey,
     status: item.status,
     recommendedDefault: item.value,
     whyThisIsDefault: item.whyThisIsDefault,
@@ -159,6 +162,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
   const ownerSlots = registry.owners.map((item) => ({
     key: item.key,
     label: item.label,
+    recordKey: item.envKey,
     status: item.status,
     recommendedDefault: item.value,
     confirmationNeededFrom: item.confirmationNeededFrom,
@@ -228,6 +232,7 @@ export async function getPilotScopePlannerDurable(
   const closeoutDefaults = registry.defaults.map((item) => ({
     key: item.key,
     label: item.label,
+    recordKey: item.envKey,
     status: item.status,
     recommendedDefault: item.value,
     whyThisIsDefault: item.whyThisIsDefault,
@@ -235,6 +240,7 @@ export async function getPilotScopePlannerDurable(
   const ownerSlots = registry.owners.map((item) => ({
     key: item.key,
     label: item.label,
+    recordKey: item.envKey,
     status: item.status,
     recommendedDefault: item.value,
     confirmationNeededFrom: item.confirmationNeededFrom,

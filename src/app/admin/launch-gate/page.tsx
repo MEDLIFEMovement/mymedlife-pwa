@@ -18,11 +18,19 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("adminLaunchGate");
 export const dynamic = "force-dynamic";
 
-export default async function AdminLaunchGatePage() {
+export default async function AdminLaunchGatePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    launchPacketResult?: string;
+    launchPacketMessage?: string;
+  }>;
+}) {
   const [actor, data] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
+  const resolvedSearchParams = await searchParams;
   const lumaActivation = getStagingLumaEventLoopReadModel({
     mode: "staging",
     data,
@@ -88,7 +96,11 @@ export default async function AdminLaunchGatePage() {
             <MiniStat label="Writes" value={`${gate.browserWritesEnabled}`} />
           </section>
 
-          <ProductionLaunchGatePanel gate={gate} />
+          <ProductionLaunchGatePanel
+            gate={gate}
+            packetResult={resolvedSearchParams?.launchPacketResult}
+            packetMessage={resolvedSearchParams?.launchPacketMessage}
+          />
         </>
       )}
     </AdminAppShell>
