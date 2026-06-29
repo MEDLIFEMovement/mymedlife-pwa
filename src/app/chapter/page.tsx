@@ -97,10 +97,12 @@ export default async function ChapterPage({ searchParams }: ChapterPageProps) {
     feedPostId: search.feedPost,
     quickAction: search.quickAction,
   });
-  const lumaEventLoop = getLumaEventLoopPilotReadback("leader", lumaSnapshot);
   const lumaActivation = getStagingLumaEventLoopReadModel({
     mode: "staging",
     data,
+  });
+  const lumaEventLoop = getLumaEventLoopPilotReadback("leader", lumaSnapshot, {
+    activation: lumaActivation,
   });
 
   if (!leaderCommandCenter.canReadCommandCenter && canReadChapterData(actor)) {

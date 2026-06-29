@@ -1,4 +1,5 @@
 import type { LumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
+import type { StagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 export type LumaEventLoopPilotRole = "member" | "leader" | "staff" | "admin";
 
@@ -37,7 +38,7 @@ export type LumaEventLoopPilotReadback = {
     importedEvents: number;
     writesEnabled: 0;
     externalSends: 0;
-    attendeeRowsReturned: 0;
+    attendeeRowsReturned: number;
     secretsReturned: 0;
   };
 };
@@ -45,7 +46,11 @@ export type LumaEventLoopPilotReadback = {
 export function getLumaEventLoopPilotReadback(
   role: LumaEventLoopPilotRole,
   snapshot: LumaCalendarReadinessSnapshot,
+  options: {
+    activation?: StagingLumaEventLoopReadModel | null;
+  } = {},
 ): LumaEventLoopPilotReadback {
+  const activation = options.activation ?? null;
   const importedEvents = snapshot.safeEvents.slice(0, 3).map((event) => ({
     id: event.apiId ?? event.id,
     title: event.title,
@@ -53,18 +58,23 @@ export function getLumaEventLoopPilotReadback(
     href: event.url,
   }));
   const ready = snapshot.status === "ready";
+  const evidence = activation
+    ? {
+        rsvpCount: activation.summary.rsvpCount,
+        attendanceCount: activation.summary.attendanceCount,
+        pointsAwarded: activation.summary.pointsAwarded,
+        externalWritesEnabled: activation.summary.externalWritesEnabled,
+      }
+    : null;
+  const evidenceStatus = getEvidenceStatus(activation);
 
   return {
     role,
     eyebrow: getRoleEyebrow(role),
     title: getRoleTitle(role, ready),
-    summary: getRoleSummary(role, ready, snapshot.eventCount),
-    statusLabel: ready
-      ? "Luma read connected"
-      : snapshot.status === "api_error"
-        ? "Luma read needs review"
-        : "Luma read not configured",
-    statusDetail: snapshot.detail,
+    summary: getRoleSummary(role, ready, snapshot.eventCount, evidence),
+    statusLabel: getStatusLabel(snapshot, evidenceStatus),
+    statusDetail: getStatusDetail(snapshot, activation, evidenceStatus),
     importedEvents,
     cards: [
       {
@@ -74,20 +84,18 @@ export function getLumaEventLoopPilotReadback(
       },
       {
         label: "RSVP path",
-        value: "Preview",
-        detail: getRoleRsvpDetail(role),
+        value: evidence ? `${evidence.rsvpCount}` : "Preview",
+        detail: getRoleRsvpDetail(role, evidence),
       },
       {
         label: "Attendance",
-        value: "Manual",
-        detail:
-          "Attendance confirmation stays in myMEDLIFE review posture before any Luma attendee import opens.",
+        value: evidence ? `${evidence.attendanceCount}` : "Manual",
+        detail: getAttendanceDetail(evidence),
       },
       {
         label: "Points",
-        value: "Gated",
-        detail:
-          "Points and leaderboards update only after the approved review path records the right audit evidence.",
+        value: evidence ? `${evidence.pointsAwarded} pts` : "Gated",
+        detail: getPointsDetail(evidence),
       },
     ],
     safetyGates: [
@@ -103,7 +111,7 @@ export function getLumaEventLoopPilotReadback(
       importedEvents: snapshot.eventCount,
       writesEnabled: 0,
       externalSends: snapshot.externalWritesEnabled,
-      attendeeRowsReturned: 0,
+      attendeeRowsReturned: evidence?.attendanceCount ?? 0,
       secretsReturned: 0,
     },
   };
@@ -147,6 +155,12 @@ function getRoleSummary(
   role: LumaEventLoopPilotRole,
   ready: boolean,
   eventCount: number,
+  evidence: {
+    rsvpCount: number;
+    attendanceCount: number;
+    pointsAwarded: number;
+    externalWritesEnabled: false;
+  } | null,
 ): string {
   const countLabel = `${eventCount} Luma event${eventCount === 1 ? "" : "s"}`;
 
@@ -154,15 +168,27 @@ function getRoleSummary(
     return "The app is prepared to show Luma events once staging environment variables are present. Until then, the existing mock event loop remains visible and every live write stays blocked.";
   }
 
+  const evidenceSummary = evidence
+    ? `${evidence.rsvpCount} RSVP, ${evidence.attendanceCount} attendance, and ${evidence.pointsAwarded} points`
+    : null;
+
   switch (role) {
     case "member":
-      return `${countLabel} are available from the MEDLIFE calendar. Members should discover the event, RSVP intent in myMEDLIFE, show up, and see how attendance can become points after review.`;
+      return evidenceSummary
+        ? `${countLabel} are available from the MEDLIFE calendar. Current staging evidence shows ${evidenceSummary}, so members can see how RSVP and attendance become real chapter momentum.`
+        : `${countLabel} are available from the MEDLIFE calendar. Members should discover the event, RSVP intent in myMEDLIFE, show up, and see how attendance can become points after review.`;
     case "leader":
-      return `${countLabel} are available for leader readback. Leaders can compare event posture, RSVP intent, attendance confirmation, and point validation before opening any live write lane.`;
+      return evidenceSummary
+        ? `${countLabel} are available for leader readback. Leaders can compare live event posture against ${evidenceSummary} in the staging proof lane before opening any broader write lane.`
+        : `${countLabel} are available for leader readback. Leaders can compare event posture, RSVP intent, attendance confirmation, and point validation before opening any live write lane.`;
     case "staff":
-      return `${countLabel} are available for portfolio review. Staff can inspect chapter event health and leaderboard impact while external systems remain manual or read-only.`;
+      return evidenceSummary
+        ? `${countLabel} are available for portfolio review. Staff can inspect chapter event health with ${evidenceSummary} already visible in staging while external systems remain manual or read-only.`
+        : `${countLabel} are available for portfolio review. Staff can inspect chapter event health and leaderboard impact while external systems remain manual or read-only.`;
     case "admin":
-      return `${countLabel} are available through the server-only read path. Admin review should verify imported event visibility, audit/outbox posture, and zero external sends before any write is enabled.`;
+      return evidenceSummary
+        ? `${countLabel} are available through the server-only read path. Admin review can now compare imported event visibility against ${evidenceSummary} and zero external sends in the staging proof lane.`
+        : `${countLabel} are available through the server-only read path. Admin review should verify imported event visibility, audit/outbox posture, and zero external sends before any write is enabled.`;
   }
 }
 
@@ -181,7 +207,28 @@ function getLumaEventsCardDetail(
   return "Waiting for staging env configuration before imported events render";
 }
 
-function getRoleRsvpDetail(role: LumaEventLoopPilotRole): string {
+function getRoleRsvpDetail(
+  role: LumaEventLoopPilotRole,
+  evidence: {
+    rsvpCount: number;
+    attendanceCount: number;
+    pointsAwarded: number;
+    externalWritesEnabled: false;
+  } | null,
+): string {
+  if (evidence) {
+    switch (role) {
+      case "member":
+        return `${evidence.rsvpCount} staging RSVP row(s) are visible without turning on member-side Luma writes.`;
+      case "leader":
+        return `${evidence.rsvpCount} RSVP row(s) are visible for leader review before attendance validation.`;
+      case "staff":
+        return `${evidence.rsvpCount} RSVP row(s) are visible for portfolio health review.`;
+      case "admin":
+        return `${evidence.rsvpCount} RSVP row(s) are visible while external sends stay at zero.`;
+    }
+  }
+
   switch (role) {
     case "member":
       return "Members see the event and move into RSVP intent without writing back to Luma.";
@@ -192,6 +239,110 @@ function getRoleRsvpDetail(role: LumaEventLoopPilotRole): string {
     case "admin":
       return "Admins verify RSVP remains app-owned and external sends stay at zero.";
   }
+}
+
+function getAttendanceDetail(
+  evidence: {
+    rsvpCount: number;
+    attendanceCount: number;
+    pointsAwarded: number;
+    externalWritesEnabled: false;
+  } | null,
+): string {
+  if (evidence) {
+    return evidence.attendanceCount > 0
+      ? "Attendance-backed staging evidence is visible in the current proof lane."
+      : "Attendance confirmation still needs a completed staging proof pass.";
+  }
+
+  return "Attendance confirmation stays in myMEDLIFE review posture before any Luma attendee import opens.";
+}
+
+function getPointsDetail(
+  evidence: {
+    rsvpCount: number;
+    attendanceCount: number;
+    pointsAwarded: number;
+    externalWritesEnabled: false;
+  } | null,
+): string {
+  if (evidence) {
+    return evidence.pointsAwarded > 0
+      ? "Points and leaderboard readback are already visible in staging review."
+      : "Points and leaderboard readback stay pending until attendance-backed proof is recorded.";
+  }
+
+  return "Points and leaderboards update only after the approved review path records the right audit evidence.";
+}
+
+function getStatusLabel(
+  snapshot: LumaCalendarReadinessSnapshot,
+  evidenceStatus: "none" | "linked" | "in_progress" | "recorded",
+): string {
+  if (snapshot.status !== "ready") {
+    return snapshot.status === "api_error"
+      ? "Luma read needs review"
+      : "Luma read not configured";
+  }
+
+  switch (evidenceStatus) {
+    case "recorded":
+      return "Staging proof recorded";
+    case "in_progress":
+      return "Staging proof in progress";
+    case "linked":
+      return "Staging loop linked";
+    case "none":
+      return "Luma read connected";
+  }
+}
+
+function getStatusDetail(
+  snapshot: LumaCalendarReadinessSnapshot,
+  activation: StagingLumaEventLoopReadModel | null,
+  evidenceStatus: "none" | "linked" | "in_progress" | "recorded",
+): string {
+  if (!activation || evidenceStatus === "none") {
+    return snapshot.detail;
+  }
+
+  const base = `${activation.providerStatusLabel}. Current staging evidence shows ${activation.summary.rsvpCount} RSVP, ${activation.summary.attendanceCount} attendance, ${activation.summary.pointsAwarded} points, and ${activation.summary.externalWritesEnabled ? "review-required external writes" : "zero external sends"}.`;
+
+  if (snapshot.status === "ready") {
+    return `${base} ${snapshot.detail}`;
+  }
+
+  return base;
+}
+
+function getEvidenceStatus(
+  activation: StagingLumaEventLoopReadModel | null,
+): "none" | "linked" | "in_progress" | "recorded" {
+  if (!activation) {
+    return "none";
+  }
+
+  if (
+    activation.providerStatusLabel === "Staging evidence rows recorded" &&
+    activation.summary.attendanceCount > 0 &&
+    activation.summary.pointsAwarded > 0
+  ) {
+    return "recorded";
+  }
+
+  if (
+    activation.summary.rsvpCount > 0 ||
+    activation.summary.attendanceCount > 0 ||
+    activation.summary.pointsAwarded > 0
+  ) {
+    return "in_progress";
+  }
+
+  if (activation.summary.lumaLinkReady || activation.summary.eventStored) {
+    return "linked";
+  }
+
+  return "none";
 }
 
 function getPrimaryAction(role: LumaEventLoopPilotRole) {

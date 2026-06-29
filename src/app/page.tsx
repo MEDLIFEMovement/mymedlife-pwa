@@ -11,6 +11,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
 import { getLumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isMemberSurfaceFamily } from "@/services/role-visibility";
 import {
@@ -42,7 +43,13 @@ export default async function Home() {
   }
 
   const workspace = getStudentHomeWorkspace(actor, data);
-  const lumaEventLoop = getLumaEventLoopPilotReadback("member", lumaSnapshot);
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
+  const lumaEventLoop = getLumaEventLoopPilotReadback("member", lumaSnapshot, {
+    activation: lumaActivation,
+  });
   const featuredAction = workspace.assignedActions[0];
   const secondaryActions = workspace.assignedActions.slice(1, 3);
   const featuredEvent = workspace.upcomingEvents[0];

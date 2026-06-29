@@ -108,10 +108,12 @@ async function renderStaffPage({
     source: search.source,
     view: search.view,
   });
-  const lumaEventLoop = getLumaEventLoopPilotReadback("staff", lumaSnapshot);
   const lumaActivation = getStagingLumaEventLoopReadModel({
     mode: "staging",
     data,
+  });
+  const lumaEventLoop = getLumaEventLoopPilotReadback("staff", lumaSnapshot, {
+    activation: lumaActivation,
   });
   const surfaceFamily = getActorSurfaceFamily(actor);
   const restrictedNextHref = getLandingRouteForActor(actor);

@@ -95,7 +95,9 @@ export default async function AdminPage() {
     mode: "staging",
     data,
   });
-  const lumaEventLoop = getLumaEventLoopPilotReadback("admin", lumaSnapshot);
+  const lumaEventLoop = getLumaEventLoopPilotReadback("admin", lumaSnapshot, {
+    activation: lumaActivation,
+  });
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminAuditLogReview = getAdminAuditLogReview(actor, data);
   const adminSystemHealthReview = getAdminSystemHealthReview(actor, data);
