@@ -424,7 +424,7 @@ export async function updateFeatureFlagStatusDurable(
     "upsert_feature_flag_override",
     {
       flag_environment: input.environment,
-      flag_key: input.key,
+      target_flag_key: input.key,
       flag_kind: definition.kind,
       next_status: input.nextStatus,
       reason: input.reason,
