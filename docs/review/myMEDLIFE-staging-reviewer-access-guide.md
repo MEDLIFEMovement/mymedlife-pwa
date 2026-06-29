@@ -8,6 +8,7 @@ Status:
 - staging reviewer path is the approved default
 - hosted route-level proof exists, including the Luma attendance-to-points readback
 - hosted Supabase rollout-control tables now exist and are readable in the signed-in reviewer path
+- hosted role-routed login proof and the authoritative first-write/proof-loop route evidence are now recorded
 
 ## What This Guide Covers
 
@@ -39,6 +40,17 @@ team wants a different identity than the approved default.
    on the login page and not sent into a member-facing route.
 8. Use that signed-in session to inspect the required read-only review routes
    and hosted evidence surfaces.
+
+Current proven examples from 2026-06-29:
+
+- member: `/app` and `/rush-month/actions/50000000-0000-4000-8000-000000000002`
+- leader:
+  `/rush-month/review?assignmentId=50000000-0000-4000-8000-000000000002&evidenceItemId=3e7b2ab6-8770-488f-9637-90cbaa863b62`
+- staff: `/staff?view=chapters`
+- DS admin:
+  `/admin/audit-log`, `/admin/integration-outbox`, `/admin/pilot-scope`,
+  `/admin/first-write`, `/admin/feature-flags`, `/admin/theme`,
+  `/admin/luma-live-pilot`
 
 ## Concrete Browser Observation
 
@@ -75,6 +87,12 @@ Additional current truth from 2026-06-29:
 - hosted DS/Admin reviewer sign-in succeeded after the Vercel SSO handoff
 - the approved Luma loop now has hosted proof for RSVP write, attendance
   import, points, leaderboard, and zero unauthorized outbox sends
+- hosted member, leader, staff, and DS/Admin role-routed readback was also
+  rechecked from the same staging alias
+- the clean authoritative Phase 2 write/readback proof uses assignment
+  `50000000-0000-4000-8000-000000000002`, not assignment `...0001`
+- see `docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md`
+  for the exact route list and row-level proof chain
 
 ## What The Reviewer Should Look For
 
@@ -102,11 +120,10 @@ Additional current truth from 2026-06-29:
 
 - The exact named reviewer account to use for the hosted proof run, if it is
   different from the default reviewer identity.
-- Hosted staging evidence for the approved first narrow write, if the team
-  still wants to re-run that lane from the latest build.
-- Hosted staging evidence for the proof metadata to leader-review loop.
-- Final screenshots or route evidence packet from the approved staging session
-  covering member, leader, staff, admin, audit, and outbox readback.
+- External recording of the current hosted proof in the review systems.
+- Final screenshots if reviewers want visual attachments in addition to the
+  current route-and-row evidence note.
+- Named-owner confirmation for the pilot packet and final approval language.
 
 ## Escalation Rule
 
