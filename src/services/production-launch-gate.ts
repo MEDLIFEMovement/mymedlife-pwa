@@ -24,7 +24,9 @@ export type ProductionLaunchGateStatus =
 export type ProductionLaunchEvidenceStatus =
   | "missing_before_pilot"
   | "staging_evidence_recorded";
-export type ProductionEnvironmentReadinessStatus = "missing_before_pilot";
+export type ProductionEnvironmentReadinessStatus =
+  | "missing_before_pilot"
+  | "recorded_for_review";
 
 export type ProductionLaunchGateItem = {
   key: ProductionLaunchGateKey;
@@ -62,6 +64,7 @@ export type ProductionEnvironmentReadinessItem = {
   label: string;
   ownerLane: string;
   status: ProductionEnvironmentReadinessStatus;
+  recordedEvidence?: string[];
   requiredEvidence: string[];
   safeDefaults: string[];
   envVarManifest?: {
@@ -136,7 +139,10 @@ export function getProductionLaunchGate(
     options.lumaReadModel,
     Boolean(options.hostedStagingEvidenceObserved),
   );
-  const environmentReadiness = getProductionEnvironmentReadinessItems(pilotRegistry);
+  const environmentReadiness = getProductionEnvironmentReadinessItems(
+    pilotRegistry,
+    env,
+  );
   const lumaProofMissing = isHostedLumaPointsProofMissing(options.lumaReadModel);
 
   return {
@@ -174,6 +180,7 @@ export function getProductionLaunchGate(
 
 export function getProductionEnvironmentReadinessItems(
   pilotRegistry = getPhase2PilotRegistry(),
+  env: Record<string, string | undefined> = process.env,
 ): ProductionEnvironmentReadinessItem[] {
   const rollbackOwner = pilotRegistry.owners.find(
     (item) => item.key === "rollback_owner",
@@ -186,13 +193,119 @@ export function getProductionEnvironmentReadinessItems(
   );
   const dsOwner = pilotRegistry.owners.find((item) => item.key === "ds_owner");
   const hqOwner = pilotRegistry.owners.find((item) => item.key === "hq_admin_owner");
+  const productionSupabaseProjectRef = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+  );
+  const productionSupabaseMigrationOwner = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+  );
+  const productionSecurityProofNote = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_SECURITY_PROOF_NOTE",
+  );
+  const productionVercelProject = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_VERCEL_PROJECT",
+  );
+  const productionDeploySource = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE",
+  );
+  const productionRollbackTarget = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET",
+  );
+  const productionAccessPosture = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_ACCESS_POSTURE",
+  );
+  const productionEnvPacketStatus = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS",
+  );
+  const productionSecretOwner = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_SECRET_OWNER",
+  );
+  const productionLumaScope = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_LUMA_SCOPE",
+  );
+  const productionAuthCallbackUrl = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+  );
+  const stagingAuthCallbackUrl = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+  );
+  const productionRoleRoutingNote = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_ROLE_ROUTING_NOTE",
+  );
+  const productionDnsOwner = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_DNS_OWNER",
+  );
+  const productionRegistrar = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_REGISTRAR",
+  );
+  const productionCutoverPlan = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_CUTOVER_PLAN",
+  );
+  const productionBackupOwner = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
+  );
+  const productionRestorePath = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
+  );
+  const productionRestoreDrillNote = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_RESTORE_DRILL_NOTE",
+  );
+  const supabasePacketRecorded =
+    Boolean(productionSupabaseProjectRef) &&
+    Boolean(productionSupabaseMigrationOwner);
+  const vercelPacketRecorded =
+    Boolean(productionVercelProject) &&
+    Boolean(productionDeploySource) &&
+    Boolean(productionRollbackTarget);
+  const envPacketRecorded =
+    Boolean(productionEnvPacketStatus) && Boolean(productionSecretOwner);
+  const authPacketRecorded =
+    Boolean(productionAuthCallbackUrl) && Boolean(stagingAuthCallbackUrl);
+  const dnsPacketRecorded =
+    Boolean(productionDnsOwner) && Boolean(productionRegistrar);
+  const backupPacketRecorded =
+    Boolean(productionBackupOwner) && Boolean(productionRestorePath);
+  const ownerPacketRecorded =
+    rollbackOwner?.status === "recorded_owner" &&
+    supportOwner?.status === "recorded_owner" &&
+    supportChannel?.status === "recorded_owner" &&
+    dsOwner?.status === "recorded_owner" &&
+    hqOwner?.status === "recorded_owner";
 
   return [
     {
       key: "production_supabase_project",
       label: "Production Supabase project",
       ownerLane: "DS / Platform",
-      status: "missing_before_pilot",
+      status: supabasePacketRecorded ? "recorded_for_review" : "missing_before_pilot",
+      recordedEvidence: supabasePacketRecorded
+        ? compactRecordedEvidence([
+            `Project ref: ${productionSupabaseProjectRef}.`,
+            `Migration owner: ${productionSupabaseMigrationOwner}.`,
+            productionSecurityProofNote
+              ? `Security proof note: ${productionSecurityProofNote}.`
+              : null,
+          ])
+        : undefined,
       requiredEvidence: [
         "Separate production Supabase project reference recorded without printing service keys.",
         "Approved migration list and migration owner named before any hosted production apply.",
@@ -205,14 +318,26 @@ export function getProductionEnvironmentReadinessItems(
         "No production migration is applied from this packet.",
       ],
       blockedUntil:
-        "DS/platform records the production project, migration owner, and security proof.",
+        supabasePacketRecorded
+          ? "Final DS/platform review still needs the current migration list, security proof refresh, and pilot-seed plan before live writes."
+          : "DS/platform records the production project, migration owner, and security proof.",
       secretsShown: 0,
     },
     {
       key: "production_vercel_environment",
       label: "Production Vercel environment",
       ownerLane: "Platform / Security",
-      status: "missing_before_pilot",
+      status: vercelPacketRecorded ? "recorded_for_review" : "missing_before_pilot",
+      recordedEvidence: vercelPacketRecorded
+        ? compactRecordedEvidence([
+            `Project/target: ${productionVercelProject}.`,
+            `Deploy source: ${productionDeploySource}.`,
+            `Rollback target: ${productionRollbackTarget}.`,
+            productionAccessPosture
+              ? `Access posture: ${productionAccessPosture}.`
+              : null,
+          ])
+        : undefined,
       requiredEvidence: [
         "Production Vercel project or production target confirmed for `mymedlife-pwa`.",
         "Production deploy source branch and rollback deployment target recorded.",
@@ -224,14 +349,25 @@ export function getProductionEnvironmentReadinessItems(
         "No production promotion is performed by this packet.",
       ],
       blockedUntil:
-        "Platform owner confirms production Vercel target, deploy source, and rollback target.",
+        vercelPacketRecorded
+          ? "Final platform review still needs rollout timing, reviewer posture, and production promotion approval."
+          : "Platform owner confirms production Vercel target, deploy source, and rollback target.",
       secretsShown: 0,
     },
     {
       key: "production_env_vars",
       label: "Production environment variables",
       ownerLane: "DS / Platform",
-      status: "missing_before_pilot",
+      status: envPacketRecorded ? "recorded_for_review" : "missing_before_pilot",
+      recordedEvidence: envPacketRecorded
+        ? compactRecordedEvidence([
+            `Names-only env-var manifest: ${productionEnvPacketStatus}.`,
+            `Secret owner: ${productionSecretOwner}.`,
+            productionLumaScope
+              ? `Approved Luma scope: ${productionLumaScope}.`
+              : null,
+          ])
+        : undefined,
       requiredEvidence: [
         "`NEXT_PUBLIC_SUPABASE_URL` points to production Supabase.",
         "`NEXT_PUBLIC_SUPABASE_ANON_KEY` is the production browser-safe key.",
@@ -293,14 +429,25 @@ export function getProductionEnvironmentReadinessItems(
         },
       ],
       blockedUntil:
-        "DS/platform confirms production env-var names, scopes, and secret ownership.",
+        envPacketRecorded
+          ? "Final DS/platform review still needs current secret presence checks and confirmation that non-approved integration keys remain unset."
+          : "DS/platform confirms production env-var names, scopes, and secret ownership.",
       secretsShown: 0,
     },
     {
       key: "auth_callback_urls",
       label: "Auth callback URLs and role routing",
       ownerLane: "Security / Student Access",
-      status: "missing_before_pilot",
+      status: authPacketRecorded ? "recorded_for_review" : "missing_before_pilot",
+      recordedEvidence: authPacketRecorded
+        ? compactRecordedEvidence([
+            `Production callback URL: ${productionAuthCallbackUrl}.`,
+            `Staging callback URL: ${stagingAuthCallbackUrl}.`,
+            productionRoleRoutingNote
+              ? `Role-routing note: ${productionRoleRoutingNote}.`
+              : null,
+          ])
+        : undefined,
       requiredEvidence: [
         "Production callback URL for `https://www.mymedlife.org` approved.",
         "Staging callback URL for `https://staging.mymedlife.org` stays separate.",
@@ -313,14 +460,25 @@ export function getProductionEnvironmentReadinessItems(
         "Staff preview remains read-only unless separately approved.",
       ],
       blockedUntil:
-        "Security and student-access owners approve callbacks and role-routing proof.",
+        authPacketRecorded
+          ? "Final security and student-access signoff still needs role-routing smoke proof and blocked wrong-workspace access verification."
+          : "Security and student-access owners approve callbacks and role-routing proof.",
       secretsShown: 0,
     },
     {
       key: "dns_domain_plan",
       label: "DNS and domain plan",
       ownerLane: "Platform / HQ",
-      status: "missing_before_pilot",
+      status: dnsPacketRecorded ? "recorded_for_review" : "missing_before_pilot",
+      recordedEvidence: dnsPacketRecorded
+        ? compactRecordedEvidence([
+            `DNS owner: ${productionDnsOwner}.`,
+            `Registrar: ${productionRegistrar}.`,
+            productionCutoverPlan
+              ? `Cutover note: ${productionCutoverPlan}.`
+              : null,
+          ])
+        : undefined,
       requiredEvidence: [
         "`staging.mymedlife.org` remains the reviewer target until production cutover.",
         "`www.mymedlife.org` production DNS owner and registrar access are named.",
@@ -332,14 +490,25 @@ export function getProductionEnvironmentReadinessItems(
         "Record DNS owner and rollback target before pilot invites.",
       ],
       blockedUntil:
-        "Platform/HQ confirms DNS owner, cutover plan, and rollback route.",
+        dnsPacketRecorded
+          ? "Final platform/HQ review still needs exact cutover timing, rollback route, and propagation plan."
+          : "Platform/HQ confirms DNS owner, cutover plan, and rollback route.",
       secretsShown: 0,
     },
     {
       key: "backup_restore_path",
       label: "Backup and restore path",
       ownerLane: "DS / Platform",
-      status: "missing_before_pilot",
+      status: backupPacketRecorded ? "recorded_for_review" : "missing_before_pilot",
+      recordedEvidence: backupPacketRecorded
+        ? compactRecordedEvidence([
+            `Backup owner: ${productionBackupOwner}.`,
+            `Restore path: ${productionRestorePath}.`,
+            productionRestoreDrillNote
+              ? `Restore drill note: ${productionRestoreDrillNote}.`
+              : null,
+          ])
+        : undefined,
       requiredEvidence: [
         "Production Supabase backup posture confirmed.",
         "Restore drill owner named.",
@@ -351,14 +520,25 @@ export function getProductionEnvironmentReadinessItems(
         "Keep production proof uploads disabled until storage restore policy is approved.",
       ],
       blockedUntil:
-        "Backup/restore owner and drill evidence are recorded for the production project.",
+        backupPacketRecorded
+          ? "Final DS/platform review still needs a current restore drill and pilot data-repair playbook."
+          : "Backup/restore owner and drill evidence are recorded for the production project.",
       secretsShown: 0,
     },
     {
       key: "rollback_support_owners",
       label: "Rollback and support owners",
       ownerLane: "Launch / HQ Ops / DS",
-      status: "missing_before_pilot",
+      status: ownerPacketRecorded ? "recorded_for_review" : "missing_before_pilot",
+      recordedEvidence: ownerPacketRecorded
+        ? compactRecordedEvidence([
+            `Rollback owner: ${rollbackOwner?.value ?? "pending"}.`,
+            `Support owner: ${supportOwner?.value ?? "pending"}.`,
+            `Support/pause channel: ${supportChannel?.value ?? "pending"}.`,
+            `DS owner: ${dsOwner?.value ?? "pending"}.`,
+            `HQ/admin owner: ${hqOwner?.value ?? "pending"}.`,
+          ])
+        : undefined,
       requiredEvidence: [
         `Rollback owner: ${rollbackOwner?.value ?? "pending"}.`,
         `Support owner: ${supportOwner?.value ?? "pending"}.`,
@@ -374,10 +554,26 @@ export function getProductionEnvironmentReadinessItems(
         "No broad launch happens without day-one support coverage.",
       ],
       blockedUntil:
-        "Named launch owners, stop rules, and support coverage are recorded.",
+        ownerPacketRecorded
+          ? "Final launch review still needs stop rules, student comms, and the named day-one coverage plan signed off."
+          : "Named launch owners, stop rules, and support coverage are recorded.",
       secretsShown: 0,
     },
   ];
+}
+
+function readRecordedPacketValue(
+  env: Record<string, string | undefined>,
+  key: string,
+): string | null {
+  const value = env[key]?.trim();
+  return value ? value : null;
+}
+
+function compactRecordedEvidence(
+  items: Array<string | null | undefined>,
+): string[] {
+  return items.filter((item): item is string => Boolean(item));
 }
 
 export function getProductionLaunchEvidenceChecks(

@@ -172,6 +172,11 @@ show `Secrets 0` for every item. No service role key, Luma API key, HubSpot key,
 n8n credential, warehouse credential, Power BI secret, SMS/email secret, or AI
 key should appear in docs, PR comments, Linear comments, browser HTML, or logs.
 
+The route can now also show safe recorded values for those items through the
+names-only `MYMEDLIFE_PRODUCTION_*` packet metadata fields. Those fields are for
+project refs, owners, URLs, and runbook names only. They are never a place to
+paste real credentials.
+
 ## Luma Event Loop Staging Proof
 
 Approved staging scope:

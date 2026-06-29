@@ -215,14 +215,20 @@ describe("production launch gate", () => {
       "rollback_support_owners",
     ]);
     expect(
-      gate.environmentReadiness.every(
-        (item) =>
-          item.status === "missing_before_pilot" &&
-          item.secretsShown === 0 &&
-          item.requiredEvidence.length >= 3 &&
-          item.safeDefaults.length >= 3,
-      ),
+      gate.environmentReadiness
+        .filter((item) => item.key !== "rollback_support_owners")
+        .every(
+          (item) =>
+            item.status === "missing_before_pilot" &&
+            item.secretsShown === 0 &&
+            item.requiredEvidence.length >= 3 &&
+            item.safeDefaults.length >= 3,
+        ),
     ).toBe(true);
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.status,
+    ).toBe("recorded_for_review");
     expect(
       gate.environmentReadiness.find(
         (item) => item.key === "production_env_vars",
@@ -283,6 +289,99 @@ describe("production launch gate", () => {
         "Support/pause channel: #mymedlife-pilot-support.",
         "DS owner: DS owner.",
         "HQ/admin owner: HQ owner.",
+      ]),
+    );
+  });
+
+  it("records safe production packet details when names-only readiness values are present", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF: "prod-abc123",
+      MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER: "Kiomi",
+      MYMEDLIFE_PRODUCTION_SECURITY_PROOF_NOTE: "Security advisor rerun required after approved apply",
+      MYMEDLIFE_PRODUCTION_VERCEL_PROJECT: "mymedlife-pwa-production",
+      MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE: "main",
+      MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET: "last-known-good deployment",
+      MYMEDLIFE_PRODUCTION_ACCESS_POSTURE: "pilot reviewers use approved app auth",
+      MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS: "reviewed by DS/platform",
+      MYMEDLIFE_PRODUCTION_SECRET_OWNER: "DS/platform",
+      MYMEDLIFE_PRODUCTION_LUMA_SCOPE: "approved pilot calendar only",
+      MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL: "https://www.mymedlife.org/auth/callback",
+      MYMEDLIFE_STAGING_AUTH_CALLBACK_URL: "https://staging.mymedlife.org/auth/callback",
+      MYMEDLIFE_PRODUCTION_ROLE_ROUTING_NOTE: "backend-routed role shells",
+      MYMEDLIFE_PRODUCTION_DNS_OWNER: "Renato",
+      MYMEDLIFE_PRODUCTION_REGISTRAR: "GoDaddy",
+      MYMEDLIFE_PRODUCTION_CUTOVER_PLAN: "weeknight pilot-only cutover",
+      MYMEDLIFE_PRODUCTION_BACKUP_OWNER: "DS on-call",
+      MYMEDLIFE_PRODUCTION_RESTORE_PATH: "Supabase PITR plus manual app repair runbook",
+      MYMEDLIFE_PRODUCTION_RESTORE_DRILL_NOTE: "restore drill scheduled before pilot",
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Nick Ellis",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
+      MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
+      MYMEDLIFE_PILOT_DS_OWNER: "DS owner",
+      MYMEDLIFE_PILOT_HQ_ADMIN_OWNER: "HQ owner",
+    });
+
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Project ref: prod-abc123.",
+        "Migration owner: Kiomi.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_vercel_environment",
+      )?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_env_vars",
+      )?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Names-only env-var manifest: reviewed by DS/platform.",
+        "Secret owner: DS/platform.",
+        "Approved Luma scope: approved pilot calendar only.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
+        ?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Production callback URL: https://www.mymedlife.org/auth/callback.",
+        "Staging callback URL: https://staging.mymedlife.org/auth/callback.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "dns_domain_plan")
+        ?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "backup_restore_path")
+        ?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Rollback owner: Nick Ellis.",
+        "Support owner: Maya Support.",
+        "Support/pause channel: #mymedlife-pilot-support.",
       ]),
     );
   });

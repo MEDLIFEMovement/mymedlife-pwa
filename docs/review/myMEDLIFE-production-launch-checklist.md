@@ -37,6 +37,9 @@ Status:
      - external systems staying off for now
    - What is still missing now is the final signoff trail and production-foundation follow-through, not another blank approval field.
 3. Confirm the production environment path for Supabase, Vercel, domain/DNS, secrets, and backup/restore.
+   - Use the safe names-only `MYMEDLIFE_PRODUCTION_*` packet metadata values to
+     record project refs, owners, URLs, and runbook names on `/admin/launch-gate`.
+   - Do not paste real secrets into that packet.
 4. Confirm the rollout-control layer is actually live in the target environment.
    - Hosted staging already has `app.feature_flag_overrides`,
      `app.feature_flag_audit_records`, `app.theme_snapshots`,

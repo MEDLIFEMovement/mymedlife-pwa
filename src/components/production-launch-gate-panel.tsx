@@ -233,6 +233,9 @@ function EnvironmentReadinessCard({
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {item.recordedEvidence?.length ? (
+          <Checklist title="Recorded now" items={item.recordedEvidence} />
+        ) : null}
         <Checklist title="Required evidence" items={item.requiredEvidence} />
         <Checklist title="Safe defaults" items={item.safeDefaults} />
       </div>
