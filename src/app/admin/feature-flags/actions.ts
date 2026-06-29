@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import {
+  canManageFeatureFlags,
   featureFlagEnvironments,
   featureFlagStatuses,
   getFeatureFlagDefinition,
@@ -23,6 +24,10 @@ export async function updateFeatureFlagAction(formData: FormData) {
   let message = "Feature flag updated and audited.";
 
   try {
+    if (!canManageFeatureFlags(actor)) {
+      throw new Error("Only DS Admin or Super Admin can manage feature flags.");
+    }
+
     const environment = parseEnvironment(formData.get("environment"));
     const key = String(formData.get("flagKey") ?? "") as FeatureFlagKey;
     const definition = getFeatureFlagDefinition(key);

@@ -129,6 +129,36 @@ describe("admin control server actions", () => {
     );
   });
 
+  it("blocks non-DS users from feature flag actions before any durable write runs", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const featureFlagModule = await import("@/modules/feature-flags");
+    const navigationModule = await import("next/navigation");
+    const { updateFeatureFlagAction } = await import("@/app/admin/feature-flags/actions");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("coach@mymedlife.test"),
+    );
+
+    await expect(
+      updateFeatureFlagAction(
+        formDataFor({
+          returnTo: "/admin/feature-flags?env=staging",
+          environment: "staging",
+          flagKey: "integration_luma",
+          nextStatus: "enabled",
+          reason: "Coach should not be able to change provider flags.",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/feature-flags?");
+
+    expect(
+      vi.mocked(featureFlagModule.updateFeatureFlagStatusDurable),
+    ).not.toHaveBeenCalled();
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
+      expect.stringContaining("Only+DS+Admin+or+Super+Admin+can+manage+feature+flags"),
+    );
+  });
+
   it("keeps a successful staging theme draft save on the success redirect path", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const themeModule = await import("@/modules/theme");
@@ -162,6 +192,34 @@ describe("admin control server actions", () => {
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
       expect.stringContaining("themeResult=success"),
+    );
+  });
+
+  it("blocks non-DS users from theme actions before any durable write runs", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const themeModule = await import("@/modules/theme");
+    const navigationModule = await import("next/navigation");
+    const { saveThemeDraftAction } = await import("@/app/admin/theme/actions");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("member.a@mymedlife.test"),
+    );
+
+    await expect(
+      saveThemeDraftAction(
+        formDataFor({
+          returnTo: "/admin/theme?env=staging",
+          environment: "staging",
+          tokenKey: "background",
+          hex: "#f6fbff",
+          reason: "Member should not be able to update theme tokens.",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/theme?");
+
+    expect(vi.mocked(themeModule.saveThemeDraftDurable)).not.toHaveBeenCalled();
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
+      expect.stringContaining("Only+DS+Admin+or+Super+Admin+can+manage+theme+tokens"),
     );
   });
 

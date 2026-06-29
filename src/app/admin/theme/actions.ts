@@ -6,6 +6,7 @@ import {
   type FeatureFlagEnvironment,
 } from "@/modules/feature-flags";
 import {
+  canManageTheme,
   publishThemeDraftDurable,
   restoreDefaultThemeDurable,
   rollbackThemeDurable,
@@ -26,6 +27,8 @@ export async function saveThemeDraftAction(formData: FormData) {
   let message = "Theme draft saved and audited.";
 
   try {
+    assertCanManageTheme(actor);
+
     await saveThemeDraftDurable({
       actor,
       environment,
@@ -52,6 +55,8 @@ export async function publishThemeAction(formData: FormData) {
   let message = "Theme published and audited.";
 
   try {
+    assertCanManageTheme(actor);
+
     const approval = await getProductionThemeApproval(formData, actor, environment);
 
     await publishThemeDraftDurable({
@@ -78,6 +83,8 @@ export async function rollbackThemeAction(formData: FormData) {
   let message = "Theme rolled back and audited.";
 
   try {
+    assertCanManageTheme(actor);
+
     const approval = await getProductionThemeApproval(formData, actor, environment);
 
     await rollbackThemeDurable({
@@ -103,6 +110,8 @@ export async function restoreDefaultThemeAction(formData: FormData) {
   let message = "Default MEDLIFE theme restored and audited.";
 
   try {
+    assertCanManageTheme(actor);
+
     const approval = await getProductionThemeApproval(formData, actor, environment);
 
     await restoreDefaultThemeDurable({
@@ -207,4 +216,14 @@ function redirectWithResult(
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Theme update failed.";
+}
+
+function assertCanManageTheme(
+  actor: Awaited<ReturnType<typeof getLocalActorContext>>,
+) {
+  if (!canManageTheme(actor)) {
+    throw new Error(
+      "Only DS Admin or Super Admin can manage theme tokens.",
+    );
+  }
 }
