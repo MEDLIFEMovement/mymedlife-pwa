@@ -100,7 +100,11 @@ export default async function AdminPage() {
   });
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminAuditLogReview = getAdminAuditLogReview(actor, data);
-  const adminSystemHealthReview = getAdminSystemHealthReview(actor, data);
+  const adminSystemHealthReview = getAdminSystemHealthReview(
+    actor,
+    data,
+    process.env,
+  );
   const adminGlossary = getAdminGlossary(actor);
   const controlledPilotReadiness = getControlledPilotReadiness(actor, {
     lumaReadModel: lumaActivation,

@@ -50,7 +50,7 @@ export type AdminSystemHealthReview = {
 export function getAdminSystemHealthReview(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
-  env?: EnvironmentSafetyInput,
+  env: EnvironmentSafetyInput = process.env,
 ): AdminSystemHealthReview {
   const surfaceFamily = getActorSurfaceFamily(actor);
 

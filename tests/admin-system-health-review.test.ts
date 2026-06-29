@@ -154,6 +154,36 @@ describe("admin system health review", () => {
     });
   });
 
+  it("reads recorded production packet values from process env by default", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const originalProdCallback = process.env.MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL;
+    const originalStagingCallback = process.env.MYMEDLIFE_STAGING_AUTH_CALLBACK_URL;
+
+    process.env.MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL =
+      "https://www.mymedlife.org/auth/callback";
+    process.env.MYMEDLIFE_STAGING_AUTH_CALLBACK_URL =
+      "https://staging.mymedlife.org/auth/callback";
+
+    try {
+      const review = getAdminSystemHealthReview(
+        actor,
+        getMockReadOnlyAppData("Default env packet read."),
+      );
+
+      expect(
+        review.checks.find((check) => check.key === "production_auth"),
+      ).toEqual(
+        expect.objectContaining({
+          status: "needs_review",
+          signal: expect.stringContaining("Recorded callback plan exists"),
+        }),
+      );
+    } finally {
+      restoreEnv("MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL", originalProdCallback);
+      restoreEnv("MYMEDLIFE_STAGING_AUTH_CALLBACK_URL", originalStagingCallback);
+    }
+  });
+
   it("hides system health from chapter and coach roles", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
     const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
@@ -187,4 +217,13 @@ function auditLog(): AuditLogRow {
     reason: "Local action start test.",
     created_at: "2026-06-15T00:00:00Z",
   };
+}
+
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+
+  process.env[key] = value;
 }

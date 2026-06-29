@@ -22,7 +22,7 @@ export default async function AdminSystemHealthPage() {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const review = getAdminSystemHealthReview(actor, data);
+  const review = getAdminSystemHealthReview(actor, data, process.env);
   const nextStep = getNextStep(actor);
 
   return (
