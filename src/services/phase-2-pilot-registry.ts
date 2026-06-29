@@ -3,6 +3,10 @@ import {
   getReviewPacketRegistry,
   type ReviewPacketSource,
 } from "@/services/review-packet-registry";
+import {
+  isResolvedReviewPacketValue,
+  readReviewPacketValue,
+} from "@/services/review-packet-value";
 
 type EnvSource = Record<string, string | undefined>;
 
@@ -240,7 +244,7 @@ function buildPhase2PilotRegistry(input: {
   packetValues: Map<string, string>;
 }): Phase2PilotRegistry {
   const defaults = defaultDefinitions.map((definition) => {
-    const recordedValue = readRecordedValue(
+    const recordedValue = readReviewPacketValue(
       input.env,
       definition.envKey,
       input.packetValues,
@@ -250,14 +254,16 @@ function buildPhase2PilotRegistry(input: {
       key: definition.key,
       label: definition.label,
       value: recordedValue ?? definition.defaultValue,
-      status: recordedValue ? "recorded_final" : "recommended_default",
+      status: isResolvedReviewPacketValue(recordedValue)
+        ? "recorded_final"
+        : "recommended_default",
       whyThisIsDefault: definition.whyThisIsDefault,
       envKey: definition.envKey,
     } satisfies Phase2PilotDefaultRecord;
   });
 
   const owners = ownerDefinitions.map((definition) => {
-    const recordedValue = readRecordedValue(
+    const recordedValue = readReviewPacketValue(
       input.env,
       definition.envKey,
       input.packetValues,
@@ -267,7 +273,9 @@ function buildPhase2PilotRegistry(input: {
       key: definition.key,
       label: definition.label,
       value: recordedValue ?? definition.defaultValue,
-      status: recordedValue ? "recorded_owner" : "pending_named_owner",
+      status: isResolvedReviewPacketValue(recordedValue)
+        ? "recorded_owner"
+        : "pending_named_owner",
       envKey: definition.envKey,
       confirmationNeededFrom: definition.confirmationNeededFrom,
       whyItMatters: definition.whyItMatters,
@@ -293,29 +301,9 @@ function buildPhase2PilotRegistry(input: {
   };
 }
 
-function readRecordedValue(
-  env: EnvSource,
-  key: string | undefined,
-  packetValues?: Map<string, string>,
-): string | null {
-  if (!key) {
-    return null;
-  }
-
-  const packetValue = packetValues?.get(key)?.trim();
-
-  if (packetValue) {
-    return packetValue;
-  }
-
-  const value = env[key]?.trim();
-
-  return value ? value : null;
-}
-
 function countRecordedEnvValues(env: EnvSource): number {
   return phase2PilotPacketKeys.reduce((count, key) => {
-    return env[key]?.trim() ? count + 1 : count;
+    return isResolvedReviewPacketValue(env[key]) ? count + 1 : count;
   }, 0);
 }
 
@@ -324,5 +312,11 @@ export type Phase2PilotPacketKey = (typeof phase2PilotPacketKeys)[number];
 export function isPhase2PilotPacketKey(
   key: string,
 ): key is Phase2PilotPacketKey {
+  return (phase2PilotPacketKeys as readonly string[]).includes(key);
+}
+
+export function requiresResolvedPhase2PilotPacketValue(
+  key: Phase2PilotPacketKey,
+): boolean {
   return (phase2PilotPacketKeys as readonly string[]).includes(key);
 }

@@ -89,6 +89,35 @@ describe("launch gate packet actions", () => {
       expect.stringContaining("Choose+a+valid+production+packet+field"),
     );
   });
+
+  it("rejects placeholder values for concrete production packet fields", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const registryModule = await import("@/services/review-packet-registry");
+    const navigationModule = await import("next/navigation");
+    const { recordProductionLaunchPacketAction } = await import("@/app/admin/launch-gate/actions");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
+    );
+
+    await expect(
+      recordProductionLaunchPacketAction(
+        formDataFor({
+          returnTo: "/admin/launch-gate",
+          recordKey: "MYMEDLIFE_PRODUCTION_DNS_OWNER",
+          value: "pending HQ/platform",
+          reason: "Placeholder owners should not be recorded as final readiness.",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/launch-gate?");
+
+    expect(registryModule.upsertReviewPacketRecord).not.toHaveBeenCalled();
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "This+production+packet+field+must+use+a+concrete+value%2C+not+a+placeholder",
+      ),
+    );
+  });
 });
 
 function formDataFor(input: Record<string, string>) {

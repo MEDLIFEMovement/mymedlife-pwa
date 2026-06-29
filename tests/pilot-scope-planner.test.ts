@@ -90,6 +90,9 @@ describe("pilot scope planner", () => {
       planner.decisions.find((decision) => decision.key === "first_write")?.status,
     ).toBe("blocked_before_pilot");
     expect(
+      planner.decisions.find((decision) => decision.key === "event_nps")?.status,
+    ).toBe("needs_decision");
+    expect(
       planner.decisions.find((decision) => decision.key === "external_writes")
         ?.recommendation,
     ).toContain("outside the approved Luma event loop");
@@ -117,9 +120,23 @@ describe("pilot scope planner", () => {
 
   it("shows recorded pilot answers when explicit Phase 2 registry values are present", () => {
     const originalChapter = process.env.MYMEDLIFE_PILOT_CHAPTER;
+    const originalCampaignScope = process.env.MYMEDLIFE_PILOT_CAMPAIGN_SCOPE;
+    const originalCohortSize = process.env.MYMEDLIFE_PILOT_COHORT_SIZE;
+    const originalFirstWrite = process.env.MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE;
+    const originalEventNps = process.env.MYMEDLIFE_PILOT_EVENT_NPS_POSTURE;
+    const originalIntegrationHold = process.env.MYMEDLIFE_PILOT_INTEGRATION_HOLD;
+    const originalCoachOwner = process.env.MYMEDLIFE_PILOT_COACH_OWNER;
     const originalRollback = process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER;
 
     process.env.MYMEDLIFE_PILOT_CHAPTER = "Boston College MEDLIFE";
+    process.env.MYMEDLIFE_PILOT_CAMPAIGN_SCOPE = "Rush Month only";
+    process.env.MYMEDLIFE_PILOT_COHORT_SIZE = "5-15 students";
+    process.env.MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE = "`action_started`";
+    process.env.MYMEDLIFE_PILOT_EVENT_NPS_POSTURE =
+      "Luma event create/update, RSVP writeback, attendance import, points and leaderboard readback; manual support review only.";
+    process.env.MYMEDLIFE_PILOT_INTEGRATION_HOLD =
+      "HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior stay off.";
+    process.env.MYMEDLIFE_PILOT_COACH_OWNER = "Priya Coach";
     process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER = "Kiomi Matsukawa";
 
     try {
@@ -142,13 +159,38 @@ describe("pilot scope planner", () => {
           ?.recordKey,
       ).toBe("MYMEDLIFE_PILOT_ROLLBACK_OWNER");
       expect(
+        planner.decisions.find((decision) => decision.key === "pilot_group")?.status,
+      ).toBe("staff_ready");
+      expect(
+        planner.decisions.find((decision) => decision.key === "first_write")?.status,
+      ).toBe("staff_ready");
+      expect(
+        planner.decisions.find((decision) => decision.key === "event_nps")?.status,
+      ).toBe("staff_ready");
+      expect(
+        planner.decisions.find((decision) => decision.key === "coach_owner")?.status,
+      ).toBe("staff_ready");
+      expect(
+        planner.decisions.find((decision) => decision.key === "external_writes")
+          ?.status,
+      ).toBe("staff_ready");
+      expect(
         planner.reviewSnapshot.recordedNow.map((item) => item.label),
       ).toContain("Named owners already recorded");
+      expect(
+        planner.reviewSnapshot.recordedNow.map((item) => item.label),
+      ).toContain("Staff-ready pilot decisions");
       expect(planner.approvalReplyBlock.join("\n")).toContain(
         "Rollback owner: Kiomi Matsukawa",
       );
     } finally {
       restoreEnv("MYMEDLIFE_PILOT_CHAPTER", originalChapter);
+      restoreEnv("MYMEDLIFE_PILOT_CAMPAIGN_SCOPE", originalCampaignScope);
+      restoreEnv("MYMEDLIFE_PILOT_COHORT_SIZE", originalCohortSize);
+      restoreEnv("MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE", originalFirstWrite);
+      restoreEnv("MYMEDLIFE_PILOT_EVENT_NPS_POSTURE", originalEventNps);
+      restoreEnv("MYMEDLIFE_PILOT_INTEGRATION_HOLD", originalIntegrationHold);
+      restoreEnv("MYMEDLIFE_PILOT_COACH_OWNER", originalCoachOwner);
       restoreEnv("MYMEDLIFE_PILOT_ROLLBACK_OWNER", originalRollback);
     }
   });

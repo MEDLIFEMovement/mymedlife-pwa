@@ -75,26 +75,35 @@ Readback confirmed:
   - `app.theme_audit_records`: `3`
   - `app.admin_step_up_sessions`: `1`
   - `app.production_control_approvals`: `1`
-  - `app.review_packet_records`: `2`
+  - `app.review_packet_records`: `25`
 
 Durable packet rows now recorded on staging:
 
-- pilot scope:
-  - `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE` = `` `action_started` ``
-- production launch:
-  - `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF` = `fnlhontvvprwgooevzdl`
-- both rows were recorded through the audited
+- pilot scope now has `6` recorded rows, including:
+  - `MYMEDLIFE_PILOT_CAMPAIGN_SCOPE = Rush Month only`
+  - `MYMEDLIFE_PILOT_COHORT_SIZE = 5-15 students`
+  - `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE =` `` `action_started` ``
+  - `MYMEDLIFE_PILOT_PROOF_REVIEW_LOOP = metadata submit -> leader review -> audit trail`
+- production launch now has `19` recorded rows, including:
+  - `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF = fnlhontvvprwgooevzdl`
+  - `MYMEDLIFE_PRODUCTION_VERCEL_PROJECT = mymedlife-pwa`
+  - `MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL = https://www.mymedlife.org/auth/callback`
+  - `MYMEDLIFE_STAGING_AUTH_CALLBACK_URL = https://staging.mymedlife.org/auth/callback`
+  - `MYMEDLIFE_PRODUCTION_RESTORE_PATH = Supabase PITR plus manual app repair runbook`
+- the packet rows were recorded through the audited
   `app.upsert_review_packet_record(...)` function with DS-admin identity and
   produced matching `app.audit_logs` rows with action
   `review_packet_recorded`
-- a protected staged DS-admin sign-in replay now confirms the app pages
-  themselves are reading those rows:
+- a protected staged DS-admin sign-in replay originally confirmed the app pages
+  themselves were reading the durable packet lane:
   - `/admin/pilot-scope` shows
     `Supabase review records · 1 recorded row · Reading 1 pilot-scope review packet row(s) from Supabase.`
   - `/admin/launch-gate` shows
     `Supabase review records · 1 recorded row · Reading 1 production-launch review packet row(s) from Supabase.`
   - the launch packet readback also shows production project ref
     `fnlhontvvprwgooevzdl`
+- the later connector-backed snapshot is what proves the lane has since grown
+  from that original one-row-per-category state into a fuller production packet
 
 Hosted Supabase advisor result after the follow-up migration:
 

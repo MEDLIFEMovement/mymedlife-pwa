@@ -5,6 +5,10 @@ import {
   getPhase2PilotRegistryDurable,
   type Phase2PilotRegistry,
 } from "@/services/phase-2-pilot-registry";
+import {
+  isResolvedReviewPacketValue,
+  readReviewPacketValue,
+} from "@/services/review-packet-value";
 import type { ReviewPacketSource } from "@/services/review-packet-registry";
 import { getReviewPacketRegistry } from "@/services/review-packet-registry";
 import {
@@ -290,129 +294,133 @@ export function getProductionEnvironmentReadinessItems(
   );
   const dsOwner = pilotRegistry.owners.find((item) => item.key === "ds_owner");
   const hqOwner = pilotRegistry.owners.find((item) => item.key === "hq_admin_owner");
-  const productionSupabaseProjectRef = readRecordedPacketValue(
+  const productionSupabaseProjectRef = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
     recordedPacketValues,
   );
-  const productionSupabaseMigrationOwner = readRecordedPacketValue(
+  const productionSupabaseMigrationOwner = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
     recordedPacketValues,
   );
-  const productionSecurityProofNote = readRecordedPacketValue(
+  const productionSecurityProofNote = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_SECURITY_PROOF_NOTE",
     recordedPacketValues,
   );
-  const productionVercelProject = readRecordedPacketValue(
+  const productionVercelProject = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_VERCEL_PROJECT",
     recordedPacketValues,
   );
-  const productionDeploySource = readRecordedPacketValue(
+  const productionDeploySource = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE",
     recordedPacketValues,
   );
-  const productionRollbackTarget = readRecordedPacketValue(
+  const productionRollbackTarget = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET",
     recordedPacketValues,
   );
-  const productionAccessPosture = readRecordedPacketValue(
+  const productionAccessPosture = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_ACCESS_POSTURE",
     recordedPacketValues,
   );
-  const productionEnvPacketStatus = readRecordedPacketValue(
+  const productionEnvPacketStatus = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS",
     recordedPacketValues,
   );
-  const productionSecretOwner = readRecordedPacketValue(
+  const productionSecretOwner = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_SECRET_OWNER",
     recordedPacketValues,
   );
-  const productionLumaScope = readRecordedPacketValue(
+  const productionLumaScope = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_LUMA_SCOPE",
     recordedPacketValues,
   );
-  const productionControlLayerStatus = readRecordedPacketValue(
+  const productionControlLayerStatus = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS",
     recordedPacketValues,
   );
-const productionControlLayerProofNote = readRecordedPacketValue(
+  const productionControlLayerProofNote = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE",
     recordedPacketValues,
   );
-  const productionAuthCallbackUrl = readRecordedPacketValue(
+  const productionAuthCallbackUrl = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
     recordedPacketValues,
   );
-  const stagingAuthCallbackUrl = readRecordedPacketValue(
+  const stagingAuthCallbackUrl = readReviewPacketValue(
     env,
     "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
     recordedPacketValues,
   );
-  const productionRoleRoutingNote = readRecordedPacketValue(
+  const productionRoleRoutingNote = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_ROLE_ROUTING_NOTE",
     recordedPacketValues,
   );
-  const productionDnsOwner = readRecordedPacketValue(
+  const productionDnsOwner = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_DNS_OWNER",
     recordedPacketValues,
   );
-  const productionRegistrar = readRecordedPacketValue(
+  const productionRegistrar = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_REGISTRAR",
     recordedPacketValues,
   );
-  const productionCutoverPlan = readRecordedPacketValue(
+  const productionCutoverPlan = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_CUTOVER_PLAN",
     recordedPacketValues,
   );
-  const productionBackupOwner = readRecordedPacketValue(
+  const productionBackupOwner = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
     recordedPacketValues,
   );
-  const productionRestorePath = readRecordedPacketValue(
+  const productionRestorePath = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
     recordedPacketValues,
   );
-  const productionRestoreDrillNote = readRecordedPacketValue(
+  const productionRestoreDrillNote = readReviewPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_RESTORE_DRILL_NOTE",
     recordedPacketValues,
   );
   const supabasePacketRecorded =
-    Boolean(productionSupabaseProjectRef) &&
-    Boolean(productionSupabaseMigrationOwner);
+    isResolvedReviewPacketValue(productionSupabaseProjectRef) &&
+    isResolvedReviewPacketValue(productionSupabaseMigrationOwner);
   const vercelPacketRecorded =
-    Boolean(productionVercelProject) &&
-    Boolean(productionDeploySource) &&
-    Boolean(productionRollbackTarget);
+    isResolvedReviewPacketValue(productionVercelProject) &&
+    isResolvedReviewPacketValue(productionDeploySource) &&
+    isResolvedReviewPacketValue(productionRollbackTarget);
   const envPacketRecorded =
-    Boolean(productionEnvPacketStatus) && Boolean(productionSecretOwner);
+    isResolvedReviewPacketValue(productionEnvPacketStatus) &&
+    isResolvedReviewPacketValue(productionSecretOwner);
   const controlLayerPacketRecorded =
-    Boolean(productionControlLayerStatus) &&
-    Boolean(productionControlLayerProofNote);
+    isResolvedReviewPacketValue(productionControlLayerStatus) &&
+    isResolvedReviewPacketValue(productionControlLayerProofNote);
   const authPacketRecorded =
-    Boolean(productionAuthCallbackUrl) && Boolean(stagingAuthCallbackUrl);
+    isResolvedReviewPacketValue(productionAuthCallbackUrl) &&
+    isResolvedReviewPacketValue(stagingAuthCallbackUrl);
   const dnsPacketRecorded =
-    Boolean(productionDnsOwner) && Boolean(productionRegistrar);
+    isResolvedReviewPacketValue(productionDnsOwner) &&
+    isResolvedReviewPacketValue(productionRegistrar);
   const backupPacketRecorded =
-    Boolean(productionBackupOwner) && Boolean(productionRestorePath);
+    isResolvedReviewPacketValue(productionBackupOwner) &&
+    isResolvedReviewPacketValue(productionRestorePath);
   const ownerPacketRecorded =
     rollbackOwner?.status === "recorded_owner" &&
     supportOwner?.status === "recorded_owner" &&
@@ -909,21 +917,6 @@ const productionControlLayerProofNote = readRecordedPacketValue(
       secretsShown: 0,
     },
   ];
-}
-
-function readRecordedPacketValue(
-  env: Record<string, string | undefined>,
-  key: string,
-  recordedPacketValues?: Map<string, string>,
-): string | null {
-  const packetValue = recordedPacketValues?.get(key)?.trim();
-
-  if (packetValue) {
-    return packetValue;
-  }
-
-  const value = env[key]?.trim();
-  return value ? value : null;
 }
 
 function compactRecordedEvidence(
@@ -1507,4 +1500,25 @@ export function isProductionLaunchPacketKey(
   key: string,
 ): key is ProductionLaunchPacketKey {
   return (productionLaunchPacketKeys as readonly string[]).includes(key);
+}
+
+const productionPacketKeysRequiringConcreteValues = new Set<ProductionLaunchPacketKey>([
+  "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+  "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+  "MYMEDLIFE_PRODUCTION_VERCEL_PROJECT",
+  "MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE",
+  "MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET",
+  "MYMEDLIFE_PRODUCTION_SECRET_OWNER",
+  "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+  "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+  "MYMEDLIFE_PRODUCTION_DNS_OWNER",
+  "MYMEDLIFE_PRODUCTION_REGISTRAR",
+  "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
+  "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
+]);
+
+export function requiresConcreteProductionLaunchPacketValue(
+  key: ProductionLaunchPacketKey,
+): boolean {
+  return productionPacketKeysRequiringConcreteValues.has(key);
 }

@@ -116,6 +116,12 @@ export type PilotScopePlanner = {
   };
 };
 
+type PilotDefaultsByKey = Partial<
+  Record<PilotCloseoutDefault["key"], PilotCloseoutDefault>
+>;
+
+type PilotOwnersByKey = Partial<Record<PilotCloseoutOwnerSlot["key"], PilotCloseoutOwnerSlot>>;
+
 export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanner {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
@@ -149,7 +155,6 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
   }
 
   const candidates = getPilotCandidates();
-  const decisions = getPilotDecisions();
   const registry = getPhase2PilotRegistry();
   const closeoutDefaults = registry.defaults.map((item) => ({
     key: item.key,
@@ -168,6 +173,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
     confirmationNeededFrom: item.confirmationNeededFrom,
     whyItMatters: item.whyItMatters,
   }));
+  const decisions = getPilotDecisions(closeoutDefaults, ownerSlots);
 
   return {
     canReadPlanner: true,
@@ -227,7 +233,6 @@ export async function getPilotScopePlannerDurable(
   }
 
   const candidates = getPilotCandidates();
-  const decisions = getPilotDecisions();
   const registry = await getPhase2PilotRegistryDurable();
   const closeoutDefaults = registry.defaults.map((item) => ({
     key: item.key,
@@ -246,6 +251,7 @@ export async function getPilotScopePlannerDurable(
     confirmationNeededFrom: item.confirmationNeededFrom,
     whyItMatters: item.whyItMatters,
   }));
+  const decisions = getPilotDecisions(closeoutDefaults, ownerSlots);
 
   return {
     canReadPlanner: true,
@@ -494,13 +500,33 @@ function getMinimumPilotPath(): MinimumPilotPath[] {
   ];
 }
 
-function getPilotDecisions(): PilotScopeDecision[] {
+function getPilotDecisions(
+  closeoutDefaults: PilotCloseoutDefault[],
+  ownerSlots: PilotCloseoutOwnerSlot[],
+): PilotScopeDecision[] {
+  const defaultsByKey = Object.fromEntries(
+    closeoutDefaults.map((item) => [item.key, item]),
+  ) as PilotDefaultsByKey;
+  const ownersByKey = Object.fromEntries(
+    ownerSlots.map((item) => [item.key, item]),
+  ) as PilotOwnersByKey;
+  const pilotGroupReady =
+    defaultsByKey.pilot_chapter?.status === "recorded_final" &&
+    defaultsByKey.campaign_scope?.status === "recorded_final" &&
+    defaultsByKey.cohort_size?.status === "recorded_final";
+  const firstWriteReady =
+    defaultsByKey.first_hosted_write?.status === "recorded_final";
+  const eventLoopReady =
+    defaultsByKey.event_nps_posture?.status === "recorded_final" &&
+    defaultsByKey.integration_hold?.status === "recorded_final";
+  const coachOwnerReady = ownersByKey.coach_owner?.status === "recorded_owner";
+
   return [
     {
       key: "pilot_group",
       label: "Choose the first pilot group",
       owner: "Nick/team",
-      status: "needs_decision",
+      status: pilotGroupReady ? "staff_ready" : "needs_decision",
       recommendation:
         "Pick one chapter or one staff-plus-chapter rehearsal group, not multiple universities.",
       whyItMatters:
@@ -510,7 +536,7 @@ function getPilotDecisions(): PilotScopeDecision[] {
       key: "first_write",
       label: "Approve the first write path",
       owner: "Kiomi",
-      status: "blocked_before_pilot",
+      status: firstWriteReady ? "staff_ready" : "blocked_before_pilot",
       recommendation:
         "Use `action_started` first; keep assignment creation, proof upload, HQ decisions, and coach decisions locked.",
       whyItMatters:
@@ -520,7 +546,7 @@ function getPilotDecisions(): PilotScopeDecision[] {
       key: "event_nps",
       label: "Confirm the Luma event loop and manual NPS posture",
       owner: "HQ ops",
-      status: "needs_decision",
+      status: eventLoopReady ? "staff_ready" : "needs_decision",
       recommendation:
         "Use the approved Luma event/RSVP/attendance/points loop for the pilot, but keep NPS handling manual-first and do not enable reminders, webhooks, or downstream automation.",
       whyItMatters:
@@ -540,7 +566,7 @@ function getPilotDecisions(): PilotScopeDecision[] {
       key: "coach_owner",
       label: "Name the coach owner",
       owner: "Coach lead",
-      status: "needs_decision",
+      status: coachOwnerReady ? "staff_ready" : "needs_decision",
       recommendation:
         "Assign one person who owns pilot questions, risk review, and intervention decisions.",
       whyItMatters:
@@ -550,7 +576,7 @@ function getPilotDecisions(): PilotScopeDecision[] {
       key: "external_writes",
       label: "Keep external writes disabled",
       owner: "Data solutions",
-      status: "staff_ready",
+      status: eventLoopReady ? "staff_ready" : "needs_decision",
       recommendation:
         "Use the outbox for visibility only outside the approved Luma event loop; do not send HubSpot, n8n, warehouse, Power BI, SMS, email, AI, or non-approved Luma writes.",
       whyItMatters:

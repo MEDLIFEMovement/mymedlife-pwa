@@ -533,6 +533,48 @@ describe("production launch gate", () => {
     );
   });
 
+  it("keeps the production Vercel packet blocked until deploy source and rollback target are recorded", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PRODUCTION_VERCEL_PROJECT: "mymedlife-pwa",
+      MYMEDLIFE_PRODUCTION_ACCESS_POSTURE:
+        "One shared sign-in surface with backend role routing.",
+    });
+
+    const vercelReadiness = gate.environmentReadiness.find(
+      (item) => item.key === "production_vercel_environment",
+    );
+
+    expect(vercelReadiness?.status).toBe("missing_before_pilot");
+    expect(vercelReadiness?.recordedEvidence).toBeUndefined();
+    expect(vercelReadiness?.blockedUntil).toContain(
+      "production Vercel target, deploy source, and rollback target",
+    );
+  });
+
+  it("keeps placeholder production packet notes from reading as final readiness", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PRODUCTION_VERCEL_PROJECT: "mymedlife-pwa",
+      MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE: "pending production branch approval",
+      MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET: "TBD after first live deploy",
+      MYMEDLIFE_PRODUCTION_ACCESS_POSTURE:
+        "One shared sign-in surface with backend role routing.",
+      MYMEDLIFE_PRODUCTION_DNS_OWNER: "pending HQ/platform",
+      MYMEDLIFE_PRODUCTION_REGISTRAR: "GoDaddy",
+    });
+
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_vercel_environment",
+      )?.status,
+    ).toBe("missing_before_pilot");
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "dns_domain_plan")
+        ?.status,
+    ).toBe("missing_before_pilot");
+  });
+
   it("prefers durable Supabase packet rows for production readiness when available", async () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const gate = await getProductionLaunchGateDurable(

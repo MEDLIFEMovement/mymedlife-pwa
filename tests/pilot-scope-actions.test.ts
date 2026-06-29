@@ -89,6 +89,35 @@ describe("pilot scope packet actions", () => {
       expect.stringContaining("Only+HQ%2FAdmin%2C+DS+Admin%2C+or+Super+Admin+can+update+pilot+packet+values"),
     );
   });
+
+  it("rejects placeholder pilot packet answers before any write runs", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const registryModule = await import("@/services/review-packet-registry");
+    const navigationModule = await import("next/navigation");
+    const { recordPilotScopePacketAction } = await import("@/app/admin/pilot-scope/actions");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    );
+
+    await expect(
+      recordPilotScopePacketAction(
+        formDataFor({
+          returnTo: "/admin/pilot-scope",
+          recordKey: "MYMEDLIFE_PILOT_SUPPORT_OWNER",
+          value: "pending HQ ops",
+          reason: "Do not treat placeholder owners as final packet values.",
+        }),
+      ),
+    ).rejects.toThrow("REDIRECT:/admin/pilot-scope?");
+
+    expect(registryModule.upsertReviewPacketRecord).not.toHaveBeenCalled();
+    expect(vi.mocked(navigationModule.redirect)).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Pilot+packet+values+must+name+a+real+approved+answer%2C+not+a+placeholder",
+      ),
+    );
+  });
 });
 
 function formDataFor(input: Record<string, string>) {

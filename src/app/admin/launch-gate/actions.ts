@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
   isProductionLaunchPacketKey,
+  requiresConcreteProductionLaunchPacketValue,
 } from "@/services/production-launch-gate";
+import { isResolvedReviewPacketValue } from "@/services/review-packet-value";
 import { upsertReviewPacketRecord } from "@/services/review-packet-registry";
 import { canReadAdminReviewSurface } from "@/services/role-visibility";
 
@@ -31,6 +33,15 @@ export async function recordProductionLaunchPacketAction(formData: FormData) {
     if (reason.length < 8) {
       throw new Error(
         "Production packet update reasons must be at least 8 characters.",
+      );
+    }
+
+    if (
+      requiresConcreteProductionLaunchPacketValue(recordKey) &&
+      !isResolvedReviewPacketValue(value)
+    ) {
+      throw new Error(
+        "This production packet field must use a concrete value, not a placeholder.",
       );
     }
 

@@ -23,7 +23,7 @@ foundation work and final human signoff.
 | First hosted write | Engineering / Product | Staging proof recorded | `action_started` is the approved first hosted write and the authoritative hosted row chain now exists on staging |
 | Smallest proof/review loop | Chapter / HQ | Approved | Metadata submit -> leader review -> audit trail |
 | Production environment ownership | Platform / Security | Approved | DS/platform owns production Supabase, Vercel, DNS, secrets, and backup/restore; security approval routed through GitHub/Copilot/Codex Security |
-| Production environment packet | DS / Platform | Follow-through required | Production Supabase project `fnlhontvvprwgooevzdl` exists, but app migrations, Vercel env vars, callbacks, DNS, backup/restore, and seed/runbook evidence still need final recording |
+| Production environment packet | DS / Platform | Follow-through required | Production Supabase project `fnlhontvvprwgooevzdl` exists but still has `0` `app.*` tables; Vercel project `mymedlife-pwa` exists but is not live yet, so migrations, env vars, deploy source, rollback target, callbacks, DNS, backup/restore, and seed/runbook evidence still need final recording |
 | Monitoring and incident response | Platform / Operations | Approved | One named incident owner, one backup owner, one pilot alert channel, and the existing rollback path as the stop mechanism |
 | Luma event loop | Events / DS | Staging proof recorded | Event create/update, RSVP writeback, attendance import, points and leaderboard readback are visible on staging with audit proof and zero sent outbox rows |
 | External integrations hold | DS | Approved | HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior stay off |
@@ -38,6 +38,9 @@ foundation work and final human signoff.
   for the separately gated Luma event-loop staging proof.
 - The current reviewer has confirmed they are the pilot owner and rollback owner.
 - The approved defaults now cover the staging access path, pilot scope, first hosted write, proof/review loop, production ownership, and the external integration hold.
+- Staging review-packet storage now holds `6` pilot-scope rows and `19`
+  production-launch rows, so the production packet is no longer just a
+  one-field placeholder.
 - Staging now has the real hosted proof rows for `action_started`,
   `evidence_submitted`, Luma RSVP, Luma attendance import, and one
   attendance-backed points award totaling `20` points.

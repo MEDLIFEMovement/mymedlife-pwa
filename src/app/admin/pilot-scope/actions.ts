@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
   isPhase2PilotPacketKey,
+  requiresResolvedPhase2PilotPacketValue,
 } from "@/services/phase-2-pilot-registry";
+import { isResolvedReviewPacketValue } from "@/services/review-packet-value";
 import { upsertReviewPacketRecord } from "@/services/review-packet-registry";
 import { canReadAdminReviewSurface } from "@/services/role-visibility";
 
@@ -30,6 +32,15 @@ export async function recordPilotScopePacketAction(formData: FormData) {
 
     if (reason.length < 8) {
       throw new Error("Pilot packet update reasons must be at least 8 characters.");
+    }
+
+    if (
+      requiresResolvedPhase2PilotPacketValue(recordKey) &&
+      !isResolvedReviewPacketValue(value)
+    ) {
+      throw new Error(
+        "Pilot packet values must name a real approved answer, not a placeholder.",
+      );
     }
 
     await upsertReviewPacketRecord({

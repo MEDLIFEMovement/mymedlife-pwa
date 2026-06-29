@@ -60,6 +60,29 @@ describe("phase 2 pilot registry", () => {
     );
   });
 
+  it("keeps placeholder owner notes visible without treating them as recorded owners", () => {
+    const registry = getPhase2PilotRegistry({
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "pending HQ ops",
+      MYMEDLIFE_PILOT_COACH_OWNER: "TBD coach lead",
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "not yet assigned",
+    });
+
+    expect(registry.counts.ownersRecorded).toBe(0);
+    expect(registry.counts.ownersPending).toBe(7);
+    expect(
+      registry.owners.find((item) => item.key === "support_owner")?.value,
+    ).toBe("pending HQ ops");
+    expect(
+      registry.owners.find((item) => item.key === "support_owner")?.status,
+    ).toBe("pending_named_owner");
+    expect(
+      registry.owners.find((item) => item.key === "coach_owner")?.status,
+    ).toBe("pending_named_owner");
+    expect(
+      registry.owners.find((item) => item.key === "rollback_owner")?.status,
+    ).toBe("pending_named_owner");
+  });
+
   it("prefers Supabase review packet rows when the durable packet exists", async () => {
     const registry = await getPhase2PilotRegistryDurable(
       {},

@@ -47,11 +47,19 @@ Status:
   - `app.review_packet_records`
   - `app.current_review_packet_role()`
   - `app.upsert_review_packet_record(...)`
-  - one pilot-scope row is recorded:
-    `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE =` `` `action_started` ``
-  - one production-launch row is recorded:
-    `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF = fnlhontvvprwgooevzdl`
-  - both rows have matching `review_packet_recorded` audit rows
+  - `6` pilot-scope rows are recorded, including:
+    - `MYMEDLIFE_PILOT_CAMPAIGN_SCOPE = Rush Month only`
+    - `MYMEDLIFE_PILOT_COHORT_SIZE = 5-15 students`
+    - `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE =` `` `action_started` ``
+    - `MYMEDLIFE_PILOT_PROOF_REVIEW_LOOP = metadata submit -> leader review -> audit trail`
+  - `19` production-launch rows are recorded, including:
+    - `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF = fnlhontvvprwgooevzdl`
+    - `MYMEDLIFE_PRODUCTION_VERCEL_PROJECT = mymedlife-pwa`
+    - `MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL = https://www.mymedlife.org/auth/callback`
+    - `MYMEDLIFE_STAGING_AUTH_CALLBACK_URL = https://staging.mymedlife.org/auth/callback`
+    - `MYMEDLIFE_PRODUCTION_RESTORE_PATH = Supabase PITR plus manual app repair runbook`
+  - the recorded values now cover pilot scope defaults plus names-only production ownership, callback, DNS, backup, and control-layer notes
+  - the remaining packet gaps are still the missing production deploy source, rollback target, named day-one support coverage, and final external signoff
 - Hosted staging now also proves the production-sensitive admin-control path:
   - DS Admin step-up re-auth succeeds
   - one production approval row is recorded
@@ -70,15 +78,16 @@ Status:
      the current hosted proof packet.
    - Confirm the hosted proof is recorded in the review systems before any live
      pilot claim is made.
-2. Execute the already-approved first hosted write and proof sequence on hosted staging.
+2. Accept and record the already-proven first hosted write and proof sequence on hosted staging.
    - The primary approver has already approved:
      - `staging.mymedlife.org` as the reviewer target
      - one small, one-chapter pilot
      - `action_started` as the first hosted write
      - metadata submit -> leader review -> audit trail as the smallest proof loop
      - external systems staying off for now
-   - What is still missing now is the final signoff trail and
-     production-foundation follow-through, not another blank approval field.
+   - The write and readback proof already exists on staging; what is still
+     missing now is the final signoff trail and production-foundation
+     follow-through, not another blank approval field.
 3. Confirm the production environment path for Supabase, Vercel, domain/DNS, secrets, and backup/restore.
    - Use the safe names-only `MYMEDLIFE_PRODUCTION_*` packet metadata values to
      record project refs, owners, URLs, and runbook names on `/admin/launch-gate`.
@@ -86,6 +95,10 @@ Status:
    - Production Supabase project `fnlhontvvprwgooevzdl` already exists, but it
      still needs approved app migrations, auth callback configuration, env vars,
      backup/restore ownership, and a tiny pilot seed plan.
+   - Production Vercel metadata is still incomplete too: project
+     `mymedlife-pwa` exists, but it is not live yet, recent deployments are
+     still preview-only, and the production deploy source plus rollback target
+     are not yet recorded in the packet.
    - The durable packet storage and the signed-in packet readback are already
      proven on staging; the remaining gap is the missing owner decisions and
      production-foundation follow-through, not another unknown storage

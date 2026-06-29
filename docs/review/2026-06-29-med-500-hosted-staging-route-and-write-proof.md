@@ -296,14 +296,23 @@ The packet-storage migration is now applied on hosted staging too:
 
 Durable packet rows now recorded on staging:
 
-- pilot scope:
-  - `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE` = `` `action_started` ``
-  - row id: `e5ed5380-caa9-4bac-bda9-8ea944bfbe6e`
-- production launch:
-  - `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF` = `fnlhontvvprwgooevzdl`
-  - row id: `6090cd26-e1be-4098-bfd6-22b1380aeb14`
+- connector-backed snapshot on 2026-06-29 shows:
+  - `6` pilot-scope rows
+  - `19` production-launch rows
+- pilot-scope values now include:
+  - `MYMEDLIFE_PILOT_CAMPAIGN_SCOPE = Rush Month only`
+  - `MYMEDLIFE_PILOT_COHORT_SIZE = 5-15 students`
+  - `MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE =` `` `action_started` ``
+  - `MYMEDLIFE_PILOT_PROOF_REVIEW_LOOP = metadata submit -> leader review -> audit trail`
+- production-launch values now include:
+  - `MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF = fnlhontvvprwgooevzdl`
+  - `MYMEDLIFE_PRODUCTION_VERCEL_PROJECT = mymedlife-pwa`
+  - `MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL = https://www.mymedlife.org/auth/callback`
+  - `MYMEDLIFE_STAGING_AUTH_CALLBACK_URL = https://staging.mymedlife.org/auth/callback`
+  - `MYMEDLIFE_PRODUCTION_RESTORE_PATH = Supabase PITR plus manual app repair runbook`
 
-Audit proof from the same write pass:
+Audit proof from the same write pass still includes the original authoritative
+packet-write anchors:
 
 - `review_packet_recorded`
   - target id: `e5ed5380-caa9-4bac-bda9-8ea944bfbe6e`
@@ -338,6 +347,15 @@ Route-level readback confirmed from the signed-in hosted session:
   - recorded project ref visible in the packet form:
     `fnlhontvvprwgooevzdl`
 
+Important:
+
+- the hosted browser replay above proves the signed-in app reads the durable
+  packet lane from Supabase
+- the later connector-backed snapshot is what proves the lane has now expanded
+  beyond the original one-row-per-category state
+- this note should not claim a fresh browser screenshot already showed `6` and
+  `19`; that count currently comes from read-only database inspection
+
 What this proves:
 
 - pilot-scope and production-launch packet values are no longer env-only
@@ -346,6 +364,9 @@ What this proves:
   matching audit rows
 - the hosted app itself now reads those durable rows through a signed-in
   reviewer session on both `/admin/pilot-scope` and `/admin/launch-gate`
+- the packet lane is now materially richer than the original proof: pilot scope
+  is no longer just the first-write row, and the production packet now carries
+  names-only ownership, callback, DNS, backup, and control-layer notes
 
 ## What is now honestly proven
 
