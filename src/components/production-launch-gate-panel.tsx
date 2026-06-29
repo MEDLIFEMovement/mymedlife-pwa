@@ -51,6 +51,21 @@ export function ProductionLaunchGatePanel({
         ))}
       </div>
 
+      <div className="mt-5 grid gap-3 xl:grid-cols-2">
+        <SnapshotCard
+          title="Recorded now"
+          description="These staging proof and production-packet items are already visible in the current review state."
+          items={gate.reviewSnapshot.recordedNow}
+          emptyMessage="No staging proof or production-packet items have been recorded yet."
+        />
+        <SnapshotCard
+          title="Still missing now"
+          description="These are the exact owner or evidence gaps still blocking a tiny live pilot."
+          items={gate.reviewSnapshot.stillMissing}
+          emptyMessage="No remaining launch blockers are listed here."
+        />
+      </div>
+
       <article className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -301,6 +316,47 @@ function Checklist({ title, items }: { title: string; items: string[] }) {
         ))}
       </ul>
     </div>
+  );
+}
+
+function SnapshotCard({
+  title,
+  description,
+  items,
+  emptyMessage,
+}: {
+  title: string;
+  description: string;
+  items: Array<{ label: string; detail: string }>;
+  emptyMessage: string;
+}) {
+  return (
+    <article className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
+        {title}
+      </p>
+      <p className="mt-2 text-sm leading-6 text-white/62">{description}</p>
+
+      <div className="mt-4 grid gap-3">
+        {items.length > 0 ? (
+          items.map((item) => (
+            <div
+              key={`${title}-${item.label}`}
+              className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3"
+            >
+              <p className="text-sm font-semibold text-white">{item.label}</p>
+              <p className="mt-1 text-sm leading-6 text-white/62">
+                {item.detail}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-sm leading-6 text-white/62">
+            {emptyMessage}
+          </p>
+        )}
+      </div>
+    </article>
   );
 }
 

@@ -95,6 +95,16 @@ export type ProductionLaunchGate = {
   items: ProductionLaunchGateItem[];
   launchEvidenceChecks: ProductionLaunchEvidenceCheck[];
   environmentReadiness: ProductionEnvironmentReadinessItem[];
+  reviewSnapshot: {
+    recordedNow: Array<{
+      label: string;
+      detail: string;
+    }>;
+    stillMissing: Array<{
+      label: string;
+      detail: string;
+    }>;
+  };
   finalReviewPrompt: string;
 };
 
@@ -129,6 +139,10 @@ export function getProductionLaunchGate(
       items: [],
       launchEvidenceChecks: [],
       environmentReadiness: [],
+      reviewSnapshot: {
+        recordedNow: [],
+        stillMissing: [],
+      },
       finalReviewPrompt: "",
     };
   }
@@ -143,6 +157,10 @@ export function getProductionLaunchGate(
   const environmentReadiness = getProductionEnvironmentReadinessItems(
     pilotRegistry,
     env,
+  );
+  const reviewSnapshot = getProductionLaunchReviewSnapshot(
+    launchEvidenceChecks,
+    environmentReadiness,
   );
   const lumaProofMissing = isHostedLumaPointsProofMissing(options.lumaReadModel);
 
@@ -172,6 +190,7 @@ export function getProductionLaunchGate(
     items,
     launchEvidenceChecks,
     environmentReadiness,
+    reviewSnapshot,
     finalReviewPrompt:
       lumaProofMissing
         ? "Approve a live pilot only after every blocked gate has named evidence, owner sign-off, rollback, and a current smoke test. Until then, keep production writes and external sends disabled, and do not treat the Luma loop as proven until one checked-in attendee creates points and leaderboard readback."
@@ -575,6 +594,47 @@ function compactRecordedEvidence(
   items: Array<string | null | undefined>,
 ): string[] {
   return items.filter((item): item is string => Boolean(item));
+}
+
+function getProductionLaunchReviewSnapshot(
+  launchEvidenceChecks: ProductionLaunchEvidenceCheck[],
+  environmentReadiness: ProductionEnvironmentReadinessItem[],
+): ProductionLaunchGate["reviewSnapshot"] {
+  const recordedNow = [
+    ...launchEvidenceChecks
+      .filter((item) => item.status === "staging_evidence_recorded")
+      .map((item) => ({
+        label: item.label,
+        detail: item.acceptanceSignal,
+      })),
+    ...environmentReadiness
+      .filter((item) => item.status === "recorded_for_review")
+      .map((item) => ({
+        label: item.label,
+        detail:
+          item.recordedEvidence?.[0] ??
+          `Recorded for review under ${item.ownerLane}.`,
+      })),
+  ];
+  const stillMissing = [
+    ...launchEvidenceChecks
+      .filter((item) => item.status === "missing_before_pilot")
+      .map((item) => ({
+        label: item.label,
+        detail: item.blockedUntil,
+      })),
+    ...environmentReadiness
+      .filter((item) => item.status === "missing_before_pilot")
+      .map((item) => ({
+        label: item.label,
+        detail: item.blockedUntil,
+      })),
+  ];
+
+  return {
+    recordedNow,
+    stillMissing,
+  };
 }
 
 export function getProductionLaunchEvidenceChecks(

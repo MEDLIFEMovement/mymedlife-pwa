@@ -23,6 +23,8 @@ describe("production launch gate", () => {
     });
     expect(gate.launchEvidenceChecks).toHaveLength(10);
     expect(gate.environmentReadiness).toHaveLength(7);
+    expect(gate.reviewSnapshot.recordedNow).toEqual([]);
+    expect(gate.reviewSnapshot.stillMissing).toHaveLength(17);
     expect(gate.finalReviewPrompt).toContain("production writes");
   });
 
@@ -247,6 +249,9 @@ describe("production launch gate", () => {
       gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
         ?.status,
     ).toBe("recorded_for_review");
+    expect(
+      gate.reviewSnapshot.recordedNow.map((item) => item.label),
+    ).toContain("Rollback and support owners");
     expect(
       gate.environmentReadiness.find(
         (item) => item.key === "production_env_vars",
@@ -492,6 +497,19 @@ describe("production launch gate", () => {
         ?.acceptanceSignal,
     ).toContain("/app, /leader, /staff, /admin, and /rush-month/leaderboard");
     expect(gate.counts.stagingEvidenceRecorded).toBe(4);
+    expect(
+      gate.reviewSnapshot.recordedNow.map((item) => item.label),
+    ).toEqual(
+      expect.arrayContaining([
+        "Staging deployment URL",
+        "Staging Supabase posture",
+        "Auth callback and role routing",
+        "Luma event, RSVP, attendance, and points loop",
+      ]),
+    );
+    expect(
+      gate.reviewSnapshot.stillMissing.map((item) => item.label),
+    ).toContain("Production Supabase project");
   });
 
   it("keeps every gate write-safe and approval-bound", () => {
