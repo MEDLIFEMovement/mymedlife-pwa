@@ -49,6 +49,10 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
   const productionApprovalRecords = adminState.productionApprovalRecords;
   const result = resolvedSearchParams?.themeResult;
   const message = resolvedSearchParams?.themeMessage;
+  const productionSafetyGateMessage =
+    adminState.persistence.mode === "supabase"
+      ? "Production theme publish, rollback, and restore actions require an approval reference, a fresh admin step-up session, and a separate durable approval row before the theme change runs."
+      : "Production theme changes stay blocked until Supabase-backed control storage and approval rows are available.";
 
   return (
     <AdminAppShell actor={actor}>
@@ -115,7 +119,7 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
             </section>
           ) : null}
 
-          <section className="grid gap-3 sm:grid-cols-4">
+          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
             <MiniStat label="Environment" value={environment} />
             <MiniStat label="Persistence" value={adminState.persistence.mode} />
             <MiniStat label="Theme status" value={snapshot.status} />
@@ -124,11 +128,21 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
               label="Contrast blocks"
               value={`${contrast.filter((item) => item.severity === "block").length}`}
             />
+            <MiniStat label="Audit rows" value={`${auditRecords.length}`} />
+            <MiniStat
+              label="Prod approvals"
+              value={`${productionApprovalRecords.length}`}
+            />
           </section>
 
           <section className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4 text-sm text-slate-600">
             <span className="font-semibold text-slate-950">Control storage:</span>{" "}
             {adminState.persistence.reason}
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4 text-sm text-slate-600">
+            <span className="font-semibold text-slate-950">Production safety gate:</span>{" "}
+            {productionSafetyGateMessage}
           </section>
 
           <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">

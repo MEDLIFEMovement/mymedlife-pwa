@@ -44,6 +44,10 @@ export default async function FeatureFlagsPage({
   const productionApprovalRecords = adminState.productionApprovalRecords;
   const result = resolvedSearchParams?.featureFlagResult;
   const message = resolvedSearchParams?.featureFlagMessage;
+  const productionSafetyGateMessage =
+    adminState.persistence.mode === "supabase"
+      ? "Production provider flags require an approval reference, a fresh admin step-up session, and a separate durable approval row before the flag change runs."
+      : "Production provider flags stay blocked until Supabase-backed control storage and approval rows are available.";
 
   return (
     <AdminAppShell actor={actor}>
@@ -106,7 +110,7 @@ export default async function FeatureFlagsPage({
             </section>
           ) : null}
 
-          <section className="grid gap-3 sm:grid-cols-4">
+          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
             <MiniStat label="Environment" value={environment} />
             <MiniStat label="Persistence" value={adminState.persistence.mode} />
             <MiniStat label="Module flags" value={`${moduleFlags.length}`} />
@@ -115,11 +119,21 @@ export default async function FeatureFlagsPage({
               label="Enabled now"
               value={`${flags.filter((flag) => flag.enabled).length}`}
             />
+            <MiniStat label="Audit rows" value={`${auditRecords.length}`} />
+            <MiniStat
+              label="Prod approvals"
+              value={`${productionApprovalRecords.length}`}
+            />
           </section>
 
           <section className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4 text-sm text-slate-600">
             <span className="font-semibold text-slate-950">Control storage:</span>{" "}
             {adminState.persistence.reason}
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4 text-sm text-slate-600">
+            <span className="font-semibold text-slate-950">Production safety gate:</span>{" "}
+            {productionSafetyGateMessage}
           </section>
 
           <FlagSection title="Module Flags" flags={moduleFlags} environment={environment} />

@@ -66,8 +66,14 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Luma");
     expect(html).toContain("Recent feature flag changes");
     expect(html).toContain("Recent production provider approvals");
+    expect(html).toContain("Audit rows");
+    expect(html).toContain("Prod approvals");
+    expect(html).toContain("Production safety gate:");
     expect(html).toContain(
       "No in-memory feature flag changes have been made for local in this local review session.",
+    );
+    expect(html).toContain(
+      "Production provider flags stay blocked until Supabase-backed control storage and approval rows are available.",
     );
     expect(html).toContain(
       "Production approval rows will appear here once Supabase-backed control storage is active.",
@@ -106,8 +112,14 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Restore MEDLIFE default");
     expect(html).toContain("Contrast checks");
     expect(html).toContain("Recent production theme approvals");
+    expect(html).toContain("Audit rows");
+    expect(html).toContain("Prod approvals");
+    expect(html).toContain("Production safety gate:");
     expect(html).toContain(
       "No in-memory theme changes have been made for local in this local review session.",
+    );
+    expect(html).toContain(
+      "Production theme changes stay blocked until Supabase-backed control storage and approval rows are available.",
     );
     expect(html).toContain(
       "Production approval rows will appear here once Supabase-backed control storage is active.",
