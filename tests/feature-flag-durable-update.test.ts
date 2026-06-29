@@ -5,6 +5,10 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("@/lib/supabase-control-client", () => ({
   createSupabaseControlClient: vi.fn(),
+  isSupabaseControlLayerRequested: vi.fn(
+    (env?: Record<string, string | undefined>) =>
+      (env ?? process.env).MYMEDLIFE_CONTROL_LAYER_SOURCE === "supabase",
+  ),
 }));
 
 const dsAdmin = () => getMockLocalActorContext("ds.admin@mymedlife.test");
@@ -12,6 +16,42 @@ const dsAdmin = () => getMockLocalActorContext("ds.admin@mymedlife.test");
 describe("feature flag durable updates", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("fails closed when Supabase control mode is requested but no control session is available", async () => {
+    const supabaseControl = await import("@/lib/supabase-control-client");
+    const originalControlSource = process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE;
+
+    try {
+      process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE = "supabase";
+      vi.mocked(supabaseControl.createSupabaseControlClient).mockResolvedValue({
+        persistence: {
+          mode: "memory",
+          status: "fallback",
+          reason:
+            "Using in-memory admin controls because no Supabase session token is active.",
+        },
+        client: null,
+      });
+
+      await expect(
+        updateFeatureFlagStatusDurable({
+          actor: dsAdmin(),
+          environment: "staging",
+          key: "events_luma_points",
+          nextStatus: "disabled",
+          reason: "Pause the event loop during hosted review.",
+        }),
+      ).rejects.toThrow(
+        "Supabase-backed feature flag control is required, but no active Supabase control session is available.",
+      );
+    } finally {
+      if (originalControlSource === undefined) {
+        delete process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE;
+      } else {
+        process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE = originalControlSource;
+      }
+    }
   });
 
   it("calls the Supabase RPC with the target_flag_key payload expected by the control-layer function", async () => {

@@ -1,4 +1,7 @@
-import { createSupabaseControlClient } from "@/lib/supabase-control-client";
+import {
+  createSupabaseControlClient,
+  isSupabaseControlLayerRequested,
+} from "@/lib/supabase-control-client";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
@@ -399,6 +402,12 @@ export async function updateFeatureFlagStatusDurable(
     input.nextStatus !== "emergency_disabled";
 
   if (!client) {
+    if (isSupabaseControlLayerRequested()) {
+      throw new Error(
+        "Supabase-backed feature flag control is required, but no active Supabase control session is available.",
+      );
+    }
+
     if (requiresProductionApproval) {
       throw new Error(
         "Production-sensitive provider flags require Supabase-backed control storage.",

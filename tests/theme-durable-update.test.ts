@@ -6,6 +6,7 @@ import type {
 import {
   defaultMedlifeThemeTokens,
   publishThemeDraftDurable,
+  saveThemeDraftDurable,
   restoreDefaultThemeDurable,
   rollbackThemeDurable,
 } from "@/modules/theme";
@@ -13,6 +14,10 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("@/lib/supabase-control-client", () => ({
   createSupabaseControlClient: vi.fn(),
+  isSupabaseControlLayerRequested: vi.fn(
+    (env?: Record<string, string | undefined>) =>
+      (env ?? process.env).MYMEDLIFE_CONTROL_LAYER_SOURCE === "supabase",
+  ),
 }));
 
 const superAdmin = () => getMockLocalActorContext("super.admin@mymedlife.test");
@@ -20,6 +25,42 @@ const superAdmin = () => getMockLocalActorContext("super.admin@mymedlife.test");
 describe("theme durable updates", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("fails closed when Supabase theme control is requested but no control session is available", async () => {
+    const supabaseControl = await import("@/lib/supabase-control-client");
+    const originalControlSource = process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE;
+
+    try {
+      process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE = "supabase";
+      vi.mocked(supabaseControl.createSupabaseControlClient).mockResolvedValue({
+        persistence: {
+          mode: "memory",
+          status: "fallback",
+          reason:
+            "Using in-memory admin controls because no Supabase session token is active.",
+        },
+        client: null,
+      });
+
+      await expect(
+        saveThemeDraftDurable({
+          actor: superAdmin(),
+          environment: "staging",
+          tokenKey: "background",
+          hex: "#f6fbff",
+          reason: "Staging theme review should not fall back to memory here.",
+        }),
+      ).rejects.toThrow(
+        "Supabase-backed theme control is required, but no active Supabase control session is available.",
+      );
+    } finally {
+      if (originalControlSource === undefined) {
+        delete process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE;
+      } else {
+        process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE = originalControlSource;
+      }
+    }
   });
 
   it("records a production approval before publishing a production theme snapshot", async () => {

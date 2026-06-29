@@ -36,6 +36,12 @@ export type SupabaseControlClient = {
   ) => Promise<TResult>;
 };
 
+export function isSupabaseControlLayerRequested(
+  env: EnvSource = process.env,
+): boolean {
+  return env.MYMEDLIFE_CONTROL_LAYER_SOURCE === "supabase";
+}
+
 export async function createSupabaseControlClient(
   env: EnvSource = process.env,
   fetchFn: typeof fetch = fetch,
@@ -49,7 +55,7 @@ export async function createSupabaseControlClient(
       client: SupabaseControlClient;
     }
 > {
-  if (env.MYMEDLIFE_CONTROL_LAYER_SOURCE !== "supabase") {
+  if (!isSupabaseControlLayerRequested(env)) {
     return memoryPersistence(
       "Using in-memory admin controls because MYMEDLIFE_CONTROL_LAYER_SOURCE is not set to supabase.",
     );

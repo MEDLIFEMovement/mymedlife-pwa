@@ -3,7 +3,10 @@ import {
 } from "@/services/role-visibility";
 import { canManageFeatureFlags } from "@/modules/feature-flags";
 import type { FeatureFlagEnvironment } from "@/modules/feature-flags";
-import { createSupabaseControlClient } from "@/lib/supabase-control-client";
+import {
+  createSupabaseControlClient,
+  isSupabaseControlLayerRequested,
+} from "@/lib/supabase-control-client";
 import {
   listRecentProductionControlApprovals,
   recordProductionControlApproval,
@@ -185,6 +188,12 @@ export async function saveThemeDraftDurable(
   const { client } = await createSupabaseControlClient();
 
   if (!client) {
+    if (isSupabaseControlLayerRequested()) {
+      throw new Error(
+        "Supabase-backed theme control is required, but no active Supabase control session is available.",
+      );
+    }
+
     return saveThemeDraft(input);
   }
 
@@ -272,6 +281,12 @@ export async function publishThemeDraftDurable(input: {
   const { client } = await createSupabaseControlClient();
 
   if (!client) {
+    if (isSupabaseControlLayerRequested()) {
+      throw new Error(
+        "Supabase-backed theme control is required, but no active Supabase control session is available.",
+      );
+    }
+
     if (input.environment === "production") {
       throw new Error(
         "Production theme changes require Supabase-backed control storage.",
@@ -368,6 +383,12 @@ export async function rollbackThemeDurable(input: {
   const { client } = await createSupabaseControlClient();
 
   if (!client) {
+    if (isSupabaseControlLayerRequested()) {
+      throw new Error(
+        "Supabase-backed theme control is required, but no active Supabase control session is available.",
+      );
+    }
+
     if (input.environment === "production") {
       throw new Error(
         "Production theme changes require Supabase-backed control storage.",
@@ -464,6 +485,12 @@ export async function restoreDefaultThemeDurable(input: {
   const { client } = await createSupabaseControlClient();
 
   if (!client) {
+    if (isSupabaseControlLayerRequested()) {
+      throw new Error(
+        "Supabase-backed theme control is required, but no active Supabase control session is available.",
+      );
+    }
+
     if (input.environment === "production") {
       throw new Error(
         "Production theme changes require Supabase-backed control storage.",
