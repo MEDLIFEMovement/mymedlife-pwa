@@ -118,6 +118,9 @@ export default async function AdminPage() {
   const nickMvpReviewPacket = getNickMvpReviewPacket(actor);
   const productionLaunchGate = getProductionLaunchGate(actor, process.env, {
     lumaReadModel: lumaActivation,
+    hostedStagingEvidenceObserved:
+      data.source.mode === "supabase" &&
+      lumaActivation.providerStatusLabel === "Staging evidence rows recorded",
   });
   const productionOperationsRunbook = getProductionOperationsRunbook(actor);
   const databaseSecurityDecision = getDatabaseSecurityDecisionPacket(actor);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getProductionLaunchGate } from "@/services/production-launch-gate";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 describe("production launch gate", () => {
   it("gives admins a launch gate that is explicit about missing live evidence", () => {
@@ -327,6 +328,47 @@ describe("production launch gate", () => {
       gate.launchEvidenceChecks.find((check) => check.key === "pilot_support_owner")
         ?.requiredEvidence,
     ).toContain("Maya Support");
+  });
+
+  it("distinguishes staged proof from fully missing launch evidence when hosted staging evidence exists", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, process.env, {
+      lumaReadModel: getStagingLumaEventLoopReadModel("staging"),
+      hostedStagingEvidenceObserved: true,
+    });
+
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_url")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_supabase")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_url")
+        ?.requiredEvidence,
+    ).toContain("already has a stable reviewer URL");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_supabase")
+        ?.acceptanceSignal,
+    ).toContain("Supabase-backed readback");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
+        ?.blockedUntil,
+    ).toContain("still need final approval");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.acceptanceSignal,
+    ).toContain("leaderboard readback");
   });
 
   it("keeps every gate write-safe and approval-bound", () => {

@@ -29,6 +29,9 @@ export default async function AdminLaunchGatePage() {
   });
   const gate = getProductionLaunchGate(actor, process.env, {
     lumaReadModel: lumaActivation,
+    hostedStagingEvidenceObserved:
+      data.source.mode === "supabase" &&
+      lumaActivation.providerStatusLabel === "Staging evidence rows recorded",
   });
   const nextStep = getNextStep(actor);
 

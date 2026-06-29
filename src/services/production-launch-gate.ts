@@ -21,7 +21,9 @@ export type ProductionLaunchGateStatus =
   | "local_evidence_ready"
   | "blocked_before_live";
 
-export type ProductionLaunchEvidenceStatus = "missing_before_pilot";
+export type ProductionLaunchEvidenceStatus =
+  | "missing_before_pilot"
+  | "staging_evidence_recorded";
 export type ProductionEnvironmentReadinessStatus = "missing_before_pilot";
 
 export type ProductionLaunchGateItem = {
@@ -96,6 +98,7 @@ export function getProductionLaunchGate(
   env: Record<string, string | undefined> = process.env,
   options: {
     lumaReadModel?: StagingLumaEventLoopReadModel;
+    hostedStagingEvidenceObserved?: boolean;
   } = {},
 ): ProductionLaunchGate {
   const surfaceFamily = getActorSurfaceFamily(actor);
@@ -129,6 +132,7 @@ export function getProductionLaunchGate(
   const launchEvidenceChecks = getProductionLaunchEvidenceChecks(
     pilotRegistry,
     options.lumaReadModel,
+    Boolean(options.hostedStagingEvidenceObserved),
   );
   const environmentReadiness = getProductionEnvironmentReadinessItems(pilotRegistry);
   const lumaProofMissing = isHostedLumaPointsProofMissing(options.lumaReadModel);
@@ -374,6 +378,7 @@ export function getProductionEnvironmentReadinessItems(
 export function getProductionLaunchEvidenceChecks(
   pilotRegistry = getPhase2PilotRegistry(),
   lumaReadModel?: StagingLumaEventLoopReadModel,
+  hostedStagingEvidenceObserved = false,
 ): ProductionLaunchEvidenceCheck[] {
   const pilotChapter = pilotRegistry.defaults.find(
     (item) => item.key === "pilot_chapter",
@@ -393,37 +398,55 @@ export function getProductionLaunchEvidenceChecks(
       key: "staging_url",
       label: "Staging deployment URL",
       ownerLane: "Engineering",
-      status: "missing_before_pilot",
-      requiredEvidence:
-        "A stable staging URL for the release branch that Nick, HQ, DS, and security can open, plus an approved reviewer access path if the hostname currently redirects through Vercel SSO into `/login?next=/sso-api...`.",
+      status: hostedStagingEvidenceObserved
+        ? "staging_evidence_recorded"
+        : "missing_before_pilot",
+      requiredEvidence: hostedStagingEvidenceObserved
+        ? "Hosted staging already has a stable reviewer URL and a recorded Vercel-SSO-to-myMEDLIFE-login access path. Reviewers still need to confirm the current release branch, role-routed pages, and the route bundle they are using for signoff."
+        : "A stable staging URL for the release branch that Nick, HQ, DS, and security can open, plus an approved reviewer access path if the hostname currently redirects through Vercel SSO into `/login?next=/sso-api...`.",
       reviewRoute: "/admin/launch-gate",
-      acceptanceSignal:
-        "The staging URL renders `/admin`, `/admin/design-qa`, `/admin/nick-review`, `/rush-month`, and `/offline` with the expected local-review posture, and reviewers know how to pass the current Vercel-SSO-to-login staging gate.",
-      blockedUntil: "Staging URL, reviewer access path, and release branch ownership are approved.",
+      acceptanceSignal: hostedStagingEvidenceObserved
+        ? "The recorded staging URL already renders the expected admin, member, and offline routes for review; the remaining step is final reviewer confirmation that the current release branch and access path still match the packet."
+        : "The staging URL renders `/admin`, `/admin/design-qa`, `/admin/nick-review`, `/rush-month`, and `/offline` with the expected local-review posture, and reviewers know how to pass the current Vercel-SSO-to-login staging gate.",
+      blockedUntil: hostedStagingEvidenceObserved
+        ? "Final reviewer confirmation, release-branch ownership, and signoff are still required before pilot approval."
+        : "Staging URL, reviewer access path, and release branch ownership are approved.",
     },
     {
       key: "staging_supabase",
       label: "Staging Supabase posture",
       ownerLane: "Data and Security",
-      status: "missing_before_pilot",
-      requiredEvidence:
-        "Staging Supabase project, migration state, seed strategy, anon/service key handling, and network restrictions reviewed.",
+      status: hostedStagingEvidenceObserved
+        ? "staging_evidence_recorded"
+        : "missing_before_pilot",
+      requiredEvidence: hostedStagingEvidenceObserved
+        ? "Hosted staging is already reading from the reviewed Supabase-backed app data path. DS/security still need to confirm the project, migration state, seed strategy, anon/service key handling, and network restrictions in the final packet."
+        : "Staging Supabase project, migration state, seed strategy, anon/service key handling, and network restrictions reviewed.",
       reviewRoute: "/admin/database-security",
-      acceptanceSignal:
-        "DS/security signs off that staging mirrors approved schema/RLS decisions without exposing service keys.",
-      blockedUntil: "Staging Supabase, schema, and key handling are approved.",
+      acceptanceSignal: hostedStagingEvidenceObserved
+        ? "The current staging reviewer path already proves Supabase-backed readback; the remaining step is DS/security signoff that the environment still mirrors approved schema/RLS decisions without exposing service keys."
+        : "DS/security signs off that staging mirrors approved schema/RLS decisions without exposing service keys.",
+      blockedUntil: hostedStagingEvidenceObserved
+        ? "DS/security review and explicit signoff are still required before pilot approval."
+        : "Staging Supabase, schema, and key handling are approved.",
     },
     {
       key: "auth_callbacks",
       label: "Auth callback and role routing",
       ownerLane: "Security and Student Access",
-      status: "missing_before_pilot",
-      requiredEvidence:
-        "Approved callback URLs, invite flow, profile creation flow, role assignment rules, Goal 157 auth preflight sign-off, restricted-state review, and an explicit decision on the current Vercel-SSO-gated staging access path.",
+      status: hostedStagingEvidenceObserved
+        ? "staging_evidence_recorded"
+        : "missing_before_pilot",
+      requiredEvidence: hostedStagingEvidenceObserved
+        ? "The staging reviewer path already shows Vercel SSO handing off into the myMEDLIFE login flow and routing seeded users into role-scoped views. Final approval still needs the callback URLs, invite flow, profile creation flow, role assignment rules, Goal 157 auth preflight sign-off, and explicit security decision on that access path."
+        : "Approved callback URLs, invite flow, profile creation flow, role assignment rules, Goal 157 auth preflight sign-off, restricted-state review, and an explicit decision on the current Vercel-SSO-gated staging access path.",
       reviewRoute: "/onboarding",
-      acceptanceSignal:
-        "A staging actor passes the approved staging access path, signs in through approved auth, lands in the correct role-scoped view without local preview email, and matches the preflight evidence.",
-      blockedUntil: "Production auth, role routing, and the staging access path are approved.",
+      acceptanceSignal: hostedStagingEvidenceObserved
+        ? "A staging actor already passes the current approved access path and lands in a role-scoped view; the remaining step is human signoff that the staging auth path, role routing, and preflight evidence are acceptable for pilot use."
+        : "A staging actor passes the approved staging access path, signs in through approved auth, lands in the correct role-scoped view without local preview email, and matches the preflight evidence.",
+      blockedUntil: hostedStagingEvidenceObserved
+        ? "Production auth, role routing, and the staging access path still need final approval before pilot use."
+        : "Production auth, role routing, and the staging access path are approved.",
     },
     {
       key: "rls_ci",
@@ -453,7 +476,10 @@ export function getProductionLaunchEvidenceChecks(
       key: "luma_event_loop",
       label: "Luma event, RSVP, attendance, and points loop",
       ownerLane: "Events, Data Solutions, and Launch",
-      status: "missing_before_pilot",
+      status:
+        lumaReadModel && !isHostedLumaPointsProofMissing(lumaReadModel)
+          ? "staging_evidence_recorded"
+          : "missing_before_pilot",
       requiredEvidence: getLumaLaunchRequiredEvidence(lumaReadModel),
       reviewRoute: "/admin/luma-live-pilot",
       acceptanceSignal: getLumaLaunchAcceptanceSignal(lumaReadModel),
