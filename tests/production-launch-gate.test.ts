@@ -150,8 +150,26 @@ describe("production launch gate", () => {
     ).toContain("create or update the approved Luma event");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.requiredEvidence,
+    ).toContain("/app, /leader, /staff, /admin, and /rush-month/leaderboard");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.acceptanceSignal,
     ).toContain("zero unauthorized outbox sends");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.supportingRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/app",
+        "/leader",
+        "/staff",
+        "/admin",
+        "/rush-month/leaderboard",
+        "/admin/audit-log",
+        "/admin/integration-outbox",
+      ]),
+    );
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.reviewRoute,
@@ -469,6 +487,10 @@ describe("production launch gate", () => {
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.acceptanceSignal,
     ).toContain("leaderboard readback");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.acceptanceSignal,
+    ).toContain("/app, /leader, /staff, /admin, and /rush-month/leaderboard");
     expect(gate.counts.stagingEvidenceRecorded).toBe(4);
   });
 

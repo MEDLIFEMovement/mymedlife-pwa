@@ -186,6 +186,19 @@ function LaunchEvidenceCard({ check }: { check: ProductionLaunchEvidenceCheck })
         </span>
       </div>
 
+      {check.supportingRoutes?.length ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {check.supportingRoutes.map((route) => (
+            <span
+              key={`${check.key}-${route}`}
+              className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58"
+            >
+              {route}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
       <dl className="mt-4 space-y-3 text-sm leading-6">
         <div>
           <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">

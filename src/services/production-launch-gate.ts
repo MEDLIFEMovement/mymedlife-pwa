@@ -48,6 +48,7 @@ export type ProductionLaunchEvidenceCheck = {
   status: ProductionLaunchEvidenceStatus;
   requiredEvidence: string;
   reviewRoute: string;
+  supportingRoutes?: string[];
   acceptanceSignal: string;
   blockedUntil: string;
 };
@@ -683,6 +684,15 @@ export function getProductionLaunchEvidenceChecks(
           : "missing_before_pilot",
       requiredEvidence: getLumaLaunchRequiredEvidence(lumaReadModel),
       reviewRoute: "/admin/luma-live-pilot",
+      supportingRoutes: [
+        "/app",
+        "/leader",
+        "/staff",
+        "/admin",
+        "/rush-month/leaderboard",
+        "/admin/audit-log",
+        "/admin/integration-outbox",
+      ],
       acceptanceSignal: getLumaLaunchAcceptanceSignal(lumaReadModel),
       blockedUntil: getLumaLaunchBlockedUntil(lumaReadModel),
     },
@@ -759,24 +769,24 @@ function getLumaLaunchRequiredEvidence(
   lumaReadModel?: StagingLumaEventLoopReadModel,
 ) {
   if (!lumaReadModel) {
-    return "Hosted staging proof that myMEDLIFE can create or update the approved Luma event, write a member RSVP to Luma, import approved attendance from Luma, and show points plus chapter/organization leaderboard readback without exposing Luma secrets.";
+    return "Hosted staging proof that myMEDLIFE can create or update the approved Luma event, write a member RSVP to Luma, import approved attendance from Luma, and show points plus chapter/organization leaderboard readback across /app, /leader, /staff, /admin, and /rush-month/leaderboard without exposing Luma secrets.";
   }
 
   if (isHostedLumaPointsProofMissing(lumaReadModel)) {
-    return `Hosted staging already shows the Luma event and RSVP path, but it still needs one real host-side Luma check-in so attendance import can produce points and chapter/organization leaderboard readback. Current staging summary: ${lumaReadModel.summary.rsvpCount} RSVP(s), ${lumaReadModel.summary.attendanceCount} attendance row(s), ${lumaReadModel.summary.pointsAwarded} point(s).`;
+    return `Hosted staging already shows the Luma event and RSVP path, but it still needs one real host-side Luma check-in so attendance import can produce points and chapter/organization leaderboard readback across /app, /leader, /staff, /admin, and /rush-month/leaderboard. Current staging summary: ${lumaReadModel.summary.rsvpCount} RSVP(s), ${lumaReadModel.summary.attendanceCount} attendance row(s), ${lumaReadModel.summary.pointsAwarded} point(s).`;
   }
 
-  return `Hosted staging shows the approved Luma loop with ${lumaReadModel.summary.rsvpCount} RSVP(s), ${lumaReadModel.summary.attendanceCount} attendance row(s), and ${lumaReadModel.summary.pointsAwarded} point(s). Reviewers still need the final launch packet, owner signoff, and rollback proof before a live pilot invite.`;
+  return `Hosted staging shows the approved Luma loop with ${lumaReadModel.summary.rsvpCount} RSVP(s), ${lumaReadModel.summary.attendanceCount} attendance row(s), and ${lumaReadModel.summary.pointsAwarded} point(s) across /app, /leader, /staff, /admin, and /rush-month/leaderboard. Reviewers still need the final launch packet, owner signoff, and rollback proof before a live pilot invite.`;
 }
 
 function getLumaLaunchAcceptanceSignal(
   lumaReadModel?: StagingLumaEventLoopReadModel,
 ) {
   if (!lumaReadModel || isHostedLumaPointsProofMissing(lumaReadModel)) {
-    return "Reviewers can see the event id, RSVP count, attendance import count, points awarded, leaderboard status, audit/readback notes, and zero unauthorized outbox sends in the staged Luma live-pilot surface after one checked-in attendee has been imported.";
+    return "Reviewers can see the event id, RSVP count, attendance import count, points awarded, leaderboard status, audit/readback notes, and zero unauthorized outbox sends in the staged Luma live-pilot surface, then confirm the same loop on /app, /leader, /staff, /admin, and /rush-month/leaderboard after one checked-in attendee has been imported.";
   }
 
-  return `Reviewers can see the staged Luma live-pilot surface with ${lumaReadModel.summary.attendanceCount} attendance row(s), ${lumaReadModel.summary.pointsAwarded} point(s), leaderboard readback, audit notes, and zero unauthorized outbox sends.`;
+  return `Reviewers can see the staged Luma live-pilot surface with ${lumaReadModel.summary.attendanceCount} attendance row(s), ${lumaReadModel.summary.pointsAwarded} point(s), leaderboard readback, audit notes, zero unauthorized outbox sends, and matching event-loop readback on /app, /leader, /staff, /admin, and /rush-month/leaderboard.`;
 }
 
 function getLumaLaunchBlockedUntil(
