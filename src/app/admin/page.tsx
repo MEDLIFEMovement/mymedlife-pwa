@@ -11,7 +11,12 @@ import { DesignQaReadinessPanel } from "@/components/design-qa-readiness-panel";
 import { EnvironmentSafetySummaryPanel } from "@/components/environment-safety-summary-panel";
 import { EventOutboxLog } from "@/components/event-outbox-log";
 import { MetricCard } from "@/components/metric-card";
-import { PanelButton, SurfacePanel, StatusPill } from "@/components/visual-primitives";
+import {
+  PanelButton,
+  StatCard,
+  SurfacePanel,
+  StatusPill,
+} from "@/components/visual-primitives";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
 import { MvpProgressMapPanel } from "@/components/mvp-progress-map-panel";
 import { MvpReleaseReadinessPanel } from "@/components/mvp-release-readiness-panel";
@@ -95,6 +100,9 @@ export default async function AdminPage() {
     mode: "staging",
     data,
   });
+  const hostedStagingEvidenceObserved =
+    data.source.mode === "supabase" &&
+    lumaActivation.providerStatusLabel === "Staging evidence rows recorded";
   const lumaEventLoop = getLumaEventLoopPilotReadback("admin", lumaSnapshot, {
     activation: lumaActivation,
   });
@@ -108,9 +116,7 @@ export default async function AdminPage() {
   const adminGlossary = getAdminGlossary(actor);
   const controlledPilotReadiness = getControlledPilotReadiness(actor, {
     lumaReadModel: lumaActivation,
-    hostedStagingEvidenceObserved:
-      data.source.mode === "supabase" &&
-      lumaActivation.providerStatusLabel === "Staging evidence rows recorded",
+    hostedStagingEvidenceObserved,
   });
   const designQaReadiness = getDesignQaReadiness(actor);
   const environmentSafetySummary = getEnvironmentSafetySummary(actor);
@@ -118,13 +124,15 @@ export default async function AdminPage() {
   const writeResultStateCoverage = getWriteResultStateCoverageSummary();
   const mvpCoverageChecklist = getMvpCoverageChecklist(actor, data);
   const mvpProgressMap = getMvpProgressMap(actor);
-  const releaseReadiness = getMvpReleaseReadinessSummary(actor);
+  const releaseReadiness = getMvpReleaseReadinessSummary(actor, {
+    env: process.env,
+    lumaReadModel: lumaActivation,
+    hostedStagingEvidenceObserved,
+  });
   const nickMvpReviewPacket = getNickMvpReviewPacket(actor);
   const productionLaunchGate = getProductionLaunchGate(actor, process.env, {
     lumaReadModel: lumaActivation,
-    hostedStagingEvidenceObserved:
-      data.source.mode === "supabase" &&
-      lumaActivation.providerStatusLabel === "Staging evidence rows recorded",
+    hostedStagingEvidenceObserved,
   });
   const productionOperationsRunbook = getProductionOperationsRunbook(actor);
   const databaseSecurityDecision = getDatabaseSecurityDecisionPacket(actor);
@@ -136,6 +144,7 @@ export default async function AdminPage() {
     coachDecision: data.kpiSummary.coachDecision,
   });
   const backendLaneLinks = getBackendLaneLinks(actor);
+  const productionSnapshot = releaseReadiness.productionReadiness;
 
   return (
     <AdminAppShell actor={actor}>
@@ -196,6 +205,67 @@ export default async function AdminPage() {
           </div>
         </div>
       </SurfacePanel>
+
+      {productionSnapshot ? (
+        <SurfacePanel
+          as="section"
+          className="rounded-[1.75rem] border border-slate-200 bg-white p-5"
+        >
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="app-eyebrow app-eyebrow-slate">Production packet</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                Recorded launch answers versus what still needs owners
+              </h2>
+              <p className="app-copy mt-2 max-w-3xl">
+                This is the fast read for DS and HQ: what is already recorded in
+                the production packet, what hosted proof is already captured,
+                and what is still missing before a tiny live pilot can move
+                forward.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <PanelButton href="/admin/release-readiness" variant="secondary">
+                Open release readiness
+              </PanelButton>
+              <PanelButton href="/admin/launch-gate" variant="secondary">
+                Open launch gate
+              </PanelButton>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard
+              label="Env recorded"
+              value={productionSnapshot.recordedEnvironmentCount}
+              note="Names-only production packet items already recorded"
+              tone="soft"
+            />
+            <StatCard
+              label="Env missing"
+              value={productionSnapshot.missingEnvironmentCount}
+              note="Environment decisions still waiting on named owners"
+              tone="soft"
+            />
+            <StatCard
+              label="Proof recorded"
+              value={productionSnapshot.stagingEvidenceRecordedCount}
+              note="Hosted staging proof items already captured"
+              tone="soft"
+            />
+            <StatCard
+              label="Proof missing"
+              value={productionSnapshot.missingEvidenceCount}
+              note="Hosted proof and approval items still blocking the pilot"
+              tone="soft"
+            />
+          </div>
+
+          <p className="mt-4 rounded-[1.2rem] border border-slate-200 bg-[var(--mymedlife-surface-tint)] px-4 py-3 text-sm leading-6 text-slate-600">
+            {productionSnapshot.nextDecision}
+          </p>
+        </SurfacePanel>
+      ) : null}
 
       <SurfacePanel as="section" className="rounded-[2rem] border border-[var(--accent)]/25 bg-[var(--background)] p-5">
         <p className="app-eyebrow app-eyebrow-blue">Event loop</p>
