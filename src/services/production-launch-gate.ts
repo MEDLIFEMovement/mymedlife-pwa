@@ -58,6 +58,7 @@ export type ProductionEnvironmentReadinessItem = {
     | "production_supabase_project"
     | "production_vercel_environment"
     | "production_env_vars"
+    | "rollout_control_layer"
     | "auth_callback_urls"
     | "dns_domain_plan"
     | "backup_restore_path"
@@ -254,6 +255,14 @@ export function getProductionEnvironmentReadinessItems(
     env,
     "MYMEDLIFE_PRODUCTION_LUMA_SCOPE",
   );
+  const productionControlLayerStatus = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS",
+  );
+  const productionControlLayerProofNote = readRecordedPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE",
+  );
   const productionAuthCallbackUrl = readRecordedPacketValue(
     env,
     "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
@@ -299,6 +308,9 @@ export function getProductionEnvironmentReadinessItems(
     Boolean(productionRollbackTarget);
   const envPacketRecorded =
     Boolean(productionEnvPacketStatus) && Boolean(productionSecretOwner);
+  const controlLayerPacketRecorded =
+    Boolean(productionControlLayerStatus) &&
+    Boolean(productionControlLayerProofNote);
   const authPacketRecorded =
     Boolean(productionAuthCallbackUrl) && Boolean(stagingAuthCallbackUrl);
   const dnsPacketRecorded =
@@ -469,6 +481,43 @@ export function getProductionEnvironmentReadinessItems(
         envPacketRecorded
           ? "Final DS/platform review still needs current secret presence checks and confirmation that non-approved integration keys remain unset."
           : "DS/platform confirms production env-var names, scopes, and secret ownership.",
+      secretsShown: 0,
+    },
+    {
+      key: "rollout_control_layer",
+      label: "Rollout control layer readiness",
+      ownerLane: "DS / Platform",
+      status: controlLayerPacketRecorded
+        ? "recorded_for_review"
+        : "missing_before_pilot",
+      recordedEvidence: controlLayerPacketRecorded
+        ? compactRecordedEvidence([
+            `Control-layer status: ${productionControlLayerStatus}.`,
+            `Proof note: ${productionControlLayerProofNote}.`,
+          ])
+        : undefined,
+      requiredEvidence: [
+        "The rollout-controls migration is applied in the target environment so `app.feature_flag_overrides`, `app.feature_flag_audit_records`, `app.theme_snapshots`, `app.theme_audit_records`, `app.admin_step_up_sessions`, `app.production_control_approvals`, and the audited write functions are readable.",
+        "`/admin/feature-flags` and `/admin/theme` render without the persistence warning in the target environment.",
+        "One DS/Admin feature-flag save and one theme-token save record visible audit rows before the environment is treated as control-layer ready.",
+        "Production-sensitive flag/theme changes create a visible `production_control_approvals` row before the durable control mutation is treated as review-complete.",
+        "`MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` is enabled only after DS/Admin control-layer read/write proof is captured.",
+      ],
+      safeDefaults: [
+        "Keep anonymous staging visitors on the default preview posture unless they are in the approved reviewer sign-in path.",
+        "Do not treat `Supabase-backed` UI copy alone as proof; the pages must stop showing the persistence warning.",
+        "Production remains blocked if reviewers cannot read or audit the feature-flag and theme tables in that environment.",
+      ],
+      reviewRoutes: [
+        "/admin/feature-flags",
+        "/admin/theme",
+        "/admin/launch-gate",
+        "/admin/audit-log",
+      ],
+      blockedUntil:
+        controlLayerPacketRecorded
+          ? "Final DS/platform review still needs current feature-flag save, theme save, durable step-up, and approval-row readback in the target environment."
+          : "DS/platform records the control-layer migration, page readback, DS/Admin writes, and approval-row proof for the target environment.",
       secretsShown: 0,
     },
     {

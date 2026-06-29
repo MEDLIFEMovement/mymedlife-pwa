@@ -173,6 +173,10 @@ Required evidence:
 - `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` is only enabled after that
   DS/Admin control-layer read/write proof is captured.
 
+Names-only packet fields when this proof is recorded:
+- `MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS`
+- `MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE`
+
 Safe defaults:
 - Keep anonymous staging visitors on the default preview posture unless they
   are in the approved reviewer sign-in path.

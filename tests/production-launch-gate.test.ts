@@ -19,12 +19,12 @@ describe("production launch gate", () => {
       stagingEvidenceRecorded: 0,
       blockedBeforeLive: 7,
       launchEvidenceChecks: 10,
-      environmentReadinessItems: 7,
+      environmentReadinessItems: 8,
     });
     expect(gate.launchEvidenceChecks).toHaveLength(10);
-    expect(gate.environmentReadiness).toHaveLength(7);
+    expect(gate.environmentReadiness).toHaveLength(8);
     expect(gate.reviewSnapshot.recordedNow).toEqual([]);
-    expect(gate.reviewSnapshot.stillMissing).toHaveLength(17);
+    expect(gate.reviewSnapshot.stillMissing).toHaveLength(18);
     expect(gate.finalReviewPrompt).toContain("production writes");
   });
 
@@ -229,6 +229,7 @@ describe("production launch gate", () => {
       "production_supabase_project",
       "production_vercel_environment",
       "production_env_vars",
+      "rollout_control_layer",
       "auth_callback_urls",
       "dns_domain_plan",
       "backup_restore_path",
@@ -314,6 +315,29 @@ describe("production launch gate", () => {
       ]),
     );
     expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollout_control_layer",
+      )?.requiredEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("app.feature_flag_overrides"),
+        expect.stringContaining("feature-flag save"),
+        expect.stringContaining("production_control_approvals"),
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollout_control_layer",
+      )?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/feature-flags",
+        "/admin/theme",
+        "/admin/launch-gate",
+        "/admin/audit-log",
+      ]),
+    );
+    expect(
       gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
         ?.requiredEvidence,
     ).toEqual(expect.arrayContaining([expect.stringContaining("www.mymedlife.org")]));
@@ -372,6 +396,10 @@ describe("production launch gate", () => {
       MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS: "reviewed by DS/platform",
       MYMEDLIFE_PRODUCTION_SECRET_OWNER: "DS/platform",
       MYMEDLIFE_PRODUCTION_LUMA_SCOPE: "approved pilot calendar only",
+      MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS:
+        "staging proof captured; production apply still blocked",
+      MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE:
+        "Feature-flag save, theme save, durable step-up, and approval-row readback recorded on staging",
       MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL: "https://www.mymedlife.org/auth/callback",
       MYMEDLIFE_STAGING_AUTH_CALLBACK_URL: "https://staging.mymedlife.org/auth/callback",
       MYMEDLIFE_PRODUCTION_ROLE_ROUTING_NOTE: "backend-routed role shells",
@@ -417,6 +445,21 @@ describe("production launch gate", () => {
         "Names-only env-var manifest: reviewed by DS/platform.",
         "Secret owner: DS/platform.",
         "Approved Luma scope: approved pilot calendar only.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollout_control_layer",
+      )?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollout_control_layer",
+      )?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Control-layer status: staging proof captured; production apply still blocked.",
+        "Proof note: Feature-flag save, theme save, durable step-up, and approval-row readback recorded on staging.",
       ]),
     );
     expect(
