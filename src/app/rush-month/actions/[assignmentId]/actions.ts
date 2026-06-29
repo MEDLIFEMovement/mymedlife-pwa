@@ -175,8 +175,9 @@ export async function submitAssignmentProofForLocalSupabase(
       success: false,
       code: "missing_auth",
       assignmentId,
-      plainEnglishMessage:
-        "Sign in with a local Supabase seed user before submitting proof.",
+      plainEnglishMessage: config.isLocalOnly
+        ? "Sign in with a local Supabase seed user before submitting proof."
+        : "Sign in through the approved staging review path before submitting proof.",
     };
   }
 
@@ -210,7 +211,7 @@ export async function submitAssignmentProofForLocalSupabase(
       code: "server_error",
       assignmentId,
       plainEnglishMessage:
-        "Local Supabase did not return the expected proof-submission record. No upload or external automation ran.",
+        "Supabase did not return the expected proof-submission record. No upload or external automation ran.",
     };
   }
 

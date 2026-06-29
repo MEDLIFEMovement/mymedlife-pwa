@@ -80,7 +80,7 @@ export function MemberActionDetailPanel({
                 Action loop
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Start the action, capture proof, and submit the preview when the chapter
+                Start the action, capture proof, and submit it when the chapter
                 story is ready to be reviewed.
               </p>
             </div>
@@ -178,8 +178,8 @@ export function MemberActionDetailPanel({
               Submission path
             </p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Use the preview route first so the proof story stays legible before any
-              save state is opened.
+              Use the member submit route so the proof story stays legible before it
+              moves into leader review.
             </p>
             <p className="mt-3 text-sm font-semibold text-slate-950">{workspace.helperLabel}</p>
             <Link

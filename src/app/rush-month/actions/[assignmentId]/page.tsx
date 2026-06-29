@@ -25,7 +25,7 @@ import {
   getActionStartResultStates,
   getDisabledActionStartResultPreview,
 } from "@/services/action-start-result-states";
-import { getActionStartWriteReadiness } from "@/services/action-start-write";
+import { getActionStartWriteReadiness, isUuid } from "@/services/action-start-write";
 import { getActionProofHandoffWorkspace } from "@/services/action-proof-handoff";
 import {
   canSubmitProofForAssignment,
@@ -205,10 +205,12 @@ export default async function ActionDetailPage({
       source: effectiveMemberActionSource ?? undefined,
       step: "submitted",
     });
-    const showSubmitStep = memberActionStep === "submit" && canSubmitProof;
-    const showSubmittedStep = memberActionStep === "submitted" && canSubmitProof;
-    const showMemberSubmitState = showSubmitStep || showSubmittedStep;
-    const memberActionOrigin = relatedEvent
+  const showSubmitStep = memberActionStep === "submit" && canSubmitProof;
+  const showSubmittedStep = memberActionStep === "submitted" && canSubmitProof;
+  const showMemberSubmitState = showSubmitStep || showSubmittedStep;
+  const showServerBackedProofSubmit =
+    showSubmitStep && isUuid(assignment.id);
+  const memberActionOrigin = relatedEvent
       ? null
       : getMemberActionOrigin(effectiveMemberActionSource);
     const memberActionSourceContext = relatedEvent
@@ -274,7 +276,17 @@ export default async function ActionDetailPage({
             </div>
           ) : null}
 
-          {showSubmitStep ? (
+          {showSubmitStep && showServerBackedProofSubmit ? (
+            <ProofSubmissionServerActionPanel
+              assignment={assignment}
+              readiness={proofSubmissionWriteReadiness}
+              resultCode={proofSubmissionResultCode}
+              defaultInput={proofSubmissionInput}
+              returnToHref={submitEvidenceHref}
+            />
+          ) : null}
+
+          {showSubmitStep && !showServerBackedProofSubmit ? (
             <MemberActionDetailPreview
               assignment={memberWorkspace.previewAssignment}
               editHref={submitEvidenceHref}

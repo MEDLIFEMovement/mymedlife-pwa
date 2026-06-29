@@ -125,7 +125,7 @@ describe("member action detail page", () => {
       html.indexOf("Invite 3 friends to the Intro GBM"),
     );
     expect(html).toContain("Action loop");
-    expect(html).toContain("Start the action, capture proof, and submit the preview when the chapter story is ready to be reviewed.");
+    expect(html).toContain("Start the action, capture proof, and submit it when the chapter story is ready to be reviewed.");
     expect(html).toContain("Due");
     expect(html).toContain("Owner");
     expect(html).toContain("Points");

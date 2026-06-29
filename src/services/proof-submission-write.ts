@@ -28,6 +28,7 @@ export type ProofSubmissionWriteConfig =
 
 export type ProofSubmissionWriteReadiness = {
   operation: "evidence_submitted";
+  environmentLabel: "Local review lane" | "Hosted staging lane";
   canSubmit: boolean;
   resultCodeIfSubmitted: ProofSubmissionResultCode;
   reason: string;
@@ -247,6 +248,9 @@ export function getProofSubmissionWriteReadiness(
 
   return {
     operation: "evidence_submitted",
+    environmentLabel: config.isLocalOnly
+      ? "Local review lane"
+      : "Hosted staging lane",
     canSubmit: config.enabled && !failedCheck,
     resultCodeIfSubmitted:
       config.enabled && !failedCheck
@@ -273,7 +277,7 @@ export function getProofSubmissionReadbackState(
       confirmsSubmitted: false,
       tone: "info",
       message:
-        "No local proof status change is expected for this result. The page is still reading the current assignment state safely.",
+        "No proof status change is expected for this result. The page is still reading the current assignment state safely.",
     };
   }
 
@@ -283,7 +287,7 @@ export function getProofSubmissionReadbackState(
       confirmsSubmitted: true,
       tone: "success",
       message:
-        "Local readback confirms this proof/testimonial is submitted for HQ review.",
+        "Readback confirms this proof/testimonial is now submitted for leader review in Supabase.",
     };
   }
 
@@ -310,7 +314,7 @@ export function mapProofSubmissionRpcSuccess(
     outboxId: row.outbox_id,
     auditLogId: row.audit_log_id,
     plainEnglishMessage:
-      "Proof/testimonial metadata submitted locally. The app recorded the evidence item, event, integration event, disabled outbox row, and audit log. No upload, public sharing, or external send happened.",
+      "Proof/testimonial metadata submitted. The app recorded the evidence item, event, integration event, disabled outbox row, and audit log. No upload, public sharing, or external send happened.",
   };
 }
 
@@ -332,7 +336,7 @@ export function mapProofSubmissionRpcError(
     return failureResult(
       assignmentId,
       "missing_auth",
-      "Sign in with a local Supabase seed user before submitting proof.",
+      "Sign in through the approved review path before submitting proof.",
     );
   }
 
