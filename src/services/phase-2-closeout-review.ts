@@ -389,7 +389,7 @@ export function getPhase2CloseoutReview(
           pilotRegistry.defaults.find((item) => item.key === "pilot_chapter")?.value ??
           "UCLA MEDLIFE"
         }.`,
-        "Rush Month only, 5-10 students, one support owner, and one support/pause channel remain the recommended minimum unless final approvals replace them.",
+        "Rush Month only, 5-15 students, one support owner, and one support/pause channel remain the recommended minimum unless final approvals replace them.",
       ],
     },
     {

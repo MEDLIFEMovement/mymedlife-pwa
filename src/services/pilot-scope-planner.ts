@@ -150,7 +150,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
     plainEnglishSummary:
       "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
     recommendedScope:
-      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-10 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one named support owner, one support/pause channel, `action_started` as the first hosted write, and the approved Luma event/RSVP/attendance/points loop as the only external-family pilot path.",
+      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-15 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one named support owner, one support/pause channel, `action_started` as the first hosted write, and the approved Luma event/RSVP/attendance/points loop as the only external-family pilot path.",
     closeoutDefaults,
     ownerSlots,
     approvalReplyGuide: [

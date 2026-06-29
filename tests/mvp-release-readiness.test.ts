@@ -275,7 +275,7 @@ describe("mvp release readiness", () => {
       "action_started",
     );
     expect(summary.phase2Closeout?.stillBlocked).toContain(
-      "Hosted `action_started` proof on staging",
+      "Hosted `action_started` signoff and approval recording",
     );
     expect(summary.phase2Closeout?.namedOwnersStillNeeded).toContain(
       "rollback owner",

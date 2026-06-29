@@ -12,7 +12,7 @@ describe("pilot scope planner", () => {
     expect(planner.verdict).toBe("pilot_scope_not_approved");
     expect(planner.counts.candidates).toBe(4);
     expect(planner.counts.recommendedCandidates).toBe(1);
-    expect(planner.counts.pendingNamedOwners).toBe(6);
+    expect(planner.counts.pendingNamedOwners).toBe(7);
     expect(planner.counts.browserWritesExpected).toBe(0);
     expect(planner.counts.externalWritesExpected).toBe(0);
     expect(planner.recommendedScope).toContain("one chapter");

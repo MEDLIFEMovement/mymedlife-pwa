@@ -624,7 +624,7 @@ function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
   return {
     title: "Phase 2 live MVP pilot closeout",
     summary:
-      "Phase 2 should now be read as a controlled hosted pilot closeout, not just local MVP review. The repo has the default packet, pilot planner, onboarding preflight, first-write closeout framing, and hosted proof-loop framing, but the hosted pilot is still waiting on named owners and staging proof.",
+      "Phase 2 should now be read as a controlled hosted pilot closeout, not just local MVP review. The repo has the default packet, pilot planner, onboarding preflight, first-write closeout framing, and hosted proof-loop framing. The remaining blockers are named owners, final human signoff, and the production foundation for a tiny live pilot, not rediscovering whether hosted staging works.",
     packetPath:
       "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
     provenNow: [
@@ -639,8 +639,8 @@ function getPhase2CloseoutSnapshot(): Phase2CloseoutSnapshot {
     stillBlocked: [
       "Named pilot owners and rollback owner",
       "Hosted auth approval for the pilot cohort",
-      "Hosted `action_started` proof on staging",
-      "Smallest hosted proof/review loop approval and evidence",
+      "Hosted `action_started` signoff and approval recording",
+      "Smallest hosted proof/review loop signoff and approval recording",
       "Final support/pause channel confirmation",
       "Explicit external-integration hold signoff",
     ],

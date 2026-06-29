@@ -27,7 +27,7 @@ Close Phase 2 at the smallest safe real pilot:
 
 - Planning default chapter: `UCLA MEDLIFE`
 - Campaign scope: `Rush Month only`
-- Pilot cohort size: `5-10 students`
+- Pilot cohort size: `5-15 students`
 - First hosted write: `action_started`
 - Smallest real proof loop: `proof metadata submission + leader review`
 - Event/NPS posture: `Luma-backed event / RSVP / attendance / points loop with manual NPS support`

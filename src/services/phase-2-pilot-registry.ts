@@ -67,7 +67,7 @@ const defaultDefinitions: DefaultDefinition[] = [
   {
     key: "cohort_size",
     label: "Pilot cohort size",
-    defaultValue: "5-10 students",
+    defaultValue: "5-15 students",
     envKey: "MYMEDLIFE_PILOT_COHORT_SIZE",
     whyThisIsDefault:
       "That is large enough to make hosted auth and review feel real without hiding product or support issues inside a broad rollout.",

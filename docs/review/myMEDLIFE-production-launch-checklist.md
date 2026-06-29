@@ -35,7 +35,7 @@ Status:
      - `action_started` as the first hosted write
      - metadata submit -> leader review -> audit trail as the smallest proof loop
      - external systems staying off for now
-   - What is still missing is the hosted evidence itself, not another blank approval field.
+   - What is still missing now is the final signoff trail and production-foundation follow-through, not another blank approval field.
 3. Confirm the production environment path for Supabase, Vercel, domain/DNS, secrets, and backup/restore.
 4. Confirm the rollout-control layer is actually live in the target environment.
    - Hosted staging already has `app.feature_flag_overrides`,
@@ -59,7 +59,7 @@ Status:
 
 ### 2. Access and auth
 
-- Capture hosted staging proof for the approved reviewer path.
+- Reconfirm the hosted reviewer path and role-routed sign-in flow on the approved staging alias.
 - Approve production auth callbacks and role routing.
 - Verify member, leader, staff, admin, and SLT Prep access boundaries.
 

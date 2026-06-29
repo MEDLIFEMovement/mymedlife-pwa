@@ -252,7 +252,7 @@ function buildLaunchPreflight(
       label: "Choose the first hosted cohort path",
       ownerLane: "Launch and HQ Operations",
       status: pilotDefaultsRecorded ? "ready" : "watch",
-      question: "How will the first 5-10 pilot users get access without opening broad onboarding writes?",
+      question: "How will the first 5-15 pilot users get access without opening broad onboarding writes?",
       requiredEvidence:
         "The team should name the first cohort and confirm whether staging pilot users are pre-provisioned manually or invited through a later approved join/onboarding path.",
       currentPosture:
