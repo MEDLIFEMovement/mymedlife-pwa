@@ -28,7 +28,7 @@ describe("phase 2 closeout review", () => {
       "Pilot chapter: UCLA MEDLIFE",
     );
     expect(review.doneCriteria).toHaveLength(8);
-    expect(review.hostedEvidenceChecklist).toHaveLength(6);
+    expect(review.hostedEvidenceChecklist).toHaveLength(7);
 
     const laneHrefs = review.lanes.map((lane) => lane.href);
     expect(laneHrefs).toEqual(
@@ -88,6 +88,9 @@ describe("phase 2 closeout review", () => {
     );
     expect(review.hostedEvidenceChecklist.join(" ")).toContain(
       "hosted `action_started` write",
+    );
+    expect(review.hostedEvidenceChecklist.join(" ")).toContain(
+      "host-side Luma check-in",
     );
     expect(review.reviewerAction).toContain("approved as written");
   });
