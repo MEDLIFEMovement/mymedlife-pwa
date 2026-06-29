@@ -86,9 +86,10 @@ Status:
    - Production Supabase project `fnlhontvvprwgooevzdl` already exists, but it
      still needs approved app migrations, auth callback configuration, env vars,
      backup/restore ownership, and a tiny pilot seed plan.
-   - The durable packet storage itself is already proven on staging; the
-     remaining gap is reviewer-facing confirmation of the signed-in readback and
-     the missing owner decisions, not another unknown storage dependency.
+   - The durable packet storage and the signed-in packet readback are already
+     proven on staging; the remaining gap is the missing owner decisions and
+     production-foundation follow-through, not another unknown storage
+     dependency.
 4. Confirm the rollout-control layer is actually live in the target environment.
    - Hosted staging already has `app.feature_flag_overrides`,
      `app.feature_flag_audit_records`, `app.theme_snapshots`,

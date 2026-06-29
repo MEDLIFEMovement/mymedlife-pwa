@@ -313,15 +313,39 @@ Audit proof from the same write pass:
   - reason:
     `Production Supabase project shell exists and still needs approved app migrations.`
 
+Hosted app-session replay now exists too:
+
+- the protected staging login page was fetched through the approved Vercel
+  reviewer path
+- the seeded DS-admin login form was posted back to the app with
+  `redirectTo=/admin/pilot-scope`
+- the app returned `303 See Other` to `/admin/pilot-scope`
+- the resulting hosted session reloaded both packet routes without the
+  no-session fallback
+
+Route-level readback confirmed from the signed-in hosted session:
+
+- `/admin/pilot-scope`
+  - page title: `Pilot Scope | myMEDLIFE`
+  - packet source:
+    `Supabase review records · 1 recorded row · Reading 1 pilot-scope review packet row(s) from Supabase.`
+  - approved value visible in the page copy:
+    `` `action_started` ``
+- `/admin/launch-gate`
+  - page heading: `Production launch gate`
+  - packet source:
+    `Supabase review records · 1 recorded row · Reading 1 production-launch review packet row(s) from Supabase.`
+  - recorded project ref visible in the packet form:
+    `fnlhontvvprwgooevzdl`
+
 What this proves:
 
 - pilot-scope and production-launch packet values are no longer env-only
   placeholders on staging
 - the packet lane now has its own durable table, audited write function, and
   matching audit rows
-- the remaining packet gap is a clean signed-in replay on `/admin/pilot-scope`
-  and `/admin/launch-gate`, not uncertainty about whether the storage path
-  exists
+- the hosted app itself now reads those durable rows through a signed-in
+  reviewer session on both `/admin/pilot-scope` and `/admin/launch-gate`
 
 ## What is now honestly proven
 

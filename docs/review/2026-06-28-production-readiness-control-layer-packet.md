@@ -87,6 +87,14 @@ Durable packet rows now recorded on staging:
   `app.upsert_review_packet_record(...)` function with DS-admin identity and
   produced matching `app.audit_logs` rows with action
   `review_packet_recorded`
+- a protected staged DS-admin sign-in replay now confirms the app pages
+  themselves are reading those rows:
+  - `/admin/pilot-scope` shows
+    `Supabase review records · 1 recorded row · Reading 1 pilot-scope review packet row(s) from Supabase.`
+  - `/admin/launch-gate` shows
+    `Supabase review records · 1 recorded row · Reading 1 production-launch review packet row(s) from Supabase.`
+  - the launch packet readback also shows production project ref
+    `fnlhontvvprwgooevzdl`
 
 Hosted Supabase advisor result after the follow-up migration:
 
@@ -197,8 +205,7 @@ Remaining hosted UI proof:
     - `production_control_approval_recorded`
     - `feature_flag_status_changed`
 - The remaining blocker is now the separate hosted `action_started` packet,
-  proof-metadata-to-leader-review packet, the clean signed-in readback replay on
-  `/admin/pilot-scope` and `/admin/launch-gate`, and the separate production
+  proof-metadata-to-leader-review packet, and the separate production
   environment and owner decisions.
 - Production environment variables remain unset/off for this control layer.
 
