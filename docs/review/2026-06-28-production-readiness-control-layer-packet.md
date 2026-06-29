@@ -147,6 +147,17 @@ Remaining hosted UI proof:
   - `/admin/audit-log`, `/admin/integration-outbox`, `/admin/pilot-scope`, and
     `/admin/first-write` all render against the signed-in hosted staging
     session.
+- A fresh hosted auth replay later on `2026-06-29` reproduced the same DS-admin
+  reviewer path directly against the app login form:
+  - the seeded hosted sign-in reached the expected final role routes for
+    member, leader, staff, and DS admin
+  - the signed-in DS-admin route set the hosted app session cookie and removed
+    the `no Supabase session token is active` fallback on
+    `/admin/feature-flags`
+  - the same session re-read `/admin/theme`, `/admin/first-write`,
+    `/admin/proof-write`, `/admin/luma-live-pilot`,
+    `/admin/integration-outbox?source=luma-live-pilot`,
+    `/admin/audit-log?source=luma-live-pilot`, and `/admin/pilot-scope`
 - The control layer is no longer waiting on staging alias promotion. The
   remaining blocker is now the separate hosted `action_started` packet,
   proof-metadata-to-leader-review packet, and the separate production

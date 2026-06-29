@@ -40,6 +40,9 @@ readiness as launch approval.
 - Hosted staging reviewer proof now exists for signed-in route access,
   Supabase-backed rollout controls, and the approved Luma event / RSVP /
   attendance / points loop.
+- A fresh hosted auth replay on 2026-06-29 also reconfirmed the same review
+  path by issuing the hosted app session cookie and re-reading the DS-admin
+  control routes in their Supabase-backed state.
 - Read-only Supabase inspection on 2026-06-29 confirms hosted staging now has:
   - `16` applied Supabase migrations
   - `1` `action_started` event row

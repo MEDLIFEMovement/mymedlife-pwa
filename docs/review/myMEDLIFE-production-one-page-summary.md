@@ -19,6 +19,9 @@ makes a small live pilot safe.
 - Tests, lint, and build are green.
 - Hosted staging already proves the first hosted write, the proof metadata
   chain, the approved Luma event loop, and role-routed review readback.
+- A fresh hosted auth recheck on 2026-06-29 also reconfirmed that the DS-admin
+  reviewer path sets the app session cookie and flips the control routes into
+  their Supabase-backed review state.
 - Live external sends and broad writes remain off by default, except for the
   separately gated Luma event-loop staging proof.
 
