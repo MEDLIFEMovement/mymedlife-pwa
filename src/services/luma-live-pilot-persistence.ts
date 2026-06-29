@@ -297,7 +297,7 @@ export async function persistLumaRsvpProof(
     },
   });
   const matchingProfile = findProfileByEmail(context.data.profiles, input.request.email);
-  const alreadyRecorded = existingEventRows.some((row) => {
+  const matchingEventRow = existingEventRows.find((row) => {
     const payload = asRecord(row.payload);
     return (
       payload.userEmail === input.request.email ||
@@ -305,7 +305,68 @@ export async function persistLumaRsvpProof(
     );
   });
 
-  if (alreadyRecorded) {
+  if (matchingEventRow) {
+    const existingPayload = asRecord(matchingEventRow.payload);
+    const existingVerificationPending = isPendingVerificationPayload(existingPayload);
+
+    if (existingVerificationPending && !verificationPending) {
+      await updateEventRow(context.client, matchingEventRow.id, {
+        payload: {
+          ...existingPayload,
+          verificationStatus: "confirmed",
+          verificationPending: false,
+        },
+      });
+
+      const existingIntegrationRow = await findRsvpIntegrationEvent(
+        context.client,
+        matchingEventRow.id,
+      );
+
+      if (existingIntegrationRow) {
+        const integrationPayload = asRecord(existingIntegrationRow.payload);
+        await updateIntegrationEventRow(context.client, existingIntegrationRow.id, {
+          payload: {
+            ...integrationPayload,
+            verificationStatus: "confirmed",
+            verificationPending: false,
+          },
+        });
+      }
+
+      const auditLog = await createAuditLog(context.client, {
+        actor_user_id: input.actor.user.id,
+        chapter_id: context.chapterId,
+        action: "luma_rsvp_verification_confirmed",
+        target_table: "events",
+        target_id: matchingEventRow.id,
+        before_value: {
+          source: pilotSource,
+          userEmailHint: maskEmail(input.request.email),
+          verificationStatus: normalizeVerificationStatus(existingPayload),
+          verificationPending: existingVerificationPending,
+        },
+        after_value: {
+          source: pilotSource,
+          userEmailHint: maskEmail(input.request.email),
+          verificationStatus: "confirmed",
+          verificationPending: false,
+        },
+        reason:
+          "Confirmed the staging Luma RSVP proof after approved-guest verification settled.",
+      });
+
+      return {
+        chapterEventId,
+        lumaEventLinkId: link.id,
+        eventId,
+        auditLogId: auditLog.id,
+        pointsCreated: 0,
+        attendanceCount: 0,
+        rsvpRecorded: true,
+      };
+    }
+
     return {
       chapterEventId,
       lumaEventLinkId: link.id,
@@ -774,6 +835,27 @@ async function createEventRow(
   return row;
 }
 
+async function updateEventRow(
+  client: SupabaseAppClient,
+  id: string,
+  values: Partial<EventRow>,
+): Promise<EventRow> {
+  const rows = await client.updateRows<EventRow>("events", values, {
+    select:
+      "id,event_type,actor_user_id,chapter_id,campaign_id,assignment_id,chapter_event_id,payload,correlation_id,occurred_at,created_at",
+    query: {
+      id: `eq.${id}`,
+    },
+  });
+  const row = rows[0];
+
+  if (!row) {
+    throw new Error("Supabase did not return the updated event row.");
+  }
+
+  return row;
+}
+
 async function createIntegrationEventRow(
   client: SupabaseAppClient,
   values: Omit<IntegrationEventRow, "id" | "created_at" | "updated_at">,
@@ -786,6 +868,27 @@ async function createIntegrationEventRow(
 
   if (!row) {
     throw new Error("Supabase did not return the created integration event row.");
+  }
+
+  return row;
+}
+
+async function updateIntegrationEventRow(
+  client: SupabaseAppClient,
+  id: string,
+  values: Partial<IntegrationEventRow>,
+): Promise<IntegrationEventRow> {
+  const rows = await client.updateRows<IntegrationEventRow>("integration_events", values, {
+    select:
+      "id,source_event_id,chapter_id,event_type,destination,external_object_type,external_object_id,status,payload,created_by,created_at,updated_at",
+    query: {
+      id: `eq.${id}`,
+    },
+  });
+  const row = rows[0];
+
+  if (!row) {
+    throw new Error("Supabase did not return the updated integration event row.");
   }
 
   return row;
@@ -854,10 +957,40 @@ function maskEmail(email: string): string {
   return `${safePrefix}***@${domainPart}`;
 }
 
+async function findRsvpIntegrationEvent(
+  client: SupabaseAppClient,
+  sourceEventId: string,
+): Promise<IntegrationEventRow | null> {
+  const rows = await client.selectRows<IntegrationEventRow>("integration_events", {
+    select:
+      "id,source_event_id,chapter_id,event_type,destination,external_object_type,external_object_id,status,payload,created_by,created_at,updated_at",
+    query: {
+      source_event_id: `eq.${sourceEventId}`,
+      event_type: "eq.luma_rsvp_recorded",
+    },
+    limit: 1,
+  });
+
+  return rows[0] ?? null;
+}
+
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
+}
+
+function isPendingVerificationPayload(payload: Record<string, unknown>) {
+  return (
+    payload.verificationPending === true ||
+    payload.verificationStatus === "pending"
+  );
+}
+
+function normalizeVerificationStatus(payload: Record<string, unknown>) {
+  return typeof payload.verificationStatus === "string"
+    ? payload.verificationStatus
+    : "pending";
 }
 
 function getNow(deps: PersistenceDependencies): string {

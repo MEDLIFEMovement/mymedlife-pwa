@@ -249,6 +249,109 @@ describe("luma live pilot persistence", () => {
     ).toContain("verification is still pending");
   });
 
+  it("upgrades a pending RSVP verification proof once a later rerun is confirmed", async () => {
+    const db = createFakeSupabaseAppClient();
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const deps = createPersistenceDeps(db.client);
+
+    await persistLumaEventUpsertProof(
+      {
+        actor,
+        request: {
+          name: "Pilot event",
+          startAt: "2026-07-20T23:00:00.000Z",
+          endAt: null,
+          timezone: "America/Los_Angeles",
+          address: null,
+          descriptionMd: null,
+        },
+        result: {
+          ok: true,
+          operation: "event_create",
+          status: "executed",
+          safeMessage: "Created Luma event.",
+          externalWrites: 1,
+          externalReads: 0,
+          eventId: "evt-rsvp-upgrade",
+          eventUrl: "https://lu.ma/evt-rsvp-upgrade",
+          attendanceRows: [],
+          secretsReturned: false,
+        },
+      },
+      deps,
+    );
+
+    await persistLumaRsvpProof(
+      {
+        actor,
+        request: {
+          eventId: "evt-rsvp-upgrade",
+          email: "nellis@medlifemovement.org",
+          name: "Nick Ellis",
+        },
+        result: {
+          ok: false,
+          operation: "rsvp_write",
+          status: "pending_verification",
+          safeMessage: "Pending verification.",
+          externalWrites: 1,
+          externalReads: 3,
+          eventId: "evt-rsvp-upgrade",
+          eventUrl: null,
+          attendanceRows: [],
+          secretsReturned: false,
+        },
+      },
+      deps,
+    );
+
+    const result = await persistLumaRsvpProof(
+      {
+        actor,
+        request: {
+          eventId: "evt-rsvp-upgrade",
+          email: "nellis@medlifemovement.org",
+          name: "Nick Ellis",
+        },
+        result: {
+          ok: true,
+          operation: "rsvp_write",
+          status: "executed",
+          safeMessage: "RSVP written.",
+          externalWrites: 1,
+          externalReads: 1,
+          eventId: "evt-rsvp-upgrade",
+          eventUrl: null,
+          attendanceRows: [],
+          secretsReturned: false,
+        },
+      },
+      deps,
+    );
+
+    expect(result.rsvpRecorded).toBe(true);
+    expect(
+      db.tables.events.find((row) => row.event_type === "event_rsvp_recorded")?.payload,
+    ).toMatchObject({
+      verificationStatus: "confirmed",
+      verificationPending: false,
+    });
+    expect(
+      db.tables.integration_events.find((row) => row.event_type === "luma_rsvp_recorded")?.payload,
+    ).toMatchObject({
+      verificationStatus: "confirmed",
+      verificationPending: false,
+    });
+    expect(
+      db.tables.audit_logs.some(
+        (row) =>
+          row.action === "luma_rsvp_verification_confirmed" &&
+          row.reason ===
+            "Confirmed the staging Luma RSVP proof after approved-guest verification settled.",
+      ),
+    ).toBe(true);
+  });
+
   it("creates attendance points once per matched member across repeated imports", async () => {
     const db = createFakeSupabaseAppClient();
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
