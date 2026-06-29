@@ -16,6 +16,13 @@ vi.mock("@/services/local-actor-context", async (importOriginal) => {
   };
 });
 
+vi.mock("@/services/admin-integrations-step-up", () => ({
+  getDsSecretStepUpState: vi.fn(),
+  needsFreshProductionStepUp: vi.fn(
+    (state: { isVerified: boolean }) => !state.isVerified,
+  ),
+}));
+
 describe("feature flags and theme admin pages", () => {
   it("uses source-aware audit empty states for memory and Supabase mode", async () => {
     const { getFeatureFlagAuditEmptyStateCopy, getThemeAuditEmptyStateCopy } =
@@ -51,9 +58,22 @@ describe("feature flags and theme admin pages", () => {
 
   it("renders the feature flag registry for DS Admin", async () => {
     const actorModule = await import("@/services/local-actor-context");
+    const stepUpModule = await import("@/services/admin-integrations-step-up");
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
       getMockLocalActorContext("ds.admin@mymedlife.test"),
     );
+    vi.mocked(stepUpModule.getDsSecretStepUpState).mockResolvedValue({
+      isVerified: false,
+      status: "missing",
+      method: null,
+      sessionId: null,
+      verifiedAt: null,
+      expiresAt: null,
+      failureCount: 0,
+      blockedUntil: null,
+      message:
+        "Step-up authentication is required before entering the integrations security area.",
+    });
 
     const { default: FeatureFlagsPage } = await import("@/app/admin/feature-flags/page");
     const html = renderToStaticMarkup(await FeatureFlagsPage({}));
@@ -68,12 +88,18 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Recent production provider approvals");
     expect(html).toContain("Audit rows");
     expect(html).toContain("Prod approvals");
+    expect(html).toContain("Step-up");
+    expect(html).toContain("Prod gate");
     expect(html).toContain("Production safety gate:");
+    expect(html).toContain("Step-up status:");
     expect(html).toContain(
       "No in-memory feature flag changes have been made for local in this local review session.",
     );
     expect(html).toContain(
       "Production provider flags stay blocked until Supabase-backed control storage and approval rows are available.",
+    );
+    expect(html).toContain(
+      "Step-up authentication is required before entering the integrations security area.",
     );
     expect(html).toContain(
       "Production approval rows will appear here once Supabase-backed control storage is active.",
@@ -97,9 +123,21 @@ describe("feature flags and theme admin pages", () => {
 
   it("renders audited theme controls for Super Admin", async () => {
     const actorModule = await import("@/services/local-actor-context");
+    const stepUpModule = await import("@/services/admin-integrations-step-up");
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
       getMockLocalActorContext("super.admin@mymedlife.test"),
     );
+    vi.mocked(stepUpModule.getDsSecretStepUpState).mockResolvedValue({
+      isVerified: false,
+      status: "expired",
+      method: "local_password_reauth",
+      sessionId: "theme-step-up",
+      verifiedAt: "2026-06-29T18:30:00.000Z",
+      expiresAt: "2026-06-29T18:35:00.000Z",
+      failureCount: 0,
+      blockedUntil: null,
+      message: "The step-up session expired. Re-authenticate to continue with secure actions.",
+    });
 
     const { default: ThemePage } = await import("@/app/admin/theme/page");
     const html = renderToStaticMarkup(await ThemePage({}));
@@ -114,13 +152,20 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Recent production theme approvals");
     expect(html).toContain("Audit rows");
     expect(html).toContain("Prod approvals");
+    expect(html).toContain("Step-up");
+    expect(html).toContain("Prod gate");
     expect(html).toContain("Production safety gate:");
+    expect(html).toContain("Step-up status:");
     expect(html).toContain(
       "No in-memory theme changes have been made for local in this local review session.",
     );
     expect(html).toContain(
       "Production theme changes stay blocked until Supabase-backed control storage and approval rows are available.",
     );
+    expect(html).toContain(
+      "The step-up session expired. Re-authenticate to continue with secure actions.",
+    );
+    expect(html).toContain("Verified at 2026-06-29T18:30:00.000Z and expires at 2026-06-29T18:35:00.000Z.");
     expect(html).toContain(
       "Production approval rows will appear here once Supabase-backed control storage is active.",
     );

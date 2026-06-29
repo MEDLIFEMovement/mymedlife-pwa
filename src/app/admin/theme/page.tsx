@@ -16,6 +16,10 @@ import {
   themeTokenOrder,
   type ThemeTokenValue,
 } from "@/modules/theme";
+import {
+  getDsSecretStepUpState,
+  needsFreshProductionStepUp,
+} from "@/services/admin-integrations-step-up";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import {
@@ -42,6 +46,12 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
   ]);
   const canManage = canManageTheme(actor);
   const environment = parseEnvironment(resolvedSearchParams?.env);
+  const stepUpState = canManage
+    ? await getDsSecretStepUpState(actor)
+    : null;
+  const productionStepUpReady = stepUpState
+    ? !needsFreshProductionStepUp(stepUpState)
+    : false;
   const adminState = await getThemeAdminState({ environment });
   const snapshot = adminState.snapshot;
   const contrast = getThemeContrastResults(snapshot);
@@ -119,7 +129,7 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
             </section>
           ) : null}
 
-          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+          <section className="grid gap-3 sm:grid-cols-3 xl:grid-cols-8">
             <MiniStat label="Environment" value={environment} />
             <MiniStat label="Persistence" value={adminState.persistence.mode} />
             <MiniStat label="Theme status" value={snapshot.status} />
@@ -133,6 +143,18 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
               label="Prod approvals"
               value={`${productionApprovalRecords.length}`}
             />
+            <MiniStat
+              label="Step-up"
+              value={productionStepUpReady ? "ready" : stepUpState?.status ?? "locked"}
+            />
+            <MiniStat
+              label="Prod gate"
+              value={
+                adminState.persistence.mode === "supabase" && productionStepUpReady
+                  ? "armed"
+                  : "locked"
+              }
+            />
           </section>
 
           <section className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4 text-sm text-slate-600">
@@ -143,6 +165,17 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
           <section className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4 text-sm text-slate-600">
             <span className="font-semibold text-slate-950">Production safety gate:</span>{" "}
             {productionSafetyGateMessage}
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+            <span className="font-semibold text-slate-950">Step-up status:</span>{" "}
+            {stepUpState?.message ?? "Step-up status is unavailable for this role."}
+            {stepUpState?.verifiedAt ? (
+              <span>
+                {" "}
+                Verified at {stepUpState.verifiedAt} and expires at {stepUpState.expiresAt}.
+              </span>
+            ) : null}
           </section>
 
           <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
