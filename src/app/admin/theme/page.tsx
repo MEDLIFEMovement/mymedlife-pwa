@@ -1,5 +1,6 @@
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
+import { ControlReviewSnapshotSection } from "@/components/control-review-snapshot-section";
 import { ProductionControlApprovalTrail } from "@/components/production-control-approval-trail";
 import { RestrictedState } from "@/components/restricted-state";
 import { getThemeAuditEmptyStateCopy } from "@/modules/admin/control-audit-empty-state";
@@ -59,6 +60,15 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
   const productionApprovalRecords = adminState.productionApprovalRecords;
   const result = resolvedSearchParams?.themeResult;
   const message = resolvedSearchParams?.themeMessage;
+  const reviewSnapshot = getThemeReviewSnapshot({
+    environment,
+    persistenceMode: adminState.persistence.mode,
+    auditRowCount: auditRecords.length,
+    productionApprovalCount: productionApprovalRecords.length,
+    productionStepUpReady,
+    stepUpMessage:
+      stepUpState?.message ?? "Step-up status is unavailable for this role.",
+  });
   const productionSafetyGateMessage =
     adminState.persistence.mode === "supabase"
       ? "Production theme publish, rollback, and restore actions require an approval reference, a fresh admin step-up session, and a separate durable approval row before the theme change runs."
@@ -177,6 +187,13 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
               </span>
             ) : null}
           </section>
+
+          <ControlReviewSnapshotSection
+            title="Theme controls"
+            description="Use this snapshot to confirm whether theme tokens are still in local review mode or already reading durable snapshots, and whether production theme actions are truly ready for signoff."
+            recordedNow={reviewSnapshot.recordedNow}
+            stillBlocked={reviewSnapshot.stillBlocked}
+          />
 
           <section className="grid gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]">
             <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
@@ -498,4 +515,76 @@ function parseEnvironment(value: string | undefined): FeatureFlagEnvironment {
   }
 
   return getCurrentFeatureEnvironment();
+}
+
+function getThemeReviewSnapshot(input: {
+  environment: FeatureFlagEnvironment;
+  persistenceMode: "memory" | "supabase";
+  auditRowCount: number;
+  productionApprovalCount: number;
+  productionStepUpReady: boolean;
+  stepUpMessage: string;
+}) {
+  const recordedNow = [
+    input.persistenceMode === "supabase"
+      ? {
+          label: "Supabase-backed theme storage is active",
+          detail: `Theme controls for ${input.environment} are reading durable theme snapshots and writing audited theme changes through Supabase.`,
+        }
+      : {
+          label: "Local theme review posture is still active",
+          detail: `Theme controls for ${input.environment} are still using in-memory review state until Supabase-backed control storage and a signed-in control session are available.`,
+        },
+    {
+      label: "Theme audit trail",
+      detail:
+        input.auditRowCount > 0
+          ? `${input.auditRowCount} recent theme audit row(s) are visible for reviewer readback.`
+          : `No theme audit rows are currently visible for ${input.environment}.`,
+    },
+    {
+      label: "Production theme approvals",
+      detail:
+        input.productionApprovalCount > 0
+          ? `${input.productionApprovalCount} recent durable production theme approval row(s) are visible in this review lane.`
+          : "No durable production theme approval rows are visible yet.",
+    },
+  ];
+
+  if (input.productionStepUpReady) {
+    recordedNow.push({
+      label: "Fresh admin step-up is active",
+      detail: "Production theme publish, rollback, and restore actions can clear the step-up requirement for this current admin session.",
+    });
+  }
+
+  const stillBlocked = [];
+
+  if (input.persistenceMode !== "supabase") {
+    stillBlocked.push({
+      label: "Durable theme storage is not active yet",
+      detail:
+        "Supabase-backed control storage and a signed-in control session are still required before this environment can claim durable theme readiness.",
+    });
+  }
+
+  if (!input.productionStepUpReady) {
+    stillBlocked.push({
+      label: "Production theme actions remain step-up locked",
+      detail: input.stepUpMessage,
+    });
+  }
+
+  if (input.productionApprovalCount === 0) {
+    stillBlocked.push({
+      label: "No durable production theme approval rows exist yet",
+      detail:
+        "Production theme publish, rollback, and restore actions remain blocked until explicit approval rows are recorded alongside the audited theme change.",
+    });
+  }
+
+  return {
+    recordedNow,
+    stillBlocked,
+  };
 }

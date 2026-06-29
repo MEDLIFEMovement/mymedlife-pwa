@@ -1,5 +1,6 @@
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
+import { ControlReviewSnapshotSection } from "@/components/control-review-snapshot-section";
 import { ProductionControlApprovalTrail } from "@/components/production-control-approval-trail";
 import { RestrictedState } from "@/components/restricted-state";
 import { getFeatureFlagAuditEmptyStateCopy } from "@/modules/admin/control-audit-empty-state";
@@ -54,6 +55,15 @@ export default async function FeatureFlagsPage({
   const productionApprovalRecords = adminState.productionApprovalRecords;
   const result = resolvedSearchParams?.featureFlagResult;
   const message = resolvedSearchParams?.featureFlagMessage;
+  const reviewSnapshot = getFeatureFlagReviewSnapshot({
+    environment,
+    persistenceMode: adminState.persistence.mode,
+    auditRowCount: auditRecords.length,
+    productionApprovalCount: productionApprovalRecords.length,
+    productionStepUpReady,
+    stepUpMessage:
+      stepUpState?.message ?? "Step-up status is unavailable for this role.",
+  });
   const productionSafetyGateMessage =
     adminState.persistence.mode === "supabase"
       ? "Production provider flags require an approval reference, a fresh admin step-up session, and a separate durable approval row before the flag change runs."
@@ -168,6 +178,13 @@ export default async function FeatureFlagsPage({
               </span>
             ) : null}
           </section>
+
+          <ControlReviewSnapshotSection
+            title="Feature flag controls"
+            description="Use this snapshot to confirm whether the current environment is still in local review mode or already reading durable control rows, and whether production-sensitive provider changes are actually ready for signoff."
+            recordedNow={reviewSnapshot.recordedNow}
+            stillBlocked={reviewSnapshot.stillBlocked}
+          />
 
           <FlagSection title="Module Flags" flags={moduleFlags} environment={environment} />
           <FlagSection title="Provider Flags" flags={providerFlags} environment={environment} />
@@ -387,4 +404,76 @@ function parseEnvironment(value: string | undefined): FeatureFlagEnvironment {
   }
 
   return getCurrentFeatureEnvironment();
+}
+
+function getFeatureFlagReviewSnapshot(input: {
+  environment: FeatureFlagEnvironment;
+  persistenceMode: "memory" | "supabase";
+  auditRowCount: number;
+  productionApprovalCount: number;
+  productionStepUpReady: boolean;
+  stepUpMessage: string;
+}) {
+  const recordedNow = [
+    input.persistenceMode === "supabase"
+      ? {
+          label: "Supabase-backed control storage is active",
+          detail: `Feature flag controls for ${input.environment} are reading durable rows and writing audited changes through Supabase.`,
+        }
+      : {
+          label: "Local review posture is still active",
+          detail: `Feature flag controls for ${input.environment} are still using in-memory review state until Supabase-backed control storage and a signed-in control session are available.`,
+        },
+    {
+      label: "Feature flag audit trail",
+      detail:
+        input.auditRowCount > 0
+          ? `${input.auditRowCount} recent feature flag audit row(s) are visible for reviewer readback.`
+          : `No feature flag audit rows are currently visible for ${input.environment}.`,
+    },
+    {
+      label: "Production provider approvals",
+      detail:
+        input.productionApprovalCount > 0
+          ? `${input.productionApprovalCount} recent durable production provider approval row(s) are visible in this review lane.`
+          : "No durable production provider approval rows are visible yet.",
+    },
+  ];
+
+  if (input.productionStepUpReady) {
+    recordedNow.push({
+      label: "Fresh admin step-up is active",
+      detail: "Production-sensitive provider changes can clear the step-up requirement for this current admin session.",
+    });
+  }
+
+  const stillBlocked = [];
+
+  if (input.persistenceMode !== "supabase") {
+    stillBlocked.push({
+      label: "Durable control storage is not active yet",
+      detail:
+        "Supabase-backed control storage and a signed-in control session are still required before this environment can claim durable feature-flag readiness.",
+    });
+  }
+
+  if (!input.productionStepUpReady) {
+    stillBlocked.push({
+      label: "Production provider changes remain step-up locked",
+      detail: input.stepUpMessage,
+    });
+  }
+
+  if (input.productionApprovalCount === 0) {
+    stillBlocked.push({
+      label: "No durable production provider approval rows exist yet",
+      detail:
+        "Critical provider toggles remain blocked until explicit approval rows are recorded alongside the audited flag change.",
+    });
+  }
+
+  return {
+    recordedNow,
+    stillBlocked,
+  };
 }

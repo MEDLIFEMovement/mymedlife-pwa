@@ -92,6 +92,11 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Prod gate");
     expect(html).toContain("Production safety gate:");
     expect(html).toContain("Step-up status:");
+    expect(html).toContain("Control review snapshot");
+    expect(html).toContain("Recorded now");
+    expect(html).toContain("Still blocked");
+    expect(html).toContain("Local review posture is still active");
+    expect(html).toContain("Durable control storage is not active yet");
     expect(html).toContain(
       "No in-memory feature flag changes have been made for local in this local review session.",
     );
@@ -156,6 +161,11 @@ describe("feature flags and theme admin pages", () => {
     expect(html).toContain("Prod gate");
     expect(html).toContain("Production safety gate:");
     expect(html).toContain("Step-up status:");
+    expect(html).toContain("Control review snapshot");
+    expect(html).toContain("Recorded now");
+    expect(html).toContain("Still blocked");
+    expect(html).toContain("Local theme review posture is still active");
+    expect(html).toContain("Production theme actions remain step-up locked");
     expect(html).toContain(
       "No in-memory theme changes have been made for local in this local review session.",
     );
