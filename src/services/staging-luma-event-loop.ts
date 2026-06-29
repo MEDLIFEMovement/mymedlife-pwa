@@ -595,25 +595,23 @@ function deriveEvidenceSummary(
   const sharedToFeed = relevantIntegrationRows.some(
     (row) => row.event_type === "event_shared_to_feed",
   );
-  const rsvpCount =
-    sumPayloadMetric(relevantEventRows, ["rsvp_count", "rsvpCount"]) +
-      sumPayloadMetric(relevantIntegrationRows, ["rsvp_count", "rsvpCount"]) ||
-    relevantEventRows.filter((row) => isRsvpEventType(row.event_type)).length +
+  const rsvpMetricKeys = ["rsvp_count", "rsvpCount"];
+  const attendanceMetricKeys = ["attendance_count", "attendanceCount"];
+  const rsvpMetricsPresent =
+    hasPayloadMetric(relevantEventRows, rsvpMetricKeys) ||
+    hasPayloadMetric(relevantIntegrationRows, rsvpMetricKeys);
+  const attendanceMetricsPresent =
+    hasPayloadMetric(relevantEventRows, attendanceMetricKeys) ||
+    hasPayloadMetric(relevantIntegrationRows, attendanceMetricKeys);
+  const rsvpCount = rsvpMetricsPresent
+    ? sumPayloadMetric(relevantEventRows, rsvpMetricKeys) +
+      sumPayloadMetric(relevantIntegrationRows, rsvpMetricKeys)
+    : relevantEventRows.filter((row) => isRsvpEventType(row.event_type)).length +
       relevantIntegrationRows.filter((row) => isRsvpEventType(row.event_type)).length;
-  const attendanceCount =
-    sumPayloadMetric(relevantEventRows, [
-      "attendance_count",
-      "attendanceCount",
-      "imported_guest_count",
-      "importedGuestCount",
-    ]) +
-      sumPayloadMetric(relevantIntegrationRows, [
-        "attendance_count",
-        "attendanceCount",
-        "imported_guest_count",
-        "importedGuestCount",
-      ]) ||
-    relevantEventRows.filter((row) => isAttendanceEventType(row.event_type)).length +
+  const attendanceCount = attendanceMetricsPresent
+    ? sumPayloadMetric(relevantEventRows, attendanceMetricKeys) +
+      sumPayloadMetric(relevantIntegrationRows, attendanceMetricKeys)
+    : relevantEventRows.filter((row) => isAttendanceEventType(row.event_type)).length +
       relevantIntegrationRows.filter((row) => isAttendanceEventType(row.event_type)).length;
   const pointsAwarded = relevantPointsRows.reduce(
     (total, row) => total + row.points_delta,
@@ -736,6 +734,13 @@ function sumPayloadMetric(
   return rows.reduce((total, row) => total + getPayloadMetric(row.payload, keys), 0);
 }
 
+function hasPayloadMetric(
+  rows: Array<{ payload: unknown }>,
+  keys: string[],
+) {
+  return rows.some((row) => payloadHasAnyMetric(row.payload, keys));
+}
+
 function getPayloadMetric(payload: unknown, keys: string[]) {
   if (!isRecord(payload)) {
     return 0;
@@ -749,6 +754,17 @@ function getPayloadMetric(payload: unknown, keys: string[]) {
   }
 
   return 0;
+}
+
+function payloadHasAnyMetric(payload: unknown, keys: string[]) {
+  if (!isRecord(payload)) {
+    return false;
+  }
+
+  return keys.some((key) => {
+    const value = payload[key];
+    return typeof value === "number" && Number.isFinite(value);
+  });
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -282,10 +282,8 @@ export async function importLumaAttendance(
       );
     }
 
-    const payload = (await response.json()) as { entries?: unknown[] };
-    const rawRows = Array.isArray(payload.entries)
-      ? payload.entries.map(toRawAttendanceRow)
-      : [];
+    const payload = (await response.json()) as LumaJson;
+    const rawRows = getAttendanceEntries(payload).map(toRawAttendanceRow);
     options.onImportedRows?.(rawRows);
     const attendanceRows = rawRows.map(toMaskedAttendanceRow);
     const attendedCount = attendanceRows.filter((row) => row.attended).length;
@@ -400,15 +398,124 @@ function sanitizeEventPayload(
 
 function toRawAttendanceRow(value: unknown): LumaImportedAttendanceRawRow {
   const row = isRecord(value) ? value : {};
-  const checkedInAt = stringOrNull(row.checked_in_at);
+  const guest = getNestedRecord(row, "guest");
+  const user = getNestedRecord(guest ?? row, "user");
+  const checkedInAt = resolveCheckedInAt(row, guest);
+  const attended =
+    Boolean(checkedInAt) ||
+    getBooleanAttendanceFlag(row, guest) ||
+    hasTicketCheckIn(row, guest);
+
   return {
-    guestId: stringOrFallback(row.id, "unknown-guest"),
-    email: stringOrNull(row.user_email),
-    name: stringOrNull(row.user_name),
-    approvalStatus: stringOrFallback(row.approval_status, "unknown"),
+    guestId: stringOrFallback(
+      guest?.id ??
+        guest?.api_id ??
+        row.id ??
+        row.api_id,
+      "unknown-guest",
+    ),
+    email: stringOrNull(
+      guest?.user_email ??
+        guest?.userEmail ??
+        guest?.email ??
+        user?.email ??
+        row.user_email ??
+        row.userEmail ??
+        row.email,
+    ),
+    name: stringOrNull(
+      guest?.user_name ??
+        guest?.userName ??
+        guest?.name ??
+        user?.name ??
+        user?.full_name ??
+        row.user_name ??
+        row.userName ??
+        row.name,
+    ),
+    approvalStatus: stringOrFallback(
+      guest?.approval_status ??
+        guest?.approvalStatus ??
+        row.approval_status ??
+        row.approvalStatus,
+      "unknown",
+    ),
     checkedInAt,
-    attended: Boolean(checkedInAt),
+    attended,
   };
+}
+
+function getAttendanceEntries(payload: LumaJson): unknown[] {
+  if (Array.isArray(payload.entries)) {
+    return payload.entries;
+  }
+
+  if (Array.isArray(payload.guests)) {
+    return payload.guests;
+  }
+
+  return [];
+}
+
+function resolveCheckedInAt(
+  row: LumaJson,
+  guest: LumaJson | null,
+): string | null {
+  return (
+    stringOrNull(row.checked_in_at) ??
+    stringOrNull(row.checkedInAt) ??
+    stringOrNull(guest?.checked_in_at) ??
+    stringOrNull(guest?.checkedInAt) ??
+    findTicketCheckInAt(row) ??
+    findTicketCheckInAt(guest)
+  );
+}
+
+function hasTicketCheckIn(row: LumaJson, guest: LumaJson | null) {
+  return Boolean(findTicketCheckInAt(row) ?? findTicketCheckInAt(guest));
+}
+
+function getBooleanAttendanceFlag(row: LumaJson, guest: LumaJson | null) {
+  return (
+    booleanOrFalse(row.checked_in) ||
+    booleanOrFalse(row.checkedIn) ||
+    booleanOrFalse(guest?.checked_in) ||
+    booleanOrFalse(guest?.checkedIn)
+  );
+}
+
+function findTicketCheckInAt(row: LumaJson | null): string | null {
+  if (!row) {
+    return null;
+  }
+
+  const ticketCollections = [
+    row.event_tickets,
+    row.eventTickets,
+    row.tickets,
+  ];
+
+  for (const value of ticketCollections) {
+    if (!Array.isArray(value)) {
+      continue;
+    }
+
+    for (const ticket of value) {
+      if (!isRecord(ticket)) {
+        continue;
+      }
+
+      const checkedInAt =
+        stringOrNull(ticket.checked_in_at) ??
+        stringOrNull(ticket.checkedInAt);
+
+      if (checkedInAt) {
+        return checkedInAt;
+      }
+    }
+  }
+
+  return null;
 }
 
 function toMaskedAttendanceRow(value: LumaImportedAttendanceRawRow): LumaImportedAttendanceRow {
@@ -548,6 +655,22 @@ function stringOrNull(value: unknown): string | null {
 
 function stringOrFallback(value: unknown, fallback: string): string {
   return stringOrNull(value) ?? fallback;
+}
+
+function booleanOrFalse(value: unknown) {
+  return value === true;
+}
+
+function getNestedRecord(
+  value: LumaJson | null,
+  key: string,
+): LumaJson | null {
+  if (!value) {
+    return null;
+  }
+
+  const nested = value[key];
+  return isRecord(nested) ? nested : null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

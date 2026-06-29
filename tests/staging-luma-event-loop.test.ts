@@ -451,4 +451,56 @@ describe("staging Luma event loop", () => {
       lumaLinkReady: true,
     });
   });
+
+  it("does not treat imported guest totals as attended counts", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "pilot-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 1,
+            },
+            correlation_id: "luma-pilot:attendance:evt-456:1",
+            occurred_at: "2026-06-28T10:05:00Z",
+            created_at: "2026-06-28T10:05:00Z",
+          },
+        ],
+        integrationEventRows: [
+          {
+            id: "pilot-attendance-integration",
+            source_event_id: "pilot-attendance",
+            chapter_id: "chapter-1",
+            event_type: "luma_attendance_imported",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt-456",
+            status: "recorded",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 1,
+            },
+            created_by: "pilot-user",
+            created_at: "2026-06-28T10:06:00Z",
+            updated_at: "2026-06-28T10:06:00Z",
+          },
+        ],
+        automationOutboxRows: [],
+        pointsEventRows: [],
+      },
+    });
+
+    expect(readModel.summary.attendanceCount).toBe(0);
+    expect(readModel.summary.pointsAwarded).toBe(0);
+  });
 });

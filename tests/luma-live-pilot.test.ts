@@ -242,6 +242,98 @@ describe("luma live pilot gateway", () => {
     ]);
   });
 
+  it("accepts nested guest rows and ticket-level check-ins from Luma readback", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        entries: [
+          {
+            guest: {
+              api_id: "guest-3",
+              email: "member.c@mymedlife.test",
+              name: "Member C",
+              approvalStatus: "approved",
+              eventTickets: [
+                {
+                  checkedInAt: "2026-07-20T23:35:00.000Z",
+                },
+              ],
+            },
+          },
+          {
+            guest: {
+              api_id: "guest-4",
+              email: "member.d@mymedlife.test",
+              name: "Member D",
+              approval_status: "approved",
+              checked_in: true,
+            },
+          },
+        ],
+      }),
+    })) satisfies LumaLivePilotFetch;
+
+    const result = await importLumaAttendance(
+      { eventId: "evt-existing", limit: 2 },
+      { env: enabledEnv, fetchImpl },
+    );
+
+    expect(result.attendanceRows).toEqual([
+      {
+        guestId: "guest-3",
+        emailHint: "me***@mymedlife.test",
+        name: "Member C",
+        approvalStatus: "approved",
+        checkedInAt: "2026-07-20T23:35:00.000Z",
+        attended: true,
+      },
+      {
+        guestId: "guest-4",
+        emailHint: "me***@mymedlife.test",
+        name: "Member D",
+        approvalStatus: "approved",
+        checkedInAt: null,
+        attended: true,
+      },
+    ]);
+    expect(result.safeMessage).toContain("2 row(s) include check-in attendance");
+  });
+
+  it("accepts guests arrays in addition to entries", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        guests: [
+          {
+            id: "guest-5",
+            userEmail: "member.e@mymedlife.test",
+            userName: "Member E",
+            approvalStatus: "approved",
+            checkedInAt: "2026-07-20T23:40:00.000Z",
+          },
+        ],
+      }),
+    })) satisfies LumaLivePilotFetch;
+
+    const result = await importLumaAttendance(
+      { eventId: "evt-existing", limit: 1 },
+      { env: enabledEnv, fetchImpl },
+    );
+
+    expect(result.attendanceRows).toEqual([
+      {
+        guestId: "guest-5",
+        emailHint: "me***@mymedlife.test",
+        name: "Member E",
+        approvalStatus: "approved",
+        checkedInAt: "2026-07-20T23:40:00.000Z",
+        attended: true,
+      },
+    ]);
+  });
+
   it("builds the attendance import URL without secrets", () => {
     const endpoint = buildLumaGuestListEndpoint("evt-existing", 500);
 
