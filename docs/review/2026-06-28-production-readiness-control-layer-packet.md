@@ -282,13 +282,14 @@ Blocked until separate approval:
 
 ## Owner Blanks
 
-- Production Supabase owner: pending DS/platform.
-- Production Vercel owner: pending DS/platform.
-- DNS owner: pending platform/HQ.
-- Backup/restore owner: pending DS/platform.
-- Rollback owner: Nick unless reassigned.
-- Pilot owner: Nick unless reassigned.
-- Day-one support owner: pending HQ.
+- Production Supabase owner: DS/platform ownership approved; named individual still required before live pilot.
+- Production Vercel owner: DS/platform ownership approved; named individual still required before live pilot.
+- DNS owner: platform/HQ ownership approved; named individual still required before live pilot.
+- Backup/restore owner: DS/platform ownership approved; named individual still required before live pilot.
+- Rollback owner: Nick confirmed unless explicitly reassigned later.
+- Pilot owner: Nick confirmed unless explicitly reassigned later.
+- Day-one support owner: HQ support lane approved; named individual still required before live pilot.
+- Support/pause channel: dedicated launch Slack channel with email backup approved; exact channel name still required before live pilot.
 
 ## Review Routes
 
