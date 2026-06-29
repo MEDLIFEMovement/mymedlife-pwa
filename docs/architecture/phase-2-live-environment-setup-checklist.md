@@ -6,7 +6,7 @@ Status:
 - local implementation is green
 - staging remains the reviewer target
 - hosted reviewer proof now exists for signed-in route access, durable control readback, and the approved staging-only Luma loop
-- the remaining hosted closeout work is now the separate `action_started`, proof-loop, and final route-capture packet
+- the remaining hosted closeout work is reviewer capture, owner signoff, and production-foundation setup rather than discovering whether the staging loop works
 - production Supabase exists, but production rollout is not approved from this checklist
 
 ## Purpose
@@ -32,17 +32,35 @@ readiness as launch approval.
   - `app.production_control_approvals`
 - The staging Supabase security advisor is clean after the helper search-path
   fix applied on 2026-06-29.
+- The production Supabase security advisor is also clean, but that production
+  project is still only an empty shell and not a launched app environment yet.
 - The current repo now allows signed-in hosted staging reviewer sessions to use
   Supabase-backed reads without widening anonymous preview traffic into the
   live read model.
 - Hosted staging reviewer proof now exists for signed-in route access,
   Supabase-backed rollout controls, and the approved Luma event / RSVP /
   attendance / points loop.
-- Hosted staging now shows one real attendance import producing points and
-  leaderboard readback while unauthorized outbox sends remain at `0`.
-- The remaining Phase 2 closeout work is no longer the Luma check-in itself;
-  it is the separate hosted `action_started`, proof-loop, and reviewer-packet
-  capture.
+- Read-only Supabase inspection on 2026-06-29 confirms hosted staging now has:
+  - `16` applied Supabase migrations
+  - `1` `action_started` event row
+  - `1` `evidence_submitted` event row
+  - `4` staged RSVP rows
+  - `5` staged attendance-import rows
+  - `1` attendance-backed points row totaling `20` points
+  - `14` disabled `n8n` outbox rows
+  - `1` disabled `hubspot` outbox row
+  - `0` sent outbox rows
+  - `0` approved live-send rows
+- The remaining Phase 2 closeout work is no longer proving the hosted
+  `action_started`, proof-loop, or Luma data path exists. The remaining work is
+  capturing the clean reviewer packet, confirming role readback on the approved
+  routes, and recording final owner signoff externally.
+- Production Supabase project `fnlhontvvprwgooevzdl` now exists and is healthy,
+  but read-only inspection on 2026-06-29 also showed:
+  - `0` `app.*` base tables
+  - `0` visible `supabase_migrations` tables
+  That means production project creation is done, but production schema rollout
+  has not started yet.
 - The narrow staging-only Luma loop is the only approved external-family
   exception under review:
   - event create/update
@@ -73,7 +91,9 @@ Required evidence:
 
 Safe defaults:
 - Staging project remains `rceupryepjgkdeqgxzrc`.
-- Production project stays separate from staging.
+- Production project remains `fnlhontvvprwgooevzdl`, separate from staging.
+- Treat the production project as an empty shell until approved app migrations
+  are actually applied.
 - No production migration is applied from this checklist.
 
 ### 2. Production Vercel environment

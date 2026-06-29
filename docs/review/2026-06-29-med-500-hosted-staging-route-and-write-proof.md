@@ -62,8 +62,8 @@ Hosted role-routed proof was rechecked on 2026-06-29 through the staging alias:
 - DS admin:
   - sign-in: `ds.admin@mymedlife.test`
   - route evidence:
-    - `/admin/audit-log`
-    - `/admin/integration-outbox`
+    - `/admin/audit-log?source=luma-live-pilot`
+    - `/admin/integration-outbox?source=luma-live-pilot`
     - `/admin/pilot-scope`
     - `/admin/first-write`
     - `/admin/feature-flags`
@@ -153,13 +153,58 @@ Hosted route-level readback was confirmed for:
 - leader review route:
   `/rush-month/review?assignmentId=50000000-0000-4000-8000-000000000002&evidenceItemId=3e7b2ab6-8770-488f-9637-90cbaa863b62`
 - staff chapters: `/staff?view=chapters`
-- admin audit: `/admin/audit-log`
-- admin outbox: `/admin/integration-outbox`
+- admin audit: `/admin/audit-log?source=luma-live-pilot`
+- admin outbox: `/admin/integration-outbox?source=luma-live-pilot`
 - admin pilot scope: `/admin/pilot-scope`
 - admin first write: `/admin/first-write`
 - admin feature flags: `/admin/feature-flags`
 - admin theme: `/admin/theme`
 - admin Luma pilot: `/admin/luma-live-pilot`
+
+## Connector-backed database snapshot
+
+Read-only Supabase inspection against staging project
+`rceupryepjgkdeqgxzrc` on 2026-06-29 confirmed:
+
+- control-layer tables
+  - `app.feature_flag_overrides`: `1`
+  - `app.feature_flag_audit_records`: `2`
+  - `app.theme_snapshots`: `3`
+  - `app.theme_audit_records`: `3`
+  - `app.admin_step_up_sessions`: `0`
+  - `app.production_control_approvals`: `0`
+- hosted write / proof counts
+  - `app.events`
+    - `action_started`: `1`
+    - `evidence_submitted`: `1`
+    - `event_rsvp_recorded`: `4`
+    - `event_attendance_recorded`: `5`
+  - `app.integration_events`
+    - `action_started`: `1`
+    - `luma_event_linked`: `4`
+    - `luma_rsvp_recorded`: `4`
+    - `luma_attendance_imported`: `5`
+  - `app.points_events`
+    - attendance-backed rows: `1`
+    - total points delta from Luma/attendance reasons: `20`
+  - `app.automation_outbox`
+    - disabled `n8n` rows: `14`
+    - disabled `hubspot` rows: `1`
+    - sent rows: `0`
+    - approved live-send rows: `0`
+  - `app.audit_logs`
+    - `action_started`: `1`
+    - `evidence_submitted`: `1`
+    - `luma_event_upsert_recorded`: `4`
+    - `luma_rsvp_recorded`: `4`
+    - `luma_attendance_import_recorded`: `5`
+
+This matters because it proves the hosted staging loop is not just visible in
+the UI. The database currently shows real staged write/readback rows for the
+first hosted write, the smallest proof loop, the Luma RSVP and attendance loop,
+one attendance-backed points award, and zero unauthorized sends. The current
+disabled outbox rows are still held on internal destinations, not released as
+live downstream traffic.
 
 ## What is now honestly proven
 
@@ -173,6 +218,8 @@ Hosted route-level readback was confirmed for:
   metadata loop
 - the Luma event / RSVP / attendance / points / leaderboard loop is separately
   proven on hosted staging
+- the focused DS admin review routes now point at the exact Luma pilot evidence
+  rows instead of the broader admin dataset
 
 ## What is still not proven here
 

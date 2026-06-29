@@ -1,27 +1,42 @@
 # myMEDLIFE Production - One Page Summary
 
-Date: 2026-06-25
+Date: 2026-06-29
 
 ## Plain English
 
-myMEDLIFE is in a good local state for review, but it is **not ready for live
+myMEDLIFE is in a good staging review state, but it is **not ready for live
 launch yet**.
 
-The app works as a role-based product and the launch-readiness docs are now in
-place. What is still missing is the hosted proof and the human approvals that
-make a live pilot safe.
+The app works as a role-based product, the hosted staging evidence now exists,
+and the launch-readiness docs are in place. What is still missing is external
+acceptance of that staging proof plus the production environment setup that
+makes a small live pilot safe.
 
 ## What Is Ready
 
 - Member, leader, staff, admin, and SLT Prep surfaces exist.
 - Launch-readiness review pages exist.
 - Tests, lint, and build are green.
+- Hosted staging already proves the first hosted write, the proof metadata
+  chain, the approved Luma event loop, and role-routed review readback.
 - Live external sends and broad writes remain off by default, except for the
   separately gated Luma event-loop staging proof.
 
 ## What Still Needs a Yes
 
-1. Hosted proof and review evidence
+1. Accept the current staging evidence packet as the official reviewer record.
+2. Finish the production environment packet:
+   - production Supabase rollout owner
+   - production Vercel target and env vars
+   - auth callback URLs
+   - DNS / domain plan
+   - backup / restore path
+   - support / rollback ownership
+3. Keep the live pilot tiny:
+   - one chapter
+   - 5-15 users
+   - Luma/event/RSVP/attendance/points loop only
+   - no HubSpot, n8n, warehouse, Power BI, SMS/email, or AI writes
 
 ## What Has Been Approved
 
@@ -59,7 +74,8 @@ For a copy/paste reply block, see
 [myMEDLIFE-production-reply-template.md](./myMEDLIFE-production-reply-template.md).
 
 The current packet defaults have been approved by the primary approver. The
-launch still depends on hosted proof before it can be treated as live-ready.
+launch still depends on production-foundation setup and external acceptance of
+the hosted proof before it can be treated as live-ready.
 
 The current reviewer has confirmed they are the pilot owner and rollback owner,
 so that part of the packet is no longer ambiguous.
@@ -68,4 +84,5 @@ so that part of the packet is no longer ambiguous.
 
 This is a **review packet**, not a launch approval.
 Do not enable broad writes, external sends, or any non-approved Luma behavior
-until the approvals above are recorded and the hosted proof is visible.
+until the approvals above are recorded, the staging proof is accepted, and the
+production environment packet is complete.

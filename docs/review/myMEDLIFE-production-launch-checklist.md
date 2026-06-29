@@ -4,8 +4,14 @@ Date: 2026-06-29
 
 Status:
 - review-ready staging, not live-ready
-- production launch is still blocked by external approvals and hosted proof
-- hosted staging now has the rollout-control tables and clean Supabase security advisor output
+- staging hosted proof now exists for the first hosted write, proof metadata
+  loop, role-routed readback, and the approved Luma event loop
+- production launch is now blocked by external signoff and production-foundation
+  setup, not by lack of staging evidence
+- hosted staging now has the rollout-control tables and clean Supabase security
+  advisor output
+- production Supabase exists as a separate healthy project shell, but it still
+  has `0` `app.*` tables and no visible migration history in that environment
 
 ## What Is Already Proven In Repo
 
@@ -15,19 +21,39 @@ Status:
 - Tests and build are green in the current worktree.
 - The app keeps HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, and AI writes disabled by default; only the approved staging-only Luma loop is in scope for hosted proof.
 
+## What Is Already Proven On Hosted Staging
+
+- Reviewer access works through `https://staging.mymedlife.org` with Vercel SSO
+  first, then the seeded myMEDLIFE login path.
+- The authoritative hosted first-write chain exists on assignment
+  `50000000-0000-4000-8000-000000000002` with matching internal event,
+  integration-event, and audit-log rows for `action_started`.
+- The smallest proof metadata loop exists on the same assignment with a visible
+  `evidence_submitted` event, matching audit row, and disabled outbox posture.
+- The approved Luma event loop is proven in staging with:
+  - `4` Luma event-link rows
+  - `4` RSVP rows
+  - `5` attendance-import rows
+  - `1` attendance-backed points row totaling `20` points
+  - `0` sent outbox rows
+- The rollout-control layer is readable on hosted staging:
+  - `app.feature_flag_overrides`
+  - `app.feature_flag_audit_records`
+  - `app.theme_snapshots`
+  - `app.theme_audit_records`
+  - `app.admin_step_up_sessions`
+  - `app.production_control_approvals`
+
 ## What Still Blocks Live Pilot
 
-1. Capture staging reviewer proof on the approved access path.
-   - Confirm Vercel SSO hands off to the seeded myMEDLIFE login page.
-   - Confirm a DS Admin or Super Admin seeded reviewer can sign in.
-   - Confirm anonymous staging traffic can remain on the safe preview posture
-     while the signed-in reviewer session switches to Supabase-backed readback.
-   - Confirm `/admin/luma-live-pilot` shows `Proof rows: Ready` before any
-     staging Luma action is attempted.
-   - Confirm `/admin/feature-flags` and `/admin/theme` do not show the
-     rollout-control migration warning. If they do, the Supabase control-layer
-     tables are still not readable in that environment and persisted rollout or
-     theme review is not ready there yet.
+1. Record and approve the current staging evidence externally.
+   - Confirm the reviewer walkthrough still matches the approved path:
+     Vercel SSO -> myMEDLIFE login -> seeded reviewer -> role-routed workspace.
+   - Confirm `/admin/luma-live-pilot`, `/admin/audit-log?source=luma-live-pilot`,
+     `/admin/integration-outbox?source=luma-live-pilot`, `/admin/feature-flags`,
+     and `/admin/theme` still match the current hosted proof packet.
+   - Confirm the hosted proof is recorded in the review systems before any live
+     pilot claim is made.
 2. Execute the already-approved first hosted write and proof sequence on hosted staging.
    - The primary approver has already approved:
      - `staging.mymedlife.org` as the reviewer target
@@ -35,11 +61,15 @@ Status:
      - `action_started` as the first hosted write
      - metadata submit -> leader review -> audit trail as the smallest proof loop
      - external systems staying off for now
-   - What is still missing now is the final signoff trail and production-foundation follow-through, not another blank approval field.
+   - What is still missing now is the final signoff trail and
+     production-foundation follow-through, not another blank approval field.
 3. Confirm the production environment path for Supabase, Vercel, domain/DNS, secrets, and backup/restore.
    - Use the safe names-only `MYMEDLIFE_PRODUCTION_*` packet metadata values to
      record project refs, owners, URLs, and runbook names on `/admin/launch-gate`.
    - Do not paste real secrets into that packet.
+   - Production Supabase project `fnlhontvvprwgooevzdl` already exists, but it
+     still needs approved app migrations, auth callback configuration, env vars,
+     backup/restore ownership, and a tiny pilot seed plan.
 4. Confirm the rollout-control layer is actually live in the target environment.
    - Hosted staging already has `app.feature_flag_overrides`,
      `app.feature_flag_audit_records`, `app.theme_snapshots`,
@@ -99,4 +129,6 @@ Status:
 ## Rule Before Launch
 
 Do not treat repo readiness as launch approval.
-Do not enable live external sends or broad writes until the human approvals above are recorded and the hosted proof is visible.
+Do not enable live external sends or broad writes until the human approvals
+above are recorded, the current staging proof is accepted externally, and the
+production environment packet is complete.
