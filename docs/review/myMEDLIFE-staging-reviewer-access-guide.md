@@ -6,7 +6,7 @@ Status:
 - draft
 - review-only
 - staging reviewer path is the approved default
-- hosted route-level proof exists, but the attendance-to-points proof is still pending one real Luma check-in
+- hosted route-level proof exists, including the Luma attendance-to-points readback
 - hosted Supabase rollout-control tables now exist and are readable in the signed-in reviewer path
 
 ## What This Guide Covers
@@ -72,9 +72,9 @@ Additional current truth from 2026-06-29:
   helper fix
 - the app can still remain in preview/mock posture if the staging Vercel
   environment has not switched to Supabase-backed read mode yet
-- the remaining Luma blocker is no longer an unknown app bug; one real
-  host-side Luma check-in still needs to be completed before attendance import
-  can prove points and leaderboard materialization
+- hosted DS/Admin reviewer sign-in succeeded after the Vercel SSO handoff
+- the approved Luma loop now has hosted proof for RSVP write, attendance
+  import, points, leaderboard, and zero unauthorized outbox sends
 
 ## What The Reviewer Should Look For
 
@@ -104,10 +104,9 @@ Additional current truth from 2026-06-29:
   different from the default reviewer identity.
 - Hosted staging evidence for the approved first narrow write, if the team
   still wants to re-run that lane from the latest build.
-- One hosted staging example where a human Luma host check-in leads to
-  attendance import, points rows, and leaderboard readback.
-- Final screenshots or route evidence from the approved staging session after
-  that check-in proof is complete.
+- Hosted staging evidence for the proof metadata to leader-review loop.
+- Final screenshots or route evidence packet from the approved staging session
+  covering member, leader, staff, admin, audit, and outbox readback.
 
 ## Escalation Rule
 

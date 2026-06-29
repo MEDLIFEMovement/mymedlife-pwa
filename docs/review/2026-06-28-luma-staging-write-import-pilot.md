@@ -82,14 +82,14 @@ Captured on `2026-06-29` with a signed-in DS Admin staging session.
 - RSVP writeback succeeded for `nellis@medlifemovement.org`.
 - Attendance import succeeded for the same event:
   - `1` approved guest row imported
-  - `0` rows marked checked in
+  - `0` rows marked checked in on the first hosted import run
   - no secrets returned
 - Official Luma API review confirmed the current pilot constraint:
   - public endpoints exist for event create/update, guest add, guest status
     update, and guest list readback with `checked_in_at`
   - no public attendee check-in write endpoint is currently documented
-  - the live pilot therefore still depends on a human host-side Luma check-in
-    before attendance import can produce points proof
+  - the live pilot therefore still depends on an approved human host-side Luma
+    check-in before attendance import can produce points proof
 - Durable app proof written in Supabase for `evt-bJE178Q02N5DaLH`:
   - `1` linked `luma_event_links` row
   - `1` linked `chapter_events` row
@@ -97,12 +97,16 @@ Captured on `2026-06-29` with a signed-in DS Admin staging session.
   - `4` `app.integration_events` rows for the linked event flow
   - `3` disabled `app.automation_outbox` rows blocking downstream automation
   - `2` audit rows that mention the Luma event id in the before/after payload
-- Points rows for that specific hosted event remain `0` because Luma returned no
-  checked-in attendance row yet.
-- The chapter event tied to `evt-bJE178Q02N5DaLH` is still:
-  - `published`
-  - `attendance_count = 0`
-  - `points_rows = 0`
+- A later hosted reviewer replay on the same date reran attendance import after
+  a real Luma host-side check-in:
+  - `1` approved guest row imported
+  - `1` row marked checked in
+  - `/admin/luma-live-pilot` headline counters moved to:
+    - `RSVPs 4`
+    - `Attendance 2`
+    - `Points 20`
+    - `Leaderboard Updated`
+    - `Outbox sends 0`
 - Reviewer-visible readback is still in place for the broader loop:
   - member `/app` shows the event, RSVP, attendance, points, and leaderboard
     story
@@ -112,16 +116,16 @@ Captured on `2026-06-29` with a signed-in DS Admin staging session.
     `/admin/integration-outbox` show the hosted proof and safety posture
 - The visible leaderboard surfaces now prefer durable Supabase-backed points rows
   when they exist, instead of always falling back to mock leaderboard data.
-  That means a real attended Luma import can now show up in reviewer-visible
-  member and leader leaderboard UI once a checked-in attendee is imported.
+  That means the hosted checked-in attendee proof can now show up in
+  reviewer-visible member and leader leaderboard UI.
 - On `/admin/luma-live-pilot`, the headline counters are cumulative staging proof
   totals. The success banner is the authoritative latest event-specific result.
 
 ## What this still does not prove
 
-- It does not yet prove a hosted checked-in attendee can create a real
-  `points_events` row from Luma attendance import.
-- That is now the main honest blocker between "hosted staging event loop exists"
-  and "hosted staging event loop is fully proven for a live pilot."
+- It does not yet prove the separate hosted `action_started` packet.
+- It does not yet prove the proof metadata to leader-review packet.
+- It does not yet provide the final clean route-capture bundle for member,
+  leader, staff, admin, audit, and outbox review surfaces.
 - It does not enable n8n, HubSpot, warehouse, Power BI, SMS/email, AI, or
   production Luma behavior.

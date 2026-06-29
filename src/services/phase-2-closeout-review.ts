@@ -161,9 +161,9 @@ export function getPhase2CloseoutReview(
       status: "awaiting_hosted_proof",
       evidence: [
         "Repo support exists for staging review auth and manual pre-provisioning of the first cohort.",
-        "Observed on 2026-06-24: anonymous staging requests redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path.",
-        "Direct anonymous requests to `/login` are also intercepted by the same Vercel SSO gate.",
-        "Hosted reviewer-path approval and real signed-in staging proof are still missing.",
+        "Observed on 2026-06-24 and again on 2026-06-29: anonymous staging requests redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path.",
+        "Hosted reviewer sign-in proof now exists for a seeded DS/Admin staging session after that Vercel handoff.",
+        "Cross-role pilot-cohort sign-in and final role-routed landing proof still need to be captured from the approved hosted session.",
       ],
     },
     {
@@ -173,7 +173,7 @@ export function getPhase2CloseoutReview(
       evidence: [
         `Recommended first hosted write remains ${firstWrite.hostedCloseout.recommendedHostedWrite}.`,
         `${firstWrite.hostedCloseout.requiredReadback.length} hosted readback checks are already defined.`,
-        "The hosted write packet is framed, but no real staging proof is recorded yet.",
+        "Hosted Luma event / RSVP / attendance proof now exists, but no hosted `action_started` before/after capture is recorded yet.",
       ],
     },
     {
@@ -183,7 +183,7 @@ export function getPhase2CloseoutReview(
       evidence: [
         `Recommended proof loop remains ${proofLoop.hostedCloseout.recommendedProofLoop}.`,
         "Leader review readback is in scope; leader decision writes, uploads, and public proof stay blocked.",
-        "The loop is review-framed in repo, but no hosted end-to-end proof is recorded yet.",
+        "Hosted Luma proof is now recorded, but the proof metadata to leader-review loop still lacks its own end-to-end staging capture.",
       ],
     },
     {
@@ -192,8 +192,8 @@ export function getPhase2CloseoutReview(
       status: "awaiting_hosted_proof",
       evidence: [
         "Leader, staff, DS/admin, audit, and outbox review surfaces are explicitly named in the hosted closeout packets.",
-        "Those routes are reviewable locally and mapped in the Phase 2 packet.",
-        "Hosted staging readback screenshots and route evidence are still missing.",
+        "Hosted Luma review has already been observed across member, leader, staff, admin, audit, and outbox surfaces.",
+        "First-write and proof-loop-specific readback screenshots or route captures are still missing from the final hosted evidence bundle.",
       ],
     },
     {
@@ -233,7 +233,7 @@ export function getPhase2CloseoutReview(
     "Capture proof that the pilot user can sign in through that staging path and lands in the correct role-scoped app surface.",
     "Capture before/after evidence for the hosted `action_started` write from the signed-in student route.",
     "Capture assignment status, internal event, integration event, and audit-log readback for hosted `action_started`, while external sends remain at zero.",
-    "Perform one real host-side Luma check-in in the approved pilot event, then rerun `/admin/luma-live-pilot` attendance import so hosted points and leaderboard readback can be proven honestly.",
+    "Record the existing hosted Luma proof with current counters, or rerun one real host-side Luma check-in in the approved pilot event, then confirm attendance import, points, leaderboard, audit, and outbox readback honestly.",
     "Capture the smallest hosted proof loop: metadata submission, leader review readback, staff readback, DS/admin readback, audit readback, and outbox readback.",
     "Capture explicit evidence that uploads, public proof sharing, HQ proof decisions, coach decisions, and all external integrations remain disabled during the hosted rehearsal.",
   ];
@@ -305,7 +305,8 @@ export function getPhase2CloseoutReview(
           onboarding.launchPreflight?.counts.blocked ?? 0
         } preflight items are still blocked.`,
         "Recommended default: manually pre-provision the first hosted pilot cohort.",
-        "Observed 2026-06-24: anonymous staging requests redirect to Vercel SSO and then to `/login?next=/sso-api...` before the app.",
+        "Observed 2026-06-24 and rechecked on 2026-06-29: anonymous staging requests redirect to Vercel SSO and then to `/login?next=/sso-api...` before the app.",
+        "A seeded DS/Admin reviewer session has already completed that hosted sign-in path successfully.",
         "Live auth, production users, and onboarding writes remain disabled.",
       ],
     },

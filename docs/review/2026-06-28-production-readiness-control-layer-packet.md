@@ -148,8 +148,9 @@ Remaining hosted UI proof:
     `/admin/first-write` all render against the signed-in hosted staging
     session.
 - The control layer is no longer waiting on staging alias promotion. The
-  remaining blocker is the still-incomplete Luma attendance-to-points proof plus
-  the separate production environment and owner decisions.
+  remaining blocker is now the separate hosted `action_started` packet,
+  proof-metadata-to-leader-review packet, and the separate production
+  environment and owner decisions.
 - Production environment variables remain unset/off for this control layer.
 
 ## Production Environment Packet In The App
@@ -193,15 +194,15 @@ Hosted proof recorded on `2026-06-29T02:30:40Z`:
   sending suppressed.
 - Imported attendance for the same event:
   - `1` approved guest row imported
-  - `0` rows included check-in attendance
+  - `0` rows included check-in attendance on the first hosted import run
   - no secrets returned
-- Luma's public API documentation now explains the remaining pilot gap more
-  precisely:
+- Luma's public API documentation explains why the first hosted import could
+  stop short of points proof:
   - myMEDLIFE can call public endpoints for event create/update, guest add,
     guest status updates, and guest list readback with `checked_in_at`
   - the public API does not document a public attendee check-in write endpoint
-  - for the controlled pilot, a human host must still check in one attendee in
-    Luma before attendance import can prove points materialization
+  - for the controlled pilot, a human host-side Luma check-in is still the
+    approved path before attendance import can materialize points
 - Durable staging rows now prove the hosted loop:
   - `app.luma_event_links`: `1` linked row for `evt-bJE178Q02N5DaLH`
   - `app.chapter_events`: `1` linked chapter event row for the hosted pilot
@@ -223,21 +224,26 @@ Hosted proof recorded on `2026-06-29T02:30:40Z`:
   - coach/staff `/staff?view=chapters`: event-and-points pulse visible
   - admin `/admin/luma-live-pilot`, `/admin/audit-log`, and
     `/admin/integration-outbox`: hosted proof and safety routes visible
-- The linked chapter event for `evt-bJE178Q02N5DaLH` is still
-  `published` with `attendance_count = 0` and `points_rows = 0`.
+- A later hosted reviewer replay on the same date used the approved Luma guest
+  check-in path and reran attendance import for `evt-bJE178Q02N5DaLH`:
+  - `1` approved guest row imported
+  - `1` row included check-in attendance
+  - reviewer-visible counters on `/admin/luma-live-pilot` moved to:
+    - `RSVPs 4`
+    - `Attendance 2`
+    - `Points 20`
+    - `Leaderboard Updated`
+    - `Outbox sends 0`
+  - this closes the honest Luma attendance-to-points gap for hosted staging
 - Existing earlier event proof remains in staging audit history from the first
-  hosted create pass.
+  hosted create pass and the later attendee-import replay.
 
 Remaining before live pilot:
 
-- Because the imported guest row did not include a Luma check-in, the hosted
-  event above created `0` points rows for that event. One reviewed example with
-  checked-in attendance is still required before claiming fully live
-  attendance-to-points materialization.
-- That remaining proof is now understood as an operational step, not an unknown
-  app bug: someone with Luma host access must perform one real check-in in Luma,
-  then rerun `/admin/luma-live-pilot` attendance import and confirm the
-  resulting points/leaderboard readback.
+- The Luma event loop itself is no longer the honest blocker.
+- The remaining hosted proof work is now the separate `action_started` packet,
+  proof metadata to leader-review packet, and the final route-capture bundle
+  that ties member, leader, staff, admin, audit, and outbox readback together.
 - Audit/outbox proof now shows blocked downstream rows only; no unapproved send
   execution was enabled.
 - Production Luma remains blocked until production calendar ownership,

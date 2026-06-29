@@ -9,7 +9,8 @@ Status:
 - repo support now exists for explicit hosted staging review auth plus narrow staging-only `action_started` and proof metadata gates
 - the staging-only Luma event loop is now the approved external-family proof exception under review
 - uploads, public proof, and all non-approved external writes remain blocked
-- hosted staging Supabase now has the rollout-control tables; remaining closeout risk is Vercel env alignment plus real signed-in proof
+- hosted staging Supabase now has the rollout-control tables, and hosted reviewer proof now exists for sign-in, durable controls, and the approved Luma loop
+- remaining closeout risk is the separate `action_started`, proof metadata to leader-review loop, final route-capture packet, and named-owner signoff
 
 ## Goal of this packet
 
@@ -87,6 +88,7 @@ Observed staging access on 2026-06-24:
 
 Implication:
 - hosted auth proof is still blocked until the staging reviewer path is captured in hosted evidence, even though the approved default path is now `staging.mymedlife.org` behind the existing Vercel SSO handoff
+- a seeded DS/Admin reviewer session has already completed that hosted sign-in path on 2026-06-29, so the remaining auth work is role-routed pilot proof rather than discovering the access gate
 
 Reason:
 - this keeps Phase 2 from depending on broad self-serve join and onboarding writes
@@ -167,23 +169,22 @@ As of 2026-06-24, the closeout criteria separate into three buckets:
 - the smallest hosted proof loop is explicitly narrowed to `proof metadata submission + leader review`
 - leader, staff, DS/admin, audit, and outbox review surfaces are named for the hosted proof loop
 - all external integrations remain explicitly disabled in the pilot framing
+- hosted `/admin/feature-flags` and `/admin/theme` control saves already have reviewer-visible durable audit proof
 
 ### Awaiting human recording or signoff
 
 - final named pilot owners are not all recorded yet
 - final support/pause channel is not fully confirmed yet
 - final rollback owner is not fully confirmed yet
-- final staging reviewer access posture is not yet confirmed
+- final cross-role pilot reviewer posture is not yet fully confirmed
 
 ### Awaiting hosted staging proof
 
-- hosted auth does not yet have approved reviewer-path evidence
+- hosted auth still needs role-routed pilot-user proof beyond the DS/Admin reviewer session
 - hosted `action_started` does not yet have before/after staging proof
 - the hosted proof/review loop does not yet have end-to-end staging evidence
-- leader, staff, DS/admin, audit, and outbox readback do not yet have hosted proof captured from staging
-- `/admin/feature-flags` and `/admin/theme` still need one real signed-in
-  DS/Admin save each so the new hosted rollout-control tables produce visible
-  audit proof
+- the final evidence bundle still needs the clean member, leader, staff,
+  DS/admin, audit, and outbox route captures attached to the latest staging run
 
 ## What Phase 2 completion means
 
@@ -204,4 +205,4 @@ Phase 2 completion does **not** mean:
 Current honest reading:
 - Phase 2 is review-ready and tightly framed
 - Phase 2 is not yet complete
-- the remaining gap is real hosted proof plus named human approvals, not more product-surface expansion
+- the remaining gap is now the separate hosted `action_started` and proof-loop packets, current route captures, and named human approvals, not more product-surface expansion

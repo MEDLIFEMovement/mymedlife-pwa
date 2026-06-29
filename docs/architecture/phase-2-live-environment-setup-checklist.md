@@ -5,7 +5,8 @@ Date: 2026-06-29
 Status:
 - local implementation is green
 - staging remains the reviewer target
-- hosted reviewer proof exists, but the final attendance-to-points proof is still incomplete
+- hosted reviewer proof now exists for signed-in route access, durable control readback, and the approved staging-only Luma loop
+- the remaining hosted closeout work is now the separate `action_started`, proof-loop, and final route-capture packet
 - production Supabase exists, but production rollout is not approved from this checklist
 
 ## Purpose
@@ -35,10 +36,13 @@ readiness as launch approval.
   Supabase-backed reads without widening anonymous preview traffic into the
   live read model.
 - Hosted staging reviewer proof now exists for signed-in route access,
-  Supabase-backed rollout controls, and most of the Luma loop.
-- Hosted staging is still not proof-complete until one real Luma host-side
-  check-in flows through attendance import into points and leaderboard
-  readback.
+  Supabase-backed rollout controls, and the approved Luma event / RSVP /
+  attendance / points loop.
+- Hosted staging now shows one real attendance import producing points and
+  leaderboard readback while unauthorized outbox sends remain at `0`.
+- The remaining Phase 2 closeout work is no longer the Luma check-in itself;
+  it is the separate hosted `action_started`, proof-loop, and reviewer-packet
+  capture.
 - The narrow staging-only Luma loop is the only approved external-family
   exception under review:
   - event create/update
