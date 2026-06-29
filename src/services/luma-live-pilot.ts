@@ -201,6 +201,7 @@ export async function writeLumaRsvp(
   options: {
     env?: LumaLivePilotEnv;
     fetchImpl?: LumaLivePilotFetch;
+    sleepImpl?: (ms: number) => Promise<void>;
   } = {},
 ): Promise<LumaLivePilotResult> {
   const featureState = await getDurableLumaFeatureState(options.env);
@@ -232,13 +233,42 @@ export async function writeLumaRsvp(
     send_email: false,
   };
 
-  return postLuma(
+  const result = await postLuma(
     `${LUMA_API_BASE}/events/guests/add`,
     body,
     apiKey,
     "rsvp_write",
     options.fetchImpl,
   );
+
+  if (!result.ok) {
+    return result;
+  }
+
+  const verification = await verifyLumaGuestAfterRsvp(
+    {
+      eventId: input.eventId,
+      email: input.email,
+    },
+    {
+      apiKey,
+      fetchImpl: options.fetchImpl,
+      sleepImpl: options.sleepImpl,
+    },
+  );
+
+  if (!verification.verified) {
+    return failedResult(
+      "rsvp_write",
+      verification.failedReason ??
+        "Luma accepted the RSVP request, but the guest did not appear in the approved guest list. Retry after the event settles or review the event's guest settings before treating this as a live pilot pass.",
+    );
+  }
+
+  return {
+    ...result,
+    externalReads: verification.externalReads,
+  };
 }
 
 export async function importLumaAttendance(
@@ -367,6 +397,81 @@ async function postLuma(
       `${getOperationLabel(operation)} failed before returning a safe response.`,
     );
   }
+}
+
+async function verifyLumaGuestAfterRsvp(
+  input: {
+    eventId: string;
+    email: string;
+  },
+  options: {
+    apiKey: string;
+    fetchImpl?: LumaLivePilotFetch;
+    sleepImpl?: (ms: number) => Promise<void>;
+  },
+): Promise<{
+  verified: boolean;
+  externalReads: number;
+  failedReason?: string;
+}> {
+  const endpoint = buildLumaGuestListEndpoint(input.eventId, 100);
+  const targetEmail = normalizeEmail(input.email);
+  const delaysMs = [0, 750, 1500];
+  let externalReads = 0;
+
+  for (const delayMs of delaysMs) {
+    if (delayMs > 0) {
+      await (options.sleepImpl ?? sleep)(delayMs);
+    }
+
+    try {
+      const response = await (options.fetchImpl ?? fetch)(endpoint, {
+        method: "GET",
+        headers: {
+          "x-luma-api-key": options.apiKey,
+        },
+        cache: "no-store",
+      });
+      externalReads += 1;
+
+      if (!response.ok) {
+        return {
+          verified: false,
+          externalReads,
+          failedReason: getSafeLumaFailureMessage(
+            response.status,
+            "Luma RSVP verification",
+          ),
+        };
+      }
+
+      const payload = (await response.json()) as LumaJson;
+      const guestEmails = getAttendanceEntries(payload)
+        .map(toRawAttendanceRow)
+        .map((row) => normalizeEmail(row.email));
+
+      if (guestEmails.includes(targetEmail)) {
+        return {
+          verified: true,
+          externalReads,
+        };
+      }
+    } catch {
+      return {
+        verified: false,
+        externalReads,
+        failedReason:
+          "Luma RSVP verification failed before the approved guest list could be checked safely.",
+      };
+    }
+  }
+
+  return {
+    verified: false,
+    externalReads,
+    failedReason:
+      "Luma accepted the RSVP request, but the guest did not appear in the approved guest list. Retry after the event settles or review the event's guest settings before treating this as a live pilot pass.",
+  };
 }
 
 function sanitizeEventPayload(
@@ -647,6 +752,10 @@ function normalizeOptionalString(value: string | null | undefined): string | nul
     : null;
 }
 
+function normalizeEmail(value: string | null | undefined): string {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
 function stringOrNull(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0
     ? value
@@ -735,4 +844,8 @@ function getSuccessMessage(operation: LumaLivePilotResult["operation"]): string 
     case "attendance_import":
       return "Imported Luma attendance into a browser-safe staging readback.";
   }
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }

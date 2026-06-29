@@ -234,12 +234,12 @@ export default async function LumaLivePilotPage({
                 {
                   label: "RSVP writeback",
                   detail:
-                    "Write the approved reviewer RSVP to that event with Luma email sending suppressed.",
+                    "Write the approved reviewer RSVP to that event with Luma email sending suppressed, then verify the guest appears in Luma's approved guest list before treating the RSVP lane as proven.",
                 },
                 {
                   label: "Attendance import",
                   detail:
-                    "First complete a real host-side Luma check-in for one approved guest, then import the same event and confirm the page returns attendance rows without QR codes or secrets.",
+                    "After the approved guest is visible in Luma, complete a real host-side Luma check-in for that guest, then import the same event and confirm the page returns attendance rows without QR codes or secrets.",
                 },
                 {
                   label: "Points and leaderboard readback",
@@ -326,7 +326,7 @@ export default async function LumaLivePilotPage({
               </form>
             </LivePilotForm>
 
-            <LivePilotForm title="Write RSVP back to Luma" detail="Adds one guest as Going with send_email=false so Luma does not send email/SMS from this pilot control.">
+            <LivePilotForm title="Write RSVP back to Luma" detail="Adds one guest as Going with send_email=false so Luma does not send email/SMS from this pilot control. Treat the lane as passed only after that guest appears in Luma's approved guest list.">
               <form action={runLumaRsvpWriteAction} className="space-y-3">
                 <input type="hidden" name="returnTo" value="/admin/luma-live-pilot" />
                 <Field label="Luma event id">
@@ -354,7 +354,7 @@ export default async function LumaLivePilotPage({
               </form>
             </LivePilotForm>
 
-            <LivePilotForm title="Import attendance from Luma" detail="Reads approved guests and checked_in_at state into a browser-safe summary. Raw secrets and QR codes are not returned. To prove points, complete a host-side Luma check-in first because the public API does not expose a public attendee check-in write.">
+            <LivePilotForm title="Import attendance from Luma" detail="Reads approved guests and checked_in_at state into a browser-safe summary. Raw secrets and QR codes are not returned. To prove points, first verify the RSVP guest is visible in Luma, then complete a host-side Luma check-in because the public API does not expose a public attendee check-in write.">
               <form action={runLumaAttendanceImportAction} className="space-y-3">
                 <input type="hidden" name="returnTo" value="/admin/luma-live-pilot" />
                 <Field label="Luma event id">
@@ -378,7 +378,8 @@ export default async function LumaLivePilotPage({
               <p className="mt-3 text-xs leading-5 text-slate-500">
                 Review note: Luma&apos;s public API lets myMEDLIFE create events, add RSVP
                 guests, update guest status, and read <code>checked_in_at</code>, but the
-                pilot still relies on a human host check-in inside Luma before this import
+                pilot still relies on a human host check-in inside Luma, and the RSVP guest
+                must actually appear in Luma&apos;s approved guest list, before this import
                 can create attendance-backed points proof.
               </p>
             </LivePilotForm>

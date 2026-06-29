@@ -47,7 +47,7 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("Luma event create/update");
     expect(html).toContain("RSVP writeback");
     expect(html).toContain("Attendance import");
-    expect(html).toContain("First complete a real host-side Luma check-in");
+    expect(html).toContain("approved guest list");
     expect(html).toContain("Points and leaderboard readback");
     expect(html).toContain("Audit/outbox safety");
     expect(html).toContain("the public API does not expose a public attendee check-in write");
