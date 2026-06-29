@@ -122,6 +122,10 @@ export type ProofMetadataPacket = {
   };
 };
 
+function isHostedStagingLane(env: EnvSource = process.env): boolean {
+  return env.MYMEDLIFE_AUTH_MODE === "staging_supabase";
+}
+
 const defaultProofInput = {
   evidenceType: "testimonial_text",
   summary:
@@ -152,6 +156,7 @@ export function getProofMetadataPacket(
   }
 
   const candidateAssignment = findCandidateAssignment(data.assignments);
+  const hostedStaging = isHostedStagingLane(env);
   const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const targetActor = getMockLocalActorContext(
     "member.a@mymedlife.test",
@@ -196,7 +201,9 @@ export function getProofMetadataPacket(
     title: getTitle(actor),
     status,
     plainEnglishSummary:
-      "This packet prepares the second Rush Month write: one approved pilot member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled outbox row, and audit log without uploading files or sharing proof publicly. For Phase 2 hosted closeout, the leader review route should be able to read that proof back while leader decision writes remain blocked.",
+      hostedStaging
+        ? "This packet prepares the second Rush Month write for hosted staging: one approved pilot member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled outbox row, and audit log without uploading files or sharing proof publicly. For Phase 2 hosted closeout, the leader review route should be able to read that proof back while leader decision writes remain blocked."
+        : "This packet prepares the second Rush Month write: one approved pilot member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled outbox row, and audit log without uploading files or sharing proof publicly. For Phase 2 hosted closeout, the leader review route should be able to read that proof back while leader decision writes remain blocked.",
     candidateAssignment: candidate,
     defaultInput: defaultProofInput,
     checks,
@@ -284,12 +291,13 @@ function buildChecks(
   const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const writeScopeEnabled = localWritesRequested || stagingProofEnabled;
   const uploadsDisabled = env.MYMEDLIFE_ALLOW_PROOF_UPLOADS !== "true";
+  const hostedStaging = isHostedStagingLane(env);
   const authModeLabel =
-    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+    hostedStaging
       ? "Hosted staging Supabase Auth mode is selected"
       : "Local Supabase Auth mode is selected";
   const authModeDetail =
-    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+    hostedStaging
       ? reviewAuthModeEnabled
         ? "Hosted staging auth can open the pilot member path after the protected staging access path is approved."
         : "Set MYMEDLIFE_AUTH_MODE=staging_supabase only after the staging reviewer access path and review auth are approved."
@@ -300,19 +308,23 @@ function buildChecks(
   return [
     {
       key: "local_supabase_reads",
-      label: "Local Supabase read model is active",
+      label: "Supabase-backed read model is active",
       passed: data.source.mode === "supabase",
       detail:
         data.source.mode === "supabase"
-          ? "The app is reading local Supabase data instead of mock fallback data."
+          ? hostedStaging
+            ? "The app is reading Supabase-backed staging data instead of mock fallback data."
+            : "The app is reading Supabase-backed local data instead of mock fallback data."
           : "The app is using mock fallback data, so proof metadata testing cannot target a real assignment UUID.",
     },
     {
       key: "candidate_assignment",
       label: "A proof-ready member assignment exists",
-      passed: Boolean(assignment),
+      passed: Boolean(assignment && isProofReadyAssignment(assignment)),
       detail: assignment
-        ? `Candidate action: ${assignment.title}.`
+        ? isProofReadyAssignment(assignment)
+          ? `Candidate action: ${assignment.title}.`
+          : `Candidate action ${assignment.title} is currently ${assignment.status}. Move one member assignment into in_progress or changes_requested before collecting proof metadata evidence.`
         : "No assignment is available for proof metadata testing.",
     },
     {
@@ -369,7 +381,9 @@ function buildChecks(
     },
     {
       key: "local_auth_session",
-      label: "Fake member is signed in locally",
+      label: hostedStaging
+        ? "Approved pilot member is signed in on staging"
+        : "Fake member is signed in locally",
       passed: Boolean(
         readiness?.checks.find((check) => check.key === "local_auth_session")
           ?.passed,
@@ -377,8 +391,10 @@ function buildChecks(
       detail:
         readiness?.checks.find((check) => check.key === "local_auth_session")
           ?.passed
-          ? "The target fake member has a local Supabase Auth session."
-          : env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+          ? hostedStaging
+            ? "The approved pilot member has a staging Supabase Auth session."
+            : "The target fake member has a local Supabase Auth session."
+          : hostedStaging
             ? "Clear the approved staging access path, then sign in as the approved staging pilot member before submitting proof metadata."
             : "Sign in as member.a@mymedlife.test before submitting proof metadata.",
     },
@@ -573,6 +589,7 @@ function buildVerificationPacket(
   readbackEvidence: ProofMetadataReadbackItem[],
   env: EnvSource = process.env,
 ): ProofMetadataVerificationPacket {
+  const hostedStaging = isHostedStagingLane(env);
   const evidenceObserved = isProofReadbackObserved(readbackEvidence);
   const auditNeedsManualCheck = isProofCoreObservedWithoutAudit(readbackEvidence);
 
@@ -580,7 +597,12 @@ function buildVerificationPacket(
     status,
     canPromoteToStagingReview: evidenceObserved,
     title: "Proof metadata operator packet",
-    plainEnglishDecision: getPlainEnglishDecision(status, evidenceObserved, auditNeedsManualCheck),
+    plainEnglishDecision: getPlainEnglishDecision(
+      status,
+      evidenceObserved,
+      auditNeedsManualCheck,
+      env,
+    ),
     envSettings:
       env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
         ? [
@@ -661,7 +683,9 @@ function buildVerificationPacket(
         label: "Open the target action",
         route: candidate?.route ?? "/rush-month/actions",
         expectedProof:
-          "The action is in progress and the proof/testimonial form is enabled only locally.",
+          hostedStaging
+            ? "The action is in progress and the proof/testimonial form is enabled only for the approved staging pilot lane."
+            : "The action is in progress and the proof/testimonial form is enabled only locally.",
       },
       {
         label: "Submit metadata only",
@@ -677,7 +701,9 @@ function buildVerificationPacket(
       },
     ],
     safetyStops: [
-      "Stop if the app is not reading local Supabase data.",
+      `Stop if the app is not reading ${
+        hostedStaging ? "Supabase-backed staging data" : "local Supabase data"
+      }.`,
       "Stop if `/admin/first-write` has not shown action-start readback evidence.",
       "Stop if the target assignment is not a Supabase UUID.",
       "Stop if proof upload controls appear enabled.",
@@ -695,26 +721,38 @@ function getPlainEnglishDecision(
   status: ProofMetadataPacketStatus,
   evidenceObserved: boolean,
   auditNeedsManualCheck: boolean,
+  env: EnvSource = process.env,
 ): string {
+  const hostedStaging = isHostedStagingLane(env);
   if (evidenceObserved) {
-    return "Proof metadata evidence is observed. Staff can review this packet for staging only after confirming no files, public proof, or external sends happened.";
+    return hostedStaging
+      ? "Hosted staging proof metadata evidence is observed. Staff can review this packet for the tiny pilot only after confirming no files, public proof, or external sends happened."
+      : "Proof metadata evidence is observed. Staff can review this packet for staging only after confirming no files, public proof, or external sends happened.";
   }
 
   if (auditNeedsManualCheck) {
-    return "Core proof metadata readback is visible, but audit proof needs manual confirmation before staging review.";
+    return hostedStaging
+      ? "Core hosted staging proof metadata readback is visible, but audit proof needs manual confirmation before pilot review."
+      : "Core proof metadata readback is visible, but audit proof needs manual confirmation before staging review.";
   }
 
   switch (status) {
     case "ready_for_local_proof_metadata":
-      return "Ready to run locally. Submit one metadata-only proof/testimonial and collect the readback evidence before any staging discussion.";
+      return hostedStaging
+        ? "Ready to run on hosted staging. Submit one metadata-only proof/testimonial with the approved pilot member and collect the readback evidence before any live-pilot discussion."
+        : "Ready to run locally. Submit one metadata-only proof/testimonial and collect the readback evidence before any staging discussion.";
     case "blocked_until_local_supabase":
-      return "Do not run. Local Supabase readback is required before proof metadata can be tested.";
+      return hostedStaging
+        ? "Do not run. Supabase-backed staging readback is required before proof metadata can be tested."
+        : "Do not run. Local Supabase readback is required before proof metadata can be tested.";
     case "blocked_until_first_write":
       return "Do not run. Prove the first action-start write before submitting proof metadata.";
     case "blocked_until_flags":
       return "Do not run. Required local flags are missing or proof upload controls are not safely disabled.";
     case "blocked_until_auth":
-      return "Do not run. Sign in as the fake local member before attempting proof metadata.";
+      return hostedStaging
+        ? "Do not run. Sign in as the approved staging pilot member before attempting proof metadata."
+        : "Do not run. Sign in as the fake local member before attempting proof metadata.";
     case "needs_manual_audit_check":
     case "evidence_observed":
       return "Review readback evidence before continuing.";

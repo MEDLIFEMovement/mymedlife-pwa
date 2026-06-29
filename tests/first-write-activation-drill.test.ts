@@ -134,6 +134,10 @@ describe("first-write activation drill", () => {
     expect(drill.verificationPacket.safetyStops.join(" ")).toContain(
       "approved staging access path",
     );
+    expect(drill.plainEnglishSummary).toContain("controlled staging proof run");
+    expect(drill.verificationPacket.plainEnglishDecision).toContain(
+      "hosted staging drill is ready to run",
+    );
   });
 
   it("names the local action-start sequence and proof expected from staff", () => {
@@ -231,6 +235,26 @@ describe("first-write activation drill", () => {
     );
     expect(drill.counts.observedReadbackItems).toBe(5);
     expect(drill.counts.externalWritesExpected).toBe(0);
+  });
+
+  it("does not claim a startable assignment exists when the candidate is already in progress", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const drill = getFirstWriteActivationDrill(
+      actor,
+      withFirstWriteReadback(withSupabaseUuidAssignment(mockData)),
+      {
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
+        MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE: "true",
+      },
+    );
+
+    expect(
+      drill.checks.find((check) => check.key === "candidate_assignment")?.passed,
+    ).toBe(false);
+    expect(
+      drill.checks.find((check) => check.key === "candidate_assignment")?.detail,
+    ).toContain("Reset or seed one member assignment");
   });
 
   it("requires manual audit confirmation when core readback is visible but audit is missing", () => {

@@ -48,6 +48,9 @@ describe("proof metadata verification packet", () => {
     expect(packet.verificationPacket.plainEnglishDecision).toContain(
       "Prove the first action-start write",
     );
+    expect(
+      packet.checks.find((check) => check.key === "candidate_assignment")?.passed,
+    ).toBe(true);
   });
 
   it("marks proof metadata ready only with first-write readback, local auth, and flags", () => {
@@ -138,6 +141,13 @@ describe("proof metadata verification packet", () => {
     ).toContain("protected staging access path");
     expect(packet.verificationPacket.safetyStops.join(" ")).toContain(
       "approved staging access path",
+    );
+    expect(
+      packet.checks.find((check) => check.key === "local_auth_session")?.label,
+    ).toBe("Approved pilot member is signed in on staging");
+    expect(packet.plainEnglishSummary).toContain("hosted staging");
+    expect(packet.verificationPacket.plainEnglishDecision).toContain(
+      "Ready to run on hosted staging",
     );
     expect(packet.hostedCloseout.recommendedProofLoop).toBe(
       "proof metadata submission plus leader review only",

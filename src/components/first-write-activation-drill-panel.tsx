@@ -15,6 +15,23 @@ export function FirstWriteActivationDrillPanel({
     return null;
   }
 
+  const isHostedStaging = drill.verificationPacket.envSettings.some((setting) => {
+    return setting.key === "MYMEDLIFE_AUTH_MODE" && setting.value === "staging_supabase";
+  });
+  const signInLabel = isHostedStaging ? "Open staging sign-in" : "Open local sign-in";
+  const settingsLabel = isHostedStaging
+    ? "Required staging review settings"
+    : "Required local env settings";
+  const credentialNote = isHostedStaging
+    ? "This seeded review credential is for approved staging proof only. It is not a production account."
+    : "This fake credential is local seed data only. It is not a production account.";
+  const readbackIntro = isHostedStaging
+    ? "After the hosted action-start proof runs, this section should move from planned proof to observed proof. It is read-only and does not trigger the write."
+    : "After the local action-start drill runs, this section should move from planned proof to observed proof. It is read-only and does not trigger the write.";
+  const sequenceIntro = isHostedStaging
+    ? "Follow these steps only in the approved staging review window. Stop if any step implies a production user, external send, proof upload, or broad launch."
+    : "Follow these steps only in local Supabase. Stop if any step implies a production user, external send, proof upload, or broad launch.";
+
   return (
     <SurfacePanel
       as="section"
@@ -46,7 +63,7 @@ export function FirstWriteActivationDrillPanel({
               variant="secondary"
               className="border-white/12 bg-[var(--mymedlife-border)]/40 text-white/78"
             >
-              Open local sign-in
+              {signInLabel}
             </PanelButton>
           </div>
         </div>
@@ -111,7 +128,7 @@ export function FirstWriteActivationDrillPanel({
         <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.9fr]">
           <article className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
             <p className="text-sm font-semibold text-white">
-              Required local env settings
+              {settingsLabel}
             </p>
             <div className="mt-3 grid gap-2">
               {drill.verificationPacket.envSettings.map((setting) => (
@@ -142,11 +159,10 @@ export function FirstWriteActivationDrillPanel({
               href={drill.verificationPacket.fakeMemberCredential.route}
               className="mt-3 bg-[var(--mymedlife-focus-blue)] text-[var(--foreground)]"
             >
-              Open local sign-in
+              {signInLabel}
             </PanelButton>
             <p className="mt-3 text-xs leading-5 text-white/54">
-              This fake credential is local seed data only. It is not a production
-              account.
+              {credentialNote}
             </p>
           </article>
         </div>
@@ -222,9 +238,7 @@ export function FirstWriteActivationDrillPanel({
           Post-drill readback evidence
         </h2>
         <p className="mt-2 text-sm leading-6 text-white/62">
-          After the local action-start drill runs, this section should move from
-          planned proof to observed proof. It is read-only and does not trigger
-          the write.
+          {readbackIntro}
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {drill.readbackEvidence.map((item) => (
@@ -254,8 +268,7 @@ export function FirstWriteActivationDrillPanel({
           Staff drill sequence
         </h2>
         <p className="mt-2 text-sm leading-6 text-white/62">
-          Follow these steps only in local Supabase. Stop if any step implies a
-          production user, external send, proof upload, or broad launch.
+          {sequenceIntro}
         </p>
         <div className="mt-4 grid gap-3">
           {drill.steps.map((step, index) => (
