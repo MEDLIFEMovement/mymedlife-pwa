@@ -200,6 +200,7 @@ describe("proof metadata verification packet", () => {
 
     expect(packet.status).toBe("evidence_observed");
     expect(packet.verificationPacket.canPromoteToStagingReview).toBe(true);
+    expect(packet.plainEnglishSummary).toContain("already contains proof metadata readback evidence");
     expect(Object.fromEntries(
       packet.readbackEvidence.map((item) => [item.key, item.status]),
     )).toEqual({
@@ -211,6 +212,35 @@ describe("proof metadata verification packet", () => {
       audit_log: "observed",
     });
     expect(packet.counts.observedReadbackItems).toBe(6);
+  });
+
+  it("prefers the hosted proof-backed assignment even when another member UUID assignment appears first", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const packet = getProofMetadataPacket(
+      actor,
+      withHostedProofMetadataReadbackWithDistractor(),
+      {
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
+        MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE: "true",
+        MYMEDLIFE_ALLOW_PROOF_UPLOADS: "false",
+      },
+    );
+
+    expect(packet.candidateAssignment?.id).toBe("50000000-0000-4000-8000-000000000002");
+    expect(packet.candidateAssignment?.status).toBe("submitted");
+    expect(packet.candidateAssignment?.readyForProof).toBe(true);
+    expect(packet.status).toBe("evidence_observed");
+    expect(
+      packet.checks.find((check) => check.key === "candidate_assignment")?.passed,
+    ).toBe(true);
+    expect(
+      packet.checks.find((check) => check.key === "assignment_ready_for_proof")?.passed,
+    ).toBe(true);
+    expect(
+      packet.checks.find((check) => check.key === "first_write_readback")?.passed,
+    ).toBe(true);
+    expect(packet.plainEnglishSummary).toContain("Hosted staging already contains proof metadata readback evidence");
   });
 
   it("requires manual audit confirmation when audit proof is missing", () => {
@@ -431,6 +461,175 @@ function withProofMetadataReadback(): ReadOnlyAppData {
         },
         reason: "Local proof metadata write path.",
         created_at: "2026-06-16T19:05:00Z",
+      },
+    ],
+  };
+}
+
+function withHostedProofMetadataReadbackWithDistractor(): ReadOnlyAppData {
+  const hostedAssignmentId = "50000000-0000-4000-8000-000000000002";
+  const hostedActionStartedEventId = "80326f8b-2436-409b-9a7d-454006c76772";
+  const hostedActionStartedIntegrationEventId = "20033a9c-f891-43c6-88ca-0e3bf0b03a8c";
+  const hostedEvidenceItemId = "3e7b2ab6-8770-488f-9637-90cbaa863b62";
+  const hostedEvidenceEventId = "cca7640b-149f-45b7-8efe-c6c50b5815cf";
+  const hostedEvidenceIntegrationEventId = "b95589cd-1000-4435-a28d-3fbb9a168a4a";
+
+  return {
+    ...mockData,
+    source: {
+      mode: "supabase",
+      status: "supabase_ready",
+      message: "Testing hosted staging proof metadata readback.",
+    },
+    assignments: [
+      {
+        ...mockData.assignments[0],
+        id: assignmentId,
+        status: "in_progress",
+        lane: "Member",
+        title: "Distractor member action",
+      },
+      {
+        ...mockData.assignments[1],
+        id: hostedAssignmentId,
+        status: "submitted",
+        lane: "Member",
+        title: "Invite three more students to Rush Month",
+      },
+      ...mockData.assignments.slice(2),
+    ],
+    evidenceItems: [
+      {
+        id: hostedEvidenceItemId,
+        assignmentId: hostedAssignmentId,
+        submittedBy: "Sofia Alvarez",
+        evidenceType: "testimonial_text",
+        summary:
+          "Hosted staging proof drill: Sofia finished the Rush Month outreach follow-up and captured the exact member invite context for leader review.",
+        status: "pending_review",
+      },
+    ],
+    eventRows: [
+      {
+        id: hostedActionStartedEventId,
+        event_type: "action_started",
+        actor_user_id: "00000000-0000-4000-8000-000000000001",
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        campaign_id: "40000000-0000-4000-8000-000000000001",
+        assignment_id: hostedAssignmentId,
+        chapter_event_id: null,
+        payload: {
+          source: "app.start_assignment_action",
+        },
+        correlation_id: "action_started:assignment-2:member-1",
+        occurred_at: "2026-06-29T15:33:24Z",
+        created_at: "2026-06-29T15:33:24Z",
+      },
+      {
+        id: hostedEvidenceEventId,
+        event_type: "evidence_submitted",
+        actor_user_id: "00000000-0000-4000-8000-000000000001",
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        campaign_id: "40000000-0000-4000-8000-000000000001",
+        assignment_id: hostedAssignmentId,
+        chapter_event_id: null,
+        payload: {
+          source: "app.submit_proof_metadata",
+          evidenceItemId: hostedEvidenceItemId,
+        },
+        correlation_id: "evidence_submitted:assignment-2:member-1",
+        occurred_at: "2026-06-29T15:51:53Z",
+        created_at: "2026-06-29T15:51:53Z",
+      },
+    ],
+    integrationEventRows: [
+      {
+        id: hostedActionStartedIntegrationEventId,
+        source_event_id: hostedActionStartedEventId,
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        event_type: "action_started",
+        destination: "internal",
+        external_object_type: "assignment",
+        external_object_id: hostedAssignmentId,
+        status: "recorded",
+        payload: {
+          liveExternalWrite: false,
+        },
+        created_by: "00000000-0000-4000-8000-000000000001",
+        created_at: "2026-06-29T15:33:24Z",
+        updated_at: "2026-06-29T15:33:24Z",
+      },
+      {
+        id: hostedEvidenceIntegrationEventId,
+        source_event_id: hostedEvidenceEventId,
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        event_type: "evidence_submitted",
+        destination: "internal",
+        external_object_type: "evidence_item",
+        external_object_id: hostedEvidenceItemId,
+        status: "recorded",
+        payload: {
+          liveExternalWrite: false,
+        },
+        created_by: "00000000-0000-4000-8000-000000000001",
+        created_at: "2026-06-29T15:51:53Z",
+        updated_at: "2026-06-29T15:51:53Z",
+      },
+    ],
+    automationOutboxRows: [
+      {
+        id: proofOutboxId,
+        source_event_id: hostedEvidenceEventId,
+        integration_event_id: hostedEvidenceIntegrationEventId,
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        destination: "n8n",
+        event_type: "evidence_submitted",
+        payload: {
+          disabled: true,
+        },
+        idempotency_key: "evidence_submitted:assignment-2:member-1",
+        status: "disabled",
+        attempt_count: 0,
+        available_at: "2026-06-29T15:51:53Z",
+        locked_at: null,
+        sent_at: null,
+        last_error: null,
+        created_at: "2026-06-29T15:51:53Z",
+        updated_at: "2026-06-29T15:51:53Z",
+      },
+    ],
+    auditLogs: [
+      {
+        id: "99ad7242-b46c-48d4-a573-79eef122fa74",
+        actor_user_id: "00000000-0000-4000-8000-000000000001",
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        action: "action_started",
+        target_table: "assignments",
+        target_id: hostedAssignmentId,
+        before_value: {
+          status: "not_started",
+        },
+        after_value: {
+          status: "in_progress",
+          eventId: hostedActionStartedEventId,
+        },
+        reason: "Hosted preview action-start proof save.",
+        created_at: "2026-06-29T15:33:24Z",
+      },
+      {
+        id: "bf1c1538-6983-46f6-b0f5-d4053be65da5",
+        actor_user_id: "00000000-0000-4000-8000-000000000001",
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        action: "evidence_submitted",
+        target_table: "evidence_items",
+        target_id: hostedEvidenceItemId,
+        before_value: null,
+        after_value: {
+          assignmentId: hostedAssignmentId,
+          eventId: hostedEvidenceEventId,
+        },
+        reason: "Hosted preview proof metadata save.",
+        created_at: "2026-06-29T15:51:53Z",
       },
     ],
   };

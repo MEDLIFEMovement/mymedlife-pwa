@@ -156,6 +156,8 @@ export function getProofMetadataPacket(
   }
 
   const candidateAssignment = findCandidateAssignment(data.assignments);
+  const evidenceBackedAssignment = findEvidenceBackedAssignment(data);
+  const resolvedAssignment = evidenceBackedAssignment ?? candidateAssignment;
   const hostedStaging = isHostedStagingLane(env);
   const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const targetActor = getMockLocalActorContext(
@@ -166,24 +168,30 @@ export function getProofMetadataPacket(
     reviewAuthModeEnabled ? "signed_in" : "signed_out",
   );
   const writeConfig = getProofSubmissionWriteConfig(env);
-  const readiness = candidateAssignment
+  const readiness = resolvedAssignment
     ? getProofSubmissionWriteReadiness(
         targetActor,
-        candidateAssignment,
+        resolvedAssignment,
         defaultProofInput,
         env,
       )
     : null;
-  const candidate = candidateAssignment ? toCandidate(candidateAssignment) : null;
-  const firstWriteObserved = candidateAssignment
-    ? hasActionStartReadback(data, candidateAssignment.id)
+  const firstWriteObserved = resolvedAssignment
+    ? hasActionStartReadback(data, resolvedAssignment.id)
     : false;
+  const existingProofObserved = resolvedAssignment
+    ? hasProofMetadataReadback(data, resolvedAssignment.id)
+    : false;
+  const candidate = resolvedAssignment
+    ? toCandidate(resolvedAssignment, existingProofObserved)
+    : null;
   const readbackEvidence = buildReadbackEvidence(data, candidate);
   const checks = buildChecks(
     data,
-    candidateAssignment,
+    resolvedAssignment,
     readiness,
     firstWriteObserved,
+    existingProofObserved,
     env,
   );
   const status = getStatus(checks, writeConfig.enabled, readbackEvidence);
@@ -201,9 +209,7 @@ export function getProofMetadataPacket(
     title: getTitle(actor),
     status,
     plainEnglishSummary:
-      hostedStaging
-        ? "This packet prepares the second Rush Month write for hosted staging: one approved pilot member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled outbox row, and audit log without uploading files or sharing proof publicly. For Phase 2 hosted closeout, the leader review route should be able to read that proof back while leader decision writes remain blocked."
-        : "This packet prepares the second Rush Month write: one approved pilot member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled outbox row, and audit log without uploading files or sharing proof publicly. For Phase 2 hosted closeout, the leader review route should be able to read that proof back while leader decision writes remain blocked.",
+      getPlainEnglishSummary(status, env),
     candidateAssignment: candidate,
     defaultInput: defaultProofInput,
     checks,
@@ -230,6 +236,43 @@ export function getProofMetadataPacket(
       uploadsExpected: 0,
     },
   };
+}
+
+function findEvidenceBackedAssignment(data: ReadOnlyAppData): Assignment | null {
+  const proofEvents = [...data.eventRows]
+    .filter((event) => event.event_type === "evidence_submitted" && event.assignment_id)
+    .sort((left, right) => {
+      return new Date(right.created_at).getTime() - new Date(left.created_at).getTime();
+    });
+
+  for (const event of proofEvents) {
+    const assignment = data.assignments.find((item) => item.id === event.assignment_id);
+    if (!assignment) {
+      continue;
+    }
+
+    const evidenceItem = data.evidenceItems.find((item) => {
+      return item.assignmentId === assignment.id && item.status === "pending_review";
+    });
+    const integrationEvent = data.integrationEventRows.find((item) => {
+      return item.event_type === "evidence_submitted" &&
+        (item.source_event_id === event.id ||
+          (evidenceItem ? item.external_object_id === evidenceItem.id : false));
+    });
+    const outbox = data.automationOutboxRows.find((item) => {
+      return item.event_type === "evidence_submitted" && item.status === "disabled" &&
+        (item.source_event_id === event.id ||
+          (integrationEvent?.id ? item.integration_event_id === integrationEvent.id : false));
+    });
+
+    if (!evidenceItem || !integrationEvent || !outbox) {
+      continue;
+    }
+
+    return assignment;
+  }
+
+  return null;
 }
 
 function findCandidateAssignment(assignments: Assignment[]): Assignment | null {
@@ -263,7 +306,10 @@ function isProofReadyAssignment(assignment: Assignment): boolean {
   );
 }
 
-function toCandidate(assignment: Assignment): ProofMetadataCandidate {
+function toCandidate(
+  assignment: Assignment,
+  existingProofObserved = false,
+): ProofMetadataCandidate {
   return {
     id: assignment.id,
     title: assignment.title,
@@ -272,7 +318,7 @@ function toCandidate(assignment: Assignment): ProofMetadataCandidate {
       source: "proof_metadata_packet",
     }),
     usesSupabaseUuid: isUuid(assignment.id),
-    readyForProof: isProofReadyAssignment(assignment),
+    readyForProof: isProofReadyAssignment(assignment) || existingProofObserved,
   };
 }
 
@@ -281,6 +327,7 @@ function buildChecks(
   assignment: Assignment | null,
   readiness: ReturnType<typeof getProofSubmissionWriteReadiness> | null,
   firstWriteObserved: boolean,
+  existingProofObserved: boolean,
   env: EnvSource,
 ): ProofMetadataPacketCheck[] {
   const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
@@ -320,11 +367,16 @@ function buildChecks(
     {
       key: "candidate_assignment",
       label: "A proof-ready member assignment exists",
-      passed: Boolean(assignment && isProofReadyAssignment(assignment)),
+      passed: Boolean(
+        assignment &&
+          (isProofReadyAssignment(assignment) || existingProofObserved),
+      ),
       detail: assignment
         ? isProofReadyAssignment(assignment)
           ? `Candidate action: ${assignment.title}.`
-          : `Candidate action ${assignment.title} is currently ${assignment.status}. Move one member assignment into in_progress or changes_requested before collecting proof metadata evidence.`
+          : existingProofObserved
+            ? `Candidate action ${assignment.title} already has proof metadata evidence and is currently ${assignment.status}. Use the current row set as the hosted proof chain.`
+            : `Candidate action ${assignment.title} is currently ${assignment.status}. Move one member assignment into in_progress or changes_requested before collecting proof metadata evidence.`
         : "No assignment is available for proof metadata testing.",
     },
     {
@@ -347,11 +399,16 @@ function buildChecks(
     {
       key: "assignment_ready_for_proof",
       label: "Assignment is ready for proof",
-      passed: Boolean(assignment && isProofReadyAssignment(assignment)),
+      passed: Boolean(
+        assignment &&
+          (isProofReadyAssignment(assignment) || existingProofObserved),
+      ),
       detail:
         assignment && isProofReadyAssignment(assignment)
           ? `Current status is ${assignment.status}.`
-          : "Proof metadata should only be submitted after the assignment is in progress or changes are requested.",
+          : existingProofObserved && assignment
+            ? `Current status is ${assignment.status}; proof metadata has already been recorded for this assignment and should now be reviewed rather than re-submitted blindly.`
+            : "Proof metadata should only be submitted after the assignment is in progress or changes are requested.",
     },
     {
       key: "auth_mode",
@@ -564,7 +621,8 @@ function buildReadbackEvidence(
 
 function hasActionStartReadback(data: ReadOnlyAppData, assignmentId: string): boolean {
   const assignmentReady = data.assignments.some((assignment) => {
-    return assignment.id === assignmentId && isProofReadyAssignment(assignment);
+    return assignment.id === assignmentId &&
+      isPostActionStartStatus(assignment.status);
   });
   const hasEvent = data.eventRows.some((event) => {
     return event.assignment_id === assignmentId && event.event_type === "action_started";
@@ -581,6 +639,42 @@ function hasActionStartReadback(data: ReadOnlyAppData, assignmentId: string): bo
   });
 
   return assignmentReady && hasEvent && hasIntegrationEvent && hasAuditLog;
+}
+
+function hasProofMetadataReadback(data: ReadOnlyAppData, assignmentId: string): boolean {
+  const assignmentSubmitted = data.assignments.some((assignment) => {
+    return assignment.id === assignmentId && assignment.status === "submitted";
+  });
+  const evidenceItem = data.evidenceItems.find((item) => {
+    return item.assignmentId === assignmentId && item.status === "pending_review";
+  });
+  const event = data.eventRows.find((item) => {
+    return item.assignment_id === assignmentId && item.event_type === "evidence_submitted";
+  });
+  const integrationEvent = data.integrationEventRows.find((item) => {
+    return item.event_type === "evidence_submitted" &&
+      item.external_object_type === "evidence_item" &&
+      (evidenceItem ? item.external_object_id === evidenceItem.id : false);
+  });
+  const outbox = data.automationOutboxRows.find((item) => {
+    return item.event_type === "evidence_submitted" && item.status === "disabled" &&
+      (event ? item.source_event_id === event.id : true);
+  });
+
+  return Boolean(
+    assignmentSubmitted &&
+      evidenceItem &&
+      event &&
+      integrationEvent &&
+      outbox,
+  );
+}
+
+function isPostActionStartStatus(status: Assignment["status"]): boolean {
+  return status === "in_progress" ||
+    status === "submitted" ||
+    status === "approved" ||
+    status === "changes_requested";
 }
 
 function buildVerificationPacket(
@@ -759,6 +853,29 @@ function getPlainEnglishDecision(
     case "hidden":
       return "This packet is hidden for the selected role.";
   }
+}
+
+function getPlainEnglishSummary(
+  status: ProofMetadataPacketStatus,
+  env: EnvSource = process.env,
+): string {
+  const hostedStaging = isHostedStagingLane(env);
+
+  if (status === "evidence_observed") {
+    return hostedStaging
+      ? "Hosted staging already contains proof metadata readback evidence for the approved pilot lane. Reviewers should confirm the current assignment, evidence item, event, disabled outbox, audit, and leader-review readback chain from this route instead of treating proof submission as undiscovered."
+      : "Local Supabase already contains proof metadata readback evidence. Reviewers should confirm the current assignment, evidence item, event, disabled outbox, audit, and leader-review readback chain from this route instead of rerunning the write blindly.";
+  }
+
+  if (status === "needs_manual_audit_check") {
+    return hostedStaging
+      ? "Hosted staging already shows the core proof metadata row set. Reviewers still need manual audit confirmation before treating this hosted proof loop as signoff-ready."
+      : "Local Supabase already shows the core proof metadata row set. Reviewers still need manual audit confirmation before treating this proof loop as staging-ready.";
+  }
+
+  return hostedStaging
+    ? "This packet prepares the second Rush Month write for hosted staging: one approved pilot member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled outbox row, and audit log without uploading files or sharing proof publicly. For Phase 2 hosted closeout, the leader review route should be able to read that proof back while leader decision writes remain blocked."
+    : "This packet prepares the second Rush Month write: one approved pilot member submits testimonial/proof metadata for one in-progress assignment. It proves the proof record, structured event, disabled outbox row, and audit log without uploading files or sharing proof publicly. For Phase 2 hosted closeout, the leader review route should be able to read that proof back while leader decision writes remain blocked.";
 }
 
 function isProofReadbackObserved(items: ProofMetadataReadbackItem[]): boolean {
