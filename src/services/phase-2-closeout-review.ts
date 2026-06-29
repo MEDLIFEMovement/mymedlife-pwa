@@ -288,8 +288,8 @@ export function getPhase2CloseoutReview(
       ? `Record the current assignment readback for ${hostedActionStartProof.assignmentId}; it has already moved beyond the first write into status \`${hostedActionStartProof.assignmentStatus}\`, so reviewers should use the event/integration/audit chain as the authoritative proof of start.`
       : "Capture assignment status, internal event, integration event, and audit-log readback for hosted `action_started`, while external sends remain at zero.",
     hostedLumaEvidenceObserved
-      ? "Record the existing hosted Luma proof with current RSVP, attendance, points, leaderboard, audit, and outbox counters."
-      : "Record the existing hosted Luma proof with current counters, or rerun one real host-side Luma check-in in the approved pilot event, then confirm attendance import, points, leaderboard, audit, and outbox readback honestly.",
+      ? "Record the existing hosted Luma proof with current RSVP, attendance, points, leaderboard, audit, and outbox counters, using `/admin/audit-log?source=luma-live-pilot` and `/admin/integration-outbox?source=luma-live-pilot` for the admin readback."
+      : "Record the existing hosted Luma proof with current counters, or rerun one real host-side Luma check-in in the approved pilot event, then confirm attendance import, points, leaderboard, audit, and outbox readback honestly, using `/admin/audit-log?source=luma-live-pilot` and `/admin/integration-outbox?source=luma-live-pilot` for the admin readback.",
     hostedProofLoopEvidence
       ? `Record the current hosted proof-loop evidence for assignment ${hostedProofLoopEvidence.assignmentId} and evidence item ${hostedProofLoopEvidence.evidenceItemId}, then confirm leader, staff, DS/admin, audit, and outbox readback against that same row set.`
       : "Capture the smallest hosted proof loop: metadata submission, leader review readback, staff readback, DS/admin readback, audit readback, and outbox readback.",

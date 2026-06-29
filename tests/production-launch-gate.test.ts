@@ -166,8 +166,8 @@ describe("production launch gate", () => {
         "/staff",
         "/admin",
         "/rush-month/leaderboard",
-        "/admin/audit-log",
-        "/admin/integration-outbox",
+        "/admin/audit-log?source=luma-live-pilot",
+        "/admin/integration-outbox?source=luma-live-pilot",
       ]),
     );
     expect(

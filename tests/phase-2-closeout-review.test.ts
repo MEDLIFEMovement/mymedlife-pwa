@@ -101,6 +101,12 @@ describe("phase 2 closeout review", () => {
     expect(review.hostedEvidenceChecklist.join(" ")).toContain(
       "host-side Luma check-in",
     );
+    expect(review.hostedEvidenceChecklist.join(" ")).toContain(
+      "/admin/audit-log?source=luma-live-pilot",
+    );
+    expect(review.hostedEvidenceChecklist.join(" ")).toContain(
+      "/admin/integration-outbox?source=luma-live-pilot",
+    );
     expect(review.reviewerAction).toContain("approved as written");
   });
 
