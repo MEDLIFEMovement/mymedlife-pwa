@@ -182,9 +182,9 @@ export default async function LumaLivePilotPage({
             <section className="rounded-[2rem] border border-amber-200 bg-amber-50 p-5">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="app-eyebrow text-amber-700">Pending host step</p>
+                  <p className="app-eyebrow text-amber-700">Best next proof candidate</p>
                   <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-                    One Luma guest still needs a real host-side check-in.
+                    {pendingHostCheckIn.nextStepLabel}
                   </h2>
                   <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-700">
                     {pendingHostCheckIn.detail}
@@ -199,7 +199,7 @@ export default async function LumaLivePilotPage({
                   Open Luma guest list
                 </a>
               </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6">
                 <PendingFact label="Event id" value={pendingHostCheckIn.eventId} mono />
                 <PendingFact
                   label="Guest"
@@ -225,6 +225,64 @@ export default async function LumaLivePilotPage({
                   label="Approved guests returned"
                   value={`${pendingHostCheckIn.importedGuestCount}`}
                 />
+                <PendingFact
+                  label="Attendance returned"
+                  value={`${pendingHostCheckIn.attendanceCount}`}
+                />
+              </div>
+            </section>
+          ) : null}
+
+          {eventLoop.recentRuns.length > 0 ? (
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <p className="app-eyebrow app-eyebrow-blue">Recent pilot runs</p>
+                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                    Review the proof candidates in completion order.
+                  </h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+                    The newest event is not always the fastest one to finish. Use this list to
+                    pick the run that is already closest to points and leaderboard proof.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3 xl:grid-cols-3">
+                {eventLoop.recentRuns.slice(0, 3).map((run, index) => (
+                  <article
+                    key={`${run.eventId}:${run.lastRsvpRecordedAt}`}
+                    className={`rounded-2xl border p-4 ${
+                      index === 0
+                        ? "border-amber-300 bg-amber-50"
+                        : "border-slate-200 bg-[var(--background)]"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
+                        {index === 0 ? "Best next proof candidate" : "Recent proof candidate"}
+                      </p>
+                      <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600">
+                        {run.nextStepLabel}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-slate-700">{run.detail}</p>
+                    <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                      <CompactFact label="Event id" value={run.eventId} mono />
+                      <CompactFact
+                        label="Guest"
+                        value={run.guestEmail ?? run.guestEmailHint ?? "Review RSVP row"}
+                      />
+                      <CompactFact
+                        label="Approved guests"
+                        value={`${run.importedGuestCount}`}
+                      />
+                      <CompactFact
+                        label="Attendance"
+                        value={`${run.attendanceCount}`}
+                      />
+                    </dl>
+                  </article>
+                ))}
               </div>
             </section>
           ) : null}
@@ -573,6 +631,31 @@ function PendingFact({
       >
         {value}
       </p>
+    </div>
+  );
+}
+
+function CompactFact({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+        {label}
+      </dt>
+      <dd
+        className={`mt-1 text-sm font-semibold text-slate-900 ${
+          mono ? "font-mono text-[13px]" : ""
+        }`}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

@@ -591,7 +591,106 @@ describe("staging Luma event loop", () => {
       guestEmailHint: "ne***@medlifemovement.org",
       lastAttendanceImportAt: "2026-06-29T11:07:42.137Z",
       importedGuestCount: 0,
+      attendanceCount: 0,
+      nextStepLabel: "Verify the guest appears in Luma's approved list first.",
     });
     expect(readModel.pendingHostCheckIn?.detail).toContain("0 approved guests");
+    expect(readModel.recentRuns).toHaveLength(1);
+  });
+
+  it("prefers the most advanced pending proof candidate over the newest RSVP", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "older-rsvp",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "older-event",
+            payload: {
+              source: "luma_live_pilot",
+              lumaEventId: "evt-older",
+              userEmail: "nellis@medlifemovement.org",
+              userEmailHint: "ne***@medlifemovement.org",
+              rsvpCount: 1,
+            },
+            correlation_id: "older-rsvp",
+            occurred_at: "2026-06-29T03:17:53.728Z",
+            created_at: "2026-06-29T03:17:53.728Z",
+          },
+          {
+            id: "older-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "older-event",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 1,
+            },
+            correlation_id: "older-attendance",
+            occurred_at: "2026-06-29T11:07:42.137Z",
+            created_at: "2026-06-29T11:07:42.137Z",
+          },
+          {
+            id: "newer-rsvp",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "newer-event",
+            payload: {
+              source: "luma_live_pilot",
+              lumaEventId: "evt-newer",
+              userEmail: "member.a@mymedlife.test",
+              userEmailHint: "me***@mymedlife.test",
+              rsvpCount: 1,
+            },
+            correlation_id: "newer-rsvp",
+            occurred_at: "2026-06-29T11:58:49.006Z",
+            created_at: "2026-06-29T11:58:49.006Z",
+          },
+          {
+            id: "newer-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "newer-event",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 0,
+            },
+            correlation_id: "newer-attendance",
+            occurred_at: "2026-06-29T12:02:36.722Z",
+            created_at: "2026-06-29T12:02:36.722Z",
+          },
+        ],
+        integrationEventRows: [],
+        automationOutboxRows: [],
+        pointsEventRows: [],
+      },
+    });
+
+    expect(readModel.pendingHostCheckIn).toMatchObject({
+      eventId: "evt-older",
+      importedGuestCount: 1,
+      attendanceCount: 0,
+      nextStepLabel: "Complete the host-side Luma check-in.",
+    });
+    expect(readModel.recentRuns.map((run) => run.eventId)).toEqual([
+      "evt-older",
+      "evt-newer",
+    ]);
   });
 });

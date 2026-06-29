@@ -110,13 +110,16 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("event_rsvp_recorded");
     expect(html).toContain("event_points_awarded");
     expect(html).toContain("Audit/outbox review remains visible before pilot expansion.");
-    expect(html).toContain("Pending host step");
-    expect(html).toContain("One Luma guest still needs a real host-side check-in.");
+    expect(html).toContain("Best next proof candidate");
+    expect(html).toContain("Verify the guest appears in Luma&#x27;s approved list first.");
     expect(html).toContain("Open Luma guest list");
     expect(html).toContain("evt-bJE178Q02N5DaLH");
     expect(html).toContain("nellis@medlifemovement.org");
     expect(html).toContain("Approved guests returned");
+    expect(html).toContain("Attendance returned");
     expect(html).toContain("0 approved guests");
+    expect(html).toContain("Recent pilot runs");
+    expect(html).toContain("Review the proof candidates in completion order.");
     expect(html).toContain("Hosted reviewer proof");
     expect(html).toContain("Use this route as the staging evidence checklist.");
     expect(html).toContain("Open staging.mymedlife.org, pass Vercel SSO");

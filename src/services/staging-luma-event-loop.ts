@@ -102,8 +102,21 @@ export type StagingLumaEventLoopReadModel = {
     lastRsvpRecordedAt: string;
     lastAttendanceImportAt: string | null;
     importedGuestCount: number;
+    attendanceCount: number;
+    nextStepLabel: string;
     detail: string;
   };
+  recentRuns: Array<{
+    eventId: string;
+    guestEmail: string | null;
+    guestEmailHint: string | null;
+    lastRsvpRecordedAt: string;
+    lastAttendanceImportAt: string | null;
+    importedGuestCount: number;
+    attendanceCount: number;
+    nextStepLabel: string;
+    detail: string;
+  }>;
   sequence: {
     label: string;
     detail: string;
@@ -117,6 +130,19 @@ export type StagingLumaEventLoopEvidenceSnapshot = {
   integrationEventRows: IntegrationEventRow[];
   automationOutboxRows: AutomationOutboxRow[];
   pointsEventRows: PointsEventRow[];
+};
+
+type PendingRunCandidate = {
+  eventId: string;
+  guestEmail: string | null;
+  guestEmailHint: string | null;
+  lastRsvpRecordedAt: string;
+  lastAttendanceImportAt: string | null;
+  importedGuestCount: number;
+  attendanceCount: number;
+  nextStepLabel: string;
+  detail: string;
+  priority: number;
 };
 
 const defaultChapterName = "UCLA MEDLIFE";
@@ -466,13 +492,17 @@ export function getStagingLumaEventLoopReadModel(
         ? "Live-ready, not enabled"
         : "Disabled";
   const pendingHostCheckIn = data
-    ? derivePendingHostCheckIn(data, summary.pointsAwarded)
+    ? derivePendingHostCheckInCandidates(data, summary.pointsAwarded)[0] ?? null
     : null;
+  const recentRuns = data
+    ? derivePendingHostCheckInCandidates(data, summary.pointsAwarded)
+    : [];
 
   return {
     summary,
     providerStatusLabel,
     pendingHostCheckIn,
+    recentRuns,
     sequence: buildReadModelSequence(providerEnabled),
     safetyNotes: [
       "No production Luma write is enabled.",
@@ -650,62 +680,126 @@ function deriveEvidenceSummary(
   };
 }
 
-function derivePendingHostCheckIn(
+function derivePendingHostCheckInCandidates(
   data: StagingLumaEventLoopEvidenceSnapshot,
   pointsAwarded: number,
 ) {
   if (pointsAwarded > 0) {
-    return null;
+    return [];
   }
 
   const allRelevantEventRows = data.eventRows.filter(isRelevantEventRow);
   const pilotEventRows = allRelevantEventRows.filter(isPilotEventRow);
   const relevantEventRows = pilotEventRows.length > 0 ? pilotEventRows : allRelevantEventRows;
-  const latestRsvpRow = [...relevantEventRows]
-    .filter((row) => row.event_type === "event_rsvp_recorded")
-    .sort(compareEventRowsNewestFirst)[0];
+  const latestRsvpRowsByChapterEvent = new Map<string, EventRow>();
 
-  if (!latestRsvpRow) {
-    return null;
+  for (const row of relevantEventRows) {
+    if (row.event_type !== "event_rsvp_recorded" || !row.chapter_event_id) {
+      continue;
+    }
+
+    const existing = latestRsvpRowsByChapterEvent.get(row.chapter_event_id);
+    if (!existing || compareEventRowsNewestFirst(row, existing) < 0) {
+      latestRsvpRowsByChapterEvent.set(row.chapter_event_id, row);
+    }
   }
 
-  const payload = asRecord(latestRsvpRow.payload);
-  const eventId = stringFromPayload(payload, ["lumaEventId"]);
-  if (!eventId) {
-    return null;
+  const candidates: PendingRunCandidate[] = [];
+
+  for (const latestRsvpRow of latestRsvpRowsByChapterEvent.values()) {
+    const payload = asRecord(latestRsvpRow.payload);
+    const eventId = stringFromPayload(payload, ["lumaEventId"]);
+    if (!eventId) {
+      continue;
+    }
+
+    const sameChapterEventRows = relevantEventRows.filter(
+      (row) => row.chapter_event_id === latestRsvpRow.chapter_event_id,
+    );
+    const latestAttendanceRow = [...sameChapterEventRows]
+      .filter((row) => isAttendanceEventType(row.event_type))
+      .sort(compareEventRowsNewestFirst)[0];
+
+    const attendancePayload = latestAttendanceRow
+      ? asRecord(latestAttendanceRow.payload)
+      : null;
+    const importedGuestCount = numberFromPayload(attendancePayload, [
+      "importedGuestCount",
+    ]);
+    const attendanceCount = numberFromPayload(attendancePayload, ["attendanceCount"]);
+    const guestEmail = stringFromPayload(payload, ["userEmail"]);
+    const guestEmailHint = stringFromPayload(payload, ["userEmailHint"]);
+    const { nextStepLabel, detail, priority } = describePendingRun({
+      attendanceCount,
+      importedGuestCount,
+      importedAt: latestAttendanceRow?.occurred_at ?? null,
+    });
+
+    candidates.push({
+      eventId,
+      guestEmail,
+      guestEmailHint,
+      lastRsvpRecordedAt: latestRsvpRow.occurred_at,
+      lastAttendanceImportAt: latestAttendanceRow?.occurred_at ?? null,
+      importedGuestCount,
+      attendanceCount,
+      nextStepLabel,
+      detail,
+      priority,
+    });
   }
 
-  const sameChapterEventRows = relevantEventRows.filter(
-    (row) => row.chapter_event_id === latestRsvpRow.chapter_event_id,
-  );
-  const latestAttendanceRow = [...sameChapterEventRows]
-    .filter((row) => isAttendanceEventType(row.event_type))
-    .sort(compareEventRowsNewestFirst)[0];
+  return candidates
+    .sort((left, right) => {
+      if (left.priority !== right.priority) {
+        return left.priority - right.priority;
+      }
 
-  const attendancePayload = latestAttendanceRow
-    ? asRecord(latestAttendanceRow.payload)
-    : null;
-  const importedGuestCount = numberFromPayload(attendancePayload, [
-    "importedGuestCount",
-  ]);
-  const attendanceCount = numberFromPayload(attendancePayload, ["attendanceCount"]);
-  const guestEmail = stringFromPayload(payload, ["userEmail"]);
-  const guestEmailHint = stringFromPayload(payload, ["userEmailHint"]);
+      return compareIsoNewestFirst(
+        left.lastAttendanceImportAt ?? left.lastRsvpRecordedAt,
+        right.lastAttendanceImportAt ?? right.lastRsvpRecordedAt,
+      );
+    })
+    .map(({ priority: _priority, ...run }) => run);
+}
+
+function describePendingRun(input: {
+  attendanceCount: number;
+  importedGuestCount: number;
+  importedAt: string | null;
+}) {
+  if (input.attendanceCount > 0) {
+    return {
+      priority: 0,
+      nextStepLabel: "Review why points did not materialize yet.",
+      detail:
+        "Attendance is already visible in app evidence, but points have not materialized yet. Recheck the import proof before widening the pilot.",
+    };
+  }
+
+  if (input.importedGuestCount > 0) {
+    return {
+      priority: 1,
+      nextStepLabel: "Complete the host-side Luma check-in.",
+      detail:
+        "The RSVP is already in Luma and the guest list has been imported, but no host-side check-in has been seen yet. Mark this guest checked in inside Luma, then rerun attendance import here.",
+    };
+  }
+
+  if (input.importedAt) {
+    return {
+      priority: 2,
+      nextStepLabel: "Verify the guest appears in Luma's approved list first.",
+      detail:
+        "The RSVP is recorded in myMEDLIFE, but the last Luma import returned 0 approved guests. First verify this guest appears in Luma's approved guest list, then mark them checked in and rerun attendance import here.",
+    };
+  }
 
   return {
-    eventId,
-    guestEmail,
-    guestEmailHint,
-    lastRsvpRecordedAt: latestRsvpRow.occurred_at,
-    lastAttendanceImportAt: latestAttendanceRow?.occurred_at ?? null,
-    importedGuestCount,
-    detail: attendanceCount > 0
-      ? "Attendance is already visible in app evidence, but points have not materialized yet. Recheck the import proof before widening the pilot."
-      : latestAttendanceRow && importedGuestCount === 0
-        ? "The RSVP is recorded in myMEDLIFE, but the last Luma import returned 0 approved guests. First verify this guest appears in Luma's approved guest list, then mark them checked in and rerun attendance import here."
-        : importedGuestCount > 0
-          ? "The RSVP is already in Luma and the guest list has been imported, but no host-side check-in has been seen yet. Mark this guest checked in inside Luma, then rerun attendance import here."
-          : "The RSVP is recorded in myMEDLIFE, but the guest still needs to appear in Luma and receive a real host-side check-in before attendance import can create points proof."
+    priority: 3,
+    nextStepLabel: "Verify RSVP visibility and then complete host check-in.",
+    detail:
+      "The RSVP is recorded in myMEDLIFE, but the guest still needs to appear in Luma and receive a real host-side check-in before attendance import can create points proof.",
   };
 }
 
@@ -739,6 +833,10 @@ function buildReadModelSequence(providerEnabled: boolean) {
       eventType: "event_points_awarded",
     },
   ];
+}
+
+function compareIsoNewestFirst(left: string, right: string) {
+  return Date.parse(right) - Date.parse(left);
 }
 
 function isRelevantEventRow(row: EventRow) {
