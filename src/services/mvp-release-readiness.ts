@@ -1,10 +1,15 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import {
+  getProductionEnvironmentReadinessItems,
+  getProductionLaunchEvidenceChecks,
+} from "@/services/production-launch-gate";
+import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
+import type { StagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 export type ReleaseReadinessStatus =
   | "ready_for_local_review"
@@ -43,6 +48,23 @@ export type Phase2CloseoutSnapshot = {
   nextDecision: string;
 };
 
+export type ProductionReadinessSnapshotItem = {
+  label: string;
+  detail: string;
+};
+
+export type ProductionReadinessSnapshot = {
+  title: string;
+  plainEnglish: string;
+  recordedEnvironmentCount: number;
+  missingEnvironmentCount: number;
+  stagingEvidenceRecordedCount: number;
+  missingEvidenceCount: number;
+  recordedNow: ProductionReadinessSnapshotItem[];
+  stillMissing: ProductionReadinessSnapshotItem[];
+  nextDecision: string;
+};
+
 export type MvpReleaseReadinessSummary = {
   canReadSummary: boolean;
   title: string;
@@ -56,11 +78,17 @@ export type MvpReleaseReadinessSummary = {
   blockers: ReleaseReadinessItem[];
   roleModelReviewCheckpoint: RoleModelReviewCheckpoint | null;
   phase2Closeout: Phase2CloseoutSnapshot | null;
+  productionReadiness: ProductionReadinessSnapshot | null;
   nextApprovals: string[];
 };
 
 export function getMvpReleaseReadinessSummary(
   actor: LocalActorContext,
+  options: {
+    env?: Record<string, string | undefined>;
+    lumaReadModel?: StagingLumaEventLoopReadModel;
+    hostedStagingEvidenceObserved?: boolean;
+  } = {},
 ): MvpReleaseReadinessSummary {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
@@ -79,6 +107,7 @@ export function getMvpReleaseReadinessSummary(
       blockers: [],
       roleModelReviewCheckpoint: null,
       phase2Closeout: null,
+      productionReadiness: null,
       nextApprovals: [],
     };
   }
@@ -549,6 +578,7 @@ export function getMvpReleaseReadinessSummary(
     ],
     roleModelReviewCheckpoint: getRoleModelReviewCheckpoint(),
     phase2Closeout: getPhase2CloseoutSnapshot(),
+    productionReadiness: getProductionReadinessSnapshot(options),
     nextApprovals: [
       "Review `docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md` and either approve it as written or replace only the chapter, cohort size, owner slots, event/NPS posture, support channel, or rollback owner.",
       "Use `/admin/pilot-scope` to name the pilot chapter, chapter leader owner, coach owner, HQ/admin owner, DS owner, support/pause channel, and rollback owner before calling Phase 2 complete.",
@@ -609,6 +639,71 @@ export function getMvpReleaseReadinessSummary(
       "Approve first pilot chapter or internal test group from `/admin/pilot-scope`.",
       "Approve any real n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, or AI integration.",
     ],
+  };
+}
+
+function getProductionReadinessSnapshot(
+  options: {
+    env?: Record<string, string | undefined>;
+    lumaReadModel?: StagingLumaEventLoopReadModel;
+    hostedStagingEvidenceObserved?: boolean;
+  },
+): ProductionReadinessSnapshot {
+  const env = options.env ?? process.env;
+  const environmentReadiness = getProductionEnvironmentReadinessItems(
+    undefined,
+    env,
+  );
+  const launchEvidenceChecks = getProductionLaunchEvidenceChecks(
+    undefined,
+    options.lumaReadModel,
+    Boolean(options.hostedStagingEvidenceObserved),
+  );
+  const recordedEnvironment = environmentReadiness.filter(
+    (item) => item.status === "recorded_for_review",
+  );
+  const missingEnvironment = environmentReadiness.filter(
+    (item) => item.status === "missing_before_pilot",
+  );
+  const stagingEvidenceRecorded = launchEvidenceChecks.filter(
+    (item) => item.status === "staging_evidence_recorded",
+  );
+  const missingEvidence = launchEvidenceChecks.filter(
+    (item) => item.status === "missing_before_pilot",
+  );
+
+  return {
+    title: "Production foundation snapshot",
+    plainEnglish:
+      "This is the quickest read on what has already been recorded in the production packet versus what still needs real owner confirmation before a tiny live pilot can begin.",
+    recordedEnvironmentCount: recordedEnvironment.length,
+    missingEnvironmentCount: missingEnvironment.length,
+    stagingEvidenceRecordedCount: stagingEvidenceRecorded.length,
+    missingEvidenceCount: missingEvidence.length,
+    recordedNow: [
+      ...recordedEnvironment.map((item) => ({
+        label: item.label,
+        detail:
+          item.recordedEvidence?.[0] ??
+          `Recorded for review under ${item.ownerLane}.`,
+      })),
+      ...stagingEvidenceRecorded.map((item) => ({
+        label: item.label,
+        detail: item.acceptanceSignal,
+      })),
+    ],
+    stillMissing: [
+      ...missingEnvironment.map((item) => ({
+        label: item.label,
+        detail: item.blockedUntil,
+      })),
+      ...missingEvidence.map((item) => ({
+        label: item.label,
+        detail: item.blockedUntil,
+      })),
+    ],
+    nextDecision:
+      "Use this snapshot to confirm what is already recorded as packet evidence, then assign owners only for the remaining missing environment and hosted-proof items.",
   };
 }
 

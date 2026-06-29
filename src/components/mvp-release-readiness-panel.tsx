@@ -47,6 +47,10 @@ export function MvpReleaseReadinessPanel({
         <Phase2CloseoutCard closeout={summary.phase2Closeout} />
       ) : null}
 
+      {summary.productionReadiness ? (
+        <ProductionReadinessCard snapshot={summary.productionReadiness} />
+      ) : null}
+
       <div className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <p className="text-sm font-semibold text-white">Approvals needed next</p>
         <ul className="mt-3 grid gap-2">
@@ -58,6 +62,52 @@ export function MvpReleaseReadinessPanel({
         </ul>
       </div>
     </section>
+  );
+}
+
+function ProductionReadinessCard({
+  snapshot,
+}: {
+  snapshot: NonNullable<MvpReleaseReadinessSummary["productionReadiness"]>;
+}) {
+  return (
+    <article className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-white">{snapshot.title}</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
+            {snapshot.plainEnglish}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+          <MiniStat
+            label="Env recorded"
+            value={`${snapshot.recordedEnvironmentCount}`}
+          />
+          <MiniStat
+            label="Env missing"
+            value={`${snapshot.missingEnvironmentCount}`}
+          />
+          <MiniStat
+            label="Proof recorded"
+            value={`${snapshot.stagingEvidenceRecordedCount}`}
+          />
+          <MiniStat
+            label="Proof missing"
+            value={`${snapshot.missingEvidenceCount}`}
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <CloseoutList title="Recorded now" items={snapshot.recordedNow} />
+        <CloseoutList title="Still missing" items={snapshot.stillMissing} />
+      </div>
+
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3 text-xs leading-5 text-white/54">
+        {snapshot.nextDecision}
+      </p>
+    </article>
   );
 }
 
@@ -118,14 +168,30 @@ function Phase2CloseoutCard({
   );
 }
 
-function CloseoutList({ title, items }: { title: string; items: string[] }) {
+function CloseoutList({
+  title,
+  items,
+}: {
+  title: string;
+  items: string[] | Array<{ label: string; detail: string }>;
+}) {
   return (
     <article className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-4">
       <h3 className="text-lg font-semibold text-white">{title}</h3>
       <ul className="mt-3 grid gap-2">
         {items.map((item) => (
-          <li key={item} className="text-sm leading-6 text-white/60">
-            {item}
+          <li
+            key={typeof item === "string" ? item : `${item.label}-${item.detail}`}
+            className="text-sm leading-6 text-white/60"
+          >
+            {typeof item === "string" ? (
+              item
+            ) : (
+              <>
+                <span className="font-semibold text-white">{item.label}</span>
+                <span className="text-white/52">: {item.detail}</span>
+              </>
+            )}
           </li>
         ))}
       </ul>

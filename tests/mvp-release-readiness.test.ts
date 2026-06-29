@@ -282,6 +282,45 @@ describe("mvp release readiness", () => {
     );
   });
 
+  it("surfaces recorded production packet state in the release summary", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const summary = getMvpReleaseReadinessSummary(actor, {
+      env: {
+        MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF: "prod-ref-123",
+        MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER: "DS Platform",
+        MYMEDLIFE_PRODUCTION_VERCEL_PROJECT: "mymedlife-pwa-production",
+        MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE: "main",
+        MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET: "previous stable deployment",
+        MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS: "names-only manifest recorded",
+        MYMEDLIFE_PRODUCTION_SECRET_OWNER: "DS Admin",
+        MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL:
+          "https://www.mymedlife.org/auth/callback",
+        MYMEDLIFE_STAGING_AUTH_CALLBACK_URL:
+          "https://staging.mymedlife.org/auth/callback",
+        MYMEDLIFE_PRODUCTION_DNS_OWNER: "HQ Ops",
+        MYMEDLIFE_PRODUCTION_REGISTRAR: "GoDaddy",
+        MYMEDLIFE_PRODUCTION_BACKUP_OWNER: "Platform",
+        MYMEDLIFE_PRODUCTION_RESTORE_PATH: "Supabase PITR + SQL restore runbook",
+      },
+      hostedStagingEvidenceObserved: true,
+    });
+
+    expect(summary.productionReadiness).not.toBeNull();
+    expect(summary.productionReadiness?.recordedEnvironmentCount).toBe(6);
+    expect(summary.productionReadiness?.missingEnvironmentCount).toBe(1);
+    expect(summary.productionReadiness?.stagingEvidenceRecordedCount).toBe(3);
+    expect(summary.productionReadiness?.missingEvidenceCount).toBe(7);
+    expect(
+      summary.productionReadiness?.recordedNow.map((item) => item.label),
+    ).toContain("Production Supabase project");
+    expect(
+      summary.productionReadiness?.recordedNow.map((item) => item.label),
+    ).toContain("Production Vercel environment");
+    expect(
+      summary.productionReadiness?.stillMissing.map((item) => item.label),
+    ).toContain("Rollback and support owners");
+  });
+
   it("keeps DS Admin on the same conservative release-readiness summary", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const summary = getMvpReleaseReadinessSummary(actor);

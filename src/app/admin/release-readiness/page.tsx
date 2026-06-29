@@ -14,6 +14,7 @@ import {
   canReadAdminIntegrationsSecurity,
   getActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminReleaseReadiness");
@@ -24,7 +25,17 @@ export default async function AdminReleaseReadinessPage() {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const summary = getMvpReleaseReadinessSummary(actor);
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
+  const summary = getMvpReleaseReadinessSummary(actor, {
+    env: process.env,
+    lumaReadModel: lumaActivation,
+    hostedStagingEvidenceObserved:
+      data.source.mode === "supabase" &&
+      lumaActivation.providerStatusLabel === "Staging evidence rows recorded",
+  });
   const bakeoff = getDiscourseBakeoffEvaluation();
   const nextStep = getNextStep(actor);
 
@@ -70,7 +81,7 @@ export default async function AdminReleaseReadinessPage() {
             </div>
           </section>
 
-          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <MiniStat
               label="Local review"
               value={summary.localReviewReady ? "yes" : "no"}
@@ -81,6 +92,10 @@ export default async function AdminReleaseReadinessPage() {
             />
             <MiniStat label="Ready" value={`${summary.achievements.length}`} />
             <MiniStat label="Blocked" value={`${summary.blockers.length}`} />
+            <MiniStat
+              label="Packet recorded"
+              value={`${summary.productionReadiness?.recordedEnvironmentCount ?? 0}`}
+            />
             <MiniStat label="Writes" value={`${summary.browserWritesEnabled}`} />
           </section>
 
