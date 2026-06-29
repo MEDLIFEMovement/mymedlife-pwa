@@ -541,10 +541,32 @@ function normalizeReadModelInput(
 function deriveEvidenceSummary(
   data: StagingLumaEventLoopEvidenceSnapshot,
 ): StagingLumaEventLoopSummary | null {
-  const relevantEventRows = data.eventRows.filter(isRelevantEventRow);
-  const relevantIntegrationRows = data.integrationEventRows.filter(isRelevantIntegrationRow);
-  const relevantOutboxRows = data.automationOutboxRows.filter(isRelevantOutboxRow);
-  const relevantPointsRows = data.pointsEventRows.filter(isRelevantPointsRow);
+  const allRelevantEventRows = data.eventRows.filter(isRelevantEventRow);
+  const allRelevantIntegrationRows = data.integrationEventRows.filter(isRelevantIntegrationRow);
+  const allRelevantOutboxRows = data.automationOutboxRows.filter(isRelevantOutboxRow);
+  const allRelevantPointsRows = data.pointsEventRows.filter(isRelevantPointsRow);
+  const pilotEventRows = allRelevantEventRows.filter(isPilotEventRow);
+  const pilotIntegrationRows = allRelevantIntegrationRows.filter(isPilotIntegrationRow);
+  const pilotOutboxRows = allRelevantOutboxRows.filter(isPilotOutboxRow);
+  const pilotChapterEventIds = new Set(
+    pilotEventRows
+      .map((row) => row.chapter_event_id)
+      .filter((value): value is string => typeof value === "string" && value.length > 0),
+  );
+  const pilotPointsRows = allRelevantPointsRows.filter((row) =>
+    isPilotPointsRow(row, pilotChapterEventIds),
+  );
+  const usePilotRows =
+    pilotEventRows.length > 0 ||
+    pilotIntegrationRows.length > 0 ||
+    pilotOutboxRows.length > 0 ||
+    pilotPointsRows.length > 0;
+  const relevantEventRows = usePilotRows ? pilotEventRows : allRelevantEventRows;
+  const relevantIntegrationRows = usePilotRows
+    ? pilotIntegrationRows
+    : allRelevantIntegrationRows;
+  const relevantOutboxRows = usePilotRows ? pilotOutboxRows : allRelevantOutboxRows;
+  const relevantPointsRows = usePilotRows ? pilotPointsRows : allRelevantPointsRows;
 
   if (
     relevantEventRows.length === 0 &&
@@ -651,6 +673,7 @@ function buildReadModelSequence(providerEnabled: boolean) {
 
 function isRelevantEventRow(row: EventRow) {
   return row.chapter_event_id !== null ||
+    row.event_type === "event_shared_to_feed" ||
     row.event_type.includes("luma") ||
     row.event_type.includes("rsvp") ||
     row.event_type.includes("attendance") ||
@@ -658,7 +681,8 @@ function isRelevantEventRow(row: EventRow) {
 }
 
 function isRelevantIntegrationRow(row: IntegrationEventRow) {
-  return row.destination === "luma" ||
+  return row.event_type === "event_shared_to_feed" ||
+    row.destination === "luma" ||
     row.event_type.includes("luma") ||
     row.event_type.includes("rsvp") ||
     row.event_type.includes("attendance") ||
@@ -686,6 +710,25 @@ function isAttendanceEventType(eventType: string) {
   return eventType.includes("attendance");
 }
 
+function isPilotEventRow(row: EventRow) {
+  return Boolean(row.correlation_id?.startsWith("luma-pilot:")) || hasPilotSource(row.payload);
+}
+
+function isPilotIntegrationRow(row: IntegrationEventRow) {
+  return hasPilotSource(row.payload);
+}
+
+function isPilotOutboxRow(row: AutomationOutboxRow) {
+  return row.idempotency_key.startsWith("luma-pilot:") || hasPilotSource(row.payload);
+}
+
+function isPilotPointsRow(row: PointsEventRow, chapterEventIds: Set<string>) {
+  return (
+    (row.chapter_event_id !== null && chapterEventIds.has(row.chapter_event_id)) ||
+    row.reason.toLowerCase().includes("luma pilot")
+  );
+}
+
 function sumPayloadMetric(
   rows: Array<{ payload: unknown }>,
   keys: string[],
@@ -710,6 +753,10 @@ function getPayloadMetric(payload: unknown, keys: string[]) {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasPilotSource(payload: unknown) {
+  return isRecord(payload) && payload.source === "luma_live_pilot";
 }
 
 function canManageChapterEvent(actor: LocalActorContext, chapterName: string): boolean {

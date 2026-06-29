@@ -168,6 +168,7 @@ describe("luma live pilot gateway", () => {
   });
 
   it("imports attendance without returning QR codes or raw secrets", async () => {
+    let rawRows: Array<{ email: string | null }> = [];
     const fetchImpl = vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -195,7 +196,13 @@ describe("luma live pilot gateway", () => {
 
     const result = await importLumaAttendance(
       { eventId: "evt-existing", limit: 2 },
-      { env: enabledEnv, fetchImpl },
+      {
+        env: enabledEnv,
+        fetchImpl,
+        onImportedRows(rows) {
+          rawRows = rows;
+        },
+      },
     );
 
     expect(fetchImpl).toHaveBeenCalledWith(
@@ -229,6 +236,10 @@ describe("luma live pilot gateway", () => {
     ]);
     expect(JSON.stringify(result)).not.toContain("private-qr");
     expect(JSON.stringify(result)).not.toContain("secret-example-do-not-return");
+    expect(rawRows.map((row) => ({ email: row.email }))).toEqual([
+      { email: "member.a@mymedlife.test" },
+      { email: "member.b@mymedlife.test" },
+    ]);
   });
 
   it("builds the attendance import URL without secrets", () => {

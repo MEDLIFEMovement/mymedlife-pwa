@@ -84,6 +84,15 @@ export type LumaImportedAttendanceRow = {
   attended: boolean;
 };
 
+export type LumaImportedAttendanceRawRow = {
+  guestId: string;
+  email: string | null;
+  name: string | null;
+  approvalStatus: string;
+  checkedInAt: string | null;
+  attended: boolean;
+};
+
 type LumaJson = Record<string, unknown>;
 type LumaLivePilotGateOptions = {
   lumaFeatureEnabled?: boolean;
@@ -237,6 +246,7 @@ export async function importLumaAttendance(
   options: {
     env?: LumaLivePilotEnv;
     fetchImpl?: LumaLivePilotFetch;
+    onImportedRows?: (rows: LumaImportedAttendanceRawRow[]) => void;
   } = {},
 ): Promise<LumaLivePilotResult> {
   const featureState = await getDurableLumaFeatureState(options.env);
@@ -273,9 +283,11 @@ export async function importLumaAttendance(
     }
 
     const payload = (await response.json()) as { entries?: unknown[] };
-    const attendanceRows = Array.isArray(payload.entries)
-      ? payload.entries.map(toAttendanceRow)
+    const rawRows = Array.isArray(payload.entries)
+      ? payload.entries.map(toRawAttendanceRow)
       : [];
+    options.onImportedRows?.(rawRows);
+    const attendanceRows = rawRows.map(toMaskedAttendanceRow);
     const attendedCount = attendanceRows.filter((row) => row.attended).length;
 
     return {
@@ -386,16 +398,27 @@ function sanitizeEventPayload(
   };
 }
 
-function toAttendanceRow(value: unknown): LumaImportedAttendanceRow {
+function toRawAttendanceRow(value: unknown): LumaImportedAttendanceRawRow {
   const row = isRecord(value) ? value : {};
   const checkedInAt = stringOrNull(row.checked_in_at);
   return {
     guestId: stringOrFallback(row.id, "unknown-guest"),
-    emailHint: maskEmail(stringOrNull(row.user_email)),
+    email: stringOrNull(row.user_email),
     name: stringOrNull(row.user_name),
     approvalStatus: stringOrFallback(row.approval_status, "unknown"),
     checkedInAt,
     attended: Boolean(checkedInAt),
+  };
+}
+
+function toMaskedAttendanceRow(value: LumaImportedAttendanceRawRow): LumaImportedAttendanceRow {
+  return {
+    guestId: value.guestId,
+    emailHint: maskEmail(value.email),
+    name: value.name,
+    approvalStatus: value.approvalStatus,
+    checkedInAt: value.checkedInAt,
+    attended: value.attended,
   };
 }
 
