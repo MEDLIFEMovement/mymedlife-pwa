@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { AdminBackendLaneNav } from "@/components/admin-backend-lane-nav";
+import { ControlReviewSnapshotSection } from "@/components/control-review-snapshot-section";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
 import { getLumaEventLoopProofSurfaces } from "@/services/luma-event-loop-proof-surfaces";
@@ -47,6 +48,14 @@ export default async function LumaLivePilotPage({
   const pendingHostCheckIn = eventLoop.pendingHostCheckIn;
   const hasHostedPointsProof =
     eventLoop.summary.attendanceCount > 0 && eventLoop.summary.pointsAwarded > 0;
+  const reviewSnapshot = getLumaPilotReviewSnapshot({
+    gate,
+    eventLoop,
+    proofSurfaces,
+    proofEvidence,
+    pendingHostCheckIn,
+    hasHostedPointsProof,
+  });
   const result = normalizeResult(resolvedSearchParams?.lumaResult);
   const message = resolvedSearchParams?.lumaMessage ?? null;
 
@@ -338,6 +347,13 @@ export default async function LumaLivePilotPage({
               </div>
             </div>
           </section>
+
+          <ControlReviewSnapshotSection
+            title="Luma pilot proof"
+            description="Use this snapshot to separate what the staging Luma loop already proves from what still blocks the smallest safe live pilot approval."
+            recordedNow={reviewSnapshot.recordedNow}
+            stillBlocked={reviewSnapshot.stillBlocked}
+          />
 
           <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -722,6 +738,84 @@ function normalizeResult(value: string | undefined) {
       : value === "error"
         ? "error"
         : null;
+}
+
+function getLumaPilotReviewSnapshot(input: {
+  gate: Awaited<ReturnType<typeof getLumaLivePilotGateDurable>>;
+  eventLoop: ReturnType<typeof getStagingLumaEventLoopReadModel>;
+  proofSurfaces: ReturnType<typeof getLumaEventLoopProofSurfaces>;
+  proofEvidence: ReturnType<typeof getStagingLumaEventLoopReadModel>["proofEvidence"];
+  pendingHostCheckIn: ReturnType<typeof getStagingLumaEventLoopReadModel>["pendingHostCheckIn"];
+  hasHostedPointsProof: boolean;
+}) {
+  const recordedNow = [
+    {
+      label: "Staging-only Luma gate is visible",
+      detail:
+        input.gate.enabledOperations > 0
+          ? `${input.gate.enabledOperations} staging operation(s) are enabled here, while production stays blocked and this lane remains staging-only.`
+          : "The gate is still visible here, but no staging Luma operations are enabled at the moment.",
+    },
+    {
+      label: "Event, RSVP, attendance, and points counters are visible",
+      detail: `${input.eventLoop.summary.rsvpCount} RSVP(s), ${input.eventLoop.summary.attendanceCount} attendance row(s), and ${input.eventLoop.summary.pointsAwarded} point(s) are visible on this staging proof route.`,
+    },
+    {
+      label: "Workspace readback routes are named",
+      detail: `Reviewers can compare the same loop across ${input.proofSurfaces.map((surface) => surface.route).join(", ")} and /rush-month/leaderboard.`,
+    },
+    {
+      label: "External systems remain held",
+      detail: "HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes stay off while Luma remains the only approved external-family pilot exception under review.",
+    },
+  ];
+
+  if (input.hasHostedPointsProof) {
+    recordedNow.push({
+      label: "Attendance-backed points proof exists",
+      detail: "Hosted staging already contains at least one honest attendance-to-points proof row, so reviewers are not starting from a blank event loop.",
+    });
+  }
+
+  if (input.proofEvidence) {
+    recordedNow.push({
+      label: "Audit and outbox proof rows are visible",
+      detail: `${input.proofEvidence.integrationRows} integration row(s), ${input.proofEvidence.disabledOutboxRows} disabled outbox row(s), ${input.proofEvidence.auditRows} audit row(s), and ${input.proofEvidence.sentOutboxRows} sent row(s) are visible for reviewer readback.`,
+    });
+  }
+
+  const stillBlocked = [];
+
+  if (input.pendingHostCheckIn) {
+    stillBlocked.push({
+      label: "Host-side Luma check-in still needs review",
+      detail: input.pendingHostCheckIn.detail,
+    });
+  }
+
+  if (!input.hasHostedPointsProof) {
+    stillBlocked.push({
+      label: "Attendance-backed points proof is not complete yet",
+      detail: "The staging loop still needs one approved guest to complete a real host-side check-in and flow through attendance import into points and leaderboard readback.",
+    });
+  }
+
+  if (!input.proofEvidence) {
+    stillBlocked.push({
+      label: "Audit and outbox proof rows are still missing",
+      detail: "Reviewers should not treat this lane as proven until the event loop creates visible integration, outbox, and audit rows with zero unapproved sends.",
+    });
+  }
+
+  stillBlocked.push({
+    label: "Tiny live pilot approval is still external",
+    detail: "This route can prove staging behavior, but named owners, rollback ownership, production-packet values, and final pilot approval still have to be recorded before any live invite goes out.",
+  });
+
+  return {
+    recordedNow,
+    stillBlocked,
+  };
 }
 
 function PendingFact({

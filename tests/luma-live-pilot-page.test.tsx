@@ -138,6 +138,14 @@ describe("Luma live pilot admin page", () => {
     expect(html).toContain("Event and points evidence");
     expect(html).toContain("RSVP, attendance, and leaderboard impact stay tied together.");
     expect(html).toContain("These counters are cumulative staging proof totals");
+    expect(html).toContain("Luma pilot proof");
+    expect(html).toContain("Use this snapshot to separate what the staging Luma loop already proves");
+    expect(html).toContain("Staging-only Luma gate is visible");
+    expect(html).toContain("Event, RSVP, attendance, and points counters are visible");
+    expect(html).toContain("Workspace readback routes are named");
+    expect(html).toContain("External systems remain held");
+    expect(html).toContain("Host-side Luma check-in still needs review");
+    expect(html).toContain("Tiny live pilot approval is still external");
     expect(html).toContain("RSVPs");
     expect(html).toContain("Attendance");
     expect(html).toContain("Points");
