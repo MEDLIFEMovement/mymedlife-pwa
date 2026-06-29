@@ -1,6 +1,7 @@
 import { createSupabaseControlClient } from "@/lib/supabase-control-client";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { recordProductionControlApproval } from "@/services/production-control-approvals";
 import {
   featureFlagEnvironments,
   featureFlagKeys,
@@ -414,12 +415,33 @@ export async function updateFeatureFlagStatusDurable(
   input: FeatureFlagChangeInput,
 ): Promise<FeatureFlagAuditRecord> {
   const { client } = await createSupabaseControlClient();
+  const definition = getFeatureFlagDefinition(input.key);
+  const requiresProductionApproval =
+    input.environment === "production" &&
+    definition.externalApiBoundary &&
+    input.nextStatus !== "disabled" &&
+    input.nextStatus !== "emergency_disabled";
 
   if (!client) {
+    if (requiresProductionApproval) {
+      throw new Error(
+        "Production-sensitive provider flags require Supabase-backed control storage.",
+      );
+    }
+
     return updateFeatureFlagStatus(input);
   }
 
-  const definition = getFeatureFlagDefinition(input.key);
+  if (requiresProductionApproval) {
+    await recordProductionControlApproval({
+      client,
+      scope: "feature_flag",
+      targetKey: input.key,
+      approvalReference: input.approvalReference ?? "",
+      reason: input.reason,
+    });
+  }
+
   const result = await client.rpc<FeatureFlagRpcResult[]>(
     "upsert_feature_flag_override",
     {

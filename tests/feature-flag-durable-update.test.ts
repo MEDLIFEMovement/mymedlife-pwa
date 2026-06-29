@@ -61,4 +61,64 @@ describe("feature flag durable updates", () => {
     });
     expect(rpc.mock.calls[0]?.[1]).not.toHaveProperty("flag_key");
   });
+
+  it("records an explicit production approval before enabling a production-sensitive provider flag", async () => {
+    const supabaseControl = await import("@/lib/supabase-control-client");
+    const rpc = vi
+      .fn()
+      .mockResolvedValueOnce("approval-1")
+      .mockResolvedValueOnce([
+        {
+          override_id: "override-production-1",
+          old_status: "disabled",
+          new_status: "enabled",
+          audit_log_id: "audit-production-1",
+        },
+      ]);
+
+    vi.mocked(supabaseControl.createSupabaseControlClient).mockResolvedValue({
+      persistence: {
+        mode: "supabase",
+        status: "ready",
+        reason: "Durable feature flag control available.",
+      },
+      client: {
+        persistence: {
+          mode: "supabase",
+          status: "ready",
+          reason: "Durable feature flag control available.",
+        },
+        selectRows: vi.fn(),
+        rpc,
+      } satisfies SupabaseControlClient,
+    });
+
+    await updateFeatureFlagStatusDurable({
+      actor: dsAdmin(),
+      environment: "production",
+      key: "integration_luma",
+      nextStatus: "enabled",
+      reason: "Enable production Luma only for the approved pilot event loop.",
+      approvalReference: "NICK-APPROVED",
+      stepUpSessionId: "step-up-session-123",
+    });
+
+    expect(rpc).toHaveBeenNthCalledWith(1, "record_production_control_approval", {
+      approval_environment: "production",
+      approval_scope: "feature_flag",
+      target_key: "integration_luma",
+      approval_reference: "NICK-APPROVED",
+      reason: "Enable production Luma only for the approved pilot event loop.",
+      expires_at: null,
+    });
+    expect(rpc).toHaveBeenNthCalledWith(2, "upsert_feature_flag_override", {
+      flag_environment: "production",
+      target_flag_key: "integration_luma",
+      flag_kind: "provider",
+      next_status: "enabled",
+      reason: "Enable production Luma only for the approved pilot event loop.",
+      approval_reference: "NICK-APPROVED",
+      step_up_session_uuid: "step-up-session-123",
+    });
+  });
 });

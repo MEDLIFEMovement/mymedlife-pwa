@@ -12,6 +12,7 @@ import {
   canReadAdminIntegrationsSecurity,
   getActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminLaunchGate");
@@ -22,7 +23,13 @@ export default async function AdminLaunchGatePage() {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const gate = getProductionLaunchGate(actor);
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
+  const gate = getProductionLaunchGate(actor, process.env, {
+    lumaReadModel: lumaActivation,
+  });
   const nextStep = getNextStep(actor);
 
   return (

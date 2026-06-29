@@ -4,6 +4,7 @@ import {
 import { canManageFeatureFlags } from "@/modules/feature-flags";
 import type { FeatureFlagEnvironment } from "@/modules/feature-flags";
 import { createSupabaseControlClient } from "@/lib/supabase-control-client";
+import { recordProductionControlApproval } from "@/services/production-control-approvals";
 import { contrastPairs, defaultMedlifeThemeTokens } from "../constants";
 import type {
   ThemeAdminState,
@@ -261,6 +262,12 @@ export async function publishThemeDraftDurable(input: {
   const { client } = await createSupabaseControlClient();
 
   if (!client) {
+    if (input.environment === "production") {
+      throw new Error(
+        "Production theme changes require Supabase-backed control storage.",
+      );
+    }
+
     return publishThemeDraft(input);
   }
 
@@ -272,6 +279,16 @@ export async function publishThemeDraftDurable(input: {
 
   if (blocked && !(actorRole === "super_admin" && input.overrideContrast)) {
     throw new Error("Theme cannot publish because contrast checks are blocked.");
+  }
+
+  if (input.environment === "production") {
+    await recordProductionControlApproval({
+      client,
+      scope: "theme_publish",
+      targetKey: `theme:${input.environment}`,
+      approvalReference: input.approvalReference ?? "",
+      reason: input.reason,
+    });
   }
 
   const result = await saveThemeSnapshotToSupabase(client, {
@@ -341,6 +358,12 @@ export async function rollbackThemeDurable(input: {
   const { client } = await createSupabaseControlClient();
 
   if (!client) {
+    if (input.environment === "production") {
+      throw new Error(
+        "Production theme changes require Supabase-backed control storage.",
+      );
+    }
+
     return rollbackTheme(input);
   }
 
@@ -359,6 +382,17 @@ export async function rollbackThemeDurable(input: {
   const previous = previousRows[0]
     ? toThemeSnapshot(previousRows[0])
     : createDefaultTheme(input.environment);
+
+  if (input.environment === "production") {
+    await recordProductionControlApproval({
+      client,
+      scope: "rollback",
+      targetKey: `theme:${input.environment}`,
+      approvalReference: input.approvalReference ?? "",
+      reason: input.reason,
+    });
+  }
+
   const result = await saveThemeSnapshotToSupabase(client, {
     environment: input.environment,
     status: "active",
@@ -420,11 +454,28 @@ export async function restoreDefaultThemeDurable(input: {
   const { client } = await createSupabaseControlClient();
 
   if (!client) {
+    if (input.environment === "production") {
+      throw new Error(
+        "Production theme changes require Supabase-backed control storage.",
+      );
+    }
+
     return restoreDefaultTheme(input);
   }
 
   assertCanManageTheme(input.actor);
   const restored = createDefaultTheme(input.environment);
+
+  if (input.environment === "production") {
+    await recordProductionControlApproval({
+      client,
+      scope: "rollback",
+      targetKey: `theme:${input.environment}:default`,
+      approvalReference: input.approvalReference ?? "",
+      reason: input.reason,
+    });
+  }
+
   const result = await saveThemeSnapshotToSupabase(client, {
     environment: input.environment,
     status: "active",

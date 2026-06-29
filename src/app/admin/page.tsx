@@ -111,7 +111,9 @@ export default async function AdminPage() {
   const mvpProgressMap = getMvpProgressMap(actor);
   const releaseReadiness = getMvpReleaseReadinessSummary(actor);
   const nickMvpReviewPacket = getNickMvpReviewPacket(actor);
-  const productionLaunchGate = getProductionLaunchGate(actor);
+  const productionLaunchGate = getProductionLaunchGate(actor, process.env, {
+    lumaReadModel: lumaActivation,
+  });
   const productionOperationsRunbook = getProductionOperationsRunbook(actor);
   const databaseSecurityDecision = getDatabaseSecurityDecisionPacket(actor);
   const routeSmokeManifest = getRouteSmokeManifest(actor);

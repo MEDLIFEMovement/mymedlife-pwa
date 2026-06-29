@@ -16,10 +16,12 @@ audited, and approval-gated.
   - explicit confirmation
   - approval reference
   - fresh DS/Admin step-up session
+  - explicit `production_control_approvals` record before the durable flag change runs
 - Production theme publish requires:
   - explicit confirmation
   - approval reference
   - fresh DS/Admin step-up session
+- Production theme rollback / restore now records the same explicit approval trail before the durable snapshot change runs.
 - `/admin/feature-flags` and `/admin/theme` now report whether they are using
   in-memory fallback or Supabase-backed control storage.
 
@@ -79,6 +81,9 @@ Local verification after hosted application:
   passed: `2` files, `13` tests.
 - `pnpm vitest run tests/feature-flag-durable-update.test.ts tests/theme-published-css-durable.test.ts tests/luma-live-pilot-durable-control.test.ts tests/admin-integrations-step-up.test.ts`
   passed: `4` files, `9` tests.
+- Follow-up durable approval verification:
+  - `pnpm vitest run tests/feature-flags-theme-services.test.ts tests/theme-published-css-durable.test.ts tests/feature-flag-durable-update.test.ts tests/theme-durable-update.test.ts tests/admin-control-actions.test.ts`
+  - passed: `5` files, `23` tests
 
 ## Production Vercel Readiness
 

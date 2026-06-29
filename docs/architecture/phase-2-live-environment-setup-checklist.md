@@ -5,7 +5,7 @@ Date: 2026-06-29
 Status:
 - local implementation is green
 - staging remains the reviewer target
-- hosted proof is still required
+- hosted reviewer proof exists, but the final attendance-to-points proof is still incomplete
 - production Supabase exists, but production rollout is not approved from this checklist
 
 ## Purpose
@@ -22,14 +22,23 @@ readiness as launch approval.
 - `staging.mymedlife.org` is still the reviewer target.
 - The staging rollout-control migration is now applied on the hosted Supabase
   project `rceupryepjgkdeqgxzrc`.
-- `app.feature_flags` and `app.theme_settings` now exist in hosted staging, and
-  the staging Supabase security advisor is clean after the helper search-path
+- Hosted staging now contains the durable rollout-control tables:
+  - `app.feature_flag_overrides`
+  - `app.feature_flag_audit_records`
+  - `app.theme_snapshots`
+  - `app.theme_audit_records`
+  - `app.admin_step_up_sessions`
+  - `app.production_control_approvals`
+- The staging Supabase security advisor is clean after the helper search-path
   fix applied on 2026-06-29.
 - The current repo now allows signed-in hosted staging reviewer sessions to use
   Supabase-backed reads without widening anonymous preview traffic into the
   live read model.
-- Hosted staging is still not proof-complete until that signed-in reviewer flow
-  is re-run against the latest deployed build.
+- Hosted staging reviewer proof now exists for signed-in route access,
+  Supabase-backed rollout controls, and most of the Luma loop.
+- Hosted staging is still not proof-complete until one real Luma host-side
+  check-in flows through attendance import into points and leaderboard
+  readback.
 - The narrow staging-only Luma loop is the only approved external-family
   exception under review:
   - event create/update
@@ -126,12 +135,17 @@ Safe defaults:
 
 Required evidence:
 - The rollout-controls migration is applied in the target environment so
-  `app.feature_flags`, `app.theme_settings`, and the audited write functions
-  are readable.
+  `app.feature_flag_overrides`, `app.feature_flag_audit_records`,
+  `app.theme_snapshots`, `app.theme_audit_records`,
+  `app.admin_step_up_sessions`, `app.production_control_approvals`, and the
+  audited write functions are readable.
 - `/admin/feature-flags` and `/admin/theme` render without the persistence
   warning in the target environment.
 - One DS/Admin feature-flag save and one theme-token save record visible audit
   rows before the environment is treated as control-layer ready.
+- Production-sensitive flag/theme changes must create a visible
+  `production_control_approvals` row before the durable control mutation is
+  treated as review-complete.
 - `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` is only enabled after that
   DS/Admin control-layer read/write proof is captured.
 

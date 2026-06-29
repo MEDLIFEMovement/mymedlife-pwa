@@ -5,8 +5,9 @@ Date: 2026-06-26
 Status:
 - draft
 - review-only
-- staging reviewer path is the approved default; hosted proof is still pending
-- hosted Supabase rollout-control tables now exist, but the reviewer proof pass is still pending
+- staging reviewer path is the approved default
+- hosted route-level proof exists, but the attendance-to-points proof is still pending one real Luma check-in
+- hosted Supabase rollout-control tables now exist and are readable in the signed-in reviewer path
 
 ## What This Guide Covers
 
@@ -60,12 +61,20 @@ Implication:
 
 Additional current truth from 2026-06-29:
 
-- hosted staging Supabase now contains `app.feature_flags` and
-  `app.theme_settings`
+- hosted staging Supabase now contains:
+  - `app.feature_flag_overrides`
+  - `app.feature_flag_audit_records`
+  - `app.theme_snapshots`
+  - `app.theme_audit_records`
+  - `app.admin_step_up_sessions`
+  - `app.production_control_approvals`
 - the staging Supabase security advisor is clean after the rollout-control
   helper fix
 - the app can still remain in preview/mock posture if the staging Vercel
   environment has not switched to Supabase-backed read mode yet
+- the remaining Luma blocker is no longer an unknown app bug; one real
+  host-side Luma check-in still needs to be completed before attendance import
+  can prove points and leaderboard materialization
 
 ## What The Reviewer Should Look For
 
@@ -93,14 +102,12 @@ Additional current truth from 2026-06-29:
 
 - The exact named reviewer account to use for the hosted proof run, if it is
   different from the default reviewer identity.
-- Hosted staging evidence for the approved reviewer path and first narrow write.
-- Hosted staging evidence for the Luma event -> RSVP -> attendance import ->
-  points/leaderboard readback loop.
-- Hosted staging proof that the rollout-control layer is readable and audited
-  in that environment.
-- Hosted staging proof that Vercel envs now point the app at Supabase-backed
-  read mode instead of preview/mock data.
-- Readback screenshots or route evidence from the approved staging session.
+- Hosted staging evidence for the approved first narrow write, if the team
+  still wants to re-run that lane from the latest build.
+- One hosted staging example where a human Luma host check-in leads to
+  attendance import, points rows, and leaderboard readback.
+- Final screenshots or route evidence from the approved staging session after
+  that check-in proof is complete.
 
 ## Escalation Rule
 
