@@ -1,6 +1,6 @@
 # myMEDLIFE Staging Reviewer Access Guide
 
-Date: 2026-06-26
+Date: 2026-06-29
 
 Status:
 - draft
@@ -40,6 +40,14 @@ team wants a different identity than the approved default.
    on the login page and not sent into a member-facing route.
 8. Use that signed-in session to inspect the required read-only review routes
    and hosted evidence surfaces.
+
+Fresh hosted recheck on 2026-06-29 also confirmed:
+
+- the same seeded login path issues a hosted app session cookie on staging
+- after that app session exists, the signed-in DS Admin route can read the
+  Supabase-backed control layer instead of the in-memory fallback
+- the clean route evidence is the final URL plus the page copy shown after the
+  signed-in redirect, not the Vercel SSO cookie by itself
 
 Current proven examples from 2026-06-29:
 
@@ -85,6 +93,16 @@ Additional current truth from 2026-06-29:
 - the app can still remain in preview/mock posture if the staging Vercel
   environment has not switched to Supabase-backed read mode yet
 - hosted DS/Admin reviewer sign-in succeeded after the Vercel SSO handoff
+- a fresh DS Admin sign-in on the same date reached
+  `/admin/feature-flags?env=staging` and rendered:
+  - `Control storage: Reading and writing feature flags, theme snapshots, approvals, step-up sessions, and audit rows from Supabase.`
+- the same signed-in DS Admin session also re-read:
+  - `/admin/theme` with `Persistence supabase`
+  - `/admin/first-write` with `Connected preview data` and the hosted
+    `action_started` readback packet
+  - `/admin/proof-write` with the hosted `Proof metadata packet`
+  - `/admin/luma-live-pilot` with `Event writes On`, `RSVP writes On`,
+    `Attendance import On`, and `Production Off`
 - the approved Luma loop now has hosted proof for RSVP write, attendance
   import, points, leaderboard, and zero unauthorized outbox sends
 - hosted member, leader, staff, and DS/Admin role-routed readback was also
@@ -101,6 +119,9 @@ Additional current truth from 2026-06-29:
 - The login form should accept one of the seeded reviewer emails and the shared
   review password `password`.
 - The app should remain on the approved staging review path.
+- `/admin/feature-flags` should stop saying `Using in-memory admin controls
+  because no Supabase session token is active.` once the reviewer is actually
+  signed in through hosted Supabase Auth.
 - The reviewer should be able to open `/admin/luma-live-pilot` and compare it
   against `/app`, `/chapter`, `/staff`, `/admin/audit-log`,
   `/admin/integration-outbox`, `/admin/feature-flags`, and `/admin/theme`.

@@ -31,6 +31,9 @@ Important:
 - the preview-actor cookie alone is not app proof
 - the valid proof path is: Vercel SSO -> myMEDLIFE login -> seeded account ->
   role-routed workspace
+- a fresh hosted recheck on 2026-06-29 also confirmed that this sign-in path
+  sets the staging app session cookie and removes the
+  `no Supabase session token is active` fallback on the DS-admin control routes
 
 ## Hosted sign-in and route proof captured
 
@@ -69,6 +72,16 @@ Hosted role-routed proof was rechecked on 2026-06-29 through the staging alias:
     - `/admin/feature-flags`
     - `/admin/theme`
     - `/admin/luma-live-pilot`
+  - readback:
+    - `/admin/feature-flags` shows
+      `Control storage: Reading and writing feature flags, theme snapshots, approvals, step-up sessions, and audit rows from Supabase.`
+    - `/admin/theme` shows `Persistence supabase` with `Snapshot rows 3`
+      and `Audit rows 3`
+    - `/admin/first-write` shows `Connected preview data` and the hosted
+      `action_started` drill readback
+    - `/admin/proof-write` shows the hosted `Proof metadata packet`
+    - `/admin/luma-live-pilot` shows `Event writes On`, `RSVP writes On`,
+      `Attendance import On`, and `Production Off`
 
 ## Authoritative hosted first-write and proof-loop row set
 
@@ -161,6 +174,18 @@ Hosted route-level readback was confirmed for:
 - admin theme: `/admin/theme`
 - admin Luma pilot: `/admin/luma-live-pilot`
 
+Fresh replay detail from the 2026-06-29 hosted sign-in recheck:
+
+- `member.a@mymedlife.test` signed in to `/app`
+  - readback: `Hi, Sofia`, `Rush Month`, `Campaign progress`
+- `leader.a@mymedlife.test` signed in to the chapter proof-review route
+  - readback: `Leader proof review`, `Chapter proof follow-up`
+- `admin@mymedlife.test` signed in to `/staff?view=chapters`
+  - readback: `Staff Command Center`, `Event and points pulse`
+- `ds.admin@mymedlife.test` signed in to `/admin/feature-flags?env=staging`
+  - readback: the hosted DS-admin route now shows Supabase-backed control
+    storage instead of the missing-session fallback
+
 ## Connector-backed database snapshot
 
 Read-only Supabase inspection against staging project
@@ -213,6 +238,9 @@ review concept:
 
 - `/admin/feature-flags` and `/admin/theme` are part of the signed-in reviewer
   route bundle
+- a fresh signed-in DS Admin replay on 2026-06-29 issued the hosted app
+  session cookie and then reloaded `/admin/feature-flags` into the Supabase
+  control state, not the in-memory fallback
 - the staging database already contains durable rows for:
   - `app.feature_flag_overrides`
   - `app.feature_flag_audit_records`
