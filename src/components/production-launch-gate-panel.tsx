@@ -28,9 +28,10 @@ export function ProductionLaunchGatePanel({
             {gate.summary}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-6">
           <MiniStat label="Launch" value={gate.launchReady ? "yes" : "no"} />
           <MiniStat label="Blocked" value={`${gate.counts.blockedBeforeLive}`} />
+          <MiniStat label="Staging" value={`${gate.counts.stagingEvidenceRecorded}`} />
           <MiniStat
             label="Evidence"
             value={`${gate.counts.launchEvidenceChecks}`}

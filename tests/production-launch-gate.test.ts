@@ -16,6 +16,7 @@ describe("production launch gate", () => {
     expect(gate.counts).toEqual({
       total: 8,
       localEvidenceReady: 1,
+      stagingEvidenceRecorded: 0,
       blockedBeforeLive: 7,
       launchEvidenceChecks: 10,
       environmentReadinessItems: 7,
@@ -369,6 +370,7 @@ describe("production launch gate", () => {
       gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
         ?.acceptanceSignal,
     ).toContain("leaderboard readback");
+    expect(gate.counts.stagingEvidenceRecorded).toBe(4);
   });
 
   it("keeps every gate write-safe and approval-bound", () => {

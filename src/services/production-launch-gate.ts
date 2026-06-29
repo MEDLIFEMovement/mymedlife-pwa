@@ -83,6 +83,7 @@ export type ProductionLaunchGate = {
   counts: {
     total: number;
     localEvidenceReady: number;
+    stagingEvidenceRecorded: number;
     blockedBeforeLive: number;
     launchEvidenceChecks: number;
     environmentReadinessItems: number;
@@ -116,6 +117,7 @@ export function getProductionLaunchGate(
       counts: {
         total: 0,
         localEvidenceReady: 0,
+        stagingEvidenceRecorded: 0,
         blockedBeforeLive: 0,
         launchEvidenceChecks: 0,
         environmentReadinessItems: 0,
@@ -152,6 +154,9 @@ export function getProductionLaunchGate(
       total: items.length,
       localEvidenceReady: items.filter((item) => item.status === "local_evidence_ready")
         .length,
+      stagingEvidenceRecorded: launchEvidenceChecks.filter(
+        (item) => item.status === "staging_evidence_recorded",
+      ).length,
       blockedBeforeLive: items.filter((item) => item.status === "blocked_before_live")
         .length,
       launchEvidenceChecks: launchEvidenceChecks.length,
