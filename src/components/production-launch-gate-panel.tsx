@@ -1,4 +1,5 @@
 import { recordProductionLaunchPacketAction } from "@/app/admin/launch-gate/actions";
+import { ReviewPacketHistorySection } from "@/components/review-packet-history-section";
 import type {
   ProductionLaunchGate,
   ProductionLaunchEvidenceCheck,
@@ -149,6 +150,15 @@ export function ProductionLaunchGatePanel({
           ))}
         </div>
       </article>
+
+      <div className="mt-5">
+        <ReviewPacketHistorySection
+          title="Recent production packet updates"
+          description="Use this to verify the latest durable production-packet answers, who recorded them, and why they belong in the readiness packet now."
+          emptyMessage="No durable production-launch packet rows have been recorded yet."
+          records={gate.packetRecords}
+        />
+      </div>
 
       <p className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/58">
         {gate.finalReviewPrompt}

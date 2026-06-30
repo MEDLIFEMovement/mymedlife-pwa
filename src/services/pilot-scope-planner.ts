@@ -1,11 +1,14 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type {
+  ReviewPacketRecord,
+  ReviewPacketSource,
+} from "@/services/review-packet-registry";
 import {
   getPhase2PilotRegistry,
   getPhase2PilotRegistryDurable,
   type Phase2PilotDefaultStatus,
   type Phase2PilotOwnerStatus,
 } from "@/services/phase-2-pilot-registry";
-import type { ReviewPacketSource } from "@/services/review-packet-registry";
 import {
   canReadAdminReviewSurface,
   getActorSurfaceFamily,
@@ -85,6 +88,7 @@ export type PilotScopePlanner = {
   title: string;
   verdict: "pilot_scope_not_approved";
   packetSource: ReviewPacketSource;
+  packetRecords: ReviewPacketRecord[];
   plainEnglishSummary: string;
   recommendedScope: string;
   reviewSnapshot: {
@@ -135,6 +139,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
         reason: "Pilot scope review is hidden for this role.",
         recordCount: 0,
       },
+      packetRecords: [],
       plainEnglishSummary:
         "Pilot planning is an HQ review surface, not a student or chapter operating view.",
       recommendedScope: "Use the student, leader, or coach operating routes instead.",
@@ -180,6 +185,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
     title: getTitle(surfaceFamily),
     verdict: "pilot_scope_not_approved",
     packetSource: registry.source,
+    packetRecords: registry.records,
     plainEnglishSummary:
       "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
     recommendedScope:
@@ -258,6 +264,7 @@ export async function getPilotScopePlannerDurable(
     title: getTitle(surfaceFamily),
     verdict: "pilot_scope_not_approved",
     packetSource: registry.source,
+    packetRecords: registry.records,
     plainEnglishSummary:
       "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
     recommendedScope:

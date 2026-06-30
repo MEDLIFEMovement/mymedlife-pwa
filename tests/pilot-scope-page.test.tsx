@@ -49,6 +49,7 @@ describe("pilot scope page", () => {
     expect(html).toContain("Named owners are still missing");
     expect(html).toContain("Packet source:");
     expect(html).toContain("Record/update this answer");
+    expect(html).toContain("Recent pilot packet updates");
     expect(html).toContain("Save packet value");
   });
 });

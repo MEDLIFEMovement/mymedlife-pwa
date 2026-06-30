@@ -1,6 +1,7 @@
 import { createSupabaseAppClient } from "@/lib/supabase-app-client";
 import {
   getReviewPacketRegistry,
+  type ReviewPacketRecord,
   type ReviewPacketSource,
 } from "@/services/review-packet-registry";
 import {
@@ -39,6 +40,7 @@ export type Phase2PilotOwnerRecord = {
 
 export type Phase2PilotRegistry = {
   source: ReviewPacketSource;
+  records: ReviewPacketRecord[];
   defaults: Phase2PilotDefaultRecord[];
   owners: Phase2PilotOwnerRecord[];
   approvalReplyBlock: string[];
@@ -201,6 +203,7 @@ export function getPhase2PilotRegistry(
         "Using env-backed pilot scope defaults and owner slots because no Supabase review packet rows have been requested for this read path.",
       recordCount: countRecordedEnvValues(env),
     },
+    records: [],
     packetValues: new Map(),
   });
 }
@@ -222,6 +225,7 @@ export async function getPhase2PilotRegistryDurable(
   return buildPhase2PilotRegistry({
     env,
     source: registry.source,
+    records: registry.records,
     packetValues: registry.values,
   });
 }
@@ -241,6 +245,7 @@ function buildApprovalReplyBlock(
 function buildPhase2PilotRegistry(input: {
   env: EnvSource;
   source: ReviewPacketSource;
+  records: ReviewPacketRecord[];
   packetValues: Map<string, string>;
 }): Phase2PilotRegistry {
   const defaults = defaultDefinitions.map((definition) => {
@@ -284,6 +289,7 @@ function buildPhase2PilotRegistry(input: {
 
   return {
     source: input.source,
+    records: input.records,
     defaults,
     owners,
     approvalReplyBlock: buildApprovalReplyBlock(defaults, owners),

@@ -18,6 +18,7 @@ describe("production launch gate", () => {
     expect(gate.browserWritesEnabled).toBe(0);
     expect(gate.externalWritesEnabled).toBe(0);
     expect(gate.packetSource.mode).toBe("env");
+    expect(gate.packetRecords).toEqual([]);
     expect(gate.counts).toEqual({
       total: 8,
       localEvidenceReady: 1,
@@ -419,6 +420,142 @@ describe("production launch gate", () => {
         "/admin/operations",
       ]),
     );
+  });
+
+  it("prefers durable production packet rows when Supabase review records exist", async () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const gate = await getProductionLaunchGateDurable(
+      actor,
+      {},
+      {},
+      {
+        createClient: (async () => ({
+          persistence: {
+            mode: "supabase",
+            status: "ready",
+            reason: "test",
+            isLocalOnly: false,
+          },
+          client: {
+            persistence: {
+              mode: "supabase",
+              status: "ready",
+              reason: "test",
+              isLocalOnly: false,
+            },
+            selectRows: async <TRow>(
+              _table,
+              options,
+            ) => {
+              const rows = [
+                {
+                  id: "row-1",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_ROLLBACK_OWNER",
+                  value: "Nick Ellis",
+                  reason: "Approved rollback owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-2",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_SUPPORT_OWNER",
+                  value: "Maya Support",
+                  reason: "Approved support owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-3",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL",
+                  value: "#pilot-watch",
+                  reason: "Approved pause channel.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-4",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_DS_OWNER",
+                  value: "DS Owner",
+                  reason: "Approved DS owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-5",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_HQ_ADMIN_OWNER",
+                  value: "HQ Owner",
+                  reason: "Approved HQ owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-6",
+                  category: "production_launch" as const,
+                  record_key: "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+                  value: "prod-ref-123",
+                  reason: "Recorded production project ref.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-2",
+                  updated_at: "2026-06-29T23:00:00.000Z",
+                },
+                {
+                  id: "row-7",
+                  category: "production_launch" as const,
+                  record_key: "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+                  value: "Kiomi Matsukawa",
+                  reason: "Recorded migration owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-2",
+                  updated_at: "2026-06-29T23:05:00.000Z",
+                },
+              ];
+              const categoryFilter = options?.query?.category;
+
+              const filteredRows = categoryFilter?.startsWith("eq.")
+                ? rows.filter((row) => row.category === categoryFilter.slice(3))
+                : rows;
+
+              const sortedRows =
+                options?.order?.column === "updated_at" &&
+                options.order.ascending === false
+                  ? [...filteredRows].sort((left, right) =>
+                      right.updated_at.localeCompare(left.updated_at),
+                    )
+                  : filteredRows;
+
+              return sortedRows as TRow[];
+            },
+            rpc: async <TResult>() => [] as TResult,
+            insertRows: async <TRow>() => [] as TRow[],
+            upsertRows: async <TRow>() => [] as TRow[],
+            updateRows: async <TRow>() => [] as TRow[],
+          },
+        })) as unknown as typeof createSupabaseAppClient,
+      },
+    );
+
+    expect(gate.packetSource.mode).toBe("supabase");
+    expect(gate.packetSource.recordCount).toBe(2);
+    expect(gate.packetRecords).toHaveLength(2);
+    expect(gate.packetRecords.map((record) => record.recordKey)).toEqual([
+      "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+      "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+    ]);
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.status,
+    ).toBe("recorded_for_review");
   });
 
   it("records safe production packet details when names-only readiness values are present", () => {

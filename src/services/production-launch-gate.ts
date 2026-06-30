@@ -9,7 +9,10 @@ import {
   isResolvedReviewPacketValue,
   readReviewPacketValue,
 } from "@/services/review-packet-value";
-import type { ReviewPacketSource } from "@/services/review-packet-registry";
+import type {
+  ReviewPacketRecord,
+  ReviewPacketSource,
+} from "@/services/review-packet-registry";
 import { getReviewPacketRegistry } from "@/services/review-packet-registry";
 import {
   canReadAdminReviewSurface,
@@ -103,6 +106,7 @@ export type ProductionLaunchGate = {
   title: string;
   verdict: "not_live_ready";
   packetSource: ReviewPacketSource;
+  packetRecords: ReviewPacketRecord[];
   summary: string;
   launchReady: false;
   browserWritesEnabled: 0;
@@ -148,6 +152,7 @@ export function getProductionLaunchGate(
         "Using env-backed production packet values because no Supabase production-launch review rows have been requested for this read path.",
       recordCount: 0,
     },
+    packetRecords: [],
     recordedPacketValues: new Map(),
     ...options,
   });
@@ -174,6 +179,7 @@ export async function getProductionLaunchGateDurable(
 
   return buildProductionLaunchGate(actor, pilotRegistry, env, {
     packetSource: packetRegistry.source,
+    packetRecords: packetRegistry.records,
     recordedPacketValues: packetRegistry.values,
     ...options,
   });
@@ -187,6 +193,7 @@ function buildProductionLaunchGate(
     lumaReadModel?: StagingLumaEventLoopReadModel;
     hostedStagingEvidenceObserved?: boolean;
     packetSource: ReviewPacketSource;
+    packetRecords: ReviewPacketRecord[];
     recordedPacketValues: Map<string, string>;
   },
 ): ProductionLaunchGate {
@@ -202,6 +209,7 @@ function buildProductionLaunchGate(
         reason: "Production launch gate is hidden for this role.",
         recordCount: 0,
       },
+      packetRecords: [],
       summary:
         "Production launch gating is an HQ/security review surface, not a chapter operating view.",
       launchReady: false,
@@ -248,6 +256,7 @@ function buildProductionLaunchGate(
     title: getTitle(surfaceFamily),
     verdict: "not_live_ready",
     packetSource: options.packetSource,
+    packetRecords: options.packetRecords,
     summary:
       lumaProofMissing
         ? "This gate gathers the local evidence that exists today and the exact evidence still missing before myMEDLIFE can move from local MVP review to a live student pilot. The sharpest remaining loop blocker is still one real Luma host-side check-in flowing through attendance import into points and leaderboard readback."

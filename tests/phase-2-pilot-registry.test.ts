@@ -24,6 +24,7 @@ describe("phase 2 pilot registry", () => {
     ).toBe("pending Kiomi");
     expect(registry.approvalReplyBlock[0]).toBe("approved as written");
     expect(registry.source.mode).toBe("env");
+    expect(registry.records).toEqual([]);
   });
 
   it("records final answers when explicit pilot values are supplied", () => {
@@ -135,6 +136,7 @@ describe("phase 2 pilot registry", () => {
 
     expect(registry.source.mode).toBe("supabase");
     expect(registry.source.recordCount).toBe(2);
+    expect(registry.records).toHaveLength(2);
     expect(
       registry.defaults.find((item) => item.key === "pilot_chapter")?.value,
     ).toBe("Boston College MEDLIFE");

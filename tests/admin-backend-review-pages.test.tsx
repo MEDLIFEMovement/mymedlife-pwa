@@ -87,6 +87,7 @@ describe("admin backend review pages", () => {
       if (modulePath === "@/app/admin/launch-gate/page") {
         expect(html).toContain("Packet source:");
         expect(html).toContain("Record names-only packet values");
+        expect(html).toContain("Recent production packet updates");
         expect(html).toContain("Save packet value");
       }
     }

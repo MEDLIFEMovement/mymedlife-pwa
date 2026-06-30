@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { recordPilotScopePacketAction } from "@/app/admin/pilot-scope/actions";
 import { ControlReviewSnapshotSection } from "@/components/control-review-snapshot-section";
+import { ReviewPacketHistorySection } from "@/components/review-packet-history-section";
 import type {
   MinimumPilotPath,
   PilotScopeCandidateStatus,
@@ -179,6 +180,15 @@ export function PilotScopePlannerPanel({
         recordedNow={planner.reviewSnapshot.recordedNow}
         stillBlocked={planner.reviewSnapshot.stillMissing}
       />
+
+      <section className="mt-5">
+        <ReviewPacketHistorySection
+          title="Recent pilot packet updates"
+          description="Use this to verify the latest durable pilot-scope answers, who recorded them, and why they were added to the packet."
+          emptyMessage="No durable pilot-scope packet rows have been recorded yet."
+          records={planner.packetRecords}
+        />
+      </section>
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {planner.candidates.map((candidate) => (
