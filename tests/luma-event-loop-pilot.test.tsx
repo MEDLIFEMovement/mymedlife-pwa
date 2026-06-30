@@ -83,6 +83,7 @@ describe("luma event loop pilot readback", () => {
     expect(html).toContain("RSVP");
     expect(html).toContain("Attendance");
     expect(html).toContain("Points");
+    expect(html).toContain("Leaderboard");
     expect(html).toContain("Luma event creation and updates are off.");
     expect(html).toContain("HubSpot, warehouse, Power BI, SMS/email, and AI actions are off.");
     expect(html).not.toContain("secret-");
@@ -268,8 +269,10 @@ describe("luma event loop pilot readback", () => {
     expect(readback.cards[1]).toMatchObject({ label: "RSVP path", value: "3" });
     expect(readback.cards[2]).toMatchObject({ label: "Attendance", value: "2" });
     expect(readback.cards[3]).toMatchObject({ label: "Points", value: "35 pts" });
+    expect(readback.cards[4]).toMatchObject({ label: "Leaderboard", value: "Visible" });
     expect(readback.counts.attendeeRowsReturned).toBe(2);
     expect(html).toContain("Staging proof recorded");
     expect(html).toContain("35 pts");
+    expect(html).toContain("Leaderboard");
   });
 });

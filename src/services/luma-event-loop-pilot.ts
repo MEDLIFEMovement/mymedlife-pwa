@@ -97,6 +97,11 @@ export function getLumaEventLoopPilotReadback(
         value: evidence ? `${evidence.pointsAwarded} pts` : "Gated",
         detail: getPointsDetail(evidence),
       },
+      {
+        label: "Leaderboard",
+        value: getLeaderboardValue(role, evidence),
+        detail: getLeaderboardDetail(role, evidence),
+      },
     ],
     safetyGates: [
       "Luma event creation and updates are off.",
@@ -179,16 +184,16 @@ function getRoleSummary(
         : `${countLabel} are available from the MEDLIFE calendar. Members should discover the event, RSVP intent in myMEDLIFE, show up, and see how attendance can become points after review.`;
     case "leader":
       return evidenceSummary
-        ? `${countLabel} are available for leader readback. Leaders can compare live event posture against ${evidenceSummary} in the staging proof lane before opening any broader write lane.`
-        : `${countLabel} are available for leader readback. Leaders can compare event posture, RSVP intent, attendance confirmation, and point validation before opening any live write lane.`;
+        ? `${countLabel} are available for leader readback. Leaders can compare live event posture against ${evidenceSummary} and confirm the chapter leaderboard moved for the right reasons before opening any broader write lane.`
+        : `${countLabel} are available for leader readback. Leaders can compare event posture, RSVP intent, attendance confirmation, point validation, and chapter leaderboard movement before opening any live write lane.`;
     case "staff":
       return evidenceSummary
-        ? `${countLabel} are available for portfolio review. Staff can inspect chapter event health with ${evidenceSummary} already visible in staging while external systems remain manual or read-only.`
-        : `${countLabel} are available for portfolio review. Staff can inspect chapter event health and leaderboard impact while external systems remain manual or read-only.`;
+        ? `${countLabel} are available for portfolio review. Staff can inspect chapter event health with ${evidenceSummary} already visible in staging while comparing chapter and organization leaderboard posture without opening any send lane.`
+        : `${countLabel} are available for portfolio review. Staff can inspect chapter event health plus chapter and organization leaderboard impact while external systems remain manual or read-only.`;
     case "admin":
       return evidenceSummary
-        ? `${countLabel} are available through the server-only read path. Admin review can now compare imported event visibility against ${evidenceSummary} and zero external sends in the staging proof lane.`
-        : `${countLabel} are available through the server-only read path. Admin review should verify imported event visibility, audit/outbox posture, and zero external sends before any write is enabled.`;
+        ? `${countLabel} are available through the server-only read path. Admin review can now compare imported event visibility against ${evidenceSummary}, leaderboard readback, and zero external sends in the staging proof lane.`
+        : `${countLabel} are available through the server-only read path. Admin review should verify imported event visibility, leaderboard readback, audit/outbox posture, and zero external sends before any write is enabled.`;
   }
 }
 
@@ -268,11 +273,69 @@ function getPointsDetail(
 ): string {
   if (evidence) {
     return evidence.pointsAwarded > 0
-      ? "Points and leaderboard readback are already visible in staging review."
-      : "Points and leaderboard readback stay pending until attendance-backed proof is recorded.";
+      ? "Attendance-backed points are already visible in staging review."
+      : "Point awards stay pending until attendance-backed proof is recorded.";
   }
 
-  return "Points and leaderboards update only after the approved review path records the right audit evidence.";
+  return "Point awards update only after the approved review path records the right audit evidence.";
+}
+
+function getLeaderboardValue(
+  role: LumaEventLoopPilotRole,
+  evidence: {
+    rsvpCount: number;
+    attendanceCount: number;
+    pointsAwarded: number;
+    externalWritesEnabled: false;
+  } | null,
+): string {
+  if (!evidence || evidence.pointsAwarded <= 0) {
+    return "Pending";
+  }
+
+  switch (role) {
+    case "member":
+    case "leader":
+      return "Live";
+    case "staff":
+      return "Portfolio";
+    case "admin":
+      return "Visible";
+  }
+}
+
+function getLeaderboardDetail(
+  role: LumaEventLoopPilotRole,
+  evidence: {
+    rsvpCount: number;
+    attendanceCount: number;
+    pointsAwarded: number;
+    externalWritesEnabled: false;
+  } | null,
+): string {
+  if (evidence && evidence.pointsAwarded > 0) {
+    switch (role) {
+      case "member":
+        return "Your chapter rank and momentum are readable after attendance-backed points land.";
+      case "leader":
+        return "Chapter leaderboard movement is visible before any broader rollout decision.";
+      case "staff":
+        return "Portfolio and organization leaderboard posture can be compared without opening sends.";
+      case "admin":
+        return "Cross-workspace leaderboard movement can be checked against audit and outbox safety.";
+    }
+  }
+
+  switch (role) {
+    case "member":
+      return "Chapter rank stays pending until attendance-backed points land.";
+    case "leader":
+      return "Chapter leaderboard movement stays pending until the event loop is proven.";
+    case "staff":
+      return "Portfolio and organization leaderboard posture stay pending until attendance-backed points are visible.";
+    case "admin":
+      return "Leaderboard readback stays pending until audit-backed points proof is visible.";
+  }
 }
 
 function getStatusLabel(
@@ -369,9 +432,9 @@ function getSecondaryAction(role: LumaEventLoopPilotRole) {
     case "member":
       return { label: "View leaderboard", href: "/rush-month/leaderboard?source=luma-loop" };
     case "leader":
-      return { label: "Validate points", href: "/leader?view=leaderboard&source=luma-loop" };
+      return { label: "View leaderboard", href: "/leader?view=leaderboard&source=luma-loop" };
     case "staff":
-      return { label: "View analytics", href: "/staff?view=feed_analytics&source=luma-loop" };
+      return { label: "Review leaderboard posture", href: "/staff?view=chapters&source=luma-loop" };
     case "admin":
       return { label: "Review audit log", href: "/admin/audit-log?source=luma-loop" };
   }

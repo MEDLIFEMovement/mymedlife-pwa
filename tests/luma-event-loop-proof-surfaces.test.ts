@@ -129,11 +129,14 @@ describe("luma event loop proof surfaces", () => {
       surfaces.every(
         (surface) =>
           surface.facts.map((fact) => fact.label).join("|") ===
-          "RSVP path|Attendance|Points",
+          "RSVP path|Attendance|Points|Leaderboard",
       ),
     ).toBe(true);
     expect(surfaces[0]?.summary).toContain("1 RSVP, 1 attendance, and 20 points");
     expect(surfaces[3]?.reviewGoal).toContain("audit, outbox, and launch-gate posture");
     expect(surfaces[1]?.note).toContain("Current staging evidence shows");
+    expect(surfaces[2]?.facts.find((fact) => fact.label === "Leaderboard")?.value).toBe(
+      "Portfolio",
+    );
   });
 });

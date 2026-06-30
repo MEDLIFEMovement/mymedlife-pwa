@@ -103,6 +103,7 @@ describe("staff page", () => {
     expect(html).toContain("RSVP");
     expect(html).toContain("Attendance");
     expect(html).toContain("Points");
+    expect(html).toContain("Review leaderboard posture");
     expect(html).toContain("Portfolio Overview");
     expect(html).toContain("Chapters Active");
     expect(html).toContain("M.S.");
