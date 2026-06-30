@@ -4,7 +4,7 @@ import { AdminSystemHealthReviewPanel } from "@/components/admin-system-health-r
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
-import { getAdminSystemHealthReview } from "@/services/admin-system-health-review";
+import { getAdminSystemHealthReviewDurable } from "@/services/admin-system-health-review";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -22,7 +22,7 @@ export default async function AdminSystemHealthPage() {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const review = getAdminSystemHealthReview(actor, data, process.env);
+  const review = await getAdminSystemHealthReviewDurable(actor, data, process.env);
   const nextStep = getNextStep(actor);
 
   return (

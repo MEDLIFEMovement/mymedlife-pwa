@@ -49,6 +49,27 @@ export function AdminSystemHealthReviewPanel({
         <MiniToken label="Secrets" value={`${review.secretsShown}`} />
       </div>
 
+      <p className="mt-4 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs leading-5 text-slate-600">
+        Packet sources: production{" "}
+        <span className="font-semibold text-slate-950">
+          {review.packetSources.production.mode === "supabase"
+            ? "Supabase review records"
+            : "env/default fallback"}
+        </span>
+        {" · "}
+        {review.packetSources.production.recordCount} recorded row
+        {review.packetSources.production.recordCount === 1 ? "" : "s"}
+        {" · "}pilot{" "}
+        <span className="font-semibold text-slate-950">
+          {review.packetSources.pilot.mode === "supabase"
+            ? "Supabase review records"
+            : "env/default fallback"}
+        </span>
+        {" · "}
+        {review.packetSources.pilot.recordCount} recorded row
+        {review.packetSources.pilot.recordCount === 1 ? "" : "s"}
+      </p>
+
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {review.checks.map((check) => (
           <HealthCheckCard key={check.key} check={check} />

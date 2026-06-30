@@ -33,7 +33,7 @@ import { WriteResultStateCoveragePanel } from "@/components/write-result-state-c
 import { getAdminControlCenterSummary } from "@/services/admin-control-center";
 import { getAdminAuditLogReview } from "@/services/admin-audit-log-review";
 import { getAdminGlossary } from "@/services/admin-glossary";
-import { getAdminSystemHealthReview } from "@/services/admin-system-health-review";
+import { getAdminSystemHealthReviewDurable } from "@/services/admin-system-health-review";
 import { getCampaignReadinessSummary } from "@/services/campaign-ops-service";
 import { getControlledPilotReadiness } from "@/services/controlled-pilot-readiness";
 import { getDatabaseSecurityDecisionPacket } from "@/services/database-security-decision";
@@ -48,7 +48,7 @@ import { getMvpCoverageChecklist } from "@/services/mvp-coverage-checklist";
 import { getMvpProgressMap } from "@/services/mvp-progress-map";
 import { getMvpReleaseReadinessSummary } from "@/services/mvp-release-readiness";
 import { getNickMvpReviewPacket } from "@/services/nick-mvp-review";
-import { getProductionLaunchGate } from "@/services/production-launch-gate";
+import { getProductionLaunchGateDurable } from "@/services/production-launch-gate";
 import { getProductionOperationsRunbook } from "@/services/production-operations-runbook";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRouteCoverageSummary } from "@/services/route-coverage-summary";
@@ -108,11 +108,6 @@ export default async function AdminPage() {
   });
   const adminControlCenter = getAdminControlCenterSummary(data);
   const adminAuditLogReview = getAdminAuditLogReview(actor, data);
-  const adminSystemHealthReview = getAdminSystemHealthReview(
-    actor,
-    data,
-    process.env,
-  );
   const adminGlossary = getAdminGlossary(actor);
   const controlledPilotReadiness = getControlledPilotReadiness(actor, {
     lumaReadModel: lumaActivation,
@@ -131,10 +126,6 @@ export default async function AdminPage() {
     hostedStagingEvidenceObserved,
   });
   const nickMvpReviewPacket = getNickMvpReviewPacket(actor);
-  const productionLaunchGate = getProductionLaunchGate(actor, process.env, {
-    lumaReadModel: lumaActivation,
-    hostedStagingEvidenceObserved,
-  });
   const productionOperationsRunbook = getProductionOperationsRunbook(actor);
   const databaseSecurityDecision = getDatabaseSecurityDecisionPacket(actor);
   const routeSmokeManifest = getRouteSmokeManifest(actor);
@@ -144,6 +135,13 @@ export default async function AdminPage() {
     assignments: data.assignments,
     coachDecision: data.kpiSummary.coachDecision,
   });
+  const [adminSystemHealthReview, productionLaunchGate] = await Promise.all([
+    getAdminSystemHealthReviewDurable(actor, data, process.env),
+    getProductionLaunchGateDurable(actor, process.env, {
+      lumaReadModel: lumaActivation,
+      hostedStagingEvidenceObserved,
+    }),
+  ]);
   const backendLaneLinks = getBackendLaneLinks(actor);
   const productionSnapshot = releaseReadiness.productionReadiness;
 
