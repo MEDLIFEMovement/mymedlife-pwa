@@ -225,7 +225,7 @@ export default async function ThemePage({ searchParams }: ThemePageProps) {
 
           <ControlReviewSnapshotSection
             title="Theme controls"
-            description="Use this snapshot to confirm whether theme tokens are still in local review mode or already reading durable snapshots, and whether production theme actions are truly ready for signoff."
+            description="Use this snapshot to confirm whether theme tokens are still in memory fallback or already reading durable snapshots, and whether production theme actions are truly ready for signoff."
             recordedNow={reviewSnapshot.recordedNow}
             stillBlocked={reviewSnapshot.stillBlocked}
           />

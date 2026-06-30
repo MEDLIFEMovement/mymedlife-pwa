@@ -216,7 +216,7 @@ export default async function FeatureFlagsPage({
 
           <ControlReviewSnapshotSection
             title="Feature flag controls"
-            description="Use this snapshot to confirm whether the current environment is still in local review mode or already reading durable control rows, and whether production-sensitive provider changes are actually ready for signoff."
+            description="Use this snapshot to confirm whether the current environment is still in memory fallback or already reading durable control rows, and whether production-sensitive provider changes are actually ready for signoff."
             recordedNow={reviewSnapshot.recordedNow}
             stillBlocked={reviewSnapshot.stillBlocked}
           />
