@@ -199,4 +199,520 @@ describe("staging Luma event loop", () => {
     ]);
     expect(readModel.safetyNotes.join(" ")).not.toContain("key=");
   });
+
+  it("can derive the staging read model from stored evidence rows", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "event-1",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            payload: { rsvpCount: 3 },
+            correlation_id: null,
+            occurred_at: "2026-06-28T10:00:00Z",
+            created_at: "2026-06-28T10:00:00Z",
+          },
+          {
+            id: "event-2",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            payload: { attendanceCount: 2 },
+            correlation_id: null,
+            occurred_at: "2026-06-28T10:05:00Z",
+            created_at: "2026-06-28T10:05:00Z",
+          },
+        ],
+        integrationEventRows: [
+          {
+            id: "integration-1",
+            source_event_id: "event-1",
+            chapter_id: "chapter-1",
+            event_type: "luma_event_linked",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt_123",
+            status: "recorded",
+            payload: {},
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:01:00Z",
+            updated_at: "2026-06-28T10:01:00Z",
+          },
+        ],
+        automationOutboxRows: [
+          {
+            id: "outbox-1",
+            source_event_id: "event-1",
+            integration_event_id: "integration-1",
+            chapter_id: "chapter-1",
+            destination: "luma",
+            event_type: "luma_event_linked",
+            payload: {},
+            idempotency_key: "luma-1",
+            status: "disabled",
+            attempt_count: 0,
+            available_at: "2026-06-28T10:01:00Z",
+            locked_at: null,
+            sent_at: null,
+            last_error: null,
+            created_at: "2026-06-28T10:01:00Z",
+            updated_at: "2026-06-28T10:01:00Z",
+          },
+        ],
+        auditLogRows: [
+          {
+            id: "audit-1",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            action: "luma_attendance_import_recorded",
+            target_table: "chapter_events",
+            target_id: "chapter-event-1",
+            before_value: {},
+            after_value: {},
+            reason: "Recorded the staging Luma attendance proof in app tables.",
+            created_at: "2026-06-28T10:09:00Z",
+          },
+        ],
+        pointsEventRows: [
+          {
+            id: "points-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            evidence_item_id: null,
+            approval_id: null,
+            awarded_to_user_id: "member-1",
+            points_delta: 20,
+            reason: "Attendance confirmed for Intro GBM",
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:07:00Z",
+          },
+          {
+            id: "points-2",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            evidence_item_id: null,
+            approval_id: null,
+            awarded_to_user_id: "member-2",
+            points_delta: 15,
+            reason: "Attendance confirmed for Intro GBM",
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:08:00Z",
+          },
+        ],
+      },
+    });
+
+    expect(readModel.providerStatusLabel).toBe("Staging evidence rows recorded");
+    expect(readModel.summary).toMatchObject({
+      eventStored: true,
+      lumaLinkReady: true,
+      qrReady: true,
+      sharedToFeed: false,
+      rsvpCount: 3,
+      attendanceCount: 2,
+      pointsAwarded: 35,
+      duplicatePointsPrevented: true,
+      externalWritesEnabled: false,
+    });
+    expect(readModel.proofEvidence).toMatchObject({
+      integrationRows: 1,
+      outboxRows: 1,
+      disabledOutboxRows: 1,
+      sentOutboxRows: 0,
+      auditRows: 1,
+      zeroUnapprovedSendsConfirmed: true,
+    });
+  });
+
+  it("prefers explicit Luma pilot evidence rows over older seeded chapter rows", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "seed-event",
+            event_type: "luma_attendance_import_mocked",
+            actor_user_id: "seed-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "seed-chapter-event",
+            payload: { attendanceCount: 24 },
+            correlation_id: "seed",
+            occurred_at: "2026-06-01T10:00:00Z",
+            created_at: "2026-06-01T10:00:00Z",
+          },
+          {
+            id: "pilot-rsvp",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            payload: { source: "luma_live_pilot", rsvpCount: 1 },
+            correlation_id: "luma-pilot:rsvp:evt-123:user-1",
+            occurred_at: "2026-06-28T10:00:00Z",
+            created_at: "2026-06-28T10:00:00Z",
+          },
+          {
+            id: "pilot-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            payload: { source: "luma_live_pilot", attendanceCount: 1 },
+            correlation_id: "luma-pilot:attendance:evt-123:1",
+            occurred_at: "2026-06-28T10:05:00Z",
+            created_at: "2026-06-28T10:05:00Z",
+          },
+        ],
+        integrationEventRows: [
+          {
+            id: "pilot-link",
+            source_event_id: "pilot-rsvp",
+            chapter_id: "chapter-1",
+            event_type: "luma_event_linked",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt-123",
+            status: "recorded",
+            payload: { source: "luma_live_pilot" },
+            created_by: "pilot-user",
+            created_at: "2026-06-28T10:01:00Z",
+            updated_at: "2026-06-28T10:01:00Z",
+          },
+          {
+            id: "pilot-feed",
+            source_event_id: "pilot-rsvp",
+            chapter_id: "chapter-1",
+            event_type: "event_shared_to_feed",
+            destination: "internal",
+            external_object_type: "chapter_event",
+            external_object_id: "pilot-chapter-event",
+            status: "recorded",
+            payload: { source: "luma_live_pilot" },
+            created_by: "pilot-user",
+            created_at: "2026-06-28T10:02:00Z",
+            updated_at: "2026-06-28T10:02:00Z",
+          },
+        ],
+        automationOutboxRows: [
+          {
+            id: "pilot-outbox",
+            source_event_id: "pilot-rsvp",
+            integration_event_id: "pilot-link",
+            chapter_id: "chapter-1",
+            destination: "n8n",
+            event_type: "luma_event_external_send_blocked",
+            payload: { source: "luma_live_pilot" },
+            idempotency_key: "luma-pilot:event:evt-123:blocked",
+            status: "disabled",
+            attempt_count: 0,
+            available_at: "2026-06-28T10:00:00Z",
+            locked_at: null,
+            sent_at: null,
+            last_error: null,
+            created_at: "2026-06-28T10:00:00Z",
+            updated_at: "2026-06-28T10:00:00Z",
+          },
+        ],
+        pointsEventRows: [
+          {
+            id: "seed-points",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "seed-chapter-event",
+            evidence_item_id: null,
+            approval_id: null,
+            awarded_to_user_id: "seed-user",
+            points_delta: 50,
+            reason: "Seeded chapter points",
+            created_by: "seed-user",
+            created_at: "2026-06-01T10:00:00Z",
+          },
+          {
+            id: "pilot-points",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            evidence_item_id: null,
+            approval_id: null,
+            awarded_to_user_id: "pilot-user",
+            points_delta: 20,
+            reason: "Luma pilot attendance confirmed for Intro GBM",
+            created_by: "pilot-user",
+            created_at: "2026-06-28T10:05:00Z",
+          },
+        ],
+      },
+    });
+
+    expect(readModel.summary).toMatchObject({
+      rsvpCount: 1,
+      attendanceCount: 1,
+      pointsAwarded: 20,
+      sharedToFeed: true,
+      lumaLinkReady: true,
+    });
+  });
+
+  it("does not treat imported guest totals as attended counts", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "pilot-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 1,
+            },
+            correlation_id: "luma-pilot:attendance:evt-456:1",
+            occurred_at: "2026-06-28T10:05:00Z",
+            created_at: "2026-06-28T10:05:00Z",
+          },
+        ],
+        integrationEventRows: [
+          {
+            id: "pilot-attendance-integration",
+            source_event_id: "pilot-attendance",
+            chapter_id: "chapter-1",
+            event_type: "luma_attendance_imported",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt-456",
+            status: "recorded",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 1,
+            },
+            created_by: "pilot-user",
+            created_at: "2026-06-28T10:06:00Z",
+            updated_at: "2026-06-28T10:06:00Z",
+          },
+        ],
+        automationOutboxRows: [],
+        pointsEventRows: [],
+      },
+    });
+
+    expect(readModel.summary.attendanceCount).toBe(0);
+    expect(readModel.summary.pointsAwarded).toBe(0);
+  });
+
+  it("surfaces the exact pending host-side check-in when RSVP exists but points do not", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "pilot-rsvp",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            payload: {
+              source: "luma_live_pilot",
+              lumaEventId: "evt-bJE178Q02N5DaLH",
+              userEmail: "nellis@medlifemovement.org",
+              userEmailHint: "ne***@medlifemovement.org",
+              rsvpCount: 1,
+            },
+            correlation_id: "luma-pilot:rsvp:evt-bJE178Q02N5DaLH:user-1",
+            occurred_at: "2026-06-29T03:17:53.728Z",
+            created_at: "2026-06-29T03:17:53.728Z",
+          },
+          {
+            id: "pilot-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "pilot-chapter-event",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 0,
+            },
+            correlation_id: "luma-pilot:attendance:evt-bJE178Q02N5DaLH:1",
+            occurred_at: "2026-06-29T11:07:42.137Z",
+            created_at: "2026-06-29T11:07:42.137Z",
+          },
+        ],
+        integrationEventRows: [
+          {
+            id: "pilot-link",
+            source_event_id: "pilot-rsvp",
+            chapter_id: "chapter-1",
+            event_type: "luma_event_linked",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt-bJE178Q02N5DaLH",
+            status: "recorded",
+            payload: { source: "luma_live_pilot" },
+            created_by: "pilot-user",
+            created_at: "2026-06-29T03:17:33.923Z",
+            updated_at: "2026-06-29T03:17:33.923Z",
+          },
+          {
+            id: "pilot-attendance-imported",
+            source_event_id: "pilot-attendance",
+            chapter_id: "chapter-1",
+            event_type: "luma_attendance_imported",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt-bJE178Q02N5DaLH",
+            status: "recorded",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 0,
+            },
+            created_by: "pilot-user",
+            created_at: "2026-06-29T11:07:42.137Z",
+            updated_at: "2026-06-29T11:07:42.137Z",
+          },
+        ],
+        automationOutboxRows: [],
+        pointsEventRows: [],
+      },
+    });
+
+    expect(readModel.pendingHostCheckIn).toMatchObject({
+      eventId: "evt-bJE178Q02N5DaLH",
+      guestEmail: "nellis@medlifemovement.org",
+      guestEmailHint: "ne***@medlifemovement.org",
+      lastAttendanceImportAt: "2026-06-29T11:07:42.137Z",
+      importedGuestCount: 0,
+      attendanceCount: 0,
+      nextStepLabel: "Verify the guest appears in Luma's approved list first.",
+    });
+    expect(readModel.pendingHostCheckIn?.detail).toContain("0 approved guests");
+    expect(readModel.recentRuns).toHaveLength(1);
+  });
+
+  it("prefers the most advanced pending proof candidate over the newest RSVP", () => {
+    const readModel = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "older-rsvp",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "older-event",
+            payload: {
+              source: "luma_live_pilot",
+              lumaEventId: "evt-older",
+              userEmail: "nellis@medlifemovement.org",
+              userEmailHint: "ne***@medlifemovement.org",
+              rsvpCount: 1,
+            },
+            correlation_id: "older-rsvp",
+            occurred_at: "2026-06-29T03:17:53.728Z",
+            created_at: "2026-06-29T03:17:53.728Z",
+          },
+          {
+            id: "older-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "older-event",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 1,
+            },
+            correlation_id: "older-attendance",
+            occurred_at: "2026-06-29T11:07:42.137Z",
+            created_at: "2026-06-29T11:07:42.137Z",
+          },
+          {
+            id: "newer-rsvp",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "newer-event",
+            payload: {
+              source: "luma_live_pilot",
+              lumaEventId: "evt-newer",
+              userEmail: "member.a@mymedlife.test",
+              userEmailHint: "me***@mymedlife.test",
+              rsvpCount: 1,
+            },
+            correlation_id: "newer-rsvp",
+            occurred_at: "2026-06-29T11:58:49.006Z",
+            created_at: "2026-06-29T11:58:49.006Z",
+          },
+          {
+            id: "newer-attendance",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "pilot-user",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "newer-event",
+            payload: {
+              source: "luma_live_pilot",
+              attendanceCount: 0,
+              importedGuestCount: 0,
+            },
+            correlation_id: "newer-attendance",
+            occurred_at: "2026-06-29T12:02:36.722Z",
+            created_at: "2026-06-29T12:02:36.722Z",
+          },
+        ],
+        integrationEventRows: [],
+        automationOutboxRows: [],
+        pointsEventRows: [],
+      },
+    });
+
+    expect(readModel.pendingHostCheckIn).toMatchObject({
+      eventId: "evt-older",
+      importedGuestCount: 1,
+      attendanceCount: 0,
+      nextStepLabel: "Complete the host-side Luma check-in.",
+    });
+    expect(readModel.recentRuns.map((run) => run.eventId)).toEqual([
+      "evt-older",
+      "evt-newer",
+    ]);
+  });
 });

@@ -15,7 +15,7 @@ export function LeaderSelectedAssignmentPanel({
   source,
 }: LeaderSelectedAssignmentPanelProps) {
   return (
-    <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="app-eyebrow app-eyebrow-blue">Selected assignment</p>
@@ -30,7 +30,7 @@ export function LeaderSelectedAssignmentPanel({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={assignment.status} />
-          <span className="rounded-full border border-[#2563eb]/30 bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+          <span className="rounded-full border border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
             {assignment.points} points
           </span>
         </div>
@@ -60,20 +60,20 @@ export function LeaderSelectedAssignmentPanel({
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
           href={buildLeaderAssignmentRouteHref(assignment.id, { source })}
-          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
         >
           Keep this assignment in view
         </Link>
         <Link
           href="/rush-month/actions"
-          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
         >
           Back to all actions
         </Link>
         {(assignment.status === "submitted" || assignment.status === "changes_requested") ? (
           <Link
             href={`/rush-month/review?assignmentId=${assignment.id}`}
-            className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
+            className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
           >
             Open proof review
           </Link>

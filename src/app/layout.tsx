@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { getCurrentFeatureEnvironment } from "@/modules/feature-flags";
+import { getPublishedThemeCssVariablesDurable } from "@/modules/theme";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -33,17 +35,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const themeCss = await getPublishedThemeCssVariablesDurable(
+    getCurrentFeatureEnvironment(),
+  );
+
   return (
     <html
       lang="en"
       className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <style
+          id="mymedlife-theme-tokens"
+          dangerouslySetInnerHTML={{ __html: themeCss }}
+        />
         <ServiceWorkerRegistration />
         {children}
       </body>

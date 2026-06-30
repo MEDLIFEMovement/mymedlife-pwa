@@ -89,14 +89,14 @@ export default async function RushMonthEventDetailPage({
     >
       {isMemberWorkspace ? (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-4 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
+          <section className="overflow-hidden rounded-[2rem] border border-[var(--accent)]/30 bg-[linear-gradient(145deg,var(--mymedlife-gradient-blue-start)_0%,var(--mymedlife-gradient-blue-mid)_58%,var(--mymedlife-gradient-blue-end)_100%)] p-4 shadow-[0_24px_80px_rgb(var(--mymedlife-deep-rgb)/0.32)]">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/82">
                     {workspace.title}
                   </span>
-                  <span className="rounded-full border border-[#2563eb]/30 bg-[#2563eb]/12 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                  <span className="rounded-full border border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-primary-button)]/12 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                     {event.rsvpStatusLabel}
                   </span>
                 </div>
@@ -105,14 +105,14 @@ export default async function RushMonthEventDetailPage({
                 </h1>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {event.memberLumaLabel ? (
-                    <span className="rounded-full border border-[#60a5fa]/28 bg-[#2563eb]/16 px-3 py-1 text-xs font-semibold text-white/92">
+                    <span className="rounded-full border border-[var(--mymedlife-focus-blue)]/28 bg-[var(--mymedlife-primary-button)]/16 px-3 py-1 text-xs font-semibold text-white/92">
                       {event.memberLumaLabel}
                     </span>
                   ) : null}
                   <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
                     {event.memberCampaignLabel}
                   </span>
-                  <span className="rounded-full border border-[#2563eb]/28 bg-[#2563eb]/12 px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                  <span className="rounded-full border border-[var(--mymedlife-primary-button)]/28 bg-[var(--mymedlife-primary-button)]/12 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                     {event.memberPointsLabel}
                   </span>
                 </div>
@@ -125,7 +125,7 @@ export default async function RushMonthEventDetailPage({
                 </p>
                 {memberSourceContext ? (
                   <div className="mt-4 max-w-xl rounded-[1.3rem] border border-white/12 bg-white/10 p-3.5 backdrop-blur-sm">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#dbe8ff]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]">
                       {memberSourceContext.eyebrow}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-white/78">
@@ -133,8 +133,8 @@ export default async function RushMonthEventDetailPage({
                     </p>
                   </div>
                 ) : null}
-                <div className="mt-4 max-w-3xl rounded-[1.3rem] border border-[#2563eb]/22 bg-[#dbeafe]/10 p-3.5">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                <div className="mt-4 max-w-3xl rounded-[1.3rem] border border-[var(--mymedlife-primary-button)]/22 bg-[var(--mymedlife-badge-background)]/10 p-3.5">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                     Event loop
                   </p>
                   <p className="mt-2 text-sm leading-6 text-white/80">
@@ -152,7 +152,7 @@ export default async function RushMonthEventDetailPage({
                     <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-xs font-semibold text-white/82">
                       Attendance
                     </span>
-                    <span className="rounded-full border border-[#2563eb]/28 bg-[#2563eb]/12 px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                    <span className="rounded-full border border-[var(--mymedlife-primary-button)]/28 bg-[var(--mymedlife-primary-button)]/12 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                       Points
                     </span>
                   </div>
@@ -160,13 +160,13 @@ export default async function RushMonthEventDetailPage({
                 <div className="mt-4 flex flex-wrap gap-2.5">
                   <Link
                     href={workspace.nextStep.href}
-                    className="inline-flex rounded-full bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-[#08224c]"
+                    className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)]"
                   >
                     {workspace.nextStep.label}
                   </Link>
                   <Link
                     href={workspace.proofNextStep.href}
-                    className="inline-flex rounded-full border border-white/18 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-white/28 hover:bg-[#eef5ff] hover:text-slate-950"
+                    className="inline-flex rounded-full border border-white/18 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-white/28 hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                   >
                     {workspace.proofNextStep.label}
                   </Link>
@@ -181,7 +181,7 @@ export default async function RushMonthEventDetailPage({
             </div>
           </section>
 
-          <div className="grid gap-3 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+          <div className="grid gap-3 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
             <section
               id="rsvp-status"
               className="app-surface rounded-[2rem] p-4"
@@ -202,17 +202,17 @@ export default async function RushMonthEventDetailPage({
                     label={event.rsvpStatusLabel}
                   />
                   {getMemberEventSupportLabel(event) ? (
-                    <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+                    <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
                       {getMemberEventSupportLabel(event)}
                     </span>
                   ) : null}
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap gap-3">
-                <span className="rounded-full border border-[#dbeafe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                <span className="rounded-full border border-[var(--mymedlife-badge-background)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                   {event.memberCampaignLabel}
                 </span>
-                <span className="rounded-full border border-[#dbeafe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                <span className="rounded-full border border-[var(--mymedlife-badge-background)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                   {event.memberPointsLabel}
                 </span>
               </div>
@@ -268,7 +268,7 @@ export default async function RushMonthEventDetailPage({
       ) : (
         <>
       {chapterEventContext ? (
-        <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+        <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
           <p className="app-eyebrow app-eyebrow-blue">{chapterEventContext.eyebrow}</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">
             {chapterEventContext.title}
@@ -278,16 +278,16 @@ export default async function RushMonthEventDetailPage({
           </p>
           <a
             href={chapterEventContext.href}
-            className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+            className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
           >
             {chapterEventContext.backLabel}
           </a>
         </section>
       ) : null}
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--accent)]/30 bg-[linear-gradient(145deg,var(--mymedlife-gradient-blue-start)_0%,var(--mymedlife-gradient-blue-mid)_58%,var(--mymedlife-gradient-blue-end)_100%)] p-5 shadow-[0_24px_80px_rgb(var(--mymedlife-deep-rgb)/0.32)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               {workspace.title}
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">{event.title}</h1>
@@ -311,11 +311,11 @@ export default async function RushMonthEventDetailPage({
 
       <DataSourceNotice source={actor.source} />
 
-      <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
-        <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#eaf2ff] p-5">
+      <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
+        <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                 What should I do next?
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -324,7 +324,7 @@ export default async function RushMonthEventDetailPage({
             </div>
             <Link
               href={workspace.nextStep.href}
-              className="w-fit rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
+              className="w-fit rounded-full bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-badge-text)]"
             >
               {workspace.nextStep.label}
             </Link>
@@ -339,16 +339,16 @@ export default async function RushMonthEventDetailPage({
           <MiniStat label="External writes" value={`${workspace.counts.externalWritesExpected}`} />
         </section>
 
-        <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
           <div className="flex flex-wrap gap-2">
             <CheckStatusPill status={event.rsvpStatusTone}>
               {event.rsvpStatusLabel}
             </CheckStatusPill>
             <LumaStatusPill status={event.lumaStatusTone} label={event.lumaStatusLabel} />
-            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
               {event.committeeName}
             </span>
-            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+            <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600">
               {event.supportLane} lane
             </span>
           </div>
@@ -362,7 +362,7 @@ export default async function RushMonthEventDetailPage({
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
             Readiness checks
           </p>
@@ -370,7 +370,7 @@ export default async function RushMonthEventDetailPage({
             {workspace.readinessChecks.map((check) => (
               <article
                 key={check.label}
-                className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
+                className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-semibold text-slate-950">{check.label}</p>
@@ -387,15 +387,15 @@ export default async function RushMonthEventDetailPage({
           outboxItems={workspace.disabledOutboxItems}
         />
 
-        <section className="rounded-[2rem] border border-[#2563eb]/30 bg-[#dbeafe] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1d4ed8]">
+        <section className="rounded-[2rem] border border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-badge-background)] p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
             Safety boundary
           </p>
           <div className="mt-4 grid gap-2">
             {workspace.safetyNotes.map((note) => (
               <p
                 key={note}
-                className="rounded-2xl border border-[#2563eb]/20 bg-white/70 p-3 text-sm leading-6 text-slate-700"
+                className="rounded-2xl border border-[var(--mymedlife-primary-button)]/20 bg-white/70 p-3 text-sm leading-6 text-slate-700"
               >
                 {note}
               </p>
@@ -547,10 +547,10 @@ function MemberEventStatusPill({
 }) {
   const className =
     tone === "ready"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : tone === "mocked"
-        ? "border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--background)] text-[var(--mymedlife-primary-button)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span
@@ -592,7 +592,7 @@ function getMemberEventSupportLabel(event: {
 
 function DetailBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-3">
+    <div className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
@@ -603,7 +603,7 @@ function DetailBlock({ label, value }: { label: string; value: string }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
@@ -621,10 +621,10 @@ function CheckStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "mocked"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-2 py-1 text-xs font-semibold ${className}`}>
@@ -642,10 +642,10 @@ function LumaStatusPill({
 }) {
   const className =
     status === "mock_linked"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "future_sync_disabled"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-slate-200 bg-[#dbeafe] text-slate-600";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

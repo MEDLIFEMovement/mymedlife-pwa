@@ -162,7 +162,7 @@ export function StaffPortfolioToolbar({
           type="search"
           defaultValue={searchQuery}
           placeholder="Search chapter, school, student..."
-          className="w-full rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#5d8ff6]/40"
+          className="w-full rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[var(--accent)]/40"
         />
       </form>
 
@@ -172,7 +172,7 @@ export function StaffPortfolioToolbar({
           aria-label="Risk filter"
           value={riskFilter}
           onChange={(event) => handleSelectChange(riskFilters, event)}
-          className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[#5d8ff6]/40"
+          className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[var(--accent)]/40"
         >
           {riskFilters.map((filter) => (
             <option key={filter.key} value={filter.key}>
@@ -194,7 +194,7 @@ export function StaffPortfolioToolbar({
           aria-label="Country filter"
           value={countryFilter}
           onChange={(event) => handleSelectChange(countryFilters, event)}
-          className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[#5d8ff6]/40"
+          className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[var(--accent)]/40"
         >
           {countryFilters.map((filter) => (
             <option key={filter.key} value={filter.key}>
@@ -216,7 +216,7 @@ export function StaffPortfolioToolbar({
           aria-label="Campaign filter"
           value={portfolioCampaignFilter}
           onChange={(event) => handleSelectChange(portfolioCampaignFilters, event)}
-          className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[#5d8ff6]/40"
+          className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[var(--accent)]/40"
         >
           {portfolioCampaignFilters.map((filter) => (
             <option key={filter.key} value={filter.key}>
@@ -238,7 +238,7 @@ export function StaffPortfolioToolbar({
           aria-label="Coach filter"
           value={coachFilter}
           onChange={(event) => handleSelectChange(coachFilters, event)}
-          className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[#5d8ff6]/40"
+          className="w-full appearance-none rounded-full border border-slate-200 bg-white px-4 py-2 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-[var(--accent)]/40"
         >
           {coachFilters.map((filter) => (
             <option key={filter.key} value={filter.key}>
@@ -256,7 +256,7 @@ export function StaffPortfolioToolbar({
 
       <a
         href={reviewAtRiskHref}
-        className="rounded-full border border-[#2563eb]/45 bg-[#dbeafe] px-4 py-2 text-center text-sm font-semibold text-[#1d4ed8]"
+        className="rounded-full border border-[var(--mymedlife-primary-button)]/45 bg-[var(--mymedlife-badge-background)] px-4 py-2 text-center text-sm font-semibold text-[var(--mymedlife-info)]"
       >
         Review At-Risk
       </a>

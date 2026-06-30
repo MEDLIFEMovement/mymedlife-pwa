@@ -78,8 +78,8 @@ export default async function SltPrepMeetingsPage({
         />
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#083f8f_0%,#0b4f9b_52%,#081b3c_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+          <section className="overflow-hidden rounded-[2rem] border border-[var(--accent)]/30 bg-[linear-gradient(145deg,var(--mymedlife-gradient-blue-start)_0%,var(--mymedlife-gradient-blue-mid)_52%,var(--mymedlife-gradient-blue-end)_100%)] p-5 shadow-[0_24px_80px_rgb(var(--mymedlife-deep-rgb)/0.32)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Pre-trip meetings
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-white">
@@ -102,7 +102,7 @@ export default async function SltPrepMeetingsPage({
             </div>
           </section>
 
-          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+          <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
             <section className="grid gap-4 lg:grid-cols-[1.02fr_0.98fr]">
               <article className="app-surface-info rounded-[2rem] p-5">
                 <p className="app-eyebrow app-eyebrow-blue">Meeting status</p>
@@ -154,7 +154,7 @@ export default async function SltPrepMeetingsPage({
                       source: "meetings",
                       travelerId: search.traveler,
                     })}
-                    className="rounded-full bg-[#0b66cc] px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-full bg-[var(--mymedlife-admin-blue)] px-4 py-2 text-sm font-semibold text-white"
                   >
                     Open orientation detail
                   </Link>
@@ -232,7 +232,7 @@ export default async function SltPrepMeetingsPage({
                       source: "meetings",
                       travelerId: search.traveler,
                     })}
-                    className="rounded-full bg-[#0b66cc] px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-full bg-[var(--mymedlife-admin-blue)] px-4 py-2 text-sm font-semibold text-white"
                   >
                     Open orientation detail
                   </Link>

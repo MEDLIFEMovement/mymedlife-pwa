@@ -55,7 +55,7 @@ export default async function AdminWorkflowsPage({
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Admin workflows
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -67,7 +67,7 @@ export default async function AdminWorkflowsPage({
               </div>
               <Link
                 href={workspace.nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {workspace.nextStep.label}
               </Link>
@@ -106,7 +106,7 @@ export default async function AdminWorkflowsPage({
                     aria-current={option.selected ? "page" : undefined}
                     className={
                       option.selected
-                        ? "rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white"
+                        ? "rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white"
                         : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                     }
                   >
@@ -130,7 +130,7 @@ export default async function AdminWorkflowsPage({
 
             {workspace.focusedSection.selectedCard ? (
               <section className="mt-4 rounded-[1.5rem] border border-slate-200 bg-white p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                   Selected in registry
                 </p>
                 <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -144,7 +144,7 @@ export default async function AdminWorkflowsPage({
                     <p className="mt-3 text-sm leading-6 text-slate-600">
                       {workspace.focusedSection.selectedCard.detail}
                     </p>
-                    <p className="mt-3 text-sm leading-6 text-[#2563eb]">
+                    <p className="mt-3 text-sm leading-6 text-[var(--mymedlife-primary-button)]">
                       {workspace.focusedSection.selectedCard.footer}
                     </p>
                     {workspace.focusedSection.selectedCard.pills?.length ? (
@@ -165,7 +165,7 @@ export default async function AdminWorkflowsPage({
                     {workspace.focusedSection.selectedCard.href ? (
                       <Link
                         href={workspace.focusedSection.selectedCard.href}
-                        className="inline-flex rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                        className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                       >
                         {workspace.focusedSection.selectedCard.hrefLabel ?? "Open route"}
                       </Link>
@@ -182,13 +182,13 @@ export default async function AdminWorkflowsPage({
                   className={[
                     "rounded-2xl border p-4",
                     workspace.focusedSection.selectedKey === card.key
-                      ? "border-blue-200 bg-blue-50"
+                      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]"
                       : "border-slate-200 bg-slate-50",
                   ].join(" ")}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                         {card.eyebrow}
                       </p>
                       <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -200,7 +200,7 @@ export default async function AdminWorkflowsPage({
                   <p className="mt-3 text-sm leading-6 text-slate-600">
                     {card.detail}
                   </p>
-                  <p className="mt-3 text-sm leading-6 text-[#2563eb]">
+                  <p className="mt-3 text-sm leading-6 text-[var(--mymedlife-primary-button)]">
                     {card.footer}
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -209,7 +209,7 @@ export default async function AdminWorkflowsPage({
                       aria-current={workspace.focusedSection.selectedKey === card.key ? "page" : undefined}
                       className={
                         workspace.focusedSection.selectedKey === card.key
-                          ? "rounded-full bg-[#2563eb] px-3 py-1.5 text-sm font-semibold text-white"
+                          ? "rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1.5 text-sm font-semibold text-white"
                           : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700"
                       }
                     >
@@ -234,7 +234,7 @@ export default async function AdminWorkflowsPage({
           <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                   Rollout package intake
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -268,7 +268,7 @@ export default async function AdminWorkflowsPage({
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                         {workflow.isCoreMedInternational ? "Core MED International" : "Adjacent campaign"}
                       </p>
                       <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -342,7 +342,7 @@ export default async function AdminWorkflowsPage({
 function MiniStat(props: { label: string; value: string }) {
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
         {props.label}
       </p>
       <p className="mt-2 text-2xl font-semibold text-slate-950">{props.value}</p>

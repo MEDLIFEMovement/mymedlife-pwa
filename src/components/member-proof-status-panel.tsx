@@ -57,11 +57,11 @@ export function MemberProofStatusPanel({
         />
       </div>
 
-      <div className="mt-4 rounded-2xl border border-blue-300/20 bg-blue-300/10 p-4">
-        <p className="text-sm font-semibold text-blue-100">
+      <div className="mt-4 rounded-2xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
+        <p className="text-sm font-semibold text-[var(--mymedlife-badge-background)]">
           Sharing is still HQ-controlled
         </p>
-        <ul className="mt-3 grid gap-2 text-xs leading-5 text-blue-50/72">
+        <ul className="mt-3 grid gap-2 text-xs leading-5 text-[var(--mymedlife-badge-background)]/72">
           {workspace.safetyNotes.map((note) => (
             <li key={note}>{note}</li>
           ))}
@@ -86,7 +86,7 @@ function ProofStatusCard({
             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tonePill(row.tone)}`}>
               {row.statusLabel}
             </span>
-            <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500">
+            <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-500">
               {row.ownerLabel}
             </span>
           </div>
@@ -98,7 +98,7 @@ function ProofStatusCard({
             href={buildActionHref
               ? buildActionHref(row.assignmentId)
               : `/rush-month/actions/${row.assignmentId}`}
-            className="w-fit rounded-full border border-[#5d8ff6]/28 bg-white px-3 py-1.5 text-xs font-semibold text-[#2563eb]"
+            className="w-fit rounded-full border border-[var(--accent)]/28 bg-white px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-primary-button)]"
           >
             Open action
           </Link>
@@ -143,7 +143,7 @@ function ProofStatusList({ items, title }: { items: string[]; title: string }) {
         {items.map((item) => (
           <span
             key={item}
-            className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs text-slate-500"
+            className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs text-slate-500"
           >
             {item}
           </span>
@@ -158,23 +158,23 @@ function toneBorder(tone: MemberProofStatusTone): string {
     case "blocked":
       return "";
     case "info":
-      return "border-[#bfdbfe]";
+      return "border-[var(--mymedlife-border)]";
     case "ready":
-      return "border-blue-200";
+      return "border-[var(--mymedlife-border)]";
     case "warning":
-      return "border-blue-200";
+      return "border-[var(--mymedlife-border)]";
   }
 }
 
 function tonePill(tone: MemberProofStatusTone): string {
   switch (tone) {
     case "blocked":
-      return "border border-slate-200 bg-[#dbeafe] text-slate-600";
+      return "border border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600";
     case "info":
-      return "border border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] text-[var(--mymedlife-primary-button)]";
     case "ready":
-      return "border border-blue-200 bg-blue-50 text-blue-700";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "warning":
-      return "border border-blue-200 bg-blue-50 text-blue-700";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
   }
 }

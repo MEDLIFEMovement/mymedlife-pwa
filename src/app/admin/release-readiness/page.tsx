@@ -14,6 +14,7 @@ import {
   canReadAdminIntegrationsSecurity,
   getActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminReleaseReadiness");
@@ -24,7 +25,18 @@ export default async function AdminReleaseReadinessPage() {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const summary = getMvpReleaseReadinessSummary(actor);
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
+  const summary = getMvpReleaseReadinessSummary(actor, {
+    data,
+    env: process.env,
+    lumaReadModel: lumaActivation,
+    hostedStagingEvidenceObserved:
+      data.source.mode === "supabase" &&
+      lumaActivation.providerStatusLabel === "Staging evidence rows recorded",
+  });
   const bakeoff = getDiscourseBakeoffEvaluation();
   const nextStep = getNextStep(actor);
 
@@ -48,7 +60,7 @@ export default async function AdminReleaseReadinessPage() {
           <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Release readiness
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -63,14 +75,14 @@ export default async function AdminReleaseReadinessPage() {
               </div>
               <Link
                 href={nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {nextStep.label}
               </Link>
             </div>
           </section>
 
-          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <MiniStat
               label="Local review"
               value={summary.localReviewReady ? "yes" : "no"}
@@ -81,6 +93,10 @@ export default async function AdminReleaseReadinessPage() {
             />
             <MiniStat label="Ready" value={`${summary.achievements.length}`} />
             <MiniStat label="Blocked" value={`${summary.blockers.length}`} />
+            <MiniStat
+              label="Packet recorded"
+              value={`${summary.productionReadiness?.recordedEnvironmentCount ?? 0}`}
+            />
             <MiniStat label="Writes" value={`${summary.browserWritesEnabled}`} />
           </section>
 
@@ -109,7 +125,7 @@ function getNextStep(actor: LocalActorContext) {
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
         {label}
       </p>
       <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>

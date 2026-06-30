@@ -8,8 +8,8 @@ export function WriteActivationReadinessPanel({
   summary,
 }: WriteActivationReadinessPanelProps) {
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
         Write activation readiness
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -22,7 +22,7 @@ export function WriteActivationReadinessPanel({
       </p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl bg-[#bfdbfe]/40 p-3">
+        <div className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
           <p className="text-xs uppercase tracking-[0.18em] text-white/44">
             Operations
           </p>
@@ -30,7 +30,7 @@ export function WriteActivationReadinessPanel({
             {summary.operationCount}
           </p>
         </div>
-        <div className="rounded-2xl bg-[#bfdbfe]/40 p-3">
+        <div className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
           <p className="text-xs uppercase tracking-[0.18em] text-white/44">
             Enabled controls
           </p>
@@ -38,7 +38,7 @@ export function WriteActivationReadinessPanel({
             {summary.enabledControlCount}
           </p>
         </div>
-        <div className="rounded-2xl bg-[#bfdbfe]/40 p-3">
+        <div className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
           <p className="text-xs uppercase tracking-[0.18em] text-white/44">
             Blockers
           </p>
@@ -50,15 +50,15 @@ export function WriteActivationReadinessPanel({
 
       <div className="mt-4 grid gap-3 lg:grid-cols-2">
         {summary.items.map((item) => (
-          <article key={item.operation} className="rounded-2xl bg-[#bfdbfe]/40 p-3">
+          <article key={item.operation} className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-white">{item.label}</p>
-                <p className="mt-1 font-mono text-xs text-blue-100/70">
+                <p className="mt-1 font-mono text-xs text-[var(--mymedlife-badge-background)]/70">
                   {item.localFunction}
                 </p>
               </div>
-              <span className="rounded-full border border-blue-300/20 bg-blue-300/10 px-2 py-1 text-xs font-semibold text-blue-100">
+              <span className="rounded-full border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 px-2 py-1 text-xs font-semibold text-[var(--mymedlife-badge-background)]">
                 locked
               </span>
             </div>

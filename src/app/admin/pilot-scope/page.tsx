@@ -4,7 +4,7 @@ import { DataSourceNotice } from "@/components/data-source-notice";
 import { PilotScopePlannerPanel } from "@/components/pilot-scope-planner-panel";
 import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import { getPilotScopePlanner } from "@/services/pilot-scope-planner";
+import { getPilotScopePlannerDurable } from "@/services/pilot-scope-planner";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -12,12 +12,20 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("adminPilotScope");
 export const dynamic = "force-dynamic";
 
-export default async function PilotScopePage() {
+export default async function PilotScopePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    pilotPacketResult?: string;
+    pilotPacketMessage?: string;
+  }>;
+}) {
   const [data, actor] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
   ]);
-  const planner = getPilotScopePlanner(actor);
+  const resolvedSearchParams = await searchParams;
+  const planner = await getPilotScopePlannerDurable(actor);
 
   return (
     <AdminAppShell actor={actor}>
@@ -27,7 +35,11 @@ export default async function PilotScopePage() {
         showIntegrations={canReadAdminIntegrationsSecurity(actor)}
       />
       {planner.canReadPlanner ? (
-        <PilotScopePlannerPanel planner={planner} />
+        <PilotScopePlannerPanel
+          planner={planner}
+          packetResult={resolvedSearchParams?.pilotPacketResult}
+          packetMessage={resolvedSearchParams?.pilotPacketMessage}
+        />
       ) : (
         <RestrictedState
           title="Pilot scope planning is hidden for this role."

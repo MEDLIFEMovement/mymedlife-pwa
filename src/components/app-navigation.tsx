@@ -45,7 +45,7 @@ export function AppNavigation({
         >
           <div
             className={[
-              "rounded-[1.7rem] border p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)] backdrop-blur-xl",
+              "rounded-[1.7rem] border p-4 shadow-[0_12px_32px_rgb(var(--mymedlife-shadow-rgb)/0.06)] backdrop-blur-xl",
               getSidebarChromeClasses(surfaceFamily),
             ].join(" ")}
           >
@@ -83,7 +83,7 @@ export function AppNavigation({
       ) : (
         <div
           className={[
-            "rounded-[1.4rem] border p-1.5 shadow-[0_12px_32px_rgba(15,23,42,0.06)] backdrop-blur-xl",
+            "rounded-[1.4rem] border p-1.5 shadow-[0_12px_32px_rgb(var(--mymedlife-shadow-rgb)/0.06)] backdrop-blur-xl",
             "border-slate-200/90 bg-white/82",
             mode === "mobile-app" ? "hidden sm:block" : "",
           ].join(" ")}
@@ -100,8 +100,8 @@ export function AppNavigation({
                   className={[
                     "shrink-0 snap-start rounded-[1rem] border px-4 py-2.5 text-[0.92rem] font-semibold transition",
                     isActive
-                      ? "border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8] shadow-[0_12px_24px_rgba(59,115,231,0.12)]"
-                      : "border-transparent bg-transparent text-slate-600 hover:border-[#bfdbfe] hover:bg-white hover:text-slate-950",
+                      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)] shadow-[0_12px_24px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
+                      : "border-transparent bg-transparent text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-white hover:text-slate-950",
                   ].join(" ")}
                 >
                   {item.label}
@@ -115,7 +115,7 @@ export function AppNavigation({
       <nav
         aria-label="Mobile quick navigation"
         className={[
-          "fixed z-40 grid gap-1 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:hidden",
+          "fixed z-40 grid gap-1 shadow-[0_18px_60px_rgb(var(--mymedlife-shadow-rgb)/0.08)] backdrop-blur-xl sm:hidden",
           showQuickItemHelpers
             ? "inset-x-3 bottom-3 rounded-[1.5rem] p-2"
             : "inset-x-3 bottom-2 rounded-[1.2rem] p-1.5",
@@ -136,8 +136,8 @@ export function AppNavigation({
                     ? "flex min-h-14 flex-col items-center justify-center rounded-[1rem] px-2 text-center transition"
                     : "flex min-h-[3rem] items-center justify-center rounded-[0.9rem] px-2 text-center transition",
                   isActive
-                    ? "bg-[#2563eb] text-white shadow-[0_12px_26px_rgba(93,143,246,0.22)]"
-                    : "bg-[#dbeafe] text-slate-600 hover:bg-[#eef4ff] hover:text-slate-950",
+                    ? "bg-[var(--mymedlife-primary-button)] text-white shadow-[0_12px_26px_rgb(var(--mymedlife-accent-rgb)/0.22)]"
+                    : "bg-[var(--mymedlife-badge-background)] text-slate-600 hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
                 ].join(" ")}
               >
               <span className="text-[0.68rem] font-semibold leading-tight">{item.label}</span>
@@ -159,14 +159,14 @@ function getSidebarChromeClasses(
 ): string {
   switch (surfaceFamily) {
     case "leader":
-      return "border-[#20386f]/90 bg-[#0b1d39] text-white";
+      return "border-[var(--mymedlife-deep-blue)]/90 bg-[var(--mymedlife-deep-blue)] text-white";
     case "coach":
-      return "border-[#dbeafe]/90 bg-[#fbfdff]/96";
+      return "border-[var(--mymedlife-badge-background)]/90 bg-[var(--mymedlife-surface-tint)]/96";
     case "staff":
-      return "border-[#e2e8f0] bg-white/94";
+      return "border-[var(--mymedlife-border)] bg-white/94";
     case "ds_admin":
     case "super_admin":
-      return "border-slate-200/95 bg-[#fbfdff]/97";
+      return "border-slate-200/95 bg-[var(--mymedlife-surface-tint)]/97";
     case "member":
     default:
       return "border-slate-200/90 bg-white/92";
@@ -195,17 +195,17 @@ function getSidebarNavItemActiveClasses(
 ): string {
   switch (surfaceFamily) {
     case "leader":
-      return "border-[#2f5be0] bg-[#2f5be0] text-white shadow-[0_10px_22px_rgba(47,91,224,0.28)]";
+      return "border-[var(--mymedlife-action-blue)] bg-[var(--mymedlife-action-blue)] text-white shadow-[0_10px_22px_rgb(var(--mymedlife-primary-rgb)/0.28)]";
     case "coach":
-      return "border-[#dbeafe] bg-[#f8fbff] text-[#1d4ed8] shadow-[0_10px_22px_rgba(37,99,235,0.08)]";
+      return "border-[var(--mymedlife-badge-background)] bg-[var(--background)] text-[var(--mymedlife-info)] shadow-[0_10px_22px_rgb(var(--mymedlife-primary-rgb)/0.08)]";
     case "staff":
-      return "border-[#dbeafe] bg-[#f8fbff] text-[#1d4ed8] shadow-[0_10px_22px_rgba(37,99,235,0.08)]";
+      return "border-[var(--mymedlife-badge-background)] bg-[var(--background)] text-[var(--mymedlife-info)] shadow-[0_10px_22px_rgb(var(--mymedlife-primary-rgb)/0.08)]";
     case "ds_admin":
     case "super_admin":
-      return "border-slate-200 bg-[#f8fbff] text-slate-950 shadow-[0_10px_22px_rgba(15,23,42,0.06)]";
+      return "border-slate-200 bg-[var(--background)] text-slate-950 shadow-[0_10px_22px_rgb(var(--mymedlife-shadow-rgb)/0.06)]";
     case "member":
     default:
-      return "border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8] shadow-[0_12px_24px_rgba(59,115,231,0.12)]";
+      return "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)] shadow-[0_12px_24px_rgb(var(--mymedlife-primary-rgb)/0.12)]";
   }
 }
 
@@ -217,13 +217,13 @@ function getSidebarNavItemInactiveClasses(
       return "border-transparent bg-transparent text-slate-300 hover:border-white/10 hover:bg-white/6 hover:text-white";
     case "coach":
     case "staff":
-      return "border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#f8fbff] hover:text-slate-950";
+      return "border-slate-200 bg-white text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)] hover:text-slate-950";
     case "ds_admin":
     case "super_admin":
-      return "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-[#f8fbff] hover:text-slate-950";
+      return "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-[var(--background)] hover:text-slate-950";
     case "member":
     default:
-      return "border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#f8fbff] hover:text-slate-950";
+      return "border-slate-200 bg-white text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)] hover:text-slate-950";
   }
 }
 
@@ -234,17 +234,17 @@ function getSidebarEyebrowClasses(
 
   switch (surfaceFamily) {
     case "leader":
-      return `${base} text-[#8ab4ff]`;
+      return `${base} text-[var(--mymedlife-focus-blue)]`;
     case "coach":
-      return `${base} text-[#2563eb]`;
+      return `${base} text-[var(--mymedlife-primary-button)]`;
     case "staff":
-      return `${base} text-[#2563eb]`;
+      return `${base} text-[var(--mymedlife-primary-button)]`;
     case "ds_admin":
     case "super_admin":
       return `${base} text-slate-600`;
     case "member":
     default:
-      return `${base} text-[#2563eb]`;
+      return `${base} text-[var(--mymedlife-primary-button)]`;
   }
 }
 

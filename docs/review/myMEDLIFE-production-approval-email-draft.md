@@ -50,7 +50,11 @@ Please confirm or replace only the fields you want to change:
    - Confirm who owns alerting, backup, rollback, and incident handling for the pilot window.
 
 7. External integration hold
-   - Confirm HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off.
+   - Confirm the only approved Luma scope is the event / RSVP / attendance / points pilot loop.
+   - Confirm HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, AI, and any non-approved Luma behavior stay off.
+
+8. Luma event loop
+   - Confirm the pilot evidence path: create/update one Luma event, write one RSVP, import attendance, show points and leaderboard readback, and prove zero unauthorized sends.
 
 If the current defaults are acceptable, a reply of `approved as written` is enough.
 If something needs to change, please reply with only the fields you want updated.
@@ -91,7 +95,11 @@ Por favor confirmen o reemplacen solo los campos que quieran cambiar:
    - Confirmar quién es responsable de alertas, backup, rollback y manejo de incidentes durante el piloto.
 
 7. Mantener integraciones apagadas
-   - Confirmar que HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email y AI siguen apagados.
+   - Confirmar que el único alcance aprobado de Luma es el bucle piloto de evento / RSVP / asistencia / puntos.
+   - Confirmar que HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, AI y cualquier comportamiento de Luma no aprobado siguen apagados.
+
+8. Bucle de eventos de Luma
+   - Confirmar la ruta de evidencia del piloto: crear/actualizar un evento de Luma, registrar un RSVP, importar asistencia, mostrar puntos y leaderboard, y probar que no hubo envíos no autorizados.
 
 Si los valores por defecto funcionan, basta con responder `approved as written`.
 Si algo debe cambiar, respondan solo con los campos que quieran actualizar.

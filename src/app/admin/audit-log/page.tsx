@@ -5,6 +5,11 @@ import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
 import { getAdminAuditLogReview } from "@/services/admin-audit-log-review";
+import {
+  appendAdminReviewFocus,
+  applyAdminReviewFocus,
+  resolveAdminReviewFocus,
+} from "@/services/admin-review-focus";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -17,13 +22,28 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("adminAuditLog");
 export const dynamic = "force-dynamic";
 
-export default async function AdminAuditLogPage() {
-  const [actor, data] = await Promise.all([
+type AdminAuditLogPageProps = {
+  searchParams?: Promise<{
+    source?: string;
+  }>;
+};
+
+export default async function AdminAuditLogPage({
+  searchParams,
+}: AdminAuditLogPageProps) {
+  const [actor, data, resolvedSearchParams] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),
+    searchParams ? searchParams : Promise.resolve(undefined),
   ]);
-  const review = getAdminAuditLogReview(actor, data);
-  const nextStep = getNextStep(actor);
+  const focus = resolveAdminReviewFocus(resolvedSearchParams?.source);
+  const review = getAdminAuditLogReview(actor, applyAdminReviewFocus(data, focus));
+  const nextStep = focus
+    ? {
+        label: "Open matching outbox rows",
+        href: appendAdminReviewFocus("/admin/integration-outbox", focus),
+      }
+    : getNextStep(actor);
 
   return (
     <AdminAppShell actor={actor}>
@@ -45,7 +65,7 @@ export default async function AdminAuditLogPage() {
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Admin audit log
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -59,12 +79,26 @@ export default async function AdminAuditLogPage() {
               </div>
               <Link
                 href={nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {nextStep.label}
               </Link>
             </div>
           </section>
+
+          {focus ? (
+            <section className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
+                Current focus
+              </p>
+              <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                {focus.label}
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                {focus.summary}
+              </p>
+            </section>
+          ) : null}
 
           <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <MiniStat label="Visible rows" value={`${review.counts.visibleRows}`} />

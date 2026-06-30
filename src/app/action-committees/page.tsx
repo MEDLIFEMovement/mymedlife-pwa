@@ -52,7 +52,7 @@ export default async function ActionCommitteesPage({
       ) : (
         <>
           {chapterCommitteeContext ? (
-            <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+            <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
               <p className="app-eyebrow app-eyebrow-blue">{chapterCommitteeContext.eyebrow}</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950">
                 {chapterCommitteeContext.title}
@@ -62,14 +62,14 @@ export default async function ActionCommitteesPage({
               </p>
               <a
                 href={chapterCommitteeContext.href}
-                className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 {chapterCommitteeContext.backLabel}
               </a>
             </section>
           ) : null}
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               Action committees
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -110,7 +110,7 @@ export default async function ActionCommitteesPage({
               return (
                 <article
                   key={committee.id}
-                  className="app-surface rounded-[1.7rem] p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)]"
+                  className="app-surface rounded-[1.7rem] p-4 shadow-[0_10px_28px_rgb(var(--mymedlife-shadow-rgb)/0.05)]"
                 >
                   <p className="app-eyebrow app-eyebrow-blue">
                     {committee.lane}
@@ -124,7 +124,7 @@ export default async function ActionCommitteesPage({
                     {committee.sampleMonthlyActions.map((action) => (
                       <span
                         key={action}
-                        className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-500"
+                        className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-500"
                       >
                         {action}
                       </span>
@@ -133,7 +133,7 @@ export default async function ActionCommitteesPage({
                   {committeeEvents[0] ? (
                     <Link
                       href={`/campaigns/${committeeEvents[0].campaignSlug}`}
-                      className="mt-4 inline-flex text-sm font-semibold text-[#2563eb]"
+                      className="mt-4 inline-flex text-sm font-semibold text-[var(--mymedlife-primary-button)]"
                     >
                       Open related campaign
                     </Link>
@@ -163,10 +163,10 @@ export default async function ActionCommitteesPage({
                     </span>
                   </div>
                   <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                    <p className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+                    <p className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgb(var(--mymedlife-shadow-rgb)/0.04)]">
                       Feedback: {eventPlan.feedbackPlan}
                     </p>
-                    <p className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgba(15,23,42,0.04)]">
+                    <p className="rounded-[1.05rem] bg-white p-3 shadow-[0_6px_20px_rgb(var(--mymedlife-shadow-rgb)/0.04)]">
                       Proof: {eventPlan.proofPrompt}
                     </p>
                   </div>

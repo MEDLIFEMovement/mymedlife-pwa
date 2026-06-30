@@ -35,7 +35,7 @@ export function LeaderProofDecisionResultStatesPanel({
 
       <div className="app-surface rounded-[1.2rem] p-3">
         <p className="text-sm font-semibold text-slate-950">Decision snapshot</p>
-        <p className="mt-2 font-mono text-xs leading-5 text-[#2563eb]">
+        <p className="mt-2 font-mono text-xs leading-5 text-[var(--mymedlife-primary-button)]">
           success: {String(preview.serverResultShape.success)}, errorCode:{" "}
           {preview.serverResultShape.errorCode}, assignmentId:{" "}
           {preview.serverResultShape.assignmentId}, evidenceItemId:{" "}
@@ -99,25 +99,25 @@ function ResultCard({
 function toneBorderClass(tone: LeaderProofDecisionResultTone): string {
   switch (tone) {
     case "success":
-      return "border-blue-200";
+      return "border-[var(--mymedlife-border)]";
     case "warning":
-      return "border-blue-200";
+      return "border-[var(--mymedlife-border)]";
     case "error":
-      return "border-blue-200";
+      return "border-[var(--mymedlife-border)]";
     case "info":
-      return "border-[#bfdbfe]";
+      return "border-[var(--mymedlife-border)]";
   }
 }
 
 function toneBadgeClass(tone: LeaderProofDecisionResultTone): string {
   switch (tone) {
     case "success":
-      return "border border-blue-200 bg-blue-50 text-blue-700";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "warning":
-      return "border border-blue-200 bg-blue-50 text-blue-700";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "error":
-      return "border border-blue-200 bg-blue-50 text-blue-700";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "info":
-      return "border border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] text-[var(--mymedlife-primary-button)]";
   }
 }

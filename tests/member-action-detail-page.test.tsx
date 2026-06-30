@@ -58,6 +58,7 @@ describe("member action detail page", () => {
     expect(html.indexOf("Action Detail")).toBeLessThan(
       html.indexOf("Invite 3 friends to the Intro GBM"),
     );
+    expect(html).toContain("Start this action");
     expect(html).toContain("Submit evidence");
     expect(html.match(/Evidence Required/g)?.length).toBe(1);
     expect(html.match(/Submit evidence/g)?.length).toBe(1);
@@ -71,6 +72,159 @@ describe("member action detail page", () => {
     expect(html).not.toContain("Member action detail");
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain("Review only");
+  });
+
+  it("renders the real start-action lane on the member route for staging-ready UUID assignments", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const originalAuthMode = process.env.MYMEDLIFE_AUTH_MODE;
+    const originalStagingWrite = process.env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE;
+
+    process.env.MYMEDLIFE_AUTH_MODE = "staging_supabase";
+    process.env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE = "true";
+
+    try {
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getMockLocalActorContext(
+          "member.a@mymedlife.test",
+          "Signed in through the approved staging lane.",
+          "mock_fallback",
+          "local_auth_session",
+          "signed_in",
+        ),
+      );
+
+      const readOnlyData = getMockReadOnlyAppData("Testing staging member start action.");
+      vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+        ...readOnlyData,
+        assignments: readOnlyData.assignments.map((assignment) =>
+          assignment.id === "member-push"
+            ? {
+                ...assignment,
+                id: "50000000-0000-4000-8000-000000000002",
+                status: "in_progress",
+              }
+            : assignment,
+        ),
+      });
+
+      const { default: ActionDetailPage } = await import(
+        "@/app/rush-month/actions/[assignmentId]/page"
+      );
+      const html = renderToStaticMarkup(
+        await ActionDetailPage({
+          params: Promise.resolve({
+            assignmentId: "50000000-0000-4000-8000-000000000002",
+          }),
+          searchParams: Promise.resolve({
+            source: "home",
+            actionStartResult: "started",
+          }),
+        }),
+      );
+
+      expect(html).toContain("Hosted staging lane");
+      expect(html).toContain("Action started and recorded.");
+      expect(html).toContain("Assignment readback");
+      expect(html).toContain(
+        "Readback confirms this assignment is now in progress in Supabase.",
+      );
+      expect(html).toContain("Action already started");
+      expect(html).toContain(
+        'value="/rush-month/actions/50000000-0000-4000-8000-000000000002?source=home"',
+      );
+    } finally {
+      if (originalAuthMode === undefined) {
+        delete process.env.MYMEDLIFE_AUTH_MODE;
+      } else {
+        process.env.MYMEDLIFE_AUTH_MODE = originalAuthMode;
+      }
+
+      if (originalStagingWrite === undefined) {
+        delete process.env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE;
+      } else {
+        process.env.MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE =
+          originalStagingWrite;
+      }
+    }
+  });
+
+  it("renders the real proof-submit lane on the member route for staging-ready UUID assignments", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const originalAuthMode = process.env.MYMEDLIFE_AUTH_MODE;
+    const originalStagingWrite =
+      process.env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE;
+
+    process.env.MYMEDLIFE_AUTH_MODE = "staging_supabase";
+    process.env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE = "true";
+
+    try {
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getMockLocalActorContext(
+          "member.a@mymedlife.test",
+          "Signed in through the approved staging lane.",
+          "mock_fallback",
+          "local_auth_session",
+          "signed_in",
+        ),
+      );
+
+      const readOnlyData = getMockReadOnlyAppData("Testing staging member proof submit.");
+      vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+        ...readOnlyData,
+        assignments: readOnlyData.assignments.map((assignment) =>
+          assignment.id === "member-push"
+            ? {
+                ...assignment,
+                id: "50000000-0000-4000-8000-000000000002",
+                status: "submitted",
+              }
+            : assignment,
+        ),
+      });
+
+      const { default: ActionDetailPage } = await import(
+        "@/app/rush-month/actions/[assignmentId]/page"
+      );
+      const html = renderToStaticMarkup(
+        await ActionDetailPage({
+          params: Promise.resolve({
+            assignmentId: "50000000-0000-4000-8000-000000000002",
+          }),
+          searchParams: Promise.resolve({
+            step: "submit",
+            source: "home",
+            proofSubmissionResult: "proof_submitted",
+          }),
+        }),
+      );
+
+      expect(html).toContain("Hosted staging lane");
+      expect(html).toContain("Proof submitted and recorded.");
+      expect(html).toContain("Proof readback");
+      expect(html).toContain(
+        "Readback confirms this proof/testimonial is now submitted for leader review in Supabase.",
+      );
+      expect(html).toContain("Proof already submitted");
+      expect(html).toContain(
+        'value="/rush-month/actions/50000000-0000-4000-8000-000000000002?step=submit&amp;source=home#submit-evidence"',
+      );
+      expect(html).toContain("I confirm this proof is accurate, consent-safe, and tied to this assignment.");
+    } finally {
+      if (originalAuthMode === undefined) {
+        delete process.env.MYMEDLIFE_AUTH_MODE;
+      } else {
+        process.env.MYMEDLIFE_AUTH_MODE = originalAuthMode;
+      }
+
+      if (originalStagingWrite === undefined) {
+        delete process.env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE;
+      } else {
+        process.env.MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE =
+          originalStagingWrite;
+      }
+    }
   });
 
   it("opens the submit-evidence state on the same member action route when the route step asks for it", async () => {

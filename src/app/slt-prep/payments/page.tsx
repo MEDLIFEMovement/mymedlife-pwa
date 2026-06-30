@@ -114,7 +114,7 @@ export default async function SltPrepPaymentsPage({
       />
 
       <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
           Travel payments
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -132,15 +132,15 @@ export default async function SltPrepPaymentsPage({
         </div>
       </section>
 
-      <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+      <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
         {actionState ? (
           <section
             id="payment-action"
-            className="rounded-[1.75rem] border border-[#bfdbfe] bg-[#f8fbff] p-4"
+            className="rounded-[1.75rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
                   {actionState.eyebrow}
                 </p>
                 <h2 className="mt-2 text-lg font-semibold text-slate-950">{actionState.title}</h2>
@@ -208,7 +208,7 @@ export default async function SltPrepPaymentsPage({
                   source: "payments",
                   travelerId: search.traveler,
                 })}
-                className="rounded-full bg-[#0b66cc] px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-full bg-[var(--mymedlife-admin-blue)] px-4 py-2 text-sm font-semibold text-white"
               >
                 Open payment checklist item
               </Link>
@@ -384,7 +384,7 @@ function PaymentRow({
   tone: "red" | "yellow" | "green";
 }) {
   return (
-    <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
+    <div className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-slate-950">{title}</p>
@@ -460,14 +460,14 @@ function ActionRow({
   href: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-3">
       <div>
         <p className="text-sm font-semibold text-slate-950">{title}</p>
         <p className="mt-1 text-sm text-slate-500">{detail}</p>
       </div>
       <Link
         href={href}
-        className="inline-flex rounded-full bg-[#0b66cc] px-4 py-2 text-sm font-semibold text-white"
+        className="inline-flex rounded-full bg-[var(--mymedlife-admin-blue)] px-4 py-2 text-sm font-semibold text-white"
       >
         {cta}
       </Link>

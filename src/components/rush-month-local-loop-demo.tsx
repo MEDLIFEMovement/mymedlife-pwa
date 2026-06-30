@@ -61,11 +61,11 @@ export function RushMonthLocalLoopDemo({
         <div className="app-surface mt-5 rounded-[1.5rem] p-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-semibold text-slate-950">Progress</p>
-            <p className="text-sm font-semibold text-[#2563eb]">{progress}%</p>
+            <p className="text-sm font-semibold text-[var(--mymedlife-primary-button)]">{progress}%</p>
           </div>
-          <div className="mt-3 h-3 overflow-hidden rounded-full bg-[#f8fbff]">
+          <div className="mt-3 h-3 overflow-hidden rounded-full bg-[var(--background)]">
             <div
-              className="h-full rounded-full bg-[#5d8ff6] transition-all"
+              className="h-full rounded-full bg-[var(--accent)] transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -176,8 +176,8 @@ export function RushMonthLocalLoopDemo({
                 onClick={() => dispatch(command)}
                 className={`rounded-2xl border p-4 text-left transition ${
                   enabled
-                    ? "border-[#5d8ff6]/28 bg-[#eaf2ff] text-slate-950 hover:bg-[#dce8ff]"
-                    : "border-slate-200 bg-[#eff6ff] text-slate-400"
+                    ? "border-[var(--accent)]/28 bg-[var(--mymedlife-info-surface)] text-slate-950 hover:bg-[var(--mymedlife-badge-background)]"
+                    : "border-slate-200 bg-[var(--background)] text-slate-400"
                 }`}
               >
                 <span className="block text-sm font-semibold">{commandLabels[command]}</span>
@@ -208,7 +208,7 @@ export function RushMonthLocalLoopDemo({
               key={auditLog.id}
               className="app-surface-soft rounded-[1.05rem] p-3"
             >
-              <p className="font-mono text-xs text-[#2563eb]">{auditLog.action}</p>
+              <p className="font-mono text-xs text-[var(--mymedlife-primary-button)]">{auditLog.action}</p>
               <p className="mt-2 text-sm text-slate-600">
                 {auditLog.actorUserId}
                 {" -> "}
@@ -241,10 +241,10 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
 function stepClassName(status: RushMonthLoopStepStatus): string {
   switch (status) {
     case "complete":
-      return "border-blue-200 bg-blue-50";
+      return "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]";
     case "current":
-      return "border-blue-200 bg-blue-50";
+      return "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]";
     case "locked":
-      return "border-slate-200 bg-[#eff6ff]";
+      return "border-slate-200 bg-[var(--background)]";
   }
 }

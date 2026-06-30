@@ -1,5 +1,6 @@
-import { createHmac, randomUUID } from "node:crypto";
+import { createHmac } from "node:crypto";
 import { cookies } from "next/headers";
+import { createSupabaseControlClient } from "@/lib/supabase-control-client";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getAuthSessionState } from "@/services/auth-session";
 import {
@@ -19,6 +20,15 @@ export const dsSecretStepUpCookieName = "mymedlife_ds_secret_step_up";
 
 const stepUpWindowMinutes = 10;
 const productionFreshWindowMinutes = 5;
+
+type DurableStepUpSessionRow = {
+  id: string;
+  user_id: string;
+  method: StepUpMethod;
+  verified_at: string;
+  expires_at: string;
+  revoked_at: string | null;
+};
 
 function getStepUpSecret(env: Record<string, string | undefined> = process.env): string {
   return env.MYMEDLIFE_LOCAL_STEP_UP_SECRET ?? "mymedlife-local-step-up-secret";
@@ -46,6 +56,32 @@ function getStepUpFailureKey(actor: LocalActorContext): string {
   return actor.user.id;
 }
 
+function buildStepUpState(
+  input: Pick<
+    DsSecretStepUpState,
+    | "isVerified"
+    | "status"
+    | "method"
+    | "sessionId"
+    | "verifiedAt"
+    | "expiresAt"
+    | "blockedUntil"
+    | "message"
+  > & { failureCount: number },
+): DsSecretStepUpState {
+  return {
+    isVerified: input.isVerified,
+    status: input.status,
+    method: input.method,
+    sessionId: input.sessionId,
+    verifiedAt: input.verifiedAt,
+    expiresAt: input.expiresAt,
+    failureCount: input.failureCount,
+    blockedUntil: input.blockedUntil,
+    message: input.message,
+  };
+}
+
 export async function getDsSecretStepUpState(
   actor: LocalActorContext,
 ): Promise<DsSecretStepUpState> {
@@ -53,7 +89,7 @@ export async function getDsSecretStepUpState(
   const rawCookie = await readStepUpCookieValue();
 
   if (failureState.blockedUntil) {
-    return {
+    return buildStepUpState({
       isVerified: false,
       status: "blocked",
       method: null,
@@ -63,11 +99,11 @@ export async function getDsSecretStepUpState(
       failureCount: failureState.count,
       blockedUntil: failureState.blockedUntil,
       message: "Too many failed step-up attempts. Wait for the cooldown before trying again.",
-    };
+    });
   }
 
   if (!rawCookie) {
-    return {
+    return buildStepUpState({
       isVerified: false,
       status: "missing",
       method: null,
@@ -77,13 +113,13 @@ export async function getDsSecretStepUpState(
       failureCount: failureState.count,
       blockedUntil: null,
       message: "Step-up authentication is required before entering the integrations security area.",
-    };
+    });
   }
 
   const [encodedPayload, signature] = rawCookie.split(".");
 
   if (!encodedPayload || !signature || signPayload(encodedPayload) !== signature) {
-    return {
+    return buildStepUpState({
       isVerified: false,
       status: "invalid",
       method: null,
@@ -93,13 +129,13 @@ export async function getDsSecretStepUpState(
       failureCount: failureState.count,
       blockedUntil: null,
       message: "The step-up session is invalid and must be re-verified.",
-    };
+    });
   }
 
   const payload = decodePayload(encodedPayload);
 
   if (!payload || payload.userId !== actor.user.id || payload.email !== actor.selectedEmail) {
-    return {
+    return buildStepUpState({
       isVerified: false,
       status: "invalid",
       method: null,
@@ -109,11 +145,11 @@ export async function getDsSecretStepUpState(
       failureCount: failureState.count,
       blockedUntil: null,
       message: "The step-up session does not match the current signed-in DS admin account.",
-    };
+    });
   }
 
   if (payload.expiresAt <= new Date().toISOString()) {
-    return {
+    return buildStepUpState({
       isVerified: false,
       status: "expired",
       method: payload.method,
@@ -123,20 +159,50 @@ export async function getDsSecretStepUpState(
       failureCount: failureState.count,
       blockedUntil: null,
       message: "The step-up session expired. Re-authenticate to continue with secure actions.",
-    };
+    });
   }
 
-  return {
+  const durableSession = await readDurableStepUpSession(actor, payload.sessionId);
+
+  if (!durableSession.ok) {
+    return buildStepUpState({
+      isVerified: false,
+      status: durableSession.status,
+      method: payload.method,
+      sessionId: payload.sessionId,
+      verifiedAt: payload.verifiedAt,
+      expiresAt: payload.expiresAt,
+      failureCount: failureState.count,
+      blockedUntil: null,
+      message: durableSession.message,
+    });
+  }
+
+  if (durableSession.row.method !== payload.method) {
+    return buildStepUpState({
+      isVerified: false,
+      status: "invalid",
+      method: payload.method,
+      sessionId: payload.sessionId,
+      verifiedAt: payload.verifiedAt,
+      expiresAt: payload.expiresAt,
+      failureCount: failureState.count,
+      blockedUntil: null,
+      message: "The durable step-up session does not match the current verification method.",
+    });
+  }
+
+  return buildStepUpState({
     isVerified: true,
     status: "verified",
-    method: payload.method,
-    sessionId: payload.sessionId,
-    verifiedAt: payload.verifiedAt,
-    expiresAt: payload.expiresAt,
+    method: durableSession.row.method,
+    sessionId: durableSession.row.id,
+    verifiedAt: durableSession.row.verified_at,
+    expiresAt: durableSession.row.expires_at,
     failureCount: failureState.count,
     blockedUntil: null,
     message: "Step-up is active for this DS admin session.",
-  };
+  });
 }
 
 async function readStepUpCookieValue(): Promise<string | null> {
@@ -233,6 +299,42 @@ export async function verifyDsSecretStepUpWithPassword(input: {
   }
 
   clearStepUpFailures(getStepUpFailureKey(actor));
+  const durableSession = await recordDurableStepUpSession(method);
+
+  if (!durableSession.ok) {
+    const state = buildStepUpState({
+      isVerified: false,
+      status: "invalid",
+      method,
+      sessionId: null,
+      verifiedAt: null,
+      expiresAt: null,
+      failureCount: 0,
+      blockedUntil: null,
+      message: durableSession.message,
+    });
+    recordIntegrationAuditEvent({
+      actor: {
+        actorUserId: actor.user.id,
+        actorEmail: actor.selectedEmail,
+        actorRole: actor.audience === "super_admin" ? "super_admin" : "ds_admin",
+      },
+      action: "step_up_failed",
+      providerKey: null,
+      environment: null,
+      result: "failure",
+      reason: durableSession.message,
+      metadataSummary: {
+        method,
+      },
+    });
+    return {
+      ok: false,
+      state,
+      message: durableSession.message,
+    };
+  }
+
   const verifiedAt = new Date();
   const expiresAt = new Date(
     verifiedAt.getTime() + stepUpWindowMinutes * 60 * 1000,
@@ -241,7 +343,7 @@ export async function verifyDsSecretStepUpWithPassword(input: {
     userId: actor.user.id,
     email: actor.selectedEmail,
     method,
-    sessionId: randomUUID(),
+    sessionId: durableSession.sessionId,
     verifiedAt: verifiedAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
   };
@@ -294,6 +396,57 @@ export async function verifyDsSecretStepUpWithPassword(input: {
   };
 }
 
+async function recordDurableStepUpSession(
+  method: StepUpMethod,
+): Promise<
+  | {
+      ok: true;
+      sessionId: string;
+    }
+  | {
+      ok: false;
+      message: string;
+    }
+> {
+  const { client, persistence } = await createSupabaseControlClient();
+
+  if (!client) {
+    return {
+      ok: false,
+      message:
+        persistence.reason.includes("in-memory")
+          ? "Step-up stays locked until Supabase-backed control storage is active for this review environment."
+          : "Step-up stays locked until the Supabase control layer is available for the current reviewer session.",
+    };
+  }
+
+  try {
+    const sessionId = await client.rpc<string>("record_admin_step_up_session", {
+      method,
+      ttl_minutes: stepUpWindowMinutes,
+    });
+
+    if (!sessionId) {
+      return {
+        ok: false,
+        message:
+          "The durable step-up session could not be recorded. Re-authenticate after the Supabase control layer is healthy.",
+      };
+    }
+
+    return {
+      ok: true,
+      sessionId,
+    };
+  } catch {
+    return {
+      ok: false,
+      message:
+        "The durable step-up session could not be recorded. Re-authenticate after the Supabase control layer is healthy.",
+    };
+  }
+}
+
 export async function clearDsSecretStepUpSession() {
   const cookieStore = await cookies();
   cookieStore.delete(dsSecretStepUpCookieName);
@@ -311,4 +464,91 @@ export function needsFreshProductionStepUp(
 
   return now.getTime() - verifiedAt.getTime() >
     productionFreshWindowMinutes * 60 * 1000;
+}
+
+async function readDurableStepUpSession(
+  actor: LocalActorContext,
+  sessionId: string,
+): Promise<
+  | {
+      ok: true;
+      row: DurableStepUpSessionRow;
+    }
+  | {
+      ok: false;
+      status: "invalid" | "expired";
+      message: string;
+    }
+> {
+  const { client } = await createSupabaseControlClient();
+
+  if (!client) {
+    return {
+      ok: false,
+      status: "invalid",
+      message:
+        "The durable step-up session could not be confirmed. Re-authenticate after the Supabase control layer is available.",
+    };
+  }
+
+  try {
+    const rows = await client.selectRows<DurableStepUpSessionRow>(
+      "admin_step_up_sessions",
+      {
+        select: "id,user_id,method,verified_at,expires_at,revoked_at",
+        query: {
+          id: `eq.${sessionId}`,
+        },
+        limit: 1,
+      },
+    );
+    const row = rows[0];
+
+    if (!row) {
+      return {
+        ok: false,
+        status: "invalid",
+        message:
+          "The durable step-up session no longer exists and must be re-verified.",
+      };
+    }
+
+    if (row.user_id !== actor.user.id) {
+      return {
+        ok: false,
+        status: "invalid",
+        message:
+          "The durable step-up session does not belong to the current signed-in DS admin account.",
+      };
+    }
+
+    if (row.revoked_at) {
+      return {
+        ok: false,
+        status: "invalid",
+        message: "The durable step-up session was revoked and must be re-verified.",
+      };
+    }
+
+    if (new Date(row.expires_at).getTime() <= Date.now()) {
+      return {
+        ok: false,
+        status: "expired",
+        message:
+          "The durable step-up session expired. Re-authenticate to continue with secure actions.",
+      };
+    }
+
+    return {
+      ok: true,
+      row,
+    };
+  } catch {
+    return {
+      ok: false,
+      status: "invalid",
+      message:
+        "The durable step-up session could not be confirmed. Re-authenticate after the Supabase control layer is healthy.",
+    };
+  }
 }

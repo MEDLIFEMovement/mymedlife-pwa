@@ -27,11 +27,13 @@ import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-
 type StaffCommandCenterPanelProps = {
   commandCenter: StaffCommandCenter;
   lumaEventLoop?: LumaEventLoopPilotReadback;
+  lumaActivation?: ReturnType<typeof getStagingLumaEventLoopReadModel>;
 };
 
 export function StaffCommandCenterPanel({
   commandCenter,
   lumaEventLoop,
+  lumaActivation,
 }: StaffCommandCenterPanelProps) {
   if (!commandCenter.canReadCommandCenter) {
     return null;
@@ -83,7 +85,8 @@ export function StaffCommandCenterPanel({
     (total, row) => total + row.pointsPerWeek,
     0,
   );
-  const lumaActivation = getStagingLumaEventLoopReadModel("staging");
+  const resolvedLumaActivation =
+    lumaActivation ?? getStagingLumaEventLoopReadModel("staging");
   const eventsThisWeekLabel =
     commandCenter.portfolioSummaryCards.find((card) => card.label === "Events This Week")
       ?.value ?? `${Math.max(1, Math.round(totalRsvpCount / 20))}`;
@@ -506,8 +509,8 @@ export function StaffCommandCenterPanel({
       `${selectedCampaignName} active`,
     ];
   const heroShellClassName = isStaffChapterOverview
-    ? "app-surface-info rounded-[1.65rem] p-4 shadow-[0_14px_42px_rgba(15,23,42,0.08)]"
-    : "app-surface-info rounded-[1.85rem] p-5 shadow-[0_18px_60px_rgba(15,23,42,0.1)]";
+    ? "app-surface-info rounded-[1.65rem] p-4 shadow-[0_14px_42px_rgb(var(--mymedlife-shadow-rgb)/0.08)]"
+    : "app-surface-info rounded-[1.85rem] p-5 shadow-[0_18px_60px_rgb(var(--mymedlife-shadow-rgb)/0.1)]";
   const heroPrimarySizeClassName = isStaffChapterOverview ? "h-20 w-20" : "h-24 w-24";
   const heroTitleClassName = isStaffChapterOverview
     ? "text-[1.7rem] font-semibold leading-tight text-slate-950"
@@ -524,8 +527,8 @@ export function StaffCommandCenterPanel({
     : "grid gap-4 xl:grid-cols-[18.5rem_minmax(0,1fr)] xl:items-start";
   const topShellClassName = useCompactStaffToolbar
     ? useMinimalStaffChapterStrip
-      ? "rounded-[1.2rem] border border-[#0f172a] bg-[#0b1b3a] px-4 py-2.5 shadow-[0_14px_36px_rgba(15,23,42,0.18)]"
-      : "rounded-[1.3rem] border border-[#0f172a] bg-[#0b1b3a] px-4 py-3 shadow-[0_20px_60px_rgba(15,23,42,0.2)]"
+      ? "rounded-[1.2rem] border border-[var(--foreground)] bg-[var(--mymedlife-deep-blue)] px-4 py-2.5 shadow-[0_14px_36px_rgb(var(--mymedlife-shadow-rgb)/0.18)]"
+      : "rounded-[1.3rem] border border-[var(--foreground)] bg-[var(--mymedlife-deep-blue)] px-4 py-3 shadow-[0_20px_60px_rgb(var(--mymedlife-shadow-rgb)/0.2)]"
     : "app-surface rounded-[1.4rem] p-4";
   const topShellEyebrowClassName = useCompactStaffToolbar
     ? useMinimalStaffChapterStrip
@@ -612,7 +615,7 @@ export function StaffCommandCenterPanel({
                   "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transition",
                   commandCenter.selectedView === option.key
                     ? useCompactStaffToolbar
-                      ? "text-[#08224c]"
+                      ? "text-[var(--foreground)]"
                       : "text-white"
                     : useCompactStaffToolbar
                       ? "text-white/62"
@@ -628,11 +631,11 @@ export function StaffCommandCenterPanel({
                   "block rounded-[0.95rem] px-3.5 py-2 pl-10 text-sm font-semibold transition",
                   useCompactStaffToolbar
                     ? commandCenter.selectedView === option.key
-                      ? "border border-white/10 bg-white text-[#08224c] shadow-[0_16px_32px_rgba(2,14,38,0.2)]"
+                      ? "border border-white/10 bg-white text-[var(--foreground)] shadow-[0_16px_32px_rgb(var(--mymedlife-deep-rgb)/0.2)]"
                       : "border border-white/12 bg-white/10 text-white/82 hover:border-white/24 hover:bg-white/16 hover:text-white"
                     : commandCenter.selectedView === option.key
-                      ? "bg-[#0b5fc4] text-white shadow-[0_16px_32px_rgba(37,99,235,0.18)]"
-                      : "border border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                      ? "bg-[var(--mymedlife-link-blue)] text-white shadow-[0_16px_32px_rgb(var(--mymedlife-primary-rgb)/0.18)]"
+                      : "border border-slate-200 bg-white text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
                 ].join(" ")}
               >
                 {option.label}
@@ -664,10 +667,10 @@ export function StaffCommandCenterPanel({
     <section className={outerShellClassName}>
       {!useCompactStaffToolbar ? (
         <aside className="grid gap-4 xl:sticky xl:top-24">
-          <section className="rounded-[2rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_20px_56px_rgba(15,23,42,0.08)]">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-4 shadow-[0_20px_56px_rgb(var(--mymedlife-shadow-rgb)/0.08)]">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   {surfaceEyebrow}
                 </p>
                 <h1 className="mt-3 text-[1.45rem] font-semibold leading-[1.04] text-slate-950">
@@ -675,7 +678,7 @@ export function StaffCommandCenterPanel({
                 </h1>
               </div>
               {commandCenter.sampleLabel ? (
-                <span className="shrink-0 rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+                <span className="shrink-0 rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                   {commandCenter.sampleLabel}
                 </span>
               ) : null}
@@ -710,7 +713,7 @@ export function StaffCommandCenterPanel({
                     className={[
                       "pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 transition",
                       commandCenter.selectedView === option.key
-                        ? "text-[#08224c]"
+                        ? "text-[var(--foreground)]"
                         : "text-slate-500",
                     ].join(" ")}
                   >
@@ -724,7 +727,7 @@ export function StaffCommandCenterPanel({
                     className={[
                       "block rounded-[1.15rem] px-4 py-3 pl-11 text-sm font-semibold transition",
                       commandCenter.selectedView === option.key
-                        ? "border border-white/10 bg-white text-[#08224c] shadow-[0_12px_24px_rgba(2,14,38,0.18)]"
+                        ? "border border-white/10 bg-white text-[var(--foreground)] shadow-[0_12px_24px_rgb(var(--mymedlife-deep-rgb)/0.18)]"
                         : "border border-white/10 bg-white/10 text-white/80 hover:border-white/20 hover:bg-white/10 hover:text-white",
                     ].join(" ")}
                   >
@@ -746,7 +749,7 @@ export function StaffCommandCenterPanel({
                   className={[
                     "rounded-[1.1rem] border px-4 py-3 transition",
                     action.tone === "primary"
-                      ? "border-white/15 bg-[#2563eb] hover:border-white/20 hover:bg-[#1d4ed8]"
+                      ? "border-white/15 bg-[var(--mymedlife-primary-button)] hover:border-white/20 hover:bg-[var(--mymedlife-info)]"
                       : "border-white/10 bg-white/10 hover:border-white/20 hover:bg-white/10",
                   ].join(" ")}
                 >
@@ -771,7 +774,7 @@ export function StaffCommandCenterPanel({
         {showTopViewStrip ? topViewStrip : null}
 
         {isAdminView || showOverviewHero || isStaffChapterOverview || isCoachSharedCommandView ? (
-          <section className="rounded-[1.6rem] border border-[#bfdbfe] bg-[#f8fbff] p-4 shadow-[0_14px_38px_rgba(15,23,42,0.06)]">
+          <section className="rounded-[1.6rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
             <p className="app-eyebrow app-eyebrow-blue">Event and points pulse</p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">
               Luma, RSVP, attendance, and points should stay visible together.
@@ -813,11 +816,11 @@ export function StaffCommandCenterPanel({
                 note="Leaderboard movement signal"
               />
             </div>
-            <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-white px-4 py-3">
+            <div className="mt-4 rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-white px-4 py-3">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <p className="text-sm font-semibold text-slate-950">
-                    {lumaActivation.providerStatusLabel}
+                    {resolvedLumaActivation.providerStatusLabel}
                   </p>
                   <p className="mt-1 text-sm leading-6 text-slate-600">
                     Staging proves the event is stored, shared, RSVP&apos;d,
@@ -825,9 +828,9 @@ export function StaffCommandCenterPanel({
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Pill tone="good" label={`${lumaActivation.summary.rsvpCount} RSVP`} />
-                  <Pill tone="warning" label={`${lumaActivation.summary.attendanceCount} attended`} />
-                  <Pill tone="good" label={`${lumaActivation.summary.pointsAwarded} pts`} />
+                  <Pill tone="good" label={`${resolvedLumaActivation.summary.rsvpCount} RSVP`} />
+                  <Pill tone="warning" label={`${resolvedLumaActivation.summary.attendanceCount} attended`} />
+                  <Pill tone="good" label={`${resolvedLumaActivation.summary.pointsAwarded} pts`} />
                 </div>
               </div>
             </div>
@@ -840,7 +843,7 @@ export function StaffCommandCenterPanel({
         ) : null}
 
         {sourceContext && !isAdminView ? (
-          <section className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+          <section className="rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
             <p className="app-eyebrow app-eyebrow-blue">{sourceContext.eyebrow}</p>
             <h2 className="mt-2 text-lg font-semibold text-slate-950">
               {sourceContext.title}
@@ -854,7 +857,7 @@ export function StaffCommandCenterPanel({
                   <Link
                     key={action.label}
                     href={action.href}
-                    className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#0b5fc4] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                    className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-link-blue)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
                   >
                     {action.label}
                   </Link>
@@ -868,13 +871,13 @@ export function StaffCommandCenterPanel({
           <section className={heroShellClassName}>
             <div className="grid gap-4 xl:grid-cols-[0.98fr_1.02fr] xl:items-start">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                   {surfaceOverviewLabel}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <div
                     className={[
-                      "flex items-center justify-center rounded-full border border-[#bfdbfe] bg-[#eff6ff]",
+                      "flex items-center justify-center rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)]",
                       heroPrimarySizeClassName,
                     ].join(" ")}
                   >
@@ -922,8 +925,8 @@ export function StaffCommandCenterPanel({
                       className={[
                         "rounded-[1.2rem] px-4 py-3 text-sm font-semibold transition",
                         action.tone === "primary"
-                          ? "bg-[#2563eb] text-white hover:bg-[#2d6cf4]"
-                          : "border border-[#bfdbfe] bg-white text-slate-800 hover:bg-[#f8fbff]",
+                          ? "bg-[var(--mymedlife-primary-button)] text-white hover:bg-[var(--mymedlife-primary-button)]"
+                          : "border border-[var(--mymedlife-border)] bg-white text-slate-800 hover:bg-[var(--background)]",
                       ].join(" ")}
                     >
                       {action.label}
@@ -981,7 +984,7 @@ export function StaffCommandCenterPanel({
                       className={[
                         "rounded-full px-4 py-2 text-sm font-semibold transition",
                         action.tone === "primary"
-                          ? "bg-[#2563eb] text-white"
+                          ? "bg-[var(--mymedlife-primary-button)] text-white"
                           : "border border-slate-200 bg-white text-slate-700",
                       ].join(" ")}
                     >
@@ -1068,13 +1071,13 @@ export function StaffCommandCenterPanel({
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={commandCenter.portfolioCampaignViewHref}
-                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                 >
                   Open Campaign View
                 </Link>
                 <Link
                   href={commandCenter.portfolioBestPracticesViewHref}
-                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                 >
                   Send Coach Packet
                 </Link>
@@ -1121,7 +1124,7 @@ function renderView(
 
       return (
         <section className="grid gap-4 xl:grid-cols-[1.45fr_0.55fr] xl:items-start">
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1145,7 +1148,7 @@ function renderView(
               </div>
             </div>
             {selectedProofReview ? (
-              <div className="rounded-[1.1rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
+              <div className="rounded-[1.1rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-4">
                 <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                   <div>
                     <p className="app-eyebrow app-eyebrow-blue">Selected review state</p>
@@ -1179,8 +1182,8 @@ function renderView(
                   className={[
                     "rounded-full px-4 py-2 text-sm font-semibold transition",
                     commandCenter.proofQueueFilter === filter.key
-                      ? "bg-[#0b5fc4] text-white shadow-[0_16px_32px_rgba(37,99,235,0.2)]"
-                      : "border border-slate-200 bg-[#dbeafe] text-slate-600 hover:border-[#bfdbfe] hover:bg-white hover:text-slate-950",
+                      ? "bg-[var(--mymedlife-link-blue)] text-white shadow-[0_16px_32px_rgb(var(--mymedlife-primary-rgb)/0.2)]"
+                      : "border border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-white hover:text-slate-950",
                   ].join(" ")}
                 >
                   {filter.label}
@@ -1211,7 +1214,7 @@ function renderView(
     case "feed_studio":
       return (
         <section className="grid gap-4">
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1254,7 +1257,7 @@ function renderView(
     case "feed_analytics":
       return (
         <section className="grid gap-4">
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1272,7 +1275,7 @@ function renderView(
               </p>
             </div>
             {commandCenter.feedAnalytics.sourceContext ? (
-              <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+              <div className="mt-4 rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div>
                     <p className="app-eyebrow app-eyebrow-blue">
@@ -1287,7 +1290,7 @@ function renderView(
                   </div>
                   <Link
                     href={commandCenter.feedAnalytics.sourceContext.actionHref}
-                    className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                    className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
                   >
                     {commandCenter.feedAnalytics.sourceContext.actionLabel}
                   </Link>
@@ -1309,7 +1312,7 @@ function renderView(
               ))}
             </div>
             <div className="mt-4 overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white">
-              <div className="border-b border-slate-200 bg-[#dbeafe] px-4 py-3">
+              <div className="border-b border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3">
                 <p className="text-sm font-semibold text-slate-950">Post Performance</p>
               </div>
               <FeedAnalyticsTable commandCenter={commandCenter} />
@@ -1320,7 +1323,7 @@ function renderView(
     case "hubspot":
       return (
         <section className="grid gap-4">
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1353,8 +1356,8 @@ function renderView(
                         className={[
                           "rounded-[1rem] border px-3 py-3 transition",
                           selected
-                            ? "border-[#2563eb] bg-[#1d4f91] text-white shadow-[0_18px_40px_rgba(37,99,235,0.18)]"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#f8fbff]",
+                            ? "border-[var(--mymedlife-primary-button)] bg-[var(--mymedlife-link-blue)] text-white shadow-[0_18px_40px_rgb(var(--mymedlife-primary-rgb)/0.18)]"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)]",
                         ].join(" ")}
                       >
                         <p className="text-sm font-semibold">{option.chapterLabel}</p>
@@ -1379,7 +1382,7 @@ function renderView(
                       </p>
                       <Link
                         href={commandCenter.hubspotWorkspace.sourceContext.actionHref}
-                        className="inline-flex rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-white"
+                        className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-white"
                       >
                         {commandCenter.hubspotWorkspace.sourceContext.actionLabel}
                       </Link>
@@ -1388,8 +1391,8 @@ function renderView(
                 ) : null}
 
                 {commandCenter.hubspotWorkspace.warningLabel ? (
-                  <div className="rounded-[1rem] border border-[#2563eb]/45 bg-[#dbeafe] px-4 py-3">
-                    <p className="text-sm font-semibold text-[#1d4ed8]">
+                  <div className="rounded-[1rem] border border-[var(--mymedlife-primary-button)]/45 bg-[var(--mymedlife-badge-background)] px-4 py-3">
+                    <p className="text-sm font-semibold text-[var(--mymedlife-info)]">
                       {commandCenter.hubspotWorkspace.warningLabel}
                     </p>
                   </div>
@@ -1449,7 +1452,7 @@ function renderView(
 
       return (
         <section className="grid gap-4">
-          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+          <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1501,7 +1504,7 @@ function renderView(
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={selectedBestPractice.shareHref}
-                    className="rounded-full bg-[#1d4f91] px-4 py-2 text-sm font-semibold text-white"
+                    className="rounded-full bg-[var(--mymedlife-link-blue)] px-4 py-2 text-sm font-semibold text-white"
                   >
                     Share to Feed
                   </Link>
@@ -1577,13 +1580,13 @@ function renderView(
 
       return (
         <section className="grid gap-4">
-          <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+          <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-white p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.08)]">
             <div className="flex flex-col gap-4">
               {adminStudentViewAction ? (
                 <div>
                   <Link
                     href={adminStudentViewAction.href}
-                    className="inline-flex items-center rounded-full border border-[#bfdbfe] bg-[#eef5ff] px-3 py-1.5 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#dbeafe]"
+                    className="inline-flex items-center rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)] px-3 py-1.5 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-badge-background)]"
                   >
                     Student view
                   </Link>
@@ -1591,7 +1594,7 @@ function renderView(
               ) : null}
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="max-w-3xl">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                     {adminHeroEyebrow}
                   </p>
                   <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
@@ -1602,14 +1605,14 @@ function renderView(
                     {commandCenter.adminWorkspace.integrationStatuses.length} integrations active
                   </p>
                 </div>
-                <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#1d4ed8]">
+                <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-info)]">
                   {commandCenter.adminWorkspace.timestampLabel}
                 </span>
               </div>
 
               {commandCenter.sourceContext ? (
-                <div className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                <div className="rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                     {commandCenter.sourceContext.eyebrow}
                   </p>
                   <p className="mt-2 text-lg font-semibold text-slate-950">
@@ -1624,7 +1627,7 @@ function renderView(
                         <Link
                           key={action.label}
                           href={action.href}
-                          className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                          className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
                         >
                           {action.label}
                         </Link>
@@ -1664,7 +1667,7 @@ function renderView(
               <Link
                 key={lane.href}
                 href={lane.href}
-                className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.06)] transition hover:border-[#bfdbfe] hover:bg-[#f8fbff]"
+                className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgb(var(--mymedlife-shadow-rgb)/0.06)] transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)]"
               >
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {lane.eyebrow}
@@ -1685,7 +1688,7 @@ function renderView(
                 <Link
                   key={lane.href}
                   href={lane.href}
-                  className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.06)] transition hover:border-[#bfdbfe] hover:bg-[#f8fbff]"
+                  className="rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgb(var(--mymedlife-shadow-rgb)/0.06)] transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)]"
                 >
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     {lane.eyebrow}
@@ -1725,7 +1728,7 @@ function renderView(
                 />
                 <Link
                   href={commandCenter.adminWorkspace.retryFailedHref}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
                 >
                   Retry Failed
                 </Link>
@@ -1773,16 +1776,16 @@ function renderView(
               <Link
                 href={commandCenter.selectedChapter.closeHref}
                 aria-label="Close chapter detail drawer"
-                className="fixed inset-0 z-40 bg-[#2563eb]/12 backdrop-blur-[1px]"
+                className="fixed inset-0 z-40 bg-[var(--mymedlife-primary-button)]/12 backdrop-blur-[1px]"
               />
               <aside
                 aria-label={drawerEyebrow}
-                className="fixed inset-y-0 right-0 z-50 w-full max-w-[34rem] overflow-y-auto border-l border-slate-200 bg-[#f5f7fb]/96 p-4 shadow-[-24px_0_80px_rgba(15,23,42,0.18)] backdrop-blur-xl"
+                className="fixed inset-y-0 right-0 z-50 w-full max-w-[34rem] overflow-y-auto border-l border-slate-200 bg-[var(--background)]/96 p-4 shadow-[-24px_0_80px_rgb(var(--mymedlife-shadow-rgb)/0.18)] backdrop-blur-xl"
               >
                 <div className="mb-3 flex justify-end">
                   <Link
                     href={commandCenter.selectedChapter.closeHref}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                   >
                     Close
                   </Link>
@@ -1818,7 +1821,7 @@ function ChapterPortfolioTable({
     <div className="app-surface overflow-hidden rounded-[1.25rem]">
       <div className="overflow-x-auto">
         <table className="min-w-[92rem] text-left text-sm text-slate-700">
-          <thead className="bg-[#dbeafe] text-xs uppercase tracking-[0.18em] text-slate-500">
+          <thead className="bg-[var(--mymedlife-badge-background)] text-xs uppercase tracking-[0.18em] text-slate-500">
             <tr>
               <th className="px-4 py-3">Chapter</th>
               <th className="px-4 py-3">Coach</th>
@@ -1841,16 +1844,16 @@ function ChapterPortfolioTable({
               <tr
                 key={row.chapterId}
                 className={[
-                  "border-t border-slate-200 transition hover:bg-[#dbeafe]/80",
+                  "border-t border-slate-200 transition hover:bg-[var(--mymedlife-badge-background)]/80",
                   selectedChapterId === row.chapterId
-                    ? "bg-[#eff6ff] shadow-[inset_4px_0_0_0_#2563eb]"
+                    ? "bg-[var(--background)] shadow-[inset_4px_0_0_0_var(--mymedlife-primary-button)]"
                     : "",
                 ].join(" ")}
               >
                 <td className="px-4 py-3 align-top">
                   <Link
                     href={row.detailHref}
-                    className="font-semibold text-slate-950 hover:text-[#1d4ed8]"
+                    className="font-semibold text-slate-950 hover:text-[var(--mymedlife-info)]"
                   >
                     {row.chapterName}
                   </Link>
@@ -1878,9 +1881,9 @@ function ChapterPortfolioTable({
                 <td className="px-4 py-3">{row.rsvpCount}</td>
                 <td className="px-4 py-3">{row.attendanceCount}</td>
                 <td className="px-4 py-3">{row.assignmentsCount}</td>
-                <td className="px-4 py-3 font-semibold text-[#b45309]">{row.proofPending}</td>
+                <td className="px-4 py-3 font-semibold text-[var(--warning)]">{row.proofPending}</td>
                 <td className="px-4 py-3">{row.pointsPerWeek.toLocaleString()}</td>
-                <td className="px-4 py-3 font-semibold text-[#b45309]">{row.hubspotStageLabel}</td>
+                <td className="px-4 py-3 font-semibold text-[var(--warning)]">{row.hubspotStageLabel}</td>
                 <td className="px-4 py-3">{row.lastActiveLabel}</td>
                 <td className="px-4 py-3">
                   <Pill tone={riskTone(row.risk)} label={riskLabel(row.risk)} />
@@ -1904,7 +1907,7 @@ function CampaignOperationsView({
 }) {
   return (
     <section className="grid gap-4">
-      <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgba(15,23,42,0.06)] sm:p-6">
+      <section className="grid gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_14px_38px_rgb(var(--mymedlife-shadow-rgb)/0.06)] sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -1924,7 +1927,7 @@ function CampaignOperationsView({
           </p>
         </div>
         <div className="mt-4 grid gap-3 lg:grid-cols-[1.15fr_0.85fr]">
-          <article className="rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
+          <article className="rounded-[1.2rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-4">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Selected campaign posture
             </p>
@@ -1947,17 +1950,17 @@ function CampaignOperationsView({
               {overview.selectedCampaignIntegrationPosture}
             </p>
           </article>
-          <article className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+          <article className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-4">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
               Current workflow state
             </p>
             {overview.selectedWorkflowSnapshot ? (
               <>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-[#bfdbfe] bg-white px-2.5 py-1 text-xs font-semibold text-[#2563eb]">
+                  <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-2.5 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                     {overview.selectedWorkflowSnapshot.versionLabel}
                   </span>
-                  <span className="rounded-full border border-[#bfdbfe] bg-white px-2.5 py-1 text-xs font-semibold text-[#2563eb]">
+                  <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-2.5 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                     source {overview.selectedWorkflowSnapshot.sourceKind.replaceAll("_", " ")}
                   </span>
                 </div>
@@ -1987,8 +1990,8 @@ function CampaignOperationsView({
               className={[
                 "rounded-[1rem] px-4 py-2 text-sm font-semibold transition",
                 tab.slug === overview.selectedCampaignSlug
-                  ? "bg-[#2563eb] text-white shadow-[0_14px_30px_rgba(37,99,235,0.16)]"
-                  : "border border-slate-200 bg-[#dbeafe] text-slate-600 hover:border-[#bfdbfe] hover:bg-white hover:text-slate-950",
+                  ? "bg-[var(--mymedlife-primary-button)] text-white shadow-[0_14px_30px_rgb(var(--mymedlife-primary-rgb)/0.16)]"
+                  : "border border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-white hover:text-slate-950",
               ].join(" ")}
             >
               {tab.name}
@@ -1996,7 +1999,7 @@ function CampaignOperationsView({
           ))}
         </div>
         {overview.sourceContext ? (
-          <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-4">
+          <div className="mt-4 rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="app-eyebrow app-eyebrow-blue">
@@ -2011,7 +2014,7 @@ function CampaignOperationsView({
               </div>
               <Link
                 href={overview.sourceContext.actionHref}
-                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eff6ff]"
+                className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)]"
               >
                 {overview.sourceContext.actionLabel}
               </Link>
@@ -2023,7 +2026,7 @@ function CampaignOperationsView({
             <CampaignRiskSummaryCard key={card.title} card={card} />
           ))}
         </div>
-        <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
+        <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-4">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Bulk Actions:
@@ -2032,7 +2035,7 @@ function CampaignOperationsView({
               <Link
                 key={action.label}
                 href={action.href}
-                className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 {action.label}
               </Link>
@@ -2046,7 +2049,7 @@ function CampaignOperationsView({
         title={`${overview.selectedCampaignName} - Chapter Execution`}
       >
         {overview.selectedRiskGroup !== "all" ? (
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.1rem] border border-[#bfdbfe] bg-[#f8fbff] px-4 py-3">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.1rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-slate-950">
                 Filtered by {overview.selectedRiskGroupLabel}
@@ -2057,7 +2060,7 @@ function CampaignOperationsView({
             </div>
             <Link
               href={overview.clearRiskGroupHref}
-              className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+              className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
             >
               Clear filter
             </Link>
@@ -2078,22 +2081,22 @@ function CampaignRiskSummaryCard({ card }: { card: StaffCampaignRiskCard }) {
       href={card.href}
       aria-current={card.isActive ? "page" : undefined}
       className={[
-        "block rounded-[1.2rem] border p-4 shadow-[0_10px_24px_rgba(93,143,246,0.1)] transition",
+        "block rounded-[1.2rem] border p-4 shadow-[0_10px_24px_rgb(var(--mymedlife-accent-rgb)/0.1)] transition",
         card.isActive
-          ? "border-[#2563eb] bg-[#eef5ff]"
-          : "border-[#2563eb]/28 bg-[linear-gradient(180deg,#eef5ff_0%,#dbeafe_100%)] hover:border-[#2563eb]/45",
+          ? "border-[var(--mymedlife-primary-button)] bg-[var(--mymedlife-surface-hover)]"
+          : "border-[var(--mymedlife-primary-button)]/28 bg-[linear-gradient(180deg,var(--mymedlife-surface-hover)_0%,var(--mymedlife-badge-background)_100%)] hover:border-[var(--mymedlife-primary-button)]/45",
       ].join(" ")}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-blue-700">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
           {card.title}
         </p>
         <span
           className={[
             "rounded-full px-2.5 py-1 text-[0.68rem] font-semibold",
             card.isActive
-              ? "border border-[#93c5fd] bg-white text-[#2563eb]"
-              : "border border-[#2563eb]/30 bg-white/70 text-blue-700",
+              ? "border border-[var(--mymedlife-focus-blue)] bg-white text-[var(--mymedlife-primary-button)]"
+              : "border border-[var(--mymedlife-primary-button)]/30 bg-white/70 text-[var(--mymedlife-info)]",
           ].join(" ")}
         >
           {card.isActive ? "Viewing lane" : "Open lane"}
@@ -2121,7 +2124,7 @@ function CampaignExecutionTable({
     <div className="app-surface overflow-hidden rounded-[1.25rem]">
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm text-slate-700">
-          <thead className="bg-[#dbeafe] text-xs uppercase tracking-[0.18em] text-slate-500">
+          <thead className="bg-[var(--mymedlife-badge-background)] text-xs uppercase tracking-[0.18em] text-slate-500">
             <tr>
               <th className="px-4 py-3">Chapter</th>
               <th className="px-4 py-3">Country</th>
@@ -2141,14 +2144,14 @@ function CampaignExecutionTable({
                 key={row.chapterName}
                 className={[
                   "border-t border-slate-200",
-                  row.selected ? "bg-[#f8fbff]" : "",
+                  row.selected ? "bg-[var(--background)]" : "",
                 ].join(" ")}
               >
                 <td className="px-4 py-3 font-semibold text-slate-950">
                   {row.href ? (
                     <Link
                       href={row.href}
-                      className="text-[#0b4f9b] underline-offset-4 hover:underline"
+                      className="text-[var(--mymedlife-gradient-blue-mid)] underline-offset-4 hover:underline"
                     >
                       {row.chapterName}
                     </Link>
@@ -2208,8 +2211,8 @@ function MilestoneState({
       className={[
         "inline-flex min-w-[3.6rem] items-center justify-center rounded-full px-2.5 py-1 text-xs font-semibold",
         status === "complete"
-          ? "bg-blue-50 text-blue-700"
-          : "bg-blue-50 text-blue-600",
+          ? "bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+          : "bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]",
       ].join(" ")}
     >
       {label}
@@ -2226,7 +2229,7 @@ function ChapterDrawer({
 }) {
   return (
     <div className="grid gap-4">
-      <div className="rounded-[1.45rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+      <div className="rounded-[1.45rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
         <div className="flex flex-wrap items-center gap-2">
           <p className="app-eyebrow app-eyebrow-blue">Chapter detail</p>
           <Pill tone={riskTone(drawer.risk)} label={riskLabel(drawer.risk)} />
@@ -2239,7 +2242,7 @@ function ChapterDrawer({
         </p>
       </div>
 
-      <div className="rounded-[1.4rem] border border-slate-200 bg-[#f8fbff] p-4">
+      <div className="rounded-[1.4rem] border border-slate-200 bg-[var(--background)] p-4">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="app-eyebrow app-eyebrow-slate">Current campaign</p>
@@ -2252,19 +2255,19 @@ function ChapterDrawer({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
               Health score
             </p>
-            <p className="mt-2 text-4xl font-semibold text-blue-500">{drawer.healthScore}</p>
+            <p className="mt-2 text-4xl font-semibold text-[var(--mymedlife-primary-button)]">{drawer.healthScore}</p>
           </div>
         </div>
-        <div className="mt-4 h-2 rounded-full bg-[#f8fbff]">
+        <div className="mt-4 h-2 rounded-full bg-[var(--background)]">
           <div
-            className="h-2 rounded-full bg-blue-400"
+            className="h-2 rounded-full bg-[var(--mymedlife-focus-blue)]"
             style={{ width: `${Math.max(8, Math.min(100, drawer.healthScore))}%` }}
           />
         </div>
       </div>
 
       {drawer.sourceContext ? (
-        <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+        <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
               <p className="app-eyebrow app-eyebrow-blue">{drawer.sourceContext.eyebrow}</p>
@@ -2277,7 +2280,7 @@ function ChapterDrawer({
             </div>
             <Link
               href={drawer.sourceContext.actionHref}
-              className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+              className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
             >
               {drawer.sourceContext.actionLabel}
             </Link>
@@ -2316,20 +2319,20 @@ function ChapterDrawer({
           className={[
             "mt-4 rounded-[1.05rem] border px-4 py-3",
             drawer.selectedDecision === "advance"
-              ? "border-blue-200 bg-blue-50"
+              ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]"
               : drawer.selectedDecision === "hold"
-                ? "border-blue-200 bg-blue-50"
-                : "border-blue-200 bg-blue-50",
+                ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]"
+                : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]",
           ].join(" ")}
         >
           <p
             className={[
               "text-sm font-semibold",
               drawer.selectedDecision === "advance"
-                ? "text-blue-800"
+                ? "text-[var(--mymedlife-badge-text)]"
                 : drawer.selectedDecision === "hold"
-                  ? "text-blue-800"
-                  : "text-blue-800",
+                  ? "text-[var(--mymedlife-badge-text)]"
+                  : "text-[var(--mymedlife-badge-text)]",
             ].join(" ")}
           >
             {getDrawerDecisionTitle(drawer)}
@@ -2340,7 +2343,7 @@ function ChapterDrawer({
         </div>
 
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-          <div className="rounded-[1.1rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
+          <div className="rounded-[1.1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-4">
             <p className="app-eyebrow app-eyebrow-slate">Focus now</p>
             <ul className="mt-3 grid gap-3">
               {drawer.focusItems.map((item) => (
@@ -2354,7 +2357,7 @@ function ChapterDrawer({
             </ul>
           </div>
 
-          <div className="rounded-[1.1rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
+          <div className="rounded-[1.1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-4">
             <p className="app-eyebrow app-eyebrow-slate">Recent signals</p>
             <div className="mt-3 grid gap-3">
               {drawer.recentSignals.map((signal) => (
@@ -2385,11 +2388,11 @@ function ChapterDrawer({
                 "rounded-full px-4 py-2.5 text-center text-sm font-semibold transition",
                 drawer.selectedDecision === option.key
                   ? option.key === "advance"
-                    ? "bg-blue-100 text-blue-800"
+                    ? "bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-badge-text)]"
                     : option.key === "hold"
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-blue-100 text-blue-800"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                      ? "bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-badge-text)]"
+                      : "bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-badge-text)]"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
               ].join(" ")}
             >
               {option.label}
@@ -2415,7 +2418,7 @@ function ChapterDrawer({
             <Link
               key={link.label}
               href={link.href}
-              className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+              className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
             >
               {link.label}
             </Link>
@@ -2433,7 +2436,7 @@ function ChapterDrawer({
             <p className="app-eyebrow app-eyebrow-slate">Coach note</p>
             <textarea
               aria-label={`Coach note for ${drawer.chapterName}`}
-              className="mt-3 min-h-24 w-full rounded-[1.05rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm text-slate-700 outline-none placeholder:text-slate-400"
+              className="mt-3 min-h-24 w-full rounded-[1.05rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-sm text-slate-700 outline-none placeholder:text-slate-400"
               placeholder={drawer.coachNotePlaceholder}
               readOnly
             />
@@ -2441,7 +2444,7 @@ function ChapterDrawer({
         </>
       ) : null}
 
-      <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-[#f5f7fb]/96 px-4 pb-1 pt-3 backdrop-blur-xl">
+      <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-[var(--background)]/96 px-4 pb-1 pt-3 backdrop-blur-xl">
         <div className="grid gap-3 sm:grid-cols-2">
           {drawer.footerActions.map((action) => (
             <Link
@@ -2450,8 +2453,8 @@ function ChapterDrawer({
               className={[
                 "rounded-[1rem] px-4 py-3 text-center text-sm font-semibold transition",
                 action.tone === "primary"
-                  ? "bg-[#2563eb] text-white hover:bg-[#2d6cf4]"
-                  : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                  ? "bg-[var(--mymedlife-primary-button)] text-white hover:bg-[var(--mymedlife-primary-button)]"
+                  : "border border-slate-200 bg-white text-slate-700 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
               ].join(" ")}
             >
               {action.label}
@@ -2475,10 +2478,10 @@ function DrawerPanel({
           className={[
             "h-2.5 w-2.5 rounded-full",
             panel.accent === "amber"
-              ? "bg-blue-400"
+              ? "bg-[var(--mymedlife-focus-blue)]"
               : panel.accent === "violet"
-                ? "bg-blue-400"
-                : "bg-blue-400",
+                ? "bg-[var(--mymedlife-focus-blue)]"
+                : "bg-[var(--mymedlife-focus-blue)]",
           ].join(" ")}
         />
         <p className="app-eyebrow app-eyebrow-slate">{panel.title}</p>
@@ -2488,7 +2491,7 @@ function DrawerPanel({
           <SupportDetail key={metric.label} label={metric.label} value={metric.value} />
         ))}
       </div>
-      <div className="mt-3 rounded-[1.05rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
+      <div className="mt-3 rounded-[1.05rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-3">
         <p className="text-sm leading-6 text-slate-600">{panel.summary}</p>
       </div>
     </div>
@@ -2543,23 +2546,23 @@ function ProofReviewQueueCard({
     <Link
       href={item.reviewHref}
       className={[
-        "block rounded-[1.35rem] border p-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition",
+        "block rounded-[1.35rem] border p-3 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)] transition",
         selected
-          ? "border-[#2563eb] bg-[#f8fbff] shadow-[0_18px_40px_rgba(37,99,235,0.12)]"
-          : "border-slate-200 bg-white hover:border-[#bfdbfe] hover:bg-[#fbfdff]",
+          ? "border-[var(--mymedlife-primary-button)] bg-[var(--background)] shadow-[0_18px_40px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
+          : "border-slate-200 bg-white hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-tint)]",
       ].join(" ")}
     >
-      <div className="rounded-[1.1rem] bg-[linear-gradient(180deg,#eff5ff_0%,#eef2f9_100%)] px-3 py-3">
+      <div className="rounded-[1.1rem] bg-[linear-gradient(180deg,var(--mymedlife-surface-hover)_0%,var(--mymedlife-panel-tint)_100%)] px-3 py-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+            <span className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
               {item.proofTypeLabel}
             </span>
-            <span className="rounded-full bg-[#2563eb] px-2 py-1 text-[0.68rem] font-semibold text-white">
+            <span className="rounded-full bg-[var(--mymedlife-primary-button)] px-2 py-1 text-[0.68rem] font-semibold text-white">
               Q:{item.qualityScore}
             </span>
           </div>
-          <span className="rounded-full bg-blue-700/90 px-2 py-1 text-[0.68rem] font-semibold text-white">
+          <span className="rounded-full bg-[var(--mymedlife-info)]/90 px-2 py-1 text-[0.68rem] font-semibold text-white">
             {item.durationLabel}
           </span>
         </div>
@@ -2620,10 +2623,10 @@ function ProofReviewPanelCard({ panel }: { panel: StaffProofReviewPanel | null }
                   <Link
                     key={option.key}
                     href={option.href}
-                    className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+                    className="rounded-[1rem] border border-slate-200 bg-white px-4 py-3 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
                   >
                     <p className="text-sm font-semibold text-slate-800">✓ {option.label}</p>
-                    <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-blue-700">
+                    <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
                       {option.statusLabel}
                     </p>
                     <p className="mt-1 text-xs leading-5 text-slate-600">{option.reason}</p>
@@ -2632,10 +2635,10 @@ function ProofReviewPanelCard({ panel }: { panel: StaffProofReviewPanel | null }
                 ) : (
                   <div
                     key={option.key}
-                    className="rounded-[1rem] border border-dashed border-slate-200 bg-[#dbeafe] px-4 py-3"
+                    className="rounded-[1rem] border border-dashed border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3"
                   >
                     <p className="text-sm font-semibold text-slate-400">{option.label}</p>
-                    <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-blue-500">
+                    <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
                       {option.statusLabel}
                     </p>
                     <p className="mt-1 text-xs leading-5 text-slate-500">{option.reason}</p>
@@ -2650,19 +2653,19 @@ function ProofReviewPanelCard({ panel }: { panel: StaffProofReviewPanel | null }
           <div className="mt-4 grid gap-2">
             <Link
               href={panel.requestChangesHref}
-              className="rounded-[1rem] border border-[#2563eb]/45 bg-[#dbeafe] px-4 py-3 text-center text-sm font-semibold text-[#1d4ed8]"
+              className="rounded-[1rem] border border-[var(--mymedlife-primary-button)]/45 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-center text-sm font-semibold text-[var(--mymedlife-info)]"
             >
               Request Changes
             </Link>
             <Link
               href={panel.rejectHref}
-              className="rounded-[1rem] border border-[#93c5fd] bg-[#eff6ff] px-4 py-3 text-center text-sm font-semibold text-[#1d4ed8]"
+              className="rounded-[1rem] border border-[var(--mymedlife-focus-blue)] bg-[var(--background)] px-4 py-3 text-center text-sm font-semibold text-[var(--mymedlife-info)]"
             >
               Reject
             </Link>
             <Link
               href={panel.bestPracticeHref}
-              className="rounded-[1rem] bg-[#93c5fd] px-4 py-3 text-center text-sm font-semibold text-white"
+              className="rounded-[1rem] bg-[var(--mymedlife-focus-blue)] px-4 py-3 text-center text-sm font-semibold text-white"
             >
               ☆ Mark as Best Practice
             </Link>
@@ -2672,7 +2675,7 @@ function ProofReviewPanelCard({ panel }: { panel: StaffProofReviewPanel | null }
             <textarea
               readOnly
               value={panel.notePlaceholder}
-              className="min-h-[6rem] w-full rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm text-slate-500"
+              className="min-h-[6rem] w-full rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-sm text-slate-500"
             />
           </label>
         </>
@@ -2696,11 +2699,11 @@ function FilterMenu({
 }) {
   return (
     <details className="relative">
-      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-[1rem] border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]">
+      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-[1rem] border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]">
         {label}
         <span className="text-xs text-slate-400">▾</span>
       </summary>
-      <div className="absolute right-0 z-10 mt-2 grid min-w-[11rem] gap-1 rounded-[1rem] border border-slate-200 bg-white p-2 shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
+      <div className="absolute right-0 z-10 mt-2 grid min-w-[11rem] gap-1 rounded-[1rem] border border-slate-200 bg-white p-2 shadow-[0_14px_30px_rgb(var(--mymedlife-shadow-rgb)/0.12)]">
         {options.map((option) => (
           <Link
             key={option.key}
@@ -2709,8 +2712,8 @@ function FilterMenu({
             className={[
               "rounded-[0.8rem] px-3 py-2 text-sm transition",
               selectedKey === option.key
-                ? "bg-[#eef5ff] font-semibold text-slate-950"
-                : "text-slate-600 hover:bg-[#dbeafe] hover:text-slate-950",
+                ? "bg-[var(--mymedlife-surface-hover)] font-semibold text-slate-950"
+                : "text-slate-600 hover:bg-[var(--mymedlife-badge-background)] hover:text-slate-950",
             ].join(" ")}
           >
             {option.label}
@@ -2734,12 +2737,12 @@ function FeedLibraryCard({
       className={[
         "block rounded-[1.2rem] border p-3 transition",
         selected
-          ? "border-[#2563eb] bg-[#f8fbff] shadow-[0_12px_30px_rgba(37,99,235,0.12)]"
-          : "border-slate-200 bg-white hover:border-[#bfdbfe] hover:bg-[#fbfdff]",
+          ? "border-[var(--mymedlife-primary-button)] bg-[var(--background)] shadow-[0_12px_30px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
+          : "border-slate-200 bg-white hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-tint)]",
       ].join(" ")}
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] border border-slate-200 bg-[#dbeafe] text-slate-400">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.95rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] text-slate-400">
           <span className="text-xs font-semibold">◫</span>
         </div>
         <div className="min-w-0 flex-1">
@@ -2761,7 +2764,7 @@ function FeedStudioComposer({ commandCenter }: { commandCenter: StaffCommandCent
   return (
     <div className="grid gap-4">
       {workspace.sourceContext ? (
-        <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+        <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div>
               <p className="app-eyebrow app-eyebrow-blue">{workspace.sourceContext.eyebrow}</p>
@@ -2774,7 +2777,7 @@ function FeedStudioComposer({ commandCenter }: { commandCenter: StaffCommandCent
             </div>
             <Link
               href={workspace.sourceContext.actionHref}
-              className="inline-flex rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+              className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)]"
             >
               {workspace.sourceContext.actionLabel}
             </Link>
@@ -2807,8 +2810,8 @@ function FeedStudioComposer({ commandCenter }: { commandCenter: StaffCommandCent
                 className={[
                   "rounded-full px-3 py-2 text-xs font-semibold transition",
                   workspace.previewRole === option.key
-                    ? "bg-[#2563eb] text-white"
-                    : "border border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                    ? "bg-[var(--mymedlife-primary-button)] text-white"
+                    : "border border-slate-200 bg-white text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
                 ].join(" ")}
               >
                 {option.label}
@@ -2817,11 +2820,11 @@ function FeedStudioComposer({ commandCenter }: { commandCenter: StaffCommandCent
           </div>
         </div>
         <div className="mt-4 flex justify-center">
-          <div className="w-full max-w-[16rem] rounded-[1.35rem] border border-[#bfdbfe] bg-white p-3 shadow-[0_10px_28px_rgba(15,23,42,0.08)]">
-            <div className="rounded-[1rem] border border-[#bfdbfe] bg-[#eff6ff] px-3 py-2 text-xs font-semibold text-[#1d4ed8]">
+          <div className="w-full max-w-[16rem] rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-white p-3 shadow-[0_10px_28px_rgb(var(--mymedlife-shadow-rgb)/0.08)]">
+            <div className="rounded-[1rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-2 text-xs font-semibold text-[var(--mymedlife-info)]">
               myMEDLIFE Feed
             </div>
-            <div className="mt-3 rounded-[1rem] border border-[#bfdbfe] bg-[#f8fbff] px-3 py-4 text-center text-slate-500">
+            <div className="mt-3 rounded-[1rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-4 text-center text-slate-500">
               Preview
             </div>
             <p className="mt-3 text-sm font-semibold text-slate-950">
@@ -2839,19 +2842,19 @@ function FeedStudioComposer({ commandCenter }: { commandCenter: StaffCommandCent
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href={draft?.sourceHref ?? `${commandCenter.routeBase}?view=feed_studio`}
-            className="flex-1 rounded-[1rem] bg-[#2563eb] px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_12px_24px_rgba(37,99,235,0.16)] transition hover:bg-[#1d4ed8]"
+            className="flex-1 rounded-[1rem] bg-[var(--mymedlife-primary-button)] px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_12px_24px_rgb(var(--mymedlife-primary-rgb)/0.16)] transition hover:bg-[var(--mymedlife-info)]"
           >
             Share with {workspace.targetChapterCountLabel}
           </Link>
           <Link
             href={draft?.sourceHref ?? `${commandCenter.routeBase}?view=feed_studio`}
-            className="rounded-[1rem] border border-[#bfdbfe] bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[#93c5fd] hover:bg-[#f8fbff] hover:text-slate-950"
+            className="rounded-[1rem] border border-[var(--mymedlife-border)] bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)] hover:text-slate-950"
           >
             Schedule
           </Link>
           <Link
             href={draft?.sourceHref ?? `${commandCenter.routeBase}?view=feed_studio`}
-            className="rounded-[1rem] border border-[#bfdbfe] bg-[#eff6ff] px-4 py-3 text-sm font-semibold text-[#1d4ed8] transition hover:border-[#93c5fd] hover:bg-[#dbeafe]"
+            className="rounded-[1rem] border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-3 text-sm font-semibold text-[var(--mymedlife-info)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-badge-background)]"
           >
             Best Practice
           </Link>
@@ -2874,13 +2877,13 @@ function FeedStudioAudiencePanel({ commandCenter }: { commandCenter: StaffComman
               key={option.key}
               href={option.href}
               aria-current={workspace.audienceMode === option.key ? "page" : undefined}
-              className="flex items-center gap-2 rounded-[0.95rem] px-1 py-1.5 text-sm transition hover:bg-[#dbeafe]"
+              className="flex items-center gap-2 rounded-[0.95rem] px-1 py-1.5 text-sm transition hover:bg-[var(--mymedlife-badge-background)]"
             >
               <span
                 className={[
                   "flex h-4 w-4 items-center justify-center rounded-full border text-[0.65rem]",
                   workspace.audienceMode === option.key
-                    ? "border-[#2563eb] bg-[#2563eb] text-white"
+                    ? "border-[var(--mymedlife-primary-button)] bg-[var(--mymedlife-primary-button)] text-white"
                     : "border-slate-300 bg-white text-white",
                 ].join(" ")}
               >
@@ -2924,18 +2927,18 @@ function FeedAnalyticsSummaryCard({
   accentIndex: number;
 }) {
   const accentClasses = [
-    "border-t-[#2563eb]",
-    "border-t-[#3b82f6]",
-    "border-t-[#60a5fa]",
-    "border-t-[#93c5fd]",
-    "border-t-[#bfdbfe]",
-    "border-t-[#60a5fa]",
+    "border-t-[var(--mymedlife-primary-button)]",
+    "border-t-[var(--mymedlife-primary-button)]",
+    "border-t-[var(--mymedlife-focus-blue)]",
+    "border-t-[var(--mymedlife-focus-blue)]",
+    "border-t-[var(--mymedlife-border)]",
+    "border-t-[var(--mymedlife-focus-blue)]",
   ];
 
   return (
     <div
       className={[
-        "rounded-[1.15rem] border border-slate-200 border-t-[3px] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]",
+        "rounded-[1.15rem] border border-slate-200 border-t-[3px] bg-white px-4 py-3 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]",
         accentClasses[accentIndex] ?? accentClasses[0],
       ].join(" ")}
     >
@@ -2984,13 +2987,13 @@ function FeedAnalyticsTable({ commandCenter }: { commandCenter: StaffCommandCent
               <tr
                 key={post.id}
                 className={[
-                  "border-t border-slate-200 transition hover:bg-[#dbeafe]/80",
-                  selected ? "bg-[#f8fbff] shadow-[inset_4px_0_0_0_#2563eb]" : "",
+                  "border-t border-slate-200 transition hover:bg-[var(--mymedlife-badge-background)]/80",
+                  selected ? "bg-[var(--background)] shadow-[inset_4px_0_0_0_var(--mymedlife-primary-button)]" : "",
                 ].join(" ")}
               >
                 <td className="px-4 py-3 align-top">
                   <Link href={post.selectHref} className="block">
-                    <p className="font-semibold text-slate-950 hover:text-[#1d4ed8]">
+                    <p className="font-semibold text-slate-950 hover:text-[var(--mymedlife-info)]">
                       {post.title}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">{post.typeLabel}</p>
@@ -3004,9 +3007,9 @@ function FeedAnalyticsTable({ commandCenter }: { commandCenter: StaffCommandCent
                 <td className="px-4 py-3">{formatWhole(post.shares)}</td>
                 <td className="px-4 py-3">{formatWhole(post.saves)}</td>
                 <td className="px-4 py-3">{formatWhole(post.ctaClicks)}</td>
-                <td className="px-4 py-3 font-semibold text-[#1d4ed8]">{formatWhole(post.actions)}</td>
-                <td className="px-4 py-3 font-semibold text-[#1d4ed8]">{formatWhole(post.evidence)}</td>
-                <td className="px-4 py-3 font-semibold text-[#1d4ed8]">{formatWhole(post.rsvps)}</td>
+                <td className="px-4 py-3 font-semibold text-[var(--mymedlife-info)]">{formatWhole(post.actions)}</td>
+                <td className="px-4 py-3 font-semibold text-[var(--mymedlife-info)]">{formatWhole(post.evidence)}</td>
+                <td className="px-4 py-3 font-semibold text-[var(--mymedlife-info)]">{formatWhole(post.rsvps)}</td>
                 <td className="px-4 py-3 text-slate-500">{post.publishedLabel}</td>
               </tr>
             );
@@ -3029,11 +3032,11 @@ function FeedAnalyticsImpactPanel({ post }: { post: StaffFeedAnalyticsPost | nul
             {post.impactMetrics.map((metric) => (
               <div
                 key={metric.question}
-                className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3"
+                className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-semibold text-slate-700">{metric.question}</p>
-                  <span className="text-sm font-semibold text-[#1d4ed8]">{metric.value}</span>
+                  <span className="text-sm font-semibold text-[var(--mymedlife-info)]">{metric.value}</span>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-slate-500">{metric.detail}</p>
               </div>
@@ -3044,7 +3047,7 @@ function FeedAnalyticsImpactPanel({ post }: { post: StaffFeedAnalyticsPost | nul
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
               Engagement Rate
             </p>
-            <p className="mt-2 text-[2.4rem] font-semibold leading-none text-[#08224c]">
+            <p className="mt-2 text-[2.4rem] font-semibold leading-none text-[var(--foreground)]">
               {post.engagementRateLabel}
             </p>
             <p className="mt-2 text-xs leading-5 text-slate-500">likes + comments / views</p>
@@ -3078,7 +3081,7 @@ function FeedAnalyticsBreakdown({
   rows: StaffFeedAnalyticsPost["topEngagement"];
 }) {
   return (
-    <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-4">
+    <div className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-4">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {title}
       </p>
@@ -3093,7 +3096,7 @@ function FeedAnalyticsBreakdown({
               {row.href && row.actionLabel ? (
                 <Link
                   href={row.href}
-                  className="mt-1 inline-flex text-xs font-semibold text-[#1d4ed8] transition hover:text-[#1e40af]"
+                  className="mt-1 inline-flex text-xs font-semibold text-[var(--mymedlife-info)] transition hover:text-[var(--mymedlife-badge-text)]"
                 >
                   {row.actionLabel}
                 </Link>
@@ -3103,9 +3106,9 @@ function FeedAnalyticsBreakdown({
               className={[
                 "shrink-0 text-sm font-semibold",
                 row.tone === "danger"
-                  ? "text-blue-600"
+                  ? "text-[var(--mymedlife-info)]"
                   : row.tone === "good"
-                    ? "text-[#1d4ed8]"
+                    ? "text-[var(--mymedlife-info)]"
                     : "text-slate-600",
               ].join(" ")}
             >
@@ -3133,9 +3136,9 @@ function HubSpotActivityBar({
           {metric.current} / {metric.total}
         </p>
       </div>
-      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#f8fbff]">
+      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[var(--background)]">
         <div
-          className="h-full rounded-full bg-[#1d4f91]"
+          className="h-full rounded-full bg-[var(--mymedlife-link-blue)]"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -3149,7 +3152,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
       <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </span>
-      <div className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm text-slate-700">
+      <div className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-sm text-slate-700">
         {value}
       </div>
     </label>
@@ -3162,7 +3165,7 @@ function ReadOnlyTextArea({ label, value }: { label: string; value: string }) {
       <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </span>
-      <div className="min-h-[6rem] rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm leading-6 text-slate-700">
+      <div className="min-h-[6rem] rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-sm leading-6 text-slate-700">
         {value}
       </div>
     </label>
@@ -3190,7 +3193,7 @@ function ChecklistPanel({
                 className={[
                   "flex h-4 w-4 items-center justify-center rounded border text-[0.65rem]",
                   checked
-                    ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb]"
+                    ? "border-[var(--mymedlife-primary-button)] bg-[var(--background)] text-[var(--mymedlife-primary-button)]"
                     : "border-slate-200 bg-white text-white",
                 ].join(" ")}
               >
@@ -3223,7 +3226,7 @@ function BestPracticeCard({
             {card.chapterLabel} · {card.countryLabel} · {card.campaignLabel}
           </p>
           {selected ? (
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#1d4f91]">
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-link-blue)]">
               Selected for sharing
             </p>
           ) : null}
@@ -3232,7 +3235,7 @@ function BestPracticeCard({
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
             Eng. Score
           </p>
-          <p className="mt-1 text-3xl font-semibold text-[#1d4f91]">{card.engagementScore}</p>
+          <p className="mt-1 text-3xl font-semibold text-[var(--mymedlife-link-blue)]">{card.engagementScore}</p>
         </div>
       </div>
       <div className="mt-4 rounded-[1rem] border border-slate-200 bg-white px-4 py-4">
@@ -3241,11 +3244,11 @@ function BestPracticeCard({
         </p>
         <p className="mt-2 text-sm leading-6 text-slate-600">{card.whyItWorked}</p>
       </div>
-      <div className="mt-4 rounded-[1rem] border border-blue-100 bg-blue-50 px-4 py-4">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-blue-700">
+      <div className="mt-4 rounded-[1rem] border border-[var(--mymedlife-badge-background)] bg-[var(--mymedlife-badge-background)] px-4 py-4">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
           KPI Result
         </p>
-        <p className="mt-2 text-sm font-semibold text-blue-700">{card.kpiResult}</p>
+        <p className="mt-2 text-sm font-semibold text-[var(--mymedlife-info)]">{card.kpiResult}</p>
       </div>
       <div className="mt-4">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -3255,7 +3258,7 @@ function BestPracticeCard({
           {card.recommendedForLabels.map((label) => (
             <span
               key={label}
-              className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600"
+              className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-slate-600"
             >
               {label}
             </span>
@@ -3265,7 +3268,7 @@ function BestPracticeCard({
       <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
         <Link
           href={card.shareHref}
-          className="rounded-[1rem] bg-[#1d4f91] px-4 py-3 text-center text-sm font-semibold text-white"
+          className="rounded-[1rem] bg-[var(--mymedlife-link-blue)] px-4 py-3 text-center text-sm font-semibold text-white"
         >
           Share to Feed
         </Link>
@@ -3277,7 +3280,7 @@ function BestPracticeCard({
         </Link>
         <Link
           href={card.href}
-          className="rounded-[1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-center text-sm font-semibold text-slate-700"
+          className="rounded-[1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-center text-sm font-semibold text-slate-700"
         >
           Open
         </Link>
@@ -3318,7 +3321,7 @@ function AdminDataTable({
 }) {
   return (
     <table className="min-w-full border-separate border-spacing-0 overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white">
-      <thead className="bg-[#dbeafe]">
+      <thead className="bg-[var(--mymedlife-badge-background)]">
         <tr>
           {columns.map((column) => (
             <th
@@ -3342,7 +3345,7 @@ function AdminOutboxRowView({
   row: StaffAdminOutboxRow;
 }) {
   return (
-    <tr className="odd:bg-white even:bg-[#dbeafe]/55">
+    <tr className="odd:bg-white even:bg-[var(--mymedlife-badge-background)]/55">
       <AdminTableCell>{row.eventLabel}</AdminTableCell>
       <AdminTableCell>{row.sourceLabel}</AdminTableCell>
       <AdminTableCell>{row.destinationLabel}</AdminTableCell>
@@ -3363,7 +3366,7 @@ function AdminAuditRowView({
   row: StaffAdminAuditRow;
 }) {
   return (
-    <tr className="odd:bg-white even:bg-[#dbeafe]/55">
+    <tr className="odd:bg-white even:bg-[var(--mymedlife-badge-background)]/55">
       <AdminTableCell>{row.actorLabel}</AdminTableCell>
       <AdminTableCell>
         <Pill tone={auditRoleTone(row.roleLabel)} label={row.roleLabel} />
@@ -3423,7 +3426,7 @@ function SidebarCard({
       className={[
         "rounded-[1.75rem] p-4",
         tone === "dark"
-          ? "border border-[#0f172a] bg-[#0b1b3a] shadow-[0_18px_44px_rgba(15,23,42,0.14)]"
+          ? "border border-[var(--foreground)] bg-[var(--mymedlife-deep-blue)] shadow-[0_18px_44px_rgb(var(--mymedlife-shadow-rgb)/0.14)]"
           : "app-surface",
       ].join(" ")}
     >
@@ -3478,10 +3481,10 @@ function ToplineMetricCard({
   note: string;
 }) {
   return (
-    <section className="app-surface rounded-[1.5rem] bg-white/96 p-4 shadow-[0_14px_32px_rgba(15,23,42,0.06)]">
+    <section className="app-surface rounded-[1.5rem] bg-white/96 p-4 shadow-[0_14px_32px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
       <div className="flex items-start justify-between gap-3">
         <p className="app-eyebrow app-eyebrow-slate">{label}</p>
-        <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-[#2563eb]">
+        <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-[var(--mymedlife-primary-button)]">
           Live
         </span>
       </div>
@@ -3498,15 +3501,15 @@ function PortfolioSummaryTile({
 }) {
   const toneClassName =
     card.tone === "blue"
-      ? "border-[#bfdbfe] bg-[#f8fbff]"
+      ? "border-[var(--mymedlife-border)] bg-[var(--background)]"
       : card.tone === "yellow"
-        ? "border-[#2563eb]/45 bg-[#eef5ff]"
-        : "border-blue-200 bg-[#eef5ff]";
+        ? "border-[var(--mymedlife-primary-button)]/45 bg-[var(--mymedlife-surface-hover)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)]";
 
   return (
     <div
       className={[
-        "rounded-[1.2rem] border p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]",
+        "rounded-[1.2rem] border p-4 shadow-[0_10px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]",
         toneClassName,
       ].join(" ")}
     >
@@ -3518,10 +3521,10 @@ function PortfolioSummaryTile({
           className={[
             "rounded-full border px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em]",
             card.tone === "blue"
-              ? "border-[#bfdbfe] bg-white text-[#2563eb]"
+              ? "border-[var(--mymedlife-border)] bg-white text-[var(--mymedlife-primary-button)]"
               : card.tone === "yellow"
-                ? "border-[#2563eb]/45 bg-white text-[#1d4ed8]"
-                : "border-blue-200 bg-white text-blue-700",
+                ? "border-[var(--mymedlife-primary-button)]/45 bg-white text-[var(--mymedlife-info)]"
+                : "border-[var(--mymedlife-border)] bg-white text-[var(--mymedlife-info)]",
           ].join(" ")}
         >
           {card.tone === "blue" ? "Watch" : card.tone === "yellow" ? "Priority" : "Intervene"}
@@ -3543,10 +3546,10 @@ function HeroMiniStat({
   note: string;
 }) {
   return (
-    <div className="app-surface rounded-[1.25rem] bg-white/96 p-4 shadow-[0_12px_28px_rgba(4,18,40,0.16)]">
+    <div className="app-surface rounded-[1.25rem] bg-white/96 p-4 shadow-[0_12px_28px_rgb(var(--mymedlife-deep-rgb)/0.16)]">
       <div className="flex items-center justify-between gap-3">
         <p className="app-eyebrow app-eyebrow-slate">{label}</p>
-        <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
+        <span className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-[0.64rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
           Pulse
         </span>
       </div>
@@ -3570,8 +3573,8 @@ function InlineCallout({
       className={[
         "rounded-[1.2rem] border p-3",
         tone === "blue"
-          ? "border-[#bfdbfe] bg-[#eef5ff]"
-          : "border-[#2563eb]/45 bg-[#dbeafe]",
+          ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-hover)]"
+          : "border-[var(--mymedlife-primary-button)]/45 bg-[var(--mymedlife-badge-background)]",
       ].join(" ")}
     >
       <p
@@ -3597,7 +3600,7 @@ function CompactMetricTile({
   note: string;
 }) {
   return (
-    <div className="app-surface rounded-[1.3rem] p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="app-surface rounded-[1.3rem] p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="app-eyebrow app-eyebrow-slate">{label}</p>
       <p className="mt-3 text-[2.6rem] font-semibold leading-none text-slate-950">{value}</p>
       <p className="mt-2 text-xs leading-5 text-slate-600">{note}</p>
@@ -3655,11 +3658,11 @@ function Pill({
       className={[
         "rounded-full px-3 py-1 text-xs font-semibold capitalize",
         tone === "good"
-          ? "border border-blue-200 bg-blue-50 text-blue-700"
+          ? "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
           : tone === "warning"
-            ? "border border-blue-200 bg-blue-50 text-blue-700"
+            ? "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
             : tone === "danger"
-              ? "border border-blue-200 bg-blue-50 text-blue-700"
+              ? "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
               : "border border-slate-200 bg-white text-slate-600",
       ].join(" ")}
     >
@@ -3687,11 +3690,11 @@ function consentTone(status: string) {
 function engagementTone(status: StaffProofReviewItem["engagementLabel"]) {
   switch (status) {
     case "high potential":
-      return "text-[#1d4ed8]";
+      return "text-[var(--mymedlife-info)]";
     case "medium potential":
-      return "text-[#b45309]";
+      return "text-[var(--warning)]";
     case "low potential":
-      return "text-[#1d4ed8]";
+      return "text-[var(--mymedlife-info)]";
   }
 }
 

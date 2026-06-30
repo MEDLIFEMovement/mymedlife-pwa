@@ -127,8 +127,8 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
         })}
       />
 
-      <section className="overflow-hidden rounded-[1.8rem] border border-[#1565c0]/12 bg-white shadow-[0_18px_55px_rgba(8,34,76,0.08)]">
-        <div className="bg-[#0b66cc] px-5 pb-5 pt-4 text-white">
+      <section className="overflow-hidden rounded-[1.8rem] border border-[var(--mymedlife-link-blue)]/12 bg-white shadow-[0_18px_55px_rgb(var(--mymedlife-deep-rgb)/0.08)]">
+        <div className="bg-[var(--mymedlife-admin-blue)] px-5 pb-5 pt-4 text-white">
           <h1 className="text-[1.95rem] font-semibold tracking-tight">
             {workspace.traveler.tripLabel.replace("|", "—")}
           </h1>
@@ -149,10 +149,10 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
             className={[
               "rounded-[1.2rem] border px-4 py-3 text-sm font-medium",
               workspace.readiness.tone === "red"
-                ? "border-blue-200 bg-blue-50 text-blue-700"
+                ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
                 : workspace.readiness.tone === "yellow"
-                  ? "border-blue-200 bg-blue-50 text-blue-700"
-                  : "border-blue-200 bg-blue-50 text-blue-700",
+                  ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+                  : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]",
             ].join(" ")}
           >
             {workspace.readiness.tone === "red"
@@ -177,15 +177,15 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
                 </p>
               </div>
             </div>
-            <div className="mt-3 h-3 overflow-hidden rounded-full bg-[#f8fbff]">
+            <div className="mt-3 h-3 overflow-hidden rounded-full bg-[var(--background)]">
               <div
-                className="h-full rounded-full bg-[#111827]"
+                className="h-full rounded-full bg-[var(--foreground)]"
                 style={{ width: `${readinessPercent}%` }}
               />
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] border border-slate-200 bg-[#fbfdff] p-4">
+          <section className="rounded-[1.5rem] border border-slate-200 bg-[var(--mymedlife-surface-tint)] p-4">
             <div className="mb-3 flex items-end justify-between gap-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-950">SLT Deadlines</h2>
@@ -195,7 +195,7 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
                   source: routeSource ?? undefined,
                   travelerId: search.traveler,
                 })}
-                className="text-sm font-semibold text-[#0b66cc]"
+                className="text-sm font-semibold text-[var(--mymedlife-admin-blue)]"
               >
                 View all
               </Link>
@@ -209,16 +209,16 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
                     source: "overview",
                     travelerId: search.traveler,
                   })}
-                  className="flex items-start gap-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 transition hover:bg-[#dbeafe]"
+                  className="flex items-start gap-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 transition hover:bg-[var(--mymedlife-badge-background)]"
                 >
                   <span
                     className={[
                       "mt-1 h-2.5 w-2.5 rounded-full",
                       alert.tone === "red"
-                        ? "bg-blue-500"
+                        ? "bg-[var(--mymedlife-primary-button)]"
                         : alert.tone === "yellow"
-                          ? "bg-blue-400"
-                          : "bg-blue-500",
+                          ? "bg-[var(--mymedlife-focus-blue)]"
+                          : "bg-[var(--mymedlife-primary-button)]",
                     ].join(" ")}
                   />
                   <div className="min-w-0 flex-1">
@@ -238,7 +238,7 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
                   key={card.href}
                   href={card.href}
                   className={[
-                    "block rounded-[1.2rem] border bg-white p-4 transition hover:bg-[#dbeafe]",
+                    "block rounded-[1.2rem] border bg-white p-4 transition hover:bg-[var(--mymedlife-badge-background)]",
                     card.borderClassName,
                   ].join(" ")}
                 >
@@ -261,7 +261,7 @@ export default async function SltPrepPage({ searchParams }: SltPrepPageProps) {
                 href={cta.href}
                 className={cta.className}
               >
-                <p className="text-sm font-semibold text-[#0b66cc]">{cta.eyebrow}</p>
+                <p className="text-sm font-semibold text-[var(--mymedlife-admin-blue)]">{cta.eyebrow}</p>
                 <p className="mt-2 text-base font-semibold text-slate-950">
                   {cta.title}
                 </p>

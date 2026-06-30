@@ -14,7 +14,7 @@ export function SltPrepRouteHandoffCard({
   backLabel: string;
 }) {
   return (
-    <section className="rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+    <section className="rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
       <p className="app-eyebrow app-eyebrow-blue">{eyebrow}</p>
       <div className="mt-2 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-2xl">

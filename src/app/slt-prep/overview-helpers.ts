@@ -14,7 +14,7 @@ export function buildOverviewCtas(workspace: SltPrepOverviewWorkspace) {
       title: workspace.nextStep.label,
       detail: workspace.nextStep.summary,
       className:
-        "rounded-[1.25rem] border border-[#0b66cc]/20 bg-[#edf5ff] px-4 py-4 transition hover:border-[#0b66cc]/35 hover:bg-[#e6f0ff]",
+        "rounded-[1.25rem] border border-[var(--mymedlife-admin-blue)]/20 bg-[var(--mymedlife-surface-hover)] px-4 py-4 transition hover:border-[var(--mymedlife-admin-blue)]/35 hover:bg-[var(--mymedlife-badge-background)]",
     },
     {
       href: "/slt-prep/staff",
@@ -23,7 +23,7 @@ export function buildOverviewCtas(workspace: SltPrepOverviewWorkspace) {
       detail:
         "Open the staff review surface with risk filters, traveler detail, and bulk support posture.",
       className:
-        "rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4 transition hover:border-[#bfd8ff] hover:bg-[#dbeafe]",
+        "rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-badge-background)]",
     },
   ] as const;
 }
@@ -62,8 +62,8 @@ export function buildChecklistCards(workspace: SltPrepOverviewWorkspace) {
       pill: duePayments.length > 0 ? "Action needed" : "Done",
       borderClassName:
         duePayments.length > 0
-          ? "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-          : "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200",
+          ? "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200"
+          : "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200",
     },
     {
       href:
@@ -78,8 +78,8 @@ export function buildChecklistCards(workspace: SltPrepOverviewWorkspace) {
       pill: pendingForms.length > 0 ? "Due soon" : "Done",
       borderClassName:
         pendingForms.length > 0
-          ? "border-l-[6px] border-l-blue-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-          : "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200",
+          ? "border-l-[6px] border-l-[var(--mymedlife-focus-blue)] border-t-slate-200 border-r-slate-200 border-b-slate-200"
+          : "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200",
     },
     {
       href:
@@ -94,8 +94,8 @@ export function buildChecklistCards(workspace: SltPrepOverviewWorkspace) {
       pill: unresolvedFlights.length > 0 ? "Action needed" : "Done",
       borderClassName:
         unresolvedFlights.length > 0
-          ? "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-          : "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200",
+          ? "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200"
+          : "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200",
     },
     {
       href:
@@ -110,8 +110,8 @@ export function buildChecklistCards(workspace: SltPrepOverviewWorkspace) {
       pill: pendingMeetings.length > 0 ? "Due soon" : "Done",
       borderClassName:
         pendingMeetings.length > 0
-          ? "border-l-[6px] border-l-blue-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-          : "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200",
+          ? "border-l-[6px] border-l-[var(--mymedlife-focus-blue)] border-t-slate-200 border-r-slate-200 border-b-slate-200"
+          : "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200",
     },
     {
       href:
@@ -127,7 +127,7 @@ export function buildChecklistCards(workspace: SltPrepOverviewWorkspace) {
       borderClassName:
         undecidedExtensions.length > 0
           ? "border-l-[6px] border-l-slate-300 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-          : "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200",
+          : "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200",
     },
     {
       href: "/slt-prep/checklist",
@@ -147,10 +147,10 @@ export function buildChecklistCards(workspace: SltPrepOverviewWorkspace) {
             : "Done",
       borderClassName:
         prepItems.some((item) => item.status === "needs_attention")
-          ? "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200"
+          ? "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200"
           : prepItems.some((item) => item.status !== "complete")
             ? "border-l-[6px] border-l-slate-300 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-            : "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200",
+            : "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200",
     },
   ] as const;
 }

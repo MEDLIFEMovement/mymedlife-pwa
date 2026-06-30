@@ -13,7 +13,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
 
   return (
     <section className="app-surface-info rounded-[2rem] p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
         Admin control center
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -37,7 +37,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         <Metric label="Audit rows" value={`${summary.auditLogCount}`} />
       </div>
 
-      <div className="mt-4 rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3">
+      <div className="mt-4 rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3">
         <p className="text-sm font-semibold text-slate-950">Safety posture</p>
         <p className="mt-2 text-xs leading-5 text-slate-600">
           Admin writes enabled: {summary.canWriteAdminChanges ? "yes" : "no"}.
@@ -46,7 +46,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         </p>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-[#bfdbfe] bg-white p-4">
+      <div className="mt-4 rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-slate-950">
@@ -57,24 +57,24 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
               and campaign templates.
             </p>
           </div>
-          <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+          <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
             {summary.masterDataInventory.mutationControlsEnabled} mutation controls
           </span>
           <Link
             href="/admin/master-data"
-            className="rounded-full bg-[#2563eb] px-3 py-1 text-xs font-semibold text-white"
+            className="rounded-full bg-[var(--mymedlife-primary-button)] px-3 py-1 text-xs font-semibold text-white"
           >
             Open inventory
           </Link>
         </div>
 
         <div className="mt-3 grid gap-3 xl:grid-cols-2">
-          <div className="rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3">
+          <div className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Users
               </p>
-              <span className="text-xs font-semibold text-[#1d4ed8]">
+              <span className="text-xs font-semibold text-[var(--mymedlife-info)]">
                 {summary.masterDataInventory.users.length}
               </span>
             </div>
@@ -107,12 +107,12 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3">
+          <div className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Roles
               </p>
-              <span className="text-xs font-semibold text-[#1d4ed8]">
+              <span className="text-xs font-semibold text-[var(--mymedlife-info)]">
                 {summary.masterDataInventory.roles.length}
               </span>
             </div>
@@ -138,12 +138,12 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3">
+          <div className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Chapters
               </p>
-              <span className="text-xs font-semibold text-[#1d4ed8]">
+              <span className="text-xs font-semibold text-[var(--mymedlife-info)]">
                 {summary.masterDataInventory.chapters.length}
               </span>
             </div>
@@ -173,12 +173,12 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3">
+          <div className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Campaign templates
               </p>
-              <span className="text-xs font-semibold text-[#1d4ed8]">
+              <span className="text-xs font-semibold text-[var(--mymedlife-info)]">
                 {summary.masterDataInventory.campaignTemplates.length}
               </span>
             </div>
@@ -218,7 +218,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         </p>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-[#bfdbfe] bg-white p-4">
+      <div className="mt-4 rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-slate-950">
@@ -229,7 +229,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
               staff dry-run views.
             </p>
           </div>
-          <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+          <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
             {summary.operatingResponsibilities.length} guarded writes
           </span>
         </div>
@@ -237,13 +237,13 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
           {summary.operatingResponsibilities.map((item) => (
             <article
               key={item.operationKey}
-              className="rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3"
+              className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                 {item.operationKey.replaceAll("_", " ")}
               </p>
               <h3 className="mt-2 text-sm font-semibold text-slate-950">{item.label}</h3>
-              <p className="mt-2 break-words text-xs font-semibold text-[#1d4ed8]">
+              <p className="mt-2 break-words text-xs font-semibold text-[var(--mymedlife-info)]">
                 {item.responsibleRole}
               </p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -252,7 +252,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
               <p className="mt-2 text-xs leading-5 text-slate-500">
                 {item.reviewPrompt}
               </p>
-              <p className="mt-3 rounded-xl border border-[#bfdbfe] bg-[#eff6ff] p-3 text-xs leading-5 text-slate-600">
+              <p className="mt-3 rounded-xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3 text-xs leading-5 text-slate-600">
                 {item.safetyBoundary}
               </p>
             </article>
@@ -260,7 +260,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         </div>
       </div>
 
-      <div className="mt-4 rounded-2xl border border-[#bfdbfe] bg-white p-4">
+      <div className="mt-4 rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-slate-950">
@@ -270,13 +270,13 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
               These are local review personas, not production users or role writes.
             </p>
           </div>
-          <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+          <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
             {summary.namedRoleCount}/{summary.roleCoverage.length} ready
           </span>
         </div>
         <div className="mt-3 grid gap-2 md:grid-cols-3">
           {summary.roleCoverage.map((item) => (
-            <article key={item.role} className="rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-3">
+            <article key={item.role} className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3">
               <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-semibold text-slate-950">{item.role}</p>
                 <span
@@ -300,7 +300,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         {summary.areas.map((area) => (
           <article
             key={area.key}
-            className="rounded-2xl border border-[#bfdbfe] bg-[#f8fbff] p-4"
+            className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -321,21 +321,21 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
             {area.key === "system_health" ? (
               <Link
                 href="/admin/system-health"
-                className="mt-3 inline-flex rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]"
+                className="mt-3 inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]"
               >
                 Open health
               </Link>
             ) : area.key === "audit_logs" ? (
               <Link
                 href="/admin/audit-log"
-                className="mt-3 inline-flex rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]"
+                className="mt-3 inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]"
               >
                 Open audit log
               </Link>
             ) : area.key === "integration_outbox" ? (
               <Link
                 href="/admin/integration-outbox"
-                className="mt-3 inline-flex rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]"
+                className="mt-3 inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]"
               >
                 Open outbox
               </Link>
@@ -344,7 +344,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
         ))}
       </div>
 
-      <div className="mt-4 rounded-2xl border border-[#bfdbfe] bg-white p-4">
+      <div className="mt-4 rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-slate-950">System health signals</p>
@@ -353,7 +353,7 @@ export function AdminControlCenterPanel({ summary }: AdminControlCenterPanelProp
               blocked until live approvals, auth, and production monitoring exist.
             </p>
           </div>
-          <span className="rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-[#1d4ed8]">
+          <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
             Read-only
           </span>
         </div>
@@ -383,7 +383,7 @@ function roleSummary(roles: readonly string[]): string {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-[#bfdbfe] bg-white p-3">
+    <div className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-3">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
         {label}
       </p>
@@ -395,21 +395,21 @@ function Metric({ label, value }: { label: string; value: string }) {
 function statusClass(status: AdminControlStatus): string {
   switch (status) {
     case "ready_readonly":
-      return "border border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8]";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "mock_only":
-      return "border border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8]";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "blocked":
-      return "border border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8]";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
   }
 }
 
 function shellStatusClass(status: string): string {
   switch (status) {
     case "active":
-      return "border border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8]";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "template":
-      return "border border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8]";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     default:
-      return "border border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8]";
+      return "border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
   }
 }

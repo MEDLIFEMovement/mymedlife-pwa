@@ -19,6 +19,7 @@ type EnvSource = Record<string, string | undefined>;
 
 export type FirstWriteDrillStatus =
   | "ready_for_local_action_start"
+  | "evidence_recorded"
   | "blocked_until_local_supabase"
   | "blocked_until_flags"
   | "blocked_until_auth"
@@ -90,6 +91,16 @@ export type FirstWriteHostedCloseout = {
   stagingTarget: string;
   recommendedHostedWrite: string;
   hostedDecision: string;
+  currentObservedEvidence: {
+    assignmentId: string;
+    assignmentTitle: string;
+    assignmentStatus: string;
+    eventId: string;
+    integrationEventId: string;
+    auditLogId: string;
+    zeroOutboxSends: true;
+    reviewerNote: string;
+  } | null;
   requiredReadback: string[];
   reviewSurfaces: string[];
   namedOwnersStillNeeded: Array<{
@@ -136,6 +147,10 @@ export type FirstWriteActivationDrill = {
   };
 };
 
+function isHostedStagingLane(env: EnvSource = process.env): boolean {
+  return env.MYMEDLIFE_AUTH_MODE === "staging_supabase";
+}
+
 export function getFirstWriteActivationDrill(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
@@ -161,7 +176,9 @@ export function getFirstWriteActivationDrill(
     };
   }
 
-  const candidateAssignment = findCandidateAssignment(data.assignments);
+  const observedEvidence = findObservedFirstWriteEvidence(data);
+  const candidateAssignment = observedEvidence?.assignment ??
+    findCandidateAssignment(data.assignments);
   const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const targetActor = getMockLocalActorContext(
     "member.a@mymedlife.test",
@@ -176,10 +193,10 @@ export function getFirstWriteActivationDrill(
     : null;
   const candidate = candidateAssignment ? toCandidate(candidateAssignment) : null;
   const checks = buildChecks(data, candidateAssignment, readiness, env);
-  const status = getStatus(checks, writeConfig.enabled);
+  const readbackEvidence = buildReadbackEvidence(data, candidate);
+  const status = getStatus(checks, writeConfig.enabled, readbackEvidence);
   const browserWritesExpected: 0 | 1 =
     status === "ready_for_local_action_start" ? 1 : 0;
-  const readbackEvidence = buildReadbackEvidence(data, candidate);
   const verificationPacket = buildVerificationPacket(
     status,
     candidate,
@@ -193,13 +210,13 @@ export function getFirstWriteActivationDrill(
     title: getTitle(surfaceFamily),
     status,
     plainEnglishSummary:
-      "This drill turns the first possible MVP save into a controlled local test: one member starts one Rush Month assignment, then staff confirm assignment status, event, integration event, and audit log readback. It does not approve production writes.",
+      getPlainEnglishSummary(status, env),
     candidateAssignment: candidate,
     checks,
-    steps: buildSteps(candidate),
+    steps: buildSteps(candidate, env),
     readbackEvidence,
     verificationPacket,
-    hostedCloseout: buildHostedCloseout(env),
+    hostedCloseout: buildHostedCloseout(env, observedEvidence),
     proofToCollect: [
       "Screenshot of `/admin/first-write` before the test showing every required check green.",
       "Screenshot of the selected action detail route before clicking Start this action.",
@@ -218,6 +235,54 @@ export function getFirstWriteActivationDrill(
       externalWritesExpected: 0,
     },
   };
+}
+
+function findObservedFirstWriteEvidence(data: ReadOnlyAppData): {
+  assignment: Assignment;
+  eventId: string;
+  integrationEventId: string;
+  auditLogId: string;
+} | null {
+  const actionStartedEvents = [...data.eventRows]
+    .filter((event) => event.event_type === "action_started" && event.assignment_id)
+    .sort((left, right) => {
+      return new Date(right.created_at).getTime() - new Date(left.created_at).getTime();
+    });
+
+  for (const event of actionStartedEvents) {
+    const assignment = data.assignments.find((item) => item.id === event.assignment_id);
+    if (!assignment) {
+      continue;
+    }
+
+    const integrationEvent = data.integrationEventRows.find((item) => {
+      return item.event_type === "action_started" &&
+        (item.source_event_id === event.id || item.external_object_id === assignment.id);
+    });
+    const auditLog = data.auditLogs.find((item) => {
+      return item.action === "action_started" &&
+        item.target_table === "assignments" &&
+        item.target_id === assignment.id;
+    });
+    const outboxRows = data.automationOutboxRows.filter((item) => {
+      return item.event_type === "action_started" ||
+        item.source_event_id === event.id ||
+        (integrationEvent?.id ? item.integration_event_id === integrationEvent.id : false);
+    });
+
+    if (!integrationEvent || !auditLog || outboxRows.length > 0) {
+      continue;
+    }
+
+    return {
+      assignment,
+      eventId: event.id,
+      integrationEventId: integrationEvent.id,
+      auditLogId: auditLog.id,
+    };
+  }
+
+  return null;
 }
 
 function findCandidateAssignment(assignments: Assignment[]): Assignment | null {
@@ -282,12 +347,13 @@ function buildChecks(
     env.MYMEDLIFE_ENABLE_ACTION_START_WRITE === "true" || stagingActionStartEnabled;
   const reviewAuthModeEnabled = isReviewSupabaseAuthMode(env.MYMEDLIFE_AUTH_MODE);
   const writeScopeEnabled = localWritesRequested || stagingActionStartEnabled;
+  const hostedStaging = isHostedStagingLane(env);
   const authModeLabel =
-    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+    hostedStaging
       ? "Hosted staging Supabase Auth mode is selected"
       : "Local Supabase Auth mode is selected";
   const authModeDetail =
-    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+    hostedStaging
       ? reviewAuthModeEnabled
         ? "MYMEDLIFE_AUTH_MODE=staging_supabase is set for the hosted review lane after the staging access path is approved."
         : "Set MYMEDLIFE_AUTH_MODE=staging_supabase only after the staging reviewer access path and review auth are approved."
@@ -298,19 +364,23 @@ function buildChecks(
   return [
     {
       key: "local_supabase_reads",
-      label: "Local Supabase read model is active",
+      label: "Supabase-backed read model is active",
       passed: data.source.mode === "supabase",
       detail:
         data.source.mode === "supabase"
-          ? "The app is reading local Supabase data instead of mock fallback data."
+          ? hostedStaging
+            ? "The app is reading Supabase-backed staging data instead of mock fallback data."
+            : "The app is reading Supabase-backed local data instead of mock fallback data."
           : "The app is using mock fallback data, so the first write drill cannot target a real assignment UUID.",
     },
     {
       key: "candidate_assignment",
-      label: "A startable assignment exists",
-      passed: Boolean(assignment),
+      label: "A startable member assignment exists",
+      passed: Boolean(assignment && isStartableAssignment(assignment)),
       detail: assignment
-        ? `Candidate action: ${assignment.title}.`
+        ? isStartableAssignment(assignment)
+          ? `Candidate action: ${assignment.title}.`
+          : `Candidate action ${assignment.title} is already ${assignment.status}. Reset or seed one member assignment to not_started or changes_requested before collecting fresh action-start proof.`
         : "No assignment is available for action-start testing.",
     },
     {
@@ -369,7 +439,12 @@ function buildChecks(
 function getStatus(
   checks: FirstWriteDrillCheck[],
   writeConfigEnabled: boolean,
+  readbackEvidence: FirstWriteReadbackEvidenceItem[],
 ): FirstWriteDrillStatus {
+  if (isReadbackEvidenceObserved(readbackEvidence)) {
+    return "evidence_recorded";
+  }
+
   const missingSupabase = checks.some((check) => {
     return (
       (check.key === "local_supabase_reads" ||
@@ -409,41 +484,63 @@ function getStatus(
 
 function buildSteps(
   candidate: FirstWriteActivationDrill["candidateAssignment"],
+  env: EnvSource = process.env,
 ): FirstWriteDrillStep[] {
+  const hostedStaging = isHostedStagingLane(env);
   const actionRoute = candidate?.route ?? "/rush-month/actions/member-push";
 
   return [
     {
       key: "setup_local_stack",
-      label: "Start local Supabase and seed fake data",
+      label: hostedStaging
+        ? "Confirm staging Supabase data and seeded pilot records"
+        : "Start local Supabase and seed fake data",
       route: "/admin",
       localActorEmail: "admin@mymedlife.test",
       plainEnglish:
-        "Staff should confirm the app is reading local Supabase data, not mock fallback data.",
+        hostedStaging
+          ? "Staff should confirm the hosted app is reading Supabase-backed staging data, not mock fallback data."
+          : "Staff should confirm the app is reading local Supabase data, not mock fallback data.",
       expectedResult:
-        "The drill check for local Supabase reads and candidate UUID is green.",
+        hostedStaging
+          ? "The drill check for Supabase-backed reads and candidate UUID is green."
+          : "The drill check for local Supabase reads and candidate UUID is green.",
       structuredEvents: [],
-      safetyBoundary: "Use fake seed data only. Do not connect production Supabase.",
+      safetyBoundary: hostedStaging
+        ? "Use staging seed data only. Do not connect production Supabase."
+        : "Use fake seed data only. Do not connect production Supabase.",
     },
     {
       key: "sign_in_member",
-      label: "Sign in as the fake member",
+      label: hostedStaging
+        ? "Sign in as the approved pilot member"
+        : "Sign in as the fake member",
       route: "/login",
       localActorEmail: "member.a@mymedlife.test",
       plainEnglish:
-        "The first write must use server-derived local auth identity, not the role switcher alone.",
+        hostedStaging
+          ? "The first hosted write must use the approved staging access path plus a server-derived staging auth identity, not the role switcher alone."
+          : "The first write must use server-derived local auth identity, not the role switcher alone.",
       expectedResult:
-        "The local auth session shows `member.a@mymedlife.test` as signed in.",
+        hostedStaging
+          ? "The staging auth session shows `member.a@mymedlife.test` as signed in."
+          : "The local auth session shows `member.a@mymedlife.test` as signed in.",
       structuredEvents: ["user_signed_in"],
-      safetyBoundary: "Production auth remains disabled.",
+      safetyBoundary: hostedStaging
+        ? "Production auth remains disabled. Stay inside the approved staging review window."
+        : "Production auth remains disabled.",
     },
     {
       key: "enable_narrow_flags",
-      label: "Enable only the action-start write flags",
+      label: hostedStaging
+        ? "Confirm only the staged action-start gate is enabled"
+        : "Enable only the action-start write flags",
       route: "/admin/first-write",
       localActorEmail: "admin@mymedlife.test",
       plainEnglish:
-        "Staff turns on the local write master switch and the action-start switch only for this localhost drill.",
+        hostedStaging
+          ? "Staff confirms the hosted staging review gate and the narrow action-start gate are the only write controls open for this proof run."
+          : "Staff turns on the local write master switch and the action-start switch only for this localhost drill.",
       expectedResult:
         "The drill still shows zero external sends and only one expected browser write.",
       structuredEvents: [],
@@ -526,11 +623,13 @@ function buildReadbackEvidence(
     {
       key: "assignment_status",
       label: "Assignment status readback",
-      status: candidate.status === "in_progress" ? "observed" : "missing",
+      status: isPostActionStartStatus(candidate.status) ? "observed" : "missing",
       detail:
         candidate.status === "in_progress"
           ? "The candidate assignment is already reading back as in progress."
-          : `The candidate assignment is currently ${candidate.status}; after the drill it should read back as in_progress.`,
+          : isPostActionStartStatus(candidate.status)
+            ? `The candidate assignment has already advanced beyond first-write into ${candidate.status}, which still proves the earlier action-start state was recorded.`
+            : `The candidate assignment is currently ${candidate.status}; after the drill it should read back as in_progress.`,
     },
     {
       key: "internal_event",
@@ -568,6 +667,25 @@ function buildReadbackEvidence(
   ];
 }
 
+function isPostActionStartStatus(status: Assignment["status"]): boolean {
+  return status === "in_progress" ||
+    status === "submitted" ||
+    status === "approved" ||
+    status === "changes_requested";
+}
+
+function isReadbackEvidenceObserved(
+  items: FirstWriteReadbackEvidenceItem[],
+): boolean {
+  const statuses = Object.fromEntries(items.map((item) => [item.key, item.status]));
+
+  return statuses.assignment_status === "observed" &&
+    statuses.internal_event === "observed" &&
+    statuses.integration_event === "observed" &&
+    statuses.audit_log === "observed" &&
+    statuses.automation_outbox === "safe_zero";
+}
+
 function buildVerificationPacket(
   status: FirstWriteDrillStatus,
   candidate: FirstWriteActivationDrill["candidateAssignment"],
@@ -575,6 +693,7 @@ function buildVerificationPacket(
   readbackEvidence: FirstWriteReadbackEvidenceItem[],
   env: EnvSource = process.env,
 ): FirstWriteVerificationPacket {
+  const hostedStaging = isHostedStagingLane(env);
   const evidenceStatuses = Object.fromEntries(
     readbackEvidence.map((item) => [item.key, item.status]),
   );
@@ -605,7 +724,7 @@ function buildVerificationPacket(
   return {
     status: packetStatus,
     title: "First-write verification packet",
-    plainEnglishDecision: getVerificationDecision(packetStatus, checks),
+    plainEnglishDecision: getVerificationDecision(packetStatus, checks, env),
     canPromoteToStagingReview: packetStatus === "evidence_observed",
     envSettings: [
       ...(env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
@@ -695,7 +814,9 @@ function buildVerificationPacket(
         label: "Confirm the packet is not blocked",
         route: "/admin/first-write",
         expectedProof:
-          "The packet status is ready to run locally or readback evidence is already observed.",
+          hostedStaging
+            ? "The packet status is ready for hosted staging proof or readback evidence is already observed."
+            : "The packet status is ready to run locally or readback evidence is already observed.",
       },
       {
         label: "Sign in as the fake member",
@@ -735,24 +856,49 @@ function buildVerificationPacket(
 function getVerificationDecision(
   status: FirstWriteVerificationPacketStatus,
   checks: FirstWriteDrillCheck[],
+  env: EnvSource = process.env,
 ): string {
+  const hostedStaging = isHostedStagingLane(env);
   if (status === "evidence_observed") {
-    return "Local evidence is strong enough for staff to discuss promoting this exact action-start pattern to staging review. This still does not approve production writes.";
+    return hostedStaging
+      ? "Hosted staging evidence is strong enough for staff to review this exact action-start pattern for the tiny pilot lane. This still does not approve production writes."
+      : "Local evidence is strong enough for staff to discuss promoting this exact action-start pattern to staging review. This still does not approve production writes.";
   }
 
   if (status === "needs_manual_audit_check") {
-    return "Core readback evidence is visible, but staff must manually confirm the audit log before staging review.";
+    return hostedStaging
+      ? "Core hosted staging readback evidence is visible, but staff must manually confirm the audit log before pilot review."
+      : "Core readback evidence is visible, but staff must manually confirm the audit log before staging review.";
   }
 
   if (status === "ready_to_run_locally") {
-    return "The local drill is ready to run. Staff should execute one fake member action-start write and then return here to confirm readback evidence.";
+    return hostedStaging
+      ? "The hosted staging drill is ready to run. Staff should execute one approved pilot-member action-start write and then return here to confirm readback evidence."
+      : "The local drill is ready to run. Staff should execute one fake member action-start write and then return here to confirm readback evidence.";
   }
 
   const firstBlockedCheck = checks.find((check) => !check.passed);
 
   return firstBlockedCheck
     ? `Do not run the drill yet. First blocker: ${firstBlockedCheck.label}.`
-    : "Do not run the drill yet. Local readiness has not been proven.";
+    : hostedStaging
+      ? "Do not run the drill yet. Hosted staging readiness has not been proven."
+      : "Do not run the drill yet. Local readiness has not been proven.";
+}
+
+function getPlainEnglishSummary(
+  status: FirstWriteDrillStatus,
+  env: EnvSource = process.env,
+): string {
+  if (status === "evidence_recorded") {
+    return isHostedStagingLane(env)
+      ? "Hosted staging already contains first-write readback evidence for one approved pilot member action-start. Reviewers should confirm the current assignment, event, integration, audit, and zero-send proof chain from this page rather than treating the write as undiscovered."
+      : "Local Supabase already contains first-write readback evidence for one fake member action-start. Reviewers should confirm the current assignment, event, integration, audit, and zero-send proof chain from this page rather than rerunning the write blindly.";
+  }
+
+  return isHostedStagingLane(env)
+    ? "This drill turns the first possible MVP save into a controlled staging proof run: one approved pilot member starts one Rush Month assignment, then staff confirm assignment status, event, integration event, and audit log readback. It does not approve production writes."
+    : "This drill turns the first possible MVP save into a controlled local test: one member starts one Rush Month assignment, then staff confirm assignment status, event, integration event, and audit log readback. It does not approve production writes.";
 }
 
 function buildHiddenVerificationPacket(): FirstWriteVerificationPacket {
@@ -773,11 +919,22 @@ function buildHiddenVerificationPacket(): FirstWriteVerificationPacket {
   };
 }
 
-function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedCloseout {
+function buildHostedCloseout(
+  env: EnvSource = process.env,
+  observedEvidence: {
+    assignment: Assignment;
+    eventId: string;
+    integrationEventId: string;
+    auditLogId: string;
+  } | null = null,
+): FirstWriteHostedCloseout {
   const pilotRegistry = getPhase2PilotRegistry(env);
   const firstHostedWrite =
     pilotRegistry.defaults.find((item) => item.key === "first_hosted_write")?.value ??
     "`action_started`";
+  const supportOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_owner",
+  );
   const supportPauseOwner = pilotRegistry.owners.find(
     (item) => item.key === "support_pause_channel",
   );
@@ -797,6 +954,14 @@ function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedClos
       key: "rollback_owner",
       label: "Rollback owner",
       recommendedDefault: rollbackOwner?.value ?? "pending Kiomi",
+    });
+  }
+
+  if (supportOwner?.status !== "recorded_owner") {
+    namedOwnersStillNeeded.push({
+      key: "support_owner",
+      label: "Support owner",
+      recommendedDefault: supportOwner?.value ?? "pending HQ ops",
     });
   }
 
@@ -822,6 +987,23 @@ function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedClos
     recommendedHostedWrite: firstHostedWrite,
     hostedDecision:
       `If the team approves one hosted write first, it should be ${firstHostedWrite} on staging only. That proves real auth identity, assignment status change, internal event, integration event, audit row, and zero external sends before any broader proof or workflow write opens.`,
+    currentObservedEvidence: observedEvidence
+      ? {
+          assignmentId: observedEvidence.assignment.id,
+          assignmentTitle: observedEvidence.assignment.title,
+          assignmentStatus: observedEvidence.assignment.status,
+          eventId: observedEvidence.eventId,
+          integrationEventId: observedEvidence.integrationEventId,
+          auditLogId: observedEvidence.auditLogId,
+          zeroOutboxSends: true,
+          reviewerNote:
+            observedEvidence.assignment.status === "submitted" ||
+              observedEvidence.assignment.status === "approved" ||
+              observedEvidence.assignment.status === "changes_requested"
+              ? "This assignment has already moved beyond the first write, so reviewers should use the event, integration, and audit chain as the authoritative start proof."
+              : "This assignment still reflects the narrow first-write posture. Reviewers can use the event, integration, and audit chain as the authoritative hosted start proof.",
+        }
+      : null,
     requiredReadback: [
       "Before-and-after route evidence from the signed-in student path.",
       "Assignment status changes to `in_progress`.",
@@ -849,7 +1031,7 @@ function buildHostedCloseout(env: EnvSource = process.env): FirstWriteHostedClos
       "HQ proof decisions",
       "coach decisions",
       "HubSpot writes",
-      "Luma writes",
+      "non-approved Luma behavior outside the staging-only event loop",
       "n8n writes",
       "warehouse and Power BI writes",
       "SMS, email, and AI actions",

@@ -28,7 +28,7 @@ export function AdminIntegrationsStepUpPanel({
 
   return (
     <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
         Secure access lock
       </p>
       <div className="mt-3 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -61,7 +61,7 @@ export function AdminIntegrationsStepUpPanel({
               type="password"
               defaultValue="password"
               autoComplete="current-password"
-              className="rounded-2xl border border-white/12 bg-[#f8fbff] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#2563eb]"
+              className="rounded-2xl border border-white/12 bg-[var(--background)] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[var(--mymedlife-primary-button)]"
             />
           </label>
         </div>
@@ -71,9 +71,9 @@ export function AdminIntegrationsStepUpPanel({
           className={[
             "rounded-2xl border px-4 py-3 text-sm leading-6",
             state.status === "success"
-              ? "border-blue-200 bg-blue-50 text-blue-700"
+              ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
               : state.status === "error"
-                ? "border-blue-200 bg-blue-50 text-blue-700"
+                ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
                 : "border-slate-200 bg-white text-slate-600",
           ].join(" ")}
         >
@@ -95,7 +95,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-full bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-wait disabled:opacity-70"
+      className="rounded-full bg-[var(--mymedlife-primary-button)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)] disabled:cursor-wait disabled:opacity-70"
     >
       {pending ? "Verifying..." : "Unlock secure area"}
     </button>

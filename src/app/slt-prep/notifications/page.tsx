@@ -64,9 +64,9 @@ export default async function SltPrepNotificationsPage({
         />
       ) : (
         <>
-          <section className="overflow-hidden rounded-[1.8rem] border border-[#1565c0]/12 bg-white shadow-[0_18px_55px_rgba(8,34,76,0.08)]">
+          <section className="overflow-hidden rounded-[1.8rem] border border-[var(--mymedlife-link-blue)]/12 bg-white shadow-[0_18px_55px_rgb(var(--mymedlife-deep-rgb)/0.08)]">
             <div className="space-y-5 px-4 pb-5 pt-4">
-              <section className="rounded-[1.4rem] border border-slate-200 bg-[#fbfdff] p-4">
+              <section className="rounded-[1.4rem] border border-slate-200 bg-[var(--mymedlife-surface-tint)] p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h1 className="text-[1.8rem] font-semibold tracking-tight text-slate-950">
@@ -83,7 +83,7 @@ export default async function SltPrepNotificationsPage({
                       checked
                       readOnly
                       type="checkbox"
-                      className="h-5 w-5 rounded border-slate-300 text-[#0b66cc] focus:ring-[#0b66cc]"
+                      className="h-5 w-5 rounded border-slate-300 text-[var(--mymedlife-admin-blue)] focus:ring-[var(--mymedlife-admin-blue)]"
                     />
                   </label>
                 </div>
@@ -139,7 +139,7 @@ export default async function SltPrepNotificationsPage({
                                 source: "notifications",
                                 travelerId: search.traveler,
                               })}
-                              className="inline-flex rounded-full bg-[#0b66cc] px-4 py-2 text-sm font-semibold text-white"
+                              className="inline-flex rounded-full bg-[var(--mymedlife-admin-blue)] px-4 py-2 text-sm font-semibold text-white"
                             >
                               {action.label}
                             </Link>
@@ -202,7 +202,7 @@ function PreferenceRow({ label, value }: { label: string; value: string }) {
           <p className="text-sm font-semibold text-slate-950">{label}</p>
           <p className="mt-1 text-sm text-slate-500">{value}</p>
         </div>
-        <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+        <span className="inline-flex rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
           Active
         </span>
       </div>

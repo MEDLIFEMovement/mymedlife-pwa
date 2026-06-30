@@ -47,11 +47,11 @@ export type ProofSubmissionResultPreview = {
 const proofSubmissionResultStates = [
   {
     code: "proof_submitted",
-    title: "Proof submitted for HQ review",
+    title: "Proof submitted for leader review",
     plainEnglishMessage:
-      "Your testimonial or proof note is saved for MEDLIFE headquarters to review before any broader sharing.",
+      "Your testimonial or proof note is saved for chapter leader review before any broader sharing or HQ sharing decisions.",
     nextStep:
-      "Show the pending HQ review state and keep public sharing off until HQ decides.",
+      "Show the pending leader review state and keep public sharing off while leader review happens.",
     tone: "success",
     success: true,
     retryAllowed: false,

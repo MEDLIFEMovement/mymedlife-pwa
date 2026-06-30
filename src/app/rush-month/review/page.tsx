@@ -156,8 +156,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
   return (
     <StudentAppShell actor={actor} showDebugTools={false}>
-      <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+      <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
           {showHqQueue ? "HQ proof-sharing review" : "Leader proof review"}
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -171,8 +171,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
       </section>
 
       {leaderReviewFocus.canReadFocus ? (
-        <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+        <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
             {leaderReviewFocus.roleLabel}
           </p>
           <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
@@ -187,13 +187,13 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             <div className="flex flex-wrap gap-2">
               <Link
                 href={leaderReviewFocus.primaryHref}
-                className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white"
               >
                 {leaderReviewFocus.primaryLabel}
               </Link>
               <Link
                 href={leaderReviewFocus.secondaryHref}
-                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-[#eef5ff] hover:text-slate-950"
+                className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 {leaderReviewFocus.secondaryLabel}
               </Link>
@@ -201,7 +201,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {leaderReviewFocus.items.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-[#bfdbfe] bg-white p-4">
+              <div key={item.label} className="rounded-2xl border border-[var(--mymedlife-border)] bg-white p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                   {item.label}
                 </p>
@@ -210,7 +210,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
               </div>
             ))}
           </div>
-          <p className="mt-4 rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] p-3 text-sm leading-6 text-slate-600">
+          <p className="mt-4 rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-3 text-sm leading-6 text-slate-600">
             {leaderReviewFocus.safetyNote}
           </p>
         </section>
@@ -249,7 +249,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
             });
 
             return (
-              <article key={evidence.id} className="rounded-3xl border border-[#bfdbfe] bg-white p-4">
+              <article key={evidence.id} className="rounded-3xl border border-[var(--mymedlife-border)] bg-white p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h2 className="text-xl font-semibold text-slate-950">
@@ -272,7 +272,7 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
                         key={label}
                         type="button"
                         disabled
-                        className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-4 py-2 text-sm font-semibold text-slate-700"
+                        className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-4 py-2 text-sm font-semibold text-slate-700"
                       >
                         {label}
                       </button>
@@ -297,8 +297,8 @@ export default async function ReviewPage({ searchParams }: ReviewPageProps) {
 
       {showHqQueue && firstDecisionPreview?.success ? (
         <>
-          <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
               Sharing trail preview
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">

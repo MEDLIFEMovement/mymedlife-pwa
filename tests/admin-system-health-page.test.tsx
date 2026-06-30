@@ -55,6 +55,8 @@ describe("admin system health page", () => {
     expect(html).toContain('href="/admin/master-data"');
     expect(html).toContain("Admin system health");
     expect(html).toContain("health review");
+    expect(html).toContain("Packet sources:");
+    expect(html).toContain('href="/admin/operations"');
     expect(html).not.toContain('href="/admin/integrations"');
   });
 

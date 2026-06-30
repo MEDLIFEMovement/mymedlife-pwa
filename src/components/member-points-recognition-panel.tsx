@@ -43,7 +43,7 @@ export function MemberPointsRecognitionPanel({
   return (
     <div className="grid gap-3">
       <SurfacePanel tone="info" className="overflow-hidden rounded-[2rem] p-4">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
           UCLA MEDLIFE
         </p>
         <h1 className="mt-2 text-[2.1rem] font-semibold leading-tight text-slate-950 sm:text-[2.5rem]">
@@ -66,7 +66,7 @@ export function MemberPointsRecognitionPanel({
           />
         </div>
         {sourceContext ? (
-          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-xl">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -91,7 +91,7 @@ export function MemberPointsRecognitionPanel({
           <SurfacePanel
             as="article"
             key={stat.label}
-            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
+            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-3.5 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]"
           >
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
               {stat.label}
@@ -141,8 +141,8 @@ export function MemberPointsRecognitionPanel({
               Math.min(100, Math.round((campaign.earned / campaign.available) * 100)),
             );
             const panelClassName = isSelected
-              ? "rounded-[1.4rem] border border-[#bfdbfe] bg-[#fbfdff] p-3.5 transition"
-              : "rounded-[1.4rem] border-slate-200 bg-[#dbeafe] p-3.5 transition hover:border-[#bfdbfe] hover:bg-[#fbfdff]";
+              ? "rounded-[1.4rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)] p-3.5 transition"
+              : "rounded-[1.4rem] border-slate-200 bg-[var(--mymedlife-badge-background)] p-3.5 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-tint)]";
             const buttonLabel = isSelected ? "Open campaign focus" : "Select campaign focus";
 
             return (
@@ -157,9 +157,9 @@ export function MemberPointsRecognitionPanel({
                     {campaign.earned} / {campaign.available} pts
                   </StatusPill>
                 </div>
-                <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#f8fbff]">
+                <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[var(--background)]">
                   <div
-                    className="h-full rounded-full bg-[#2b5fb4]"
+                    className="h-full rounded-full bg-[var(--mymedlife-action-blue)]"
                     style={{ width: `${width}%` }}
                   />
                 </div>
@@ -229,7 +229,7 @@ export function MemberPointsRecognitionPanel({
             <SurfacePanel
               as="article"
               key={row.id}
-              className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-3.5"
+              className="rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3.5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -252,7 +252,7 @@ export function MemberPointsRecognitionPanel({
             <SurfacePanel
               as="article"
               key={`${action.title}-${action.pointsLabel}`}
-              className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-3.5 transition hover:border-[#bfdbfe] hover:bg-[#fbfdff]"
+              className="rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3.5 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-tint)]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -276,7 +276,7 @@ export function MemberPointsRecognitionPanel({
         <p className="mt-3 text-sm leading-7 text-slate-700">{recognition.explainer.body}</p>
         <PanelButton
           href={recognition.explainer.ctaHref}
-          className="mt-4 border border-[#bfdbfe] bg-white text-[#2563eb]"
+          className="mt-4 border border-[var(--mymedlife-border)] bg-white text-[var(--mymedlife-primary-button)]"
         >
           {recognition.explainer.ctaLabel} →
         </PanelButton>
@@ -347,26 +347,26 @@ function PointsHeroCard({
 function getBadgeCardClassName(tone: MemberRecognitionSummary["badges"][number]["tone"]) {
   switch (tone) {
     case "gold":
-      return "rounded-[1.35rem] border border-[#2563eb]/30 bg-[#eff6ff] p-4";
+      return "rounded-[1.35rem] border border-[var(--mymedlife-primary-button)]/30 bg-[var(--background)] p-4";
     case "blue":
-      return "rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4";
+      return "rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)] p-4";
     case "slate":
-      return "rounded-[1.35rem] border border-slate-200 bg-[#dbeafe]/70 p-4 opacity-80";
+      return "rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-badge-background)]/70 p-4 opacity-80";
     default:
-      return "rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4";
+      return "rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)] p-4";
   }
 }
 
 function getBadgeIconClassName(tone: MemberRecognitionSummary["badges"][number]["tone"]) {
   switch (tone) {
     case "gold":
-      return "flex h-10 w-10 items-center justify-center rounded-full border border-[#2563eb]/40 bg-[#dbeafe] text-[#1d4ed8]";
+      return "flex h-10 w-10 items-center justify-center rounded-full border border-[var(--mymedlife-primary-button)]/40 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
     case "blue":
-      return "flex h-10 w-10 items-center justify-center rounded-full border border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]";
+      return "flex h-10 w-10 items-center justify-center rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] text-[var(--mymedlife-primary-button)]";
     case "slate":
-      return "flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-[#eff6ff] text-slate-500";
+      return "flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-[var(--background)] text-slate-500";
     default:
-      return "flex h-10 w-10 items-center justify-center rounded-full border border-[#bfdbfe] bg-[#eff6ff] text-[#2563eb]";
+      return "flex h-10 w-10 items-center justify-center rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] text-[var(--mymedlife-primary-button)]";
   }
 }
 

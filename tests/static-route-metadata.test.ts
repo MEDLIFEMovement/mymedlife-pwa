@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(66);
+    expect(entries).toHaveLength(67);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -41,6 +41,10 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("adminIntegrationOutbox")).toMatchObject({
       title: "Admin Integration Outbox",
+    });
+    expect(getStaticRouteMetadata("adminLumaLivePilot")).toMatchObject({
+      title: "Admin Luma Live Pilot",
+      description: expect.stringContaining("attendance import"),
     });
     expect(getStaticRouteMetadata("adminMasterData")).toMatchObject({
       title: "Admin Master Data",

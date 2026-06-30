@@ -13,10 +13,10 @@ export function ActionProofHandoffPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             Proof handoff
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{workspace.title}</h2>
@@ -26,14 +26,14 @@ export function ActionProofHandoffPanel({
         </div>
         <Link
           href={workspace.nextBestAction.href}
-          className="w-fit rounded-full bg-blue-300 px-4 py-2 text-sm font-semibold text-[#08224c]"
+          className="w-fit rounded-full bg-[var(--mymedlife-focus-blue)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
         >
           {workspace.nextBestAction.label}
         </Link>
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <article className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+        <article className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
             What to prepare
           </p>
@@ -45,7 +45,7 @@ export function ActionProofHandoffPanel({
           </p>
         </article>
 
-        <article className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+        <article className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
             Good proof checklist
           </p>
@@ -70,11 +70,11 @@ export function ActionProofHandoffPanel({
         />
       </div>
 
-      <div className="mt-4 rounded-2xl border border-blue-300/20 bg-blue-300/10 p-4">
-        <p className="text-sm font-semibold text-blue-100">
+      <div className="mt-4 rounded-2xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
+        <p className="text-sm font-semibold text-[var(--mymedlife-badge-background)]">
           What stays off here
         </p>
-        <ul className="mt-3 grid gap-2 text-xs leading-5 text-blue-50/72">
+        <ul className="mt-3 grid gap-2 text-xs leading-5 text-[var(--mymedlife-badge-background)]/72">
           {workspace.safetyNotes.map((note) => (
             <li key={note}>{note}</li>
           ))}
@@ -86,7 +86,7 @@ export function ActionProofHandoffPanel({
 
 function ProofHandoffList({ items, title }: { items: string[]; title: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
       <p className="text-sm font-semibold text-white">{title}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {items.map((item) => (

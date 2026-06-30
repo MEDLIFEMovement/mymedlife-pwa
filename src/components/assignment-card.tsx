@@ -22,10 +22,10 @@ export function AssignmentCard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+            <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
               {assignment.lane} lane
             </span>
-            <span className="rounded-full border border-[#2563eb]/30 bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
+            <span className="rounded-full border border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-info)]">
               {assignment.points} points
             </span>
           </div>
@@ -52,7 +52,7 @@ export function AssignmentCard({
 
       <Link
         href={actionHref ?? buildMemberActionRouteHref(assignment.id, { source })}
-        className="mt-4 inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
+        className="mt-4 inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
       >
         Open action
       </Link>

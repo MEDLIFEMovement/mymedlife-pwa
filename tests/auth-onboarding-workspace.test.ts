@@ -100,8 +100,8 @@ describe("auth onboarding workspace", () => {
     expect(workspace.launchPreflight?.counts).toEqual({
       total: 10,
       ready: 2,
-      watch: 7,
-      blocked: 1,
+      watch: 8,
+      blocked: 0,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
       productionUsersEnabled: 0,
@@ -132,7 +132,17 @@ describe("auth onboarding workspace", () => {
       workspace.launchPreflight?.items.find(
         (item) => item.key === "callback_url_plan",
       )?.status,
-    ).toBe("blocked");
+    ).toBe("watch");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "callback_url_plan",
+      )?.currentPosture,
+    ).toContain("Hosted staging reviewer proof already exists");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "auth_profile_mapping",
+      )?.currentPosture,
+    ).toContain("seeded DS/Admin reviewer");
     expect(
       workspace.launchPreflight?.items.find(
         (item) => item.key === "role_coverage_matrix",
@@ -158,6 +168,7 @@ describe("auth onboarding workspace", () => {
       MYMEDLIFE_PILOT_CAMPAIGN_SCOPE: "Rush Month only",
       MYMEDLIFE_PILOT_COHORT_SIZE: "8 students",
       MYMEDLIFE_PILOT_COACH_OWNER: "Coach Renee",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
       MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
       MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Kiomi Matsukawa",
     });
@@ -186,7 +197,17 @@ describe("auth onboarding workspace", () => {
       workspace.launchPreflight?.items.find(
         (item) => item.key === "support_rollback",
       )?.currentPosture,
+    ).toContain("Maya Support");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "support_rollback",
+      )?.currentPosture,
     ).toContain("#mymedlife-pilot-support");
+    expect(
+      workspace.launchPreflight?.items.find(
+        (item) => item.key === "support_rollback",
+      )?.label,
+    ).toBe("Name support owner, channel, and rollback owner");
     expect(
       workspace.launchPreflight?.items.find(
         (item) => item.key === "support_rollback",

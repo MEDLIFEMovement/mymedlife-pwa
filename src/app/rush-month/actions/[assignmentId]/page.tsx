@@ -25,7 +25,7 @@ import {
   getActionStartResultStates,
   getDisabledActionStartResultPreview,
 } from "@/services/action-start-result-states";
-import { getActionStartWriteReadiness } from "@/services/action-start-write";
+import { getActionStartWriteReadiness, isUuid } from "@/services/action-start-write";
 import { getActionProofHandoffWorkspace } from "@/services/action-proof-handoff";
 import {
   canSubmitProofForAssignment,
@@ -205,10 +205,12 @@ export default async function ActionDetailPage({
       source: effectiveMemberActionSource ?? undefined,
       step: "submitted",
     });
-    const showSubmitStep = memberActionStep === "submit" && canSubmitProof;
-    const showSubmittedStep = memberActionStep === "submitted" && canSubmitProof;
-    const showMemberSubmitState = showSubmitStep || showSubmittedStep;
-    const memberActionOrigin = relatedEvent
+  const showSubmitStep = memberActionStep === "submit" && canSubmitProof;
+  const showSubmittedStep = memberActionStep === "submitted" && canSubmitProof;
+  const showMemberSubmitState = showSubmitStep || showSubmittedStep;
+  const showServerBackedProofSubmit =
+    showSubmitStep && isUuid(assignment.id);
+  const memberActionOrigin = relatedEvent
       ? null
       : getMemberActionOrigin(effectiveMemberActionSource);
     const memberActionSourceContext = relatedEvent
@@ -255,7 +257,7 @@ export default async function ActionDetailPage({
                 </div>
                 <Link
                   href={memberActionSourceContext.href}
-                  className="w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                  className="w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                 >
                   {memberActionSourceContext.backLabel}
                 </Link>
@@ -267,14 +269,24 @@ export default async function ActionDetailPage({
             <div className="flex justify-start">
               <Link
                 href={defaultActionHref}
-                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 Back to action details
               </Link>
             </div>
           ) : null}
 
-          {showSubmitStep ? (
+          {showSubmitStep && showServerBackedProofSubmit ? (
+            <ProofSubmissionServerActionPanel
+              assignment={assignment}
+              readiness={proofSubmissionWriteReadiness}
+              resultCode={proofSubmissionResultCode}
+              defaultInput={proofSubmissionInput}
+              returnToHref={submitEvidenceHref}
+            />
+          ) : null}
+
+          {showSubmitStep && !showServerBackedProofSubmit ? (
             <MemberActionDetailPreview
               assignment={memberWorkspace.previewAssignment}
               editHref={submitEvidenceHref}
@@ -297,11 +309,19 @@ export default async function ActionDetailPage({
           ) : null}
 
           {!showMemberSubmitState ? (
-            <MemberActionDetailPanel
-              workspace={memberWorkspace}
-              actionHref={submitEvidenceHref}
-              sourceContext={memberActionSourceContext}
-            />
+            <section className="grid gap-3">
+              <ActionStartServerActionPanel
+                assignment={assignment}
+                readiness={actionStartWriteReadiness}
+                resultCode={actionStartResultCode}
+                returnToHref={defaultActionHref}
+              />
+              <MemberActionDetailPanel
+                workspace={memberWorkspace}
+                actionHref={submitEvidenceHref}
+                sourceContext={memberActionSourceContext}
+              />
+            </section>
           ) : null}
         </section>
       </StudentAppShell>
@@ -315,14 +335,14 @@ export default async function ActionDetailPage({
       showMobileQuickItemHelpers={!isMemberActionDetail}
       showDebugTools={!isMemberActionDetail}
     >
-      <section className="overflow-hidden rounded-[2rem] border border-[#5d8ff6]/30 bg-[linear-gradient(145deg,#0a3b88_0%,#0b4f9b_58%,#081a3a_100%)] p-5 shadow-[0_24px_80px_rgba(2,14,38,0.32)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--accent)]/30 bg-[linear-gradient(145deg,var(--mymedlife-gradient-blue-start)_0%,var(--mymedlife-gradient-blue-mid)_58%,var(--mymedlife-gradient-blue-end)_100%)] p-5 shadow-[0_24px_80px_rgb(var(--mymedlife-deep-rgb)/0.32)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-3xl">
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full border border-white/16 bg-white/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/82">
                 Member action detail
               </span>
-              <span className="rounded-full border border-[#2563eb]/30 bg-[#2563eb]/12 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+              <span className="rounded-full border border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-primary-button)]/12 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                 {assignment.points} points
               </span>
             </div>
@@ -352,7 +372,7 @@ export default async function ActionDetailPage({
 
       <DataSourceNotice source={data.source} />
 
-      <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+      <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
         <section className="grid gap-4 lg:grid-cols-[1.02fr_0.98fr]">
           <article className="app-surface-info rounded-[2rem] p-5">
             <p className="app-eyebrow app-eyebrow-blue">Action flow</p>
@@ -474,7 +494,7 @@ export default async function ActionDetailPage({
           <ActionProofHandoffPanel workspace={proofHandoff} />
 
           {actionStartedPreview.success ? (
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Local action contract
               </p>
@@ -543,7 +563,7 @@ export default async function ActionDetailPage({
             />
           )}
 
-          <Link href="/rush-month/actions" className="text-sm font-semibold text-[#93c5fd]">
+          <Link href="/rush-month/actions" className="text-sm font-semibold text-[var(--mymedlife-focus-blue)]">
             Back to all actions
           </Link>
       </>

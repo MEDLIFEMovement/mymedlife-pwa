@@ -1,43 +1,78 @@
+import { recordProductionLaunchPacketAction } from "@/app/admin/launch-gate/actions";
+import { ReviewPacketHistorySection } from "@/components/review-packet-history-section";
 import type {
   ProductionLaunchGate,
   ProductionLaunchEvidenceCheck,
+  ProductionEnvironmentReadinessItem,
   ProductionLaunchGateItem,
 } from "@/services/production-launch-gate";
 
 type ProductionLaunchGatePanelProps = {
   gate: ProductionLaunchGate;
+  packetResult?: string;
+  packetMessage?: string;
 };
 
 export function ProductionLaunchGatePanel({
   gate,
+  packetResult,
+  packetMessage,
 }: ProductionLaunchGatePanelProps) {
   if (!gate.canReadGate) {
     return null;
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             Production launch gate
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{gate.title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
             {gate.summary}
           </p>
+          <p className="mt-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2 text-xs leading-5 text-white/62">
+            Packet source:{" "}
+            <span className="font-semibold text-white">
+              {gate.packetSource.mode === "supabase" ? "Supabase review records" : "env/default fallback"}
+            </span>
+            {" · "}
+            {gate.packetSource.recordCount} recorded row
+            {gate.packetSource.recordCount === 1 ? "" : "s"}
+            {" · "}
+            {gate.packetSource.reason}
+          </p>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-6">
           <MiniStat label="Launch" value={gate.launchReady ? "yes" : "no"} />
           <MiniStat label="Blocked" value={`${gate.counts.blockedBeforeLive}`} />
+          <MiniStat label="Staging" value={`${gate.counts.stagingEvidenceRecorded}`} />
           <MiniStat
             label="Evidence"
             value={`${gate.counts.launchEvidenceChecks}`}
+          />
+          <MiniStat
+            label="Env"
+            value={`${gate.counts.environmentReadinessItems}`}
           />
           <MiniStat label="Writes" value={`${gate.browserWritesEnabled}`} />
           <MiniStat label="Sends" value={`${gate.externalWritesEnabled}`} />
         </div>
       </div>
+
+      {packetMessage ? (
+        <div
+          className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
+            packetResult === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-rose-200 bg-rose-50 text-rose-800"
+          }`}
+        >
+          {packetMessage}
+        </div>
+      ) : null}
 
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {gate.items.map((item) => (
@@ -45,10 +80,25 @@ export function ProductionLaunchGatePanel({
         ))}
       </div>
 
-      <article className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      <div className="mt-5 grid gap-3 xl:grid-cols-2">
+        <SnapshotCard
+          title="Recorded now"
+          description="These staging proof and production-packet items are already visible in the current review state."
+          items={gate.reviewSnapshot.recordedNow}
+          emptyMessage="No staging proof or production-packet items have been recorded yet."
+        />
+        <SnapshotCard
+          title="Still missing now"
+          description="These are the exact owner or evidence gaps still blocking a tiny live pilot."
+          items={gate.reviewSnapshot.stillMissing}
+          emptyMessage="No remaining launch blockers are listed here."
+        />
+      </div>
+
+      <article className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
               Staging and pilot proof
             </p>
             <h3 className="mt-2 text-xl font-semibold text-white">
@@ -73,7 +123,44 @@ export function ProductionLaunchGatePanel({
         </div>
       </article>
 
-      <p className="mt-4 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/58">
+      <article className="mt-5 rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
+              Supabase and Vercel readiness
+            </p>
+            <h3 className="mt-2 text-xl font-semibold text-white">
+              Production environment packet
+            </h3>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/62">
+              Confirm the production project, env vars, callbacks, DNS, backups,
+              rollback, and support ownership before a live pilot. This packet
+              records evidence needs only; it does not reveal or set secrets.
+            </p>
+          </div>
+          <MiniStat
+            label="Items"
+            value={`${gate.counts.environmentReadinessItems}`}
+          />
+        </div>
+
+        <div className="mt-4 grid gap-3 xl:grid-cols-2">
+          {gate.environmentReadiness.map((item) => (
+            <EnvironmentReadinessCard key={item.key} item={item} />
+          ))}
+        </div>
+      </article>
+
+      <div className="mt-5">
+        <ReviewPacketHistorySection
+          title="Recent production packet updates"
+          description="Use this to verify the latest durable production-packet answers, who recorded them, and why they belong in the readiness packet now."
+          emptyMessage="No durable production-launch packet rows have been recorded yet."
+          records={gate.packetRecords}
+        />
+      </div>
+
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/58">
         {gate.finalReviewPrompt}
       </p>
     </section>
@@ -82,7 +169,7 @@ export function ProductionLaunchGatePanel({
 
 function GateItemCard({ item }: { item: ProductionLaunchGateItem }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+    <article className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap gap-2">
@@ -118,14 +205,14 @@ function GateItemCard({ item }: { item: ProductionLaunchGateItem }) {
         {item.reviewRoutes.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-2.5 py-1 text-xs font-semibold text-white/58"
+            className="rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-2.5 py-1 text-xs font-semibold text-white/58"
           >
             {route}
           </span>
         ))}
       </div>
 
-      <p className="mt-3 text-xs leading-5 text-blue-100/70">
+      <p className="mt-3 text-xs leading-5 text-[var(--mymedlife-badge-background)]/70">
         Approval: {item.approvalRequired}
       </p>
     </article>
@@ -134,10 +221,10 @@ function GateItemCard({ item }: { item: ProductionLaunchGateItem }) {
 
 function LaunchEvidenceCard({ check }: { check: ProductionLaunchEvidenceCheck }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-4">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <span className="rounded-full border border-blue-300/30 bg-blue-300/15 px-3 py-1 text-xs font-semibold text-blue-100">
+          <span className="rounded-full border border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-badge-background)]">
             {check.status.replaceAll("_", " ")}
           </span>
           <h4 className="mt-3 text-base font-semibold text-white">
@@ -151,6 +238,19 @@ function LaunchEvidenceCard({ check }: { check: ProductionLaunchEvidenceCheck })
           {check.reviewRoute}
         </span>
       </div>
+
+      {check.supportingRoutes?.length ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {check.supportingRoutes.map((route) => (
+            <span
+              key={`${check.key}-${route}`}
+              className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58"
+            >
+              {route}
+            </span>
+          ))}
+        </div>
+      ) : null}
 
       <dl className="mt-4 space-y-3 text-sm leading-6">
         <div>
@@ -176,9 +276,200 @@ function LaunchEvidenceCard({ check }: { check: ProductionLaunchEvidenceCheck })
   );
 }
 
+function EnvironmentReadinessCard({
+  item,
+}: {
+  item: ProductionEnvironmentReadinessItem;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <span className="rounded-full border border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-badge-background)]">
+            {item.status.replaceAll("_", " ")}
+          </span>
+          <h4 className="mt-3 text-base font-semibold text-white">
+            {item.label}
+          </h4>
+          <p className="mt-1 text-xs leading-5 text-white/46">
+            {item.ownerLane}
+          </p>
+        </div>
+        <MiniToken label="Secrets" value={`${item.secretsShown}`} />
+      </div>
+
+      {item.reviewRoutes.length ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {item.reviewRoutes.map((route) => (
+            <span
+              key={`${item.key}-${route}`}
+              className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/58"
+            >
+              {route}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {item.recordedEvidence?.length ? (
+          <Checklist title="Recorded now" items={item.recordedEvidence} />
+        ) : null}
+        <Checklist title="Required evidence" items={item.requiredEvidence} />
+        <Checklist title="Safe defaults" items={item.safeDefaults} />
+      </div>
+
+      {item.envVarManifest ? (
+        <div className="mt-3 rounded-2xl bg-white/[0.05] p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">
+            Env-var manifest
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {item.envVarManifest.map((group) => (
+              <div key={group.label}>
+                <p className="text-xs font-semibold text-white/58">
+                  {group.label}
+                </p>
+                <ul className="mt-2 grid gap-1">
+                  {group.names.map((name) => (
+                    <li
+                      key={name}
+                      className="font-mono text-[0.72rem] leading-5 text-white/62"
+                    >
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {item.editableFields?.length ? (
+        <div className="mt-3 rounded-2xl bg-white/[0.05] p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">
+            Record names-only packet values
+          </p>
+          <div className="mt-3 grid gap-3">
+            {item.editableFields.map((field) => (
+              <form
+                key={`${item.key}-${field.recordKey}`}
+                action={recordProductionLaunchPacketAction}
+                className="rounded-2xl border border-white/10 bg-white/[0.06] p-3"
+              >
+                <input type="hidden" name="recordKey" value={field.recordKey} />
+                <input type="hidden" name="returnTo" value="/admin/launch-gate" />
+                <label className="block text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
+                  {field.label}
+                </label>
+                {field.multiline ? (
+                  <textarea
+                    name="value"
+                    defaultValue={field.value}
+                    rows={3}
+                    className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-3 py-2 text-sm text-white"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    name="value"
+                    defaultValue={field.value}
+                    className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-3 py-2 text-sm text-white"
+                  />
+                )}
+                <p className="mt-2 text-xs leading-5 text-white/50">
+                  {field.description}
+                </p>
+                <label className="mt-3 block text-xs font-semibold uppercase tracking-[0.14em] text-white/50">
+                  Reason
+                </label>
+                <textarea
+                  name="reason"
+                  rows={2}
+                  placeholder={`Why does this ${field.label.toLowerCase()} answer belong in the packet now?`}
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950/20 px-3 py-2 text-sm text-white"
+                />
+                <button
+                  type="submit"
+                  className="mt-3 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+                >
+                  Save packet value
+                </button>
+              </form>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <p className="mt-3 text-xs leading-5 text-white/58">
+        Blocked until: {item.blockedUntil}
+      </p>
+    </div>
+  );
+}
+
+function Checklist({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-2xl bg-white/[0.05] p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">
+        {title}
+      </p>
+      <ul className="mt-2 grid gap-2">
+        {items.map((item) => (
+          <li key={item} className="text-sm leading-6 text-white/62">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function SnapshotCard({
+  title,
+  description,
+  items,
+  emptyMessage,
+}: {
+  title: string;
+  description: string;
+  items: Array<{ label: string; detail: string }>;
+  emptyMessage: string;
+}) {
+  return (
+    <article className="rounded-3xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-badge-background)]/70">
+        {title}
+      </p>
+      <p className="mt-2 text-sm leading-6 text-white/62">{description}</p>
+
+      <div className="mt-4 grid gap-3">
+        {items.length > 0 ? (
+          items.map((item) => (
+            <div
+              key={`${title}-${item.label}`}
+              className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3"
+            >
+              <p className="text-sm font-semibold text-white">{item.label}</p>
+              <p className="mt-1 text-sm leading-6 text-white/62">
+                {item.detail}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-sm leading-6 text-white/62">
+            {emptyMessage}
+          </p>
+        )}
+      </div>
+    </article>
+  );
+}
+
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -198,8 +489,8 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: ProductionLaunchGateItem["status"] }) {
   const className =
     status === "local_evidence_ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-      : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+      : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

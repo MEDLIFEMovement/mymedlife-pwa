@@ -30,7 +30,7 @@ export function ControlledPilotReadinessPanel({
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/admin/staff-dry-run"
-              className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#10223f]"
+              className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
             >
               Open staff dry-run guide
             </Link>
@@ -131,12 +131,12 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: PilotReadinessStatus }) {
   const className =
     status === "ready_now"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "needs_decision"
-        ? "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]"
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] text-[var(--mymedlife-primary-button)]"
         : status === "blocked_before_pilot"
-          ? "border-blue-200 bg-blue-50 text-blue-700"
-          : "border-blue-200 bg-blue-50 text-blue-700";
+          ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+          : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

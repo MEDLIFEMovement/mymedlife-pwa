@@ -1,3 +1,14 @@
+import { createSupabaseAppClient } from "@/lib/supabase-app-client";
+import {
+  getReviewPacketRegistry,
+  type ReviewPacketRecord,
+  type ReviewPacketSource,
+} from "@/services/review-packet-registry";
+import {
+  isResolvedReviewPacketValue,
+  readReviewPacketValue,
+} from "@/services/review-packet-value";
+
 type EnvSource = Record<string, string | undefined>;
 
 export type Phase2PilotDefaultStatus = "recommended_default" | "recorded_final";
@@ -9,7 +20,7 @@ export type Phase2PilotDefaultRecord = {
   value: string;
   status: Phase2PilotDefaultStatus;
   whyThisIsDefault: string;
-  envKey?: string;
+  envKey: string;
 };
 
 export type Phase2PilotOwnerRecord = {
@@ -28,6 +39,8 @@ export type Phase2PilotOwnerRecord = {
 };
 
 export type Phase2PilotRegistry = {
+  source: ReviewPacketSource;
+  records: ReviewPacketRecord[];
   defaults: Phase2PilotDefaultRecord[];
   owners: Phase2PilotOwnerRecord[];
   approvalReplyBlock: string[];
@@ -67,7 +80,7 @@ const defaultDefinitions: DefaultDefinition[] = [
   {
     key: "cohort_size",
     label: "Pilot cohort size",
-    defaultValue: "5-10 students",
+    defaultValue: "5-15 students",
     envKey: "MYMEDLIFE_PILOT_COHORT_SIZE",
     whyThisIsDefault:
       "That is large enough to make hosted auth and review feel real without hiding product or support issues inside a broad rollout.",
@@ -91,19 +104,20 @@ const defaultDefinitions: DefaultDefinition[] = [
   {
     key: "event_nps_posture",
     label: "Event and NPS posture",
-    defaultValue: "manual-first",
+    defaultValue:
+      "Luma-backed event, RSVP, and attendance loop with manual support review",
     envKey: "MYMEDLIFE_PILOT_EVENT_NPS_POSTURE",
     whyThisIsDefault:
-      "Manual attendance and NPS handling keeps the first pilot independent of Luma write automation.",
+      "Events, RSVP, attendance, points, and leaderboard impact are the core pilot loop, while NPS and support review stay manual-first.",
   },
   {
     key: "integration_hold",
     label: "External integration hold",
     defaultValue:
-      "HubSpot, Luma writes, n8n, warehouse, Power BI, SMS, email, and AI actions stay off",
+      "Only the approved Luma event loop may be rehearsed; HubSpot, n8n, warehouse, Power BI, SMS, email, and AI actions stay off",
     envKey: "MYMEDLIFE_PILOT_INTEGRATION_HOLD",
     whyThisIsDefault:
-      "The app/Supabase loop should prove itself before downstream systems react to pilot behavior.",
+      "The Luma event loop is the first approved external-family pilot path; every other downstream system should wait until the app/Supabase loop is proven.",
   },
 ];
 
@@ -145,6 +159,15 @@ const ownerDefinitions: OwnerDefinition[] = [
       "A DS owner is needed for audit/outbox inspection, staging posture, and explicit integration hold confirmation.",
   },
   {
+    key: "support_owner",
+    label: "Support owner",
+    defaultValue: "pending HQ ops",
+    envKey: "MYMEDLIFE_PILOT_SUPPORT_OWNER",
+    confirmationNeededFrom: "HQ ops",
+    whyItMatters:
+      "One named person must own day-one pilot triage, wrong-role fixes, student support handoff, and pause decisions during the first live pilot.",
+  },
+  {
     key: "support_pause_channel",
     label: "Support and pause channel",
     defaultValue: "pending HQ ops",
@@ -164,30 +187,100 @@ const ownerDefinitions: OwnerDefinition[] = [
   },
 ];
 
+const phase2PilotPacketKeys = [
+  ...defaultDefinitions.map((definition) => definition.envKey),
+  ...ownerDefinitions.map((definition) => definition.envKey),
+] as const;
+
 export function getPhase2PilotRegistry(
   env: EnvSource = process.env,
 ): Phase2PilotRegistry {
+  return buildPhase2PilotRegistry({
+    env,
+    source: {
+      mode: "env",
+      reason:
+        "Using env-backed pilot scope defaults and owner slots because no Supabase review packet rows have been requested for this read path.",
+      recordCount: countRecordedEnvValues(env),
+    },
+    records: [],
+    packetValues: new Map(),
+  });
+}
+
+export async function getPhase2PilotRegistryDurable(
+  env: EnvSource = process.env,
+  deps: {
+    createClient?: typeof createSupabaseAppClient;
+  } = {},
+): Promise<Phase2PilotRegistry> {
+  const registry = await getReviewPacketRegistry(
+    {
+      category: "pilot_scope",
+      env,
+    },
+    deps,
+  );
+
+  return buildPhase2PilotRegistry({
+    env,
+    source: registry.source,
+    records: registry.records,
+    packetValues: registry.values,
+  });
+}
+
+function buildApprovalReplyBlock(
+  defaults: Phase2PilotDefaultRecord[],
+  owners: Phase2PilotOwnerRecord[],
+): string[] {
+  return [
+    "approved as written",
+    "",
+    ...defaults.map((item) => `${item.label}: ${item.value}`),
+    ...owners.map((item) => `${item.label}: ${item.value}`),
+  ];
+}
+
+function buildPhase2PilotRegistry(input: {
+  env: EnvSource;
+  source: ReviewPacketSource;
+  records: ReviewPacketRecord[];
+  packetValues: Map<string, string>;
+}): Phase2PilotRegistry {
   const defaults = defaultDefinitions.map((definition) => {
-    const recordedValue = readRecordedValue(env, definition.envKey);
+    const recordedValue = readReviewPacketValue(
+      input.env,
+      definition.envKey,
+      input.packetValues,
+    );
 
     return {
       key: definition.key,
       label: definition.label,
       value: recordedValue ?? definition.defaultValue,
-      status: recordedValue ? "recorded_final" : "recommended_default",
+      status: isResolvedReviewPacketValue(recordedValue)
+        ? "recorded_final"
+        : "recommended_default",
       whyThisIsDefault: definition.whyThisIsDefault,
       envKey: definition.envKey,
     } satisfies Phase2PilotDefaultRecord;
   });
 
   const owners = ownerDefinitions.map((definition) => {
-    const recordedValue = readRecordedValue(env, definition.envKey);
+    const recordedValue = readReviewPacketValue(
+      input.env,
+      definition.envKey,
+      input.packetValues,
+    );
 
     return {
       key: definition.key,
       label: definition.label,
       value: recordedValue ?? definition.defaultValue,
-      status: recordedValue ? "recorded_owner" : "pending_named_owner",
+      status: isResolvedReviewPacketValue(recordedValue)
+        ? "recorded_owner"
+        : "pending_named_owner",
       envKey: definition.envKey,
       confirmationNeededFrom: definition.confirmationNeededFrom,
       whyItMatters: definition.whyItMatters,
@@ -195,6 +288,8 @@ export function getPhase2PilotRegistry(
   });
 
   return {
+    source: input.source,
+    records: input.records,
     defaults,
     owners,
     approvalReplyBlock: buildApprovalReplyBlock(defaults, owners),
@@ -212,27 +307,22 @@ export function getPhase2PilotRegistry(
   };
 }
 
-function buildApprovalReplyBlock(
-  defaults: Phase2PilotDefaultRecord[],
-  owners: Phase2PilotOwnerRecord[],
-): string[] {
-  return [
-    "approved as written",
-    "",
-    ...defaults.map((item) => `${item.label}: ${item.value}`),
-    ...owners.map((item) => `${item.label}: ${item.value}`),
-  ];
+function countRecordedEnvValues(env: EnvSource): number {
+  return phase2PilotPacketKeys.reduce((count, key) => {
+    return isResolvedReviewPacketValue(env[key]) ? count + 1 : count;
+  }, 0);
 }
 
-function readRecordedValue(
-  env: EnvSource,
-  key: string | undefined,
-): string | null {
-  if (!key) {
-    return null;
-  }
+export type Phase2PilotPacketKey = (typeof phase2PilotPacketKeys)[number];
 
-  const value = env[key]?.trim();
+export function isPhase2PilotPacketKey(
+  key: string,
+): key is Phase2PilotPacketKey {
+  return (phase2PilotPacketKeys as readonly string[]).includes(key);
+}
 
-  return value ? value : null;
+export function requiresResolvedPhase2PilotPacketValue(
+  key: Phase2PilotPacketKey,
+): boolean {
+  return (phase2PilotPacketKeys as readonly string[]).includes(key);
 }

@@ -43,10 +43,10 @@ export function EnvironmentSafetySummaryPanel({
 function EnvironmentItemCard({ item }: { item: EnvironmentSafetyItem }) {
   const statusClass =
     item.status === "safe"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : item.status === "watch"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <article className="app-surface rounded-[1.3rem] p-4">

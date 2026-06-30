@@ -100,6 +100,7 @@ describe("home page", () => {
     expect(html).toContain("Luma");
     expect(html).toContain("RSVP");
     expect(html).toContain("RSVP&#x27;d");
+    expect(html).toContain("Leaderboard");
     expect(html).toContain("Bruin Walk Table 7");
     expect(html).toContain("Add 5 leads");
     expect(html).toContain(">Submitted<");

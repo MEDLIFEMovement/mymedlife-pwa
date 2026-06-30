@@ -1,6 +1,11 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type {
+  ReviewPacketRecord,
+  ReviewPacketSource,
+} from "@/services/review-packet-registry";
 import {
   getPhase2PilotRegistry,
+  getPhase2PilotRegistryDurable,
   type Phase2PilotDefaultStatus,
   type Phase2PilotOwnerStatus,
 } from "@/services/phase-2-pilot-registry";
@@ -39,7 +44,12 @@ export type MinimumPilotPath = {
   label: string;
   route: string;
   localActorEmail: string;
-  pilotMode: "staff_rehearsal" | "first_live_candidate" | "manual_first" | "blocked";
+  pilotMode:
+    | "staff_rehearsal"
+    | "first_live_candidate"
+    | "controlled_luma_pilot"
+    | "manual_first"
+    | "blocked";
   whatMustWork: string;
   structuredEvents: string[];
   safetyBoundary: string;
@@ -57,6 +67,7 @@ export type PilotScopeDecision = {
 export type PilotCloseoutOwnerSlot = {
   key: string;
   label: string;
+  recordKey: string;
   status: Phase2PilotOwnerStatus;
   recommendedDefault: string;
   confirmationNeededFrom: "Nick/team" | "Kiomi" | "HQ ops" | "Coach lead" | "Data solutions";
@@ -66,6 +77,7 @@ export type PilotCloseoutOwnerSlot = {
 export type PilotCloseoutDefault = {
   key: string;
   label: string;
+  recordKey: string;
   status: Phase2PilotDefaultStatus;
   recommendedDefault: string;
   whyThisIsDefault: string;
@@ -75,8 +87,20 @@ export type PilotScopePlanner = {
   canReadPlanner: boolean;
   title: string;
   verdict: "pilot_scope_not_approved";
+  packetSource: ReviewPacketSource;
+  packetRecords: ReviewPacketRecord[];
   plainEnglishSummary: string;
   recommendedScope: string;
+  reviewSnapshot: {
+    recordedNow: Array<{
+      label: string;
+      detail: string;
+    }>;
+    stillMissing: Array<{
+      label: string;
+      detail: string;
+    }>;
+  };
   closeoutDefaults: PilotCloseoutDefault[];
   ownerSlots: PilotCloseoutOwnerSlot[];
   approvalReplyGuide: string[];
@@ -96,6 +120,12 @@ export type PilotScopePlanner = {
   };
 };
 
+type PilotDefaultsByKey = Partial<
+  Record<PilotCloseoutDefault["key"], PilotCloseoutDefault>
+>;
+
+type PilotOwnersByKey = Partial<Record<PilotCloseoutOwnerSlot["key"], PilotCloseoutOwnerSlot>>;
+
 export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanner {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
@@ -104,9 +134,19 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
       canReadPlanner: false,
       title: "Pilot scope planner hidden for this role",
       verdict: "pilot_scope_not_approved",
+      packetSource: {
+        mode: "env",
+        reason: "Pilot scope review is hidden for this role.",
+        recordCount: 0,
+      },
+      packetRecords: [],
       plainEnglishSummary:
         "Pilot planning is an HQ review surface, not a student or chapter operating view.",
       recommendedScope: "Use the student, leader, or coach operating routes instead.",
+      reviewSnapshot: {
+        recordedNow: [],
+        stillMissing: [],
+      },
       closeoutDefaults: [],
       ownerSlots: [],
       approvalReplyGuide: [],
@@ -120,11 +160,11 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
   }
 
   const candidates = getPilotCandidates();
-  const decisions = getPilotDecisions();
   const registry = getPhase2PilotRegistry();
   const closeoutDefaults = registry.defaults.map((item) => ({
     key: item.key,
     label: item.label,
+    recordKey: item.envKey,
     status: item.status,
     recommendedDefault: item.value,
     whyThisIsDefault: item.whyThisIsDefault,
@@ -132,20 +172,25 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
   const ownerSlots = registry.owners.map((item) => ({
     key: item.key,
     label: item.label,
+    recordKey: item.envKey,
     status: item.status,
     recommendedDefault: item.value,
     confirmationNeededFrom: item.confirmationNeededFrom,
     whyItMatters: item.whyItMatters,
   }));
+  const decisions = getPilotDecisions(closeoutDefaults, ownerSlots);
 
   return {
     canReadPlanner: true,
     title: getTitle(surfaceFamily),
     verdict: "pilot_scope_not_approved",
+    packetSource: registry.source,
+    packetRecords: registry.records,
     plainEnglishSummary:
       "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
     recommendedScope:
-      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-10 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one support/pause channel, and `action_started` as the first hosted write while every external integration stays manual or disabled.",
+      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-15 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one named support owner, one support/pause channel, `action_started` as the first hosted write, and the approved Luma event/RSVP/attendance/points loop as the only external-family pilot path.",
+    reviewSnapshot: getPilotReviewSnapshot(closeoutDefaults, ownerSlots, decisions),
     closeoutDefaults,
     ownerSlots,
     approvalReplyGuide: [
@@ -159,8 +204,87 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
     decisions,
     safetyRules: [
       "Do not invite real students until staging, auth, first write path, proof consent, and support owner are approved.",
-      "Keep Luma, HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes disabled for the first pilot unless separately approved.",
-      "Use manual event attendance/NPS handling first unless the team approves a narrow Luma read/import path.",
+      "Keep HubSpot, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior disabled for the first pilot.",
+      "Use the approved Luma event/RSVP/attendance/points loop only after hosted staging proof and rollback ownership are recorded.",
+      "Treat bridge videos/testimonials as HQ-owned proof; chapter leaders can help collect them but do not approve network-wide sharing.",
+      "Use fake or staff-only data during dry runs. Do not mix real student data into local review.",
+    ],
+    counts: {
+      candidates: candidates.length,
+      recommendedCandidates: candidates.filter(
+        (candidate) => candidate.status === "recommended_after_gates",
+      ).length,
+      decisionsNeeded: decisions.filter(
+        (decision) => decision.status === "needs_decision",
+      ).length,
+      blockedDecisions: decisions.filter(
+        (decision) => decision.status === "blocked_before_pilot",
+      ).length,
+      pendingNamedOwners: ownerSlots.filter(
+        (slot) => slot.status === "pending_named_owner",
+      ).length,
+      browserWritesExpected: 0,
+      externalWritesExpected: 0,
+    },
+  };
+}
+
+export async function getPilotScopePlannerDurable(
+  actor: LocalActorContext,
+): Promise<PilotScopePlanner> {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
+    return getPilotScopePlanner(actor);
+  }
+
+  const candidates = getPilotCandidates();
+  const registry = await getPhase2PilotRegistryDurable();
+  const closeoutDefaults = registry.defaults.map((item) => ({
+    key: item.key,
+    label: item.label,
+    recordKey: item.envKey,
+    status: item.status,
+    recommendedDefault: item.value,
+    whyThisIsDefault: item.whyThisIsDefault,
+  }));
+  const ownerSlots = registry.owners.map((item) => ({
+    key: item.key,
+    label: item.label,
+    recordKey: item.envKey,
+    status: item.status,
+    recommendedDefault: item.value,
+    confirmationNeededFrom: item.confirmationNeededFrom,
+    whyItMatters: item.whyItMatters,
+  }));
+  const decisions = getPilotDecisions(closeoutDefaults, ownerSlots);
+
+  return {
+    canReadPlanner: true,
+    title: getTitle(surfaceFamily),
+    verdict: "pilot_scope_not_approved",
+    packetSource: registry.source,
+    packetRecords: registry.records,
+    plainEnglishSummary:
+      "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
+    recommendedScope:
+      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-15 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one named support owner, one support/pause channel, `action_started` as the first hosted write, and the approved Luma event/RSVP/attendance/points loop as the only external-family pilot path.",
+    reviewSnapshot: getPilotReviewSnapshot(closeoutDefaults, ownerSlots, decisions),
+    closeoutDefaults,
+    ownerSlots,
+    approvalReplyGuide: [
+      "Reply `approved as written` if the defaults below are acceptable for the first pilot.",
+      "If anything needs to change, replace only the chapter, owner slots, cohort size, event/NPS posture, or support/rollback lines.",
+      "Do not open broader writes, uploads, or external sends in the same approval step.",
+    ],
+    approvalReplyBlock: registry.approvalReplyBlock,
+    candidates,
+    minimumPilotPath: getMinimumPilotPath(),
+    decisions,
+    safetyRules: [
+      "Do not invite real students until staging, auth, first write path, proof consent, and support owner are approved.",
+      "Keep HubSpot, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior disabled for the first pilot.",
+      "Use the approved Luma event/RSVP/attendance/points loop only after hosted staging proof and rollback ownership are recorded.",
       "Treat bridge videos/testimonials as HQ-owned proof; chapter leaders can help collect them but do not approve network-wide sharing.",
       "Use fake or staff-only data during dry runs. Do not mix real student data into local review.",
     ],
@@ -232,11 +356,12 @@ function getPilotCandidates(): PilotScopeCandidate[] {
         "staging environment",
         "auth/onboarding",
         "first write path via /admin/first-write",
+        "Luma event-loop proof via /admin/luma-live-pilot",
         "proof consent/storage posture",
-        "named coach/support owner",
+        "named coach owner and support owner",
       ],
       mustStayManualOrDisabled: [
-        "Luma writes",
+        "non-approved Luma behavior",
         "HubSpot sync",
         "n8n automation",
         "warehouse exports",
@@ -339,20 +464,22 @@ function getMinimumPilotPath(): MinimumPilotPath[] {
       safetyBoundary: "Assignment creation and reminders can stay disabled in the first pilot.",
     },
     {
-      key: "event_nps_manual",
-      label: "Event attendance and NPS run manually first",
+      key: "event_luma_loop",
+      label: "Luma event, RSVP, attendance, and points loop",
       route: "/rush-month/events",
       localActorEmail: "leader.a@mymedlife.test",
-      pilotMode: "manual_first",
+      pilotMode: "controlled_luma_pilot",
       whatMustWork:
-        "Event owners, student action, NPS prompt, and proof prompt should be clear even if Luma import is manual.",
+        "The pilot event must connect Luma event identity, member RSVP, attendance import, points award, and leaderboard impact without turning on reminders or broad automation.",
       structuredEvents: [
         "luma_event_linked",
-        "luma_attendance_import_mocked",
+        "luma_rsvp_recorded",
+        "luma_attendance_imported",
+        "event_points_awarded",
         "kpi_event_recorded",
       ],
       safetyBoundary:
-        "No Luma writes, NPS reminders, n8n workflow, or warehouse export should run in the first pilot.",
+        "Only the approved Luma event-loop path may run; Luma reminders, webhooks, NPS automation, n8n workflow, HubSpot sync, and warehouse export stay off.",
     },
     {
       key: "proof_intake",
@@ -380,13 +507,33 @@ function getMinimumPilotPath(): MinimumPilotPath[] {
   ];
 }
 
-function getPilotDecisions(): PilotScopeDecision[] {
+function getPilotDecisions(
+  closeoutDefaults: PilotCloseoutDefault[],
+  ownerSlots: PilotCloseoutOwnerSlot[],
+): PilotScopeDecision[] {
+  const defaultsByKey = Object.fromEntries(
+    closeoutDefaults.map((item) => [item.key, item]),
+  ) as PilotDefaultsByKey;
+  const ownersByKey = Object.fromEntries(
+    ownerSlots.map((item) => [item.key, item]),
+  ) as PilotOwnersByKey;
+  const pilotGroupReady =
+    defaultsByKey.pilot_chapter?.status === "recorded_final" &&
+    defaultsByKey.campaign_scope?.status === "recorded_final" &&
+    defaultsByKey.cohort_size?.status === "recorded_final";
+  const firstWriteReady =
+    defaultsByKey.first_hosted_write?.status === "recorded_final";
+  const eventLoopReady =
+    defaultsByKey.event_nps_posture?.status === "recorded_final" &&
+    defaultsByKey.integration_hold?.status === "recorded_final";
+  const coachOwnerReady = ownersByKey.coach_owner?.status === "recorded_owner";
+
   return [
     {
       key: "pilot_group",
       label: "Choose the first pilot group",
       owner: "Nick/team",
-      status: "needs_decision",
+      status: pilotGroupReady ? "staff_ready" : "needs_decision",
       recommendation:
         "Pick one chapter or one staff-plus-chapter rehearsal group, not multiple universities.",
       whyItMatters:
@@ -396,7 +543,7 @@ function getPilotDecisions(): PilotScopeDecision[] {
       key: "first_write",
       label: "Approve the first write path",
       owner: "Kiomi",
-      status: "blocked_before_pilot",
+      status: firstWriteReady ? "staff_ready" : "blocked_before_pilot",
       recommendation:
         "Use `action_started` first; keep assignment creation, proof upload, HQ decisions, and coach decisions locked.",
       whyItMatters:
@@ -404,13 +551,13 @@ function getPilotDecisions(): PilotScopeDecision[] {
     },
     {
       key: "event_nps",
-      label: "Choose manual versus Luma/NPS import",
+      label: "Confirm the Luma event loop and manual NPS posture",
       owner: "HQ ops",
-      status: "needs_decision",
+      status: eventLoopReady ? "staff_ready" : "needs_decision",
       recommendation:
-        "Start with manual event/NPS handling and structured event logs before any Luma automation.",
+        "Use the approved Luma event/RSVP/attendance/points loop for the pilot, but keep NPS handling manual-first and do not enable reminders, webhooks, or downstream automation.",
       whyItMatters:
-        "Rush Month can prove the student behavior loop before external event automation adds failure modes.",
+        "Events and points are the core product loop, while NPS and downstream automation can wait until attendance and leaderboard behavior are proven.",
     },
     {
       key: "proof_rules",
@@ -424,23 +571,23 @@ function getPilotDecisions(): PilotScopeDecision[] {
     },
     {
       key: "coach_owner",
-      label: "Name the coach/support owner",
+      label: "Name the coach owner",
       owner: "Coach lead",
-      status: "needs_decision",
+      status: coachOwnerReady ? "staff_ready" : "needs_decision",
       recommendation:
         "Assign one person who owns pilot questions, risk review, and intervention decisions.",
       whyItMatters:
-        "A pilot without named support ownership turns product bugs and chapter confusion into invisible churn.",
+        "A pilot without a named coach owner turns chapter risk and intervention decisions into invisible churn.",
     },
     {
       key: "external_writes",
       label: "Keep external writes disabled",
       owner: "Data solutions",
-      status: "staff_ready",
+      status: eventLoopReady ? "staff_ready" : "needs_decision",
       recommendation:
-        "Use the outbox for visibility only; do not send HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, or AI writes.",
+        "Use the outbox for visibility only outside the approved Luma event loop; do not send HubSpot, n8n, warehouse, Power BI, SMS, email, AI, or non-approved Luma writes.",
       whyItMatters:
-        "The app/Supabase operating loop must be stable before external systems start reacting to it.",
+        "The app/Supabase operating loop and the controlled Luma event path must be stable before any other external system starts reacting to pilot behavior.",
     },
   ];
 }
@@ -469,5 +616,97 @@ function emptyCounts(): PilotScopePlanner["counts"] {
     pendingNamedOwners: 0,
     browserWritesExpected: 0,
     externalWritesExpected: 0,
+  };
+}
+
+function getPilotReviewSnapshot(
+  closeoutDefaults: PilotCloseoutDefault[],
+  ownerSlots: PilotCloseoutOwnerSlot[],
+  decisions: PilotScopeDecision[],
+): PilotScopePlanner["reviewSnapshot"] {
+  const recordedDefaults = closeoutDefaults.filter(
+    (item) => item.status === "recorded_final",
+  );
+  const pendingDefaults = closeoutDefaults.filter(
+    (item) => item.status !== "recorded_final",
+  );
+  const recordedOwners = ownerSlots.filter(
+    (slot) => slot.status === "recorded_owner",
+  );
+  const pendingOwners = ownerSlots.filter(
+    (slot) => slot.status !== "recorded_owner",
+  );
+  const staffReadyDecisions = decisions.filter(
+    (decision) => decision.status === "staff_ready",
+  );
+  const needsDecision = decisions.filter(
+    (decision) => decision.status === "needs_decision",
+  );
+  const blockedDecisions = decisions.filter(
+    (decision) => decision.status === "blocked_before_pilot",
+  );
+
+  const recordedNow = [
+    {
+      label: "Planning default scope is defined",
+      detail:
+        "The current planning default stays one chapter, Rush Month only, a 5-15 user pilot, one narrow write lane, and the approved Luma event loop only.",
+    },
+    {
+      label: "Recorded closeout defaults",
+      detail:
+        recordedDefaults.length > 0
+          ? `${recordedDefaults.length} closeout default(s) are already recorded: ${recordedDefaults.map((item) => item.label).join(", ")}.`
+          : "No Phase 2 closeout defaults have been explicitly recorded yet.",
+    },
+    {
+      label: "Named owners already recorded",
+      detail:
+        recordedOwners.length > 0
+          ? `${recordedOwners.length} owner slot(s) are already named: ${recordedOwners.map((slot) => slot.label).join(", ")}.`
+          : "No owner slots have been explicitly named yet.",
+    },
+  ];
+
+  if (staffReadyDecisions.length > 0) {
+    recordedNow.push({
+      label: "Staff-ready pilot decisions",
+      detail: `${staffReadyDecisions.length} pilot decision(s) are already staff-ready: ${staffReadyDecisions.map((item) => item.label).join(", ")}.`,
+    });
+  }
+
+  const stillMissing = [];
+
+  if (pendingDefaults.length > 0) {
+    stillMissing.push({
+      label: "Closeout defaults still need confirmation",
+      detail: `${pendingDefaults.length} closeout default(s) still need explicit confirmation: ${pendingDefaults.map((item) => item.label).join(", ")}.`,
+    });
+  }
+
+  if (pendingOwners.length > 0) {
+    stillMissing.push({
+      label: "Named owners are still missing",
+      detail: `${pendingOwners.length} owner slot(s) still need a named human owner: ${pendingOwners.map((slot) => slot.label).join(", ")}.`,
+    });
+  }
+
+  if (needsDecision.length > 0) {
+    stillMissing.push({
+      label: "Pilot decisions still need approval",
+      detail: `${needsDecision.length} decision(s) still need approval: ${needsDecision.map((item) => item.label).join(", ")}.`,
+    });
+  }
+
+  if (blockedDecisions.length > 0) {
+    stillMissing.push({
+      label: "Pilot decisions are still blocked by gating work",
+      detail: `${blockedDecisions.length} decision(s) remain blocked before pilot use: ${blockedDecisions.map((item) => item.label).join(", ")}.`,
+    });
+  }
+
+  return {
+    recordedNow,
+    stillMissing,
   };
 }

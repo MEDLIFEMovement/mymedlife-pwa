@@ -52,7 +52,7 @@ describe("admin backend review pages", () => {
 
     for (const [modulePath, heading] of pages) {
       const pageModule = await import(modulePath);
-      const html = renderToStaticMarkup(await pageModule.default());
+      const html = renderToStaticMarkup(await pageModule.default({}));
 
       expect(html).toContain("Backend route family");
       expect(html).toContain('href="/admin"');
@@ -83,6 +83,13 @@ describe("admin backend review pages", () => {
       expect(html).toContain('href="/admin/coach-write"');
       expect(html).toContain('href="/admin/sop-builder/rush-month?tab=steps"');
       expect(html).toContain(heading);
+
+      if (modulePath === "@/app/admin/launch-gate/page") {
+        expect(html).toContain("Packet source:");
+        expect(html).toContain("Record names-only packet values");
+        expect(html).toContain("Recent production packet updates");
+        expect(html).toContain("Save packet value");
+      }
     }
   });
 });

@@ -6,23 +6,41 @@ import { ProductionLaunchGatePanel } from "@/components/production-launch-gate-p
 import { RestrictedState } from "@/components/restricted-state";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import { getProductionLaunchGate } from "@/services/production-launch-gate";
+import { getProductionLaunchGateDurable } from "@/services/production-launch-gate";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   canReadAdminIntegrationsSecurity,
   getActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("adminLaunchGate");
 export const dynamic = "force-dynamic";
 
-export default async function AdminLaunchGatePage() {
+export default async function AdminLaunchGatePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    launchPacketResult?: string;
+    launchPacketMessage?: string;
+  }>;
+}) {
   const [actor, data] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const gate = getProductionLaunchGate(actor);
+  const resolvedSearchParams = await searchParams;
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
+  const gate = await getProductionLaunchGateDurable(actor, process.env, {
+    lumaReadModel: lumaActivation,
+    hostedStagingEvidenceObserved:
+      data.source.mode === "supabase" &&
+      lumaActivation.providerStatusLabel === "Staging evidence rows recorded",
+  });
   const nextStep = getNextStep(actor);
 
   return (
@@ -45,7 +63,7 @@ export default async function AdminLaunchGatePage() {
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Production launch gate
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -59,7 +77,7 @@ export default async function AdminLaunchGatePage() {
               </div>
               <Link
                 href={nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {nextStep.label}
               </Link>
@@ -78,7 +96,11 @@ export default async function AdminLaunchGatePage() {
             <MiniStat label="Writes" value={`${gate.browserWritesEnabled}`} />
           </section>
 
-          <ProductionLaunchGatePanel gate={gate} />
+          <ProductionLaunchGatePanel
+            gate={gate}
+            packetResult={resolvedSearchParams?.launchPacketResult}
+            packetMessage={resolvedSearchParams?.launchPacketMessage}
+          />
         </>
       )}
     </AdminAppShell>

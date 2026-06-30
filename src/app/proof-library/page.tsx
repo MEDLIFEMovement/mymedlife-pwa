@@ -39,7 +39,7 @@ export default async function ProofLibraryPage() {
   return (
     <StudentAppShell actor={actor}>
       <section className="app-surface-info rounded-[2rem] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
           Proof library
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -53,7 +53,7 @@ export default async function ProofLibraryPage() {
         </p>
         <Link
           href="/proof-library/upload"
-          className="mt-4 inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+          className="mt-4 inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
         >
           Open proof requirements
         </Link>
@@ -99,7 +99,7 @@ export default async function ProofLibraryPage() {
                         {proofItem.summary}
                       </p>
                     </div>
-                    <span className="shrink-0 rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs text-slate-500">
+                    <span className="shrink-0 rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs text-slate-500">
                       {proofItem.sharingStatus.replaceAll("_", " ")}
                     </span>
                   </div>
@@ -118,7 +118,7 @@ export default async function ProofLibraryPage() {
                   {campaign ? (
                     <Link
                       href={`/campaigns/${campaign.slug}`}
-                      className="mt-4 inline-flex text-sm font-semibold text-[#2563eb]"
+                      className="mt-4 inline-flex text-sm font-semibold text-[var(--mymedlife-primary-button)]"
                     >
                       Open {campaign.name}
                     </Link>

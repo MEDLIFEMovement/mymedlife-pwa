@@ -49,12 +49,12 @@ export function LeaderProofDecisionServerActionPanel({
           className={[
             "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-blue-200 bg-blue-50 text-blue-700"
+              ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
               : resultState.tone === "warning"
-                ? "border-blue-200 bg-blue-50 text-blue-700"
+                ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
                 : resultState.tone === "error"
-                  ? "border-blue-200 bg-blue-50 text-blue-700"
-                  : "border-[#bfdbfe] bg-[#eaf2ff] text-[#2563eb]",
+                  ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+                  : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] text-[var(--mymedlife-primary-button)]",
           ].join(" ")}
           role="status"
         >
@@ -68,9 +68,9 @@ export function LeaderProofDecisionServerActionPanel({
           className={[
             "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-blue-200 bg-blue-50 text-blue-700"
+              ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
               : readbackState.tone === "warning"
-                ? "border-blue-200 bg-blue-50 text-blue-700"
+                ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
                 : "border-slate-200 bg-white text-slate-600",
           ].join(" ")}
         >
@@ -94,7 +94,7 @@ export function LeaderProofDecisionServerActionPanel({
         <select
           id="leaderDecision"
           name="decision"
-          className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none disabled:cursor-not-allowed disabled:bg-[#eff6ff] disabled:text-slate-400"
+          className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none disabled:cursor-not-allowed disabled:bg-[var(--background)] disabled:text-slate-400"
           defaultValue={defaultInput.decision}
           disabled={!readiness.canSubmit}
         >
@@ -109,7 +109,7 @@ export function LeaderProofDecisionServerActionPanel({
         <textarea
           id="leaderNote"
           name="note"
-          className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-[#eff6ff] disabled:text-slate-400"
+          className="min-h-28 w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:bg-[var(--background)] disabled:text-slate-400"
           defaultValue={defaultInput.note}
           disabled={!readiness.canSubmit}
         />
@@ -117,7 +117,7 @@ export function LeaderProofDecisionServerActionPanel({
         <button
           type="submit"
           disabled={!readiness.canSubmit}
-          className="w-full rounded-full bg-[#2563eb] px-5 py-3 text-sm font-semibold text-[#10223f] transition hover:bg-[#93c5fd] disabled:cursor-not-allowed disabled:bg-[#f8fbff] disabled:text-slate-400 sm:w-auto"
+          className="w-full rounded-full bg-[var(--mymedlife-primary-button)] px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--mymedlife-focus-blue)] disabled:cursor-not-allowed disabled:bg-[var(--background)] disabled:text-slate-400 sm:w-auto"
         >
           {readiness.canSubmit
             ? "Save chapter decision"

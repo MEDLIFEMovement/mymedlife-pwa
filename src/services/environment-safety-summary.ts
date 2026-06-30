@@ -7,6 +7,7 @@ import {
 import { getSupabaseAuthConfig } from "@/services/supabase-auth-config";
 
 export type EnvironmentSafetyInput = {
+  [key: string]: string | undefined;
   MYMEDLIFE_DATA_SOURCE?: string;
   MYMEDLIFE_AUTH_MODE?: string;
   MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH?: string;

@@ -342,7 +342,7 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
                 readiness, and the notes that should guide the next conversation.
               </p>
               {selectedCoachChapter ? (
-                <div className="mt-4 rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+                <div className="mt-4 rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                       <p className="app-eyebrow app-eyebrow-blue">Notes focus</p>
@@ -354,13 +354,13 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
                         and review context you just inspected so coach notes stay specific.
                       </p>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                        <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                           {selectedCoachChapter.readinessScore}% health
                         </span>
-                        <span className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                        <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                           {selectedCoachChapter.openFollowUps} follow-ups open
                         </span>
-                        <span className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1 text-xs font-semibold text-[#2563eb]">
+                        <span className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                           {selectedCoachChapter.proofPending} proof pending
                         </span>
                       </div>
@@ -368,13 +368,13 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
                     <div className="grid gap-2 sm:min-w-[15rem]">
                       <Link
                         href={coachChapterDetailHref}
-                        className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-center text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eff6ff]"
+                        className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-center text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)]"
                       >
                         Return to chapter detail
                       </Link>
                       <Link
                         href={portfolio.riskReviewHref}
-                        className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-center text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eff6ff]"
+                        className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-center text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)]"
                       >
                         Review risk reports
                       </Link>
@@ -383,7 +383,7 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
                 </div>
               ) : null}
               {coachChapterSourceContext ? (
-                <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-4">
+                <div className="mt-4 rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                       <p className="app-eyebrow app-eyebrow-slate">
@@ -398,7 +398,7 @@ export default async function CoachPage({ searchParams }: CoachPageProps) {
                     </div>
                     <Link
                       href={coachChapterSourceContext.actionHref}
-                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
                     >
                       {coachChapterSourceContext.actionLabel}
                     </Link>
@@ -618,7 +618,7 @@ function CoachChapterDetailPanel({
   return (
     <section className="grid gap-4">
       <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
           Staff chapter detail
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -647,7 +647,7 @@ function CoachChapterDetailPanel({
           />
         </div>
 
-        <div className="mt-5 rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4">
+        <div className="mt-5 rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)] p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -660,19 +660,19 @@ function CoachChapterDetailPanel({
             <div className="grid gap-2 sm:min-w-[15rem]">
               <Link
                 href={supportNotesHref}
-                className="rounded-full bg-[#2563eb] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 Write coach note
               </Link>
               <Link
                 href={riskReviewHref}
-                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-center text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eef5ff] hover:text-[#1d4ed8]"
+                className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-center text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-[var(--mymedlife-info)]"
               >
                 Review risk reports
               </Link>
               <Link
                 href={campaignsHref}
-                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-center text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eef5ff] hover:text-[#1d4ed8]"
+                className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-center text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-[var(--mymedlife-info)]"
               >
                 Open campaign support
               </Link>
@@ -684,7 +684,7 @@ function CoachChapterDetailPanel({
       {selectedChapter ? (
         <section className="app-surface rounded-[1.8rem] p-5">
           {sourceContext ? (
-            <section className="mb-4 rounded-[1.35rem] border border-[#bfdbfe] bg-[#f8fbff] p-4">
+            <section className="mb-4 rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="app-eyebrow app-eyebrow-blue">
@@ -699,7 +699,7 @@ function CoachChapterDetailPanel({
                 </div>
                 <Link
                   href={sourceContext.actionHref}
-                  className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eff6ff]"
+                  className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)]"
                 >
                   {sourceContext.actionLabel}
                 </Link>
@@ -710,7 +710,7 @@ function CoachChapterDetailPanel({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1 text-xs font-semibold text-[var(--mymedlife-info)]">
                   {selectedChapter.statusLabel}
                 </span>
                 <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
@@ -730,7 +730,7 @@ function CoachChapterDetailPanel({
             </div>
             <Link
               href={overviewHref}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
             >
               Return to chapter list
             </Link>
@@ -760,7 +760,7 @@ function CoachChapterDetailPanel({
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-[0.94fr_1.06fr]">
-            <section className="rounded-[1.4rem] border border-slate-200 bg-[#dbeafe] p-4">
+            <section className="rounded-[1.4rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Focus items
               </p>
@@ -775,7 +775,7 @@ function CoachChapterDetailPanel({
                 ))}
               </div>
             </section>
-            <section className="rounded-[1.4rem] border border-slate-200 bg-[#dbeafe] p-4">
+            <section className="rounded-[1.4rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Recent signals
               </p>
@@ -786,7 +786,7 @@ function CoachChapterDetailPanel({
                     className="rounded-[1rem] border border-slate-200 bg-white p-3"
                   >
                     <p className="text-sm font-semibold text-slate-950">{signal.label}</p>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
                       {signal.status}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{signal.detail}</p>
@@ -799,13 +799,13 @@ function CoachChapterDetailPanel({
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href={supportNotesHref}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
             >
               Return to support notes
             </Link>
             <Link
               href={campaignsHref}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
             >
               Open campaign support
             </Link>
@@ -827,7 +827,7 @@ function CoachChapterDetailPanel({
               {chapterSwitchRows.map((row) => (
                 <article
                   key={row.chapterId}
-                  className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-4"
+                  className="rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
                 >
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center gap-2">
@@ -847,10 +847,10 @@ function CoachChapterDetailPanel({
                       <MiniStat label="Proof" value={`${row.proofPending}`} />
                     </div>
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold text-[#2563eb]">{row.nextStep}</p>
+                      <p className="text-sm font-semibold text-[var(--mymedlife-primary-button)]">{row.nextStep}</p>
                       <Link
                         href={rewriteCoachSurfaceHref(row.detailHref, "chapter_detail")}
-                        className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eff6ff]"
+                        className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)]"
                       >
                         Open chapter
                       </Link>
@@ -871,7 +871,7 @@ function CoachChapterDetailPanel({
             {rows.map((row) => (
               <article
                 key={row.chapterId}
-                className="rounded-[1.4rem] border border-slate-200 bg-[#dbeafe] p-4"
+                className="rounded-[1.4rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0 flex-1">
@@ -890,10 +890,10 @@ function CoachChapterDetailPanel({
                     </div>
                   </div>
                   <div className="flex flex-col items-start gap-3 lg:items-end">
-                    <p className="text-sm font-semibold text-[#2563eb]">{row.nextStep}</p>
+                    <p className="text-sm font-semibold text-[var(--mymedlife-primary-button)]">{row.nextStep}</p>
                     <Link
                       href={rewriteCoachSurfaceHref(row.detailHref, "chapter_detail")}
-                      className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eff6ff]"
+                      className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)]"
                     >
                       Open chapter
                     </Link>
@@ -916,7 +916,7 @@ function CoachCampaignOperationsPanel({
   return (
     <section className="grid gap-4">
       <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
           Campaign focus
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -927,7 +927,7 @@ function CoachCampaignOperationsPanel({
           selected risk lane and return path stay narrower than the HQ command center.
         </p>
         {overview.sourceContext ? (
-          <div className="mt-5 rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] p-4">
+          <div className="mt-5 rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-surface-tint)] p-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -942,7 +942,7 @@ function CoachCampaignOperationsPanel({
               </div>
               <Link
                 href={overview.sourceContext.actionHref}
-                className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eef5ff] hover:text-[#1d4ed8]"
+                className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-[var(--mymedlife-info)]"
               >
                 {overview.sourceContext.actionLabel}
               </Link>
@@ -965,8 +965,8 @@ function CoachCampaignOperationsPanel({
               className={[
                 "block rounded-[1.2rem] border p-4 transition",
                 card.isActive
-                  ? "border-[#2563eb] bg-[#eef5ff]"
-                  : "border-slate-200 bg-[#dbeafe] hover:border-[#bfdbfe] hover:bg-white",
+                  ? "border-[var(--mymedlife-primary-button)] bg-[var(--mymedlife-surface-hover)]"
+                  : "border-slate-200 bg-[var(--mymedlife-badge-background)] hover:border-[var(--mymedlife-border)] hover:bg-white",
               ].join(" ")}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1001,8 +1001,8 @@ function CoachCampaignOperationsPanel({
               className={[
                 "rounded-[1.4rem] border p-4",
                 row.selected
-                  ? "border-[#bfdbfe] bg-[#f8fbff]"
-                  : "border-slate-200 bg-[#dbeafe]",
+                  ? "border-[var(--mymedlife-border)] bg-[var(--background)]"
+                  : "border-slate-200 bg-[var(--mymedlife-badge-background)]",
               ].join(" ")}
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -1027,7 +1027,7 @@ function CoachCampaignOperationsPanel({
                   <div className="flex flex-col items-start gap-3 lg:items-end">
                     <Link
                       href={row.href}
-                      className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eff6ff]"
+                      className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)]"
                     >
                       Return to chapter detail
                     </Link>
@@ -1044,7 +1044,7 @@ function CoachCampaignOperationsPanel({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>

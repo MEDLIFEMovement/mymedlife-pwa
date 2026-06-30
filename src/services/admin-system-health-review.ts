@@ -2,8 +2,22 @@ import {
   getEnvironmentSafetySummary,
   type EnvironmentSafetyInput,
 } from "@/services/environment-safety-summary";
+import { createSupabaseAppClient } from "@/lib/supabase-app-client";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getPhase2PilotRegistry,
+  getPhase2PilotRegistryDurable,
+  type Phase2PilotRegistry,
+} from "@/services/phase-2-pilot-registry";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import {
+  isResolvedReviewPacketValue,
+  readReviewPacketValue,
+} from "@/services/review-packet-value";
+import {
+  getReviewPacketRegistry,
+  type ReviewPacketSource,
+} from "@/services/review-packet-registry";
 import { getAppRouteRegistry } from "@/services/app-route-registry";
 import {
   canReadAdminReviewSurface,
@@ -33,6 +47,10 @@ export type AdminSystemHealthReview = {
   launchReady: false;
   summary: string;
   sourceLabel: string;
+  packetSources: {
+    pilot: ReviewPacketSource;
+    production: ReviewPacketSource;
+  };
   browserWritesEnabled: number;
   externalWritesEnabled: 0;
   secretsShown: 0;
@@ -50,9 +68,19 @@ export type AdminSystemHealthReview = {
 export function getAdminSystemHealthReview(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
-  env?: EnvironmentSafetyInput,
+  env: EnvironmentSafetyInput = process.env,
 ): AdminSystemHealthReview {
   const surfaceFamily = getActorSurfaceFamily(actor);
+  const pilotRegistry = getPhase2PilotRegistry(env);
+  const packetSources = {
+    pilot: pilotRegistry.source,
+    production: {
+      mode: "env",
+      reason:
+        "Using env-backed production packet values because no Supabase production-launch review rows have been requested for this read path.",
+      recordCount: countRecordedProductionPacketValues(env),
+    } as const,
+  };
 
   if (!canReadAdminReviewSurface(actor)) {
     return {
@@ -62,6 +90,7 @@ export function getAdminSystemHealthReview(
       summary:
         "System health is an admin launch-readiness surface, not a chapter operating view.",
       sourceLabel: data.source.mode,
+      packetSources,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
       secretsShown: 0,
@@ -72,7 +101,9 @@ export function getAdminSystemHealthReview(
   }
 
   const environmentSafety = getEnvironmentSafetySummary(actor, env);
-  const checks = getSystemHealthChecks(data, environmentSafety.counts);
+  const checks = getSystemHealthChecks(data, environmentSafety.counts, env, {
+    pilotRegistry,
+  });
 
   return {
     canReadReview: true,
@@ -81,6 +112,58 @@ export function getAdminSystemHealthReview(
     summary:
       "Shows what is locally healthy, what is safely mocked, and what remains blocked before a live myMEDLIFE pilot.",
     sourceLabel: data.source.mode,
+    packetSources,
+    browserWritesEnabled: environmentSafety.counts.browserWritesEnabled,
+    externalWritesEnabled: environmentSafety.counts.externalWritesEnabled,
+    secretsShown: environmentSafety.counts.secretsShown,
+    counts: countChecks(checks),
+    checks,
+    finalPrompt:
+      "Do not approve live launch until blocked production health checks have owners, the production operations runbook is approved, smoke evidence is current, and rollback or incident response plans are named.",
+  };
+}
+
+export async function getAdminSystemHealthReviewDurable(
+  actor: LocalActorContext,
+  data: ReadOnlyAppData,
+  env: EnvironmentSafetyInput = process.env,
+  deps: {
+    createClient?: typeof createSupabaseAppClient;
+  } = {},
+): Promise<AdminSystemHealthReview> {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
+    return getAdminSystemHealthReview(actor, data, env);
+  }
+
+  const [pilotRegistry, productionPacketRegistry] = await Promise.all([
+    getPhase2PilotRegistryDurable(env, deps),
+    getReviewPacketRegistry(
+      {
+        category: "production_launch",
+        env,
+      },
+      deps,
+    ),
+  ]);
+  const environmentSafety = getEnvironmentSafetySummary(actor, env);
+  const checks = getSystemHealthChecks(data, environmentSafety.counts, env, {
+    pilotRegistry,
+    productionPacketValues: productionPacketRegistry.values,
+  });
+
+  return {
+    canReadReview: true,
+    title: getTitle(surfaceFamily),
+    launchReady: false,
+    summary:
+      "Shows what is locally healthy, what is safely mocked, and what remains blocked before a live myMEDLIFE pilot.",
+    sourceLabel: data.source.mode,
+    packetSources: {
+      pilot: pilotRegistry.source,
+      production: productionPacketRegistry.source,
+    },
     browserWritesEnabled: environmentSafety.counts.browserWritesEnabled,
     externalWritesEnabled: environmentSafety.counts.externalWritesEnabled,
     secretsShown: environmentSafety.counts.secretsShown,
@@ -97,11 +180,62 @@ function getSystemHealthChecks(
     blocked: number;
     watch: number;
   },
+  env?: EnvironmentSafetyInput,
+  options: {
+    pilotRegistry?: Phase2PilotRegistry;
+    productionPacketValues?: Map<string, string>;
+  } = {},
 ): AdminSystemHealthCheck[] {
+  const envSource = env ?? {};
   const routeCount = getAppRouteRegistry().length;
   const disabledOutboxCount = data.outboxItems.filter((item) => {
     return item.status === "disabled";
   }).length;
+  const productionCallback = readReviewPacketValue(
+    envSource,
+    "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+    options.productionPacketValues,
+  );
+  const stagingCallback = readReviewPacketValue(
+    envSource,
+    "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+    options.productionPacketValues,
+  );
+  const backupOwner = readReviewPacketValue(
+    envSource,
+    "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
+    options.productionPacketValues,
+  );
+  const restorePath = readReviewPacketValue(
+    envSource,
+    "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
+    options.productionPacketValues,
+  );
+  const pilotSupportOwner =
+    options.pilotRegistry?.owners.find((item) => item.key === "support_owner")?.value ??
+    readReviewPacketValue(envSource, "MYMEDLIFE_PILOT_SUPPORT_OWNER");
+  const supportChannel =
+    options.pilotRegistry?.owners.find((item) => item.key === "support_pause_channel")
+      ?.value ??
+    readReviewPacketValue(envSource, "MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL");
+  const rollbackOwner =
+    options.pilotRegistry?.owners.find((item) => item.key === "rollback_owner")?.value ??
+    readReviewPacketValue(envSource, "MYMEDLIFE_PILOT_ROLLBACK_OWNER");
+  const supportOwnerResolved = isResolvedReviewPacketValue(pilotSupportOwner);
+  const supportChannelResolved = isResolvedReviewPacketValue(supportChannel);
+  const rollbackOwnerResolved = isResolvedReviewPacketValue(rollbackOwner);
+  const backupOwnerResolved = isResolvedReviewPacketValue(backupOwner);
+  const restorePathResolved = isResolvedReviewPacketValue(restorePath);
+  const productionAuthRecorded =
+    isResolvedReviewPacketValue(productionCallback) &&
+    isResolvedReviewPacketValue(stagingCallback);
+  const operationsRecorded = Boolean(
+    backupOwnerResolved ||
+      restorePathResolved ||
+      supportOwnerResolved ||
+      supportChannelResolved ||
+      rollbackOwnerResolved,
+  );
 
   return [
     {
@@ -173,10 +307,14 @@ function getSystemHealthChecks(
       key: "production_auth",
       label: "Production auth",
       ownerLane: "Security and Student Access",
-      status: "blocked_before_live",
-      signal: "Production auth and real users are not enabled.",
+      status: productionAuthRecorded ? "needs_review" : "blocked_before_live",
+      signal: productionAuthRecorded
+        ? `Recorded callback plan exists for ${productionCallback} and ${stagingCallback}, but production auth and real users are still not enabled.`
+        : "Production auth and real users are not enabled.",
       nextStep:
-        "Approve Supabase Auth project setup, callbacks, onboarding, and membership approval flow.",
+        productionAuthRecorded
+          ? "Use the recorded callback plan to finish role-routing proof, onboarding approval, and membership approval review."
+          : "Approve Supabase Auth project setup, callbacks, onboarding, and membership approval flow.",
       routeEvidence: ["/login", "/chapter/members"],
     },
     {
@@ -204,14 +342,32 @@ function getSystemHealthChecks(
       key: "monitoring_backup",
       label: "Monitoring, backup, and incident ownership",
       ownerLane: "Platform and Security",
-      status: "blocked_before_live",
-      signal:
-        "A local production operations runbook exists, but production monitoring, backup checks, and incident ownership are not connected yet.",
+      status: operationsRecorded ? "needs_review" : "blocked_before_live",
+      signal: operationsRecorded
+        ? `Recorded production-ops packet values now exist for backup owner ${backupOwner ?? "pending"}, restore path ${restorePath ?? "pending"}, support owner ${pilotSupportOwner ?? "pending"}, support channel ${supportChannel ?? "pending"}, and rollback owner ${rollbackOwner ?? "pending"}, but release-build proof and final operations approval are still missing.`
+        : "A local production operations runbook exists, but production monitoring, backup checks, and incident ownership are not connected yet.",
       nextStep:
-        "Review the operations runbook, assign owners, define alerts, prove backups, and document rollback before pilot launch.",
+        operationsRecorded
+          ? "Review the recorded production-ops packet on the launch gate, then finish alerting, backup proof, and rollback signoff before pilot launch."
+          : "Review the operations runbook, assign owners, define alerts, prove backups, and document rollback before pilot launch.",
       routeEvidence: ["/admin", "/admin/pilot-scope"],
     },
   ];
+}
+
+function countRecordedProductionPacketValues(
+  env: EnvironmentSafetyInput,
+): number {
+  const productionKeys = [
+    "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+    "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+    "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
+    "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
+  ];
+
+  return productionKeys.filter((key) =>
+    isResolvedReviewPacketValue(readReviewPacketValue(env, key)),
+  ).length;
 }
 
 function countChecks(

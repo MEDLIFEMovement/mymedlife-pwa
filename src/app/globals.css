@@ -3,14 +3,47 @@
 :root {
   --background: #f8fbff;
   --foreground: #10223f;
-  --muted: rgba(16, 34, 63, 0.68);
-  --panel: rgba(255, 255, 255, 0.88);
-  --panel-strong: rgba(255, 255, 255, 0.96);
-  --line: rgba(93, 143, 246, 0.14);
+  --mymedlife-page-background: #ffffff;
+  --mymedlife-card-block: #ffffff;
+  --mymedlife-primary-button: #2563eb;
+  --mymedlife-secondary-button: #facc15;
+  --mymedlife-border: #bfdbfe;
+  --mymedlife-success: #16a34a;
+  --mymedlife-info: #1d4ed8;
+  --mymedlife-nav-background: #0b3b82;
+  --mymedlife-nav-text: #ffffff;
+  --mymedlife-badge-background: #dbeafe;
+  --mymedlife-badge-text: #1d4ed8;
+  --mymedlife-progress-track: #dbeafe;
+  --mymedlife-progress-fill: #2563eb;
+  --muted: #475569;
+  --mymedlife-surface-tint: color-mix(in srgb, var(--mymedlife-page-background) 92%, var(--background));
+  --mymedlife-surface-hover: color-mix(in srgb, var(--mymedlife-badge-background) 68%, var(--mymedlife-page-background));
+  --mymedlife-panel-tint: color-mix(in srgb, var(--mymedlife-badge-background) 46%, var(--mymedlife-page-background));
+  --mymedlife-info-surface: var(--mymedlife-badge-background);
+  --mymedlife-admin-blue: var(--mymedlife-info);
+  --mymedlife-action-blue: var(--mymedlife-primary-button);
+  --mymedlife-action-blue-hover: var(--mymedlife-info);
+  --mymedlife-link-blue: var(--mymedlife-info);
+  --mymedlife-focus-blue: var(--accent);
+  --mymedlife-deep-blue: var(--foreground);
+  --mymedlife-gradient-blue-start: var(--mymedlife-nav-background);
+  --mymedlife-gradient-blue-mid: var(--mymedlife-info);
+  --mymedlife-gradient-blue-end: var(--foreground);
+  --mymedlife-on-gold: var(--foreground);
+  --mymedlife-shadow-rgb: 15 23 42;
+  --mymedlife-accent-rgb: 93 143 246;
+  --mymedlife-primary-rgb: 37 99 235;
+  --mymedlife-deep-rgb: 2 14 38;
+  --mymedlife-white-rgb: 255 255 255;
+  --mymedlife-panel-rgb: 248 250 252;
+  --panel: color-mix(in srgb, var(--mymedlife-card-block) 88%, transparent);
+  --panel-strong: color-mix(in srgb, var(--mymedlife-card-block) 96%, transparent);
+  --line: color-mix(in srgb, var(--mymedlife-border) 52%, transparent);
   --accent: #5d8ff6;
   --accent-strong: #3b73e7;
-  --warning: #2563eb;
-  --danger: #ef7d73;
+  --warning: #ca8a04;
+  --danger: #dc2626;
 }
 
 @theme inline {
@@ -28,18 +61,18 @@ html {
   min-height: 100%;
   scroll-behavior: smooth;
   background:
-    radial-gradient(circle at top left, rgba(93, 143, 246, 0.06), transparent 30%),
-    radial-gradient(circle at top right, rgba(93, 143, 246, 0.04), transparent 28%),
-    linear-gradient(180deg, #ffffff 0%, #fbfdff 44%, #f7fbff 100%);
+    radial-gradient(circle at top left, rgb(var(--mymedlife-accent-rgb) / 0.06), transparent 30%),
+    radial-gradient(circle at top right, rgb(var(--mymedlife-accent-rgb) / 0.04), transparent 28%),
+    linear-gradient(180deg, var(--mymedlife-page-background) 0%, var(--mymedlife-surface-tint) 44%, var(--background) 100%);
 }
 
 body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at 14% 16%, rgba(93, 143, 246, 0.045), transparent 22%),
-    radial-gradient(circle at 86% 0%, rgba(93, 143, 246, 0.035), transparent 22%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.995), rgba(247, 251, 255, 1));
+    radial-gradient(circle at 14% 16%, rgb(var(--mymedlife-accent-rgb) / 0.045), transparent 22%),
+    radial-gradient(circle at 86% 0%, rgb(var(--mymedlife-accent-rgb) / 0.035), transparent 22%),
+    linear-gradient(180deg, rgb(var(--mymedlife-white-rgb) / 0.995), var(--mymedlife-surface-tint));
   color: var(--foreground);
   font-family: var(--font-space-grotesk), sans-serif;
 }
@@ -50,10 +83,10 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(93, 143, 246, 0.016) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(93, 143, 246, 0.016) 1px, transparent 1px);
+    linear-gradient(rgb(var(--mymedlife-accent-rgb) / 0.016) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--mymedlife-accent-rgb) / 0.016) 1px, transparent 1px);
   background-size: 32px 32px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 68%);
+  mask-image: linear-gradient(180deg, rgb(var(--mymedlife-shadow-rgb)/0.18), transparent 68%);
   opacity: 0.1;
 }
 
@@ -67,37 +100,37 @@ button {
 }
 
 ::selection {
-  background: rgba(93, 143, 246, 0.24);
-  color: #08224c;
+  background: rgb(var(--mymedlife-accent-rgb) / 0.24);
+  color: var(--foreground);
 }
 
 :focus-visible {
-  outline: 3px solid rgba(93, 143, 246, 0.88);
+  outline: 3px solid rgb(var(--mymedlife-accent-rgb) / 0.88);
   outline-offset: 3px;
 }
 
 .app-surface {
-  border: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
+  border: 1px solid color-mix(in srgb, var(--mymedlife-border) 42%, transparent);
+  background: var(--panel-strong);
+  box-shadow: 0 12px 34px rgb(var(--mymedlife-shadow-rgb) / 0.06);
 }
 
 .app-surface-soft {
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(248, 250, 252, 0.92);
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  border: 1px solid color-mix(in srgb, var(--mymedlife-border) 34%, transparent);
+  background: rgb(var(--mymedlife-panel-rgb) / 0.92);
+  box-shadow: 0 8px 24px rgb(var(--mymedlife-shadow-rgb) / 0.05);
 }
 
 .app-surface-info {
-  border: 1px solid rgba(191, 219, 254, 0.95);
-  background: linear-gradient(160deg, rgba(241, 246, 255, 0.98), rgba(250, 252, 255, 0.98));
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--mymedlife-border);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--mymedlife-info-surface) 82%, var(--mymedlife-card-block)), rgb(var(--mymedlife-white-rgb) / 0.98));
+  box-shadow: 0 10px 28px rgb(var(--mymedlife-shadow-rgb) / 0.05);
 }
 
 .app-surface-warm {
-  border: 1px solid rgba(191, 219, 254, 0.42);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 255, 0.98));
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+  border: 1px solid color-mix(in srgb, var(--mymedlife-border) 42%, transparent);
+  background: linear-gradient(180deg, rgb(var(--mymedlife-white-rgb) / 0.98), color-mix(in srgb, var(--mymedlife-surface-tint) 88%, var(--mymedlife-card-block)));
+  box-shadow: 0 10px 28px rgb(var(--mymedlife-shadow-rgb) / 0.05);
 }
 
 .app-eyebrow {
@@ -108,26 +141,92 @@ button {
 }
 
 .app-eyebrow-blue {
-  color: #2563eb;
+  color: var(--mymedlife-primary-button);
 }
 
 .app-eyebrow-slate {
-  color: #64748b;
+  color: var(--muted);
 }
 
 .app-eyebrow-warm {
-  color: #1d4ed8;
+  color: var(--mymedlife-info);
 }
 
 .app-title {
-  color: #0f172a;
+  color: var(--foreground);
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.15;
 }
 
 .app-copy {
-  color: #475569;
+  color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.65;
+}
+
+/* Theme bridge for legacy Tailwind utility colors.
+   This lets older readable JSX classes follow the audited theme tokens while
+   new work moves toward semantic app-* classes. */
+.text-slate-950,
+.text-slate-900,
+.text-slate-800 {
+  color: var(--foreground);
+}
+
+.text-slate-700,
+.text-slate-600 {
+  color: var(--muted);
+}
+
+.text-slate-500,
+.text-slate-400,
+.text-slate-300 {
+  color: color-mix(in srgb, var(--muted) 82%, var(--mymedlife-card-block));
+}
+
+.text-white {
+  color: var(--mymedlife-nav-text);
+}
+
+.bg-white {
+  background-color: var(--mymedlife-card-block);
+}
+
+.bg-white\/96 {
+  background-color: color-mix(in srgb, var(--mymedlife-card-block) 96%, transparent);
+}
+
+.bg-slate-50 {
+  background-color: var(--mymedlife-surface-tint);
+}
+
+.bg-slate-300 {
+  background-color: var(--mymedlife-progress-track);
+}
+
+.border-slate-100,
+.border-slate-200,
+.border-slate-200\/80,
+.border-slate-200\/90,
+.border-slate-200\/95,
+.border-slate-300,
+.border-slate-300\/80 {
+  border-color: color-mix(in srgb, var(--mymedlife-border) 72%, transparent);
+}
+
+.border-white {
+  border-color: color-mix(in srgb, var(--mymedlife-card-block) 88%, transparent);
+}
+
+.bg-rose-50 {
+  background-color: color-mix(in srgb, var(--danger) 10%, var(--mymedlife-card-block));
+}
+
+.border-rose-200 {
+  border-color: color-mix(in srgb, var(--danger) 34%, var(--mymedlife-card-block));
+}
+
+.text-rose-700 {
+  color: var(--danger);
 }

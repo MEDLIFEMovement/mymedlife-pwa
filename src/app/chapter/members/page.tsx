@@ -66,7 +66,7 @@ export default async function ChapterMembersPage({
         <>
           {memberRoleFocus.canReadFocus ? (
             <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                 {memberRoleFocus.roleLabel}
               </p>
               <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
@@ -81,7 +81,7 @@ export default async function ChapterMembersPage({
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={memberRoleFocus.primaryHref}
-                    className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                    className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
                   >
                     {memberRoleFocus.primaryLabel}
                   </Link>
@@ -96,7 +96,7 @@ export default async function ChapterMembersPage({
               <div className="mt-4 grid gap-3 md:grid-cols-3">
                 {memberRoleFocus.items.map((item) => (
                   <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                       {item.label}
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-slate-950">

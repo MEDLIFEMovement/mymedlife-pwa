@@ -1,16 +1,17 @@
 # myMEDLIFE Production Go / No-Go Matrix
 
-Date: 2026-06-25
+Date: 2026-06-29
 
 Status:
 - no-go for live launch
-- go only after the hosted proof and named approvals below are recorded
+- go only after the staging proof is accepted externally and the production
+  foundation items below are recorded
 
 ## Summary
 
 This matrix turns the current launch boundary into a simple approval list.
-The app is review-ready, but live launch is still blocked by hosted proof and
-human decisions.
+The app is review-ready, but live launch is still blocked by production
+foundation work and final human signoff.
 
 ## Current Decision State
 
@@ -19,11 +20,13 @@ human decisions.
 | Staging reviewer access path | Engineering / Security | Approved | `staging.mymedlife.org` behind the existing Vercel SSO handoff |
 | Pilot chapter and cohort | Nick / HQ | Approved | One chapter only, small and controlled |
 | Rollback owner | Current pilot owner / rollback owner confirmed by the reviewer | Confirmed | Packet record now matches the reviewer confirmation |
-| First hosted write | Engineering / Product | Approved | `action_started` is the approved first hosted write; hosted proof still pending |
+| First hosted write | Engineering / Product | Staging proof recorded | `action_started` is the approved first hosted write and the authoritative hosted row chain now exists on staging |
 | Smallest proof/review loop | Chapter / HQ | Approved | Metadata submit -> leader review -> audit trail |
 | Production environment ownership | Platform / Security | Approved | DS/platform owns production Supabase, Vercel, DNS, secrets, and backup/restore; security approval routed through GitHub/Copilot/Codex Security |
+| Production environment packet | DS / Platform | Follow-through required | Production Supabase project `fnlhontvvprwgooevzdl` exists but still has `0` `app.*` tables; Vercel project `mymedlife-pwa` exists but is not live yet, so migrations, env vars, deploy source, rollback target, callbacks, DNS, backup/restore, and seed/runbook evidence still need final recording |
 | Monitoring and incident response | Platform / Operations | Approved | One named incident owner, one backup owner, one pilot alert channel, and the existing rollback path as the stop mechanism |
-| External integrations hold | DS | Approved | HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off |
+| Luma event loop | Events / DS | Staging proof recorded | Event create/update, RSVP writeback, attendance import, points and leaderboard readback are visible on staging with audit proof and zero sent outbox rows |
+| External integrations hold | DS | Approved | HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior stay off |
 
 ## What Is Already True
 
@@ -31,14 +34,22 @@ human decisions.
 - Launch readiness surfaces exist for production gate, closeout, system health,
   operations, pilot scope, design QA, auth onboarding, and first write.
 - Tests, lint, and build are green in the current worktree.
-- The repo keeps live external sends and broad writes disabled by default.
+- The repo keeps live external sends and broad writes disabled by default, except
+  for the separately gated Luma event-loop staging proof.
 - The current reviewer has confirmed they are the pilot owner and rollback owner.
 - The approved defaults now cover the staging access path, pilot scope, first hosted write, proof/review loop, production ownership, and the external integration hold.
+- Staging review-packet storage now holds `6` pilot-scope rows and `19`
+  production-launch rows, so the production packet is no longer just a
+  one-field placeholder.
+- Staging now has the real hosted proof rows for `action_started`,
+  `evidence_submitted`, Luma RSVP, Luma attendance import, and one
+  attendance-backed points award totaling `20` points.
 
 ## What Must Stay True Until Approval
 
 - No live external sends.
 - No broad writes.
+- No non-approved Luma behavior.
 - No proof uploads or public proof sharing.
 - No production auth claim.
 - No production launch claim.

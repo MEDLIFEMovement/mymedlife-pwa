@@ -25,7 +25,7 @@ export async function startAssignmentAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), assignmentId);
   const result = await startAssignmentActionForLocalSupabase(assignmentId);
 
-  redirect(`${returnTo}?actionStartResult=${result.code}`);
+  redirect(appendResultQuery(returnTo, "actionStartResult", result.code));
 }
 
 export async function submitAssignmentProofAction(formData: FormData) {
@@ -33,7 +33,7 @@ export async function submitAssignmentProofAction(formData: FormData) {
   const returnTo = normalizeReturnTo(formData.get("returnTo"), assignmentId);
   const result = await submitAssignmentProofForLocalSupabase(formData);
 
-  redirect(`${returnTo}?proofSubmissionResult=${result.code}`);
+  redirect(appendResultQuery(returnTo, "proofSubmissionResult", result.code));
 }
 
 export async function startAssignmentActionForLocalSupabase(
@@ -78,8 +78,9 @@ export async function startAssignmentActionForLocalSupabase(
       success: false,
       code: "missing_auth",
       assignmentId,
-      plainEnglishMessage:
-        "Sign in with a local Supabase seed user before starting this action.",
+      plainEnglishMessage: config.isLocalOnly
+        ? "Sign in with a local Supabase seed user before starting this action."
+        : "Sign in through the approved staging review path before starting this action.",
     };
   }
 
@@ -101,7 +102,7 @@ export async function startAssignmentActionForLocalSupabase(
       code: "server_error",
       assignmentId,
       plainEnglishMessage:
-        "Local Supabase did not return the expected action-start record. No external automation ran.",
+        "Supabase did not return the expected action-start record. No external automation ran.",
     };
   }
 
@@ -174,8 +175,9 @@ export async function submitAssignmentProofForLocalSupabase(
       success: false,
       code: "missing_auth",
       assignmentId,
-      plainEnglishMessage:
-        "Sign in with a local Supabase seed user before submitting proof.",
+      plainEnglishMessage: config.isLocalOnly
+        ? "Sign in with a local Supabase seed user before submitting proof."
+        : "Sign in through the approved staging review path before submitting proof.",
     };
   }
 
@@ -209,7 +211,7 @@ export async function submitAssignmentProofForLocalSupabase(
       code: "server_error",
       assignmentId,
       plainEnglishMessage:
-        "Local Supabase did not return the expected proof-submission record. No upload or external automation ran.",
+        "Supabase did not return the expected proof-submission record. No upload or external automation ran.",
     };
   }
 
@@ -233,4 +235,10 @@ function normalizeReturnTo(value: FormDataEntryValue | null, assignmentId: strin
   }
 
   return trimmed;
+}
+
+function appendResultQuery(path: string, key: string, value: string) {
+  const url = new URL(path, "https://mymedlife.local");
+  url.searchParams.set(key, value);
+  return `${url.pathname}${url.search}${url.hash}`;
 }

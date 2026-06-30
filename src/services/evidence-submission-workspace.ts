@@ -1,4 +1,5 @@
 import { assignments, evidenceItems } from "@/data/mock-rush-month";
+import { getModuleFeatureAvailability } from "@/modules/feature-flags";
 import {
   getActionProofHandoffWorkspace,
   type ActionProofHandoffPhase,
@@ -113,9 +114,40 @@ export function getEvidenceSubmissionWorkspace(
   allEvidence: EvidenceItem[] = evidenceItems,
 ): EvidenceSubmissionWorkspace {
   const surfaceFamily = getActorSurfaceFamily(actor);
+  const ugcFeature = getModuleFeatureAvailability("ugc_feed_proof");
 
   if (surfaceFamily === "ds_admin") {
     return hiddenWorkspace();
+  }
+
+  if (!ugcFeature.enabled) {
+    return {
+      canReadWorkspace: true,
+      title: "Proof and UGC review is paused",
+      summary: ugcFeature.gracefulFallback,
+      nextSubmission: null,
+      submissionPacket: null,
+      rows: [],
+      futureStructuredEvents: [],
+      blockedWrites: ugcFeature.blockedControls,
+      safetyNotes: [
+        ugcFeature.gracefulFallback,
+        "Events, RSVP, attendance, points, and leaderboards remain available.",
+      ],
+      counts: {
+        total: 0,
+        readyToSubmit: 0,
+        waitingReview: 0,
+        changesRequested: 0,
+        actionNotReady: 0,
+        approvedInternal: 0,
+        localWriteControlsEnabled: 0,
+        uploadsEnabled: 0,
+        externalSendsEnabled: 0,
+        prepPackets: 0,
+        submissionPackets: 0,
+      },
+    };
   }
 
   const visibleAssignments = allAssignments.filter((assignment) =>

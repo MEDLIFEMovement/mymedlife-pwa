@@ -80,6 +80,8 @@ const staffNavigation: NavigationItem[] = [
 const adminBackendNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
   { href: "/admin/phase-2", label: "Phase 2" },
+  { href: "/admin/feature-flags", label: "Feature Flags" },
+  { href: "/admin/theme", label: "Theme" },
   { href: "/admin/permissions", label: "Permissions" },
   { href: "/admin/committees", label: "Committees" },
   { href: "/admin/workflows", label: "Workflows" },
@@ -105,6 +107,8 @@ const adminBackendNavigation: NavigationItem[] = [
 const dsAdminNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
   { href: "/admin/phase-2", label: "Phase 2" },
+  { href: "/admin/feature-flags", label: "Feature Flags" },
+  { href: "/admin/theme", label: "Theme" },
   { href: "/admin/integrations", label: "Integrations" },
   { href: "/admin/permissions", label: "Permissions" },
   { href: "/admin/workflows", label: "Workflows" },

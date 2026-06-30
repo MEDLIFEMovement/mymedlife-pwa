@@ -38,13 +38,13 @@ export function CoachPortfolioReadinessPanel({
           <div className="mb-4">
             <Link
               href={studentViewAction.href}
-              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
             >
               Student view
             </Link>
           </div>
         ) : null}
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
           MEDLIFE National
         </p>
         <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
@@ -60,7 +60,7 @@ export function CoachPortfolioReadinessPanel({
         </div>
 
         {sourceContext ? (
-          <div className="mt-5 rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+          <div className="mt-5 rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
               {sourceContext.eyebrow}
             </p>
@@ -72,7 +72,7 @@ export function CoachPortfolioReadinessPanel({
                   <Link
                     key={action.label}
                     href={action.href}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                   >
                     {action.label}
                   </Link>
@@ -88,7 +88,7 @@ export function CoachPortfolioReadinessPanel({
           <HeroStat label="Evidence Queue" value={portfolio.evidenceQueueLabel} />
         </div>
 
-        <div className="mt-5 flex flex-col gap-4 rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+        <div className="mt-5 flex flex-col gap-4 rounded-[1.35rem] border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Assigned portfolio
@@ -101,19 +101,19 @@ export function CoachPortfolioReadinessPanel({
           <div className="flex flex-wrap gap-2">
             <Link
               href={portfolio.chapterHref}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
             >
               Open chapter
             </Link>
             <Link
               href={portfolio.notesHref}
-              className="rounded-full bg-[#2563eb] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+              className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
             >
               Write coach note
             </Link>
             <Link
               href={portfolio.riskReviewHref}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
             >
               Review risk reports
             </Link>
@@ -139,7 +139,7 @@ export function CoachPortfolioReadinessPanel({
           </div>
           <Link
             href={portfolio.riskReviewHref}
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
           >
             Focus intervene now
           </Link>
@@ -167,7 +167,7 @@ export function CoachPortfolioReadinessPanel({
           {portfolio.priorities.map((item) => (
             <p
               key={item}
-              className="rounded-[1.1rem] border border-slate-200 bg-[#dbeafe] px-4 py-3 text-sm font-medium text-slate-700"
+              className="rounded-[1.1rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-3 text-sm font-medium text-slate-700"
             >
               {item}
             </p>
@@ -184,14 +184,14 @@ function PortfolioFilterGroup({
   group: CoachPortfolioReadiness["filterGroups"][number];
 }) {
   return (
-    <section className="rounded-[1.2rem] border border-slate-200 bg-[#dbeafe] p-4">
+    <section className="rounded-[1.2rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
           {group.label}
         </p>
         <Link
           href={group.resetHref}
-          className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff]"
+          className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]"
         >
           All
         </Link>
@@ -203,8 +203,8 @@ function PortfolioFilterGroup({
             className={[
               "rounded-full border px-3 py-1 text-xs font-semibold transition",
               option.isActive
-                ? "border-[#2563eb] bg-[#eef5ff] text-[#1d4ed8]"
-                : "border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#eef5ff]",
+                ? "border-[var(--mymedlife-primary-button)] bg-[var(--mymedlife-surface-hover)] text-[var(--mymedlife-info)]"
+                : "border-slate-200 bg-white text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)]",
             ].join(" ")}
           >
             {option.label} ({option.count})
@@ -246,7 +246,7 @@ function CoachChapterCard({
   row: CoachPortfolioReadiness["rows"][number];
 }) {
   return (
-    <article className="rounded-[1.5rem] border border-slate-200 bg-[#dbeafe] p-4">
+    <article className="rounded-[1.5rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4">
       <div className="flex flex-col gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -271,7 +271,7 @@ function CoachChapterCard({
             </div>
           </div>
 
-          <div className="mt-4 h-2 rounded-full bg-[#dfe8f7]">
+          <div className="mt-4 h-2 rounded-full bg-[var(--mymedlife-panel-tint)]">
             <div
               className={getCoachProgressBarClassName(row.decision)}
               style={{ width: `${Math.max(8, Math.min(row.readinessScore, 100))}%` }}
@@ -289,7 +289,7 @@ function CoachChapterCard({
           <DecisionPill decision={row.decision} />
           <Link
             href={row.detailHref}
-            className="rounded-full border border-[#bfdbfe] bg-white px-4 py-2 text-sm font-semibold text-[#2563eb] transition hover:border-[#93c5fd] hover:bg-[#eff6ff]"
+            className="rounded-full border border-[var(--mymedlife-border)] bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-primary-button)] transition hover:border-[var(--mymedlife-focus-blue)] hover:bg-[var(--background)]"
           >
             Open chapter
           </Link>
@@ -321,8 +321,8 @@ function InlineStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ label }: { label: CoachPortfolioReadiness["rows"][number]["statusLabel"] }) {
   const className =
     label === "Healthy"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
-      : "border-blue-200 bg-blue-50 text-blue-700";
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+      : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -334,10 +334,10 @@ function StatusPill({ label }: { label: CoachPortfolioReadiness["rows"][number][
 function DecisionPill({ decision }: { decision: CoachPortfolioDecision }) {
   const className =
     decision === "advance"
-      ? "border-blue-200 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : decision === "hold"
-        ? "border-blue-200 bg-blue-50 text-blue-700"
-        : "border-blue-200 bg-blue-50 text-blue-700";
+        ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+        : "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <p className={`rounded-full border px-3 py-1 text-sm font-semibold ${className}`}>
@@ -371,10 +371,10 @@ function readableDecision(decision: CoachPortfolioDecision) {
 function getCoachProgressBarClassName(decision: CoachPortfolioDecision) {
   switch (decision) {
     case "advance":
-      return "h-full rounded-full bg-blue-500";
+      return "h-full rounded-full bg-[var(--mymedlife-primary-button)]";
     case "hold":
-      return "h-full rounded-full bg-blue-400";
+      return "h-full rounded-full bg-[var(--mymedlife-focus-blue)]";
     case "intervene":
-      return "h-full rounded-full bg-blue-500";
+      return "h-full rounded-full bg-[var(--mymedlife-primary-button)]";
   }
 }

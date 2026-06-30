@@ -4,7 +4,7 @@ import { AdminSystemHealthReviewPanel } from "@/components/admin-system-health-r
 import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { RestrictedState } from "@/components/restricted-state";
-import { getAdminSystemHealthReview } from "@/services/admin-system-health-review";
+import { getAdminSystemHealthReviewDurable } from "@/services/admin-system-health-review";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -22,7 +22,7 @@ export default async function AdminSystemHealthPage() {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const review = getAdminSystemHealthReview(actor, data);
+  const review = await getAdminSystemHealthReviewDurable(actor, data, process.env);
   const nextStep = getNextStep(actor);
 
   return (
@@ -45,7 +45,7 @@ export default async function AdminSystemHealthPage() {
           <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Admin system health
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -59,7 +59,7 @@ export default async function AdminSystemHealthPage() {
               </div>
               <Link
                 href={nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {nextStep.label}
               </Link>
@@ -94,14 +94,14 @@ function getNextStep(actor: LocalActorContext) {
 
   return {
     label: "Open operations runbook",
-    href: "/admin",
+    href: "/admin/operations",
   };
 }
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
         {label}
       </p>
       <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>

@@ -93,6 +93,11 @@ describe("admin page", () => {
     expect(html).toContain('href="/admin/master-data"');
     expect(html).toContain(">Overview<");
     expect(html).toContain("DS and Super Admin context is role-aware and read-only.");
+    expect(html).toContain("Recorded launch answers versus what still needs owners");
+    expect(html).toContain("Open release readiness");
+    expect(html).toContain("Open launch gate");
+    expect(html).toContain("Env recorded");
+    expect(html).toContain("Proof missing");
     expect(html).toContain("What this admin surface actually owns");
     expect(html).toContain("Permission Registry");
     expect(html).toContain("Workflow Registry");

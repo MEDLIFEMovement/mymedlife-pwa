@@ -1,10 +1,11 @@
 # myMEDLIFE Production Next Steps After Reply
 
-Date: 2026-06-25
+Date: 2026-06-29
 
 Status:
 - review-only
-- hosted proof pending
+- hosted staging proof recorded
+- production foundation still pending
 
 ## Purpose
 
@@ -18,12 +19,15 @@ Codex will:
 
 1. Record the approved values in the closeout packet and supporting review docs.
 2. Keep the staging reviewer path, pilot scope, first hosted write, smallest
-   proof/review loop, production ownership, and integration hold aligned across
-   the review surfaces.
-3. Prepare the next hosted proof pass with the approved staging path and the
-   approved narrow write/review sequence.
-4. Leave live external sends, broad writes, and production launch disabled
-   until the hosted proof is visible and the remaining launch gates are clear.
+   proof/review loop, Luma event loop, production ownership, and integration
+   hold aligned across the review surfaces.
+3. Treat the current staging proof packet as the baseline reviewer record, not
+   as an open-ended placeholder.
+4. Finish the production environment packet with project refs, target env vars,
+   callbacks, DNS, backup/restore, support, and rollback ownership.
+5. Leave broad writes, non-approved Luma behavior, live external sends, and
+   production launch disabled until the staging proof is accepted externally
+   and the remaining launch gates are clear.
 
 ## If the reply changes one or more fields
 
@@ -41,9 +45,10 @@ Codex will:
 - It will not treat the reply as live launch approval.
 - It will not enable external sends.
 - It will not enable broad writes.
+- It will not enable non-approved Luma behavior.
 - It will not change the stack.
-- It will not mark the goal complete until the hosted proof and remaining
-  approvals are actually recorded.
+- It will not mark the goal complete until the staging proof, production packet,
+  and remaining approvals are actually recorded.
 
 ## Current Packet State
 
@@ -53,13 +58,15 @@ The primary approver has already approved the defaults for:
 - pilot scope
 - first hosted write
 - smallest proof/review loop
+- Luma event loop
 - production environment ownership
 - external integration hold
 - support / pause channel
 - monitoring / incident response ownership
 
 There are no remaining open items in the default packet. The next blocker is
-hosted proof, not another approval field.
+external acceptance of the current proof plus production follow-through, not
+another blank approval field.
 
 ## Reminder
 

@@ -3,10 +3,16 @@ import { signOut } from "@/app/login/actions";
 import type { AuthSessionState } from "@/services/auth-session";
 
 type AuthSessionPanelProps = {
+  continueHref?: string;
+  continueLabel?: string;
   session: AuthSessionState;
 };
 
-export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
+export function AuthSessionPanel({
+  continueHref = "/",
+  continueLabel = "Continue into myMEDLIFE",
+  session,
+}: AuthSessionPanelProps) {
   if (session.status !== "signed_in" || !session.user) {
     return (
       <section className="app-surface-info rounded-[2rem] p-5">
@@ -33,19 +39,20 @@ export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
       <h2 className="app-title mt-2">{session.user.displayName}</h2>
       <p className="app-copy mt-2">{session.user.email}</p>
       <p className="app-copy mt-3">
-        This account is ready to continue into the role-based workspace.
+        This account is already signed in. Continue into the right workspace or
+        sign out to switch seeded review accounts.
       </p>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <Link
-          href="/"
-          className="rounded-full bg-[#2563eb] px-4 py-2 text-center text-sm font-semibold text-[#10223f]"
+          href={continueHref}
+          className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-center text-sm font-semibold text-[var(--foreground)]"
         >
-          Continue into myMEDLIFE
+          {continueLabel}
         </Link>
         <form action={signOut}>
           <button
             type="submit"
-            className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-[#5d8ff6]/28 hover:text-slate-950 sm:w-auto"
+            className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-[var(--accent)]/28 hover:text-slate-950 sm:w-auto"
           >
             Sign out
           </button>

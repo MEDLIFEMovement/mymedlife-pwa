@@ -11,28 +11,20 @@ export function DataSourceNotice({ source }: DataSourceNoticeProps) {
     <section
       aria-label="Data source status"
       className={[
-        "rounded-[1.2rem] border px-3 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.04)] sm:px-4",
+        "rounded-[1.2rem] border px-3 py-2 shadow-[0_8px_20px_rgb(var(--mymedlife-shadow-rgb)/0.04)] sm:px-4",
         isSupabase
-          ? "border-blue-200/90 bg-blue-50/88"
-          : "border-blue-200/85 bg-[#eef5ff]/94",
+          ? "border-[var(--mymedlife-border)]/90 bg-[var(--mymedlife-badge-background)]/88"
+          : "border-[var(--mymedlife-border)]/85 bg-[var(--mymedlife-surface-hover)]/94",
       ].join(" ")}
     >
       <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
         <span
           aria-hidden="true"
-          className={[
-            "h-2.5 w-2.5 rounded-full",
-            isSupabase ? "bg-blue-500" : "bg-blue-500",
-          ].join(" ")}
+          className="h-2.5 w-2.5 rounded-full bg-[var(--mymedlife-primary-button)]"
         />
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2.5 sm:gap-3">
           <span
-            className={[
-              "rounded-full border bg-white px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.15em] sm:text-[0.66rem]",
-              isSupabase
-                ? "border-blue-200 text-blue-700"
-                : "border-blue-200 text-blue-700",
-            ].join(" ")}
+            className="rounded-full border border-[var(--mymedlife-border)] bg-white px-3 py-1 text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-[var(--mymedlife-info)] sm:text-[0.66rem]"
           >
             {isSupabase ? "Connected preview data" : "Preview data"}
           </span>

@@ -7,6 +7,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getLumaCalendarReadinessSnapshot } from "@/services/luma-calendar-readiness";
 import { getLumaEventLoopPilotReadback } from "@/services/luma-event-loop-pilot";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getStaffCommandCenter } from "@/services/staff-command-center";
@@ -107,7 +108,13 @@ async function renderStaffPage({
     source: search.source,
     view: search.view,
   });
-  const lumaEventLoop = getLumaEventLoopPilotReadback("staff", lumaSnapshot);
+  const lumaActivation = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
+  const lumaEventLoop = getLumaEventLoopPilotReadback("staff", lumaSnapshot, {
+    activation: lumaActivation,
+  });
   const surfaceFamily = getActorSurfaceFamily(actor);
   const restrictedNextHref = getLandingRouteForActor(actor);
   const restrictedNextLabel =
@@ -129,6 +136,7 @@ async function renderStaffPage({
           <StaffCommandCenterPanel
             commandCenter={commandCenter}
             lumaEventLoop={lumaEventLoop}
+            lumaActivation={lumaActivation}
           />
 
           {commandCenter.selectedView === "admin" &&

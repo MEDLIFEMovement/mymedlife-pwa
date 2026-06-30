@@ -1,0 +1,240 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
+import { getMockLocalActorContext } from "@/services/local-actor-context";
+
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn((target: string) => {
+    throw new Error(`redirect:${target}`);
+  }),
+  usePathname: () => "/admin/luma-live-pilot",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("@/services/local-actor-context", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services/local-actor-context")>();
+
+  return {
+    ...actual,
+    getLocalActorContext: vi.fn(),
+  };
+});
+
+vi.mock("@/services/read-only-app-data", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/services/read-only-app-data")>();
+
+  return {
+    ...actual,
+    getReadOnlyAppData: vi.fn(actual.getReadOnlyAppData),
+  };
+});
+
+describe("Luma live pilot admin page", () => {
+  it("shows DS Admin the event, RSVP, attendance, points, leaderboard, and outbox proof path", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
+    );
+    const baseData = dataModule.getMockReadOnlyAppData("Testing pending host check-in.");
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue({
+      ...baseData,
+      automationOutboxRows: [
+        {
+          id: "outbox-1",
+          source_event_id: "pilot-rsvp",
+          integration_event_id: "pilot-link",
+          chapter_id: "chapter-1",
+          destination: "n8n",
+          event_type: "event_rsvp_recorded",
+          payload: {
+            source: "luma_live_pilot",
+          },
+          idempotency_key: "luma-pilot:rsvp:evt-bJE178Q02N5DaLH:user-1",
+          status: "disabled",
+          attempt_count: 0,
+          available_at: "2026-06-29T03:17:53.728Z",
+          sent_at: null,
+          locked_at: null,
+          last_error: null,
+          created_at: "2026-06-29T03:17:53.728Z",
+          updated_at: "2026-06-29T03:17:53.728Z",
+        },
+      ],
+      auditLogs: [
+        {
+          id: "audit-1",
+          actor_user_id: "pilot-user",
+          chapter_id: "chapter-1",
+          action: "luma_attendance_import_recorded",
+          target_table: "chapter_events",
+          target_id: "pilot-chapter-event",
+          before_value: {},
+          after_value: {},
+          reason: "Recorded the staging Luma attendance proof in app tables.",
+          created_at: "2026-06-29T11:09:00.000Z",
+        },
+      ],
+      eventRows: [
+        {
+          id: "pilot-rsvp",
+          event_type: "event_rsvp_recorded",
+          actor_user_id: "pilot-user",
+          chapter_id: "chapter-1",
+          campaign_id: null,
+          assignment_id: null,
+          chapter_event_id: "pilot-chapter-event",
+          payload: {
+            source: "luma_live_pilot",
+            lumaEventId: "evt-bJE178Q02N5DaLH",
+            userEmail: "nellis@medlifemovement.org",
+            userEmailHint: "ne***@medlifemovement.org",
+            rsvpCount: 1,
+          },
+          correlation_id: "luma-pilot:rsvp:evt-bJE178Q02N5DaLH:user-1",
+          occurred_at: "2026-06-29T03:17:53.728Z",
+          created_at: "2026-06-29T03:17:53.728Z",
+        },
+        {
+          id: "pilot-attendance",
+          event_type: "event_attendance_recorded",
+          actor_user_id: "pilot-user",
+          chapter_id: "chapter-1",
+          campaign_id: null,
+          assignment_id: null,
+          chapter_event_id: "pilot-chapter-event",
+          payload: {
+            source: "luma_live_pilot",
+            attendanceCount: 0,
+            importedGuestCount: 0,
+          },
+          correlation_id: "luma-pilot:attendance:evt-bJE178Q02N5DaLH:1",
+          occurred_at: "2026-06-29T11:07:42.137Z",
+          created_at: "2026-06-29T11:07:42.137Z",
+        },
+      ],
+      integrationEventRows: [
+        {
+          id: "pilot-link",
+          source_event_id: "pilot-rsvp",
+          chapter_id: "chapter-1",
+          event_type: "luma_event_linked",
+          destination: "luma",
+          external_object_type: "event",
+          external_object_id: "evt-bJE178Q02N5DaLH",
+          status: "recorded",
+          payload: { source: "luma_live_pilot" },
+          created_by: "pilot-user",
+          created_at: "2026-06-29T03:17:33.923Z",
+          updated_at: "2026-06-29T03:17:33.923Z",
+        },
+      ],
+      pointsEventRows: [],
+    });
+
+    const { default: LumaLivePilotPage } = await import("@/app/admin/luma-live-pilot/page");
+    const html = renderToStaticMarkup(await LumaLivePilotPage({}));
+
+    expect(html).toContain("Staging Luma pilot");
+    expect(html).toContain("Event and points evidence");
+    expect(html).toContain("RSVP, attendance, and leaderboard impact stay tied together.");
+    expect(html).toContain("These counters are cumulative staging proof totals");
+    expect(html).toContain("Luma pilot proof");
+    expect(html).toContain("Use this snapshot to separate what the staging Luma loop already proves");
+    expect(html).toContain("Staging-only Luma gate is visible");
+    expect(html).toContain("Event, RSVP, attendance, and points counters are visible");
+    expect(html).toContain("Workspace readback routes are named");
+    expect(html).toContain("External systems remain held");
+    expect(html).toContain("Host-side Luma check-in still needs review");
+    expect(html).toContain("Tiny live pilot approval is still external");
+    expect(html).toContain("RSVPs");
+    expect(html).toContain("Attendance");
+    expect(html).toContain("Points");
+    expect(html).toContain("Leaderboard");
+    expect(html).toContain("Proof rows");
+    expect(html).toContain("Ready");
+    expect(html).toContain("Outbox sends");
+    expect(html).toContain(
+      "Proof footprint: 1 integration row(s), 1 disabled outbox row(s), 1 audit row(s), and 0 sent row(s).",
+    );
+    expect(html).toContain("event_rsvp_recorded");
+    expect(html).toContain("event_points_awarded");
+    expect(html).toContain("Audit/outbox review remains visible before pilot expansion.");
+    expect(html).toContain("Best next proof candidate");
+    expect(html).toContain("Verify the guest appears in Luma&#x27;s approved list first.");
+    expect(html).toContain("Open Luma guest list");
+    expect(html).toContain("evt-bJE178Q02N5DaLH");
+    expect(html).toContain("nellis@medlifemovement.org");
+    expect(html).toContain("Approved guests returned");
+    expect(html).toContain("Attendance returned");
+    expect(html).toContain("0 approved guests");
+    expect(html).toContain("Recent pilot runs");
+    expect(html).toContain("Review the proof candidates in completion order.");
+    expect(html).toContain("Hosted reviewer proof");
+    expect(html).toContain("Use this route as the staging evidence checklist.");
+    expect(html).toContain('href="/admin/luma-live-pilot"');
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain('href="/admin/integration-outbox?source=luma-live-pilot"');
+    expect(html).toContain('href="/admin/audit-log?source=luma-live-pilot"');
+    expect(html).toContain("Open staging.mymedlife.org, pass Vercel SSO");
+    expect(html).toContain("Luma event create/update");
+    expect(html).toContain("RSVP writeback");
+    expect(html).toContain("Attendance import");
+    expect(html).toContain("approved guest list");
+    expect(html).toContain("Points and leaderboard readback");
+    expect(html).toContain("Audit/outbox safety");
+    expect(html).toContain("Workspace readback routes");
+    expect(html).toContain("Verify the same event loop in every workspace.");
+    expect(html).toContain("General member workspace");
+    expect(html).toContain("Student leader workspace");
+    expect(html).toContain("Sales coach / staff workspace");
+    expect(html).toContain("DS / admin workspace");
+    expect(html).toContain("Open /app");
+    expect(html).toContain("Open /leader");
+    expect(html).toContain("Open /staff");
+    expect(html).toContain("Open /admin");
+    expect(html).toContain("the public API does not expose a public attendee check-in write");
+    expect(html).not.toContain("secret-example");
+  });
+
+  it("blocks non-DS users from staging Luma write and import controls", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("coach@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      dataModule.getMockReadOnlyAppData("Testing restricted state."),
+    );
+
+    const { default: LumaLivePilotPage } = await import("@/app/admin/luma-live-pilot/page");
+    const html = renderToStaticMarkup(await LumaLivePilotPage({}));
+
+    expect(html).toContain("Luma live pilot restricted");
+    expect(html).toContain("Only DS Admin and Super Admin can run staging Luma write or import controls.");
+    expect(html).not.toContain("Create/update Luma event");
+  });
+
+  it("renders a warning banner when RSVP proof is recorded but guest verification is still pending", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("ds.admin@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      dataModule.getMockReadOnlyAppData("Testing warning banner."),
+    );
+
+    const { default: LumaLivePilotPage } = await import("@/app/admin/luma-live-pilot/page");
+    const html = renderToStaticMarkup(
+      await LumaLivePilotPage({
+        searchParams: Promise.resolve({
+          lumaResult: "warning",
+          lumaMessage:
+            "Luma accepted the RSVP request, but the approved guest list has not settled yet. Staging proof recorded.",
+        }),
+      }),
+    );
+
+    expect(html).toContain("approved guest list has not settled yet");
+  });
+});

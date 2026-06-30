@@ -15,10 +15,10 @@ export function MvpReleaseReadinessPanel({
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             Release readiness
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{summary.title}</h2>
@@ -47,7 +47,11 @@ export function MvpReleaseReadinessPanel({
         <Phase2CloseoutCard closeout={summary.phase2Closeout} />
       ) : null}
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      {summary.productionReadiness ? (
+        <ProductionReadinessCard snapshot={summary.productionReadiness} />
+      ) : null}
+
+      <div className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <p className="text-sm font-semibold text-white">Approvals needed next</p>
         <ul className="mt-3 grid gap-2">
           {summary.nextApprovals.map((approval) => (
@@ -61,13 +65,59 @@ export function MvpReleaseReadinessPanel({
   );
 }
 
+function ProductionReadinessCard({
+  snapshot,
+}: {
+  snapshot: NonNullable<MvpReleaseReadinessSummary["productionReadiness"]>;
+}) {
+  return (
+    <article className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-white">{snapshot.title}</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/60">
+            {snapshot.plainEnglish}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
+          <MiniStat
+            label="Env recorded"
+            value={`${snapshot.recordedEnvironmentCount}`}
+          />
+          <MiniStat
+            label="Env missing"
+            value={`${snapshot.missingEnvironmentCount}`}
+          />
+          <MiniStat
+            label="Proof recorded"
+            value={`${snapshot.stagingEvidenceRecordedCount}`}
+          />
+          <MiniStat
+            label="Proof missing"
+            value={`${snapshot.missingEvidenceCount}`}
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <CloseoutList title="Recorded now" items={snapshot.recordedNow} />
+        <CloseoutList title="Still missing" items={snapshot.stillMissing} />
+      </div>
+
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3 text-xs leading-5 text-white/54">
+        {snapshot.nextDecision}
+      </p>
+    </article>
+  );
+}
+
 function Phase2CloseoutCard({
   closeout,
 }: {
   closeout: NonNullable<MvpReleaseReadinessSummary["phase2Closeout"]>;
 }) {
   return (
-    <article className="mt-4 rounded-2xl border border-blue-300/20 bg-blue-300/10 p-4">
+    <article className="mt-4 rounded-2xl border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-sm font-semibold text-white">{closeout.title}</p>
@@ -75,7 +125,7 @@ function Phase2CloseoutCard({
             {closeout.summary}
           </p>
         </div>
-        <span className="rounded-full border border-blue-200/20 bg-blue-200/10 px-3 py-1 font-mono text-xs font-semibold text-blue-100/80">
+        <span className="rounded-full border border-[var(--mymedlife-border)]/20 bg-[var(--mymedlife-border)]/10 px-3 py-1 font-mono text-xs font-semibold text-[var(--mymedlife-badge-background)]/80">
           {closeout.packetPath}
         </span>
       </div>
@@ -85,7 +135,7 @@ function Phase2CloseoutCard({
         <CloseoutList title="Still blocked" items={closeout.stillBlocked} />
       </div>
 
-      <div className="mt-4 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+      <div className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
         <p className="text-sm font-semibold text-white">Named owners still needed</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {closeout.namedOwnersStillNeeded.map((owner) => (
@@ -104,7 +154,7 @@ function Phase2CloseoutCard({
               {closeout.recordedOwnerAnswers.map((owner) => (
                 <span
                   key={owner}
-                  className="rounded-full border border-blue-300/20 bg-blue-300/10 px-3 py-1 text-xs font-semibold text-blue-100/80"
+                  className="rounded-full border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-badge-background)]/80"
                 >
                   {owner}
                 </span>
@@ -118,14 +168,30 @@ function Phase2CloseoutCard({
   );
 }
 
-function CloseoutList({ title, items }: { title: string; items: string[] }) {
+function CloseoutList({
+  title,
+  items,
+}: {
+  title: string;
+  items: string[] | Array<{ label: string; detail: string }>;
+}) {
   return (
-    <article className="rounded-2xl bg-[#bfdbfe]/40 p-4">
+    <article className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-4">
       <h3 className="text-lg font-semibold text-white">{title}</h3>
       <ul className="mt-3 grid gap-2">
         {items.map((item) => (
-          <li key={item} className="text-sm leading-6 text-white/60">
-            {item}
+          <li
+            key={typeof item === "string" ? item : `${item.label}-${item.detail}`}
+            className="text-sm leading-6 text-white/60"
+          >
+            {typeof item === "string" ? (
+              item
+            ) : (
+              <>
+                <span className="font-semibold text-white">{item.label}</span>
+                <span className="text-white/52">: {item.detail}</span>
+              </>
+            )}
           </li>
         ))}
       </ul>
@@ -143,7 +209,7 @@ function RoleModelCheckpoint({
   checkpoint: RoleModelCheckpointValue;
 }) {
   return (
-    <article className="mt-4 rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+    <article className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-sm font-semibold text-white">{checkpoint.title}</p>
@@ -151,7 +217,7 @@ function RoleModelCheckpoint({
             {checkpoint.plainEnglish}
           </p>
         </div>
-        <span className="rounded-full border border-blue-300/20 bg-blue-300/10 px-3 py-1 text-xs font-semibold text-blue-100">
+        <span className="rounded-full border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-badge-background)]">
           {checkpoint.items.length} route checks
         </span>
       </div>
@@ -171,7 +237,7 @@ function RoleModelCheckpoint({
               </span>
             </div>
             <h3 className="mt-3 text-sm font-semibold text-white">{item.label}</h3>
-            <p className="mt-2 break-words font-mono text-xs text-blue-100/70">
+            <p className="mt-2 break-words font-mono text-xs text-[var(--mymedlife-badge-background)]/70">
               {item.reviewerActorEmail}
             </p>
             <p className="mt-2 text-sm leading-6 text-white/60">{item.passSignal}</p>
@@ -179,7 +245,7 @@ function RoleModelCheckpoint({
         ))}
       </div>
 
-      <p className="mt-4 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
+      <p className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/54">
         {checkpoint.finalDecisionPrompt}
       </p>
     </article>
@@ -194,7 +260,7 @@ function ReadinessList({
   title: string;
 }) {
   return (
-    <article className="rounded-2xl bg-[#bfdbfe]/40 p-4">
+    <article className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-4">
       <h3 className="text-lg font-semibold text-white">{title}</h3>
       <div className="mt-3 grid gap-3">
         {items.map((item) => (
@@ -215,7 +281,7 @@ function ReadinessList({
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -227,8 +293,8 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: ReleaseReadinessStatus }) {
   const className =
     status === "ready_for_local_review"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-      : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+      : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

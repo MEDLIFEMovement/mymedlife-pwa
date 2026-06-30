@@ -65,12 +65,15 @@ describe("app route registry", () => {
     );
     expect(isKnownAppRouteHref("/staff")).toBe(true);
     expect(isKnownAppRouteHref("/admin/phase-2")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/feature-flags")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/theme")).toBe(true);
     expect(isKnownAppRouteHref("/admin/review-path")).toBe(true);
     expect(isKnownAppRouteHref("/admin/nick-review")).toBe(true);
     expect(isKnownAppRouteHref("/admin/release-readiness")).toBe(true);
     expect(isKnownAppRouteHref("/admin/launch-gate")).toBe(true);
     expect(isKnownAppRouteHref("/admin/audit-log")).toBe(true);
     expect(isKnownAppRouteHref("/admin/integration-outbox")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/luma-live-pilot")).toBe(true);
     expect(isKnownAppRouteHref("/admin/master-data")).toBe(true);
     expect(isKnownAppRouteHref("/admin/permissions")).toBe(true);
     expect(isKnownAppRouteHref("/admin/committees")).toBe(true);

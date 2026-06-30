@@ -9,6 +9,10 @@ import {
   type AdminLiveSendPreflightItem,
   type AdminLiveSendPreflightStatus,
 } from "@/services/admin-integration-outbox-workspace";
+import {
+  applyAdminReviewFocus,
+  resolveAdminReviewFocus,
+} from "@/services/admin-review-focus";
 import type { IntegrationContractStatus } from "@/services/integration-contract-review";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
@@ -18,12 +22,27 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("adminIntegrationOutbox");
 export const dynamic = "force-dynamic";
 
-export default async function AdminIntegrationOutboxPage() {
-  const [actor, data] = await Promise.all([
+type AdminIntegrationOutboxPageProps = {
+  searchParams?: Promise<{
+    source?: string;
+  }>;
+};
+
+export default async function AdminIntegrationOutboxPage({
+  searchParams,
+}: AdminIntegrationOutboxPageProps) {
+  const [actor, data, resolvedSearchParams] = await Promise.all([
     getLocalActorContext(),
     getReadOnlyAppData(),
+    searchParams ? searchParams : Promise.resolve(undefined),
   ]);
-  const workspace = getAdminIntegrationOutboxWorkspace(actor, data);
+  const focus = resolveAdminReviewFocus(resolvedSearchParams?.source);
+  const workspace = getAdminIntegrationOutboxWorkspace(
+    actor,
+    applyAdminReviewFocus(data, focus),
+  );
+  const nextStepHref = focus ? "/admin/luma-live-pilot" : workspace.nextStep.href;
+  const nextStepLabel = focus ? "Back to Luma pilot" : workspace.nextStep.label;
 
   return (
     <AdminAppShell actor={actor}>
@@ -45,7 +64,7 @@ export default async function AdminIntegrationOutboxPage() {
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Admin integration outbox
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -56,13 +75,27 @@ export default async function AdminIntegrationOutboxPage() {
                 </p>
               </div>
               <Link
-                href={workspace.nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                href={nextStepHref}
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
-                {workspace.nextStep.label}
+                {nextStepLabel}
               </Link>
             </div>
           </section>
+
+          {focus ? (
+            <section className="rounded-2xl border border-[var(--mymedlife-border)] bg-[var(--background)] p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
+                Current focus
+              </p>
+              <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                {focus.label}
+              </h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                {focus.summary}
+              </p>
+            </section>
+          ) : null}
 
           <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <MiniStat
@@ -113,7 +146,7 @@ export default async function AdminIntegrationOutboxPage() {
           <section className="app-surface rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                   Contract review
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -154,7 +187,7 @@ export default async function AdminIntegrationOutboxPage() {
               {workspace.contractReview.items.map((item) => (
                 <article
                   key={item.key}
-                  className="rounded-2xl border border-slate-200 bg-[#f8fbff] p-4"
+                  className="rounded-2xl border border-slate-200 bg-[var(--background)] p-4"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -171,7 +204,7 @@ export default async function AdminIntegrationOutboxPage() {
                   <p className="mt-3 text-sm leading-6 text-slate-600">
                     {item.currentPosture}
                   </p>
-                  <p className="mt-3 text-xs leading-5 text-[#1d4ed8]">
+                  <p className="mt-3 text-xs leading-5 text-[var(--mymedlife-info)]">
                     Source of truth: {item.sourceOfTruth}
                   </p>
                   <p className="mt-2 text-xs leading-5 text-slate-500">
@@ -223,14 +256,14 @@ export default async function AdminIntegrationOutboxPage() {
               {workspace.integrationEvents.map((event) => (
                 <article
                   key={event.id}
-                  className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4"
+                  className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
                 >
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h2 className="text-lg font-semibold text-white">
                         {event.title}
                       </h2>
-                      <p className="mt-1 font-mono text-xs text-blue-100/70">
+                      <p className="mt-1 font-mono text-xs text-[var(--mymedlife-badge-background)]/70">
                         {event.eventType}
                       </p>
                     </div>
@@ -255,14 +288,14 @@ export default async function AdminIntegrationOutboxPage() {
               {workspace.outboxItems.map((item) => (
                 <article
                   key={item.id}
-                  className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4"
+                  className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h2 className="text-lg font-semibold text-white">
                         {item.destination}
                       </h2>
-                      <p className="mt-1 font-mono text-xs text-blue-100/70">
+                      <p className="mt-1 font-mono text-xs text-[var(--mymedlife-badge-background)]/70">
                         source: {item.sourceEventId}
                       </p>
                     </div>
@@ -271,7 +304,7 @@ export default async function AdminIntegrationOutboxPage() {
                   <p className="mt-3 text-sm leading-6 text-white/62">
                     {item.payloadSummary}
                   </p>
-                  <p className="mt-3 rounded-xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/52">
+                  <p className="mt-3 rounded-xl border border-white/10 bg-[var(--mymedlife-admin-blue)]/70 p-3 text-xs leading-5 text-white/52">
                     {item.safety}
                   </p>
                 </article>
@@ -292,7 +325,7 @@ export default async function AdminIntegrationOutboxPage() {
               ) : (
                 <div className="grid gap-2">
                   {workspace.readbackRows.map((row) => (
-                    <article key={row.id} className="rounded-xl bg-[#bfdbfe]/40 p-3">
+                    <article key={row.id} className="rounded-xl bg-[var(--mymedlife-border)]/40 p-3">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold text-white">
@@ -332,9 +365,9 @@ export default async function AdminIntegrationOutboxPage() {
               ) : (
                 <div className="grid gap-2">
                   {workspace.auditRows.map((row) => (
-                    <article key={row.id} className="rounded-xl bg-[#bfdbfe]/40 p-3">
+                    <article key={row.id} className="rounded-xl bg-[var(--mymedlife-border)]/40 p-3">
                       <p className="text-sm font-semibold text-white">{row.action}</p>
-                      <p className="mt-1 font-mono text-xs text-blue-100/70">
+                      <p className="mt-1 font-mono text-xs text-[var(--mymedlife-badge-background)]/70">
                         {row.target}
                       </p>
                       <p className="mt-2 text-xs leading-5 text-white/52">
@@ -347,10 +380,10 @@ export default async function AdminIntegrationOutboxPage() {
             </InventorySection>
           </section>
 
-          <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
                   Live-send preflight
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -396,7 +429,7 @@ export default async function AdminIntegrationOutboxPage() {
               {workspace.liveSendPreflight.blockedControls.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1 text-xs font-semibold text-white/64"
+                  className="rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-1 text-xs font-semibold text-white/64"
                 >
                   Locked {item}
                 </span>
@@ -404,15 +437,15 @@ export default async function AdminIntegrationOutboxPage() {
             </div>
           </section>
 
-          <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
               Blocked live controls
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {workspace.blockedControls.map((item) => (
                 <span
                   key={item}
-                  className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1 text-xs font-semibold text-white/64"
+                  className="rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-1 text-xs font-semibold text-white/64"
                 >
                   {item}
                 </span>
@@ -422,7 +455,7 @@ export default async function AdminIntegrationOutboxPage() {
               {workspace.safetyNotes.map((note) => (
                 <p
                   key={note}
-                  className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3 text-sm leading-6 text-white/64"
+                  className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3 text-sm leading-6 text-white/64"
                 >
                   {note}
                 </p>
@@ -437,7 +470,7 @@ export default async function AdminIntegrationOutboxPage() {
 
 function PreflightCard({ item }: { item: AdminLiveSendPreflightItem }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+    <article className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <PreflightStatusPill status={item.status} />
@@ -449,7 +482,7 @@ function PreflightCard({ item }: { item: AdminLiveSendPreflightItem }) {
         </div>
       </div>
       <p className="mt-3 text-sm leading-6 text-white/72">{item.question}</p>
-      <p className="mt-2 text-xs leading-5 text-blue-100/72">
+      <p className="mt-2 text-xs leading-5 text-[var(--mymedlife-badge-background)]/72">
         Required: {item.requiredEvidence}
       </p>
       <p className="mt-3 rounded-2xl bg-white/[0.05] p-3 text-xs leading-5 text-white/54">
@@ -459,7 +492,7 @@ function PreflightCard({ item }: { item: AdminLiveSendPreflightItem }) {
         {item.routeEvidence.map((route) => (
           <span
             key={`${item.key}-${route}`}
-            className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-2.5 py-1 text-xs font-semibold text-white/58"
+            className="rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-2.5 py-1 text-xs font-semibold text-white/58"
           >
             {route}
           </span>
@@ -482,7 +515,7 @@ function InventorySection({
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-2xl font-semibold text-white">{title}</h2>
-        <span className="rounded-full border border-white/10 bg-[#bfdbfe]/40 px-3 py-1 text-xs font-semibold text-white/64">
+        <span className="rounded-full border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-1 text-xs font-semibold text-white/64">
           {count}
         </span>
       </div>
@@ -501,7 +534,7 @@ function SmallToken({ label, value }: { label: string; value: string }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -517,10 +550,10 @@ function PreflightStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "watch"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -536,10 +569,10 @@ function ReviewStatusPill({
 }) {
   const className =
     status === "ready"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "watch"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
@@ -550,7 +583,7 @@ function ReviewStatusPill({
 
 function Pill({ children }: { children: string }) {
   return (
-    <span className="shrink-0 rounded-full border border-blue-300/20 bg-blue-300/10 px-3 py-1 text-xs font-semibold text-blue-100">
+    <span className="shrink-0 rounded-full border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-badge-background)]">
       {children}
     </span>
   );
@@ -558,7 +591,7 @@ function Pill({ children }: { children: string }) {
 
 function EmptyState({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4 text-sm leading-6 text-white/60">
+    <p className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4 text-sm leading-6 text-white/60">
       {children}
     </p>
   );

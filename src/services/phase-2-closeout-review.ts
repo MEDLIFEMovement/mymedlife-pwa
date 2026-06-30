@@ -13,6 +13,7 @@ import {
   getActorSurfaceFamily,
   type ActorSurfaceFamily,
 } from "@/services/role-visibility";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 import { getStaffDryRunGuide } from "@/services/staff-dry-run-guide";
 
 export type Phase2CloseoutLaneStatus =
@@ -68,6 +69,27 @@ export type Phase2CloseoutReview = {
   };
 };
 
+type HostedActionStartProof = {
+  assignmentId: string;
+  assignmentTitle: string;
+  assignmentStatus: string;
+  eventId: string;
+  integrationEventId: string;
+  auditLogId: string;
+};
+
+type HostedProofLoopEvidence = {
+  assignmentId: string;
+  assignmentTitle: string;
+  assignmentStatus: string;
+  evidenceItemId: string;
+  evidenceSummary: string;
+  eventId: string;
+  integrationEventId: string;
+  auditLogId: string;
+  outboxId: string;
+};
+
 export function getPhase2CloseoutReview(
   actor: LocalActorContext,
   data: ReadOnlyAppData,
@@ -80,7 +102,7 @@ export function getPhase2CloseoutReview(
       title: "Phase 2 closeout review hidden for this role",
       summary:
         "Phase 2 closeout is an HQ review surface, not a student or chapter operating view.",
-      packetPath: "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md",
+      packetPath: "docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md",
       reviewerAction: "Use the student, leader, or coach operating routes instead.",
       approvalReplyHint: "",
       recordedAnswers: [],
@@ -94,8 +116,23 @@ export function getPhase2CloseoutReview(
     };
   }
 
-  const releaseReadiness = getMvpReleaseReadinessSummary(actor);
-  const pilotReadiness = getControlledPilotReadiness(actor);
+  const lumaReadModel = getStagingLumaEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
+  const hostedStagingEvidenceObserved =
+    data.source.mode === "supabase" &&
+    lumaReadModel.providerStatusLabel === "Staging evidence rows recorded";
+  const releaseReadiness = getMvpReleaseReadinessSummary(actor, {
+    data,
+    env: process.env,
+    lumaReadModel,
+    hostedStagingEvidenceObserved,
+  });
+  const pilotReadiness = getControlledPilotReadiness(actor, {
+    lumaReadModel,
+    hostedStagingEvidenceObserved,
+  });
   const pilotScope = getPilotScopePlanner(actor);
   const pilotRegistry = getPhase2PilotRegistry();
   const onboarding = getAuthOnboardingWorkspace(actor);
@@ -103,9 +140,20 @@ export function getPhase2CloseoutReview(
   const firstWrite = getFirstWriteActivationDrill(actor, data);
   const proofLoop = getProofMetadataPacket(actor, data);
   const designQa = getDesignQaReadiness(actor);
+  const hostedActionStartProof = findHostedActionStartProof(data);
+  const hostedProofLoopEvidence = findHostedProofLoopEvidence(data);
+  const hostedLumaEvidenceObserved =
+    hostedStagingEvidenceObserved &&
+    lumaReadModel.summary.rsvpCount > 0 &&
+    lumaReadModel.summary.attendanceCount > 0 &&
+    lumaReadModel.summary.pointsAwarded > 0;
+  const roleReadbackEvidenceObserved =
+    Boolean(hostedActionStartProof) &&
+    Boolean(hostedProofLoopEvidence) &&
+    hostedLumaEvidenceObserved;
   const packetPath =
     releaseReadiness.phase2Closeout?.packetPath ??
-    "docs/review/2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md";
+    "docs/review/2026-06-29-med-500-hosted-staging-route-and-write-proof.md";
   const recordedAnswers = [
     ...pilotRegistry.defaults
       .filter((item) => item.status === "recorded_final")
@@ -115,19 +163,19 @@ export function getPhase2CloseoutReview(
       .map((item) => `${item.label}: ${item.value}`),
   ];
   const requiredHumanDecisions = [
-    "Confirm the intended staging review target and reviewer access path; anonymous requests currently redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path before the app.",
+    "Confirm the current staging reviewer path and whether the Vercel-SSO-gated `/login?next=/sso-api...` handoff remains the approved pilot reviewer path.",
     "Confirm the staff dry-run pass and note any confusing copy that should stay visible in the packet.",
     "Complete one human device and accessibility smoke pass before pilot approval.",
     ...(pilotRegistry.counts.ownersPending > 0
       ? [
-          "Name the pilot chapter owners, DS owner, support/pause channel, and rollback owner.",
+          "Name the pilot chapter owners, DS owner, support owner, support/pause channel, and rollback owner.",
         ]
       : []),
     ...(firstWrite.hostedCloseout.namedOwnersStillNeeded.some(
       (item) => item.key === "hosted_write_approver",
     )
       ? [
-          "Approve `action_started` as the first hosted write, or replace it with a narrower approved lane.",
+          "Confirm the current hosted `action_started` proof as the first live-pilot write lane and record the final approver / rollback trail.",
         ]
       : []),
     "Confirm the smallest hosted proof/review loop is limited to proof metadata submission plus leader review readback, while leader decision writes, uploads, and public proof stay blocked.",
@@ -137,7 +185,7 @@ export function getPhase2CloseoutReview(
   const doneCriteria: Phase2DoneCriterion[] = [
     {
       key: "named_owners",
-      label: "Named pilot owners, rollback owner, and support/pause channel are recorded",
+      label: "Named pilot owners, support owner, support/pause channel, and rollback owner are recorded",
       status:
         pilotRegistry.counts.ownersPending === 0
           ? "review_ready_in_repo"
@@ -151,42 +199,56 @@ export function getPhase2CloseoutReview(
     {
       key: "hosted_auth",
       label: "Hosted auth works for the pilot cohort",
-      status: "awaiting_hosted_proof",
+      status: "awaiting_human_confirmation",
       evidence: [
         "Repo support exists for staging review auth and manual pre-provisioning of the first cohort.",
-        "Observed on 2026-06-24: anonymous staging requests redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path.",
-        "Direct anonymous requests to `/login` are also intercepted by the same Vercel SSO gate.",
-        "Hosted reviewer-path approval and real signed-in staging proof are still missing.",
+        "Observed on 2026-06-24 and again on 2026-06-29: anonymous staging requests redirect to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path.",
+        "Hosted reviewer sign-in proof now exists for a seeded DS/Admin staging session after that Vercel handoff.",
+        "Cross-role pilot-cohort sign-in and final role-routed landing proof still need reviewer confirmation from the approved hosted session.",
       ],
     },
     {
       key: "first_hosted_write",
       label: "The first hosted write lane `action_started` is enabled and proven in staging",
-      status: "awaiting_hosted_proof",
+      status: hostedActionStartProof
+        ? "awaiting_human_confirmation"
+        : "awaiting_hosted_proof",
       evidence: [
         `Recommended first hosted write remains ${firstWrite.hostedCloseout.recommendedHostedWrite}.`,
         `${firstWrite.hostedCloseout.requiredReadback.length} hosted readback checks are already defined.`,
-        "The hosted write packet is framed, but no real staging proof is recorded yet.",
+        hostedActionStartProof
+          ? `Hosted action-start evidence is already visible on assignment ${hostedActionStartProof.assignmentId} via event ${hostedActionStartProof.eventId}, integration event ${hostedActionStartProof.integrationEventId}, and audit log ${hostedActionStartProof.auditLogId}.`
+          : "Hosted Luma event / RSVP / attendance proof now exists, but no hosted `action_started` before/after capture is recorded yet.",
       ],
     },
     {
       key: "proof_loop",
       label: "The smallest hosted proof/review loop is proven end to end",
-      status: "awaiting_hosted_proof",
+      status: hostedProofLoopEvidence
+        ? "awaiting_human_confirmation"
+        : "awaiting_hosted_proof",
       evidence: [
         `Recommended proof loop remains ${proofLoop.hostedCloseout.recommendedProofLoop}.`,
         "Leader review readback is in scope; leader decision writes, uploads, and public proof stay blocked.",
-        "The loop is review-framed in repo, but no hosted end-to-end proof is recorded yet.",
+        hostedProofLoopEvidence
+          ? `Hosted proof-loop evidence is already visible on assignment ${hostedProofLoopEvidence.assignmentId} and evidence item ${hostedProofLoopEvidence.evidenceItemId}, with outbox row ${hostedProofLoopEvidence.outboxId} still disabled.`
+          : "Hosted Luma proof is now recorded, but the proof metadata to leader-review loop still lacks its own end-to-end staging capture.",
       ],
     },
     {
       key: "readback_surfaces",
       label: "Leader, staff, DS/admin, and audit/outbox views show the correct readback",
-      status: "awaiting_hosted_proof",
+      status: roleReadbackEvidenceObserved
+        ? "awaiting_human_confirmation"
+        : "awaiting_hosted_proof",
       evidence: [
         "Leader, staff, DS/admin, audit, and outbox review surfaces are explicitly named in the hosted closeout packets.",
-        "Those routes are reviewable locally and mapped in the Phase 2 packet.",
-        "Hosted staging readback screenshots and route evidence are still missing.",
+        hostedLumaEvidenceObserved
+          ? "Hosted Luma review has already been observed across member, leader, staff, admin, audit, and outbox surfaces."
+          : "Hosted Luma review still needs an honest RSVP, attendance, and points readback pass.",
+        roleReadbackEvidenceObserved
+          ? "The remaining gap is reviewer confirmation and external recording of the current route/readback evidence bundle."
+          : "First-write and proof-loop-specific readback screenshots or route captures are still missing from the final hosted evidence bundle.",
       ],
     },
     {
@@ -223,10 +285,19 @@ export function getPhase2CloseoutReview(
 
   const hostedEvidenceChecklist = [
     "Capture the approved staging reviewer path, including the real access gate reviewers are expected to use before the Vercel-hosted `/login?next=/sso-api...` handoff.",
-    "Capture proof that the pilot user can sign in through that staging path and lands in the correct role-scoped app surface.",
-    "Capture before/after evidence for the hosted `action_started` write from the signed-in student route.",
-    "Capture assignment status, internal event, integration event, and audit-log readback for hosted `action_started`, while external sends remain at zero.",
-    "Capture the smallest hosted proof loop: metadata submission, leader review readback, staff readback, DS/admin readback, audit readback, and outbox readback.",
+    "Record the current pilot user sign-in path from the approved hosted session and confirm the landing route matches the correct role-scoped app surface.",
+    hostedActionStartProof
+      ? `Record the current hosted \`action_started\` proof for assignment ${hostedActionStartProof.assignmentId}, including event ${hostedActionStartProof.eventId}, integration event ${hostedActionStartProof.integrationEventId}, audit log ${hostedActionStartProof.auditLogId}, and zero outbox sends.`
+      : "Capture before/after evidence for the hosted `action_started` write from the signed-in student route.",
+    hostedActionStartProof
+      ? `Record the current assignment readback for ${hostedActionStartProof.assignmentId}; it has already moved beyond the first write into status \`${hostedActionStartProof.assignmentStatus}\`, so reviewers should use the event/integration/audit chain as the authoritative proof of start.`
+      : "Capture assignment status, internal event, integration event, and audit-log readback for hosted `action_started`, while external sends remain at zero.",
+    hostedLumaEvidenceObserved
+      ? "Record the existing hosted Luma proof with current RSVP, attendance, points, leaderboard, audit, and outbox counters, using `/admin/audit-log?source=luma-live-pilot` and `/admin/integration-outbox?source=luma-live-pilot` for the admin readback."
+      : "Record the existing hosted Luma proof with current counters, or rerun one real host-side Luma check-in in the approved pilot event, then confirm attendance import, points, leaderboard, audit, and outbox readback honestly, using `/admin/audit-log?source=luma-live-pilot` and `/admin/integration-outbox?source=luma-live-pilot` for the admin readback.",
+    hostedProofLoopEvidence
+      ? `Record the current hosted proof-loop evidence for assignment ${hostedProofLoopEvidence.assignmentId} and evidence item ${hostedProofLoopEvidence.evidenceItemId}, then confirm leader, staff, DS/admin, audit, and outbox readback against that same row set.`
+      : "Capture the smallest hosted proof loop: metadata submission, leader review readback, staff readback, DS/admin readback, audit readback, and outbox readback.",
     "Capture explicit evidence that uploads, public proof sharing, HQ proof decisions, coach decisions, and all external integrations remain disabled during the hosted rehearsal.",
   ];
 
@@ -297,7 +368,8 @@ export function getPhase2CloseoutReview(
           onboarding.launchPreflight?.counts.blocked ?? 0
         } preflight items are still blocked.`,
         "Recommended default: manually pre-provision the first hosted pilot cohort.",
-        "Observed 2026-06-24: anonymous staging requests redirect to Vercel SSO and then to `/login?next=/sso-api...` before the app.",
+        "Observed 2026-06-24 and rechecked on 2026-06-29: anonymous staging requests redirect to Vercel SSO and then to `/login?next=/sso-api...` before the app.",
+        "A seeded DS/Admin reviewer session has already completed that hosted sign-in path successfully.",
         "Live auth, production users, and onboarding writes remain disabled.",
       ],
     },
@@ -322,33 +394,45 @@ export function getPhase2CloseoutReview(
           pilotRegistry.defaults.find((item) => item.key === "pilot_chapter")?.value ??
           "UCLA MEDLIFE"
         }.`,
-        "Rush Month only, 5-10 students, and one support/pause channel remain the recommended minimum unless final approvals replace them.",
+        "Rush Month only, 5-15 students, one support owner, and one support/pause channel remain the recommended minimum unless final approvals replace them.",
       ],
     },
     {
       key: "first_hosted_write",
       label: "First hosted write approval",
       href: "/admin/first-write",
-      status: "blocked_before_pilot",
-      summary: firstWrite.hostedCloseout.hostedDecision,
+      status: hostedActionStartProof
+        ? "awaiting_human_confirmation"
+        : "blocked_before_pilot",
+      summary: hostedActionStartProof
+        ? `${firstWrite.hostedCloseout.hostedDecision} Current staging evidence already exists on assignment ${hostedActionStartProof.assignmentId}; the remaining step is approval recording, not rediscovering the write.`
+        : firstWrite.hostedCloseout.hostedDecision,
       evidence: [
         `Recommended first hosted write: ${firstWrite.hostedCloseout.recommendedHostedWrite}.`,
         `${firstWrite.hostedCloseout.requiredReadback.length} readback checks must be captured before any second write opens.`,
         `${firstWrite.hostedCloseout.namedOwnersStillNeeded.length} owner slots are still unnamed on the hosted write path.`,
-        "Hosted staging proof has not been recorded on this route yet.",
+        hostedActionStartProof
+          ? `Hosted staging proof is already visible via event ${hostedActionStartProof.eventId}, integration event ${hostedActionStartProof.integrationEventId}, and audit log ${hostedActionStartProof.auditLogId}.`
+          : "Hosted staging proof has not been recorded on this route yet.",
       ],
     },
     {
       key: "hosted_proof_loop",
       label: "Hosted proof loop closeout",
       href: "/admin/proof-write",
-      status: "blocked_before_pilot",
-      summary: proofLoop.hostedCloseout.hostedDecision,
+      status: hostedProofLoopEvidence
+        ? "awaiting_human_confirmation"
+        : "blocked_before_pilot",
+      summary: hostedProofLoopEvidence
+        ? `${proofLoop.hostedCloseout.hostedDecision} Current staging evidence already exists on evidence item ${hostedProofLoopEvidence.evidenceItemId}; the remaining step is reviewer confirmation and signoff.`
+        : proofLoop.hostedCloseout.hostedDecision,
       evidence: [
         `Recommended proof loop: ${proofLoop.hostedCloseout.recommendedProofLoop}.`,
         `${proofLoop.hostedCloseout.requiredReadback.length} hosted readback checks must be captured before proof-loop approval is honest.`,
         `${proofLoop.hostedCloseout.namedOwnersStillNeeded.length} owner slots still affect the hosted proof loop.`,
-        "Leader review readback is in scope for this loop, but leader decision writes remain blocked.",
+        hostedProofLoopEvidence
+          ? `Leader review readback is in scope for this loop and the current proof row set is anchored to ${hostedProofLoopEvidence.evidenceItemId}; leader decision writes remain blocked.`
+          : "Leader review readback is in scope for this loop, but leader decision writes remain blocked.",
       ],
     },
     {
@@ -440,4 +524,94 @@ function emptyCounts(): Phase2CloseoutReview["counts"] {
     browserWritesExpected: 0,
     externalWritesExpected: 0,
   };
+}
+
+function findHostedActionStartProof(
+  data: ReadOnlyAppData,
+): HostedActionStartProof | null {
+  for (const event of data.eventRows) {
+    if (event.event_type !== "action_started" || !event.assignment_id) {
+      continue;
+    }
+
+    const assignment = data.assignments.find((item) => item.id === event.assignment_id);
+    const integrationEvent = data.integrationEventRows.find((item) => {
+      return item.event_type === "action_started" &&
+        (item.source_event_id === event.id || item.external_object_id === event.assignment_id);
+    });
+    const auditLog = data.auditLogs.find((item) => {
+      return item.action === "action_started" &&
+        item.target_table === "assignments" &&
+        item.target_id === event.assignment_id;
+    });
+    const outboxRows = data.automationOutboxRows.filter((item) => {
+      return item.event_type === "action_started" ||
+        item.source_event_id === event.id ||
+        (integrationEvent?.id ? item.integration_event_id === integrationEvent.id : false);
+    });
+
+    if (!assignment || !integrationEvent || !auditLog || outboxRows.length > 0) {
+      continue;
+    }
+
+    return {
+      assignmentId: assignment.id,
+      assignmentTitle: assignment.title,
+      assignmentStatus: assignment.status,
+      eventId: event.id,
+      integrationEventId: integrationEvent.id,
+      auditLogId: auditLog.id,
+    };
+  }
+
+  return null;
+}
+
+function findHostedProofLoopEvidence(
+  data: ReadOnlyAppData,
+): HostedProofLoopEvidence | null {
+  for (const evidenceItem of data.evidenceItems) {
+    if (!evidenceItem.assignmentId) {
+      continue;
+    }
+
+    const assignment = data.assignments.find((item) => item.id === evidenceItem.assignmentId);
+    const event = data.eventRows.find((item) => {
+      return item.event_type === "evidence_submitted" &&
+        item.assignment_id === evidenceItem.assignmentId;
+    });
+    const integrationEvent = data.integrationEventRows.find((item) => {
+      return item.event_type === "evidence_submitted" &&
+        (event?.id ? item.source_event_id === event.id : false);
+    });
+    const outboxRow = data.automationOutboxRows.find((item) => {
+      return item.event_type === "evidence_submitted" &&
+        item.status === "disabled" &&
+        ((event?.id ? item.source_event_id === event.id : false) ||
+          (integrationEvent?.id ? item.integration_event_id === integrationEvent.id : false));
+    });
+    const auditLog = data.auditLogs.find((item) => {
+      return item.action === "evidence_submitted" &&
+        item.target_table === "evidence_items" &&
+        item.target_id === evidenceItem.id;
+    });
+
+    if (!assignment || !event || !integrationEvent || !outboxRow || !auditLog) {
+      continue;
+    }
+
+    return {
+      assignmentId: assignment.id,
+      assignmentTitle: assignment.title,
+      assignmentStatus: assignment.status,
+      evidenceItemId: evidenceItem.id,
+      evidenceSummary: evidenceItem.summary,
+      eventId: event.id,
+      integrationEventId: integrationEvent.id,
+      auditLogId: auditLog.id,
+      outboxId: outboxRow.id,
+    };
+  }
+
+  return null;
 }

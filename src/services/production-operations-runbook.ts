@@ -43,6 +43,7 @@ export type ProductionOperationsRunbook = {
 
 export function getProductionOperationsRunbook(
   actor: LocalActorContext,
+  env: Record<string, string | undefined> = process.env,
 ): ProductionOperationsRunbook {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
@@ -62,14 +63,16 @@ export function getProductionOperationsRunbook(
     };
   }
 
-  const items = productionOperationsRunbookItems;
+  const items = getProductionOperationsRunbookItems(env);
 
   return {
     canReadRunbook: true,
     title: getTitle(surfaceFamily),
     launchReady: false,
     summary:
-      "Names the local first-response playbooks, owner lanes, and missing live evidence for a controlled myMEDLIFE pilot without enabling production writes, external sends, or secrets.",
+      hasRecordedProductionOperationsContext(env)
+        ? "Names the local first-response playbooks, owner lanes, recorded production packet answers, and remaining live evidence for a controlled myMEDLIFE pilot without enabling production writes, external sends, or secrets."
+        : "Names the local first-response playbooks, owner lanes, and missing live evidence for a controlled myMEDLIFE pilot without enabling production writes, external sends, or secrets.",
     browserWritesExpected: 0,
     externalWritesExpected: 0,
     secretsShown: 0,
@@ -88,8 +91,44 @@ export function getProductionOperationsRunbook(
   };
 }
 
-const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
-  {
+function getProductionOperationsRunbookItems(
+  env: Record<string, string | undefined>,
+): ProductionOperationsRunbookItem[] {
+  const productionCallback = readPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL",
+  );
+  const stagingCallback = readPacketValue(
+    env,
+    "MYMEDLIFE_STAGING_AUTH_CALLBACK_URL",
+  );
+  const supportOwner = readPacketValue(env, "MYMEDLIFE_PILOT_SUPPORT_OWNER");
+  const supportChannel = readPacketValue(
+    env,
+    "MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL",
+  );
+  const rollbackOwner = readPacketValue(env, "MYMEDLIFE_PILOT_ROLLBACK_OWNER");
+  const pilotChapter = readPacketValue(env, "MYMEDLIFE_PILOT_CHAPTER");
+  const dsOwner = readPacketValue(env, "MYMEDLIFE_PILOT_DS_OWNER");
+  const productionSupabaseProjectRef = readPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+  );
+  const productionSupabaseMigrationOwner = readPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+  );
+  const productionBackupOwner = readPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_BACKUP_OWNER",
+  );
+  const productionRestorePath = readPacketValue(
+    env,
+    "MYMEDLIFE_PRODUCTION_RESTORE_PATH",
+  );
+
+  return [
+    {
     key: "incident_triage",
     label: "Incident triage and severity",
     ownerLane: "Platform and HQ Operations",
@@ -102,7 +141,9 @@ const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
       "Escalate to the owner lane named on the matching runbook item.",
     ],
     missingLiveEvidence: [
-      "Named incident commander and support backup for the pilot window.",
+      supportOwner || supportChannel
+        ? `Recorded pilot support context still needs final launch approval: support owner ${supportOwner ?? "pending"}, support channel ${supportChannel ?? "pending"}.`
+        : "Named incident commander and support backup for the pilot window.",
       "Approved alert channel, severity labels, and response-time expectations.",
       "Release-build smoke result linked to every severity-1 launch path.",
     ],
@@ -119,14 +160,18 @@ const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
     ownerLane: "Security and Student Access",
     status: "blocked_before_live",
     localRunbook:
-      "Local actor switching can preview role visibility, but production Supabase Auth, callbacks, invites, and membership approval are not enabled.",
+      productionCallback || stagingCallback
+        ? `Local actor switching can preview role visibility, and recorded callback packet values now exist for ${productionCallback ?? "production callback pending"} and ${stagingCallback ?? "staging callback pending"}, but production Supabase Auth, invites, and membership approval are not enabled.`
+        : "Local actor switching can preview role visibility, but production Supabase Auth, callbacks, invites, and membership approval are not enabled.",
     firstResponseSteps: [
       "Confirm whether the issue is sign-in, join request, chapter membership, or role visibility.",
       "Compare the affected route against the expected actor role in `/admin` release readiness.",
       "Keep manual invite or role repair steps outside the browser app until auth is approved.",
     ],
     missingLiveEvidence: [
-      "Production auth project, callback URLs, invite rules, and membership approval rules.",
+      productionCallback || stagingCallback
+        ? `Recorded callback URLs still need final auth approval, invite rules, and membership approval rules before real users sign in.`
+        : "Production auth project, callback URLs, invite rules, and membership approval rules.",
       "Support owner for account lockout, wrong-role, and wrong-chapter access cases.",
       "Rollback plan for disabling a bad auth or role assignment change.",
     ],
@@ -149,8 +194,12 @@ const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
       "Rerun the relevant RLS/security test before reopening the affected path.",
     ],
     missingLiveEvidence: [
-      "Production migration review and release-branch RLS/security test pass.",
-      "Backup and restore proof for the production Supabase project.",
+      productionSupabaseProjectRef || productionSupabaseMigrationOwner
+        ? `Recorded production database packet still needs final migration review and release-branch RLS/security test pass for ${productionSupabaseProjectRef ?? "the production project"}.`
+        : "Production migration review and release-branch RLS/security test pass.",
+      productionBackupOwner || productionRestorePath
+        ? `Recorded backup posture still needs a current restore proof: owner ${productionBackupOwner ?? "pending"}, path ${productionRestorePath ?? "pending"}.`
+        : "Backup and restore proof for the production Supabase project.",
       "Approved migration rollback owner and data repair process.",
     ],
     reviewRoutes: ["/admin", "/admin/first-write", "/admin/write-sequence"],
@@ -173,7 +222,9 @@ const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
     ],
     missingLiveEvidence: [
       "Release-branch readback proof for the exact production write being promoted.",
-      "Named rollback owner and rollback command or manual repair step.",
+      rollbackOwner || supportChannel
+        ? `Recorded rollback context still needs the exact live rollback command or repair step: rollback owner ${rollbackOwner ?? "pending"}, support channel ${supportChannel ?? "pending"}.`
+        : "Named rollback owner and rollback command or manual repair step.",
       "Current audit-log proof for success, error, duplicate, and permission-denied states.",
     ],
     reviewRoutes: [
@@ -217,16 +268,18 @@ const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
     ownerLane: "Data Solutions",
     status: "local_runbook_ready",
     localRunbook:
-      "DS Admin can inspect disabled IntegrationEvent, AutomationOutbox, and AuditLog posture while n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, and AI writes stay off.",
+      "DS Admin can inspect IntegrationEvent, AutomationOutbox, and AuditLog posture while only the approved Luma event loop is rehearsed; n8n, HubSpot, warehouse, Power BI, SMS, email, AI, and non-approved Luma writes stay off.",
     firstResponseSteps: [
       "Treat the app and Supabase as source of truth before retrying any external workflow.",
       "Do not replay outbox rows until idempotency, retry, and dead-letter rules are approved.",
       "Compare the integration event to the audit row before marking a recovery complete.",
     ],
     missingLiveEvidence: [
-      "n8n, HubSpot, Luma, warehouse, Power BI, SMS, email, and AI contracts approved.",
+      "Luma event-loop contract approved for the pilot, while n8n, HubSpot, warehouse, Power BI, SMS, email, AI, and non-approved Luma contracts remain disabled.",
       "Retry, idempotency, dead-letter, and manual recovery procedure documented.",
-      "Named DS owner for pausing, replaying, or discarding external messages.",
+      dsOwner
+        ? `Recorded DS owner still needs the replay/discard runbook approved: ${dsOwner}.`
+        : "Named DS owner for pausing, replaying, or discarding external messages.",
     ],
     reviewRoutes: ["/admin", "/rush-month/loop", "/rush-month/events"],
     approvalRequired: "DS must approve every real external send path explicitly.",
@@ -263,14 +316,18 @@ const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
     ownerLane: "HQ Operations",
     status: "blocked_before_live",
     localRunbook:
-      "Staff dry-run guide, stakeholder review, and pilot scope planner exist, but the first real pilot group and day-one support plan are not approved.",
+      pilotChapter || supportOwner || supportChannel
+        ? `Staff dry-run guide, stakeholder review, and pilot scope planner exist. Recorded pilot communication context now includes ${pilotChapter ?? "pilot chapter pending"}, ${supportOwner ?? "support owner pending"}, and ${supportChannel ?? "support channel pending"}, but the first real pilot group and day-one support plan are not approved.`
+        : "Staff dry-run guide, stakeholder review, and pilot scope planner exist, but the first real pilot group and day-one support plan are not approved.",
     firstResponseSteps: [
       "Confirm whether the issue affects one student, one chapter, or the whole pilot.",
       "Use the pilot scope and staff dry-run route to decide whether to advance, hold, or intervene.",
       "Send communications only from approved MEDLIFE channels, not from app automation.",
     ],
     missingLiveEvidence: [
-      "Named first pilot group, support channel, escalation owner, and launch window.",
+      pilotChapter || supportOwner || supportChannel || rollbackOwner
+        ? `Recorded pilot packet values still need final launch-window approval: pilot group ${pilotChapter ?? "pending"}, support owner ${supportOwner ?? "pending"}, support channel ${supportChannel ?? "pending"}, rollback owner ${rollbackOwner ?? "pending"}.`
+        : "Named first pilot group, support channel, escalation owner, and launch window.",
       "Staff rehearsal completed on the release build with current support scripts.",
       "Student-facing pause or rollback message approved before invitations go out.",
     ],
@@ -280,7 +337,28 @@ const productionOperationsRunbookItems: ProductionOperationsRunbookItem[] = [
     externalWritesExpected: 0,
     secretsShown: 0,
   },
-];
+  ];
+}
+
+function hasRecordedProductionOperationsContext(
+  env: Record<string, string | undefined>,
+) {
+  return Boolean(
+    readPacketValue(env, "MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL") ||
+      readPacketValue(env, "MYMEDLIFE_PILOT_SUPPORT_OWNER") ||
+      readPacketValue(env, "MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL") ||
+      readPacketValue(env, "MYMEDLIFE_PILOT_ROLLBACK_OWNER") ||
+      readPacketValue(env, "MYMEDLIFE_PRODUCTION_BACKUP_OWNER"),
+  );
+}
+
+function readPacketValue(
+  env: Record<string, string | undefined>,
+  key: string,
+) {
+  const value = env[key]?.trim();
+  return value ? value : null;
+}
 
 function emptyCounts(): ProductionOperationsRunbook["counts"] {
   return {

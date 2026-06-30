@@ -49,6 +49,27 @@ export function AdminSystemHealthReviewPanel({
         <MiniToken label="Secrets" value={`${review.secretsShown}`} />
       </div>
 
+      <p className="mt-4 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs leading-5 text-slate-600">
+        Packet sources: production{" "}
+        <span className="font-semibold text-slate-950">
+          {review.packetSources.production.mode === "supabase"
+            ? "Supabase review records"
+            : "env/default fallback"}
+        </span>
+        {" · "}
+        {review.packetSources.production.recordCount} recorded row
+        {review.packetSources.production.recordCount === 1 ? "" : "s"}
+        {" · "}pilot{" "}
+        <span className="font-semibold text-slate-950">
+          {review.packetSources.pilot.mode === "supabase"
+            ? "Supabase review records"
+            : "env/default fallback"}
+        </span>
+        {" · "}
+        {review.packetSources.pilot.recordCount} recorded row
+        {review.packetSources.pilot.recordCount === 1 ? "" : "s"}
+      </p>
+
       <div className="mt-5 grid gap-3 lg:grid-cols-2">
         {review.checks.map((check) => (
           <HealthCheckCard key={check.key} check={check} />
@@ -75,14 +96,14 @@ function HealthCheckCard({ check }: { check: AdminSystemHealthCheck }) {
         </div>
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-600">{check.signal}</p>
-      <p className="mt-3 text-xs leading-5 text-[#1d4ed8]">
+      <p className="mt-3 text-xs leading-5 text-[var(--mymedlife-info)]">
         Next: {check.nextStep}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {check.routeEvidence.map((route) => (
           <span
             key={`${check.key}-${route}`}
-            className="rounded-full border border-slate-200 bg-[#dbeafe] px-2.5 py-1 text-xs font-semibold text-slate-500"
+            className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-2.5 py-1 text-xs font-semibold text-slate-500"
           >
             {route}
           </span>
@@ -114,12 +135,12 @@ function MiniToken({ label, value }: { label: string; value: string }) {
 function StatusPill({ status }: { status: AdminSystemHealthStatus }) {
   const className =
     status === "local_ready"
-      ? "border-blue-300/60 bg-blue-50 text-blue-700"
+      ? "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
       : status === "mock_safe"
-        ? "border-blue-300/60 bg-blue-50 text-blue-700"
+        ? "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
         : status === "needs_review"
-          ? "border-blue-300/60 bg-blue-50 text-blue-700"
-          : "border-blue-300/60 bg-blue-50 text-blue-700";
+          ? "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+          : "border-[var(--mymedlife-focus-blue)]/60 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>

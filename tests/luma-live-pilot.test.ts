@@ -134,13 +134,30 @@ describe("luma live pilot gateway", () => {
   });
 
   it("writes RSVP guests back to Luma with Luma email sending off", async () => {
-    const fetchImpl = vi.fn(async () => ({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        id: "guest-created",
-      }),
-    })) satisfies LumaLivePilotFetch;
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: "guest-created",
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          entries: [
+            {
+              id: "guest-created",
+              user_email: "member.a@mymedlife.test",
+              user_name: "Member A",
+              approval_status: "approved",
+              checked_in_at: null,
+            },
+          ],
+        }),
+      }) satisfies LumaLivePilotFetch;
 
     const result = await writeLumaRsvp(
       {
@@ -148,7 +165,7 @@ describe("luma live pilot gateway", () => {
         email: "member.a@mymedlife.test",
         name: "Member A",
       },
-      { env: enabledEnv, fetchImpl },
+      { env: enabledEnv, fetchImpl, sleepImpl: async () => {} },
     );
 
     expect(fetchImpl).toHaveBeenCalledWith(
@@ -163,11 +180,58 @@ describe("luma live pilot gateway", () => {
       approval_status: "approved",
       send_email: false,
     });
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      "https://public-api.luma.com/v1/events/guests/list?event_id=evt-existing&approval_status=approved&pagination_limit=100&sort_column=checked_in_at&sort_direction=desc+nulls+last",
+      expect.any(Object),
+    );
     expect(result.safeMessage).toContain("email sending off");
     expect(result.externalWrites).toBe(1);
+    expect(result.externalReads).toBe(1);
+  });
+
+  it("keeps the RSVP proof as pending verification if Luma accepts the guest but the approved list never settles", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({}),
+      })
+      .mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          entries: [],
+        }),
+      }) satisfies LumaLivePilotFetch;
+
+    const result = await writeLumaRsvp(
+      {
+        eventId: "evt-existing",
+        email: "member.a@mymedlife.test",
+      },
+      {
+        env: enabledEnv,
+        fetchImpl,
+        sleepImpl: async () => {},
+      },
+    );
+
+    expect(fetchImpl).toHaveBeenCalledTimes(4);
+    expect(result).toMatchObject({
+      ok: false,
+      operation: "rsvp_write",
+      status: "pending_verification",
+      externalWrites: 1,
+      externalReads: 3,
+      eventId: "evt-existing",
+    });
+    expect(result.safeMessage).toContain("did not appear in the approved guest list yet");
   });
 
   it("imports attendance without returning QR codes or raw secrets", async () => {
+    let rawRows: Array<{ email: string | null }> = [];
     const fetchImpl = vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -195,7 +259,13 @@ describe("luma live pilot gateway", () => {
 
     const result = await importLumaAttendance(
       { eventId: "evt-existing", limit: 2 },
-      { env: enabledEnv, fetchImpl },
+      {
+        env: enabledEnv,
+        fetchImpl,
+        onImportedRows(rows) {
+          rawRows = rows;
+        },
+      },
     );
 
     expect(fetchImpl).toHaveBeenCalledWith(
@@ -229,6 +299,102 @@ describe("luma live pilot gateway", () => {
     ]);
     expect(JSON.stringify(result)).not.toContain("private-qr");
     expect(JSON.stringify(result)).not.toContain("secret-example-do-not-return");
+    expect(rawRows.map((row) => ({ email: row.email }))).toEqual([
+      { email: "member.a@mymedlife.test" },
+      { email: "member.b@mymedlife.test" },
+    ]);
+  });
+
+  it("accepts nested guest rows and ticket-level check-ins from Luma readback", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        entries: [
+          {
+            guest: {
+              api_id: "guest-3",
+              email: "member.c@mymedlife.test",
+              name: "Member C",
+              approvalStatus: "approved",
+              eventTickets: [
+                {
+                  checkedInAt: "2026-07-20T23:35:00.000Z",
+                },
+              ],
+            },
+          },
+          {
+            guest: {
+              api_id: "guest-4",
+              email: "member.d@mymedlife.test",
+              name: "Member D",
+              approval_status: "approved",
+              checked_in: true,
+            },
+          },
+        ],
+      }),
+    })) satisfies LumaLivePilotFetch;
+
+    const result = await importLumaAttendance(
+      { eventId: "evt-existing", limit: 2 },
+      { env: enabledEnv, fetchImpl },
+    );
+
+    expect(result.attendanceRows).toEqual([
+      {
+        guestId: "guest-3",
+        emailHint: "me***@mymedlife.test",
+        name: "Member C",
+        approvalStatus: "approved",
+        checkedInAt: "2026-07-20T23:35:00.000Z",
+        attended: true,
+      },
+      {
+        guestId: "guest-4",
+        emailHint: "me***@mymedlife.test",
+        name: "Member D",
+        approvalStatus: "approved",
+        checkedInAt: null,
+        attended: true,
+      },
+    ]);
+    expect(result.safeMessage).toContain("2 row(s) include check-in attendance");
+  });
+
+  it("accepts guests arrays in addition to entries", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        guests: [
+          {
+            id: "guest-5",
+            userEmail: "member.e@mymedlife.test",
+            userName: "Member E",
+            approvalStatus: "approved",
+            checkedInAt: "2026-07-20T23:40:00.000Z",
+          },
+        ],
+      }),
+    })) satisfies LumaLivePilotFetch;
+
+    const result = await importLumaAttendance(
+      { eventId: "evt-existing", limit: 1 },
+      { env: enabledEnv, fetchImpl },
+    );
+
+    expect(result.attendanceRows).toEqual([
+      {
+        guestId: "guest-5",
+        emailHint: "me***@mymedlife.test",
+        name: "Member E",
+        approvalStatus: "approved",
+        checkedInAt: "2026-07-20T23:40:00.000Z",
+        attended: true,
+      },
+    ]);
   });
 
   it("builds the attendance import URL without secrets", () => {

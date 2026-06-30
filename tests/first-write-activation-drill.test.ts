@@ -134,6 +134,10 @@ describe("first-write activation drill", () => {
     expect(drill.verificationPacket.safetyStops.join(" ")).toContain(
       "approved staging access path",
     );
+    expect(drill.plainEnglishSummary).toContain("controlled staging proof run");
+    expect(drill.verificationPacket.plainEnglishDecision).toContain(
+      "hosted staging drill is ready to run",
+    );
   });
 
   it("names the local action-start sequence and proof expected from staff", () => {
@@ -154,16 +158,18 @@ describe("first-write activation drill", () => {
     expect(drill.proofToCollect.join(" ")).toContain("audit log");
     expect(drill.proofToCollect.join(" ")).toContain("external writes stayed at zero");
     expect(drill.hostedCloseout.reviewSurfaces).toContain("/admin/audit-log");
-    expect(drill.hostedCloseout.namedOwnersStillNeeded).toHaveLength(3);
+    expect(drill.hostedCloseout.namedOwnersStillNeeded).toHaveLength(4);
   });
 
   it("uses recorded pilot approvals to shrink the hosted-write owner gap", () => {
     const originalWrite = process.env.MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE;
     const originalRollback = process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER;
+    const originalSupportOwner = process.env.MYMEDLIFE_PILOT_SUPPORT_OWNER;
     const originalSupport = process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL;
 
     process.env.MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE = "`action_started`";
     process.env.MYMEDLIFE_PILOT_ROLLBACK_OWNER = "Kiomi Matsukawa";
+    process.env.MYMEDLIFE_PILOT_SUPPORT_OWNER = "Maya Support";
     process.env.MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL = "#mymedlife-pilot-watch";
 
     try {
@@ -179,6 +185,10 @@ describe("first-write activation drill", () => {
           expect.objectContaining({
             key: "rollback_owner",
             value: "Kiomi Matsukawa",
+          }),
+          expect.objectContaining({
+            key: "support_owner",
+            value: "Maya Support",
           }),
           expect.objectContaining({
             key: "support_pause_channel",
@@ -197,6 +207,7 @@ describe("first-write activation drill", () => {
     } finally {
       restoreEnv("MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE", originalWrite);
       restoreEnv("MYMEDLIFE_PILOT_ROLLBACK_OWNER", originalRollback);
+      restoreEnv("MYMEDLIFE_PILOT_SUPPORT_OWNER", originalSupportOwner);
       restoreEnv("MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL", originalSupport);
     }
   });
@@ -214,7 +225,7 @@ describe("first-write activation drill", () => {
     );
 
     expect(drill.candidateAssignment?.status).toBe("in_progress");
-    expect(drill.status).toBe("blocked_until_auth");
+    expect(drill.status).toBe("evidence_recorded");
     expect(Object.fromEntries(
       drill.readbackEvidence.map((item) => [item.key, item.status]),
     )).toEqual({
@@ -229,8 +240,64 @@ describe("first-write activation drill", () => {
     expect(drill.verificationPacket.plainEnglishDecision).toContain(
       "staging review",
     );
+    expect(drill.plainEnglishSummary).toContain("already contains first-write readback evidence");
     expect(drill.counts.observedReadbackItems).toBe(5);
     expect(drill.counts.externalWritesExpected).toBe(0);
+  });
+
+  it("recognizes hosted action-start proof even after the assignment has advanced to submitted", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const drill = getFirstWriteActivationDrill(
+      actor,
+      withHostedAdvancedFirstWriteEvidence(withSupabaseUuidAssignment(mockData)),
+      {
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
+        MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE: "true",
+      },
+    );
+
+    expect(drill.candidateAssignment?.status).toBe("submitted");
+    expect(drill.status).toBe("evidence_recorded");
+    expect(
+      drill.readbackEvidence.find((item) => item.key === "assignment_status")?.status,
+    ).toBe("observed");
+    expect(
+      drill.readbackEvidence.find((item) => item.key === "assignment_status")?.detail,
+    ).toContain("advanced beyond first-write into submitted");
+    expect(drill.verificationPacket.status).toBe("evidence_observed");
+    expect(drill.verificationPacket.canPromoteToStagingReview).toBe(true);
+    expect(drill.plainEnglishSummary).toContain("Hosted staging already contains first-write readback evidence");
+    expect(drill.hostedCloseout.currentObservedEvidence).toEqual(
+      expect.objectContaining({
+        assignmentId: drill.candidateAssignment?.id,
+        assignmentStatus: "submitted",
+        zeroOutboxSends: true,
+      }),
+    );
+    expect(drill.hostedCloseout.currentObservedEvidence?.reviewerNote).toContain(
+      "already moved beyond the first write",
+    );
+  });
+
+  it("does not claim a startable assignment exists when the candidate is already in progress", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const drill = getFirstWriteActivationDrill(
+      actor,
+      withFirstWriteReadback(withSupabaseUuidAssignment(mockData)),
+      {
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
+        MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE: "true",
+      },
+    );
+
+    expect(
+      drill.checks.find((check) => check.key === "candidate_assignment")?.passed,
+    ).toBe(false);
+    expect(
+      drill.checks.find((check) => check.key === "candidate_assignment")?.detail,
+    ).toContain("Reset or seed one member assignment");
   });
 
   it("requires manual audit confirmation when core readback is visible but audit is missing", () => {
@@ -376,6 +443,89 @@ function withFirstWriteReadback(data: ReadOnlyAppData): ReadOnlyAppData {
         },
         reason: "Local action start test.",
         created_at: "2026-06-16T19:00:00Z",
+      },
+    ],
+  };
+}
+
+function withHostedAdvancedFirstWriteEvidence(data: ReadOnlyAppData): ReadOnlyAppData {
+  const assignmentId = "50000000-0000-4000-8000-000000000002";
+  const eventId = "80326f8b-2436-409b-9a7d-454006c76772";
+  const integrationEventId = "20033a9c-f891-43c6-88ca-0e3bf0b03a8c";
+
+  return {
+    ...data,
+    source: {
+      mode: "supabase",
+      status: "supabase_ready",
+      message: "Testing hosted staging first-write readback.",
+    },
+    assignments: data.assignments.map((assignment, index) => {
+      if (index !== 0) {
+        return assignment;
+      }
+
+      return {
+        ...assignment,
+        id: assignmentId,
+        status: "submitted",
+        lane: "Member",
+        title: "Invite three more students to Rush Month",
+      };
+    }),
+    eventRows: [
+      {
+        id: eventId,
+        event_type: "action_started",
+        actor_user_id: "00000000-0000-4000-8000-000000000001",
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        campaign_id: "40000000-0000-4000-8000-000000000001",
+        assignment_id: assignmentId,
+        chapter_event_id: null,
+        payload: {
+          source: "app.start_assignment_action",
+        },
+        correlation_id: "action_started:assignment-2:member-1",
+        occurred_at: "2026-06-29T15:33:24Z",
+        created_at: "2026-06-29T15:33:24Z",
+      },
+    ],
+    integrationEventRows: [
+      {
+        id: integrationEventId,
+        source_event_id: eventId,
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        event_type: "action_started",
+        destination: "internal",
+        external_object_type: "assignment",
+        external_object_id: assignmentId,
+        status: "recorded",
+        payload: {
+          liveExternalWrite: false,
+        },
+        created_by: "00000000-0000-4000-8000-000000000001",
+        created_at: "2026-06-29T15:33:24Z",
+        updated_at: "2026-06-29T15:33:24Z",
+      },
+    ],
+    automationOutboxRows: [],
+    auditLogs: [
+      {
+        id: "99ad7242-b46c-48d4-a573-79eef122fa74",
+        actor_user_id: "00000000-0000-4000-8000-000000000001",
+        chapter_id: "10000000-0000-4000-8000-000000000001",
+        action: "action_started",
+        target_table: "assignments",
+        target_id: assignmentId,
+        before_value: {
+          status: "not_started",
+        },
+        after_value: {
+          status: "in_progress",
+          eventId,
+        },
+        reason: "Hosted preview action-start proof save.",
+        created_at: "2026-06-29T15:33:24Z",
       },
     ],
   };

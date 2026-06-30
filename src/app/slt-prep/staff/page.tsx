@@ -173,8 +173,8 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
         />
       ) : (
         <>
-          <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_55%,#eef4ff_100%)] p-5 shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+          <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-[linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--background)_55%,var(--mymedlife-surface-hover)_100%)] p-5 shadow-[0_18px_48px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Traveler readiness
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">{workspace.title}</h1>
@@ -190,7 +190,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
               />
               <StaffHeroStat label="High risk" value={`${workspace.counts.highRiskTravelers}`} />
             </div>
-            <div className="mt-4 rounded-[1.4rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+            <div className="mt-4 rounded-[1.4rem] border border-[var(--mymedlife-border)] bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
               <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Status filters
               </p>
@@ -203,8 +203,8 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                     className={[
                       "rounded-full border px-4 py-2 text-sm font-semibold transition",
                       filter.active
-                        ? "border-[#2563eb]/35 bg-[#dbeafe] text-[#1d4ed8]"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#f8fbff] hover:text-slate-950",
+                        ? "border-[var(--mymedlife-primary-button)]/35 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)] hover:text-slate-950",
                     ].join(" ")}
                   >
                     {filter.label}
@@ -214,8 +214,8 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
             </div>
           </section>
 
-          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+          <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
@@ -241,8 +241,8 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                         className={[
                           "rounded-full border px-4 py-2 text-sm font-semibold transition",
                           workspace.bulkAction === option.value
-                            ? "border-[#2563eb]/35 bg-[#dbeafe] text-[#1d4ed8]"
-                            : "border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                            ? "border-[var(--mymedlife-primary-button)]/35 bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)]"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
                         ].join(" ")}
                       >
                         {option.label}
@@ -272,7 +272,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                       return (
                         <tr
                           key={traveler.id}
-                          className={isSelected ? "bg-[#eef5ff]" : "bg-white"}
+                          className={isSelected ? "bg-[var(--mymedlife-surface-hover)]" : "bg-white"}
                         >
                           <td className="px-3 py-4 align-top">
                             <Link
@@ -315,7 +315,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                           <td className="px-3 py-4 align-top text-right">
                             <Link
                               href={traveler.detailHref}
-                              className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-[#0b66cc]"
+                              className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-admin-blue)]"
                             >
                               {traveler.detailLabel}
                             </Link>
@@ -329,8 +329,8 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
             </section>
 
             {workspace.bulkActionPreview ? (
-              <section className="rounded-[2rem] border border-[#2563eb]/30 bg-[#dbeafe] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1d4ed8]">
+              <section className="rounded-[2rem] border border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-badge-background)] p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
                   Bulk preview
                 </p>
                 <p className="mt-3 text-sm leading-6 text-slate-700">
@@ -375,7 +375,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                         source: travelerPacketSource,
                         travelerId: selectedTravelerId,
                       })}
-                      className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
+                      className="inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
                     >
                       Open traveler mobile view
                     </Link>
@@ -440,7 +440,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
                       </p>
                       <Link
                         href={workspace.selectedTravelerDrilldown.href}
-                        className="mt-3 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-[#0b66cc]"
+                        className="mt-3 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-[var(--mymedlife-admin-blue)]"
                       >
                         Open blocker detail
                       </Link>
@@ -525,7 +525,7 @@ function buildStaffHref({
 
 function StaffHeroStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.2rem] border border-[#bfdbfe] bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+    <div className="rounded-[1.2rem] border border-[var(--mymedlife-border)] bg-white p-3 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
       <p className="text-[0.62rem] font-semibold uppercase tracking-[0.15em] text-slate-500">
         {label}
       </p>

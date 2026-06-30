@@ -44,7 +44,7 @@ export function EventOutboxLog({ events, outboxItems }: EventOutboxLogProps) {
             <article key={item.id} className="app-surface-soft rounded-2xl p-3">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-slate-950">{item.destination}</p>
-                <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700">
+                <span className="rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-2 py-1 text-xs text-[var(--mymedlife-info)]">
                   {item.status}
                 </span>
               </div>

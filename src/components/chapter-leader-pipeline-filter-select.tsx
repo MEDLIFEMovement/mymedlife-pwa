@@ -28,7 +28,7 @@ export function ChapterLeaderPipelineFilterSelect({
         aria-label="Pipeline filter"
         value={selectedKey}
         onChange={handleChange}
-        className="min-w-[15rem] appearance-none rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-2.5 pr-10 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.04)] outline-none transition hover:border-slate-300 focus:border-[#5d8ff6]"
+        className="min-w-[15rem] appearance-none rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-2.5 pr-10 text-sm font-semibold text-slate-700 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.04)] outline-none transition hover:border-slate-300 focus:border-[var(--accent)]"
       >
         {options.map((option) => (
           <option key={option.key} value={option.key}>

@@ -157,7 +157,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
   return (
     <StudentAppShell actor={actor}>
       {chapterAssignmentContext ? (
-        <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#f8fbff] p-5">
+        <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-5">
           <p className="app-eyebrow app-eyebrow-blue">{chapterAssignmentContext.eyebrow}</p>
           <h2 className="mt-2 text-2xl font-semibold text-slate-950">
             {chapterAssignmentContext.title}
@@ -167,7 +167,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
           </p>
           <Link
             href={chapterAssignmentContext.href}
-            className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+            className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
           >
             {chapterAssignmentContext.backLabel}
           </Link>
@@ -175,7 +175,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
       ) : null}
 
       <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
           This week actions
         </p>
         <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -209,7 +209,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
 
       {leaderActionsFocus.canReadFocus ? (
         <section className="app-surface-info rounded-[2rem] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
             {leaderActionsFocus.roleLabel}
           </p>
           <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
@@ -224,13 +224,13 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
             <div className="flex flex-wrap gap-2">
               <Link
                 href={leaderActionsFocus.primaryHref}
-                className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {leaderActionsFocus.primaryLabel}
               </Link>
               <Link
                 href={leaderActionsFocus.secondaryHref}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 {leaderActionsFocus.secondaryLabel}
               </Link>
@@ -238,7 +238,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {leaderActionsFocus.items.map((item) => (
-              <div key={item.label} className="rounded-2xl bg-[#bfdbfe]/40 p-4">
+              <div key={item.label} className="rounded-2xl bg-[var(--mymedlife-border)]/40 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
                   {item.label}
                 </p>
@@ -247,7 +247,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
               </div>
             ))}
           </div>
-          <p className="mt-4 rounded-2xl border border-white/10 bg-[#bfdbfe]/42 p-3 text-sm leading-6 text-white/62">
+          <p className="mt-4 rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/42 p-3 text-sm leading-6 text-white/62">
             {leaderActionsFocus.safetyNote}
           </p>
         </section>
@@ -257,8 +257,8 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
 
       {canCreateAssignment ? (
         <section className="grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
-          <article className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <article className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
               Leader assignment path
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -273,7 +273,7 @@ export default async function ActionsPage({ searchParams }: ActionsPageProps) {
             </p>
 
             {assignmentCreatePreview.success ? (
-              <div className="mt-4 rounded-2xl bg-[#bfdbfe]/40 p-3">
+              <div className="mt-4 rounded-2xl bg-[var(--mymedlife-border)]/40 p-3">
                 <p className="text-sm font-semibold text-white">
                   Preview assignment: {assignmentCreatePreview.data.assignment.title}
                 </p>

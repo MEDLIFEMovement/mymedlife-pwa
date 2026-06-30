@@ -97,9 +97,9 @@ export default async function SltPrepChecklistPage({
         })}
       />
 
-      <section className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white shadow-[0_18px_55px_rgba(8,34,76,0.08)]">
-        <div className="bg-[#eff6ff] px-5 pb-5 pt-4 text-slate-950">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+      <section className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-white shadow-[0_18px_55px_rgb(var(--mymedlife-deep-rgb)/0.08)]">
+        <div className="bg-[var(--background)] px-5 pb-5 pt-4 text-slate-950">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
             Trip Prep
           </p>
           <h1 className="mt-2 text-[1.9rem] font-semibold tracking-tight text-slate-950">
@@ -131,8 +131,8 @@ export default async function SltPrepChecklistPage({
                   className={[
                     "rounded-full border px-4 py-2 text-sm font-semibold transition",
                     isActive
-                    ? "border-[#2563eb] bg-[#eff6ff] text-[#2563eb]"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-[#bfd8ff] hover:text-slate-950",
+                    ? "border-[var(--mymedlife-primary-button)] bg-[var(--background)] text-[var(--mymedlife-primary-button)]"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-[var(--mymedlife-border)] hover:text-slate-950",
                   ].join(" ")}
                 >
                   {option.label}
@@ -162,7 +162,7 @@ export default async function SltPrepChecklistPage({
                         travelerId: search.traveler,
                       })}
                       className={[
-                        "block rounded-[1.2rem] border bg-white p-4 transition hover:bg-[#eff6ff]",
+                        "block rounded-[1.2rem] border bg-white p-4 transition hover:bg-[var(--background)]",
                         getChecklistAccentClassName(item.status),
                       ].join(" ")}
                     >
@@ -178,10 +178,10 @@ export default async function SltPrepChecklistPage({
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
-                        <span className="rounded-full border border-slate-200 bg-[#eff6ff] px-3 py-1">
+                        <span className="rounded-full border border-slate-200 bg-[var(--background)] px-3 py-1">
                           {item.dueLabel}
                         </span>
-                        <span className="rounded-full border border-slate-200 bg-[#eff6ff] px-3 py-1">
+                        <span className="rounded-full border border-slate-200 bg-[var(--background)] px-3 py-1">
                           {item.mockSource}
                         </span>
                       </div>
@@ -251,19 +251,19 @@ function getChecklistLabel(status: TripPrepChecklistItem["status"]) {
 
 function getChecklistAccentClassName(status: TripPrepChecklistItem["status"]) {
   if (status === "needs_attention") {
-    return "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200";
+    return "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200";
   }
 
   if (status === "in_review" || status === "upcoming") {
-    return "border-l-[6px] border-l-blue-400 border-t-slate-200 border-r-slate-200 border-b-slate-200";
+    return "border-l-[6px] border-l-[var(--mymedlife-focus-blue)] border-t-slate-200 border-r-slate-200 border-b-slate-200";
   }
 
-  return "border-l-[6px] border-l-blue-500 border-t-slate-200 border-r-slate-200 border-b-slate-200";
+  return "border-l-[6px] border-l-[var(--mymedlife-primary-button)] border-t-slate-200 border-r-slate-200 border-b-slate-200";
 }
 
 function ChecklistStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.15rem] border border-slate-200 bg-[#dbeafe] px-3 py-3">
+    <div className="rounded-[1.15rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
         {label}
       </p>

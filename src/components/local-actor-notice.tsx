@@ -44,8 +44,8 @@ export function LocalActorNotice({ actor }: LocalActorNoticeProps) {
         </div>
       </div>
       <div className="app-surface mt-3 rounded-[1.1rem] px-3 py-2 text-xs leading-5 text-slate-600">
-        Identity source: <span className="font-semibold text-[#1d4ed8]">{identityLabel}</span>.
-        Auth session: <span className="font-semibold text-[#1d4ed8]">{actor.authSessionStatus}</span>.
+        Identity source: <span className="font-semibold text-[var(--mymedlife-info)]">{identityLabel}</span>.
+        Auth session: <span className="font-semibold text-[var(--mymedlife-info)]">{actor.authSessionStatus}</span>.
       </div>
       <p className="app-copy mt-3">{actor.accessSummary}</p>
       <p className="mt-2 text-xs leading-5 text-slate-500">

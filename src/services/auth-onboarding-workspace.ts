@@ -184,6 +184,9 @@ function buildLaunchPreflight(
     (item) => item.key === "campaign_scope",
   );
   const coachOwner = pilotRegistry.owners.find((item) => item.key === "coach_owner");
+  const supportOwner = pilotRegistry.owners.find(
+    (item) => item.key === "support_owner",
+  );
   const supportChannel = pilotRegistry.owners.find(
     (item) => item.key === "support_pause_channel",
   );
@@ -195,6 +198,7 @@ function buildLaunchPreflight(
     cohortSize?.status === "recorded_final" &&
     campaignScope?.status === "recorded_final";
   const supportOwnersRecorded =
+    supportOwner?.status === "recorded_owner" &&
     supportChannel?.status === "recorded_owner" &&
     rollbackOwner?.status === "recorded_owner";
 
@@ -203,12 +207,12 @@ function buildLaunchPreflight(
       key: "callback_url_plan",
       label: "Approve auth callback URLs",
       ownerLane: "Security and Student Access",
-      status: "blocked",
+      status: "watch",
       question: "Can a real user sign in and return to the correct myMEDLIFE route?",
       requiredEvidence:
         "Production and staging callback URLs, invite redirect URLs, restricted-state fallback routes, and the approved staging reviewer access path must be confirmed before live auth.",
       currentPosture:
-        "Local preview still uses fake actor email selection; production callbacks are not enabled. On 2026-06-24, anonymous staging requests redirected to Vercel SSO and then to a Vercel-hosted `/login?next=/sso-api...` path before the app, and direct `/login` requests were intercepted by the same gate.",
+        "Local preview still uses fake actor email selection, and production callbacks are not enabled. Hosted staging reviewer proof already exists through the Vercel SSO-gated `/login?next=/sso-api...` handoff, but the team still needs final callback approval, invite redirect approval, and confirmation that this remains the approved reviewer access path.",
       routeEvidence: ["/login", "/onboarding", "/admin/launch-gate"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -238,7 +242,7 @@ function buildLaunchPreflight(
       requiredEvidence:
         "Supabase Auth user id, profile row, membership row, and staff/coach assignment reads must agree before real users are invited.",
       currentPosture:
-        "Local auth-derived actor context exists, but production Auth/profile mapping still needs staging proof and an explicitly approved reviewer access path through the current Vercel-SSO-gated `/login?next=/sso-api...` handoff.",
+        "Local auth-derived actor context exists, and a seeded DS/Admin reviewer has already completed the current staged Vercel SSO handoff. Production Auth/profile mapping still needs final callback approval, role-routing confirmation, and cross-role pilot-cohort readback before real users are invited.",
       routeEvidence: ["/profile", "/onboarding", "/admin/system-health"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
@@ -248,7 +252,7 @@ function buildLaunchPreflight(
       label: "Choose the first hosted cohort path",
       ownerLane: "Launch and HQ Operations",
       status: pilotDefaultsRecorded ? "ready" : "watch",
-      question: "How will the first 5-10 pilot users get access without opening broad onboarding writes?",
+      question: "How will the first 5-15 pilot users get access without opening broad onboarding writes?",
       requiredEvidence:
         "The team should name the first cohort and confirm whether staging pilot users are pre-provisioned manually or invited through a later approved join/onboarding path.",
       currentPosture:
@@ -334,7 +338,7 @@ function buildLaunchPreflight(
     },
     {
       key: "support_rollback",
-      label: "Name support and rollback owner",
+      label: "Name support owner, channel, and rollback owner",
       ownerLane: "Launch and HQ Operations",
       status: supportOwnersRecorded ? "ready" : "watch",
       question: "If a real user lands in the wrong role, who fixes it and how?",
@@ -342,7 +346,7 @@ function buildLaunchPreflight(
         "Pilot support owner, wrong-role correction path, rollback process, and student communication fallback must be named.",
       currentPosture:
         supportOwnersRecorded
-          ? `Recorded pilot owners: support/pause channel is ${supportChannel?.value} and rollback owner is ${rollbackOwner?.value}. Operations and pilot-scope surfaces still need the wrong-role correction path and student communication fallback recorded alongside those owners.`
+          ? `Recorded pilot owners: support owner is ${supportOwner?.value}, support/pause channel is ${supportChannel?.value}, and rollback owner is ${rollbackOwner?.value}. Operations and pilot-scope surfaces still need the wrong-role correction path and student communication fallback recorded alongside those owners.`
           : "Operations and pilot-scope surfaces describe support needs, but owner sign-off is still missing before pilot.",
       routeEvidence: ["/admin/pilot-scope", "/admin/operations", "/admin/launch-gate"],
       browserWritesExpected: 0,

@@ -5,6 +5,9 @@ type AdminBackendLaneKey =
   | "overview"
   | "phase_2"
   | "integrations"
+  | "feature_flags"
+  | "theme"
+  | "luma_live_pilot"
   | "permissions"
   | "committees"
   | "workflows"
@@ -49,6 +52,21 @@ const baseLanes = [
     key: "integrations",
     label: "Integrations",
     href: "/admin/integrations",
+  },
+  {
+    key: "feature_flags",
+    label: "Feature Flags",
+    href: "/admin/feature-flags",
+  },
+  {
+    key: "theme",
+    label: "Theme",
+    href: "/admin/theme",
+  },
+  {
+    key: "luma_live_pilot",
+    label: "Luma Pilot",
+    href: "/admin/luma-live-pilot",
   },
   {
     key: "permissions",
@@ -225,7 +243,7 @@ export function AdminBackendLaneNav({
                   aria-hidden="true"
                   className={[
                     "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transition",
-                    selected ? "text-[#1d4ed8]" : "text-slate-500",
+                    selected ? "text-[var(--mymedlife-info)]" : "text-slate-500",
                   ].join(" ")}
                 >
                   <AdminLaneIcon lane={lane.key} />
@@ -235,8 +253,8 @@ export function AdminBackendLaneNav({
                   aria-current={selected ? "page" : undefined}
                 className={
                   selected
-                    ? "block rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 pl-9 text-sm font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
-                    : "block rounded-full border border-slate-200 bg-white px-3 py-1.5 pl-9 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                    ? "block rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 pl-9 text-sm font-semibold text-[var(--mymedlife-info)] shadow-[0_10px_22px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
+                    : "block rounded-full border border-slate-200 bg-white px-3 py-1.5 pl-9 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                 }
               >
                 {lane.label}
@@ -262,8 +280,8 @@ export function AdminBackendLaneNav({
                 aria-current={selected ? "page" : undefined}
                 className={
                   selected
-                    ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
-                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                    ? "rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-info)] shadow-[0_10px_22px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
+                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
                 }
               >
                 {lane.label}
@@ -288,8 +306,8 @@ export function AdminBackendLaneNav({
                 aria-current={selected ? "page" : undefined}
                 className={
                   selected
-                    ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
-                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eff6ff] hover:text-slate-950"
+                    ? "rounded-full border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] px-3 py-1.5 text-xs font-semibold text-[var(--mymedlife-info)] shadow-[0_10px_22px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
+                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--background)] hover:text-slate-950"
                 }
               >
                 {lane.label}
@@ -348,6 +366,16 @@ function AdminLaneIcon({ lane }: { lane: AdminBackendLaneKey }) {
           <path d="M12 19v-2.5" />
           <path d="M7 12H4.5" />
           <path d="M19.5 12H17" />
+        </svg>
+      );
+    case "luma_live_pilot":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M12 3.5v6" />
+          <path d="m9.2 6.3 2.8-2.8 2.8 2.8" />
+          <path d="M5 12.5h14" />
+          <path d="M7 18.5h10" />
+          <rect x="6" y="10" width="12" height="10" rx="2" />
         </svg>
       );
     case "integration_outbox":

@@ -42,7 +42,7 @@ export default async function RushMonthDashboardPage() {
       {!dashboard.canReadChapterTruth ? (
         <>
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               {dashboard.eyebrow}
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">{dashboard.title}</h1>
@@ -98,7 +98,7 @@ export default async function RushMonthDashboardPage() {
       ) : (
         <>
           <section className="app-surface-info overflow-hidden rounded-[2rem] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
               {dashboard.eyebrow}
             </p>
             <h1 className="mt-3 text-3xl font-semibold text-slate-950">{dashboard.title}</h1>
@@ -121,16 +121,16 @@ export default async function RushMonthDashboardPage() {
             </div>
           </section>
 
-          <div className="grid gap-4 rounded-[2rem] bg-[#eef3fb] p-4 shadow-[0_18px_50px_rgba(5,24,60,0.12)]">
+          <div className="grid gap-4 rounded-[2rem] bg-[var(--mymedlife-panel-tint)] p-4 shadow-[0_18px_50px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
             <section className="grid gap-4 lg:grid-cols-[0.88fr_1.12fr]">
-              <article className="rounded-[2rem] border border-[#bfdbfe] bg-[#eaf2ff] p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+              <article className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                   Phase
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-slate-950">
                   {dashboard.phaseSummary.label}
                 </h2>
-                <p className="mt-2 text-sm font-semibold text-[#2563eb]">
+                <p className="mt-2 text-sm font-semibold text-[var(--mymedlife-primary-button)]">
                   {dashboard.phaseSummary.status}
                 </p>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
@@ -155,7 +155,7 @@ export default async function RushMonthDashboardPage() {
                 </div>
               </article>
 
-              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
                   Why it matters
                 </p>
@@ -168,8 +168,8 @@ export default async function RushMonthDashboardPage() {
               </article>
             </section>
 
-            <section className="rounded-[2rem] border border-[#bfdbfe] bg-[#eaf2ff] p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+            <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-info-surface)] p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                 Next best action
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950">
@@ -180,13 +180,13 @@ export default async function RushMonthDashboardPage() {
               </p>
               <Link
                 href={dashboard.nextStep.href}
-                className="mt-4 inline-flex rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
+                className="mt-4 inline-flex rounded-full bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-badge-text)]"
               >
                 {dashboard.nextStep.ctaLabel}
               </Link>
             </section>
 
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
                 Role action groups
               </p>
@@ -197,9 +197,9 @@ export default async function RushMonthDashboardPage() {
                 {dashboard.actionGroups.map((group) => (
                   <article
                     key={group.label}
-                    className="rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] p-4"
+                    className="rounded-[1.35rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
                   >
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                       {group.label}
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -207,7 +207,7 @@ export default async function RushMonthDashboardPage() {
                     </p>
                     <Link
                       href={group.href}
-                      className="mt-4 inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c]"
+                      className="mt-4 inline-flex rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-[var(--foreground)]"
                     >
                       {group.linkLabel}
                     </Link>
@@ -219,8 +219,8 @@ export default async function RushMonthDashboardPage() {
             <DataSourceNotice source={data.source} />
 
             {dashboard.roleFocus ? (
-              <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+              <section className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
                   {dashboard.roleFocus.roleLabel}
                 </p>
                 <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
@@ -235,14 +235,14 @@ export default async function RushMonthDashboardPage() {
                   <div className="flex flex-wrap gap-2">
                     <Link
                       href={dashboard.roleFocus.primaryHref}
-                      className="rounded-full bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-[#1e40af]"
+                      className="rounded-full bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-[var(--mymedlife-badge-text)]"
                     >
                       {dashboard.roleFocus.primaryLabel}
                     </Link>
                     {dashboard.roleFocus.secondaryHref ? (
                       <Link
                         href={dashboard.roleFocus.secondaryHref}
-                        className="rounded-full border border-slate-200 bg-[#dbeafe] px-4 py-2 text-sm font-semibold text-slate-700"
+                        className="rounded-full border border-slate-200 bg-[var(--mymedlife-badge-background)] px-4 py-2 text-sm font-semibold text-slate-700"
                       >
                         {dashboard.roleFocus.secondaryLabel}
                       </Link>
@@ -253,7 +253,7 @@ export default async function RushMonthDashboardPage() {
                   {dashboard.roleFocus.items.map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
+                      className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                         {item.label}
@@ -263,7 +263,7 @@ export default async function RushMonthDashboardPage() {
                     </div>
                   ))}
                 </div>
-                <p className="mt-4 rounded-2xl border border-slate-200 bg-[#dbeafe] p-3 text-sm leading-6 text-slate-600">
+                <p className="mt-4 rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3 text-sm leading-6 text-slate-600">
                   {dashboard.roleFocus.safetyNote}
                 </p>
               </section>
@@ -283,7 +283,7 @@ export default async function RushMonthDashboardPage() {
             <MemberRecognitionPanel recognition={recognition} />
 
             <section className="grid gap-3">
-              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
                 <h2 className="text-2xl font-semibold text-slate-950">Visible assignments</h2>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   These are the actions this local role can read. Browser save
@@ -304,15 +304,15 @@ export default async function RushMonthDashboardPage() {
             </section>
 
             <section className="grid gap-3 lg:grid-cols-2">
-              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
                 <h2 className="text-2xl font-semibold text-slate-950">Events to move the chapter</h2>
                 <div className="mt-4 grid gap-3">
                   {dashboard.eventPlans.map((eventPlan) => (
                     <div
                       key={eventPlan.id}
-                      className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
+                      className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                         {eventPlan.timing} / {eventPlan.lumaStatus.replaceAll("_", " ")}
                       </p>
                       <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -329,15 +329,15 @@ export default async function RushMonthDashboardPage() {
                 </div>
               </article>
 
-              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
                 <h2 className="text-2xl font-semibold text-slate-950">Proof to build belief</h2>
                 <div className="mt-4 grid gap-3">
                   {dashboard.proofItems.map((proofItem) => (
                     <div
                       key={proofItem.id}
-                      className="rounded-2xl border border-slate-200 bg-[#dbeafe] p-4"
+                      className="rounded-2xl border border-slate-200 bg-[var(--mymedlife-badge-background)] p-4"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563eb]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-primary-button)]">
                         {proofItem.proofType.replaceAll("_", " ")} / {proofItem.sharingStatus.replaceAll("_", " ")}
                       </p>
                       <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -352,15 +352,15 @@ export default async function RushMonthDashboardPage() {
               </article>
             </section>
 
-            <section className="rounded-[2rem] border border-[#2563eb]/30 bg-[#dbeafe] p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#1d4ed8]">
+            <section className="rounded-[2rem] border border-[var(--mymedlife-primary-button)]/30 bg-[var(--mymedlife-badge-background)] p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-info)]">
                 Watchouts
               </p>
               <div className="mt-4 grid gap-3">
                 {dashboard.alerts.map((alert) => (
                   <p
                     key={alert}
-                    className="rounded-2xl border border-[#2563eb]/20 bg-white/70 p-3 text-sm leading-6 text-slate-700"
+                    className="rounded-2xl border border-[var(--mymedlife-primary-button)]/20 bg-white/70 p-3 text-sm leading-6 text-slate-700"
                   >
                     {alert}
                   </p>
@@ -369,15 +369,15 @@ export default async function RushMonthDashboardPage() {
             </section>
 
             {dashboard.risks.length > 0 ? (
-              <section className="rounded-[2rem] border border-blue-200 bg-blue-50/95 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+              <section className="rounded-[2rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)]/95 p-5 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
                 <h2 className="text-2xl font-semibold text-slate-950">Visible risk signals</h2>
                 <div className="mt-4 grid gap-3">
                   {dashboard.risks.slice(0, 3).map((risk) => (
                     <article
                       key={risk.id}
-                      className="rounded-2xl border border-blue-200 bg-white/80 p-4"
+                      className="rounded-2xl border border-[var(--mymedlife-border)] bg-white/80 p-4"
                     >
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--mymedlife-info)]">
                         {risk.severity} / {risk.visibility.replaceAll("_", " ")}
                       </p>
                       <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -426,7 +426,7 @@ function DashboardSurfaceCard({
   value: string;
 }) {
   return (
-    <section className="rounded-[1.45rem] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+    <section className="rounded-[1.45rem] border border-slate-200 bg-white p-4 shadow-[0_10px_30px_rgb(var(--mymedlife-shadow-rgb)/0.06)]">
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
         {label}
       </p>

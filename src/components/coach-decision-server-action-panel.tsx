@@ -31,8 +31,8 @@ export function CoachDecisionServerActionPanel({
   const readbackState = getCoachDecisionReadbackState(phase, resultCode);
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]">
         Local coach decision
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -47,12 +47,12 @@ export function CoachDecisionServerActionPanel({
           className={[
             "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
               : resultState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+                ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
                 : resultState.tone === "error"
-                  ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                  : "border-blue-300/30 bg-blue-300/10 text-blue-100",
+                  ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
+                  : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]",
           ].join(" ")}
           role="status"
         >
@@ -66,10 +66,10 @@ export function CoachDecisionServerActionPanel({
           className={[
             "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
               : readbackState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                : "border-white/10 bg-[#bfdbfe]/42 text-white/68",
+                ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/10 text-[var(--mymedlife-badge-background)]"
+                : "border-white/10 bg-[var(--mymedlife-border)]/42 text-white/68",
           ].join(" ")}
         >
           <p className="font-semibold">Local readback</p>
@@ -93,7 +93,7 @@ export function CoachDecisionServerActionPanel({
         <select
           id="decision"
           name="decision"
-          className="w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+          className="w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
           defaultValue={defaultInput.decision}
           disabled={!readiness.canSubmit}
         >
@@ -108,7 +108,7 @@ export function CoachDecisionServerActionPanel({
         <textarea
           id="note"
           name="note"
-          className="min-h-28 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
+          className="min-h-28 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none disabled:cursor-not-allowed disabled:text-white/38"
           defaultValue={defaultInput.note}
           disabled={!readiness.canSubmit}
         />
@@ -122,7 +122,7 @@ export function CoachDecisionServerActionPanel({
         <textarea
           id="blockerSummary"
           name="blockerSummary"
-          className="min-h-24 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
+          className="min-h-24 w-full rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/52 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
           placeholder="Required only if the decision is intervene."
           defaultValue={defaultInput.blockerSummary ?? ""}
           disabled={!readiness.canSubmit}
@@ -131,7 +131,7 @@ export function CoachDecisionServerActionPanel({
         <button
           type="submit"
           disabled={!readiness.canSubmit}
-          className="w-full rounded-full bg-blue-200 px-5 py-3 text-sm font-semibold text-[#08224c] transition hover:bg-[#1e4fd8]yan-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
+          className="w-full rounded-full bg-[var(--mymedlife-border)] px-5 py-3 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--mymedlife-action-blue-hover)] disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
         >
           {readiness.canSubmit ? "Save coach decision locally" : "Coach decision locked"}
         </button>
@@ -141,7 +141,7 @@ export function CoachDecisionServerActionPanel({
         {readiness.checks.map((check) => (
           <div
             key={check.key}
-            className="rounded-2xl border border-white/10 bg-[#bfdbfe]/42 px-3 py-2"
+            className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/42 px-3 py-2"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
               {check.passed ? "Ready" : "Blocked"}

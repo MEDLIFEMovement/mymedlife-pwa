@@ -9,22 +9,24 @@ import { PanelButton, SurfacePanel, StatusPill } from "@/components/visual-primi
 type MemberRushMonthEventsPanelProps = {
   workspace: RushMonthEventReadinessWorkspace;
   source?: MemberActionRouteSource | null;
+  lumaActivation?: ReturnType<typeof getStagingLumaEventLoopReadModel>;
 };
 
 export function MemberRushMonthEventsPanel({
   workspace,
   source,
+  lumaActivation,
 }: MemberRushMonthEventsPanelProps) {
   const thisWeekRows = workspace.rows.filter((row) => row.memberSection === "this_week");
   const comingUpRows = workspace.rows.filter((row) => row.memberSection === "coming_up");
   const visibleRows = [...thisWeekRows, ...comingUpRows];
   const sourceContext = getMemberEventsSourceContext(source);
-  const activation = getStagingLumaEventLoopReadModel("staging");
+  const activation = lumaActivation ?? getStagingLumaEventLoopReadModel("staging");
 
   return (
     <section className="grid gap-3">
       <section className="app-surface-info overflow-hidden rounded-[2rem] p-4">
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
           UCLA MEDLIFE
         </p>
         <h1 className="mt-2 text-[2.1rem] font-semibold leading-none text-slate-950 sm:text-[2.45rem]">
@@ -35,7 +37,7 @@ export function MemberRushMonthEventsPanel({
           loop moving.
         </p>
         {sourceContext ? (
-          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
+          <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-3.5 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-xl">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -47,7 +49,7 @@ export function MemberRushMonthEventsPanel({
               </div>
               <Link
                 href={sourceContext.href}
-                className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                className="inline-flex w-fit rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950"
               >
                 {sourceContext.backLabel}
               </Link>
@@ -113,7 +115,7 @@ function EventLoopStatus({
   detail: string;
 }) {
   return (
-    <div className="rounded-[1.1rem] border border-[#bfdbfe] bg-white px-3.5 py-3">
+    <div className="rounded-[1.1rem] border border-[var(--mymedlife-border)] bg-white px-3.5 py-3">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-500">
         {label}
       </p>
@@ -135,7 +137,7 @@ function MemberEventCard({
   const detailHref = `/rush-month/events/${row.id}?source=${detailSource}`;
 
   return (
-    <article className="rounded-[1.5rem] border border-slate-200 bg-[#dbeafe] p-3.5">
+    <article className="rounded-[1.5rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] p-3.5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -147,13 +149,13 @@ function MemberEventCard({
             <StatusPill tone="blue" className="text-[0.68rem] tracking-[0.12em]">
               {row.memberCampaignLabel}
             </StatusPill>
-            <StatusPill tone="gold" className="text-[0.68rem] tracking-[0.12em] text-[#1d4ed8]">
+            <StatusPill tone="gold" className="text-[0.68rem] tracking-[0.12em] text-[var(--mymedlife-info)]">
               {row.memberPointsLabel}
             </StatusPill>
           </div>
           <Link
             href={detailHref}
-            className="mt-2.5 inline-block text-lg font-semibold leading-6 text-slate-950 transition hover:text-[#1d4ed8]"
+            className="mt-2.5 inline-block text-lg font-semibold leading-6 text-slate-950 transition hover:text-[var(--mymedlife-info)]"
           >
             {row.title}
           </Link>

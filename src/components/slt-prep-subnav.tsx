@@ -29,8 +29,8 @@ export function SltPrepSubnav({ items }: { items: SltPrepSubnavItem[] }) {
             className={[
               "shrink-0 snap-start rounded-full border px-3 py-2 text-sm font-medium transition",
               isActive
-                ? "border-[#bfdbfe] bg-[#dbeafe] text-[#1d4ed8] shadow-[0_12px_24px_rgba(59,115,231,0.12)]"
-                : "border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
+                ? "border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] text-[var(--mymedlife-info)] shadow-[0_12px_24px_rgb(var(--mymedlife-primary-rgb)/0.12)]"
+                : "border-slate-200 bg-white text-slate-600 hover:border-[var(--mymedlife-border)] hover:bg-[var(--mymedlife-surface-hover)] hover:text-slate-950",
             ].join(" ")}
           >
             {item.label}

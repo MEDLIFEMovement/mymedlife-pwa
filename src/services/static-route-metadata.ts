@@ -49,6 +49,7 @@ export type StaticRouteMetadataKey =
   | "adminIntegrationProvider"
   | "adminIntegrationAudit"
   | "adminIntegrationOutbox"
+  | "adminLumaLivePilot"
   | "adminMasterData"
   | "adminPermissions"
   | "adminCommittees"
@@ -296,6 +297,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Admin Integration Outbox",
     description:
       "Read-only integration events, automation outbox, audit posture, and blocked live-send controls.",
+  },
+  adminLumaLivePilot: {
+    title: "Admin Luma Live Pilot",
+    description:
+      "Hosted staging Luma proof lane for event create or update, RSVP writeback, attendance import, points and leaderboard readback, and audit or outbox review.",
   },
   adminMasterData: {
     title: "Admin Master Data",

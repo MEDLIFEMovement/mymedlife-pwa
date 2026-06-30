@@ -65,10 +65,10 @@ export function MemberActionDetailPreview({
 
   return (
     <section id={sectionId} className="grid gap-4">
-      <section className="overflow-hidden rounded-[2rem] border border-[#bfdbfe] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_52%,#eef5ff_100%)] p-4 shadow-[0_18px_52px_rgba(15,23,42,0.07)]">
+      <section className="overflow-hidden rounded-[2rem] border border-[var(--mymedlife-border)] bg-[linear-gradient(180deg,var(--mymedlife-nav-text)_0%,var(--background)_52%,var(--mymedlife-surface-hover)_100%)] p-4 shadow-[0_18px_52px_rgb(var(--mymedlife-shadow-rgb)/0.07)]">
         <div className="grid gap-4">
           <div>
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
               {mode === "submitted" ? "Confirmation" : "Submit"}
             </p>
             <h2 className="mt-2 text-[1.95rem] font-semibold leading-tight text-slate-950 sm:text-[2.2rem]">
@@ -99,16 +99,16 @@ export function MemberActionDetailPreview({
             />
           </div>
 
-          <div className="rounded-[1.45rem] border border-[#bfdbfe] bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+          <div className="rounded-[1.45rem] border border-[var(--mymedlife-border)] bg-white p-4 shadow-[0_8px_24px_rgb(var(--mymedlife-shadow-rgb)/0.05)]">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
               {mode === "submitted" ? "Submitted for" : "Submitting for"}
             </p>
             <h3 className="mt-2 text-xl font-semibold text-slate-950">{assignment.title}</h3>
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="rounded-full border border-slate-200 bg-[#f8fbff] px-3 py-1 text-xs font-semibold text-slate-600">
+              <span className="rounded-full border border-slate-200 bg-[var(--background)] px-3 py-1 text-xs font-semibold text-slate-600">
                 {mode === "submitted" ? "Pending leader review" : "Proof handoff"}
               </span>
-              <span className="rounded-full border border-[#2563eb]/28 bg-[#2563eb]/12 px-3 py-1 text-xs font-semibold text-[#2563eb]">
+              <span className="rounded-full border border-[var(--mymedlife-primary-button)]/28 bg-[var(--mymedlife-primary-button)]/12 px-3 py-1 text-xs font-semibold text-[var(--mymedlife-primary-button)]">
                 {assignment.points} pts if approved
               </span>
             </div>
@@ -123,11 +123,11 @@ export function MemberActionDetailPreview({
         <section className="app-surface rounded-[2rem] p-4">
           <article
             aria-live="polite"
-            className="grid gap-4 rounded-[1.4rem] border border-[#bfdbfe] bg-[#eff6ff] p-4"
+            className="grid gap-4 rounded-[1.4rem] border border-[var(--mymedlife-border)] bg-[var(--background)] p-4"
             role="status"
           >
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-primary-button)]">
                 Confirmation
               </p>
               <h3 className="mt-2 text-lg font-semibold text-slate-950">
@@ -161,19 +161,19 @@ export function MemberActionDetailPreview({
             <div className="flex flex-wrap gap-2">
               <a
                 href={editHref}
-                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#5d8ff6]/30 hover:bg-[#dbeafe]"
+                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--accent)]/30 hover:bg-[var(--mymedlife-badge-background)]"
               >
                 Edit evidence
               </a>
               <a
                 href={queueHref}
-                className="inline-flex rounded-full bg-[#2b5fb4] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2455a4]"
+                className="inline-flex rounded-full bg-[var(--mymedlife-action-blue)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-action-blue-hover)]"
               >
                 See your proof queue
               </a>
               <a
                 href={actionDetailHref}
-                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#5d8ff6]/30 hover:bg-[#dbeafe]"
+                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[var(--accent)]/30 hover:bg-[var(--mymedlife-badge-background)]"
               >
                 Back to action details
               </a>
@@ -208,8 +208,8 @@ export function MemberActionDetailPreview({
                         className={[
                           "rounded-full px-3 py-2 text-sm font-semibold transition",
                           isActive
-                            ? "bg-[#2b5fb4] text-white"
-                            : "bg-transparent text-slate-500 hover:bg-[#dbeafe] hover:text-slate-900",
+                            ? "bg-[var(--mymedlife-action-blue)] text-white"
+                            : "bg-transparent text-slate-500 hover:bg-[var(--mymedlife-badge-background)] hover:text-slate-900",
                         ].join(" ")}
                         onClick={() => setEvidenceType(option.value as MemberEvidenceType)}
                         role="tab"
@@ -223,7 +223,7 @@ export function MemberActionDetailPreview({
               </div>
 
               {evidenceType === "screenshot" ? (
-                <div className="rounded-[1.4rem] border border-dashed border-slate-300 bg-[#f8fbff] px-4 py-4 text-center">
+                <div className="rounded-[1.4rem] border border-dashed border-slate-300 bg-[var(--background)] px-4 py-4 text-center">
                   <p className="text-sm font-semibold text-slate-950">Tap to upload screenshot</p>
                   <p className="mt-2 text-sm text-slate-500">JPG, PNG up to 10MB</p>
                   <p className="mt-3 text-xs leading-5 text-slate-500">
@@ -251,7 +251,7 @@ export function MemberActionDetailPreview({
                     ? "One clean link is enough if it clearly proves the action."
                     : "Write a short note that explains the action clearly enough for a leader to review."}
                 </p>
-                <div className="mt-2 rounded-[1.15rem] border border-slate-200 bg-[#dbeafe] px-3 py-2.5 text-sm leading-6 text-slate-700">
+                <div className="mt-2 rounded-[1.15rem] border border-slate-200 bg-[var(--mymedlife-badge-background)] px-3 py-2.5 text-sm leading-6 text-slate-700">
                   <span className="font-semibold text-slate-950">Evidence requirement:</span>{" "}
                   {assignment.evidenceRequired}
                 </div>
@@ -260,7 +260,7 @@ export function MemberActionDetailPreview({
                     id="member-proof-preview"
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
-                    className="mt-2 w-full rounded-[1.25rem] border border-slate-200 bg-white p-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#5d8ff6]/40"
+                    className="mt-2 w-full rounded-[1.25rem] border border-slate-200 bg-white p-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[var(--accent)]/40"
                     placeholder="Paste the RSVP confirmation or proof link."
                     type="url"
                   />
@@ -269,7 +269,7 @@ export function MemberActionDetailPreview({
                     id="member-proof-preview"
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
-                    className="mt-2 min-h-24 w-full rounded-[1.25rem] border border-slate-200 bg-white p-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#5d8ff6]/40"
+                    className="mt-2 min-h-24 w-full rounded-[1.25rem] border border-slate-200 bg-white p-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-[var(--accent)]/40"
                     placeholder={
                       evidenceType === "screenshot"
                         ? "Example: Screenshot shows two friends RSVP'd after I texted them the GBM link."
@@ -279,12 +279,12 @@ export function MemberActionDetailPreview({
                 )}
               </div>
 
-              <label className="flex items-start gap-3 rounded-[1.35rem] border border-blue-200 bg-[#dbeafe] p-4 text-sm leading-6 text-slate-700">
+              <label className="flex items-start gap-3 rounded-[1.35rem] border border-[var(--mymedlife-border)] bg-[var(--mymedlife-badge-background)] p-4 text-sm leading-6 text-slate-700">
                 <input
                   checked={isConfirmed}
                   onChange={(event) => setIsConfirmed(event.target.checked)}
                   type="checkbox"
-                  className="mt-1 h-4 w-4 rounded border-slate-300 bg-white text-[#2563eb] focus:ring-[#2563eb]"
+                  className="mt-1 h-4 w-4 rounded border-slate-300 bg-white text-[var(--mymedlife-primary-button)] focus:ring-[var(--mymedlife-primary-button)]"
                 />
                 <span>
                   I confirm this evidence is accurate and okay to share with chapter
@@ -299,22 +299,22 @@ export function MemberActionDetailPreview({
                   className={[
                     "rounded-full px-4 py-2 text-sm font-semibold transition",
                     canSubmit
-                      ? "bg-[#2b5fb4] text-white hover:bg-[#2455a4]"
-                      : "cursor-not-allowed bg-[#f8fbff] text-slate-400",
+                      ? "bg-[var(--mymedlife-action-blue)] text-white hover:bg-[var(--mymedlife-action-blue-hover)]"
+                      : "cursor-not-allowed bg-[var(--background)] text-slate-400",
                   ].join(" ")}
                 >
                   Submit for review
                 </button>
                 <p className="text-xs leading-5 text-slate-500">
                   This action is still worth{" "}
-                  <span className="font-semibold text-[#1d4ed8]">{assignment.points} points</span>{" "}
+                  <span className="font-semibold text-[var(--mymedlife-info)]">{assignment.points} points</span>{" "}
                   after review. Points move once the proof is approved.
                 </p>
               </div>
             </form>
 
-            <aside className="grid gap-3 self-start rounded-[1.5rem] border border-slate-200 bg-[#f8fbff] p-4">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2455a4]">
+            <aside className="grid gap-3 self-start rounded-[1.5rem] border border-slate-200 bg-[var(--background)] p-4">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[var(--mymedlife-action-blue-hover)]">
                 Review preview
               </p>
               <h3 className="text-lg font-semibold text-slate-950">What the leader sees</h3>
@@ -349,7 +349,7 @@ export function MemberActionDetailPreview({
 
 function SummaryCard({ label, value, detail }: SummaryCardProps) {
   return (
-    <article className="rounded-[1.35rem] border border-white/12 bg-white/10 p-3.5 text-white shadow-[0_14px_40px_rgba(2,14,38,0.12)]">
+    <article className="rounded-[1.35rem] border border-white/12 bg-white/10 p-3.5 text-white shadow-[0_14px_40px_rgb(var(--mymedlife-deep-rgb)/0.12)]">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/65">
         {label}
       </p>

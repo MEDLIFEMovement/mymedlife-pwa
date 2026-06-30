@@ -13,39 +13,50 @@ type ActionStartServerActionPanelProps = {
   assignment: Assignment;
   readiness: ActionStartWriteReadiness;
   resultCode?: ActionStartResultCode;
+  returnToHref?: string;
 };
 
 export function ActionStartServerActionPanel({
   assignment,
   readiness,
   resultCode,
+  returnToHref,
 }: ActionStartServerActionPanelProps) {
   const resultState = resultCode ? getActionStartResultState(resultCode) : null;
   const readbackState = getActionStartReadbackState(assignment, resultCode);
+  const confirmsStarted = readbackState?.confirmsStarted ?? false;
+  const title = confirmsStarted
+    ? "Action started and recorded."
+    : readiness.canSubmit
+      ? "Start this action now."
+      : "Start action is still safely gated.";
+  const detail = confirmsStarted
+    ? "This assignment is already in progress. Finish the work, then move into proof and review."
+    : readiness.reason;
+  const buttonLabel = confirmsStarted
+    ? "Action already started"
+    : "Start this action";
+  const buttonDisabled = confirmsStarted || !readiness.canSubmit;
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100">
-        Local start action
+    <section className="app-surface-info rounded-[1.8rem] p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
+        {readiness.environmentLabel}
       </p>
-      <h2 className="mt-2 text-2xl font-semibold text-white">
-        {readiness.canSubmit
-          ? "You can start this action in local Supabase."
-          : "Start action is still safely gated."}
-      </h2>
-      <p className="mt-2 text-sm leading-6 text-white/68">{readiness.reason}</p>
+      <h2 className="mt-2 text-2xl font-semibold text-slate-950">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{detail}</p>
 
       {resultState ? (
         <div
           className={[
-            "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
+            "mt-4 rounded-[1.3rem] border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-[var(--mymedlife-border)] bg-[var(--background)] text-slate-800"
               : resultState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+                ? "border-[var(--mymedlife-warning)]/30 bg-[var(--mymedlife-warning)]/8 text-slate-800"
                 : resultState.tone === "error"
-                  ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                  : "border-blue-300/30 bg-blue-300/10 text-blue-100",
+                  ? "border-[var(--mymedlife-error)]/24 bg-[var(--mymedlife-error)]/8 text-slate-800"
+                  : "border-[var(--mymedlife-border)] bg-white text-slate-800",
           ].join(" ")}
           role="status"
         >
@@ -57,17 +68,17 @@ export function ActionStartServerActionPanel({
       {readbackState ? (
         <div
           className={[
-            "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
+            "mt-3 rounded-[1.3rem] border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-[var(--mymedlife-border)] bg-[var(--background)] text-slate-800"
               : readbackState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                : "border-white/10 bg-[#bfdbfe]/42 text-white/68",
+                ? "border-[var(--mymedlife-warning)]/30 bg-[var(--mymedlife-warning)]/8 text-slate-800"
+                : "border-slate-200 bg-white text-slate-600",
           ].join(" ")}
         >
-          <p className="font-semibold">Local readback</p>
+          <p className="font-semibold">Assignment readback</p>
           <p className="mt-1">{readbackState.message}</p>
-          <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
+          <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
             Current assignment status: {readbackState.assignmentStatus}
           </p>
         </div>
@@ -78,14 +89,14 @@ export function ActionStartServerActionPanel({
         <input
           type="hidden"
           name="returnTo"
-          value={`/rush-month/actions/${assignment.id}`}
+          value={returnToHref ?? `/rush-month/actions/${assignment.id}`}
         />
         <button
           type="submit"
-          disabled={!readiness.canSubmit}
-          className="w-full rounded-full bg-blue-300 px-5 py-3 text-sm font-semibold text-[#08224c] transition hover:bg-[#1e4fd8]lue-200 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
+          disabled={buttonDisabled}
+          className="w-full rounded-full bg-[var(--mymedlife-action-blue)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-action-blue-hover)] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 sm:w-auto"
         >
-          {readiness.canSubmit ? "Start this action" : "Start action locked"}
+          {buttonLabel}
         </button>
       </form>
 
@@ -93,12 +104,12 @@ export function ActionStartServerActionPanel({
         {readiness.checks.map((check) => (
           <div
             key={check.key}
-            className="rounded-2xl border border-white/10 bg-[#bfdbfe]/42 px-3 py-2"
+            className="rounded-[1.15rem] border border-slate-200 bg-white px-3 py-2"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               {check.passed ? "Ready" : "Blocked"}
             </p>
-            <p className="mt-1 text-sm text-white/72">{check.label}</p>
+            <p className="mt-1 text-sm text-slate-700">{check.label}</p>
           </div>
         ))}
       </div>

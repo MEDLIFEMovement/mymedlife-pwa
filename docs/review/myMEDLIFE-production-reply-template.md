@@ -25,9 +25,10 @@ Support / pause channel: dedicated launch Slack channel, with email backup
 Pilot owner / rollback owner: [confirmed]
 First hosted write: action_started
 Smallest proof/review loop: metadata submit -> leader review -> audit trail
+Luma event loop: event create/update, RSVP writeback, attendance import, points/leaderboard readback, zero unauthorized sends
 Production environment ownership: DS/platform, with GitHub/Copilot/Codex Security on security approval
 Monitoring / incident response: named incident owner, backup owner, and pilot alert channel
-External integration hold: stay off
+External integration hold: HubSpot, n8n, warehouse, Power BI, SMS/email, AI, and non-approved Luma behavior stay off
 ```
 
 ## Notes

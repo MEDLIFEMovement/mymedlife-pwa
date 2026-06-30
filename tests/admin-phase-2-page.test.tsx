@@ -51,7 +51,7 @@ describe("admin phase 2 page", () => {
     expect(html).toContain("need signoff");
     expect(html).toContain("need hosted proof");
     expect(html).toContain(
-      "Named pilot owners, rollback owner, and support/pause channel are recorded",
+      "Named pilot owners, support owner, support/pause channel, and rollback owner are recorded",
     );
     expect(html).toContain("Hosted auth works for the pilot cohort");
     expect(html).toContain(

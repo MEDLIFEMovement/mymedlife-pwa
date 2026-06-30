@@ -6,6 +6,13 @@ import type {
   IntegrationEvent,
   PointsEvent,
 } from "@/shared/types/domain";
+import type {
+  AuditLogRow,
+  AutomationOutboxRow,
+  EventRow,
+  IntegrationEventRow,
+  PointsEventRow,
+} from "@/shared/types/persistence";
 
 export type StagingLumaMode =
   | "mock"
@@ -89,12 +96,64 @@ export type StagingLumaEventLoopSummary = {
 export type StagingLumaEventLoopReadModel = {
   summary: StagingLumaEventLoopSummary;
   providerStatusLabel: string;
+  proofEvidence: null | {
+    integrationRows: number;
+    outboxRows: number;
+    disabledOutboxRows: number;
+    sentOutboxRows: number;
+    auditRows: number;
+    zeroUnapprovedSendsConfirmed: boolean;
+  };
+  pendingHostCheckIn: null | {
+    eventId: string;
+    guestEmail: string | null;
+    guestEmailHint: string | null;
+    lastRsvpRecordedAt: string;
+    lastAttendanceImportAt: string | null;
+    importedGuestCount: number;
+    attendanceCount: number;
+    nextStepLabel: string;
+    detail: string;
+  };
+  recentRuns: Array<{
+    eventId: string;
+    guestEmail: string | null;
+    guestEmailHint: string | null;
+    lastRsvpRecordedAt: string;
+    lastAttendanceImportAt: string | null;
+    importedGuestCount: number;
+    attendanceCount: number;
+    nextStepLabel: string;
+    detail: string;
+  }>;
   sequence: {
     label: string;
     detail: string;
     eventType: string;
   }[];
   safetyNotes: string[];
+};
+
+export type StagingLumaEventLoopEvidenceSnapshot = {
+  eventRows: EventRow[];
+  integrationEventRows: IntegrationEventRow[];
+  automationOutboxRows: AutomationOutboxRow[];
+  pointsEventRows: PointsEventRow[];
+  auditLogRows?: AuditLogRow[];
+  auditLogs?: AuditLogRow[];
+};
+
+type PendingRunCandidate = {
+  eventId: string;
+  guestEmail: string | null;
+  guestEmailHint: string | null;
+  lastRsvpRecordedAt: string;
+  lastAttendanceImportAt: string | null;
+  importedGuestCount: number;
+  attendanceCount: number;
+  nextStepLabel: string;
+  detail: string;
+  priority: number;
 };
 
 const defaultChapterName = "UCLA MEDLIFE";
@@ -412,62 +471,58 @@ export function summarizeStagingLumaEventLoop(
 }
 
 export function getStagingLumaEventLoopReadModel(
-  mode: StagingLumaMode = "staging",
+  input:
+    | StagingLumaMode
+    | {
+        mode?: StagingLumaMode;
+        data?: StagingLumaEventLoopEvidenceSnapshot;
+      } = "staging",
 ): StagingLumaEventLoopReadModel {
-  const eventStored = true;
+  const { mode, data } = normalizeReadModelInput(input);
   const providerEnabled = mode === "mock" || mode === "staging";
-
-  return {
-    summary: {
-      mode,
-      eventStored,
-      lumaLinkReady: providerEnabled,
-      qrReady: providerEnabled,
-      sharedToFeed: true,
-      rsvpCount: 1,
-      attendanceCount: 1,
-      pointsAwarded: 20,
-      duplicatePointsPrevented: true,
-      externalWritesEnabled: false,
-    },
-    providerStatusLabel: providerEnabled
+  const evidenceSummary = data ? deriveEvidenceSummary(data) : null;
+  const proofEvidence = data ? deriveProofEvidence(data) : null;
+  const summary = evidenceSummary ?? {
+    mode,
+    eventStored: true,
+    lumaLinkReady: providerEnabled,
+    qrReady: providerEnabled,
+    sharedToFeed: true,
+    rsvpCount: 1,
+    attendanceCount: 1,
+    pointsAwarded: 20,
+    duplicatePointsPrevented: true,
+    externalWritesEnabled: false,
+  };
+  const providerStatusLabel = evidenceSummary
+    ? evidenceSummary.lumaLinkReady
+      ? "Staging evidence rows recorded"
+      : "Staging evidence pending Luma link"
+    : providerEnabled
       ? "Staging-safe link attached"
       : mode === "live_ready_not_enabled"
         ? "Live-ready, not enabled"
-        : "Disabled",
-    sequence: [
-      {
-        label: "Leader preps event",
-        detail: "Event is stored in myMEDLIFE with chapter ownership.",
-        eventType: "event_created",
-      },
-      {
-        label: "Luma link and QR",
-        detail: providerEnabled
-          ? "Link and QR are generated without exposing Luma keys."
-          : "Provider link remains blocked until approved.",
-        eventType: providerEnabled ? "luma_event_linked" : "luma_event_create_requested",
-      },
-      {
-        label: "Shared to feed",
-        detail: "Members can discover the event from the app-owned feed.",
-        eventType: "event_shared_to_feed",
-      },
-      {
-        label: "Member RSVP",
-        detail: "RSVP is recorded as the signed-in member only.",
-        eventType: "event_rsvp_recorded",
-      },
-      {
-        label: "Attendance to points",
-        detail: "Confirmed attendance creates one points event per member/event.",
-        eventType: "event_points_awarded",
-      },
-    ],
+        : "Disabled";
+  const pendingHostCheckIn = data
+    ? derivePendingHostCheckInCandidates(data, summary.pointsAwarded)[0] ?? null
+    : null;
+  const recentRuns = data
+    ? derivePendingHostCheckInCandidates(data, summary.pointsAwarded)
+    : [];
+
+  return {
+    summary,
+    providerStatusLabel,
+    proofEvidence,
+    pendingHostCheckIn,
+    recentRuns,
+    sequence: buildReadModelSequence(providerEnabled),
     safetyNotes: [
       "No production Luma write is enabled.",
       "No raw Luma key is exposed to the browser, logs, audit details, or local storage.",
-      "Automation outbox rows remain disabled until a later approval opens live execution.",
+      summary.externalWritesEnabled
+        ? "Review the outbox carefully: external execution should still stay off for the pilot."
+        : "Automation outbox rows remain disabled until a later approval opens live execution.",
     ],
   };
 }
@@ -519,6 +574,499 @@ function assertCanConfigureProvider(actor: LocalActorContext) {
   if (!canConfigureProvider(actor)) {
     throw new Error("Only DS Admin or Super Admin can configure Luma provider status.");
   }
+}
+
+function normalizeReadModelInput(
+  input:
+    | StagingLumaMode
+    | {
+        mode?: StagingLumaMode;
+        data?: StagingLumaEventLoopEvidenceSnapshot;
+      },
+) {
+  if (typeof input === "string") {
+    return { mode: input, data: undefined };
+  }
+
+  return {
+    mode: input.mode ?? "staging",
+    data: input.data,
+  };
+}
+
+function deriveEvidenceSummary(
+  data: StagingLumaEventLoopEvidenceSnapshot,
+): StagingLumaEventLoopSummary | null {
+  const allRelevantEventRows = data.eventRows.filter(isRelevantEventRow);
+  const allRelevantIntegrationRows = data.integrationEventRows.filter(isRelevantIntegrationRow);
+  const allRelevantOutboxRows = data.automationOutboxRows.filter(isRelevantOutboxRow);
+  const allRelevantPointsRows = data.pointsEventRows.filter(isRelevantPointsRow);
+  const pilotEventRows = allRelevantEventRows.filter(isPilotEventRow);
+  const pilotIntegrationRows = allRelevantIntegrationRows.filter(isPilotIntegrationRow);
+  const pilotOutboxRows = allRelevantOutboxRows.filter(isPilotOutboxRow);
+  const pilotChapterEventIds = new Set(
+    pilotEventRows
+      .map((row) => row.chapter_event_id)
+      .filter((value): value is string => typeof value === "string" && value.length > 0),
+  );
+  const pilotPointsRows = allRelevantPointsRows.filter((row) =>
+    isPilotPointsRow(row, pilotChapterEventIds),
+  );
+  const usePilotRows =
+    pilotEventRows.length > 0 ||
+    pilotIntegrationRows.length > 0 ||
+    pilotOutboxRows.length > 0 ||
+    pilotPointsRows.length > 0;
+  const relevantEventRows = usePilotRows ? pilotEventRows : allRelevantEventRows;
+  const relevantIntegrationRows = usePilotRows
+    ? pilotIntegrationRows
+    : allRelevantIntegrationRows;
+  const relevantOutboxRows = usePilotRows ? pilotOutboxRows : allRelevantOutboxRows;
+  const relevantPointsRows = usePilotRows ? pilotPointsRows : allRelevantPointsRows;
+
+  if (
+    relevantEventRows.length === 0 &&
+    relevantIntegrationRows.length === 0 &&
+    relevantOutboxRows.length === 0 &&
+    relevantPointsRows.length === 0
+  ) {
+    return null;
+  }
+
+  const eventStored =
+    relevantEventRows.some((row) => {
+      return row.event_type === "event_created" ||
+        row.event_type === "luma_event_upserted" ||
+        row.chapter_event_id !== null;
+    }) ||
+    relevantIntegrationRows.some((row) => row.event_type.includes("luma_event"));
+  const lumaLinkReady = relevantIntegrationRows.some((row) => {
+    return row.destination === "luma" &&
+      row.status !== "disabled" &&
+      row.status !== "failed";
+  });
+  const qrReady =
+    lumaLinkReady ||
+    relevantIntegrationRows.some((row) => row.event_type === "event_qr_generated");
+  const sharedToFeed = relevantIntegrationRows.some(
+    (row) => row.event_type === "event_shared_to_feed",
+  );
+  const rsvpMetricKeys = ["rsvp_count", "rsvpCount"];
+  const attendanceMetricKeys = ["attendance_count", "attendanceCount"];
+  const rsvpMetricsPresent =
+    hasPayloadMetric(relevantEventRows, rsvpMetricKeys) ||
+    hasPayloadMetric(relevantIntegrationRows, rsvpMetricKeys);
+  const attendanceMetricsPresent =
+    hasPayloadMetric(relevantEventRows, attendanceMetricKeys) ||
+    hasPayloadMetric(relevantIntegrationRows, attendanceMetricKeys);
+  const rsvpCount = rsvpMetricsPresent
+    ? sumPayloadMetric(relevantEventRows, rsvpMetricKeys) +
+      sumPayloadMetric(relevantIntegrationRows, rsvpMetricKeys)
+    : relevantEventRows.filter((row) => isRsvpEventType(row.event_type)).length +
+      relevantIntegrationRows.filter((row) => isRsvpEventType(row.event_type)).length;
+  const attendanceCount = attendanceMetricsPresent
+    ? sumPayloadMetric(relevantEventRows, attendanceMetricKeys) +
+      sumPayloadMetric(relevantIntegrationRows, attendanceMetricKeys)
+    : relevantEventRows.filter((row) => isAttendanceEventType(row.event_type)).length +
+      relevantIntegrationRows.filter((row) => isAttendanceEventType(row.event_type)).length;
+  const pointsAwarded = relevantPointsRows.reduce(
+    (total, row) => total + row.points_delta,
+    0,
+  );
+  const uniquePointKeys = new Set(
+    relevantPointsRows.map((row) =>
+      [row.chapter_event_id ?? "no-event", row.awarded_to_user_id].join(":"),
+    ),
+  );
+
+  return {
+    mode: "staging",
+    eventStored,
+    lumaLinkReady,
+    qrReady,
+    sharedToFeed,
+    rsvpCount,
+    attendanceCount,
+    pointsAwarded,
+    duplicatePointsPrevented: uniquePointKeys.size === relevantPointsRows.length,
+    externalWritesEnabled: false,
+  };
+}
+
+function deriveProofEvidence(
+  data: StagingLumaEventLoopEvidenceSnapshot,
+) {
+  const allRelevantEventRows = data.eventRows.filter(isRelevantEventRow);
+  const allRelevantIntegrationRows = data.integrationEventRows.filter(isRelevantIntegrationRow);
+  const allRelevantOutboxRows = data.automationOutboxRows.filter(isRelevantOutboxRow);
+  const allRelevantAuditRows = getAuditRows(data).filter(isRelevantAuditRow);
+  const pilotEventRows = allRelevantEventRows.filter(isPilotEventRow);
+  const pilotIntegrationRows = allRelevantIntegrationRows.filter(isPilotIntegrationRow);
+  const pilotOutboxRows = allRelevantOutboxRows.filter(isPilotOutboxRow);
+  const pilotAuditRows = allRelevantAuditRows.filter(isPilotAuditRow);
+  const usePilotRows =
+    pilotEventRows.length > 0 ||
+    pilotIntegrationRows.length > 0 ||
+    pilotOutboxRows.length > 0;
+  const relevantIntegrationRows = usePilotRows
+    ? pilotIntegrationRows
+    : allRelevantIntegrationRows;
+  const relevantOutboxRows = usePilotRows ? pilotOutboxRows : allRelevantOutboxRows;
+  const relevantAuditRows =
+    usePilotRows && pilotAuditRows.length > 0 ? pilotAuditRows : allRelevantAuditRows;
+
+  if (
+    relevantIntegrationRows.length === 0 &&
+    relevantOutboxRows.length === 0 &&
+    relevantAuditRows.length === 0
+  ) {
+    return null;
+  }
+
+  const sentOutboxRows = relevantOutboxRows.filter(
+    (row) => row.status === "sent" || row.sent_at !== null,
+  ).length;
+
+  return {
+    integrationRows: relevantIntegrationRows.length,
+    outboxRows: relevantOutboxRows.length,
+    disabledOutboxRows: relevantOutboxRows.filter((row) => row.status === "disabled").length,
+    sentOutboxRows,
+    auditRows: relevantAuditRows.length,
+    zeroUnapprovedSendsConfirmed: sentOutboxRows === 0,
+  };
+}
+
+function getAuditRows(data: StagingLumaEventLoopEvidenceSnapshot) {
+  return data.auditLogRows ?? data.auditLogs ?? [];
+}
+
+function derivePendingHostCheckInCandidates(
+  data: StagingLumaEventLoopEvidenceSnapshot,
+  pointsAwarded: number,
+) {
+  if (pointsAwarded > 0) {
+    return [];
+  }
+
+  const allRelevantEventRows = data.eventRows.filter(isRelevantEventRow);
+  const pilotEventRows = allRelevantEventRows.filter(isPilotEventRow);
+  const relevantEventRows = pilotEventRows.length > 0 ? pilotEventRows : allRelevantEventRows;
+  const latestRsvpRowsByChapterEvent = new Map<string, EventRow>();
+
+  for (const row of relevantEventRows) {
+    if (row.event_type !== "event_rsvp_recorded" || !row.chapter_event_id) {
+      continue;
+    }
+
+    const existing = latestRsvpRowsByChapterEvent.get(row.chapter_event_id);
+    if (!existing || compareEventRowsNewestFirst(row, existing) < 0) {
+      latestRsvpRowsByChapterEvent.set(row.chapter_event_id, row);
+    }
+  }
+
+  const candidates: PendingRunCandidate[] = [];
+
+  for (const latestRsvpRow of latestRsvpRowsByChapterEvent.values()) {
+    const payload = asRecord(latestRsvpRow.payload);
+    const eventId = stringFromPayload(payload, ["lumaEventId"]);
+    if (!eventId) {
+      continue;
+    }
+
+    const sameChapterEventRows = relevantEventRows.filter(
+      (row) => row.chapter_event_id === latestRsvpRow.chapter_event_id,
+    );
+    const latestAttendanceRow = [...sameChapterEventRows]
+      .filter((row) => isAttendanceEventType(row.event_type))
+      .sort(compareEventRowsNewestFirst)[0];
+
+    const attendancePayload = latestAttendanceRow
+      ? asRecord(latestAttendanceRow.payload)
+      : null;
+    const importedGuestCount = numberFromPayload(attendancePayload, [
+      "importedGuestCount",
+    ]);
+    const attendanceCount = numberFromPayload(attendancePayload, ["attendanceCount"]);
+    const guestEmail = stringFromPayload(payload, ["userEmail"]);
+    const guestEmailHint = stringFromPayload(payload, ["userEmailHint"]);
+    const { nextStepLabel, detail, priority } = describePendingRun({
+      attendanceCount,
+      importedGuestCount,
+      importedAt: latestAttendanceRow?.occurred_at ?? null,
+    });
+
+    candidates.push({
+      eventId,
+      guestEmail,
+      guestEmailHint,
+      lastRsvpRecordedAt: latestRsvpRow.occurred_at,
+      lastAttendanceImportAt: latestAttendanceRow?.occurred_at ?? null,
+      importedGuestCount,
+      attendanceCount,
+      nextStepLabel,
+      detail,
+      priority,
+    });
+  }
+
+  return candidates
+    .sort((left, right) => {
+      if (left.priority !== right.priority) {
+        return left.priority - right.priority;
+      }
+
+      return compareIsoNewestFirst(
+        left.lastAttendanceImportAt ?? left.lastRsvpRecordedAt,
+        right.lastAttendanceImportAt ?? right.lastRsvpRecordedAt,
+      );
+    })
+    .map(({ priority: _priority, ...run }) => run);
+}
+
+function describePendingRun(input: {
+  attendanceCount: number;
+  importedGuestCount: number;
+  importedAt: string | null;
+}) {
+  if (input.attendanceCount > 0) {
+    return {
+      priority: 0,
+      nextStepLabel: "Review why points did not materialize yet.",
+      detail:
+        "Attendance is already visible in app evidence, but points have not materialized yet. Recheck the import proof before widening the pilot.",
+    };
+  }
+
+  if (input.importedGuestCount > 0) {
+    return {
+      priority: 1,
+      nextStepLabel: "Complete the host-side Luma check-in.",
+      detail:
+        "The RSVP is already in Luma and the guest list has been imported, but no host-side check-in has been seen yet. Mark this guest checked in inside Luma, then rerun attendance import here.",
+    };
+  }
+
+  if (input.importedAt) {
+    return {
+      priority: 2,
+      nextStepLabel: "Verify the guest appears in Luma's approved list first.",
+      detail:
+        "The RSVP is recorded in myMEDLIFE, but the last Luma import returned 0 approved guests. First verify this guest appears in Luma's approved guest list, then mark them checked in and rerun attendance import here.",
+    };
+  }
+
+  return {
+    priority: 3,
+    nextStepLabel: "Verify RSVP visibility and then complete host check-in.",
+    detail:
+      "The RSVP is recorded in myMEDLIFE, but the guest still needs to appear in Luma and receive a real host-side check-in before attendance import can create points proof.",
+  };
+}
+
+function buildReadModelSequence(providerEnabled: boolean) {
+  return [
+    {
+      label: "Leader preps event",
+      detail: "Event is stored in myMEDLIFE with chapter ownership.",
+      eventType: "event_created",
+    },
+    {
+      label: "Luma link and QR",
+      detail: providerEnabled
+        ? "Link and QR are generated without exposing Luma keys."
+        : "Provider link remains blocked until approved.",
+      eventType: providerEnabled ? "luma_event_linked" : "luma_event_create_requested",
+    },
+    {
+      label: "Shared to feed",
+      detail: "Members can discover the event from the app-owned feed.",
+      eventType: "event_shared_to_feed",
+    },
+    {
+      label: "Member RSVP",
+      detail: "RSVP is recorded as the signed-in member only.",
+      eventType: "event_rsvp_recorded",
+    },
+    {
+      label: "Attendance to points",
+      detail: "Confirmed attendance creates one points event per member/event.",
+      eventType: "event_points_awarded",
+    },
+  ];
+}
+
+function compareIsoNewestFirst(left: string, right: string) {
+  return Date.parse(right) - Date.parse(left);
+}
+
+function isRelevantEventRow(row: EventRow) {
+  return row.chapter_event_id !== null ||
+    row.event_type === "event_shared_to_feed" ||
+    row.event_type.includes("luma") ||
+    row.event_type.includes("rsvp") ||
+    row.event_type.includes("attendance") ||
+    row.event_type.includes("points");
+}
+
+function isRelevantIntegrationRow(row: IntegrationEventRow) {
+  return row.event_type === "event_shared_to_feed" ||
+    row.destination === "luma" ||
+    row.event_type.includes("luma") ||
+    row.event_type.includes("rsvp") ||
+    row.event_type.includes("attendance") ||
+    row.event_type.includes("points");
+}
+
+function isRelevantOutboxRow(row: AutomationOutboxRow) {
+  return row.destination === "luma" ||
+    row.event_type.includes("luma") ||
+    row.event_type.includes("rsvp") ||
+    row.event_type.includes("attendance") ||
+    row.event_type.includes("points");
+}
+
+function isRelevantAuditRow(row: AuditLogRow) {
+  return row.action.includes("luma") ||
+    row.target_table === "luma_event_links" ||
+    (typeof row.reason === "string" && row.reason.includes("Luma"));
+}
+
+function isRelevantPointsRow(row: PointsEventRow) {
+  return row.chapter_event_id !== null ||
+    row.reason.toLowerCase().includes("attendance");
+}
+
+function isRsvpEventType(eventType: string) {
+  return eventType.includes("rsvp");
+}
+
+function isAttendanceEventType(eventType: string) {
+  return eventType.includes("attendance");
+}
+
+function isPilotEventRow(row: EventRow) {
+  return Boolean(row.correlation_id?.startsWith("luma-pilot:")) || hasPilotSource(row.payload);
+}
+
+function isPilotIntegrationRow(row: IntegrationEventRow) {
+  return hasPilotSource(row.payload);
+}
+
+function isPilotOutboxRow(row: AutomationOutboxRow) {
+  return row.idempotency_key.startsWith("luma-pilot:") || hasPilotSource(row.payload);
+}
+
+function isPilotAuditRow(row: AuditLogRow) {
+  return (
+    row.action.startsWith("luma_") ||
+    (typeof row.reason === "string" && row.reason.includes("staging Luma"))
+  );
+}
+
+function isPilotPointsRow(row: PointsEventRow, chapterEventIds: Set<string>) {
+  return (
+    (row.chapter_event_id !== null && chapterEventIds.has(row.chapter_event_id)) ||
+    row.reason.toLowerCase().includes("luma pilot")
+  );
+}
+
+function compareEventRowsNewestFirst(a: EventRow, b: EventRow) {
+  return sortIsoDescending(a.occurred_at, b.occurred_at);
+}
+
+function sortIsoDescending(a: string | null, b: string | null) {
+  const left = a ? Date.parse(a) : 0;
+  const right = b ? Date.parse(b) : 0;
+  return right - left;
+}
+
+function sumPayloadMetric(
+  rows: Array<{ payload: unknown }>,
+  keys: string[],
+) {
+  return rows.reduce((total, row) => total + getPayloadMetric(row.payload, keys), 0);
+}
+
+function hasPayloadMetric(
+  rows: Array<{ payload: unknown }>,
+  keys: string[],
+) {
+  return rows.some((row) => payloadHasAnyMetric(row.payload, keys));
+}
+
+function getPayloadMetric(payload: unknown, keys: string[]) {
+  if (!isRecord(payload)) {
+    return 0;
+  }
+
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+  }
+
+  return 0;
+}
+
+function numberFromPayload(
+  payload: Record<string, unknown> | null,
+  keys: string[],
+) {
+  if (!payload) {
+    return 0;
+  }
+
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+  }
+
+  return 0;
+}
+
+function stringFromPayload(
+  payload: Record<string, unknown> | null,
+  keys: string[],
+) {
+  if (!payload) {
+    return null;
+  }
+
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function payloadHasAnyMetric(payload: unknown, keys: string[]) {
+  if (!isRecord(payload)) {
+    return false;
+  }
+
+  return keys.some((key) => {
+    const value = payload[key];
+    return typeof value === "number" && Number.isFinite(value);
+  });
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asRecord(value: unknown) {
+  return isRecord(value) ? value : null;
+}
+
+function hasPilotSource(payload: unknown) {
+  return isRecord(payload) && payload.source === "luma_live_pilot";
 }
 
 function canManageChapterEvent(actor: LocalActorContext, chapterName: string): boolean {

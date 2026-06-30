@@ -1,3 +1,9 @@
+import {
+  getFeatureResolvedState,
+  getFeatureResolvedStateDurable,
+  isFeatureEnabled,
+} from "@/modules/feature-flags";
+
 export type LumaLivePilotEnv = {
   LUMA_API_KEY?: string;
   LUMA_CALENDAR_ID?: string;
@@ -59,7 +65,7 @@ export type LumaAttendanceImportInput = {
 export type LumaLivePilotResult = {
   ok: boolean;
   operation: "event_create" | "event_update" | "rsvp_write" | "attendance_import";
-  status: "executed" | "blocked" | "failed";
+  status: "executed" | "blocked" | "failed" | "pending_verification";
   safeMessage: string;
   externalWrites: number;
   externalReads: number;
@@ -78,23 +84,40 @@ export type LumaImportedAttendanceRow = {
   attended: boolean;
 };
 
+export type LumaImportedAttendanceRawRow = {
+  guestId: string;
+  email: string | null;
+  name: string | null;
+  approvalStatus: string;
+  checkedInAt: string | null;
+  attended: boolean;
+};
+
 type LumaJson = Record<string, unknown>;
+type LumaLivePilotGateOptions = {
+  lumaFeatureEnabled?: boolean;
+  lumaFeatureFallback?: string;
+};
 
 const LUMA_API_BASE = "https://public-api.luma.com/v1";
 
 export function getLumaLivePilotGate(
   env: LumaLivePilotEnv = process.env as LumaLivePilotEnv,
+  options: LumaLivePilotGateOptions = {},
 ): LumaLivePilotGate {
   const apiKeyConfigured = Boolean(env.LUMA_API_KEY?.trim());
   const calendarIdConfigured = Boolean(env.LUMA_CALENDAR_ID?.trim());
   const environment = normalizeEnvironment(env);
   const productionBlocked = env.VERCEL_ENV === "production" || environment === "production";
+  const lumaFeatureEnabled =
+    options.lumaFeatureEnabled ?? isFeatureEnabled("integration_luma", { env });
   const baseEnabled =
     env.MYMEDLIFE_ENABLE_LUMA_WRITES === "true" &&
     apiKeyConfigured &&
     calendarIdConfigured &&
     environment === "staging" &&
-    !productionBlocked;
+    !productionBlocked &&
+    lumaFeatureEnabled;
 
   const eventWritesEnabled =
     baseEnabled && env.MYMEDLIFE_ENABLE_LUMA_EVENT_WRITES === "true";
@@ -126,8 +149,21 @@ export function getLumaLivePilotGate(
       rsvpWritesEnabled,
       attendanceImportEnabled,
       baseWritesFlag: env.MYMEDLIFE_ENABLE_LUMA_WRITES === "true",
+      lumaFeatureEnabled,
+      lumaFeatureFallback: options.lumaFeatureFallback,
     }),
   };
+}
+
+export async function getLumaLivePilotGateDurable(
+  env: LumaLivePilotEnv = process.env as LumaLivePilotEnv,
+): Promise<LumaLivePilotGate> {
+  const featureState = await getDurableLumaFeatureState(env);
+
+  return getLumaLivePilotGate(env, {
+    lumaFeatureEnabled: featureState.enabled,
+    lumaFeatureFallback: featureState.gracefulFallback,
+  });
 }
 
 export async function createOrUpdateLumaEvent(
@@ -137,9 +173,17 @@ export async function createOrUpdateLumaEvent(
     fetchImpl?: LumaLivePilotFetch;
   } = {},
 ): Promise<LumaLivePilotResult> {
-  const gate = getLumaLivePilotGate(options.env);
+  const featureState = await getDurableLumaFeatureState(options.env);
+  const gate = getLumaLivePilotGate(options.env, {
+    lumaFeatureEnabled: featureState.enabled,
+    lumaFeatureFallback: featureState.gracefulFallback,
+  });
   const eventId = normalizeOptionalString(input.eventId);
   const operation = eventId ? "event_update" : "event_create";
+
+  if (!featureState.enabled) {
+    return blockedResult(operation, featureState.gracefulFallback);
+  }
 
   if (!gate.eventWritesEnabled) {
     return blockedResult(operation, "Luma event create/update is not enabled for this staging environment.");
@@ -157,9 +201,18 @@ export async function writeLumaRsvp(
   options: {
     env?: LumaLivePilotEnv;
     fetchImpl?: LumaLivePilotFetch;
+    sleepImpl?: (ms: number) => Promise<void>;
   } = {},
 ): Promise<LumaLivePilotResult> {
-  const gate = getLumaLivePilotGate(options.env);
+  const featureState = await getDurableLumaFeatureState(options.env);
+  const gate = getLumaLivePilotGate(options.env, {
+    lumaFeatureEnabled: featureState.enabled,
+    lumaFeatureFallback: featureState.gracefulFallback,
+  });
+
+  if (!featureState.enabled) {
+    return blockedResult("rsvp_write", featureState.gracefulFallback);
+  }
 
   if (!gate.rsvpWritesEnabled) {
     return blockedResult("rsvp_write", "Luma RSVP writeback is not enabled for this staging environment.");
@@ -180,13 +233,54 @@ export async function writeLumaRsvp(
     send_email: false,
   };
 
-  return postLuma(
+  const result = await postLuma(
     `${LUMA_API_BASE}/events/guests/add`,
     body,
     apiKey,
     "rsvp_write",
     options.fetchImpl,
   );
+
+  if (!result.ok) {
+    return result;
+  }
+
+  const verification = await verifyLumaGuestAfterRsvp(
+    {
+      eventId: input.eventId,
+      email: input.email,
+    },
+    {
+      apiKey,
+      fetchImpl: options.fetchImpl,
+      sleepImpl: options.sleepImpl,
+    },
+  );
+
+  if (!verification.verified) {
+    if (verification.pendingVerification) {
+      return pendingVerificationResult(
+        "rsvp_write",
+        verification.failedReason ??
+          "Luma accepted the RSVP request, but the guest did not appear in the approved guest list yet. Review guest visibility before treating this as a live pilot pass.",
+        {
+          eventId: input.eventId,
+          externalReads: verification.externalReads,
+        },
+      );
+    }
+
+    return failedResult(
+      "rsvp_write",
+      verification.failedReason ??
+        "Luma RSVP verification failed before the approved guest list could be checked safely.",
+    );
+  }
+
+  return {
+    ...result,
+    externalReads: verification.externalReads,
+  };
 }
 
 export async function importLumaAttendance(
@@ -194,9 +288,18 @@ export async function importLumaAttendance(
   options: {
     env?: LumaLivePilotEnv;
     fetchImpl?: LumaLivePilotFetch;
+    onImportedRows?: (rows: LumaImportedAttendanceRawRow[]) => void;
   } = {},
 ): Promise<LumaLivePilotResult> {
-  const gate = getLumaLivePilotGate(options.env);
+  const featureState = await getDurableLumaFeatureState(options.env);
+  const gate = getLumaLivePilotGate(options.env, {
+    lumaFeatureEnabled: featureState.enabled,
+    lumaFeatureFallback: featureState.gracefulFallback,
+  });
+
+  if (!featureState.enabled) {
+    return blockedResult("attendance_import", featureState.gracefulFallback);
+  }
 
   if (!gate.attendanceImportEnabled) {
     return blockedResult("attendance_import", "Luma attendance import is not enabled for this staging environment.");
@@ -221,10 +324,10 @@ export async function importLumaAttendance(
       );
     }
 
-    const payload = (await response.json()) as { entries?: unknown[] };
-    const attendanceRows = Array.isArray(payload.entries)
-      ? payload.entries.map(toAttendanceRow)
-      : [];
+    const payload = (await response.json()) as LumaJson;
+    const rawRows = getAttendanceEntries(payload).map(toRawAttendanceRow);
+    options.onImportedRows?.(rawRows);
+    const attendanceRows = rawRows.map(toMaskedAttendanceRow);
     const attendedCount = attendanceRows.filter((row) => row.attended).length;
 
     return {
@@ -308,6 +411,83 @@ async function postLuma(
   }
 }
 
+async function verifyLumaGuestAfterRsvp(
+  input: {
+    eventId: string;
+    email: string;
+  },
+  options: {
+    apiKey: string;
+    fetchImpl?: LumaLivePilotFetch;
+    sleepImpl?: (ms: number) => Promise<void>;
+  },
+): Promise<{
+  verified: boolean;
+  externalReads: number;
+  pendingVerification?: boolean;
+  failedReason?: string;
+}> {
+  const endpoint = buildLumaGuestListEndpoint(input.eventId, 100);
+  const targetEmail = normalizeEmail(input.email);
+  const delaysMs = [0, 750, 1500];
+  let externalReads = 0;
+
+  for (const delayMs of delaysMs) {
+    if (delayMs > 0) {
+      await (options.sleepImpl ?? sleep)(delayMs);
+    }
+
+    try {
+      const response = await (options.fetchImpl ?? fetch)(endpoint, {
+        method: "GET",
+        headers: {
+          "x-luma-api-key": options.apiKey,
+        },
+        cache: "no-store",
+      });
+      externalReads += 1;
+
+      if (!response.ok) {
+        return {
+          verified: false,
+          externalReads,
+          failedReason: getSafeLumaFailureMessage(
+            response.status,
+            "Luma RSVP verification",
+          ),
+        };
+      }
+
+      const payload = (await response.json()) as LumaJson;
+      const guestEmails = getAttendanceEntries(payload)
+        .map(toRawAttendanceRow)
+        .map((row) => normalizeEmail(row.email));
+
+      if (guestEmails.includes(targetEmail)) {
+        return {
+          verified: true,
+          externalReads,
+        };
+      }
+    } catch {
+      return {
+        verified: false,
+        externalReads,
+        failedReason:
+          "Luma RSVP verification failed before the approved guest list could be checked safely.",
+      };
+    }
+  }
+
+  return {
+    verified: false,
+    externalReads,
+    pendingVerification: true,
+    failedReason:
+      "Luma accepted the RSVP request, but the guest did not appear in the approved guest list yet. Retry after the event settles or review the event's guest settings before treating this as a live pilot pass.",
+  };
+}
+
 function sanitizeEventPayload(
   input: LumaEventUpsertInput,
   eventId: string | null,
@@ -335,16 +515,136 @@ function sanitizeEventPayload(
   };
 }
 
-function toAttendanceRow(value: unknown): LumaImportedAttendanceRow {
+function toRawAttendanceRow(value: unknown): LumaImportedAttendanceRawRow {
   const row = isRecord(value) ? value : {};
-  const checkedInAt = stringOrNull(row.checked_in_at);
+  const guest = getNestedRecord(row, "guest");
+  const user = getNestedRecord(guest ?? row, "user");
+  const checkedInAt = resolveCheckedInAt(row, guest);
+  const attended =
+    Boolean(checkedInAt) ||
+    getBooleanAttendanceFlag(row, guest) ||
+    hasTicketCheckIn(row, guest);
+
   return {
-    guestId: stringOrFallback(row.id, "unknown-guest"),
-    emailHint: maskEmail(stringOrNull(row.user_email)),
-    name: stringOrNull(row.user_name),
-    approvalStatus: stringOrFallback(row.approval_status, "unknown"),
+    guestId: stringOrFallback(
+      guest?.id ??
+        guest?.api_id ??
+        row.id ??
+        row.api_id,
+      "unknown-guest",
+    ),
+    email: stringOrNull(
+      guest?.user_email ??
+        guest?.userEmail ??
+        guest?.email ??
+        user?.email ??
+        row.user_email ??
+        row.userEmail ??
+        row.email,
+    ),
+    name: stringOrNull(
+      guest?.user_name ??
+        guest?.userName ??
+        guest?.name ??
+        user?.name ??
+        user?.full_name ??
+        row.user_name ??
+        row.userName ??
+        row.name,
+    ),
+    approvalStatus: stringOrFallback(
+      guest?.approval_status ??
+        guest?.approvalStatus ??
+        row.approval_status ??
+        row.approvalStatus,
+      "unknown",
+    ),
     checkedInAt,
-    attended: Boolean(checkedInAt),
+    attended,
+  };
+}
+
+function getAttendanceEntries(payload: LumaJson): unknown[] {
+  if (Array.isArray(payload.entries)) {
+    return payload.entries;
+  }
+
+  if (Array.isArray(payload.guests)) {
+    return payload.guests;
+  }
+
+  return [];
+}
+
+function resolveCheckedInAt(
+  row: LumaJson,
+  guest: LumaJson | null,
+): string | null {
+  return (
+    stringOrNull(row.checked_in_at) ??
+    stringOrNull(row.checkedInAt) ??
+    stringOrNull(guest?.checked_in_at) ??
+    stringOrNull(guest?.checkedInAt) ??
+    findTicketCheckInAt(row) ??
+    findTicketCheckInAt(guest)
+  );
+}
+
+function hasTicketCheckIn(row: LumaJson, guest: LumaJson | null) {
+  return Boolean(findTicketCheckInAt(row) ?? findTicketCheckInAt(guest));
+}
+
+function getBooleanAttendanceFlag(row: LumaJson, guest: LumaJson | null) {
+  return (
+    booleanOrFalse(row.checked_in) ||
+    booleanOrFalse(row.checkedIn) ||
+    booleanOrFalse(guest?.checked_in) ||
+    booleanOrFalse(guest?.checkedIn)
+  );
+}
+
+function findTicketCheckInAt(row: LumaJson | null): string | null {
+  if (!row) {
+    return null;
+  }
+
+  const ticketCollections = [
+    row.event_tickets,
+    row.eventTickets,
+    row.tickets,
+  ];
+
+  for (const value of ticketCollections) {
+    if (!Array.isArray(value)) {
+      continue;
+    }
+
+    for (const ticket of value) {
+      if (!isRecord(ticket)) {
+        continue;
+      }
+
+      const checkedInAt =
+        stringOrNull(ticket.checked_in_at) ??
+        stringOrNull(ticket.checkedInAt);
+
+      if (checkedInAt) {
+        return checkedInAt;
+      }
+    }
+  }
+
+  return null;
+}
+
+function toMaskedAttendanceRow(value: LumaImportedAttendanceRawRow): LumaImportedAttendanceRow {
+  return {
+    guestId: value.guestId,
+    emailHint: maskEmail(value.email),
+    name: value.name,
+    approvalStatus: value.approvalStatus,
+    checkedInAt: value.checkedInAt,
+    attended: value.attended,
   };
 }
 
@@ -376,6 +676,28 @@ function failedResult(
   };
 }
 
+function pendingVerificationResult(
+  operation: LumaLivePilotResult["operation"],
+  safeMessage: string,
+  input: {
+    eventId: string | null;
+    externalReads: number;
+  },
+): LumaLivePilotResult {
+  return {
+    ok: false,
+    operation,
+    status: "pending_verification",
+    safeMessage,
+    externalWrites: 1,
+    externalReads: input.externalReads,
+    eventId: input.eventId,
+    eventUrl: null,
+    attendanceRows: [],
+    secretsReturned: false,
+  };
+}
+
 function normalizeEnvironment(env: LumaLivePilotEnv) {
   switch (env.MYMEDLIFE_LUMA_ENVIRONMENT) {
     case "staging":
@@ -396,9 +718,16 @@ function getGateDetail(input: {
   rsvpWritesEnabled: boolean;
   attendanceImportEnabled: boolean;
   baseWritesFlag: boolean;
+  lumaFeatureEnabled: boolean;
+  lumaFeatureFallback?: string;
 }): string {
   if (input.productionBlocked) {
     return "Production Luma setup stays blocked. This live pilot can only run in the staging environment.";
+  }
+
+  if (!input.lumaFeatureEnabled) {
+    return input.lumaFeatureFallback ??
+      "The integration_luma feature flag is disabled, so no Luma API calls can run.";
   }
 
   if (!input.apiKeyConfigured || !input.calendarIdConfigured) {
@@ -421,6 +750,24 @@ function getGateDetail(input: {
   ].join("; ");
 }
 
+async function getDurableLumaFeatureState(
+  env: LumaLivePilotEnv | undefined,
+) {
+  try {
+    return await getFeatureResolvedStateDurable("integration_luma", { env });
+  } catch {
+    return {
+      ...getFeatureResolvedState("integration_luma", { env }),
+      enabled: false,
+      status: "emergency_disabled" as const,
+      reason:
+        "Luma feature flag could not be verified from durable controls.",
+      gracefulFallback:
+        "Luma feature flag could not be verified from durable controls, so no Luma API calls can run.",
+    };
+  }
+}
+
 function requireApiKey(env: LumaLivePilotEnv = process.env as LumaLivePilotEnv): string {
   return requireNonEmpty(env.LUMA_API_KEY, "LUMA_API_KEY");
 }
@@ -441,6 +788,10 @@ function normalizeOptionalString(value: string | null | undefined): string | nul
     : null;
 }
 
+function normalizeEmail(value: string | null | undefined): string {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
 function stringOrNull(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0
     ? value
@@ -449,6 +800,22 @@ function stringOrNull(value: unknown): string | null {
 
 function stringOrFallback(value: unknown, fallback: string): string {
   return stringOrNull(value) ?? fallback;
+}
+
+function booleanOrFalse(value: unknown) {
+  return value === true;
+}
+
+function getNestedRecord(
+  value: LumaJson | null,
+  key: string,
+): LumaJson | null {
+  if (!value) {
+    return null;
+  }
+
+  const nested = value[key];
+  return isRecord(nested) ? nested : null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -513,4 +880,8 @@ function getSuccessMessage(operation: LumaLivePilotResult["operation"]): string 
     case "attendance_import":
       return "Imported Luma attendance into a browser-safe staging readback.";
   }
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }

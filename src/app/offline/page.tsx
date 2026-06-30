@@ -15,9 +15,9 @@ const recoveryLinks = [
 export default function OfflinePage() {
   return (
     <main className="min-h-screen px-4 py-6">
-      <section className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-md flex-col justify-between rounded-[2rem] border border-slate-200 bg-white/96 p-5 shadow-[0_18px_54px_rgba(15,23,42,0.08)]">
+      <section className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-md flex-col justify-between rounded-[2rem] border border-slate-200 bg-white/96 p-5 shadow-[0_18px_54px_rgb(var(--mymedlife-shadow-rgb)/0.08)]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
             myMEDLIFE
           </p>
           <h1 className="mt-4 text-3xl font-semibold leading-tight text-slate-950">
@@ -34,14 +34,14 @@ export default function OfflinePage() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-[1.15rem] border border-[#5d8ff6]/24 bg-[#eaf2ff] px-4 py-3 text-sm font-semibold text-[#2563eb]"
+              className="rounded-[1.15rem] border border-[var(--accent)]/24 bg-[var(--mymedlife-info-surface)] px-4 py-3 text-sm font-semibold text-[var(--mymedlife-primary-button)]"
             >
               {link.label}
             </Link>
           ))}
         </div>
 
-        <p className="mt-8 rounded-[1.15rem] border border-[#2563eb]/26 bg-[#dbeafe] p-3 text-xs leading-5 text-slate-600">
+        <p className="mt-8 rounded-[1.15rem] border border-[var(--mymedlife-primary-button)]/26 bg-[var(--mymedlife-badge-background)] p-3 text-xs leading-5 text-slate-600">
           Offline mode does not submit assignments, upload proof, update points,
           send nudges, or run external automation.
         </p>

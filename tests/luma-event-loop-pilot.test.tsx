@@ -6,6 +6,7 @@ import {
   getLumaEventLoopPilotReadback,
   type LumaEventLoopPilotRole,
 } from "@/services/luma-event-loop-pilot";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 const readySnapshot: LumaCalendarReadinessSnapshot = {
   status: "ready",
@@ -82,6 +83,7 @@ describe("luma event loop pilot readback", () => {
     expect(html).toContain("RSVP");
     expect(html).toContain("Attendance");
     expect(html).toContain("Points");
+    expect(html).toContain("Leaderboard");
     expect(html).toContain("Luma event creation and updates are off.");
     expect(html).toContain("HubSpot, warehouse, Power BI, SMS/email, and AI actions are off.");
     expect(html).not.toContain("secret-");
@@ -136,5 +138,141 @@ describe("luma event loop pilot readback", () => {
       detail: expect.stringContaining("hosted credential"),
     });
     expect(readback.counts.externalSends).toBe(0);
+  });
+
+  it("switches to staging-proof language when evidence rows already exist", () => {
+    const activation = getStagingLumaEventLoopReadModel({
+      mode: "staging",
+      data: {
+        eventRows: [
+          {
+            id: "event-1",
+            event_type: "event_rsvp_recorded",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            payload: { rsvpCount: 3 },
+            correlation_id: null,
+            occurred_at: "2026-06-28T10:00:00Z",
+            created_at: "2026-06-28T10:00:00Z",
+          },
+          {
+            id: "event-2",
+            event_type: "event_attendance_recorded",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            payload: { attendanceCount: 2 },
+            correlation_id: null,
+            occurred_at: "2026-06-28T10:05:00Z",
+            created_at: "2026-06-28T10:05:00Z",
+          },
+        ],
+        integrationEventRows: [
+          {
+            id: "integration-1",
+            source_event_id: "event-1",
+            chapter_id: "chapter-1",
+            event_type: "luma_event_linked",
+            destination: "luma",
+            external_object_type: "event",
+            external_object_id: "evt_123",
+            status: "recorded",
+            payload: {},
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:01:00Z",
+            updated_at: "2026-06-28T10:01:00Z",
+          },
+        ],
+        automationOutboxRows: [
+          {
+            id: "outbox-1",
+            source_event_id: "event-1",
+            integration_event_id: "integration-1",
+            chapter_id: "chapter-1",
+            destination: "luma",
+            event_type: "luma_event_linked",
+            payload: {},
+            idempotency_key: "luma-1",
+            status: "disabled",
+            attempt_count: 0,
+            available_at: "2026-06-28T10:01:00Z",
+            locked_at: null,
+            sent_at: null,
+            last_error: null,
+            created_at: "2026-06-28T10:01:00Z",
+            updated_at: "2026-06-28T10:01:00Z",
+          },
+        ],
+        auditLogRows: [
+          {
+            id: "audit-1",
+            actor_user_id: "leader-1",
+            chapter_id: "chapter-1",
+            action: "luma_attendance_import_recorded",
+            target_table: "chapter_events",
+            target_id: "chapter-event-1",
+            before_value: {},
+            after_value: {},
+            reason: "Recorded the staging Luma attendance proof in app tables.",
+            created_at: "2026-06-28T10:09:00Z",
+          },
+        ],
+        pointsEventRows: [
+          {
+            id: "points-1",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            evidence_item_id: null,
+            approval_id: null,
+            awarded_to_user_id: "member-1",
+            points_delta: 20,
+            reason: "Attendance confirmed for Intro GBM",
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:07:00Z",
+          },
+          {
+            id: "points-2",
+            chapter_id: "chapter-1",
+            campaign_id: null,
+            assignment_id: null,
+            chapter_event_id: "chapter-event-1",
+            evidence_item_id: null,
+            approval_id: null,
+            awarded_to_user_id: "member-2",
+            points_delta: 15,
+            reason: "Attendance confirmed for Intro GBM",
+            created_by: "leader-1",
+            created_at: "2026-06-28T10:08:00Z",
+          },
+        ],
+      },
+    });
+
+    const readback = getLumaEventLoopPilotReadback("admin", readySnapshot, {
+      activation,
+    });
+    const html = renderToStaticMarkup(
+      <LumaEventLoopPilotPanel readback={readback} compact />,
+    );
+
+    expect(readback.statusLabel).toBe("Staging proof recorded");
+    expect(readback.statusDetail).toContain("Staging evidence rows recorded");
+    expect(readback.summary).toContain("3 RSVP, 2 attendance, and 35 points");
+    expect(readback.statusDetail).toContain("1 disabled outbox row(s), 1 audit row(s), and 0 sent row(s)");
+    expect(readback.cards[1]).toMatchObject({ label: "RSVP path", value: "3" });
+    expect(readback.cards[2]).toMatchObject({ label: "Attendance", value: "2" });
+    expect(readback.cards[3]).toMatchObject({ label: "Points", value: "35 pts" });
+    expect(readback.cards[4]).toMatchObject({ label: "Leaderboard", value: "Visible" });
+    expect(readback.counts.attendeeRowsReturned).toBe(2);
+    expect(html).toContain("Staging proof recorded");
+    expect(html).toContain("35 pts");
+    expect(html).toContain("Leaderboard");
   });
 });

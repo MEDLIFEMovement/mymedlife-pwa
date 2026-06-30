@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
+import type { createSupabaseAppClient } from "@/lib/supabase-app-client";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
-import { getProductionLaunchGate } from "@/services/production-launch-gate";
+import {
+  getProductionLaunchGate,
+  getProductionLaunchGateDurable,
+} from "@/services/production-launch-gate";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 describe("production launch gate", () => {
   it("gives admins a launch gate that is explicit about missing live evidence", () => {
@@ -12,13 +17,20 @@ describe("production launch gate", () => {
     expect(gate.launchReady).toBe(false);
     expect(gate.browserWritesEnabled).toBe(0);
     expect(gate.externalWritesEnabled).toBe(0);
+    expect(gate.packetSource.mode).toBe("env");
+    expect(gate.packetRecords).toEqual([]);
     expect(gate.counts).toEqual({
       total: 8,
       localEvidenceReady: 1,
+      stagingEvidenceRecorded: 0,
       blockedBeforeLive: 7,
-      launchEvidenceChecks: 9,
+      launchEvidenceChecks: 11,
+      environmentReadinessItems: 8,
     });
-    expect(gate.launchEvidenceChecks).toHaveLength(9);
+    expect(gate.launchEvidenceChecks).toHaveLength(11);
+    expect(gate.environmentReadiness).toHaveLength(8);
+    expect(gate.reviewSnapshot.recordedNow).toEqual([]);
+    expect(gate.reviewSnapshot.stillMissing).toHaveLength(19);
     expect(gate.finalReviewPrompt).toContain("production writes");
   });
 
@@ -123,8 +135,10 @@ describe("production launch gate", () => {
       "staging_url",
       "staging_supabase",
       "auth_callbacks",
+      "rollout_control_layer",
       "rls_ci",
       "proof_storage",
+      "luma_event_loop",
       "device_qa_signoff",
       "monitoring_backup",
       "outbox_integration_hold",
@@ -140,13 +154,65 @@ describe("production launch gate", () => {
       ),
     ).toBe(true);
     expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.requiredEvidence,
+    ).toContain("Supabase-backed control tables");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.supportingRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/theme",
+        "/admin/audit-log",
+        "/admin/launch-gate",
+      ]),
+    );
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.reviewRoute,
+    ).toBe("/admin/feature-flags");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.requiredEvidence,
+    ).toContain("create or update the approved Luma event");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.requiredEvidence,
+    ).toContain("/app, /leader, /staff, /admin, and /rush-month/leaderboard");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.requiredEvidence,
+    ).toContain("/app, /leader, /staff, /admin, and /rush-month/leaderboard");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.acceptanceSignal,
+    ).toContain("zero unauthorized outbox sends");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.supportingRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/app",
+        "/leader",
+        "/staff",
+        "/admin",
+        "/rush-month/leaderboard",
+        "/admin/audit-log?source=luma-live-pilot",
+        "/admin/integration-outbox?source=luma-live-pilot",
+      ]),
+    );
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.reviewRoute,
+    ).toBe("/admin/luma-live-pilot");
+    expect(
       gate.launchEvidenceChecks.find((check) => check.key === "device_qa_signoff")
         ?.requiredEvidence,
     ).toContain("Goal 149 device/PWA matrix");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "outbox_integration_hold")
         ?.requiredEvidence,
-    ).toContain("HubSpot");
+    ).toContain("non-approved Luma behavior");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
         ?.requiredEvidence,
@@ -177,12 +243,619 @@ describe("production launch gate", () => {
     ).toBe("/admin/pilot-scope");
   });
 
+  it("exposes the production Supabase and Vercel readiness packet without secrets", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Nick Ellis",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
+      MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
+      MYMEDLIFE_PILOT_DS_OWNER: "DS owner",
+      MYMEDLIFE_PILOT_HQ_ADMIN_OWNER: "HQ owner",
+    });
+    const packetKeys = gate.environmentReadiness.map((item) => item.key);
+
+    expect(packetKeys).toEqual([
+      "production_supabase_project",
+      "production_vercel_environment",
+      "production_env_vars",
+      "rollout_control_layer",
+      "auth_callback_urls",
+      "dns_domain_plan",
+      "backup_restore_path",
+      "rollback_support_owners",
+    ]);
+    expect(
+      gate.environmentReadiness
+        .filter((item) => item.key !== "rollback_support_owners")
+        .every(
+          (item) =>
+            item.status === "missing_before_pilot" &&
+            item.secretsShown === 0 &&
+            item.requiredEvidence.length >= 3 &&
+            item.safeDefaults.length >= 3,
+        ),
+    ).toBe(true);
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.reviewSnapshot.recordedNow.map((item) => item.label),
+    ).toContain("Rollback and support owners");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_env_vars",
+      )?.requiredEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("NEXT_PUBLIC_SUPABASE_URL"),
+        expect.stringContaining("MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase"),
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_env_vars",
+      )?.envVarManifest,
+    ).toEqual(
+      expect.arrayContaining([
+        {
+          label: "Browser-safe public values",
+          names: ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"],
+        },
+        {
+          label: "Approved Luma pilot only",
+          names: expect.arrayContaining([
+            "LUMA_API_KEY",
+            "LUMA_CALENDAR_ID",
+            "MYMEDLIFE_ENABLE_LUMA_ATTENDANCE_IMPORT",
+          ]),
+        },
+        {
+          label: "External systems held off",
+          names: expect.arrayContaining([
+            "HUBSPOT_*",
+            "N8N_*",
+            "OPENAI_API_KEY",
+          ]),
+        },
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.editableFields?.map((field) => field.recordKey),
+    ).toEqual(
+      expect.arrayContaining([
+        "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+        "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/launch-gate",
+        "/admin/database-security",
+        "/admin/system-health",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_env_vars",
+      )?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/launch-gate",
+        "/admin/database-security",
+        "/admin/feature-flags",
+        "/admin/theme",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollout_control_layer",
+      )?.requiredEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("app.feature_flag_overrides"),
+        expect.stringContaining("feature-flag save"),
+        expect.stringContaining("production_control_approvals"),
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollout_control_layer",
+      )?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/feature-flags",
+        "/admin/theme",
+        "/admin/launch-gate",
+        "/admin/audit-log",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
+        ?.requiredEvidence,
+    ).toEqual(expect.arrayContaining([expect.stringContaining("www.mymedlife.org")]));
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
+        ?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/login",
+        "/onboarding",
+        "/admin/launch-gate",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "dns_domain_plan")
+        ?.requiredEvidence,
+    ).toEqual(expect.arrayContaining([expect.stringContaining("staging.mymedlife.org")]));
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "backup_restore_path")
+        ?.requiredEvidence,
+    ).toEqual(expect.arrayContaining([expect.stringContaining("Restore drill owner")]));
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.requiredEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Rollback owner: Nick Ellis.",
+        "Support owner: Maya Support.",
+        "Support/pause channel: #mymedlife-pilot-support.",
+        "DS owner: DS owner.",
+        "HQ/admin owner: HQ owner.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.reviewRoutes,
+    ).toEqual(
+      expect.arrayContaining([
+        "/admin/pilot-scope",
+        "/admin/launch-gate",
+        "/admin/operations",
+      ]),
+    );
+  });
+
+  it("prefers durable production packet rows when Supabase review records exist", async () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const gate = await getProductionLaunchGateDurable(
+      actor,
+      {},
+      {},
+      {
+        createClient: (async () => ({
+          persistence: {
+            mode: "supabase",
+            status: "ready",
+            reason: "test",
+            isLocalOnly: false,
+          },
+          client: {
+            persistence: {
+              mode: "supabase",
+              status: "ready",
+              reason: "test",
+              isLocalOnly: false,
+            },
+            selectRows: async <TRow>(
+              _table,
+              options,
+            ) => {
+              const rows = [
+                {
+                  id: "row-1",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_ROLLBACK_OWNER",
+                  value: "Nick Ellis",
+                  reason: "Approved rollback owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-2",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_SUPPORT_OWNER",
+                  value: "Maya Support",
+                  reason: "Approved support owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-3",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL",
+                  value: "#pilot-watch",
+                  reason: "Approved pause channel.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-4",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_DS_OWNER",
+                  value: "DS Owner",
+                  reason: "Approved DS owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-5",
+                  category: "pilot_scope" as const,
+                  record_key: "MYMEDLIFE_PILOT_HQ_ADMIN_OWNER",
+                  value: "HQ Owner",
+                  reason: "Approved HQ owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-1",
+                  updated_at: "2026-06-29T22:00:00.000Z",
+                },
+                {
+                  id: "row-6",
+                  category: "production_launch" as const,
+                  record_key: "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+                  value: "prod-ref-123",
+                  reason: "Recorded production project ref.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-2",
+                  updated_at: "2026-06-29T23:00:00.000Z",
+                },
+                {
+                  id: "row-7",
+                  category: "production_launch" as const,
+                  record_key: "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+                  value: "Kiomi Matsukawa",
+                  reason: "Recorded migration owner.",
+                  actor_role: "admin" as const,
+                  updated_by: "user-2",
+                  updated_at: "2026-06-29T23:05:00.000Z",
+                },
+              ];
+              const categoryFilter = options?.query?.category;
+
+              const filteredRows = categoryFilter?.startsWith("eq.")
+                ? rows.filter((row) => row.category === categoryFilter.slice(3))
+                : rows;
+
+              const sortedRows =
+                options?.order?.column === "updated_at" &&
+                options.order.ascending === false
+                  ? [...filteredRows].sort((left, right) =>
+                      right.updated_at.localeCompare(left.updated_at),
+                    )
+                  : filteredRows;
+
+              return sortedRows as TRow[];
+            },
+            rpc: async <TResult>() => [] as TResult,
+            insertRows: async <TRow>() => [] as TRow[],
+            upsertRows: async <TRow>() => [] as TRow[],
+            updateRows: async <TRow>() => [] as TRow[],
+          },
+        })) as unknown as typeof createSupabaseAppClient,
+      },
+    );
+
+    expect(gate.packetSource.mode).toBe("supabase");
+    expect(gate.packetSource.recordCount).toBe(2);
+    expect(gate.packetRecords).toHaveLength(2);
+    expect(gate.packetRecords.map((record) => record.recordKey)).toEqual([
+      "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+      "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+    ]);
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.status,
+    ).toBe("recorded_for_review");
+  });
+
+  it("records safe production packet details when names-only readiness values are present", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF: "prod-abc123",
+      MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER: "Kiomi",
+      MYMEDLIFE_PRODUCTION_SECURITY_PROOF_NOTE: "Security advisor rerun required after approved apply",
+      MYMEDLIFE_PRODUCTION_VERCEL_PROJECT: "mymedlife-pwa-production",
+      MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE: "main",
+      MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET: "last-known-good deployment",
+      MYMEDLIFE_PRODUCTION_ACCESS_POSTURE: "pilot reviewers use approved app auth",
+      MYMEDLIFE_PRODUCTION_ENV_PACKET_STATUS: "reviewed by DS/platform",
+      MYMEDLIFE_PRODUCTION_SECRET_OWNER: "DS/platform",
+      MYMEDLIFE_PRODUCTION_LUMA_SCOPE: "approved pilot calendar only",
+      MYMEDLIFE_PRODUCTION_CONTROL_LAYER_STATUS:
+        "staging proof captured; production apply still blocked",
+      MYMEDLIFE_PRODUCTION_CONTROL_LAYER_PROOF_NOTE:
+        "Feature-flag save, theme save, durable step-up, and approval-row readback recorded on staging",
+      MYMEDLIFE_PRODUCTION_AUTH_CALLBACK_URL: "https://www.mymedlife.org/auth/callback",
+      MYMEDLIFE_STAGING_AUTH_CALLBACK_URL: "https://staging.mymedlife.org/auth/callback",
+      MYMEDLIFE_PRODUCTION_ROLE_ROUTING_NOTE: "backend-routed role shells",
+      MYMEDLIFE_PRODUCTION_DNS_OWNER: "Renato",
+      MYMEDLIFE_PRODUCTION_REGISTRAR: "GoDaddy",
+      MYMEDLIFE_PRODUCTION_CUTOVER_PLAN: "weeknight pilot-only cutover",
+      MYMEDLIFE_PRODUCTION_BACKUP_OWNER: "DS on-call",
+      MYMEDLIFE_PRODUCTION_RESTORE_PATH: "Supabase PITR plus manual app repair runbook",
+      MYMEDLIFE_PRODUCTION_RESTORE_DRILL_NOTE: "restore drill scheduled before pilot",
+      MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Nick Ellis",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
+      MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
+      MYMEDLIFE_PILOT_DS_OWNER: "DS owner",
+      MYMEDLIFE_PILOT_HQ_ADMIN_OWNER: "HQ owner",
+    });
+
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Project ref: prod-abc123.",
+        "Migration owner: Kiomi.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_vercel_environment",
+      )?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_env_vars",
+      )?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Names-only env-var manifest: reviewed by DS/platform.",
+        "Secret owner: DS/platform.",
+        "Approved Luma scope: approved pilot calendar only.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollout_control_layer",
+      )?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollout_control_layer",
+      )?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Control-layer status: staging proof captured; production apply still blocked.",
+        "Proof note: Feature-flag save, theme save, durable step-up, and approval-row readback recorded on staging.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "auth_callback_urls")
+        ?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Production callback URL: https://www.mymedlife.org/auth/callback.",
+        "Staging callback URL: https://staging.mymedlife.org/auth/callback.",
+      ]),
+    );
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "dns_domain_plan")
+        ?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "backup_restore_path")
+        ?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "rollback_support_owners")
+        ?.recordedEvidence,
+    ).toEqual(
+      expect.arrayContaining([
+        "Rollback owner: Nick Ellis.",
+        "Support owner: Maya Support.",
+        "Support/pause channel: #mymedlife-pilot-support.",
+      ]),
+    );
+  });
+
+  it("keeps the production Vercel packet blocked until deploy source and rollback target are recorded", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PRODUCTION_VERCEL_PROJECT: "mymedlife-pwa",
+      MYMEDLIFE_PRODUCTION_ACCESS_POSTURE:
+        "One shared sign-in surface with backend role routing.",
+    });
+
+    const vercelReadiness = gate.environmentReadiness.find(
+      (item) => item.key === "production_vercel_environment",
+    );
+
+    expect(vercelReadiness?.status).toBe("missing_before_pilot");
+    expect(vercelReadiness?.recordedEvidence).toBeUndefined();
+    expect(vercelReadiness?.blockedUntil).toContain(
+      "production Vercel target, deploy source, and rollback target",
+    );
+  });
+
+  it("keeps placeholder production packet notes from reading as final readiness", () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, {
+      MYMEDLIFE_PRODUCTION_VERCEL_PROJECT: "mymedlife-pwa",
+      MYMEDLIFE_PRODUCTION_DEPLOY_SOURCE: "pending production branch approval",
+      MYMEDLIFE_PRODUCTION_ROLLBACK_TARGET: "TBD after first live deploy",
+      MYMEDLIFE_PRODUCTION_ACCESS_POSTURE:
+        "One shared sign-in surface with backend role routing.",
+      MYMEDLIFE_PRODUCTION_DNS_OWNER: "pending HQ/platform",
+      MYMEDLIFE_PRODUCTION_REGISTRAR: "GoDaddy",
+    });
+
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_vercel_environment",
+      )?.status,
+    ).toBe("missing_before_pilot");
+    expect(
+      gate.environmentReadiness.find((item) => item.key === "dns_domain_plan")
+        ?.status,
+    ).toBe("missing_before_pilot");
+  });
+
+  it("prefers durable Supabase packet rows for production readiness when available", async () => {
+    const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const gate = await getProductionLaunchGateDurable(
+      actor,
+      {},
+      {},
+      {
+        createClient: (async () => ({
+          persistence: {
+            mode: "supabase",
+            status: "ready",
+            reason: "test",
+            isLocalOnly: false,
+          },
+          client: {
+            persistence: {
+              mode: "supabase",
+              status: "ready",
+              reason: "test",
+              isLocalOnly: false,
+            },
+            selectRows: async <TRow>(
+              tableName: string,
+              options?: { query?: Record<string, string> },
+            ) => {
+              if (tableName === "review_packet_records") {
+                const pilotRows = [
+                  {
+                    id: "row-1",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_ROLLBACK_OWNER",
+                    value: "Nick Ellis",
+                    reason: "Named rollback owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-2",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_SUPPORT_OWNER",
+                    value: "Maya Support",
+                    reason: "Named support owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-3",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL",
+                    value: "#mymedlife-pilot-support",
+                    reason: "Named pause channel.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-4",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_DS_OWNER",
+                    value: "DS owner",
+                    reason: "Named DS owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-5",
+                    category: "pilot_scope",
+                    record_key: "MYMEDLIFE_PILOT_HQ_ADMIN_OWNER",
+                    value: "HQ owner",
+                    reason: "Named HQ owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                ];
+                const productionRows = [
+                  {
+                    id: "row-6",
+                    category: "production_launch",
+                    record_key: "MYMEDLIFE_PRODUCTION_SUPABASE_PROJECT_REF",
+                    value: "prod-abc123",
+                    reason: "Recorded production Supabase ref.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                  {
+                    id: "row-7",
+                    category: "production_launch",
+                    record_key: "MYMEDLIFE_PRODUCTION_SUPABASE_MIGRATION_OWNER",
+                    value: "Kiomi",
+                    reason: "Recorded migration owner.",
+                    actor_role: "admin",
+                    updated_by: "user-1",
+                    updated_at: "2026-06-29T22:00:00.000Z",
+                  },
+                ];
+
+                if (options?.query?.category === "eq.pilot_scope") {
+                  return pilotRows as TRow[];
+                }
+
+                if (options?.query?.category === "eq.production_launch") {
+                  return productionRows as TRow[];
+                }
+
+                return [...pilotRows, ...productionRows] as TRow[];
+              }
+
+              return [] as TRow[];
+            },
+            rpc: async <TResult>() => [] as TResult,
+            insertRows: async <TRow>() => [] as TRow[],
+            upsertRows: async <TRow>() => [] as TRow[],
+            updateRows: async <TRow>() => [] as TRow[],
+          },
+        })) as unknown as typeof createSupabaseAppClient,
+      },
+    );
+
+    expect(gate.packetSource.mode).toBe("supabase");
+    expect(gate.packetSource.recordCount).toBe(2);
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "production_supabase_project",
+      )?.status,
+    ).toBe("recorded_for_review");
+    expect(
+      gate.environmentReadiness.find(
+        (item) => item.key === "rollback_support_owners",
+      )?.status,
+    ).toBe("recorded_for_review");
+  });
+
   it("surfaces recorded pilot answers in the launch gate without claiming approval", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const gate = getProductionLaunchGate(actor, {
       MYMEDLIFE_PILOT_CHAPTER: "UCLA MEDLIFE",
       MYMEDLIFE_PILOT_FIRST_HOSTED_WRITE: "`action_started`",
       MYMEDLIFE_PILOT_COACH_OWNER: "Coach Ana",
+      MYMEDLIFE_PILOT_SUPPORT_OWNER: "Maya Support",
       MYMEDLIFE_PILOT_SUPPORT_PAUSE_CHANNEL: "#mymedlife-pilot-support",
       MYMEDLIFE_PILOT_ROLLBACK_OWNER: "Kiomi Matsukawa",
     });
@@ -206,11 +879,90 @@ describe("production launch gate", () => {
     ).toContain("UCLA MEDLIFE");
     expect(
       gate.items.find((item) => item.key === "pilot_operations")?.localEvidence,
+    ).toContain("Maya Support");
+    expect(
+      gate.items.find((item) => item.key === "pilot_operations")?.localEvidence,
     ).toContain("#mymedlife-pilot-support");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "pilot_support_owner")
         ?.requiredEvidence,
     ).toContain("UCLA MEDLIFE");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "pilot_support_owner")
+        ?.requiredEvidence,
+    ).toContain("Maya Support");
+  });
+
+  it("distinguishes staged proof from fully missing launch evidence when hosted staging evidence exists", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const gate = getProductionLaunchGate(actor, process.env, {
+      lumaReadModel: getStagingLumaEventLoopReadModel("staging"),
+      hostedStagingEvidenceObserved: true,
+    });
+
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_url")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_supabase")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.status,
+    ).toBe("staging_evidence_recorded");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_url")
+        ?.requiredEvidence,
+    ).toContain("already has a stable reviewer URL");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "staging_supabase")
+        ?.acceptanceSignal,
+    ).toContain("Supabase-backed readback");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "auth_callbacks")
+        ?.blockedUntil,
+    ).toContain("still need final approval");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.acceptanceSignal,
+    ).toContain("durable audit posture");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "rollout_control_layer")
+        ?.blockedUntil,
+    ).toContain("durable row counts");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.acceptanceSignal,
+    ).toContain("leaderboard readback");
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "luma_event_loop")
+        ?.acceptanceSignal,
+    ).toContain("/app, /leader, /staff, /admin, and /rush-month/leaderboard");
+    expect(gate.counts.stagingEvidenceRecorded).toBe(5);
+    expect(
+      gate.reviewSnapshot.recordedNow.map((item) => item.label),
+    ).toEqual(
+      expect.arrayContaining([
+        "Staging deployment URL",
+        "Staging Supabase posture",
+        "Auth callback and role routing",
+        "Rollout control layer readback",
+        "Luma event, RSVP, attendance, and points loop",
+      ]),
+    );
+    expect(
+      gate.reviewSnapshot.stillMissing.map((item) => item.label),
+    ).toContain("Production Supabase project");
   });
 
   it("keeps every gate write-safe and approval-bound", () => {
@@ -246,5 +998,6 @@ describe("production launch gate", () => {
     expect(getProductionLaunchGate(coach).canReadGate).toBe(false);
     expect(getProductionLaunchGate(member).items).toEqual([]);
     expect(getProductionLaunchGate(member).launchEvidenceChecks).toEqual([]);
+    expect(getProductionLaunchGate(member).environmentReadiness).toEqual([]);
   });
 });

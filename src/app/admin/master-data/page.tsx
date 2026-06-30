@@ -40,7 +40,7 @@ export default async function AdminMasterDataPage() {
           <section className="app-surface-info rounded-[2rem] p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--mymedlife-primary-button)]">
                   Admin master data
                 </p>
                 <h1 className="mt-3 text-3xl font-semibold text-slate-950">
@@ -52,7 +52,7 @@ export default async function AdminMasterDataPage() {
               </div>
               <Link
                 href={workspace.nextStep.href}
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 {workspace.nextStep.label}
               </Link>
@@ -179,7 +179,7 @@ export default async function AdminMasterDataPage() {
                   </p>
                   {template.workflowSnapshot ? (
                     <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
                         Current workflow state
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -213,7 +213,7 @@ export default async function AdminMasterDataPage() {
           </InventorySection>
 
           <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               SOP tooling
             </p>
             <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -227,7 +227,7 @@ export default async function AdminMasterDataPage() {
               </div>
               <Link
                 href="/admin/sop-builder/rush-month?tab=steps"
-                className="w-fit rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+                className="w-fit rounded-full bg-[var(--mymedlife-primary-button)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--mymedlife-info)]"
               >
                 Open SOP builder
               </Link>
@@ -235,7 +235,7 @@ export default async function AdminMasterDataPage() {
           </section>
 
           <section className="rounded-[2rem] border border-slate-200 bg-slate-50 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-primary-button)]">
               Blocked until approval
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -290,7 +290,7 @@ function InventorySection({
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#2563eb]">
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--mymedlife-primary-button)]">
         {label}
       </p>
       <p className="mt-1 text-xl font-semibold text-slate-950">{value}</p>

@@ -9,10 +9,10 @@ export function DiscourseBakeoffPanel({
   evaluation: DiscourseBakeoffEvaluation;
 }) {
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-[var(--mymedlife-focus-blue)]/20 bg-[var(--mymedlife-focus-blue)]/10 p-5">
       <div className="flex flex-col gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--mymedlife-badge-background)]/80">
             Bake-off recommendation
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">
@@ -22,7 +22,7 @@ export function DiscourseBakeoffPanel({
             {evaluation.summary}
           </p>
         </div>
-        <p className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4 text-sm leading-6 text-white/72">
+        <p className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4 text-sm leading-6 text-white/72">
           {evaluation.finalRecommendation}
         </p>
       </div>
@@ -31,7 +31,7 @@ export function DiscourseBakeoffPanel({
         {evaluation.items.map((item) => (
           <article
             key={item.key}
-            className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-4"
+            className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-4"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -70,7 +70,7 @@ export function DiscourseBakeoffPanel({
         {evaluation.nextSteps.map((item) => (
           <p
             key={item}
-            className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 p-3 text-sm leading-6 text-white/64"
+            className="rounded-2xl border border-white/10 bg-[var(--mymedlife-border)]/40 p-3 text-sm leading-6 text-white/64"
           >
             {item}
           </p>
@@ -87,10 +87,10 @@ function BakeoffStatusPill({
 }) {
   const className =
     status === "pwa_leads"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
       : status === "reference_only"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
-        : "border-blue-300/30 bg-blue-300/15 text-blue-100";
+        ? "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]"
+        : "border-[var(--mymedlife-focus-blue)]/30 bg-[var(--mymedlife-focus-blue)]/15 text-[var(--mymedlife-badge-background)]";
 
   return (
     <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${className}`}>
