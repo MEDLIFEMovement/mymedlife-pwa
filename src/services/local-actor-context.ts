@@ -99,6 +99,10 @@ type LocalActorPreviewSelection = {
   identitySource: LocalActorPreviewIdentitySource;
 };
 
+type SupabaseActorContextOptions = {
+  allowMockFallbackWhenProfileMissing?: boolean;
+};
+
 export const localActorPreviewCookieName = "mymedlife_preview_actor_email";
 
 export type ActorEmailResolution = {
@@ -285,6 +289,10 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
         resolvedActor.identitySource,
         resolvedActor.authSessionStatus,
         false,
+        {
+          allowMockFallbackWhenProfileMissing:
+            resolvedActor.authSessionStatus !== "signed_in",
+        },
       );
     } catch (error) {
       return getMockLocalActorContext(
@@ -318,6 +326,7 @@ export async function getSupabaseLocalActorContext(
   identitySource: ActorIdentitySource = "local_actor_email",
   authSessionStatus: AuthSessionStatus = "disabled",
   isLocalOnly = true,
+  options: SupabaseActorContextOptions = {},
 ): Promise<LocalActorContext> {
   const snapshot = await readLocalActorSnapshot(client);
   const normalizedEmail = selectedEmail.toLowerCase();
@@ -326,6 +335,16 @@ export async function getSupabaseLocalActorContext(
     snapshot.profiles[0];
 
   if (!profile) {
+    if (options.allowMockFallbackWhenProfileMissing === false) {
+      return getMissingProfileActorContext(
+        selectedEmail,
+        "Supabase Auth is signed in, but this user does not have a myMEDLIFE profile or role assignment yet.",
+        identitySource,
+        authSessionStatus,
+        isLocalOnly,
+      );
+    }
+
     return getMockLocalActorContext(
       selectedEmail,
       "Supabase returned no profiles, so mock actor fallback is active.",
@@ -396,6 +415,61 @@ export async function getSupabaseLocalActorContext(
     defaultLandingSurface: getCanonicalLandingSurface(primaryCanonicalRole),
     chapterNames,
     coachPortfolioChapterNames,
+    isLocalOnly,
+  };
+}
+
+export function getMissingProfileActorContext(
+  selectedEmail: string,
+  message: string,
+  identitySource: ActorIdentitySource = "local_auth_session",
+  authSessionStatus: AuthSessionStatus = "signed_in",
+  isLocalOnly = false,
+): LocalActorContext {
+  const displayName =
+    selectedEmail
+      .split("@")[0]
+      ?.split(".")
+      .filter(Boolean)
+      .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
+      .join(" ") || "Pending user";
+  const canonicalRoleAssignments = getCanonicalRoleAssignments({
+    audience: "chapter_member",
+    chapterRoles: [],
+    staffRoles: [],
+  });
+  const canonicalRoles = getCanonicalRoles(canonicalRoleAssignments);
+  const canonicalScopes = getCanonicalScopes(canonicalRoleAssignments);
+  const primaryCanonicalRole =
+    getHighestOperationalCanonicalRole(canonicalRoleAssignments);
+
+  return {
+    source: {
+      mode: "supabase",
+      status: "auth_profile_missing",
+      message,
+    },
+    user: {
+      id: "auth-profile-missing",
+      displayName,
+      email: selectedEmail,
+    },
+    selectedEmail,
+    identitySource,
+    authSessionStatus,
+    audience: "chapter_member",
+    audienceLabel: "Profile setup required",
+    accessSummary:
+      "This signed-in user needs a myMEDLIFE profile, chapter, and role before workspace access is enabled.",
+    chapterRoles: [],
+    staffRoles: [],
+    canonicalRoleAssignments,
+    canonicalRoles,
+    canonicalScopes,
+    primaryCanonicalRole,
+    defaultLandingSurface: getCanonicalLandingSurface(primaryCanonicalRole),
+    chapterNames: [],
+    coachPortfolioChapterNames: [],
     isLocalOnly,
   };
 }

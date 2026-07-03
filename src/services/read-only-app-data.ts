@@ -59,7 +59,11 @@ import type {
 } from "@/shared/types/persistence";
 
 export type DataSourceMode = "mock" | "supabase";
-export type DataSourceStatus = "mock_fallback" | "supabase_ready" | "supabase_error";
+export type DataSourceStatus =
+  | "mock_fallback"
+  | "supabase_ready"
+  | "supabase_error"
+  | "auth_profile_missing";
 
 export type DataSourceMeta = {
   mode: DataSourceMode;

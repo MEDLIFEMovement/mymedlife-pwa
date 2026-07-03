@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SupabaseReadonlyClient } from "@/lib/supabase-readonly";
 import {
+  getMissingProfileActorContext,
   getMockLocalActorContext,
   getSupabaseLocalActorContext,
   readLocalActorSnapshot,
@@ -142,6 +143,39 @@ describe("local actor context service", () => {
     expect(actor.identitySource).toBe("local_auth_session");
     expect(actor.authSessionStatus).toBe("signed_in");
     expect(actor.audience).toBe("chapter_leader");
+  });
+
+  it("does not use mock personas for hosted signed-in users without profiles", async () => {
+    const actor = await getSupabaseLocalActorContext(
+      createFakeClient({}),
+      "nellis@medlifemovement.org",
+      "Hosted production actor read.",
+      "local_auth_session",
+      "signed_in",
+      false,
+      { allowMockFallbackWhenProfileMissing: false },
+    );
+
+    expect(actor.source.status).toBe("auth_profile_missing");
+    expect(actor.source.mode).toBe("supabase");
+    expect(actor.user.email).toBe("nellis@medlifemovement.org");
+    expect(actor.user.displayName).toBe("Nellis");
+    expect(actor.user.displayName).not.toBe("Sofia Alvarez");
+    expect(actor.chapterRoles).toEqual([]);
+    expect(actor.staffRoles).toEqual([]);
+    expect(actor.isLocalOnly).toBe(false);
+  });
+
+  it("keeps missing-profile auth context setup-only", () => {
+    const actor = getMissingProfileActorContext(
+      "new.user@medlifemovement.org",
+      "Profile setup required.",
+    );
+
+    expect(actor.source.status).toBe("auth_profile_missing");
+    expect(actor.authSessionStatus).toBe("signed_in");
+    expect(actor.identitySource).toBe("local_auth_session");
+    expect(actor.accessSummary).toContain("profile, chapter, and role");
   });
 
   it("resolves signed-in auth email before the debug actor email", () => {
