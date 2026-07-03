@@ -1,8 +1,6 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
   canReadAssignment,
-  getActorSurfaceFamily,
-  type ActorSurfaceFamily,
   getVisibleAssignmentsForActor,
 } from "@/services/role-visibility";
 import type { Assignment, EvidenceItem } from "@/shared/types/domain";
@@ -38,6 +36,8 @@ export type LeaderProofDecisionRow = {
   recommendedDecision: LeaderProofDecisionValue;
   evidenceSummary: string;
   proofTypeLabel: string;
+  privateUploadStatusLabel: string;
+  privateUploadGuidance: string;
   leaderNextStep: string;
   hqSharingBoundary: string;
   storyContextPrompt: string;
@@ -73,12 +73,10 @@ export function getLeaderProofDecisionWorkspace(
   assignments: Assignment[],
   evidenceItems: EvidenceItem[],
 ): LeaderProofDecisionWorkspace {
-  const surfaceFamily = getActorSurfaceFamily(actor);
-
-  if (!canReadLeaderProofDecisionWorkspace(surfaceFamily)) {
+  if (!canReadLeaderProofDecisionWorkspace(actor)) {
     return {
       canReadWorkspace: false,
-      title: getTitle(surfaceFamily),
+      title: "Leader proof decision workspace hidden for this role",
       summary:
         "Chapter proof decisions are visible to chapter leaders and HQ staff, not members, coaches, or DS Admin.",
       rows: [],
@@ -96,9 +94,9 @@ export function getLeaderProofDecisionWorkspace(
 
   return {
     canReadWorkspace: true,
-    title: getTitle(surfaceFamily),
+    title: getTitle(actor),
     summary:
-      "Review the chapter-level proof decisions leaders need for points and KPI movement: approve, request changes, or reject. These controls are still disabled, and HQ broad sharing remains separate.",
+      "Review the chapter-level proof decisions that drive chapter completion, local points/KPI movement, and follow-up. The localhost-only save panel can run below when auth, RLS, and the private upload lane are ready; HQ sharing still stays separate.",
     rows,
     counts: {
       total: rows.length,
@@ -111,15 +109,15 @@ export function getLeaderProofDecisionWorkspace(
       externalWritesEnabled: 0,
     },
     finalPrompt:
-      "Use this to review the chapter proof decision model only. Do not enable proof decisions, points ledger writes, member nudges, public proof sharing, exports, or AI summaries until auth, RLS, audit readback, and approval gates are current.",
+      "Use this workspace to confirm chapter proof readiness, whether a private file is attached, and what the leader decision should be. The local save lane can write assignment/proof status plus chapter-level points/KPI intent, but HQ sharing, member nudges, exports, and AI follow-up still stay gated.",
   };
 }
 
-function canReadLeaderProofDecisionWorkspace(surfaceFamily: ActorSurfaceFamily): boolean {
+function canReadLeaderProofDecisionWorkspace(actor: LocalActorContext): boolean {
   return (
-    surfaceFamily === "leader" ||
-    surfaceFamily === "staff" ||
-    surfaceFamily === "super_admin"
+    actor.audience === "chapter_leader" ||
+    actor.audience === "admin" ||
+    actor.audience === "super_admin"
   );
 }
 
@@ -150,6 +148,8 @@ function toDecisionRow(
     recommendedDecision,
     evidenceSummary: evidence?.summary ?? "No proof has been submitted yet.",
     proofTypeLabel: evidence?.evidenceType.replaceAll("_", " ") ?? assignment.evidenceRequired,
+    privateUploadStatusLabel: getPrivateUploadStatusLabel(evidence),
+    privateUploadGuidance: getPrivateUploadGuidance(evidence),
     leaderNextStep: getLeaderNextStep(status, assignment, evidence),
     hqSharingBoundary:
       "This chapter decision only affects local proof, points, and KPI posture. HQ still owns broad proof sharing or public reuse.",
@@ -302,34 +302,85 @@ const decisionOptions: LeaderProofDecisionOption[] = [
     value: "approve",
     label: "Approve",
     disabledReason:
-      "Approval writes stay disabled until auth, RLS, points, audit, and rollback evidence are approved.",
+      "Use the localhost-only save panel below once auth, RLS, audit readback, and approval evidence are ready.",
   },
   {
     value: "request_changes",
     label: "Request changes",
     disabledReason:
-      "Change-request nudges stay disabled until notification and audit gates are approved.",
+      "Use the localhost-only save panel below; member nudges still stay disabled until a later lane is approved.",
   },
   {
     value: "reject",
     label: "Reject",
     disabledReason:
-      "Reject decisions stay disabled until the team approves the proof-review write path.",
+      "Use the localhost-only save panel below once the proof-review write path is enabled for the signed-in leader.",
   },
 ];
 
-function getTitle(surfaceFamily: ActorSurfaceFamily): string {
-  switch (surfaceFamily) {
-    case "leader":
-      return "Chapter proof decision board";
-    case "staff":
-      return "Chapter proof support desk";
+function getPrivateUploadStatusLabel(evidence: EvidenceItem | undefined): string {
+  if (!evidence) {
+    return "No proof submitted";
+  }
+
+  if (evidence.storagePath) {
+    return "Private file attached";
+  }
+
+  if (proofTypeSupportsPrivateUpload(evidence.evidenceType)) {
+    return "Private file missing";
+  }
+
+  return "Raw file not required";
+}
+
+function getPrivateUploadGuidance(evidence: EvidenceItem | undefined): string {
+  if (!evidence) {
+    return "Wait for proof before asking the submitter to attach a private file.";
+  }
+
+  if (evidence.storagePath) {
+    return "A private upload is already on file. This route confirms upload presence without exposing the raw file outside the approved submitter/HQ boundary.";
+  }
+
+  if (proofTypeSupportsPrivateUpload(evidence.evidenceType)) {
+    return "If the leader decision depends on a raw video, photo, PDF, or screenshot, ask the submitter to finish `/proof-library/upload` before final approval.";
+  }
+
+  return "This proof type can be reviewed from its text or link summary alone.";
+}
+
+function proofTypeSupportsPrivateUpload(evidenceType: EvidenceItem["evidenceType"]): boolean {
+  switch (evidenceType) {
+    case "bridge_video":
+    case "event_photo":
+    case "attendance_log":
+    case "feedback_form":
+    case "tracker_screenshot":
+    case "planning_doc":
+    case "mock_file":
+      return true;
+    case "text":
+    case "link":
+    case "testimonial_text":
+    case "recap_note":
+    case "external_link":
+      return false;
+  }
+}
+
+function getTitle(actor: LocalActorContext): string {
+  switch (actor.audience) {
+    case "chapter_leader":
+      return "Leader proof decision workspace";
+    case "admin":
+      return "HQ proof decision support";
     case "super_admin":
-      return "Proof decision operations";
-    case "member":
+      return "Full local proof decision workspace";
+    case "chapter_member":
     case "coach":
     case "ds_admin":
-      return "Chapter proof decisions hidden for this role";
+      return "Leader proof decision workspace hidden for this role";
   }
 }
 

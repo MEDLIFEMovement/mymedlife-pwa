@@ -33,7 +33,7 @@ export async function signInWithPassword(
   if (password.length < 1) {
     return {
       status: "error",
-      message: "Enter the local seed password.",
+      message: "Enter a password.",
       email,
     };
   }

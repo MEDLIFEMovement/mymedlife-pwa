@@ -5,12 +5,7 @@ import {
 } from "@/services/hq-proof-decision-write";
 import { getMockLocalActorContext, type LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
-import {
-  canReadAdminReviewSurface,
-  getActorSurfaceFamily,
-} from "@/services/role-visibility";
 import type { HqSharingDecisionInput } from "@/services/local-action-contracts";
-import { buildLeaderAssignmentRouteHref } from "@/services/leader-assignment-route-href";
 import type { EvidenceItem } from "@/shared/types/domain";
 
 type EnvSource = Record<string, string | undefined>;
@@ -51,6 +46,11 @@ export type HqProofDecisionCandidate = {
   assignmentId: string;
   summary: string;
   status: EvidenceItem["status"];
+  proofTypeLabel: string;
+  privateUploadStatusLabel: string;
+  privateUploadGuidance: string;
+  privacyBoundary: string;
+  deletionBoundary: string;
   route: string;
   reviewRoute: string;
   usesSupabaseUuid: boolean;
@@ -112,7 +112,11 @@ export function getHqProofDecisionPacket(
   data: ReadOnlyAppData,
   env: EnvSource = process.env,
 ): HqProofDecisionPacket {
-  if (!canReadAdminReviewSurface(actor)) {
+  if (
+    actor.audience !== "admin" &&
+    actor.audience !== "ds_admin" &&
+    actor.audience !== "super_admin"
+  ) {
     return {
       canReadPacket: false,
       title: "HQ proof decision packet hidden for this role",
@@ -172,7 +176,7 @@ export function getHqProofDecisionPacket(
     title: getTitle(actor),
     status,
     plainEnglishSummary:
-      "This packet prepares the third local Rush Month write: HQ records whether one submitted proof/testimonial should be approved for future sharing review, held for better context, or kept internal. It proves the HQ decision event, disabled n8n outbox row, and audit log without publishing proof or sending automation.",
+      "This packet prepares the next HQ proof-sharing write: HQ records whether one submitted proof/testimonial should be approved for future sharing review, held for better context, or kept internal. It proves the HQ decision event, disabled n8n outbox row, and audit log while keeping raw uploads private, public sharing off, and takedown/deletion manual-first.",
     candidateEvidence: candidate,
     defaultInput: defaultDecisionInput,
     checks,
@@ -183,8 +187,9 @@ export function getHqProofDecisionPacket(
       "Screenshot of `/rush-month/review` with the HQ decision form enabled for a fake Admin or Super Admin.",
       "Screenshot after submit showing the local HQ decision result state.",
       "Readback proof that the proof/testimonial status moved to approved or changes requested.",
+      "Evidence that any attached raw file stayed private and no public URL or member-visible asset was created.",
       "Evidence that hq_sharing_decision_logged internal event, integration event, disabled outbox row, and audit log were created.",
-      "Evidence that public proof publishing, warehouse export, AI summary, and external sends stayed at zero.",
+      "Evidence that public proof publishing, warehouse export, AI summary, external sends, and browser-side deletion shortcuts stayed at zero.",
     ],
     counts: {
       checks: checks.length,
@@ -201,6 +206,12 @@ export function getHqProofDecisionPacket(
 
 function findCandidateEvidence(data: ReadOnlyAppData): EvidenceItem | null {
   return (
+    data.evidenceItems.find((item) => {
+      return isReadyForHqDecision(item) &&
+        isUuid(item.id) &&
+        Boolean(item.storagePath) &&
+        hasProofMetadataReadback(data, item);
+    }) ??
     data.evidenceItems.find((item) => {
       return isReadyForHqDecision(item) &&
         isUuid(item.id) &&
@@ -232,9 +243,12 @@ function toCandidate(evidenceItem: EvidenceItem): HqProofDecisionCandidate {
     assignmentId: evidenceItem.assignmentId,
     summary: evidenceItem.summary,
     status: evidenceItem.status,
-    route: buildLeaderAssignmentRouteHref(evidenceItem.assignmentId, {
-      source: "hq_proof_packet",
-    }),
+    proofTypeLabel: evidenceItem.evidenceType.replaceAll("_", " "),
+    privateUploadStatusLabel: getPrivateUploadStatusLabel(evidenceItem),
+    privateUploadGuidance: getPrivateUploadGuidance(evidenceItem),
+    privacyBoundary: getPrivacyBoundary(evidenceItem),
+    deletionBoundary: getDeletionBoundary(evidenceItem),
+    route: `/rush-month/actions/${evidenceItem.assignmentId}`,
     reviewRoute: "/rush-month/review",
     usesSupabaseUuid: isUuid(evidenceItem.id),
     readyForHqDecision: isReadyForHqDecision(evidenceItem),
@@ -278,8 +292,8 @@ function buildChecks(
       passed: Boolean(evidenceItem && isUuid(evidenceItem.id)),
       detail:
         evidenceItem && isUuid(evidenceItem.id)
-          ? "The candidate proof can be passed to app.record_hq_proof_sharing_decision."
-          : "Mock proof IDs are intentionally blocked before HQ decisions are saved.",
+        ? "The candidate proof can be passed to app.record_hq_proof_sharing_decision."
+        : "Mock proof IDs are intentionally blocked before HQ decisions are saved.",
     },
     {
       key: "proof_metadata_readback",
@@ -350,7 +364,7 @@ function buildChecks(
       label: "Public proof sharing stays disabled",
       passed: publicSharingDisabled,
       detail: publicSharingDisabled
-        ? "This packet records sharing posture only. It does not publish proof to students or the public."
+        ? "This packet records sharing posture only. It does not publish proof to students or the public, and it does not expose private uploads."
         : "Turn off MYMEDLIFE_ALLOW_PUBLIC_PROOF_SHARING before testing the HQ decision packet.",
     },
     {
@@ -622,6 +636,8 @@ function buildVerificationPacket(
       "Stop if `/admin/proof-write` has not shown proof metadata readback evidence.",
       "Stop if the target proof/testimonial is not a Supabase UUID.",
       "Stop if public proof publishing or share controls appear enabled.",
+      "Stop if a raw file becomes visible outside the approved submitter/HQ boundary or a public URL appears.",
+      "Stop if the browser offers deletion/takedown outside the approved private upload cleanup lane.",
       "Stop if any external send, social post, AI summary, warehouse export, or n8n workflow appears enabled.",
       "Stop if the operator is not using a fake Admin or Super Admin local seed user.",
     ],
@@ -707,15 +723,15 @@ function buildHiddenVerificationPacket(): HqProofDecisionVerificationPacket {
 }
 
 function getTitle(actor: LocalActorContext): string {
-  switch (getActorSurfaceFamily(actor)) {
-    case "staff":
+  switch (actor.audience) {
+    case "admin":
       return "Admin HQ proof decision packet";
     case "ds_admin":
       return "DS Admin HQ decision safety packet";
     case "super_admin":
       return "Full local HQ proof decision packet";
-    case "member":
-    case "leader":
+    case "chapter_member":
+    case "chapter_leader":
     case "coach":
       return "HQ proof decision packet hidden for this role";
   }
@@ -730,4 +746,67 @@ function emptyCounts(): HqProofDecisionPacket["counts"] {
     externalWritesExpected: 0,
     publicSharesExpected: 0,
   };
+}
+
+function getPrivateUploadStatusLabel(evidenceItem: EvidenceItem): string {
+  if (evidenceItem.storagePath) {
+    return "Private file attached";
+  }
+
+  if (supportsPrivateUpload(evidenceItem.evidenceType)) {
+    return "Private file missing";
+  }
+
+  return "No raw file required";
+}
+
+function getPrivateUploadGuidance(evidenceItem: EvidenceItem): string {
+  if (evidenceItem.storagePath) {
+    return "A private raw file is already attached. HQ is deciding reuse posture only; this packet must not expose the file outside the approved submitter/HQ boundary.";
+  }
+
+  if (supportsPrivateUpload(evidenceItem.evidenceType)) {
+    return "No private raw file is attached yet. HQ can still keep the proof internal or request better context, but this should not be treated as publish-ready proof.";
+  }
+
+  return "This proof can be reviewed from text or link context without requiring a private raw file.";
+}
+
+function getPrivacyBoundary(evidenceItem: EvidenceItem): string {
+  if (evidenceItem.storagePath) {
+    return "Raw files stay private to the submitter and approved HQ cleanup roles. This decision does not create a public URL or broader member access.";
+  }
+
+  if (supportsPrivateUpload(evidenceItem.evidenceType)) {
+    return "If a raw file is attached later, it must stay in the private bucket until a separate sharing and publishing lane is approved.";
+  }
+
+  return "Keep student identity and reuse posture explicit. This route records sharing intent only, not public publication.";
+}
+
+function getDeletionBoundary(evidenceItem: EvidenceItem): string {
+  if (evidenceItem.storagePath) {
+    return "If the student requests takedown or deletion, remove the private asset through `/proof-library/upload` and preserve the HQ decision audit history.";
+  }
+
+  return "If consent changes later, remove any attached source asset through the private upload cleanup lane before reconsidering reuse.";
+}
+
+function supportsPrivateUpload(evidenceType: EvidenceItem["evidenceType"]): boolean {
+  switch (evidenceType) {
+    case "bridge_video":
+    case "event_photo":
+    case "attendance_log":
+    case "feedback_form":
+    case "tracker_screenshot":
+    case "planning_doc":
+    case "mock_file":
+      return true;
+    case "text":
+    case "link":
+    case "testimonial_text":
+    case "recap_note":
+    case "external_link":
+      return false;
+  }
 }

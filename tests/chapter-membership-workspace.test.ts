@@ -1,9 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { getChapterMembershipWorkspace } from "@/services/chapter-membership-workspace";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 const data = getMockReadOnlyAppData("Testing chapter membership workspace.");
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("chapter membership workspace", () => {
   it("gives chapter leaders a read-only member management workspace", () => {
@@ -11,13 +15,13 @@ describe("chapter membership workspace", () => {
     const workspace = getChapterMembershipWorkspace(actor, data);
 
     expect(workspace.canReadWorkspace).toBe(true);
-    expect(workspace.title).toContain("roster and join requests");
+    expect(workspace.title).toContain("member workspace");
     expect(workspace.counts.activeMembers).toBe(5);
     expect(workspace.counts.pendingRequests).toBe(2);
     expect(workspace.counts.enabledControls).toBe(0);
     expect(workspace.membershipApprovalPacket).toEqual(
       expect.objectContaining({
-        title: "First join approval preview",
+        title: "Goal 160 membership approval packet",
         targetRoute: "/chapter/members",
         futureFunction: "app.approve_chapter_membership",
         joinRequestId: "join-avery",
@@ -35,7 +39,7 @@ describe("chapter membership workspace", () => {
         requestedCommitteeLane: "Recruitment",
         source: "rush_event",
         approvedByActorEmail: "leader.a@mymedlife.test",
-        auditReason: "Approve this Rush Month join request for chapter roster follow-through.",
+        auditReason: "Approve Rush Month join request for chapter review.",
       }),
     );
     expect(workspace.membershipApprovalPacket?.resultPreview.currentResult.code).toBe(
@@ -70,29 +74,10 @@ describe("chapter membership workspace", () => {
     const workspace = getChapterMembershipWorkspace(actor, data);
 
     expect(workspace.canReadWorkspace).toBe(true);
-    expect(workspace.title).toContain("coaching roster view");
+    expect(workspace.title).toContain("coach roster readout");
     expect(workspace.joinRequests).toEqual([]);
     expect(workspace.membershipApprovalPacket).toBeNull();
-    expect(workspace.summary).toContain("without owning join approvals");
-  });
-
-  it("lets committee chairs read the chapter roster but keeps committee members out", () => {
-    const committeeChair = getChapterMembershipWorkspace(
-      getMockLocalActorContext("committee.chair@mymedlife.test"),
-      data,
-    );
-    const committeeMember = getChapterMembershipWorkspace(
-      getMockLocalActorContext("committee.member@mymedlife.test"),
-      data,
-    );
-
-    expect(committeeChair.canReadWorkspace).toBe(true);
-    expect(committeeChair.title).toContain("roster and join requests");
-    expect(committeeChair.membershipApprovalPacket?.payload.approvedByActorEmail).toBe(
-      "committee.chair@mymedlife.test",
-    );
-    expect(committeeMember.canReadWorkspace).toBe(false);
-    expect(committeeMember.members).toEqual([]);
+    expect(workspace.summary).toContain("without owning membership approvals");
   });
 
   it("keeps DS Admin and general members out of member-management truth", () => {
@@ -121,8 +106,8 @@ describe("chapter membership workspace", () => {
     expect(
       workspace.disabledControls.every((control) => control.reason.length > 20),
     ).toBe(true);
-    expect(workspace.auditPreview.join(" ")).toContain("audit trail");
-    expect(workspace.outboxPreview.join(" ")).toContain("paused");
+    expect(workspace.auditPreview.join(" ")).toContain("membership_approved");
+    expect(workspace.outboxPreview.join(" ")).toContain("disabled");
     expect(workspace.membershipApprovalPacket?.futureRecords).toEqual(
       expect.arrayContaining([
         {
@@ -138,7 +123,7 @@ describe("chapter membership workspace", () => {
     expect(workspace.membershipApprovalPacket?.blockedControls).toEqual(
       expect.arrayContaining([
         "Approve join request",
-        "Add member to chapter roster",
+        "Create membership row",
         "Send welcome message",
         "Sync CRM contact",
       ]),
@@ -175,5 +160,100 @@ describe("chapter membership workspace", () => {
     expect(chairCoverage?.status).toBe("thin");
     expect(memberCoverage?.status).toBe("thin");
     expect(workspace.roleCoverage.some((item) => item.status === "missing")).toBe(false);
+  });
+
+  it("switches the enabled safety note to hosted staging language when the staging rehearsal is on", () => {
+    vi.stubEnv("MYMEDLIFE_AUTH_MODE", "staging_supabase");
+    vi.stubEnv(
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "https://rceupryepjgkdeqgxzrc.supabase.co",
+    );
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "staging-publishable-key");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://staging.mymedlife.org");
+    vi.stubEnv("MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES", "true");
+    vi.stubEnv("MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE", "true");
+
+    const actor = {
+      ...getMockLocalActorContext("leader.a@mymedlife.test"),
+      identitySource: "local_auth_session" as const,
+      authSessionStatus: "signed_in" as const,
+      isLocalOnly: false,
+    };
+    const chapterId = "10000000-0000-4000-8000-000000000001";
+    const leaderUserId = "20000000-0000-4000-8000-000000000001";
+    const applicantUserId = "20000000-0000-4000-8000-000000000005";
+    const workspace = getChapterMembershipWorkspace(actor, {
+      ...data,
+      source: {
+        mode: "supabase",
+        status: "supabase_ready",
+        message: "Reading hosted staging Supabase data for the signed-in session.",
+      },
+      chapter: {
+        ...data.chapter,
+        id: chapterId,
+      },
+      profiles: [
+        {
+          id: leaderUserId,
+          display_name: "Priya President",
+          email: "leader.a@mymedlife.test",
+          status: "active",
+          created_at: "2026-06-20T00:00:00.000Z",
+          updated_at: "2026-06-20T00:00:00.000Z",
+        },
+        {
+          id: applicantUserId,
+          display_name: "Avery New",
+          email: "avery.new@mymedlife.test",
+          status: "active",
+          created_at: "2026-06-20T00:00:00.000Z",
+          updated_at: "2026-06-20T00:00:00.000Z",
+        },
+      ],
+      memberships: [
+        {
+          id: "30000000-0000-4000-8000-000000000001",
+          user_id: leaderUserId,
+          chapter_id: chapterId,
+          role_key: "president_vp",
+          status: "approved",
+          requested_at: "2026-06-20T00:00:00.000Z",
+          approved_at: "2026-06-20T00:00:00.000Z",
+          approved_by: leaderUserId,
+          created_at: "2026-06-20T00:00:00.000Z",
+          updated_at: "2026-06-20T00:00:00.000Z",
+        },
+        {
+          id: "30000000-0000-4000-8000-000000000005",
+          user_id: applicantUserId,
+          chapter_id: chapterId,
+          role_key: "general_member",
+          status: "requested",
+          requested_at: "2026-06-20T00:00:00.000Z",
+          approved_at: null,
+          approved_by: null,
+          created_at: "2026-06-20T00:00:00.000Z",
+          updated_at: "2026-06-20T00:00:00.000Z",
+        },
+      ],
+    });
+
+    expect(workspace.counts.enabledControls).toBe(1);
+    expect(workspace.safetyNote).toContain("Hosted staging membership approval");
+    expect(workspace.safetyNote).toContain("staging.mymedlife.org only");
+    expect(
+      workspace.membershipApprovalPacket?.readinessChecks.find(
+        (check) => check.key === "live_auth_required",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        label: "Signed-in hosted staging Supabase Auth session is required before approval",
+        passed: true,
+      }),
+    );
+    expect(workspace.membershipApprovalPacket?.readinessReason).toContain(
+      "hosted staging membership approval server action and readback path",
+    );
   });
 });

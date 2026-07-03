@@ -648,10 +648,10 @@ Goal 78 added `/admin/proof-write` so HQ reviewers can prepare the second
 local Rush Month write: metadata-only proof/testimonial submission after the
 first action-start readback is proven.
 
-Goal 77 added `/admin/write-sequence` so HQ reviewers can see the safe Rush
-Month write promotion order after the first-write packet: action-start, proof
-metadata, HQ proof decision, leader assignment creation, and coach decision
-logging.
+Goal 77 added `/admin/write-sequence` so HQ reviewers can see the implemented
+Phase 2 write subset in order: membership approval, leader assignment
+creation, action-start, proof metadata, leader proof decision, HQ proof
+decision, and coach decision logging.
 
 Goal 76 extended `/admin/first-write` so HQ reviewers have one operator-ready
 packet for local env settings, fake sign-in, the action-start route sequence,

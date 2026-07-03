@@ -13,11 +13,11 @@ export function ProofSharingReviewPanel({ board }: ProofSharingReviewPanelProps)
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
+    <section className="rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100/80">
-            Sharing review
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/80">
+            HQ sharing posture
           </p>
           <h2 className="mt-2 text-2xl font-semibold text-white">{board.title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-white/66">
@@ -25,18 +25,18 @@ export function ProofSharingReviewPanel({ board }: ProofSharingReviewPanelProps)
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center sm:grid-cols-6">
-          <MiniStat label="Items" value={`${board.counts.total}`} />
-          <MiniStat label="Needs context" value={`${board.counts.needsConsentOrContext}`} />
-          <MiniStat label="Ready" value={`${board.counts.readyForHqReview}`} />
+          <MiniStat label="Rows" value={`${board.counts.total}`} />
+          <MiniStat label="Consent" value={`${board.counts.needsConsentOrContext}`} />
+          <MiniStat label="HQ review" value={`${board.counts.readyForHqReview}`} />
           <MiniStat label="Internal" value={`${board.counts.internalLearning}`} />
-          <MiniStat label="Story candidates" value={`${board.counts.futurePublicCandidates}`} />
-          <MiniStat label="Handoffs" value={`${board.counts.externalExportsEnabled}`} />
+          <MiniStat label="Publish" value={`${board.counts.publishActionsEnabled}`} />
+          <MiniStat label="Exports" value={`${board.counts.externalExportsEnabled}`} />
         </div>
       </div>
 
       <div className="mt-5 grid gap-3">
         {board.rows.map((row) => (
-          <article key={row.id} className="rounded-2xl bg-[#bfdbfe]/40 p-4">
+          <article key={row.id} className="rounded-2xl bg-black/20 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2">
@@ -59,10 +59,28 @@ export function ProofSharingReviewPanel({ board }: ProofSharingReviewPanelProps)
                 </p>
               </div>
             </div>
-            <p className="mt-3 rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-3 text-xs leading-5 text-white/54">
-              Broader sharing: {row.canBePublishedNow ? "open now" : "later"}.
-              External handoff: {row.externalExportPosture}. Public proof pages,
-              exports, and automations stay paused in this preview.
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                  Privacy boundary
+                </p>
+                <p className="mt-2 text-xs leading-5 text-white/58">
+                  {row.privacyBoundary}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
+                  Deletion / takedown
+                </p>
+                <p className="mt-2 text-xs leading-5 text-white/58">
+                  {row.deletionBoundary}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 rounded-2xl border border-white/10 bg-[#071d1a]/70 p-3 text-xs leading-5 text-white/54">
+              Publish now: {row.canBePublishedNow ? "yes" : "no"}. External
+              export posture: {row.externalExportPosture}. No public proof page,
+              warehouse export, n8n workflow, HubSpot, or Luma write happens.
             </p>
           </article>
         ))}
@@ -73,7 +91,7 @@ export function ProofSharingReviewPanel({ board }: ProofSharingReviewPanelProps)
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#bfdbfe]/40 px-3 py-2">
+    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
         {label}
       </p>
@@ -85,13 +103,13 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function ReviewStatePill({ state }: { state: ProofSharingReviewState }) {
   const className =
     state === "needs_consent_or_context"
-      ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+      ? "border-rose-300/30 bg-rose-300/15 text-rose-100"
       : state === "ready_for_hq_review"
-        ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+        ? "border-sky-300/30 bg-sky-300/15 text-sky-100"
         : state === "future_public_candidate"
-          ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+          ? "border-cyan-300/30 bg-cyan-300/15 text-cyan-100"
           : state === "internal_learning"
-            ? "border-blue-300/30 bg-blue-300/15 text-blue-100"
+            ? "border-emerald-300/30 bg-emerald-300/15 text-emerald-100"
             : "border-white/10 bg-white/10 text-white/70";
 
   return (

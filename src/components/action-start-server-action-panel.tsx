@@ -75,6 +75,7 @@ export function ActionStartServerActionPanel({
 
       <form action={startAssignmentAction} className="mt-5">
         <input type="hidden" name="assignmentId" value={assignment.id} />
+        <input type="hidden" name="expectedStatus" value={assignment.status} />
         <input
           type="hidden"
           name="returnTo"

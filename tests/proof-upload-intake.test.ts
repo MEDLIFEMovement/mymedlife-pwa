@@ -22,7 +22,7 @@ describe("proof upload intake", () => {
     ]);
     expect(workspace.storagePacket).toEqual(
       expect.objectContaining({
-        title: "Proof upload path preview",
+        title: "Goal 159 proof storage intake packet",
         targetRoute: "/proof-library/upload",
         futureFunction: "app.prepare_proof_upload_intake",
         privateBucket: "proof-submissions-private",
@@ -32,7 +32,7 @@ describe("proof upload intake", () => {
       }),
     );
     expect(workspace.storagePacket?.storagePathPreview).toBe(
-      "chapters/chapter-a/campaigns/rush-month/evidence/local-proof-upload-preview/rush-social-bridge-video.mov",
+      "chapters/chapter-a/evidence/local-proof-upload-preview/rush-social-bridge-video.mov",
     );
     expect(workspace.storagePacket?.rawUploadReaders).toEqual([
       "submitter",
@@ -133,7 +133,7 @@ describe("proof upload intake", () => {
     expect(workspace.futureStructuredEvents).toEqual(
       expect.arrayContaining([
         "proof_upload_requested",
-        "proof_consent_recorded",
+        "proof_upload_validated",
         "evidence_submitted",
         "automation_outbox_recorded",
         "audit_log_recorded",
@@ -141,7 +141,7 @@ describe("proof upload intake", () => {
     );
     expect(
       workspace.futureOutboxDestinations.every((destination) =>
-        destination.includes("paused"),
+        destination.includes("disabled"),
       ),
     ).toBe(true);
   });
@@ -162,7 +162,7 @@ describe("proof upload intake", () => {
     });
 
     expect(workspace.storagePacket?.storagePathPreview).toBe(
-      "chapters/chapter-a/campaigns/rush-month/evidence/evidence-bridge-video/leader-recap.mp4",
+      "chapters/chapter-a/evidence/evidence-bridge-video/leader-recap.mp4",
     );
     expect(
       workspace.storagePacket?.readinessChecks.find(
@@ -184,7 +184,7 @@ describe("proof upload intake", () => {
     );
     expect(
       workspace.storagePacket?.futureRecords.find(
-        (record) => record.label === "Held handoffs",
+        (record) => record.label === "Disabled outbox",
       )?.value,
     ).toContain("AI summary");
     expect(workspace.uploadsEnabled).toBe(false);
@@ -195,7 +195,7 @@ describe("proof upload intake", () => {
     const workspace = getProofUploadIntakeWorkspace(actor);
 
     expect(workspace.canReadWorkspace).toBe(true);
-    expect(workspace.title).toBe("Leader proof prep");
+    expect(workspace.title).toBe("Leader proof upload readiness");
     expect(workspace.uploadsEnabled).toBe(false);
   });
 });

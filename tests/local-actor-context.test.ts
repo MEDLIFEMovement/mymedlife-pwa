@@ -149,6 +149,8 @@ describe("local actor context service", () => {
       {
         status: "signed_in",
         isLocalOnly: true,
+        isHostedStaging: false,
+        environment: "local",
         message: "Signed in.",
         user: {
           id: "user-3",
@@ -172,6 +174,8 @@ describe("local actor context service", () => {
         {
           status: "disabled",
           isLocalOnly: true,
+          isHostedStaging: false,
+          environment: "local",
           message: "Auth disabled.",
           user: null,
         },
@@ -188,6 +192,8 @@ describe("local actor context service", () => {
         {
           status: "signed_out",
           isLocalOnly: true,
+          isHostedStaging: false,
+          environment: "local",
           message: "Signed out.",
           user: null,
         },

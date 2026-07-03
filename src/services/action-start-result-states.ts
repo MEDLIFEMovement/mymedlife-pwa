@@ -10,6 +10,7 @@ export type ActionStartResultCode =
   | "missing_auth"
   | "permission_denied"
   | "server_error"
+  | "stale_assignment"
   | "started"
   | "write_disabled";
 
@@ -71,6 +72,17 @@ const actionStartResultStates = [
     tone: "warning",
     success: false,
     retryAllowed: false,
+    createsEvent: false,
+  },
+  {
+    code: "stale_assignment",
+    title: "This action changed since you opened it",
+    plainEnglishMessage:
+      "Another update changed this action before your save reached Supabase, so the app stopped instead of writing stale assignment truth.",
+    nextStep: "Refresh the page, review the latest status, and try again only if the action is still ready.",
+    tone: "warning",
+    success: false,
+    retryAllowed: true,
     createsEvent: false,
   },
   {
@@ -154,11 +166,22 @@ export function getFutureActionStartResultIfEnabled(
     return getActionStartResultState("permission_denied");
   }
 
-  if (assignment.status !== "not_started") {
+  if (
+    assignment.status === "not_started" ||
+    assignment.status === "changes_requested"
+  ) {
+    return getActionStartResultState("started");
+  }
+
+  if (
+    assignment.status === "in_progress" ||
+    assignment.status === "submitted" ||
+    assignment.status === "approved"
+  ) {
     return getActionStartResultState("already_started");
   }
 
-  return getActionStartResultState("started");
+  return getActionStartResultState("stale_assignment");
 }
 
 export function getDisabledActionStartResultPreview(

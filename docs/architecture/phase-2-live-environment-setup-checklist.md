@@ -1,231 +1,196 @@
-# Phase 2 Live Environment Setup Checklist
+# MED-472 Phase 2 Live Environment Setup Checklist
 
-Date: 2026-06-29
+Date: 2026-06-20
 
-Status:
-- local implementation is green
-- staging remains the reviewer target
-- hosted proof is still required
-- production Supabase exists, but production rollout is not approved from this checklist
+## Goal
 
-## Purpose
+Define and track the local, preview, staging, and production setup plan for
+Supabase and Vercel without committing credentials.
 
-This checklist is the documentation version of the production environment packet
-shown on `/admin/launch-gate`.
+## Selected Topology
 
-It exists so the team can review the production Supabase and Vercel setup
-requirements in one place without exposing secrets and without treating repo
-readiness as launch approval.
+Environment path `B` is the selected Phase 2 topology.
 
-## Current Truth
+Plain English:
 
-- `staging.mymedlife.org` is still the reviewer target.
-- The staging rollout-control migration is now applied on the hosted Supabase
-  project `rceupryepjgkdeqgxzrc`.
-- `app.feature_flags` and `app.theme_settings` now exist in hosted staging, and
-  the staging Supabase security advisor is clean after the helper search-path
-  fix applied on 2026-06-29.
-- The current repo now allows signed-in hosted staging reviewer sessions to use
-  Supabase-backed reads without widening anonymous preview traffic into the
-  live read model.
-- Hosted staging is still not proof-complete until that signed-in reviewer flow
-  is re-run against the latest deployed build.
-- The narrow staging-only Luma loop is the only approved external-family
-  exception under review:
-  - event create/update
-  - RSVP writeback
-  - attendance import
-  - points and leaderboard readback
-- HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, AI actions, and any
-  non-approved Luma behavior stay off.
-- Local verification is green:
-  - `pnpm test`
-  - `pnpm lint`
-  - `pnpm typecheck`
-  - `pnpm build`
-  - `pnpm supabase:test`
+- local stays for development only
+- staging is where auth, RLS, and the first approved writes get rehearsed
+- production is the real public app
+- Vercel preview can exist for branch review, but it points at staging and never
+  at production
 
-## Production Environment Packet
+Technical summary:
 
-### 1. Production Supabase project
+- dedicated local Docker Supabase
+- dedicated staging Supabase + Vercel staging environment
+- dedicated production Supabase + Vercel production environment
+- Supabase redirect allow-list includes `http://localhost:3000/**`,
+  `http://127.0.0.1:3000/**`, and
+  `https://*-<team-or-account-slug>.vercel.app/**`
+- production keeps an exact site URL and exact callback URL only
 
-Required evidence:
-- Separate production Supabase project reference is recorded without printing
-  service keys.
-- Approved migration list and migration owner are named before any hosted
-  production apply.
-- RLS/security advisor output is captured after approved migrations.
-- Production seed and user-provisioning plan is limited to the tiny pilot
-  cohort.
+## Named Environments
 
-Safe defaults:
-- Staging project remains `rceupryepjgkdeqgxzrc`.
-- Production project stays separate from staging.
-- No production migration is applied from this checklist.
+- Local app: `http://localhost:3000`
+- Local alternate host used in review and callbacks: `http://127.0.0.1:3000`
+- Vercel preview: branch and commit preview URLs
+- Staging: `https://staging.mymedlife.org`
+- Production: `https://www.mymedlife.org`
 
-### 2. Production Vercel environment
+## Current Hosted Supabase State
 
-Required evidence:
-- Production Vercel project or production target is confirmed for
-  `mymedlife-pwa`.
-- Production deploy source branch and rollback deployment target are recorded.
-- Vercel SSO / access posture is chosen for pilot reviewers and real users.
+Connector and CLI verification on 2026-06-20 found:
 
-Safe defaults:
-- Preview branch deployments remain the review lane.
-- Production env vars stay unset until approved.
-- No production promotion is performed from this checklist.
+- staging hosted project: `myMEDLIFE`
+- staging project ref: `rceupryepjgkdeqgxzrc`
+- staging region: `us-east-1`
+- staging status: `ACTIVE_HEALTHY`
+- staging created at: `2026-06-17`
+- repo migrations applied: 11
+- latest migration: `20260620093821_fix_function_search_path_warnings`
+- app schema tables: 27
+- app tables with RLS enabled: 27
+- private storage bucket: `proof-submissions-private`
+- edge functions: 0
+- app schema / RLS posture: 27 app tables, 27 with RLS enabled
+- staging leaked-password protection: enabled on `2026-06-20`
+- Supabase security advisor: no current lints
+- final migration dry run: remote database is up to date
+- hosted staging auth: proven on `https://staging.mymedlife.org`
+- hosted membership approval rehearsal: completed with audit/outbox readback while welcome, CRM, and external sends stayed disabled
+- production hosted project: `myMEDLIFE Production`
+- production project ref: `fnlhontvvprwgooevzdl`
+- production region: `us-east-1`
+- production status: `ACTIVE_HEALTHY`
+- production created at: `2026-06-20`
+- production migrations: 0
+- production security advisor: no lints
+- production app schema/data/auth/storage/integrations: not applied
 
-### 3. Production environment variables
+What is still missing:
 
-Required evidence:
-- `NEXT_PUBLIC_SUPABASE_URL` points to production Supabase.
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` is the production browser-safe key.
-- The server-only Supabase service key is set without `NEXT_PUBLIC_`.
-- `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` is set only after approved control
-  layer migration rollout.
-- Luma pilot variables are scoped only to the approved pilot calendar.
+- documented preview, staging, and production environment-variable scope outside source control, with production setup still incomplete
+- one explicit production schema decision: defer schema application beyond
+  Phase 2, or approve a separate production apply with rollback evidence
+- named owners for hosted auth, RLS, first-write validation, backups,
+  monitoring, and rollback evidence
 
-Environment manifest:
+## Phase 2 Stop Line
 
-- Browser-safe public values
-  - `NEXT_PUBLIC_SUPABASE_URL`
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Server-only Supabase values
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `SUPABASE_DB_URL`
-- App data and control-layer mode
-  - `MYMEDLIFE_DATA_SOURCE`
-  - `MYMEDLIFE_CONTROL_LAYER_SOURCE`
-  - `MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH`
-- Approved Luma pilot only
-  - `LUMA_API_KEY`
-  - `LUMA_CALENDAR_ID`
-  - `MYMEDLIFE_LUMA_ENVIRONMENT`
-  - `MYMEDLIFE_ENABLE_LUMA_WRITES`
-  - `MYMEDLIFE_ENABLE_LUMA_EVENT_WRITES`
-  - `MYMEDLIFE_ENABLE_LUMA_RSVP_WRITES`
-  - `MYMEDLIFE_ENABLE_LUMA_ATTENDANCE_IMPORT`
-- External systems held off
-  - `HUBSPOT_*`
-  - `N8N_*`
-  - `WAREHOUSE_*`
-  - `POWER_BI_*`
-  - `OPENAI_API_KEY`
-  - `SMS_*`
-  - `EMAIL_*`
+Phase 2 can close with:
 
-Safe defaults:
-- Never expose service role, Luma API, HubSpot, n8n, warehouse, Power BI,
-  SMS/email, or AI keys through `NEXT_PUBLIC_`.
-- Keep non-approved integration env vars unset or off.
-- Record presence and scope only; do not paste secret values into docs, PRs,
-  Linear, or logs.
+- staging proved on the hosted domain
+- PR `#120` merged after human review
+- production Supabase still intentionally empty
+- production schema application explicitly deferred or separately approved
+- pilot owners, rollback path, and stop rules named
 
-### 4. Rollout control layer readiness
+Phase 2 does not require applying the approved schema to production unless
+Kiomi / DS and Nick choose to fold that work into a later live-launch lane.
 
-Required evidence:
-- The rollout-controls migration is applied in the target environment so
-  `app.feature_flags`, `app.theme_settings`, and the audited write functions
-  are readable.
-- `/admin/feature-flags` and `/admin/theme` render without the persistence
-  warning in the target environment.
-- One DS/Admin feature-flag save and one theme-token save record visible audit
-  rows before the environment is treated as control-layer ready.
-- `MYMEDLIFE_CONTROL_LAYER_SOURCE=supabase` is only enabled after that
-  DS/Admin control-layer read/write proof is captured.
+Repo posture already in place:
 
-Safe defaults:
-- Keep anonymous staging visitors on the default preview posture unless they
-  are in the approved reviewer sign-in path.
-- Do not treat `Supabase-backed` UI copy alone as proof; the pages must stop
-  showing the persistence warning.
-- Production remains blocked if reviewers cannot read or audit the feature-flag
-  and theme tables in that environment.
+- the repo now supports `MYMEDLIFE_AUTH_MODE=staging_supabase`
+- that auth mode only enables on `https://staging.mymedlife.org`
+- it only accepts the staging hosted project `rceupryepjgkdeqgxzrc`
+- it refuses the production project and production host
+- it stays disabled if any write or upload flag is set to `true`
 
-### 5. Auth callback URLs and role routing
+## Supabase Ownership
 
-Required evidence:
-- Production callback URL for `https://www.mymedlife.org` is approved.
-- Staging callback URL for `https://staging.mymedlife.org` stays separate.
-- Role-routing smoke proves member, leader, staff, DS Admin, Super Admin, and
-  eligible traveler paths.
-- Wrong-workspace URL access is blocked server-side.
+- Kiomi / DS owns hosted Supabase project creation and key handling.
+- Production keys remain human-owned and server-only.
+- Codex can wire approved environment variables once the human owner provides
+  them outside source control.
 
-Safe defaults:
-- One sign-in surface remains the entry point.
-- Backend role and scope decide the destination after auth.
-- Staff preview remains read-only unless separately approved.
+## Vercel Ownership
 
-### 6. DNS and domain plan
+- Kiomi / DS owns staging and production environment-variable setup.
+- Preview deployments can exist automatically on Vercel, but must not gain
+  production secrets.
+- Nick owns pilot go/no-go after evidence exists.
 
-Required evidence:
-- `staging.mymedlife.org` remains the reviewer target until production cutover.
-- `www.mymedlife.org` production DNS owner and registrar access are named.
-- Cutover, rollback, and cache/DNS propagation plan are documented.
+## Environment Variables To Name
 
-Safe defaults:
-- Do not repoint production DNS from this checklist.
-- Keep staging and production hostnames visibly separate.
-- Record DNS owner and rollback target before pilot invites.
+Browser:
 
-### 7. Backup and restore path
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` (legacy compatibility if retained)
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_VERCEL_URL` (preview only)
 
-Required evidence:
-- Production Supabase backup posture is confirmed.
-- Restore drill owner is named.
-- Pilot data repair path is documented for assignment, RSVP, attendance,
-  points, and audit rows.
+Server only:
 
-Safe defaults:
-- Do not invite real users until backup posture is named.
-- Do not enable irreversible writes without a repair path.
-- Keep production proof uploads disabled until storage restore policy is
-  approved.
+- `MYMEDLIFE_AUTH_MODE`
+- `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES` (staging only; keep false unless one hosted write rehearsal is approved)
+- `SUPABASE_SECRET_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (legacy compatibility if retained)
 
-### 8. Rollback and support owners
+## Callback And Redirect URLs
 
-Required evidence:
-- Rollback owner is named.
-- Support/pause channel is named.
-- DS owner is named.
-- HQ/admin owner is named.
-- Stop rules and student communication plan are recorded before invitations.
+Local:
 
-Safe defaults:
-- Pilot owner and rollback owner stay visible in the launch packet.
-- One support/pause channel is used during the pilot.
-- No broad launch happens without day-one support coverage.
+- `http://localhost:3000/auth/callback`
+- `http://127.0.0.1:3000/auth/callback`
+- allow-list patterns: `http://localhost:3000/**` and `http://127.0.0.1:3000/**`
 
-## What Must Stay Blocked
+Preview:
 
-- production migrations
-- production auth claims
-- proof uploads
-- public proof sharing
-- broad browser writes
-- HubSpot writes
-- Shopify writes
-- n8n execution
-- warehouse / Power BI writes
-- SMS / email sends
-- AI actions
-- any non-approved Luma behavior outside the staging-only pilot loop
+- pattern: `https://*-<team-or-account-slug>.vercel.app/**`
+- app callback shape: `https://<branch>.<project>.vercel.app/auth/callback`
 
-## Reviewer Path
+Staging:
 
-Use these surfaces together:
+- `https://staging.mymedlife.org/auth/callback`
+- use `MYMEDLIFE_AUTH_MODE=staging_supabase` only on the custom staging domain
+- keep `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=false` outside an intentionally approved narrow hosted write rehearsal window
 
-- `/admin/launch-gate`
-- `/admin/luma-live-pilot`
-- `/admin/integration-outbox`
-- `/admin/audit-log`
-- `/admin/pilot-scope`
-- `/admin/operations`
+Production:
 
-## Bottom Line
+- `https://www.mymedlife.org/auth/callback`
+- exact production Site URL only
+- keep `MYMEDLIFE_AUTH_MODE=disabled` until a separate production auth approval exists
 
-This checklist is an environment and ownership packet, not a go-live approval.
-The app is locally ready for review, but production remains blocked until the
-hosted staging proof, environment ownership, rollback path, and named support
-owners are all visible.
+## Backup, Monitoring, And Rollback Expectations
+
+- Name who checks hosted Supabase backups before pilot invitations.
+- Name who watches staging and production health during the pilot.
+- Agree whether rollback uses Vercel instant rollback, preview promotion, or a
+  rebuild-to-production flow.
+- Keep the rollback owner human, not tool-driven.
+
+## Owner Follow-Up
+
+Kiomi / DS:
+
+- review the empty production Supabase project and record one explicit outcome:
+  defer production schema application until a later live-launch lane, or
+  approve a separate production apply with rollback evidence
+- keep `staging.mymedlife.org` attached to the Vercel staging environment and
+  preview scoped to staging rather than production
+- document the approved staging variables already in use, then load any
+  remaining preview/production variables outside source control
+- name owners for hosted auth, RLS, first-write validation, backups,
+  monitoring, and rollback evidence
+
+Codex:
+
+- keep the repo, Linear, GitHub, and staging evidence current
+- wire approved variable names, callback URLs, and route behavior once human
+  owners provide them safely
+- run hosted validation only after owners approve the exact validation scope
+
+Nick:
+
+- approve pilot timing and final go/no-go after staging proof exists
+
+## Blocked Live Actions
+
+Do not do the following from this issue alone:
+
+- apply production schema migrations or enable production writes without
+  DS/security approval
+- add staging or production keys to source control
+- point the live domain at an unapproved deployment
+- promote preview to production before the security gate is satisfied

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   getSupabaseAuthConfig,
-  isHostedSupabaseUrl,
   isLocalSupabaseUrl,
 } from "@/services/supabase-auth-config";
 
@@ -34,8 +33,10 @@ describe("Supabase auth config", () => {
       }),
     ).toMatchObject({
       enabled: true,
+      mode: "local_supabase",
       url: "http://127.0.0.1:54321",
       isLocalOnly: true,
+      isHostedStaging: false,
     });
   });
 
@@ -53,36 +54,97 @@ describe("Supabase auth config", () => {
     });
   });
 
-  it("keeps staging auth disabled until the explicit hosted-review flag is approved", () => {
+  it("requires the staging host and browser key before enabling hosted staging auth", () => {
     expect(
       getSupabaseAuthConfig({
         MYMEDLIFE_AUTH_MODE: "staging_supabase",
-        NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: "staging-anon-key",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
       }),
     ).toMatchObject({
       enabled: false,
       mode: "staging_supabase",
-      isLocalOnly: false,
-      reason:
-        "Hosted staging Supabase Auth is disabled until the staging Review auth control is turned on in /admin/feature-flags for an approved review window.",
+      isHostedStaging: true,
     });
   });
 
-  it("enables hosted staging auth only with an explicit staging-review flag and hosted URL", () => {
+  it("enables hosted staging auth only for the approved staging host and project", () => {
     expect(
       getSupabaseAuthConfig({
         MYMEDLIFE_AUTH_MODE: "staging_supabase",
-        MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH: "true",
-        NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co/",
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: "staging-anon-key",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co/",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
       }),
     ).toMatchObject({
       enabled: true,
       mode: "staging_supabase",
-      reviewEnvironment: "staging",
-      url: "https://example.supabase.co",
+      environment: "staging",
+      url: "https://rceupryepjgkdeqgxzrc.supabase.co",
       isLocalOnly: false,
+      isHostedStaging: true,
+    });
+  });
+
+  it("refuses the production Supabase project in hosted staging mode", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://fnlhontvvprwgooevzdl.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      reason:
+        "Hosted staging Supabase Auth refuses the production Supabase project until production auth is explicitly approved.",
+    });
+  });
+
+  it("refuses the production site URL in hosted staging mode", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      reason:
+        "Hosted staging Supabase Auth refuses the production site URL until production auth is explicitly approved.",
+    });
+  });
+
+  it("keeps hosted staging auth disabled while any write flag is on", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+        MYMEDLIFE_ENABLE_ACTION_START_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      reason:
+        "Hosted staging Supabase Auth stays disabled until write and upload flags are off. Turn off: MYMEDLIFE_ENABLE_ACTION_START_WRITE.",
+    });
+  });
+
+  it("keeps hosted staging auth available for the approved membership write lane", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+        MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      mode: "staging_supabase",
+      isHostedStaging: true,
     });
   });
 
@@ -91,7 +153,5 @@ describe("Supabase auth config", () => {
     expect(isLocalSupabaseUrl("http://localhost:54321")).toBe(true);
     expect(isLocalSupabaseUrl("https://example.supabase.co")).toBe(false);
     expect(isLocalSupabaseUrl("not a url")).toBe(false);
-    expect(isHostedSupabaseUrl("https://example.supabase.co")).toBe(true);
-    expect(isHostedSupabaseUrl("http://127.0.0.1:54321")).toBe(false);
   });
 });

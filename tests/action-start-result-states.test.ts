@@ -16,6 +16,7 @@ describe("action-start result states", () => {
       "started",
       "write_disabled",
       "already_started",
+      "stale_assignment",
       "permission_denied",
       "missing_auth",
       "assignment_not_found",
@@ -73,6 +74,22 @@ describe("action-start result states", () => {
     );
   });
 
+  it("still allows a changes-requested action to restart work", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+    const assignment = {
+      ...requireAssignment("coach-summary"),
+      status: "changes_requested" as const,
+    };
+
+    expect(getFutureActionStartResultIfEnabled(actor, assignment)).toEqual(
+      expect.objectContaining({
+        code: "started",
+        createsEvent: true,
+        success: true,
+      }),
+    );
+  });
+
   it("blocks DS admin from creating action-start truth", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
     const assignment = requireAssignment("member-push");
@@ -86,9 +103,9 @@ describe("action-start result states", () => {
   });
 
   it("returns stable lookup records by code", () => {
-    expect(getActionStartResultState("missing_auth")).toEqual(
+    expect(getActionStartResultState("stale_assignment")).toEqual(
       expect.objectContaining({
-        title: "Sign-in is required",
+        title: "This action changed since you opened it",
         retryAllowed: true,
       }),
     );

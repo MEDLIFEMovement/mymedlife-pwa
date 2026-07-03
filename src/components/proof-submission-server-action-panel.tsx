@@ -107,6 +107,21 @@ export function ProofSubmissionServerActionPanel({
           disabled={!readiness.canSubmit}
         />
 
+        <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/18 p-4 text-sm leading-6 text-white/72">
+          <input
+            type="checkbox"
+            name="accuracyConfirmed"
+            value="yes"
+            defaultChecked
+            disabled={!readiness.canSubmit}
+            className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
+          />
+          <span>
+            I confirmed this proof summary is accurate and safe for private MEDLIFE
+            review. Public sharing still stays off.
+          </span>
+        </label>
+
         <button
           type="submit"
           disabled={!readiness.canSubmit}

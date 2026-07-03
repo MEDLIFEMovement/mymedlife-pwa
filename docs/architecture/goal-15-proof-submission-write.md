@@ -92,6 +92,27 @@ The tests prove:
 - no file storage path is written
 - no outbox row is approved or sent
 
+## Browser-Facing Result Handling
+
+The server-action layer now adds two reviewer-visible safeguards:
+
+- the student must confirm the proof summary is accurate and safe for private
+  MEDLIFE review before the browser write proceeds
+- repeat proof submissions return `already_submitted` instead of collapsing into
+  a generic denial when the assignment is already `submitted` or `approved`
+
+## Rollback Path
+
+This remains a localhost-only repair path:
+
+1. reset the affected assignment status to its prior value
+2. remove the related `evidence_submitted` rows from `evidence_items`,
+   `events`, `integration_events`, `automation_outbox`, and `audit_logs`
+3. or rerun `supabase db reset` to restore the full local seed state
+
+No file upload, public publishing, or external-send cleanup is needed because
+those behaviors remain disabled.
+
 ## Follow-Up
 
 Goal 16 implements local HQ proof-sharing decisions with the same safety

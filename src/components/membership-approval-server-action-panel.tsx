@@ -27,6 +27,7 @@ export function MembershipApprovalServerActionPanel({
   applicantEmail,
   joinRequestId,
 }: MembershipApprovalServerActionPanelProps) {
+  const isHostedStaging = packet?.writeReadiness.config.isHostedStaging ?? false;
   const resultState = resultCode
     ? getMembershipApprovalResultState(resultCode)
     : null;
@@ -38,26 +39,36 @@ export function MembershipApprovalServerActionPanel({
     joinRequestId ?? packet?.joinRequestId,
   );
   const buttonLabel = packet?.writeReadiness.canSubmit
-    ? "Approve join request"
-    : "Join approval unavailable";
+    ? isHostedStaging
+      ? "Approve membership on staging"
+      : "Approve membership locally"
+    : "Membership approval locked";
+  const rehearsalLabel = isHostedStaging
+    ? "Hosted staging membership approval"
+    : "Local membership approval";
+  const readbackLabel = isHostedStaging
+    ? "Hosted staging readback"
+    : "Local readback";
 
   if (!packet && !resultState) {
     return null;
   }
 
   return (
-    <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-blue-100">
-        Join approval preview
+    <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
+        {rehearsalLabel}
       </p>
       <h2 className="mt-2 text-2xl font-semibold text-white">
         {packet?.writeReadiness.canSubmit
-          ? "This join request is ready for the localhost rehearsal."
-          : "Join approval is still safely gated."}
+          ? isHostedStaging
+            ? "This join request can be approved on hosted staging."
+            : "This join request can be approved in local Supabase."
+          : "Membership approval is still safely gated."}
       </h2>
       <p className="mt-2 text-sm leading-6 text-white/68">
         {packet?.writeReadiness.reason ??
-          "This panel shows the latest join-approval result and safe readback."}
+          "This panel is showing the most recent membership approval result and safe readback."}
       </p>
 
       {resultState ? (
@@ -65,12 +76,12 @@ export function MembershipApprovalServerActionPanel({
           className={[
             "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
             resultState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
               : resultState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+                ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
                 : resultState.tone === "error"
-                  ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                  : "border-blue-300/30 bg-blue-300/10 text-blue-100",
+                  ? "border-rose-300/30 bg-rose-300/10 text-rose-100"
+                  : "border-sky-300/30 bg-sky-300/10 text-sky-100",
           ].join(" ")}
           role="status"
         >
@@ -84,13 +95,13 @@ export function MembershipApprovalServerActionPanel({
           className={[
             "mt-3 rounded-2xl border px-4 py-3 text-sm leading-6",
             readbackState.tone === "success"
-              ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
+              ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
               : readbackState.tone === "warning"
-                ? "border-blue-300/30 bg-blue-300/10 text-blue-100"
-                : "border-white/10 bg-[#bfdbfe]/42 text-white/68",
+                ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
+                : "border-white/10 bg-black/18 text-white/68",
           ].join(" ")}
         >
-          <p className="font-semibold">Preview readback</p>
+          <p className="font-semibold">{readbackLabel}</p>
           <p className="mt-1">{readbackState.message}</p>
           <p className="mt-1 text-xs uppercase tracking-[0.16em] opacity-75">
             Membership: {readbackState.currentMembershipStatus.replaceAll("_", " ")} · Join
@@ -112,7 +123,7 @@ export function MembershipApprovalServerActionPanel({
             />
             <input type="hidden" name="returnTo" value={packet.targetRoute} />
 
-            <div className="grid gap-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/42 p-4 sm:grid-cols-2">
+            <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/18 p-4 sm:grid-cols-2">
               <Field label="Applicant" value={packet.applicantName} />
               <Field label="Requested role" value={packet.requestedRoleLabel} />
               <Field label="Email" value={packet.applicantEmail} />
@@ -125,30 +136,30 @@ export function MembershipApprovalServerActionPanel({
             <textarea
               id="membershipAuditReason"
               name="auditReason"
-              className="min-h-28 w-full rounded-2xl border border-white/10 bg-[#bfdbfe]/52 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
+              className="min-h-28 w-full rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white outline-none placeholder:text-white/34 disabled:cursor-not-allowed disabled:text-white/38"
               defaultValue={packet.payload.auditReason}
               disabled={!packet.writeReadiness.canSubmit}
             />
 
-            <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[#bfdbfe]/42 p-4 text-sm leading-6 text-white/72">
+            <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/18 p-4 text-sm leading-6 text-white/72">
               <input
                 type="checkbox"
                 name="accuracyConfirmed"
                 value="yes"
                 defaultChecked
                 disabled={!packet.writeReadiness.canSubmit}
-                className="mt-1 h-4 w-4 rounded border-white/20 bg-[#bfdbfe]/52"
+                className="mt-1 h-4 w-4 rounded border-white/20 bg-black/30"
               />
               <span>
                 I confirmed this join request belongs to the right chapter and the role is
-                accurate for this staged approval rehearsal.
+                accurate for this approval rehearsal.
               </span>
             </label>
 
             <button
               type="submit"
               disabled={!packet.writeReadiness.canSubmit}
-              className="w-full rounded-full bg-blue-200 px-5 py-3 text-sm font-semibold text-[#08224c] transition hover:bg-[#1e4fd8]lue-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
+              className="w-full rounded-full bg-emerald-200 px-5 py-3 text-sm font-semibold text-[#06211d] transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:bg-white/12 disabled:text-white/38 sm:w-auto"
             >
               {buttonLabel}
             </button>
@@ -158,7 +169,7 @@ export function MembershipApprovalServerActionPanel({
             {packet.writeReadiness.checks.map((check) => (
               <div
                 key={check.key}
-                className="rounded-2xl border border-white/10 bg-[#bfdbfe]/42 px-3 py-2"
+                className="rounded-2xl border border-white/10 bg-black/18 px-3 py-2"
               >
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/42">
                   {check.passed ? "Ready" : "Blocked"}

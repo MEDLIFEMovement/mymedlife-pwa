@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(69);
+    expect(entries).toHaveLength(75);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );

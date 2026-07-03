@@ -9,6 +9,7 @@ import {
   type MembershipApprovalResultCode,
   type MembershipApprovalResultState,
 } from "@/services/membership-approval-result-states";
+import { getSupabaseAuthConfig } from "@/services/supabase-auth-config";
 import { isActorAllowedForPlannedWrite } from "@/services/write-plan-matrix";
 import type { DatabaseRoleKey } from "@/shared/types/persistence";
 
@@ -41,7 +42,8 @@ export type MembershipApprovalWriteCheck = {
 export type MembershipApprovalWriteConfig =
   | {
       enabled: true;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
+      isHostedStaging: boolean;
       externalWritesEnabled: false;
       sendsWelcome: false;
       syncsCrm: false;
@@ -49,7 +51,8 @@ export type MembershipApprovalWriteConfig =
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
+      isHostedStaging: boolean;
       externalWritesEnabled: false;
       sendsWelcome: false;
       syncsCrm: false;
@@ -91,8 +94,13 @@ const requiredRlsTests = [
   "membership_approval_creates_disabled_outbox_row",
 ] as const;
 
-const requiredEnvFlags = [
+const localRequiredEnvFlags = [
   "MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true",
+  "MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE=true",
+] as const;
+
+const hostedStagingRequiredEnvFlags = [
+  "MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=true",
   "MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE=true",
 ] as const;
 
@@ -107,21 +115,65 @@ const futureTables = [
 export function getMembershipApprovalWriteConfig(
   env: EnvSource = process.env,
 ): MembershipApprovalWriteConfig {
+  const authConfig = getSupabaseAuthConfig(env);
+
+  if (!authConfig.enabled) {
+    return disabledConfig(
+      authConfig.reason,
+      authConfig.isLocalOnly,
+      authConfig.isHostedStaging ?? false,
+    );
+  }
+
+  if (authConfig.isHostedStaging) {
+    if (env.MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES !== "true") {
+      return disabledConfig(
+        "Hosted staging writes are disabled. Set MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=true only for the approved staging write rehearsal.",
+        false,
+        true,
+      );
+    }
+
+    if (env.MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE !== "true") {
+      return disabledConfig(
+        "Hosted staging membership approval remains disabled. Set MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE=true only after auth, RLS, rollback, and audit readback are approved.",
+        false,
+        true,
+      );
+    }
+
+    return {
+      enabled: true,
+      isLocalOnly: false,
+      isHostedStaging: true,
+      externalWritesEnabled: false,
+      sendsWelcome: false,
+      syncsCrm: false,
+      reason:
+        "Hosted staging membership approval is enabled for staging.mymedlife.org only. Welcome messages, CRM syncs, uploads, and external sends remain disabled.",
+    };
+  }
+
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
     return disabledConfig(
       "Membership approval writes are disabled. Set MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true only for localhost Supabase write testing.",
+      true,
+      false,
     );
   }
 
   if (env.MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE !== "true") {
     return disabledConfig(
       "Membership approval browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE=true only after auth, RLS, rollback, and audit readback are approved.",
+      true,
+      false,
     );
   }
 
   return {
     enabled: true,
     isLocalOnly: true,
+    isHostedStaging: false,
     externalWritesEnabled: false,
     sendsWelcome: false,
     syncsCrm: false,
@@ -142,7 +194,9 @@ export function getMembershipApprovalWriteReadiness(
     input,
     existingMemberEmails,
   );
-  const localWritesRequested = env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
+  const localWritesRequested = config.isHostedStaging
+    ? env.MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES === "true"
+    : env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES === "true";
   const membershipApprovalWriteApproved =
     env.MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE === "true";
   const localAuthSession =
@@ -159,7 +213,9 @@ export function getMembershipApprovalWriteReadiness(
   const checks: MembershipApprovalWriteCheck[] = [
     {
       key: "local_writes_requested",
-      label: "Local write switch is on",
+      label: config.isHostedStaging
+        ? "Hosted staging write switch is on"
+        : "Local write switch is on",
       passed: localWritesRequested,
     },
     {
@@ -179,7 +235,9 @@ export function getMembershipApprovalWriteReadiness(
     },
     {
       key: "local_auth_session",
-      label: "Signed-in local Supabase Auth session",
+      label: config.isHostedStaging
+        ? "Signed-in hosted staging Supabase Auth session"
+        : "Signed-in local Supabase Auth session",
       passed: localAuthSession,
     },
     {
@@ -257,15 +315,22 @@ export function getMembershipApprovalWriteReadiness(
     futureResultIfEnabled: futureResult,
     checks,
     requiredRlsTests,
-    requiredEnvFlags,
+    requiredEnvFlags: config.isHostedStaging
+      ? hostedStagingRequiredEnvFlags
+      : localRequiredEnvFlags,
     futureTables,
   };
 }
 
-function disabledConfig(reason: string): MembershipApprovalWriteConfig {
+function disabledConfig(
+  reason: string,
+  isLocalOnly: boolean,
+  isHostedStaging: boolean,
+): MembershipApprovalWriteConfig {
   return {
     enabled: false,
-    isLocalOnly: true,
+    isLocalOnly,
+    isHostedStaging,
     externalWritesEnabled: false,
     sendsWelcome: false,
     syncsCrm: false,

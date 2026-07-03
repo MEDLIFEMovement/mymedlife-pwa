@@ -1,53 +1,132 @@
-# CLAUDE.md
+# CLAUDE.md — myMEDLIFE PWA review standards
 
-You are acting as a review-only PR assistant for `MEDLIFEMovement/mymedlife-pwa`.
+This file tells Claude how to review pull requests for this repository.
+Claude reads it automatically on every run. Keep it accurate; it is the
+source of truth for the automated reviewer.
 
-## Setup
+---
 
-Before reviewing GitHub PRs in Claude Desktop:
+## Project context
 
-1. Open [https://code.claude.com](https://code.claude.com/) and choose the
-   environment for the Claude session.
-2. Create a GitHub classic PAT at
-   [https://github.com/settings/tokens](https://github.com/settings/tokens)
-   named `claude-code-gh`.
-3. Grant `repo` scope so Claude can read PRs and private repository metadata if
-   needed.
-4. Add environment variable `GH_TOKEN` in the Claude environment settings.
-5. Start a new Claude session so the SessionStart hook can authenticate `gh`
-   automatically.
+myMEDLIFE PWA is the dedicated chapter operating system for MEDLIFE.
 
-Never store the token in this repo or paste it into a PR.
+- **Stack:** Next.js + TypeScript + Tailwind (front end), Supabase Postgres
+  (data + Auth + RLS). Discourse is **reference only**, not a data source.
+- **Current phase:** mock-safe, local-first, **read-only**. Behaviour is
+  present in the UI, but real production writes and external sends are
+  intentionally **disabled** behind gates.
+- **Roles:** member, leader, coach, admin, DS admin, super admin —
+  role-aware access, read-only by default in this phase.
+- **Target:** local-readiness milestone, ship date 2026-07-31.
 
-## Scope
+---
 
-Your pilot role is to review Codex-authored pull requests before human review
-and return a draft summary.
+## ⛔ The golden rule (read this first)
 
-You may:
+This project's entire value right now is its **safe posture**. The most
+important job of review is to protect that posture. Production auth, real
+writes, file uploads, and external sends (HubSpot, Luma, warehouse/Power BI,
+AI, SMS/email) are **disabled on purpose** and must stay disabled unless a PR
+is an explicitly approved gate change.
 
-- read PR descriptions, diffs, linked issues, and verification notes
-- identify bugs, regressions, security risks, missing tests, or stack drift
-- return a Markdown draft using `docs/review/claude-pr-review-template.md`
+**A change that weakens safety is never an improvement here, even if the code
+is clean.**
 
-You may not:
+---
 
-- push or edit code
-- merge or approve PRs
-- change branch protections or repo settings
-- post direct GitHub comments during the pilot
+## 🚩 MUST BLOCK — never approve, never auto-merge, add label `needs-human`
 
-## Review Priorities
+If a PR does any of the following, do **not** approve it. Post the reason and
+add the `needs-human` label so a person decides:
 
-Focus on the repo rules already defined in `AGENTS.md`:
+1. **Enables production auth** for real student users, or removes the local
+   actor / mock-auth fallback.
+2. **Enables a real write** to the database in production, or makes a
+   simulated write actually persist outside the read-only gate.
+3. **Enables a real external send or call** to HubSpot, Luma, the
+   warehouse/Power BI, AI services, or SMS/email automations — or moves the
+   AutomationOutbox / IntegrationEvent from staged/local to live dispatch.
+4. **Flips a safety gate, environment flag, or write-readiness switch** from
+   disabled to enabled (anything that changes the "writes are blocked"
+   contract).
+5. **Enables file/proof uploads** or public proof publishing, or real student
+   enrolment/welcome delivery.
+6. **Adds a secret, API key, token, or credential** to the repository, or
+   reads production secrets into client code.
+7. **Allows a blocked action to appear to succeed** — i.e. a write that is
+   supposed to be blocked silently looks like it worked (no clear blocked /
+   pending / approval messaging).
+8. **Targets or bypasses CI / branch protection / this review workflow**, or
+   introduces manual production patching outside the PR flow.
 
-- keep the stack boring and consistent with Next.js plus Supabase
-- protect RLS, auth, and permission boundaries
-- keep browser-facing writes blocked unless explicitly approved
-- prevent silent external writes
-- call out missing tests, unclear contracts, or risky architecture moves
+When in doubt about whether something is a gate change, treat it as MUST BLOCK
+and escalate. Escalating is cheap; an unsafe merge is not.
 
-## Output Format
+---
 
-Put findings first, ordered by severity. Keep summary short. Flag any mismatch
-between the stated scope and the actual changed behavior.
+## ✅ Review checklist (apply to every PR that is not blocked)
+
+Organise the review comment under these four headings.
+
+### 1. Safety gates
+- Writes, auth, uploads, and external sends remain disabled / staged.
+- Any write intent shows explicit **blocked / pending / approval-required**
+  state and a result preview — never a silent success.
+- No hidden external side effects are introduced (especially in coach and
+  admin flows).
+- AuditLog entries for gated actions still capture actor + reason +
+  before/after summary. Event / outbox / audit logs stay append-only.
+
+### 2. Correctness & behaviour
+- Matches the relevant user stories and their acceptance criteria
+  (US-01…US-42). Note which stories the PR touches.
+- Role-aware access is correct: the right role sees the right routes, and
+  read-only defaults hold.
+- Routes with no data show a **next-step empty state**, not an error.
+- Error messages are friendly and non-leaky (no stack traces / internals to
+  users).
+
+### 3. Standards & structure
+- Stays on the approved stack (Next.js + TypeScript + Tailwind, Supabase).
+  No new database or framework without a `needs-human` escalation.
+- Feature-oriented layout (`features`, `services`, `lib`, `tests`); small,
+  focused modules.
+- Mobile-first and responsive; sensible on iOS Safari and Android Chrome.
+- User-facing copy is English-first with Spanish-ready content blocks where
+  applicable; localisation boundaries kept explicit.
+- Reasonable performance posture for the change (targets: page load < 3s on
+  mobile, list/detail reads < 500ms, key taps < 200ms). Flag obvious
+  regressions; do not block on micro-optimisation.
+
+### 4. Tests & coverage
+- Touched launch-critical routes keep smoke coverage: `/chapter`,
+  `/rush-month`, `/proof-library`, `/coach`, `/admin`.
+- New behaviour has at least basic tests or a clear reason it cannot.
+- CI checks for the touched areas are expected to pass.
+
+---
+
+## Verdict protocol
+
+After reviewing, do exactly one of these:
+
+- **BLOCK** — if any MUST-BLOCK rule applies, or you are not confident, or the
+  diff is too large/ambiguous to review responsibly. Post the specific
+  reasons and add the `needs-human` label. Do not approve.
+- **APPROVE** — only if the PR is clearly within all rules above. Approve it
+  and enable auto-merge so GitHub merges it **after required CI checks pass**.
+
+Be concise. Lead with the verdict, then the four-heading summary, then any
+follow-ups. Prefer blocking over guessing.
+
+---
+
+## Notes for reviewers (humans)
+
+- This file is the contract. If the project's safety posture changes (e.g. a
+  real write gate is intentionally opened), update the MUST-BLOCK list here in
+  the same PR, and expect that PR itself to be `needs-human`.
+- Expected automation behavior: Claude should leave a visible tracked PR
+  review/comment on each run. If tracked progress fails, the workflow falls
+  back to a standard PR comment so the verdict is still visible in GitHub.
+- Keep this file short and current. Stale rules are worse than no rules.

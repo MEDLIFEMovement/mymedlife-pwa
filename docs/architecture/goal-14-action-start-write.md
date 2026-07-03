@@ -76,6 +76,28 @@ The tests prove:
 - action start creates internal event, integration event, and audit log rows
 - action start does not create outbox rows or external sends
 
+## Browser-Facing Result Handling
+
+The server-action layer now treats two reviewer-visible edge cases explicitly:
+
+- `changes_requested` assignments can be restarted and return the normal
+  `started` result if the actor is still allowed.
+- If the assignment changes before the browser save completes, the app returns a
+  `stale_assignment` result instead of pretending the write succeeded or
+  collapsing everything into a generic permission error.
+
+## Rollback Path
+
+This remains a localhost-only repair path:
+
+1. reset the affected assignment status to its prior value
+2. remove the matching `action_started` rows from `events`,
+   `integration_events`, and `audit_logs`
+3. or rerun `supabase db reset` to return the whole local drill to a known seed
+   state
+
+There are still no action-start outbox rows or external sends to unwind.
+
 ## Next Step
 
 Goal 15 should follow the same pattern for proof submission metadata:

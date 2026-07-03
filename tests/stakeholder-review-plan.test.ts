@@ -8,7 +8,7 @@ describe("stakeholder review plan", () => {
     const plan = getStakeholderReviewPlan(actor);
 
     expect(plan.canReadPlan).toBe(true);
-    expect(plan.counts.steps).toBe(43);
+    expect(plan.counts.steps).toBe(45);
     expect(plan.counts.browserWritesExpected).toBe(0);
     expect(plan.counts.externalWritesExpected).toBe(0);
     expect(plan.steps.every((step) => step.safetyBoundary.length > 0)).toBe(true);
@@ -65,6 +65,8 @@ describe("stakeholder review plan", () => {
       "/admin/write-sequence",
       "/admin/proof-write",
       "/admin/hq-proof-write",
+      "/admin/points-write",
+      "/admin/slt-checklist-write",
       "/admin/assignment-write",
       "/admin/coach-write",
     ]);
@@ -141,7 +143,7 @@ describe("stakeholder review plan", () => {
       "19-20",
       "21-22",
       "23-35",
-      "36-43",
+      "36-45",
     ]);
     expect(
       plan.phases.find((phase) => phase.id === "admin-walkthrough")?.summary,

@@ -11,10 +11,6 @@ import {
   type MembershipApprovalWriteReadiness,
 } from "@/services/membership-approval-write-readiness";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
-import {
-  getActorSurfaceFamily,
-  type ActorSurfaceFamily,
-} from "@/services/role-visibility";
 import type { DatabaseRoleKey } from "@/shared/types/persistence";
 
 export type ChapterMembershipStatus =
@@ -248,7 +244,7 @@ const joinRequests: ChapterJoinRequest[] = [
     requestedCommitteeLane: "Recruitment",
     source: "rush_event",
     requestedAtLabel: "After Tuesday tabling",
-    nextStep: "Confirm who owns the welcome, then decide whether Avery is ready for the chapter roster.",
+    nextStep: "President/VP should approve membership only after live auth is approved.",
   },
   {
     id: "join-sam",
@@ -259,7 +255,7 @@ const joinRequests: ChapterJoinRequest[] = [
     requestedCommitteeLane: "Local Volunteering",
     source: "friend_referral",
     requestedAtLabel: "This week",
-    nextStep: "Confirm which action committee lane fits best before moving Sam forward.",
+    nextStep: "Leader should ask which action committee lane fits before approval.",
   },
 ];
 
@@ -268,28 +264,28 @@ const disabledControls: DisabledMembershipControl[] = [
     key: "approve_join_request",
     label: "Approve join request",
     reason:
-      "Join approvals need real sign-in, safety review, and a named approval before the chapter roster can change.",
+      "Membership approvals require production auth, RLS review, and an explicit Goal approval.",
     futureEventType: "membership_approved",
   },
   {
     key: "assign_chapter_role",
     label: "Assign chapter role",
     reason:
-      "Role changes affect app access and stay closed until the sign-in and safety path is approved.",
+      "Role assignment changes app permissions and must stay disabled until the auth/RLS launch path is approved.",
     futureEventType: "role_approved",
   },
   {
     key: "move_committee_lane",
     label: "Move committee lane",
     reason:
-      "Committee reassignments should create an audit trail later, but this MVP roster still stays read-only.",
+      "Committee lane changes should create audit logs later, but this MVP view is read-only.",
     futureEventType: "committee_lane_updated",
   },
   {
     key: "deactivate_member",
     label: "Deactivate member",
     reason:
-      "Removing chapter access is a sensitive permission change and is not open in this preview.",
+      "Removing chapter access is a sensitive permission change and is not enabled in the local MVP.",
     futureEventType: "membership_deactivated",
   },
 ];
@@ -306,14 +302,12 @@ export function getChapterMembershipWorkspace(
     | "evidenceItems"
   >,
 ): ChapterMembershipWorkspace {
-  const surfaceFamily = getActorSurfaceFamily(actor);
-
   if (!canActorReadWorkspace(actor)) {
     return {
       canReadWorkspace: false,
       title: "Member management hidden for this role",
       summary:
-        surfaceFamily === "ds_admin"
+        actor.audience === "ds_admin"
           ? "DS Admin can inspect integration safety, but should not read or own chapter membership truth."
           : "General members should see their own work, points, proof, and leaderboard instead of leader member-management queues.",
       safetyNote:
@@ -348,12 +342,14 @@ export function getChapterMembershipWorkspace(
 
   return {
     canReadWorkspace: true,
-    title: getTitle(surfaceFamily, data.chapter.name),
-    summary: getSummary(surfaceFamily, data.chapter.name),
+    title: getTitle(actor, data.chapter.name),
+    summary: getSummary(actor, data.chapter.name),
     safetyNote:
       membershipApprovalEnabled
-        ? "Join approval is open on this route. Welcome messages, CRM syncs, role changes, committee moves, and deactivation still stay paused."
-        : "This is a read-only roster workspace. Future join approvals, role changes, and committee moves should create traceable app records later, but every action stays paused here.",
+        ? membershipApprovalPacket?.writeReadiness.config.isHostedStaging
+          ? "Hosted staging membership approval is enabled for staging.mymedlife.org only. Welcome messages, CRM syncs, role changes, committee moves, and deactivation still stay disabled."
+          : "Local membership approval is enabled for localhost Supabase only. Welcome messages, CRM syncs, role changes, committee moves, and deactivation still stay disabled."
+        : "This is a read-only membership workspace. Future join approvals, role changes, and committee moves must create structured events and audit logs, but every control remains disabled here.",
     allowedAudiences,
     counts: {
       activeMembers: workspaceMembers.filter(
@@ -388,30 +384,23 @@ export function getChapterMembershipWorkspace(
     disabledControls: remainingDisabledControls,
     membershipApprovalPacket,
     auditPreview: [
-      "A join approval would create an audit trail before chapter access changes.",
-      "A role change would create a tracked event before any later reminders or follow-up automation.",
-      "A committee move would stay app-owned and keep broader handoffs paused.",
+      "membership_approved would write AuditLog before member access changes.",
+      "role_approved would write IntegrationEvent and AuditLog before any future reminder automation.",
+      "committee_lane_updated would stay app-owned and outbox-disabled until automation approval.",
     ],
     outboxPreview: [
-      "Welcome email or text handoff stays paused until messaging approval exists.",
-      "HubSpot contact updates stay paused until CRM sync approval exists.",
+      "Future welcome email/text reminder stays disabled until n8n/SMS/email approval.",
+      "Future HubSpot contact update stays disabled until CRM sync approval.",
     ],
   };
 }
 
 function canActorReadWorkspace(actor: LocalActorContext) {
-  const surfaceFamily = getActorSurfaceFamily(actor);
-
-  if (surfaceFamily === "ds_admin") {
+  if (!allowedAudiences.includes(actor.audience)) {
     return false;
   }
 
-  if (
-    surfaceFamily === "leader" ||
-    surfaceFamily === "coach" ||
-    surfaceFamily === "staff" ||
-    surfaceFamily === "super_admin"
-  ) {
+  if (actor.audience !== "chapter_member") {
     return true;
   }
 
@@ -422,7 +411,7 @@ function getVisibleMembers(
   actor: LocalActorContext,
   members: readonly ChapterMemberRow[],
 ): ChapterMemberRow[] {
-  if (getActorSurfaceFamily(actor) === "coach") {
+  if (actor.audience === "coach") {
     return members.filter((member) => member.membershipStatus !== "inactive");
   }
 
@@ -433,7 +422,7 @@ function getVisibleJoinRequests(
   actor: LocalActorContext,
   requests: readonly ChapterJoinRequest[],
 ): ChapterJoinRequest[] {
-  if (getActorSurfaceFamily(actor) === "coach") {
+  if (actor.audience === "coach") {
     return [];
   }
 
@@ -449,7 +438,7 @@ function buildMembershipApprovalPacket(
   if (!request) {
     return null;
   }
-  const auditReason = "Approve this Rush Month join request for chapter roster follow-through.";
+  const auditReason = "Approve Rush Month join request for chapter review.";
   const input = {
     joinRequestId: request.id,
     applicantEmail: request.email,
@@ -473,7 +462,7 @@ function buildMembershipApprovalPacket(
   );
 
   return {
-    title: "First join approval preview",
+    title: "Goal 160 membership approval packet",
     targetRoute: "/chapter/members",
     futureFunction: "app.approve_chapter_membership",
     joinRequestId: request.id,
@@ -497,8 +486,10 @@ function buildMembershipApprovalPacket(
     resultPreview,
     writeReadiness,
     readinessReason: writeReadiness.canSubmit
-      ? "This preview now maps to the localhost join-approval action and readback path. Welcome messages, CRM syncs, and broader external sends still stay paused."
-      : "This preview shows the first join-approval save path and its current gate checks, but real sign-in, safety review, rollback, and audit readback still need approval before the action can open.",
+      ? writeReadiness.config.isHostedStaging
+        ? "This packet is now backed by the hosted staging membership approval server action and readback path. Welcome messages, CRM syncs, and external writes still remain disabled."
+        : "This packet is now backed by the local-only membership approval server action and readback path. Welcome messages, CRM syncs, and external writes still remain disabled."
+      : "This packet previews the first membership approval write and Goal 162 readiness checks, but production auth, RLS review, rollback, and audit readback must be approved before the control is enabled.",
     readinessChecks: [
       {
         key: "join_request_visible",
@@ -508,11 +499,16 @@ function buildMembershipApprovalPacket(
       {
         key: "actor_can_review_membership",
         label: "Actor can review membership posture",
-        passed: canActorReviewMembership(actor),
+        passed:
+          actor.audience === "chapter_leader" ||
+          actor.audience === "admin" ||
+          actor.audience === "super_admin",
       },
       {
         key: "live_auth_required",
-        label: "Signed-in local auth is required before approval",
+        label: writeReadiness.config.isHostedStaging
+          ? "Signed-in hosted staging Supabase Auth session is required before approval"
+          : "Signed-in local Supabase Auth session is required before approval",
         passed:
           actor.identitySource === "local_auth_session" &&
           actor.authSessionStatus === "signed_in",
@@ -538,15 +534,15 @@ function buildMembershipApprovalPacket(
         value: "membership_approved",
       },
       {
-        label: "Held handoffs",
-        value: "welcome message, HubSpot update, and automation handoffs paused",
+        label: "Disabled outbox",
+        value: "welcome message, HubSpot update, and n8n workflow disabled",
       },
       {
         label: "Audit action",
         value: "membership_approved",
       },
       {
-        label: "Current gate result",
+        label: "Goal 162 write readiness",
         value: writeReadiness.resultCodeIfSubmitted,
       },
     ],
@@ -554,7 +550,7 @@ function buildMembershipApprovalPacket(
       ? ["Assign chapter role", "Send welcome message", "Sync CRM contact"]
       : [
           "Approve join request",
-          "Add member to chapter roster",
+          "Create membership row",
           "Assign chapter role",
           "Send welcome message",
           "Sync CRM contact",
@@ -746,52 +742,36 @@ function getCoverageStatus(
   return "covered";
 }
 
-function getTitle(
-  surfaceFamily: ActorSurfaceFamily,
-  chapterName: string,
-): string {
-  switch (surfaceFamily) {
-    case "leader":
-      return `${chapterName} roster and join requests`;
+function getTitle(actor: LocalActorContext, chapterName: string): string {
+  switch (actor.audience) {
+    case "chapter_leader":
+      return `${chapterName} member workspace`;
     case "coach":
-      return `${chapterName} coaching roster view`;
-    case "staff":
-      return `${chapterName} staff roster view`;
+      return `${chapterName} coach roster readout`;
+    case "admin":
+      return `${chapterName} support roster`;
     case "super_admin":
-      return `${chapterName} membership operations view`;
-    case "member":
+      return `${chapterName} full membership review`;
+    case "chapter_member":
     case "ds_admin":
       return "Member management hidden for this role";
   }
 }
 
-function getSummary(
-  surfaceFamily: ActorSurfaceFamily,
-  chapterName: string,
-): string {
-  switch (surfaceFamily) {
-    case "leader":
-      return `Use this read-only ${chapterName} roster to see who needs follow-up, which roles are thin, and which join or role actions are still held.`;
+function getSummary(actor: LocalActorContext, chapterName: string): string {
+  switch (actor.audience) {
+    case "chapter_leader":
+      return `Use this read-only ${chapterName} workspace to see who needs follow-up, which roles are thin, and what join/role controls remain disabled.`;
     case "coach":
-      return `Use this roster to coach ${chapterName} on leadership coverage and follow-up risk without owning join approvals.`;
-    case "staff":
-      return `HQ can inspect ${chapterName} roster posture, but chapter access decisions remain app-owned and approval-gated.`;
+      return `Use this roster to coach ${chapterName} on leadership coverage and follow-up risk without owning membership approvals.`;
+    case "admin":
+      return `HQ can inspect ${chapterName} membership posture, but chapter membership truth remains app-owned and approval-gated.`;
     case "super_admin":
-      return `Super Admin can inspect full roster posture for ${chapterName}; roster-changing actions still stay paused.`;
-    case "member":
+      return `Super Admin can inspect all local membership posture for ${chapterName}; writes still stay disabled.`;
+    case "chapter_member":
     case "ds_admin":
       return "This actor should not read the member-management workspace.";
   }
-}
-
-function canActorReviewMembership(actor: LocalActorContext) {
-  const surfaceFamily = getActorSurfaceFamily(actor);
-
-  return (
-    surfaceFamily === "leader" ||
-    surfaceFamily === "staff" ||
-    surfaceFamily === "super_admin"
-  );
 }
 
 function emptyCounts(): ChapterMembershipWorkspace["counts"] {

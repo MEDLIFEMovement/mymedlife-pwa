@@ -73,6 +73,25 @@ export type ActionStartReadbackState = {
   message: string;
 };
 
+export function parseActionStartStatus(
+  value: string | null | undefined,
+): Assignment["status"] | null {
+  switch (value) {
+    case "not_started":
+    case "in_progress":
+    case "submitted":
+    case "approved":
+    case "changes_requested":
+      return value;
+    default:
+      return null;
+  }
+}
+
+export function isActionStartableStatus(status: Assignment["status"]): boolean {
+  return status === "not_started" || status === "changes_requested";
+}
+
 export function getActionStartWriteConfig(
   env: EnvSource = process.env,
 ): ActionStartWriteConfig {
@@ -144,8 +163,7 @@ export function getActionStartWriteReadiness(
   const assignmentUuid = isUuid(assignment.id);
   const actorCanRead = canReadAssignment(actor, assignment);
   const actorAllowed = isActorAllowedForPlannedWrite(actor.audience, "action_started");
-  const assignmentReady =
-    assignment.status === "not_started" || assignment.status === "changes_requested";
+  const assignmentReady = isActionStartableStatus(assignment.status);
 
   const checks: ActionStartWriteReadiness["checks"] = [
     {
@@ -261,6 +279,27 @@ export function mapActionStartRpcSuccess(
   };
 }
 
+export function getActionStartAlreadyStartedServerResult(
+  assignmentId: string,
+): ActionStartServerResult {
+  return failureResult(
+    assignmentId,
+    "already_started",
+    "This action is already underway in local Supabase, so no duplicate start event was created.",
+  );
+}
+
+export function getActionStartStaleServerResult(
+  assignmentId: string,
+  currentStatus: Assignment["status"],
+): ActionStartServerResult {
+  return failureResult(
+    assignmentId,
+    "stale_assignment",
+    `This action changed to ${currentStatus} before the save completed. Refresh the page and review the latest local assignment state before trying again.`,
+  );
+}
+
 export function mapActionStartRpcError(
   assignmentId: string,
   error: { code?: string; message?: string },
@@ -281,6 +320,18 @@ export function mapActionStartRpcError(
       "missing_auth",
       "Sign in with a local Supabase seed user before starting this action.",
     );
+  }
+
+  if (message.includes("changed since page load")) {
+    return failureResult(
+      assignmentId,
+      "stale_assignment",
+      "This action changed before the save completed. Refresh the page and review the latest local assignment state before trying again.",
+    );
+  }
+
+  if (message.includes("already started")) {
+    return getActionStartAlreadyStartedServerResult(assignmentId);
   }
 
   if (error.code === "42501" || message.includes("cannot start")) {

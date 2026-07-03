@@ -28,14 +28,23 @@ export type AuthReader = {
 export type AuthSessionState = {
   status: AuthSessionStatus;
   isLocalOnly: boolean;
+  isHostedStaging?: boolean;
+  environment?: "local" | "staging";
   message: string;
   user:
     | {
         id: string;
         email: string;
-        displayName: string;
+      displayName: string;
       }
     | null;
+};
+
+type AuthSessionOptions = {
+  isLocalOnly?: boolean;
+  isHostedStaging?: boolean;
+  environment?: "local" | "staging";
+  sessionLabel?: string;
 };
 
 export function getDisabledAuthSessionState(
@@ -44,6 +53,8 @@ export function getDisabledAuthSessionState(
   return {
     status: "disabled",
     isLocalOnly: config.isLocalOnly,
+    isHostedStaging: config.isHostedStaging,
+    environment: config.environment,
     message: config.reason,
     user: null,
   };
@@ -51,31 +62,29 @@ export function getDisabledAuthSessionState(
 
 export async function getAuthSessionState(
   authReader: AuthReader,
-  options: {
-    isLocalOnly?: boolean;
-    sessionLabel?: string;
-  } = {},
+  config?: SupabaseAuthConfig | AuthSessionOptions,
 ): Promise<AuthSessionState> {
-  const isLocalOnly = options.isLocalOnly ?? true;
-  const sessionLabel =
-    options.sessionLabel ??
-    (isLocalOnly ? "local Supabase Auth" : "hosted staging Supabase Auth");
+  const copy = getAuthSessionCopy(config);
   const result = await authReader.auth.getUser();
 
   if (result.error) {
     if (isMissingSessionError(result.error)) {
       return {
         status: "signed_out",
-        isLocalOnly,
-        message: `No ${sessionLabel} session is active.`,
+        isLocalOnly: copy.isLocalOnly,
+        isHostedStaging: copy.isHostedStaging,
+        environment: copy.environment,
+        message: copy.signedOutMessage,
         user: null,
       };
     }
 
     return {
       status: "error",
-      isLocalOnly,
-      message: `${sessionLabel} session check failed: ${result.error.message}`,
+      isLocalOnly: copy.isLocalOnly,
+      isHostedStaging: copy.isHostedStaging,
+      environment: copy.environment,
+      message: `${copy.authLabel} session check failed: ${result.error.message}`,
       user: null,
     };
   }
@@ -83,16 +92,20 @@ export async function getAuthSessionState(
   if (!result.data.user?.email) {
     return {
       status: "signed_out",
-      isLocalOnly,
-      message: `No ${sessionLabel} session is active.`,
+      isLocalOnly: copy.isLocalOnly,
+      isHostedStaging: copy.isHostedStaging,
+      environment: copy.environment,
+      message: copy.signedOutMessage,
       user: null,
     };
   }
 
   return {
     status: "signed_in",
-    isLocalOnly,
-    message: `${sessionLabel} session is active.`,
+    isLocalOnly: copy.isLocalOnly,
+    isHostedStaging: copy.isHostedStaging,
+    environment: copy.environment,
+    message: copy.signedInMessage,
     user: {
       id: result.data.user.id,
       email: result.data.user.email,
@@ -111,9 +124,7 @@ export function getAuthDisplayName(user: AuthenticatedUser): string {
   );
 }
 
-export function normalizeLoginRedirect(
-  value: FormDataEntryValue | null | undefined,
-): string {
+export function normalizeLoginRedirect(value: FormDataEntryValue | null): string {
   if (typeof value !== "string") {
     return "/";
   }
@@ -145,4 +156,32 @@ function isMissingSessionError(error: { message: string; name?: string }): boole
     message.includes("session_not_found") ||
     message.includes("no current user")
   );
+}
+
+function getAuthSessionCopy(config?: SupabaseAuthConfig | AuthSessionOptions) {
+  const sessionLabel =
+    config && "sessionLabel" in config ? config.sessionLabel : undefined;
+
+  if (config?.isHostedStaging || sessionLabel === "hosted staging Supabase Auth") {
+    return {
+      authLabel: sessionLabel ?? "hosted staging Supabase Auth",
+      signedOutMessage: `No ${sessionLabel ?? "hosted staging Supabase Auth"} session is active.`,
+      signedInMessage: `${sessionLabel ?? "hosted staging Supabase Auth"} session is active.`,
+      isLocalOnly: false,
+      isHostedStaging: true,
+      environment: "staging" as const,
+    };
+  }
+
+  const isLocalOnly = config?.isLocalOnly ?? true;
+  const authLabel = sessionLabel ?? "local Supabase Auth";
+
+  return {
+    authLabel,
+    signedOutMessage: `No ${authLabel} session is active.`,
+    signedInMessage: `${authLabel} session is active.`,
+    isLocalOnly,
+    isHostedStaging: false,
+    environment: "local" as const,
+  };
 }

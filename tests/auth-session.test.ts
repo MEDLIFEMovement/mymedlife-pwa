@@ -14,6 +14,8 @@ describe("auth session service", () => {
       mode: "disabled",
       reviewEnvironment: "disabled",
       isLocalOnly: true,
+      isHostedStaging: false,
+      environment: "local",
       reason: "Auth is off.",
     });
 
@@ -60,6 +62,32 @@ describe("auth session service", () => {
     expect(state).toMatchObject({
       status: "signed_out",
       user: null,
+    });
+  });
+
+  it("uses hosted staging session copy when the staging gate is active", async () => {
+    const state = await getAuthSessionState(
+      createFakeAuthReader({
+        data: { user: null },
+        error: { name: "AuthSessionMissingError", message: "Auth session missing!" },
+      }),
+      {
+        enabled: true,
+        mode: "staging_supabase",
+        environment: "staging",
+        url: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        anonKey: "staging-publishable-key",
+        isLocalOnly: false,
+        isHostedStaging: true,
+        reason: "Hosted staging auth is enabled.",
+      },
+    );
+
+    expect(state).toMatchObject({
+      status: "signed_out",
+      environment: "staging",
+      isHostedStaging: true,
+      message: "No hosted staging Supabase Auth session is active.",
     });
   });
 

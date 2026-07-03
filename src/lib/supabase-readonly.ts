@@ -1,4 +1,5 @@
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthSessionState } from "@/services/auth-session";
 
 type EnvSource = Record<string, string | undefined>;
 type CreateServerClient = typeof createLocalSupabaseServerClient;
@@ -8,25 +9,13 @@ export type SupabaseReadConfig =
       enabled: true;
       url: string;
       key: string;
-      reason: string;
       accessToken?: string;
+      reason: string;
     }
   | {
       enabled: false;
       reason: string;
     };
-
-export type SupabaseSelectOptions = {
-  select?: string;
-  query?: Record<string, string>;
-};
-
-export type SupabaseReadonlyClient = {
-  selectRows: <TRow>(
-    tableName: string,
-    options?: SupabaseSelectOptions,
-  ) => Promise<TRow[]>;
-};
 
 export type SupabaseReadonlyAccess =
   | {
@@ -41,6 +30,29 @@ export type SupabaseReadonlyAccess =
       reason: string;
       isLocalOnly: boolean;
       mode: "mock_fallback";
+    };
+
+export type SupabaseSelectOptions = {
+  select?: string;
+  query?: Record<string, string>;
+};
+
+export type SupabaseReadonlyClient = {
+  selectRows: <TRow>(
+    tableName: string,
+    options?: SupabaseSelectOptions,
+  ) => Promise<TRow[]>;
+};
+
+export type HostedStagingSessionReadonlyResult =
+  | {
+      enabled: true;
+      client: SupabaseReadonlyClient;
+      reason: string;
+    }
+  | {
+      enabled: false;
+      reason: string;
     };
 
 export function getSupabaseReadConfig(env: EnvSource = process.env): SupabaseReadConfig {
@@ -89,6 +101,44 @@ export function getSupabaseReadConfig(env: EnvSource = process.env): SupabaseRea
   };
 }
 
+export function createSupabaseReadonlyClient(
+  config: Extract<SupabaseReadConfig, { enabled: true }>,
+  fetchFn: typeof fetch = fetch,
+): SupabaseReadonlyClient {
+  return {
+    async selectRows<TRow>(
+      tableName: string,
+      options: SupabaseSelectOptions = {},
+    ): Promise<TRow[]> {
+      const url = new URL(`${config.url}/rest/v1/${tableName}`);
+      url.searchParams.set("select", options.select ?? "*");
+
+      for (const [key, value] of Object.entries(options.query ?? {})) {
+        url.searchParams.set(key, value);
+      }
+
+      const response = await fetchFn(url, {
+        method: "GET",
+        headers: {
+          apikey: config.key,
+          authorization: `Bearer ${config.accessToken ?? config.key}`,
+          "accept-profile": "app",
+        },
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(
+          `Supabase read failed for ${tableName}: ${response.status} ${detail}`,
+        );
+      }
+
+      return (await response.json()) as TRow[];
+    },
+  };
+}
+
 export async function createSupabaseReadonlyAccess(
   env: EnvSource = process.env,
   fetchFn: typeof fetch = fetch,
@@ -108,8 +158,10 @@ export async function createSupabaseReadonlyAccess(
     };
   }
 
-  const createServerClient = options.createServerClient ?? createLocalSupabaseServerClient;
-  const { client: authClient, config: authConfig } = await createServerClient(env);
+  const createServerClient =
+    options.createServerClient ?? createLocalSupabaseServerClient;
+  const { client: authClient, config: authConfig } =
+    await createServerClient(env);
 
   if (authClient && authConfig.enabled) {
     const sessionResult = await authClient.auth.getSession();
@@ -150,58 +202,73 @@ export async function createSupabaseReadonlyAccess(
     }
   }
 
-  if (env.MYMEDLIFE_DATA_SOURCE !== "supabase") {
-    return {
-      enabled: false,
-      reason: config.reason,
-      isLocalOnly: authConfig.isLocalOnly,
-      mode: "mock_fallback",
-    };
-  }
-
   return {
     enabled: false,
-    reason: authConfig.reason,
+    reason:
+      env.MYMEDLIFE_DATA_SOURCE === "supabase" ? authConfig.reason : config.reason,
     isLocalOnly: authConfig.isLocalOnly,
     mode: "mock_fallback",
   };
 }
 
-export function createSupabaseReadonlyClient(
-  config: Extract<SupabaseReadConfig, { enabled: true }>,
-  fetchFn: typeof fetch = fetch,
+export function createSupabaseQueryReadonlyClient(
+  client: NonNullable<
+    Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"]
+  >,
 ): SupabaseReadonlyClient {
   return {
     async selectRows<TRow>(
       tableName: string,
       options: SupabaseSelectOptions = {},
     ): Promise<TRow[]> {
-      const url = new URL(`${config.url}/rest/v1/${tableName}`);
-      url.searchParams.set("select", options.select ?? "*");
+      let query = client.schema("app").from(tableName).select(options.select ?? "*");
+      const order = parseOrder(options.query?.order);
 
-      for (const [key, value] of Object.entries(options.query ?? {})) {
-        url.searchParams.set(key, value);
+      if (order) {
+        query = query.order(order.column, {
+          ascending: order.ascending,
+          nullsFirst: order.nullsFirst,
+        });
       }
 
-      const response = await fetchFn(url, {
-        method: "GET",
-        headers: {
-          apikey: config.key,
-          authorization: `Bearer ${config.accessToken ?? config.key}`,
-          "accept-profile": "app",
-        },
-        cache: "no-store",
-      });
+      const { data, error } = await query;
 
-      if (!response.ok) {
-        const detail = await response.text();
+      if (error) {
         throw new Error(
-          `Supabase read failed for ${tableName}: ${response.status} ${detail}`,
+          `Supabase query read failed for ${tableName}: ${error.message}`,
         );
       }
 
-      return (await response.json()) as TRow[];
+      return (data ?? []) as TRow[];
     },
+  };
+}
+
+export async function getHostedStagingSessionReadonlyClient(
+  env: EnvSource = process.env,
+): Promise<HostedStagingSessionReadonlyResult> {
+  const { client, config } = await createLocalSupabaseServerClient(env);
+
+  if (!client || !config.isHostedStaging) {
+    return {
+      enabled: false,
+      reason: config.reason,
+    };
+  }
+
+  const session = await getAuthSessionState(client, config);
+
+  if (session.status !== "signed_in") {
+    return {
+      enabled: false,
+      reason: session.message,
+    };
+  }
+
+  return {
+    enabled: true,
+    client: createSupabaseQueryReadonlyClient(client),
+    reason: "Reading hosted staging Supabase data for the signed-in session.",
   };
 }
 
@@ -220,4 +287,27 @@ function isLocalSupabaseUrl(url: string): boolean {
 
 function stripTrailingSlash(value: string): string {
   return value.endsWith("/") ? value.slice(0, -1) : value;
+}
+
+function parseOrder(
+  value: string | undefined,
+): { column: string; ascending: boolean; nullsFirst?: boolean } | null {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const [column, direction = "asc", nulls] = trimmed.split(".");
+
+  if (!column) {
+    return null;
+  }
+
+  return {
+    column,
+    ascending: direction !== "desc",
+    nullsFirst:
+      nulls === "nullsfirst" ? true : nulls === "nullslast" ? false : undefined,
+  };
 }

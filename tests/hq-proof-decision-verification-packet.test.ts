@@ -61,9 +61,13 @@ describe("HQ proof decision verification packet", () => {
     expect(packet.counts.publicSharesExpected).toBe(0);
     expect(packet.checks.every((check) => check.passed)).toBe(true);
     expect(packet.candidateEvidence?.route).toBe(
-      `/rush-month/actions?assignmentId=${assignmentId}&source=hq_proof_packet`,
+      `/rush-month/actions/${assignmentId}`,
     );
     expect(packet.candidateEvidence?.reviewRoute).toBe("/rush-month/review");
+    expect(packet.candidateEvidence?.privateUploadStatusLabel).toBe(
+      "No raw file required",
+    );
+    expect(packet.candidateEvidence?.privacyBoundary).toContain("sharing intent only");
     expect(packet.verificationPacket.envSettings).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -75,6 +79,9 @@ describe("HQ proof decision verification packet", () => {
           value: "false",
         }),
       ]),
+    );
+    expect(packet.proofToCollect).toContain(
+      "Evidence that any attached raw file stayed private and no public URL or member-visible asset was created.",
     );
   });
 
@@ -128,6 +135,31 @@ describe("HQ proof decision verification packet", () => {
     expect(
       packet.readbackEvidence.find((item) => item.key === "audit_log")?.status,
     ).toBe("manual_check_needed");
+  });
+
+  it("prefers a ready proof with a private upload attached and surfaces takedown guidance", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const packet = getHqProofDecisionPacket(actor, withRawUploadReady(), {
+      MYMEDLIFE_AUTH_MODE: "local_supabase",
+      MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+      MYMEDLIFE_ENABLE_HQ_PROOF_DECISION_WRITE: "true",
+    });
+
+    expect(packet.candidateEvidence?.privateUploadStatusLabel).toBe(
+      "Private file attached",
+    );
+    expect(packet.candidateEvidence?.privateUploadGuidance).toContain(
+      "approved submitter/HQ boundary",
+    );
+    expect(packet.candidateEvidence?.deletionBoundary).toContain(
+      "/proof-library/upload",
+    );
+    expect(packet.verificationPacket.safetyStops).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("public URL"),
+        expect.stringContaining("deletion/takedown"),
+      ]),
+    );
   });
 
   it("keeps DS Admin eligible and operating roles hidden", () => {
@@ -366,5 +398,25 @@ function withHqDecisionReadback(): ReadOnlyAppData {
         created_at: "2026-06-16T19:10:00Z",
       },
     ],
+  };
+}
+
+function withRawUploadReady(): ReadOnlyAppData {
+  const data = withProofMetadataReadback();
+
+  return {
+    ...data,
+    evidenceItems: data.evidenceItems.map((evidenceItem) => {
+      if (evidenceItem.id !== evidenceItemId) {
+        return evidenceItem;
+      }
+
+      return {
+        ...evidenceItem,
+        evidenceType: "bridge_video",
+        storagePath:
+          "chapters/10000000-0000-4000-8000-000000000001/evidence/00000000-0000-4000-8000-000000000401/rush-social-bridge-video.mov",
+      };
+    }),
   };
 }

@@ -113,6 +113,7 @@ export type EvidenceItem = {
     | "external_link";
   summary: string;
   status: "pending_review" | "approved" | "rejected" | "changes_requested";
+  storagePath?: string | null;
 };
 
 export type Approval = {

@@ -1,0 +1,80 @@
+name: Claude Auto Review
+
+# Runs automatically every time a PR is opened or updated. No @claude mention
+# needed. Claude reviews against CLAUDE.md and, if the PR passes, approves it
+# and turns on auto-merge so GitHub merges it once required CI checks are green.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Don't pile up runs on the same PR — cancel older ones to save cost.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write        # needed to merge
+  pull-requests: write   # needed to comment / approve / merge
+  issues: write          # needed to add the needs-human label
+  actions: read
+  id-token: write
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude review and gated auto-merge
+        uses: anthropics/claude-code-action@v1
+        env:
+          # Lets Claude's gh CLI commands act on the PR.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # REQUIRED for pull_request + prompt: makes the action post a visible
+          # tracking/review comment on the PR. Without this, the review runs
+          # but stays hidden in the Actions log (green run, no comment).
+          track_progress: true
+          prompt: |
+            You are the automated reviewer for the myMEDLIFE PWA.
+            Review pull request #${{ github.event.pull_request.number }}
+            in the repository ${{ github.repository }}.
+
+            Do this in order:
+            1. Read CLAUDE.md in the repository root and treat it as the
+               complete and binding set of review rules.
+            2. Read the PR diff (e.g. `gh pr diff ${{ github.event.pull_request.number }}`)
+               and review it against every rule in CLAUDE.md and the
+               acceptance criteria it references.
+            3. Post one concise PR review comment. Lead with the verdict
+               (APPROVE or BLOCK), then a summary under these four headings:
+               Safety gates, Correctness, Standards, Tests & coverage.
+               If for any reason the tracked comment is not created, also post
+               your summary with: gh pr comment ${{ github.event.pull_request.number }} --body "<your summary>"
+            4. Apply the verdict using the gh CLI:
+
+               If BLOCK (any MUST-BLOCK rule applies, or you are not fully
+               confident, or the diff is too large/ambiguous to review
+               responsibly):
+                 gh label create needs-human --color B60205 --force || true
+                 gh pr edit ${{ github.event.pull_request.number }} --add-label "needs-human"
+               Do NOT approve and do NOT merge. Stop.
+
+               If APPROVE (clearly within all rules):
+                 gh pr review --approve ${{ github.event.pull_request.number }} || true
+                 gh pr merge --squash --auto ${{ github.event.pull_request.number }}
+               This enables auto-merge; GitHub completes the merge only after
+               the required CI checks pass.
+
+            Prefer blocking over guessing. When unsure, BLOCK and escalate.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 15
+            --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr review:*),Bash(gh pr merge:*),Bash(gh pr edit:*),Bash(gh label:*)"
+          # For deeper review on a safety-critical change, switch the model
+          # line above to:  --model claude-opus-4-8

@@ -12,18 +12,20 @@ describe("write sequence planner", () => {
 
     expect(planner.canReadPlanner).toBe(true);
     expect(planner.title).toBe("Admin write sequence planner");
-    expect(planner.counts.operations).toBe(7);
-    expect(planner.counts.localBrowserWriteCandidates).toBe(7);
+    expect(planner.counts.operations).toBe(9);
+    expect(planner.counts.localBrowserWriteCandidates).toBe(9);
     expect(planner.counts.externalWritesExpected).toBe(0);
     expect(planner.nextRecommendedOperation).toBe("action_started");
     expect(planner.operations.map((operation) => operation.key)).toEqual([
       "action_started",
+      "membership_approved",
+      "action_assigned",
       "evidence_submitted",
       "leader_proof_decision_logged",
       "hq_sharing_decision_logged",
-      "action_assigned",
+      "points_kpi_materialized",
+      "slt_checklist_completed",
       "coach_decision_logged",
-      "membership_approved",
     ]);
     expect(
       planner.operations.find((operation) => operation.key === "coach_decision_logged"),
@@ -42,21 +44,26 @@ describe("write sequence planner", () => {
     const actionStart = planner.operations.find(
       (operation) => operation.key === "action_started",
     );
+    const membershipApproval = planner.operations.find(
+      (operation) => operation.key === "membership_approved",
+    );
 
+    expect(membershipApproval?.promotionOrder).toBe(2);
+    expect(membershipApproval?.studentJourneyOrder).toBe(1);
+    expect(leaderAssignment?.promotionOrder).toBe(3);
+    expect(leaderAssignment?.studentJourneyOrder).toBe(2);
     expect(actionStart?.promotionOrder).toBe(1);
-    expect(actionStart?.studentJourneyOrder).toBe(2);
-    expect(leaderAssignment?.promotionOrder).toBe(5);
+    expect(actionStart?.studentJourneyOrder).toBe(3);
     expect(
       planner.operations.find(
         (operation) => operation.key === "leader_proof_decision_logged",
       )?.promotionOrder,
-    ).toBe(3);
-    expect(leaderAssignment?.studentJourneyOrder).toBe(1);
+    ).toBe(5);
     expect(
       planner.operations.find((operation) => operation.key === "membership_approved")
         ?.promotionOrder,
-    ).toBe(7);
-    expect(planner.promotionSummary).toContain("seed assignments already exist");
+    ).toBe(2);
+    expect(planner.promotionSummary).toContain("prove `action_started` first");
   });
 
   it("surfaces live packet status for every write step", () => {
@@ -74,6 +81,18 @@ describe("write sequence planner", () => {
         key: "action_started",
         packetLabel: "Action-start packet",
         packetRoute: "/admin/first-write",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "membership_approved",
+        packetLabel: "Membership approval readiness packet",
+        packetRoute: "/chapter/members",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "action_assigned",
+        packetLabel: "Leader assignment packet",
+        packetRoute: "/admin/assignment-write",
         externalWritesExpected: 0,
       },
       {
@@ -95,21 +114,21 @@ describe("write sequence planner", () => {
         externalWritesExpected: 0,
       },
       {
-        key: "action_assigned",
-        packetLabel: "Leader assignment packet",
-        packetRoute: "/admin/assignment-write",
+        key: "points_kpi_materialized",
+        packetLabel: "Points and KPI packet",
+        packetRoute: "/admin/points-write",
+        externalWritesExpected: 0,
+      },
+      {
+        key: "slt_checklist_completed",
+        packetLabel: "SLT checklist packet",
+        packetRoute: "/admin/slt-checklist-write",
         externalWritesExpected: 0,
       },
       {
         key: "coach_decision_logged",
-        packetLabel: "Coach decision packet",
+        packetLabel: "Staff chapter decision and coach note packet",
         packetRoute: "/admin/coach-write",
-        externalWritesExpected: 0,
-      },
-      {
-        key: "membership_approved",
-        packetLabel: "Membership approval readiness packet",
-        packetRoute: "/chapter/members",
         externalWritesExpected: 0,
       },
     ]);

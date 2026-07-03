@@ -5,11 +5,12 @@
 Goal 77 adds `/admin/write-sequence`, a staff-only control-room surface for the
 Rush Month write promotion order.
 
-The project already has local-only server action patterns for action start,
-proof metadata, HQ proof decisions, leader assignment creation, and coach
-decisions. Goal 76 made the first action-start write operator-ready. Goal 77
-shows how the rest of the operating-loop writes should be promoted safely after
-that first write is proven.
+The project now has local-only write coverage for membership approval, leader
+assignment creation, action start, proof metadata, leader proof decisions, HQ
+proof decisions, and coach decisions. Goal 77 is now being used as the
+review-facing subset planner for those implemented Phase 2 writes while later
+gates such as private uploads, points/KPI materialization, and SLT checklist
+completion remain separate.
 
 ## What It Adds
 
@@ -23,18 +24,29 @@ that first write is proven.
 
 ## Student Journey Versus Promotion Order
 
-The real student journey is:
+The review journey is:
 
-1. leader assigns action
-2. member starts action
-3. member submits proof/testimonial metadata
-4. HQ decides whether proof can be shared
-5. coach logs advance / hold / intervene decision
+1. chapter membership is approved
+2. leader assigns action
+3. member starts action
+4. member submits proof/testimonial metadata
+5. leader reviews proof for chapter completion
+6. HQ decides whether proof can be shared
+7. coach logs advance / hold / intervene decision
 
-The safe technical promotion order starts with `action_started` because fake
-seed assignments already exist. That lets staff prove one small, useful
-browser-to-Supabase write before enabling broader leader/admin/coach mutation
-paths.
+Within the currently implemented subset, the safe promotion order is:
+
+1. `membership_approved`
+2. `action_assigned`
+3. `action_started`
+4. `evidence_submitted`
+5. `leader_proof_decision_logged`
+6. `hq_sharing_decision_logged`
+7. `coach_decision_logged`
+
+This subset intentionally does not claim that proof upload, points/KPI
+materialization, or SLT checklist completion are ready. Those remain separate
+later Phase 2 gates.
 
 ## Safety Boundary
 
@@ -53,5 +65,7 @@ expected tables, structured events, audit evidence, and disabled outbox posture.
 
 ## Next Review Step
 
-Run `/admin/first-write` first. After action-start readback evidence is proven,
-open `/admin/write-sequence` to choose the next local write promotion packet.
+Open `/chapter/members` first and review the membership approval packet. After
+membership readback, audit evidence, and disabled outbox posture are proven,
+use `/admin/write-sequence` to walk through the next local write packets in
+order.

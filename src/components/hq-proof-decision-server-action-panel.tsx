@@ -76,6 +76,11 @@ export function HqProofDecisionServerActionPanel({
         </div>
       ) : null}
 
+      <div className="mt-3 rounded-2xl border border-white/10 bg-black/18 px-4 py-3 text-sm leading-6 text-white/68">
+        <p className="font-semibold text-white">Privacy boundary</p>
+        <p className="mt-1">{getPrivateUploadBoundaryMessage(evidenceItem)}</p>
+      </div>
+
       <form action={submitHqProofDecisionAction} className="mt-5 space-y-4">
         <input type="hidden" name="evidenceItemId" value={evidenceItem.id} />
         <input type="hidden" name="returnTo" value="/rush-month/review" />
@@ -130,4 +135,35 @@ export function HqProofDecisionServerActionPanel({
       </div>
     </section>
   );
+}
+
+function getPrivateUploadBoundaryMessage(evidenceItem: EvidenceItem): string {
+  if (evidenceItem.storagePath) {
+    return "A private upload is attached to this proof. HQ is deciding future sharing posture only; the raw file stays private and this route must not create a public URL.";
+  }
+
+  if (supportsPrivateUpload(evidenceItem.evidenceType)) {
+    return "No private raw file is attached yet. HQ can still request better context or keep the proof internal, but this route must not assume the proof is public-ready.";
+  }
+
+  return "This proof can be reviewed from its text or link context alone. Keep student identity and reuse posture separate from any future publishing decision.";
+}
+
+function supportsPrivateUpload(evidenceType: EvidenceItem["evidenceType"]): boolean {
+  switch (evidenceType) {
+    case "bridge_video":
+    case "event_photo":
+    case "attendance_log":
+    case "feedback_form":
+    case "tracker_screenshot":
+    case "planning_doc":
+    case "mock_file":
+      return true;
+    case "text":
+    case "link":
+    case "testimonial_text":
+    case "recap_note":
+    case "external_link":
+      return false;
+  }
 }

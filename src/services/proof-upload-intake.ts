@@ -1,9 +1,6 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import {
-  getActorSurfaceFamily,
-  type ActorSurfaceFamily,
-} from "@/services/role-visibility";
-import {
+  buildPrivateProofStoragePath,
   getProofStoragePlan,
   getProofStorageReadinessConfig,
   isAllowedProofMimeType,
@@ -107,9 +104,7 @@ export function getProofUploadIntakeWorkspace(
   actor: LocalActorContext,
   input: ProofUploadIntakeInput = defaultInput,
 ): ProofUploadIntakeWorkspace {
-  const surfaceFamily = getActorSurfaceFamily(actor);
-
-  if (surfaceFamily === "ds_admin") {
+  if (actor.audience === "ds_admin") {
     return hiddenWorkspace(
       "Proof upload intake hidden for DS Admin",
       "DS Admin can inspect disabled storage and outbox posture, but should not read or own student proof content.",
@@ -124,9 +119,9 @@ export function getProofUploadIntakeWorkspace(
 
   return {
     canReadWorkspace: true,
-    title: getTitle(surfaceFamily),
+    title: getTitle(actor),
     summary:
-      "This workspace previews how proof and bridge videos will be prepared before uploads open. Students and leaders can see the consent, context, and file requirements that support later review and reuse.",
+      "This workspace previews the proof and bridge-video upload experience without uploading files. Students and leaders can see what consent, context, and file requirements will be needed before HQ can review or reuse proof.",
     uploadsEnabled: config.uploadsEnabled,
     publicPublishingEnabled: config.publicPublishingEnabled,
     externalExportsEnabled: false,
@@ -145,17 +140,17 @@ export function getProofUploadIntakeWorkspace(
       {
         label: "Upload file",
         reason:
-          "Storage buckets, file validation, upload safety rules, and moderation posture are not open yet.",
+          "Supabase Storage buckets, file validation, upload RLS, and malware/moderation posture are not approved yet.",
       },
       {
         label: "Publish proof",
         reason:
-          "Broader proof sharing still needs HQ approval, consent review, and a dedicated publishing flow.",
+          "Public proof sharing requires HQ approval, consent review, and a separate publishing workflow.",
       },
       {
         label: "Export raw proof",
         reason:
-          "Raw bridge videos and testimonials stay inside the app until broader handoffs are explicitly approved.",
+          "Raw bridge videos/testimonials must not be exported to n8n, warehouse, Power BI, HubSpot, Luma, SMS, email, or AI until explicitly approved.",
       },
     ],
     storagePacket: buildProofUploadStoragePacket(input, checks, disabledAttempt),
@@ -169,10 +164,10 @@ export function getProofUploadIntakeWorkspace(
       "audit_log_recorded",
     ],
     futureOutboxDestinations: [
-      "n8n reminder handoff paused",
-      "warehouse export paused",
-      "AI summary paused",
-      "public proof publishing paused",
+      "n8n reminder packet disabled",
+      "warehouse export disabled",
+      "AI summary disabled",
+      "public proof publishing disabled",
     ],
   };
 }
@@ -271,7 +266,7 @@ function buildProofUploadStoragePacket(
   const config = getProofStorageReadinessConfig();
 
   return {
-    title: "Proof upload path preview",
+    title: "Goal 159 proof storage intake packet",
     targetRoute: "/proof-library/upload",
     futureFunction: "app.prepare_proof_upload_intake",
     privateBucket: plan.privateSubmissionBucket,
@@ -282,8 +277,7 @@ function buildProofUploadStoragePacket(
     currentResultTitle: "Upload disabled",
     futureResultCode: "proof_upload_intake_recorded",
     futureResultTitle: "Proof upload intake recorded",
-    readinessReason:
-      "This preview maps the future storage path, metadata, and review checkpoints before uploads are allowed to save files.",
+    readinessReason: config.reason,
     requiredMetadata: plan.requiredMetadata,
     rawUploadReaders: plan.rawUploadReaders,
     publicAssetReaders: plan.publicAssetReaders,
@@ -322,15 +316,18 @@ function buildProofUploadStoragePacket(
       },
       {
         label: "Evidence item",
-        value: `storage_path -> ${disabledAttempt.normalizedFileName}`,
+        value: `storage_path -> ${buildStoragePathPreview(
+          input,
+          disabledAttempt.normalizedFileName,
+        )}`,
       },
       {
         label: "Structured event",
         value: "proof_upload_requested",
       },
       {
-        label: "Held handoffs",
-        value: "n8n, warehouse, AI summary, and public publish stay paused",
+        label: "Disabled outbox",
+        value: "n8n, warehouse, AI summary, and public publish disabled",
       },
       {
         label: "Audit action",
@@ -357,27 +354,25 @@ function buildStoragePathPreview(
   input: ProofUploadIntakeInput,
   normalizedFileName: string,
 ): string {
-  return [
-    "chapters/chapter-a",
-    "campaigns/rush-month",
-    "evidence",
+  return buildPrivateProofStoragePath(
+    "chapter-a",
     input.evidenceItemId,
     normalizedFileName,
-  ].join("/");
+  );
 }
 
-function getTitle(surfaceFamily: ActorSurfaceFamily): string {
-  switch (surfaceFamily) {
-    case "member":
+function getTitle(actor: LocalActorContext): string {
+  switch (actor.audience) {
+    case "chapter_member":
       return "Prepare your proof upload";
-    case "leader":
-      return "Leader proof prep";
+    case "chapter_leader":
+      return "Leader proof upload readiness";
     case "coach":
-      return "Coach proof prep view";
-    case "staff":
-      return "Proof intake desk";
+      return "Coach proof intake readout";
+    case "admin":
+      return "HQ proof upload readiness";
     case "super_admin":
-      return "Proof intake operations";
+      return "Full proof upload readiness";
     case "ds_admin":
       return "Proof upload intake hidden for DS Admin";
   }

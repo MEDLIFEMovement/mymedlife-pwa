@@ -60,12 +60,18 @@ export type StaticRouteMetadataKey =
   | "adminSopBuilder"
   | "adminDatabaseSecurity"
   | "adminSystemHealth"
+  | "adminPhase2Review"
+  | "adminEnvironmentSetup"
+  | "adminAuthOnboarding"
+  | "adminSecurityGate"
   | "adminDesignQa"
   | "adminOperations"
   | "adminFirstWrite"
   | "adminWriteSequence"
   | "adminProofWrite"
   | "adminHqProofWrite"
+  | "adminPointsWrite"
+  | "adminSltChecklistWrite"
   | "adminAssignmentWrite"
   | "adminCoachWrite"
   | "adminPilotScope"
@@ -355,6 +361,26 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     description:
       "Read-only system health, launch blocker, environment, audit, outbox, and production readiness review.",
   },
+  adminPhase2Review: {
+    title: "Admin Phase 2 Review",
+    description:
+      "Read-only Phase 2 readiness, issue map, write gates, owner responsibilities, and mock-only boundary review.",
+  },
+  adminEnvironmentSetup: {
+    title: "Admin Environment Setup",
+    description:
+      "Read-only environment setup checklist covering local, preview, staging, production, env vars, and secret ownership boundaries.",
+  },
+  adminAuthOnboarding: {
+    title: "Admin Auth Onboarding",
+    description:
+      "Read-only auth and onboarding foundation covering callback flow, role routing, ownership, duplicate handling, and rollback boundaries.",
+  },
+  adminSecurityGate: {
+    title: "Admin Security Gate",
+    description:
+      "Read-only RLS and security gate covering schema exposure, direct-write denials, audit proof, storage gating, and hosted review requirements.",
+  },
   adminDesignQa: {
     title: "Admin Design QA",
     description:
@@ -384,6 +410,16 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "HQ Proof Decision Packet",
     description:
       "Staff-only local HQ proof-sharing decision packet with public sharing and external sends disabled.",
+  },
+  adminPointsWrite: {
+    title: "Points And KPI Packet",
+    description:
+      "Staff-only local packet for reviewing points/KPI materialization, duplicate posture, and audit linkage.",
+  },
+  adminSltChecklistWrite: {
+    title: "SLT Checklist Packet",
+    description:
+      "Staff-only local packet for reviewing traveler-owned checklist completion, readiness deltas, and locked external travel systems.",
   },
   adminAssignmentWrite: {
     title: "Leader Assignment Packet",

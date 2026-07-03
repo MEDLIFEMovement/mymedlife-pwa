@@ -169,6 +169,8 @@ export const evidenceItems: EvidenceItem[] = [
     evidenceType: "bridge_video",
     summary: "Bridge video needs clearer context before HQ decides whether to share it.",
     status: "changes_requested",
+    storagePath:
+      "chapters/10000000-0000-4000-8000-000000000001/evidence/evidence-proof-pack/rush-proof-pack.mov",
   },
 ];
 

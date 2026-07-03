@@ -232,8 +232,11 @@ describe("browser write activation gate", () => {
       },
       [],
       {
+        MYMEDLIFE_AUTH_MODE: "local_supabase",
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+        NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "local-anon-key",
       },
     );
 

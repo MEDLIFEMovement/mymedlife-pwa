@@ -10,7 +10,7 @@ describe("proof sharing review", () => {
 
     expect(board.canReadBoard).toBe(true);
     expect(board.canDecideSharing).toBe(true);
-    expect(board.title).toBe("Proof sharing desk");
+    expect(board.title).toBe("HQ proof-sharing review");
     expect(board.counts.total).toBe(proofLibraryItems.length);
     expect(board.counts.publishActionsEnabled).toBe(0);
     expect(board.counts.externalExportsEnabled).toBe(0);
@@ -31,6 +31,8 @@ describe("proof sharing review", () => {
       expect.arrayContaining(["bridge_video", "alumni_ugc"]),
     );
     expect(board.rows[0]?.reviewState).toBe("needs_consent_or_context");
+    expect(board.rows[0]?.privacyBoundary).toContain("internal staff review");
+    expect(board.rows[0]?.deletionBoundary).toContain("audit");
   });
 
   it("counts internal learning and future public candidates", () => {
@@ -39,7 +41,7 @@ describe("proof sharing review", () => {
 
     expect(board.counts.internalLearning).toBe(1);
     expect(board.counts.futurePublicCandidates).toBe(1);
-    expect(board.title).toBe("Proof sharing operations");
+    expect(board.title).toBe("Full local proof-sharing review");
   });
 
   it("lets leaders and coaches read posture without deciding sharing", () => {

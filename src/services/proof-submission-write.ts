@@ -91,6 +91,33 @@ export const allowedProofEvidenceTypes = [
   "external_link",
 ] as const satisfies readonly EvidenceItem["evidenceType"][];
 
+export function parseProofSubmissionStatus(
+  value: string | null | undefined,
+): Assignment["status"] | null {
+  switch (value) {
+    case "not_started":
+    case "in_progress":
+    case "submitted":
+    case "approved":
+    case "changes_requested":
+      return value;
+    default:
+      return null;
+  }
+}
+
+export function isProofSubmissionReadyStatus(
+  status: Assignment["status"],
+): boolean {
+  return status === "in_progress" || status === "changes_requested";
+}
+
+export function isProofAccuracyConfirmed(
+  value: FormDataEntryValue | null,
+): boolean {
+  return typeof value === "string" && value.trim() === "yes";
+}
+
 export function getProofSubmissionWriteConfig(
   env: EnvSource = process.env,
 ): ProofSubmissionWriteConfig {
@@ -182,9 +209,7 @@ export function getProofSubmissionWriteReadiness(
     actor.audience,
     "evidence_submitted",
   );
-  const assignmentReady =
-    assignment.status === "in_progress" ||
-    assignment.status === "changes_requested";
+  const assignmentReady = isProofSubmissionReadyStatus(assignment.status);
   const summaryLongEnough = input.summary.trim().length >= 12;
   const uploadsDisabled = env.MYMEDLIFE_ALLOW_PROOF_UPLOADS !== "true";
 
@@ -314,11 +339,45 @@ export function mapProofSubmissionRpcSuccess(
   };
 }
 
+export function getProofSubmissionAccuracyRequiredServerResult(
+  assignmentId: string,
+): ProofSubmissionServerResult {
+  return failureResult(
+    assignmentId,
+    "accuracy_required",
+    "Confirm that this testimonial or proof summary is accurate and safe for private MEDLIFE review before saving it locally.",
+  );
+}
+
+export function getProofSubmissionAlreadySubmittedServerResult(
+  assignmentId: string,
+): ProofSubmissionServerResult {
+  return failureResult(
+    assignmentId,
+    "already_submitted",
+    "This assignment already has submitted or approved proof in local Supabase, so no duplicate proof item was created.",
+  );
+}
+
+export function getProofSubmissionActionNotReadyServerResult(
+  assignmentId: string,
+): ProofSubmissionServerResult {
+  return failureResult(
+    assignmentId,
+    "action_not_ready",
+    "Start the action before submitting proof. The app left the assignment unchanged.",
+  );
+}
+
 export function mapProofSubmissionRpcError(
   assignmentId: string,
   error: { code?: string; message?: string },
 ): ProofSubmissionServerResult {
   const message = error.message?.toLowerCase() ?? "";
+
+  if (message.includes("accuracy") || message.includes("private medlife review")) {
+    return getProofSubmissionAccuracyRequiredServerResult(assignmentId);
+  }
 
   if (error.code === "P0002" || message.includes("assignment not found")) {
     return failureResult(
@@ -342,6 +401,10 @@ export function mapProofSubmissionRpcError(
       "summary_too_short",
       "Add a short testimonial or context note before saving proof.",
     );
+  }
+
+  if (message.includes("already submitted")) {
+    return getProofSubmissionAlreadySubmittedServerResult(assignmentId);
   }
 
   if (error.code === "42501" || message.includes("cannot submit proof")) {

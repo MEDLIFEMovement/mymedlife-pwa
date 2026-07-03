@@ -1,9 +1,5 @@
 import { getProofLibraryItemsForActor } from "@/services/campaign-ops-service";
 import type { LocalActorContext } from "@/services/local-actor-context";
-import {
-  getActorSurfaceFamily,
-  type ActorSurfaceFamily,
-} from "@/services/role-visibility";
 import type { ProofLibraryItem } from "@/shared/types/campaigns";
 
 export type ProofSharingReviewState =
@@ -22,6 +18,8 @@ export type ProofSharingReviewRow = {
   sharingStatus: ProofLibraryItem["sharingStatus"];
   reviewState: ProofSharingReviewState;
   actionNeeded: string;
+  privacyBoundary: string;
+  deletionBoundary: string;
   canBePublishedNow: false;
   externalExportPosture: "disabled";
 };
@@ -47,9 +45,7 @@ export function getProofSharingReviewBoard(
   actor: LocalActorContext,
   items?: ProofLibraryItem[],
 ): ProofSharingReviewBoard {
-  const surfaceFamily = getActorSurfaceFamily(actor);
-
-  if (surfaceFamily === "member" || surfaceFamily === "ds_admin") {
+  if (actor.audience === "chapter_member" || actor.audience === "ds_admin") {
     return {
       canReadBoard: false,
       canDecideSharing: false,
@@ -66,10 +62,10 @@ export function getProofSharingReviewBoard(
 
   return {
     canReadBoard: true,
-    canDecideSharing: surfaceFamily === "staff" || surfaceFamily === "super_admin",
-    title: getTitle(surfaceFamily),
+    canDecideSharing: actor.audience === "admin" || actor.audience === "super_admin",
+    title: getTitle(actor),
     summary:
-      "Proof is belief-building evidence that can help chapters coach, recruit, and tell stronger stories. Broader sharing stays curated while this MVP keeps public publishing and exports paused.",
+      "Proof is testimonial evidence used to break self-limiting beliefs. HQ decides future sharing while raw source material stays private, takedown/deletion remains manual-first, and nothing is published or exported from this MVP shell.",
     rows: sortRows(rows),
     counts: {
       total: rows.length,
@@ -101,6 +97,8 @@ function toReviewRow(item: ProofLibraryItem): ProofSharingReviewRow {
     sharingStatus: item.sharingStatus,
     reviewState,
     actionNeeded: getActionNeeded(item, reviewState),
+    privacyBoundary: getPrivacyBoundary(item),
+    deletionBoundary: getDeletionBoundary(item),
     canBePublishedNow: false,
     externalExportPosture: "disabled",
   };
@@ -132,29 +130,49 @@ function getActionNeeded(
 ): string {
   switch (reviewState) {
     case "needs_consent_or_context":
-      return "Confirm consent, context, and the hesitation this proof addresses before it moves into broader storytelling.";
+      return "HQ should confirm consent, context, and the hesitation this proof addresses before any future sharing decision.";
     case "ready_for_hq_review":
-      return "This proof is ready for a decision about whether it should stay private, support internal learning, or become a future story candidate.";
+      return "HQ can decide whether this testimonial should become an internal example, future public candidate, or stay private.";
     case "internal_learning":
-      return "Use this internally for playbooks, SOP examples, and coaching while broader sharing remains curated.";
+      return "Use internally for playbooks, SOP examples, and coaching, but do not publish publicly from this app.";
     case "future_public_candidate":
-      return "Keep this queued as a future story candidate once approval, consent, and publishing controls are in place.";
+      return "Candidate for a future public proof surface after approval, consent, and publishing controls exist.";
     case "private_not_shared":
-      return `Keep ${item.sourceLabel} private unless the chapter and HQ decide to revisit it later.`;
+      return `Keep ${item.sourceLabel} private unless HQ creates a new sharing decision later.`;
   }
 }
 
-function getTitle(surfaceFamily: ActorSurfaceFamily): string {
-  switch (surfaceFamily) {
-    case "leader":
-      return "Chapter proof board";
+function getPrivacyBoundary(item: ProofLibraryItem): string {
+  if (item.proofType === "bridge_video" || item.proofType === "event_photo") {
+    return "Treat any raw media as private source material until HQ explicitly approves reuse and a separate publish tool exists.";
+  }
+
+  if (item.proofType === "alumni_ugc") {
+    return "Keep identity, channel context, and reuse posture explicit before this story leaves the app or internal staff review.";
+  }
+
+  return "This proof can inform internal learning now, but broader reuse still requires explicit consent and a later publishing path.";
+}
+
+function getDeletionBoundary(item: ProofLibraryItem): string {
+  if (item.sharingStatus === "not_shared") {
+    return "If the student asks for takedown or deletion, keep this proof private and remove any attached source asset before reconsidering reuse.";
+  }
+
+  return "If consent changes or a takedown request arrives, remove the underlying source asset first and preserve the HQ decision history in audit readback.";
+}
+
+function getTitle(actor: LocalActorContext): string {
+  switch (actor.audience) {
+    case "chapter_leader":
+      return "Leader-visible proof posture";
     case "coach":
-      return "Coach proof board";
-    case "staff":
-      return "Proof sharing desk";
+      return "Coach proof posture";
+    case "admin":
+      return "HQ proof-sharing review";
     case "super_admin":
-      return "Proof sharing operations";
-    case "member":
+      return "Full local proof-sharing review";
+    case "chapter_member":
     case "ds_admin":
       return "HQ proof-sharing review hidden for this role";
   }

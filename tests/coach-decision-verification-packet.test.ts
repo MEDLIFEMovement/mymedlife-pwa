@@ -82,6 +82,20 @@ describe("coach decision verification packet", () => {
         }),
       ]),
     );
+    expect(packet.verificationPacket.title).toBe(
+      "Staff chapter decision and coach note packet",
+    );
+    expect(
+      packet.verificationPacket.supportNotesSummary.blockedControls,
+    ).toContain("member nudge");
+    expect(
+      packet.verificationPacket.coverageChecklist.find(
+        (item) => item.key === "downstream_locks",
+      ),
+    ).toMatchObject({
+      status: "locked",
+      route: "/admin/integration-outbox",
+    });
   });
 
   it("shows observed coach decision readback after the local records exist", () => {
@@ -128,10 +142,23 @@ describe("coach decision verification packet", () => {
     const leader = getMockLocalActorContext("leader.a@mymedlife.test");
     const coach = getMockLocalActorContext("coach@mymedlife.test");
 
-    expect(getCoachDecisionPacket(dsAdmin, mockData).canReadPacket).toBe(true);
-    expect(getCoachDecisionPacket(dsAdmin, mockData).title).toBe(
+    const dsAdminPacket = getCoachDecisionPacket(dsAdmin, mockData);
+
+    expect(dsAdminPacket.canReadPacket).toBe(true);
+    expect(dsAdminPacket.title).toBe(
       "DS Admin coach decision safety packet",
     );
+    expect(dsAdminPacket.verificationPacket.supportNotesSummary.canReadNotes).toBe(
+      false,
+    );
+    expect(
+      dsAdminPacket.verificationPacket.roleCoverage.find(
+        (role) => role.role === "DS Admin",
+      ),
+    ).toMatchObject({
+      decisionAccess: "Blocked from owning chapter truth",
+      packetAccess: "Safety-only packet",
+    });
     expect(getCoachDecisionPacket(member, mockData).canReadPacket).toBe(false);
     expect(getCoachDecisionPacket(committeeMember, mockData).canReadPacket).toBe(
       false,
@@ -141,6 +168,27 @@ describe("coach decision verification packet", () => {
     );
     expect(getCoachDecisionPacket(leader, mockData).canReadPacket).toBe(false);
     expect(getCoachDecisionPacket(coach, mockData).canReadPacket).toBe(false);
+  });
+
+  it("summarizes note visibility and correction posture for admin review", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const packet = getCoachDecisionPacket(actor, mockData);
+
+    expect(packet.verificationPacket.supportNotesSummary.canReadNotes).toBe(true);
+    expect(packet.verificationPacket.supportNotesSummary.visibleNotes).toBeGreaterThan(0);
+    expect(packet.verificationPacket.supportNotesSummary.coachPrivate).toBeGreaterThan(0);
+    expect(packet.verificationPacket.supportNotesSummary.hqSupport).toBeGreaterThan(0);
+    expect(
+      packet.verificationPacket.supportNotesSummary.chapterFollowUp,
+    ).toBeGreaterThan(0);
+    expect(packet.verificationPacket.rollbackPlan[0]).toContain(
+      "new correction event",
+    );
+    expect(
+      packet.verificationPacket.coverageChecklist.find(
+        (item) => item.key === "duplicate_and_correction",
+      )?.detail,
+    ).toContain("fresh readiness review");
   });
 });
 

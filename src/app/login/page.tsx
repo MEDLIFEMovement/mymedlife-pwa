@@ -20,16 +20,10 @@ type LoginPageProps = {
 
 export default async function LoginPage(props: LoginPageProps) {
   const query = (await props.searchParams) ?? {};
-  const redirectTo = normalizeLoginRedirect(query.redirectTo);
+  const redirectTo = normalizeLoginRedirect(query.redirectTo ?? null);
   const { client, config } = await createLocalSupabaseServerClient();
   const session = client
-    ? await getAuthSessionState(client, {
-        isLocalOnly: config.isLocalOnly,
-        sessionLabel:
-          config.reviewEnvironment === "staging"
-            ? "hosted staging Supabase Auth"
-            : "local Supabase Auth",
-      })
+    ? await getAuthSessionState(client, config)
     : getDisabledAuthSessionState(config);
   const signInEnabled = Boolean(client);
   const initialMessage =

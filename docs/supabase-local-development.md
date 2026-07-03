@@ -439,6 +439,17 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `src/services/proof-upload-intake.ts`: read-only proof upload route state with
   Goal 159 storage intake packets, future bucket/path previews, consent and
   moderation gates, disabled outbox posture, and locked storage controls.
+- `src/services/private-proof-upload-write.ts`: localhost-only private proof
+  upload gate, storage-path helpers, queue row shaping, and audited RPC result
+  mapping for Goal 160.
+- `src/services/private-proof-upload-workspace.ts`: role-scoped upload queue
+  for `/proof-library/upload`, including submitter-only raw upload ownership and
+  HQ cleanup visibility.
+- `src/components/private-proof-upload-panel.tsx`: browser-facing private proof
+  upload and removal forms that stay localhost-only and keep public proof off.
+- `src/app/proof-library/upload/actions.ts`: server actions that prepare the
+  private bucket path, upload one file, remove one file, and persist the
+  audited bundle.
 - `src/services/chapter-membership-workspace.ts`: read-only membership route
   state with Goal 160 membership approval packets, join-request payload
   previews, readiness checks, disabled outbox posture, and locked approval
@@ -455,6 +466,9 @@ HubSpot, Luma, n8n, warehouse, Power BI, email, SMS, or AI writes.
 - `tests/proof-upload-intake.test.ts`: unit tests proving the proof upload route
   keeps file uploads disabled while exposing the Goal 159 storage packet for
   reviewers.
+- `tests/private-proof-upload-write.test.ts`: unit tests proving the Goal 160
+  private upload gate, path convention, row permissions, and RPC result mapping
+  stay explicit.
 - `tests/chapter-membership-workspace.test.ts`: unit tests proving membership
   approval packets are visible to leaders/admins, hidden from coaches and DS
   Admin, and still keep membership writes disabled.
@@ -634,7 +648,11 @@ Supabase HQ proof-sharing decision write function for
 public publishing, or external sends. Goal 17 documents the future proof/video
 storage layer and adds disabled upload readiness tests, but it still does not
 create buckets, upload files, publish proof, or send external automation. Goal
-18 adds the first local Supabase assignment creation function for
+160 adds the first localhost-only private proof upload write: one submitter can
+attach one private raw file to one existing proof metadata row, HQ cleanup roles
+can remove it, storage RLS keeps cross-user access blocked, and public proof
+plus external sends remain off. Goal 18 adds the first local Supabase
+assignment creation function for
 `action_assigned`, but it still does not add browser save controls, production
 auth, or external sends. Goal 19 defines the future auth/onboarding path, but
 it still does not enable live auth, browser sessions, production users,
