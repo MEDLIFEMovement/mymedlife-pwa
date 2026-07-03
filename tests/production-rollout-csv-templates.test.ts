@@ -44,6 +44,7 @@ describe("production rollout CSV templates", () => {
   it("documents the build and check commands for launch reviewers", () => {
     const readme = getProductionRolloutCsvTemplateReadme("rollout-csv");
 
+    expect(readme).toContain("pnpm rollout:check-csv --dir rollout-csv");
     expect(readme).toContain("pnpm rollout:build");
     expect(readme).toContain("--chapters rollout-csv/chapters.csv");
     expect(readme).toContain("pnpm rollout:check production-rollout-packet.json");

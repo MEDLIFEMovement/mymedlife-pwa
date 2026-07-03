@@ -167,6 +167,12 @@ Rules:
 After the CSV files are filled with real data:
 
 ```bash
+pnpm rollout:check-csv --dir rollout-csv
+```
+
+When the CSV folder is ready, build the JSON packet:
+
+```bash
 pnpm rollout:build \
   --chapters rollout-csv/chapters.csv \
   --users rollout-csv/users.csv \
@@ -191,7 +197,7 @@ Before any production data apply, confirm:
 
 - The packet passes `pnpm rollout:check`.
 - The handoff says `READY FOR HUMAN APPLY`.
-- The combined launch check only passes after GoDaddy DNS is fixed.
+- The combined launch check still passes the public production domain gate.
 - Nick approves the 30 chapters.
 - DS approves the user and role apply path.
 - The production apply owner is named.

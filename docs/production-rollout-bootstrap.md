@@ -92,6 +92,8 @@ For the plain-English data request, owner map, and review checklist, use
 Then fill those files with real MEDLIFE data and build the JSON packet:
 
 ```bash
+pnpm rollout:check-csv --dir rollout-csv
+
 pnpm rollout:build \
   --chapters rollout-csv/chapters.csv \
   --users rollout-csv/users.csv \
