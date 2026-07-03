@@ -184,13 +184,16 @@ function withSupabaseUuidAssignment(data: ReadOnlyAppData): ReadOnlyAppData {
       message: "Testing local Supabase data.",
     },
     assignments: [
-      {
-        ...data.assignments[0],
-        id: "00000000-0000-4000-8000-000000000101",
-        status: "not_started",
-        lane: "Member",
-      },
-      ...data.assignments.slice(1),
+      ...data.assignments.map((assignment) =>
+        assignment.id === "member-push"
+          ? {
+              ...assignment,
+              id: "00000000-0000-4000-8000-000000000101",
+              status: "not_started" as const,
+              lane: "Member" as const,
+            }
+          : assignment,
+      ),
     ],
   };
 }

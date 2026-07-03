@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { getRuntimeTheme, getRuntimeThemeStyle } from "@/services/runtime-theme";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -33,15 +34,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const runtimeTheme = await getRuntimeTheme();
+
   return (
     <html
       lang="en"
       className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      data-theme-source={runtimeTheme.source}
+      style={getRuntimeThemeStyle(runtimeTheme)}
     >
       <body className="min-h-full flex flex-col">
         <ServiceWorkerRegistration />

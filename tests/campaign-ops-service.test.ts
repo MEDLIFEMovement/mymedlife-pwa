@@ -60,12 +60,14 @@ describe("campaign ops service", () => {
 
   it("groups event plans and proof around campaigns", () => {
     expect(getEventPlansForCampaign("rush-month").map((item) => item.title)).toEqual([
-      "Freshman welcome social",
-      "Health equity intro Med Talk",
+      "Tabling at Bruin Walk",
+      "Intro GBM",
+      "Rush Week Social",
+      "Member Orientation",
     ]);
     expect(getNextEventPlanForCommittee("committee-social")).toEqual(
       expect.objectContaining({
-        title: "Freshman welcome social",
+        title: "Tabling at Bruin Walk",
       }),
     );
   });
@@ -76,10 +78,10 @@ describe("campaign ops service", () => {
 
     expect(workspace.mode).toBe("committee_member");
     expect(workspace.title).toContain("one event");
-    expect(workspace.priorityEvents.map((item) => item.campaignSlug)).toEqual([
-      "rush-month",
-      "rush-month",
-    ]);
+    expect(workspace.priorityEvents.every((item) => item.campaignSlug === "rush-month")).toBe(
+      true,
+    );
+    expect(workspace.priorityEvents).toHaveLength(4);
     expect(workspace.safetyReminders).toContain("Luma writes stay disabled.");
   });
 

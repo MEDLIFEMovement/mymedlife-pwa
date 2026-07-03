@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(60);
+    expect(entries).toHaveLength(75);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -20,6 +20,9 @@ describe("static route metadata", () => {
   it("keeps safety-sensitive reviewer routes named clearly", () => {
     expect(getStaticRouteMetadata("admin")).toMatchObject({
       title: "Admin",
+    });
+    expect(getStaticRouteMetadata("adminPhase2")).toMatchObject({
+      title: "Admin Phase 2",
     });
     expect(getStaticRouteMetadata("adminReviewPath")).toMatchObject({
       title: "Admin Review Path",
@@ -36,29 +39,47 @@ describe("static route metadata", () => {
     expect(getStaticRouteMetadata("adminAuditLog")).toMatchObject({
       title: "Admin Audit Log",
     });
+    expect(getStaticRouteMetadata("adminIntegrations")).toMatchObject({
+      title: "Admin Integrations",
+    });
+    expect(getStaticRouteMetadata("adminFeatureFlags")).toMatchObject({
+      title: "Admin Feature Flags",
+      description: expect.stringContaining("Supabase-backed rollout controls"),
+    });
+    expect(getStaticRouteMetadata("adminTheme")).toMatchObject({
+      title: "Admin Theme Settings",
+      description: expect.stringContaining("white-blue app shell"),
+    });
+    expect(getStaticRouteMetadata("adminLumaLivePilot")).toMatchObject({
+      title: "Admin Luma Live Pilot",
+      description: expect.stringContaining("Staging-only Luma event"),
+    });
     expect(getStaticRouteMetadata("adminIntegrationOutbox")).toMatchObject({
       title: "Admin Integration Outbox",
     });
     expect(getStaticRouteMetadata("adminMasterData")).toMatchObject({
       title: "Admin Master Data",
     });
+    expect(getStaticRouteMetadata("adminPermissions")).toMatchObject({
+      title: "Admin Permissions",
+    });
+    expect(getStaticRouteMetadata("adminCommittees")).toMatchObject({
+      title: "Admin Committees",
+    });
+    expect(getStaticRouteMetadata("adminWorkflows")).toMatchObject({
+      title: "Admin Workflows",
+    });
+    expect(getStaticRouteMetadata("adminSopLibrary")).toMatchObject({
+      title: "Admin SOP Library",
+    });
+    expect(getStaticRouteMetadata("adminSopBuilder")).toMatchObject({
+      title: "Admin SOP Builder",
+    });
     expect(getStaticRouteMetadata("adminDatabaseSecurity")).toMatchObject({
       title: "Admin Database Security",
     });
     expect(getStaticRouteMetadata("adminSystemHealth")).toMatchObject({
       title: "Admin System Health",
-    });
-    expect(getStaticRouteMetadata("adminPhase2Review")).toMatchObject({
-      title: "Admin Phase 2 Review",
-    });
-    expect(getStaticRouteMetadata("adminEnvironmentSetup")).toMatchObject({
-      title: "Admin Environment Setup",
-    });
-    expect(getStaticRouteMetadata("adminAuthOnboarding")).toMatchObject({
-      title: "Admin Auth Onboarding",
-    });
-    expect(getStaticRouteMetadata("adminSecurityGate")).toMatchObject({
-      title: "Admin Security Gate",
     });
     expect(getStaticRouteMetadata("adminDesignQa")).toMatchObject({
       title: "Admin Design QA",
@@ -78,12 +99,6 @@ describe("static route metadata", () => {
     expect(getStaticRouteMetadata("adminHqProofWrite")).toMatchObject({
       title: "HQ Proof Decision Packet",
     });
-    expect(getStaticRouteMetadata("adminPointsWrite")).toMatchObject({
-      title: "Points And KPI Packet",
-    });
-    expect(getStaticRouteMetadata("adminSltChecklistWrite")).toMatchObject({
-      title: "SLT Checklist Packet",
-    });
     expect(getStaticRouteMetadata("adminAssignmentWrite")).toMatchObject({
       title: "Leader Assignment Packet",
     });
@@ -98,6 +113,12 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("profile")).toMatchObject({
       title: "Profile",
+    });
+    expect(getStaticRouteMetadata("app")).toMatchObject({
+      title: "Member App",
+    });
+    expect(getStaticRouteMetadata("leader")).toMatchObject({
+      title: "Leader Command Center",
     });
     expect(getStaticRouteMetadata("onboarding")).toMatchObject({
       title: "Onboarding",
@@ -114,6 +135,13 @@ describe("static route metadata", () => {
     expect(getStaticRouteMetadata("sltPrepChecklist")).toMatchObject({
       title: "SLT Checklist",
     });
+    expect(getStaticRouteMetadata("sltPrepFlights")).toMatchObject({
+      title: "SLT Flights",
+    });
+    expect(getStaticRouteMetadata("sltPrepProfile")).toMatchObject({
+      title: "SLT Profile",
+      description: expect.stringContaining("alerts"),
+    });
     expect(getStaticRouteMetadata("sltPrepStaff")).toMatchObject({
       title: "SLT Staff Dashboard",
     });
@@ -128,7 +156,11 @@ describe("static route metadata", () => {
       description: expect.stringContaining("proof prep checklist"),
     });
     expect(getStaticRouteMetadata("coach")).toMatchObject({
-      title: "Coach Dashboard",
+      title: "Staff Command Center",
+    });
+    expect(getStaticRouteMetadata("chapter")).toMatchObject({
+      title: "Student Leadership Command Center",
+      description: expect.stringContaining("member pipeline"),
     });
     expect(getStaticRouteMetadata("staff")).toMatchObject({
       title: "Staff Command Center",

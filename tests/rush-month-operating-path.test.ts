@@ -45,7 +45,7 @@ describe("rush month operating path", () => {
     };
     const view = getRushMonthOperatingPathView(actor, calmData);
 
-    expect(view.focusStepId).toBe("assign-eboard");
+    expect(view.focusStepId).toBe("proof-pack");
   });
 
   it("keeps coach attention on the final decision lane", () => {

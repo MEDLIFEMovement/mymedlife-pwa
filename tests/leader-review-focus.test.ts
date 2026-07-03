@@ -16,14 +16,14 @@ describe("leader review focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("President / VP");
-    expect(focus.primaryHref).toBe("/rush-month/review");
-    expect(focus.secondaryHref).toBe("/chapter/members");
-    expect(focus.title).toContain("without taking over HQ sharing");
+    expect(focus.primaryHref).toBe("/leader?view=attendance");
+    expect(focus.secondaryHref).toBe("/leader?view=leaderboard");
+    expect(focus.title).toContain("without opening HQ review lanes");
     expect(focus.safetyNote).toContain("HQ-only");
     expect(focus.items.map((item) => item.label)).toEqual([
-      "HQ-ready",
+      "Ready to confirm",
       "Needs context",
-      "Decision authority",
+      "HQ review lane",
     ]);
   });
 
@@ -32,13 +32,13 @@ describe("leader review focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("E-Board Member");
-    expect(focus.primaryHref).toBe("/rush-month/actions");
-    expect(focus.secondaryHref).toBe("/rush-month/events");
-    expect(focus.title).toContain("owner follow-up");
+    expect(focus.primaryHref).toBe("/leader?view=events");
+    expect(focus.secondaryHref).toBe("/leader?view=attendance");
+    expect(focus.title).toContain("follow-up gaps");
     expect(focus.safetyNote).toContain("HQ-only");
     expect(focus.items.map((item) => item.label)).toEqual([
       "Owners to nudge",
-      "Ready for HQ",
+      "Ready to close",
       "External sends",
     ]);
   });
@@ -48,8 +48,8 @@ describe("leader review focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("Chapter Leader");
-    expect(focus.primaryHref).toBe("/rush-month/review");
-    expect(focus.secondaryHref).toBe("/rush-month/actions");
+    expect(focus.primaryHref).toBe("/leader?view=attendance");
+    expect(focus.secondaryHref).toBe("/leader?view=leaderboard");
     expect(focus.safetyNote).toContain("HQ sharing decisions");
   });
 
@@ -60,6 +60,6 @@ describe("leader review focus", () => {
     expect(member.canReadFocus).toBe(false);
     expect(member.items).toEqual([]);
     expect(admin.canReadFocus).toBe(false);
-    expect(admin.roleLabel).toBe("Admin");
+    expect(admin.roleLabel).toBe("Staff / Admin");
   });
 });

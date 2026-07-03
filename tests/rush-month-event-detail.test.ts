@@ -12,10 +12,10 @@ describe("rush month event detail", () => {
 
     expect(workspace?.canReadWorkspace).toBe(true);
     expect(workspace?.title).toBe("Your event game plan");
-    expect(workspace?.event?.title).toBe("Freshman welcome social");
+    expect(workspace?.event?.title).toBe("Tabling at Bruin Walk");
     expect(workspace?.event?.committeeName).toBe("Social Action Committee");
-    expect(workspace?.event?.rsvpStatusLabel).toBe("Registered locally");
-    expect(workspace?.event?.rsvpDetail).toContain("No live Luma attendee record");
+    expect(workspace?.event?.rsvpStatusLabel).toBe("You're on the list");
+    expect(workspace?.event?.rsvpDetail).toContain("showing up ready");
     expect(workspace?.nextStep.href).toBe("/rush-month/actions");
     expect(workspace?.readinessChecks.map((check) => check.label)).toEqual([
       "Owner",

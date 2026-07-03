@@ -10,19 +10,21 @@ describe("rush month event readiness", () => {
     expect(workspace.canReadWorkspace).toBe(true);
     expect(workspace.title).toBe("Your Rush Month events");
     expect(workspace.counts).toEqual({
-      totalEvents: 2,
+      totalEvents: 4,
       mockLinkedLumaEvents: 1,
       disabledLumaSyncs: 1,
-      npsPrompts: 2,
-      proofPrompts: 2,
+      npsPrompts: 4,
+      proofPrompts: 4,
       externalWritesExpected: 0,
     });
     expect(workspace.rows.map((row) => row.title)).toEqual([
-      "Freshman welcome social",
-      "Health equity intro Med Talk",
+      "Tabling at Bruin Walk",
+      "Intro GBM",
+      "Rush Week Social",
+      "Member Orientation",
     ]);
-    expect(workspace.rows[0]?.rsvpStatusLabel).toBe("Registered locally");
-    expect(workspace.rows[1]?.rsvpStatusLabel).toBe("RSVP not open");
+    expect(workspace.rows[0]?.rsvpStatusLabel).toBe("You're on the list");
+    expect(workspace.rows[1]?.rsvpStatusLabel).toBe("RSVP ready");
     expect(workspace.rows[0]?.npsQuestion).toContain("recommend this MEDLIFE event");
     expect(workspace.rows[0]?.proofPrompt).toContain("bridge video");
   });

@@ -1,7 +1,17 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
+  getLaunchLaneHomeHref,
+  getLaunchLaneLeaderAttendanceHref,
+  getLaunchLaneLeaderEventsHref,
+  getLaunchLaneLeaderPointsHref,
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+  getLaunchLaneStaffPointsHref,
+} from "@/services/events-points-launch-lane";
+import {
   canReadChapterData,
+  getActorSurfaceFamily,
   getVisibleAssignmentsForActor,
 } from "@/services/role-visibility";
 import type { Assignment } from "@/shared/types/domain";
@@ -34,15 +44,16 @@ export function getRoleNextActionBrief(
   }
 
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
+  const surfaceFamily = getActorSurfaceFamily(actor);
 
-  switch (actor.audience) {
-    case "chapter_member":
+  switch (surfaceFamily) {
+    case "member":
       return getMemberBrief(visibleAssignments, data);
-    case "chapter_leader":
+    case "leader":
       return getLeaderBrief(actor, visibleAssignments, data);
     case "coach":
       return getCoachBrief(visibleAssignments, data);
-    case "admin":
+    case "staff":
       return getAdminBrief(data);
     case "ds_admin":
       return getDsAdminBrief(data);
@@ -55,29 +66,28 @@ function getMemberBrief(
   assignments: Assignment[],
   data: ReadOnlyAppData,
 ): RoleNextActionBrief {
-  const nextAssignment =
-    assignments.find((assignment) => assignment.status !== "approved") ?? assignments[0];
+  const upcomingEventCount = data.chapterEventRows.length;
 
   return {
     eyebrow: "Your next move",
-    title: nextAssignment ? `Finish: ${nextAssignment.title}` : "Check your Rush Month work",
+    title:
+      upcomingEventCount > 0
+        ? "Open the next chapter event"
+        : "Check your chapter events",
     summary:
-      nextAssignment?.evidenceRequired ??
-      "Open your visible actions and confirm what proof or testimonial is needed.",
+      "Events are the front door right now. RSVP, show up, and let confirmed attendance move your points.",
     ownerLabel: "General Member",
-    primaryHref: nextAssignment
-      ? `/rush-month/actions/${nextAssignment.id}`
-      : "/rush-month/actions",
-    primaryLabel: "Open my action",
-    secondaryHref: "/rush-month/leaderboard",
+    primaryHref: getLaunchLaneMemberEventsHref("home"),
+    primaryLabel: "Open events",
+    secondaryHref: getLaunchLaneMemberPointsHref("points"),
     secondaryLabel: "See my points",
     safetyNote:
-      "This is still read-only guidance. Submitting or saving proof remains disabled until approved.",
+      "This stays read-only here. RSVP, attendance, and points can stay visible without opening broader proof or assignment modules.",
     signals: [
       {
-        label: "Visible actions",
-        value: `${assignments.length}`,
-        note: "Only member-readable work is shown here.",
+        label: "Upcoming events",
+        value: `${upcomingEventCount}`,
+        note: "Chapter events visible in the current launch lane.",
       },
       {
         label: "Points earned",
@@ -85,9 +95,9 @@ function getMemberBrief(
         note: "Friendly recognition from the local mock points summary.",
       },
       {
-        label: "Proof prompt",
-        value: nextAssignment?.status.replaceAll("_", " ") ?? "none",
-        note: nextAssignment?.dueLabel ?? "No due date in this local view.",
+        label: "Loop focus",
+        value: "RSVP -> Attend",
+        note: "Points move from confirmed attendance, not from browsing alone.",
       },
     ],
   };
@@ -109,23 +119,25 @@ function getLeaderBrief(
     return {
       eyebrow: "President / VP priority",
       title: shouldReview
-        ? "Approve the next proof and role decisions"
-        : "Check role coverage before opening more work",
+        ? "Check attendance and chapter follow-through"
+        : "Check event readiness before opening more work",
       summary: shouldReview
-        ? "Submitted or changes-requested proof needs a decision posture before points, KPIs, and coach readiness can move."
-        : "Use member and role coverage before approving the next Rush Month owner push.",
+        ? "Use attendance, member follow-through, and chapter visibility before points or chapter momentum move."
+        : "Use event readiness, role coverage, and attendance posture before widening the next chapter push.",
       ownerLabel: "President / VP",
-      primaryHref: shouldReview ? "/rush-month/review" : "/chapter/members",
-      primaryLabel: shouldReview ? "Open approval queue" : "Check role coverage",
-      secondaryHref: "/rush-month/dashboard",
-      secondaryLabel: "Open leader dashboard",
+      primaryHref: shouldReview
+        ? getLaunchLaneLeaderAttendanceHref()
+        : getLaunchLaneLeaderEventsHref(),
+      primaryLabel: shouldReview ? "Check attendance" : "Open leader events",
+      secondaryHref: getLaunchLaneLeaderPointsHref(),
+      secondaryLabel: "See chapter points",
       safetyNote:
-        "President / VP approval posture is read-only here. Membership approvals, proof decisions, assignment saves, and role changes remain disabled.",
+        "President / VP review remains read-only. Attendance, points, and chapter event posture stay visible without opening broader assignment or proof modules.",
       signals: [
         {
-          label: "Needs decision",
+          label: "Needs follow-through",
           value: `${pendingFollowUp}`,
-          note: "Submitted or changes-requested items visible to President / VP.",
+          note: "Submitted or changes-requested items still need chapter attention.",
         },
         {
           label: "Active owners",
@@ -145,19 +157,24 @@ function getLeaderBrief(
     return {
       eyebrow: "E-Board priority",
       title: activeOwners > 0
-        ? "Move the owners who are still stuck"
-        : "Prepare the next action committee push",
+        ? "Move the next chapter event forward"
+        : "Prepare the next chapter event push",
       summary: activeOwners > 0
-        ? "Not-started and in-progress actions need concrete owner follow-up before the next event."
-        : "Keep action committees moving by naming the event goal, owner, due date, and proof reminder.",
+        ? "Use the event lane to see who is showing up, what still needs follow-up, and where points can move next."
+        : "Keep the chapter moving by tightening the next event, attendance plan, and points story.",
       ownerLabel: "E-Board Member",
-      primaryHref: "/rush-month/actions",
-      primaryLabel: "Open owner follow-up",
-      secondaryHref: "/rush-month/events",
-      secondaryLabel: "Check events",
+      primaryHref: getLaunchLaneLeaderEventsHref(),
+      primaryLabel: "Open leader events",
+      secondaryHref: getLaunchLaneLeaderAttendanceHref(),
+      secondaryLabel: "Check attendance",
       safetyNote:
-        "E-Board execution posture is read-only here. Assignment saves, reminders, Luma writes, proof uploads, and external sends remain disabled.",
+        "E-Board execution stays read-only here. Event, attendance, and points posture stay visible while broader assignment and proof modules remain tucked away.",
       signals: [
+        {
+          label: "Events linked",
+          value: `${data.kpiSummary.eventsLinked}`,
+          note: "Mock Luma posture only.",
+        },
         {
           label: "Active owners",
           value: `${activeOwners}`,
@@ -168,11 +185,6 @@ function getLeaderBrief(
           value: `${pendingFollowUp}`,
           note: "Items that need clearer proof, testimonial context, or HQ review.",
         },
-        {
-          label: "Events linked",
-          value: `${data.kpiSummary.eventsLinked}`,
-          note: "Mock Luma posture only.",
-        },
       ],
     };
   }
@@ -180,18 +192,18 @@ function getLeaderBrief(
   return {
     eyebrow: "Leader operating priority",
     title: shouldReview
-      ? "Clear proof follow-up before assigning more work"
-      : "Assign the next concrete Rush Month owner",
+      ? "Check attendance and chapter follow-through"
+      : "Keep the next chapter event moving",
     summary: shouldReview
-      ? "Submitted or changes-requested proof needs a plain decision so points, KPIs, and coach posture can move."
-      : "Keep action committees moving by naming the owner, event goal, due date, and proof requirement.",
+      ? "Use attendance and event follow-through to confirm the chapter can trust the next points move."
+      : "Keep the chapter rhythm simple: events, attendance, and points should tell the same story.",
     ownerLabel: "Chapter Leader / E-Board",
-    primaryHref: shouldReview ? "/rush-month/review" : "/rush-month/actions",
-    primaryLabel: shouldReview ? "Open follow-up queue" : "Open team actions",
-    secondaryHref: "/rush-month/loop",
-    secondaryLabel: "Run local MVP loop",
+    primaryHref: getLaunchLaneLeaderEventsHref(),
+    primaryLabel: "Open leader events",
+    secondaryHref: getLaunchLaneLeaderPointsHref(),
+    secondaryLabel: "See chapter points",
     safetyNote:
-      "Leader saves and reminders are still disabled. This panel only shows the next safe operating step.",
+      "Leader saves and reminders are still disabled. Keep the visible story centered on event readiness, attendance, and points.",
     signals: [
       {
         label: "Needs follow-up",
@@ -228,12 +240,12 @@ function getCoachBrief(
     eyebrow: "Coach portfolio priority",
     title: `Review whether this chapter should ${data.kpiSummary.coachDecision}`,
     summary:
-      "Use assignment movement, proof flow, risk flags, and KPI direction before logging advance, hold, or intervene later.",
+      "Use chapter event health, attendance movement, risk flags, and points direction before logging advance, hold, or intervene later.",
     ownerLabel: "Coach",
-    primaryHref: "/coach",
-    primaryLabel: "Open coach readout",
-    secondaryHref: "/rush-month/dashboard",
-    secondaryLabel: "Open campaign health",
+    primaryHref: getLaunchLaneHomeHref("coach"),
+    primaryLabel: "Open portfolio chapters",
+    secondaryHref: getLaunchLaneStaffPointsHref(),
+    secondaryLabel: "See org points",
     safetyNote:
       "Coach decisions and escalation packets remain disabled until live auth and write activation are approved.",
     signals: [
@@ -259,26 +271,26 @@ function getCoachBrief(
 function getAdminBrief(data: ReadOnlyAppData): RoleNextActionBrief {
   return {
     eyebrow: "HQ support priority",
-    title: "Review proof-sharing posture without publishing anything",
+    title: "Review chapter event health before widening the pilot",
     summary:
-      "HQ decides whether submitted testimonials or bridge videos should be shared broadly later. The MVP still keeps publishing and external syncs off.",
-    ownerLabel: "Admin",
-    primaryHref: "/rush-month/review",
-    primaryLabel: "Open HQ review",
+      "Staff should be able to see chapter events, attendance movement, and points clearly before the pilot widens. Broader proof sharing and external syncs stay off.",
+    ownerLabel: "Staff",
+    primaryHref: getLaunchLaneHomeHref("staff"),
+    primaryLabel: "Open chapter view",
     secondaryHref: "/admin",
     secondaryLabel: "Open admin center",
     safetyNote:
-      "Admin mutation controls, public proof sharing, and real HubSpot/Luma/n8n writes remain disabled.",
+      "Public proof sharing and real HubSpot/Luma/n8n writes remain disabled while the visible staff lane stays focused on events and points.",
     signals: [
       {
-        label: "Proof pending",
-        value: `${data.kpiSummary.proofPending}`,
-        note: "Local proof posture for future HQ review.",
+        label: "Visible events",
+        value: `${data.chapterEventRows.length}`,
+        note: "Chapter event rows visible in the current pilot lane.",
       },
       {
-        label: "Outbox sends",
-        value: "0",
-        note: "No real external automation is enabled.",
+        label: "Points earned",
+        value: `${data.pointsSummary.earned}`,
+        note: "Local readback only; broader org sync stays off.",
       },
       {
         label: "Campaign",

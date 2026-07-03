@@ -19,10 +19,10 @@ describe("leader actions focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("President / VP");
-    expect(focus.primaryHref).toBe("/rush-month/review");
-    expect(focus.secondaryHref).toBe("/chapter/members");
+    expect(focus.primaryHref).toBe("/leader?view=attendance");
+    expect(focus.secondaryHref).toBe("/leader?view=leaderboard");
     expect(focus.assignmentCreateTitle).toContain("approval checkpoint");
-    expect(focus.safetyNote).toContain("Assignment saves");
+    expect(focus.safetyNote).toContain("event-and-points loop");
     expect(focus.items.map((item) => item.label)).toEqual([
       "Needs decision",
       "Active owners",
@@ -35,10 +35,10 @@ describe("leader actions focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("E-Board Member");
-    expect(focus.primaryHref).toBe("/rush-month/actions");
-    expect(focus.secondaryHref).toBe("/rush-month/events");
+    expect(focus.primaryHref).toBe("/leader?view=events");
+    expect(focus.secondaryHref).toBe("/leader?view=attendance");
     expect(focus.assignmentCreateTitle).toContain("execution planning");
-    expect(focus.safetyNote).toContain("Luma writes");
+    expect(focus.safetyNote).toContain("event-and-points lane");
     expect(focus.items.map((item) => item.label)).toEqual([
       "Owners to move",
       "Proof follow-up",
@@ -51,6 +51,8 @@ describe("leader actions focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("Chapter Leader");
+    expect(focus.primaryHref).toBe("/leader?view=events");
+    expect(focus.secondaryHref).toBe("/leader?view=leaderboard");
     expect(focus.assignmentCreateTitle).toBe("Assignment creation stays gated");
     expect(focus.safetyNote).toContain("external automation remain disabled");
   });

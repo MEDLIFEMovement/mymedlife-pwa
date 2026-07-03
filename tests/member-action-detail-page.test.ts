@@ -20,7 +20,7 @@ describe("member action detail copy", () => {
 
   it("keeps the steps explicit about evidence and local confirmation", () => {
     expect(getActionSteps(assignment)).toEqual([
-      "Invite students to the Rush Month event using the approved chapter message. Submit proof after the invite push.",
+      "Invite three students to the Intro GBM using the approved chapter message, then submit proof that shows the real outreach happened.",
       "Capture proof that answers this requirement: Message screenshot, invite list, or event RSVP link.",
       "Confirm the proof is accurate, preview the submission locally, and use the confirmation state before any real save path is approved.",
     ]);
@@ -28,9 +28,9 @@ describe("member action detail copy", () => {
 
   it("surfaces due date, assignee, status, and the 30-point detail facts", () => {
     expect(getActionDetailFacts(assignment)).toEqual([
-      expect.objectContaining({ label: "Due date", value: "Thursday" }),
+      expect.objectContaining({ label: "Due date", value: "Nov 15" }),
       expect.objectContaining({ label: "Assignee", value: "General Member" }),
-      expect.objectContaining({ label: "Status", value: "in progress" }),
+      expect.objectContaining({ label: "Status", value: "not started" }),
       expect.objectContaining({ label: "Points", value: "30" }),
     ]);
   });
