@@ -176,7 +176,10 @@ Vercel already has these aliases attached to the `mymedlife-pwa` project:
 - `mymedlife-pwa.vercel.app`
 
 GoDaddy DNS still needs to stop serving the parking records before the public
-domain can be considered live. In GoDaddy, remove the parking records:
+domain can be considered live. Vercel's live domain inspection currently
+recommends the simple A-record cutover below for both the apex and `www`.
+
+In GoDaddy, remove the parking records:
 
 ```text
 A     @     15.197.148.33
@@ -184,12 +187,11 @@ A     @     3.33.130.190
 CNAME www   mymedlife.org
 ```
 
-Then add the current Vercel records:
+Then add the current Vercel-recommended records:
 
 ```text
-A     @     216.150.1.1
-A     @     216.150.16.1
-CNAME www   6e73350b5a40ce7a.vercel-dns-016.com
+A     @     76.76.21.21
+A     www   76.76.21.21
 ```
 
 After DNS is saved and has time to propagate, verify Vercel and the public login
