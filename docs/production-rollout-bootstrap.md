@@ -154,6 +154,60 @@ The command prints the packet counts, blockers, warnings, and next steps. It
 exits with a failure code when the packet is not ready, so it can also be used
 in a review checklist or CI job.
 
+After the packet passes, create a review-only handoff for the human apply step:
+
+```bash
+pnpm rollout:handoff path/to/production-rollout-packet.json \
+  --out production-rollout-handoff.md
+```
+
+This report lists the Supabase Auth users, chapter rows, approved memberships,
+staff roles, coach assignments, launch campaigns, and safety rules that a human
+reviewer needs before applying production data. It does not create Auth users,
+write app rows, upload files, touch DNS, change Vercel settings, or enable
+external integrations.
+
+## Production Domain Check
+
+Vercel already has these aliases attached to the `mymedlife-pwa` project:
+
+- `mymedlife.org`
+- `www.mymedlife.org`
+- `mymedlife-pwa.vercel.app`
+
+GoDaddy DNS still needs to stop serving the parking records before the public
+domain can be considered live. In GoDaddy, remove the parking records:
+
+```text
+A     @     15.197.148.33
+A     @     3.33.130.190
+CNAME www   mymedlife.org
+```
+
+Then add the current Vercel records:
+
+```text
+A     @     216.150.1.1
+A     @     216.150.16.1
+CNAME www   6e73350b5a40ce7a.vercel-dns-016.com
+```
+
+After DNS is saved and has time to propagate, verify Vercel and the public login
+page:
+
+```bash
+pnpm dlx vercel@latest domains verify mymedlife.org \
+  --scope team_Ckuej4U0KGPbI7v9TtfElAMP --non-interactive
+
+pnpm dlx vercel@latest domains verify www.mymedlife.org \
+  --scope team_Ckuej4U0KGPbI7v9TtfElAMP --non-interactive
+
+pnpm production:domain https://www.mymedlife.org
+```
+
+The public domain is not ready until the domain check says `READY` and confirms
+that `/login` serves the myMEDLIFE app copy instead of the GoDaddy lander.
+
 ## Production Route Smoke Check
 
 After each production deployment, verify the four core public routes:
