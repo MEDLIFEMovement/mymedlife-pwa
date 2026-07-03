@@ -208,6 +208,27 @@ pnpm production:domain https://www.mymedlife.org
 The public domain is not ready until the domain check says `READY` and confirms
 that `/login` serves the myMEDLIFE app copy instead of the GoDaddy lander.
 
+## Combined Launch Check
+
+Use the combined read-only launch check when preparing a final go/no-go update:
+
+```bash
+pnpm production:launch-check \
+  --app-url https://mymedlife-pwa.vercel.app \
+  --public-url https://www.mymedlife.org \
+  --packet production-rollout-packet.json
+```
+
+This command checks all of the following in one report:
+
+- the deployed Vercel app routes for `/login`, `/app`, `/leader`, and `/staff`
+- the public production domain DNS and login page
+- the 30-chapter rollout packet readiness
+- the review-only rollout handoff posture
+
+It is read-only. It does not create users, write Supabase rows, change DNS,
+change Vercel settings, upload files, or enable integrations.
+
 ## Production Route Smoke Check
 
 After each production deployment, verify the four core public routes:
