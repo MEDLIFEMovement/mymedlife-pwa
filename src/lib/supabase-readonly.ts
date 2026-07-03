@@ -2,17 +2,34 @@ import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getAuthSessionState } from "@/services/auth-session";
 
 type EnvSource = Record<string, string | undefined>;
+type CreateServerClient = typeof createLocalSupabaseServerClient;
 
 export type SupabaseReadConfig =
   | {
       enabled: true;
       url: string;
       key: string;
+      accessToken?: string;
       reason: string;
     }
   | {
       enabled: false;
       reason: string;
+    };
+
+export type SupabaseReadonlyAccess =
+  | {
+      enabled: true;
+      client: SupabaseReadonlyClient;
+      reason: string;
+      isLocalOnly: boolean;
+      mode: "local_service_role" | "auth_session";
+    }
+  | {
+      enabled: false;
+      reason: string;
+      isLocalOnly: boolean;
+      mode: "mock_fallback";
     };
 
 export type SupabaseSelectOptions = {
@@ -104,7 +121,7 @@ export function createSupabaseReadonlyClient(
         method: "GET",
         headers: {
           apikey: config.key,
-          authorization: `Bearer ${config.key}`,
+          authorization: `Bearer ${config.accessToken ?? config.key}`,
           "accept-profile": "app",
         },
         cache: "no-store",
@@ -119,6 +136,78 @@ export function createSupabaseReadonlyClient(
 
       return (await response.json()) as TRow[];
     },
+  };
+}
+
+export async function createSupabaseReadonlyAccess(
+  env: EnvSource = process.env,
+  fetchFn: typeof fetch = fetch,
+  options: {
+    createServerClient?: CreateServerClient;
+  } = {},
+): Promise<SupabaseReadonlyAccess> {
+  const config = getSupabaseReadConfig(env);
+
+  if (config.enabled) {
+    return {
+      enabled: true,
+      client: createSupabaseReadonlyClient(config, fetchFn),
+      reason: config.reason,
+      isLocalOnly: true,
+      mode: "local_service_role",
+    };
+  }
+
+  const createServerClient =
+    options.createServerClient ?? createLocalSupabaseServerClient;
+  const { client: authClient, config: authConfig } =
+    await createServerClient(env);
+
+  if (authClient && authConfig.enabled) {
+    const sessionResult = await authClient.auth.getSession();
+    const accessToken = sessionResult.data.session?.access_token;
+
+    if (!sessionResult.error && accessToken) {
+      const reason = authConfig.isLocalOnly
+        ? "Reading local Supabase data with the signed-in auth session."
+        : "Reading hosted staging Supabase data with the signed-in reviewer session.";
+
+      return {
+        enabled: true,
+        client: createSupabaseReadonlyClient(
+          {
+            enabled: true,
+            url: authConfig.url,
+            key: authConfig.anonKey,
+            accessToken,
+            reason,
+          },
+          fetchFn,
+        ),
+        reason,
+        isLocalOnly: authConfig.isLocalOnly,
+        mode: "auth_session",
+      };
+    }
+
+    if (env.MYMEDLIFE_DATA_SOURCE === "supabase") {
+      return {
+        enabled: false,
+        reason: authConfig.isLocalOnly
+          ? "Using mock data because no signed-in local Supabase session is active."
+          : "Using mock data because no signed-in hosted staging reviewer session is active.",
+        isLocalOnly: authConfig.isLocalOnly,
+        mode: "mock_fallback",
+      };
+    }
+  }
+
+  return {
+    enabled: false,
+    reason:
+      env.MYMEDLIFE_DATA_SOURCE === "supabase" ? authConfig.reason : config.reason,
+    isLocalOnly: authConfig.isLocalOnly,
+    mode: "mock_fallback",
   };
 }
 

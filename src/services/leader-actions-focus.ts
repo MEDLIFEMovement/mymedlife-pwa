@@ -1,5 +1,12 @@
+import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
+import {
+  getLaunchLaneLeaderAttendanceHref,
+  getLaunchLaneLeaderEventsHref,
+  getLaunchLaneLeaderPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 import type { Assignment } from "@/shared/types/domain";
 
 export type LeaderActionsFocusItem = {
@@ -28,17 +35,17 @@ export function getLeaderActionsFocus(
   data: ReadOnlyAppData,
   visibleAssignments: Assignment[],
 ): LeaderActionsFocus {
-  if (actor.audience !== "chapter_leader") {
+  if (getActorSurfaceFamily(actor) !== "leader") {
     return {
       canReadFocus: false,
-      roleLabel: actor.audienceLabel,
+      roleLabel: getActorPrimaryRoleLabel(actor),
       title: "Leader action focus hidden for this role",
       summary:
-        "Only chapter-leader review personas see assignment guardrail and owner follow-up guidance.",
-      primaryHref: "/rush-month/actions",
-      primaryLabel: "Open actions",
-      secondaryHref: "/rush-month/dashboard",
-      secondaryLabel: "Open dashboard",
+        "Only chapter-leader review personas see chapter-event and attendance guidance here.",
+      primaryHref: getLaunchLaneLeaderEventsHref(),
+      primaryLabel: "Open leader events",
+      secondaryHref: getLaunchLaneLeaderPointsHref(),
+      secondaryLabel: "See chapter points",
       assignmentCreateTitle: "Assignment creation hidden",
       assignmentCreateSummary:
         "This role should use its own operating route instead of chapter-leader assignment guidance.",
@@ -56,18 +63,18 @@ export function getLeaderActionsFocus(
     return {
       canReadFocus: true,
       roleLabel: "President / VP",
-      title: "Approve the next assignment only after the guardrails are clear.",
+      title: "Check attendance and chapter follow-through before points move.",
       summary:
-        "Use this actions view to check proof decisions, owner accountability, role coverage, points, and KPI fit before allowing more work to be assigned.",
-      primaryHref: "/rush-month/review",
-      primaryLabel: "Review proof decisions",
-      secondaryHref: "/chapter/members",
-      secondaryLabel: "Check member roles",
+        "Use the leader shell to check attendance posture, owner accountability, role coverage, and points before widening the next chapter push.",
+      primaryHref: getLaunchLaneLeaderAttendanceHref(),
+      primaryLabel: "Check attendance",
+      secondaryHref: getLaunchLaneLeaderPointsHref(),
+      secondaryLabel: "See chapter points",
       assignmentCreateTitle: "Assignment creation is an approval checkpoint",
       assignmentCreateSummary:
-        "The disabled assignment form is useful for reviewing title, owner role, proof requirement, points, KPI, audit, and outbox posture before any real save is approved.",
+        "The hidden assignment form stays useful for internal review, but the visible leader lane should stay centered on events, attendance, and points.",
       safetyNote:
-        "President / VP review remains read-only. Assignment saves, membership approvals, proof decisions, reminders, and role changes remain disabled.",
+        "President / VP review remains read-only. Visible leader work stays in the event-and-points loop while broader assignment and proof modules remain disabled.",
       items: [
         {
           label: "Needs decision",
@@ -92,18 +99,18 @@ export function getLeaderActionsFocus(
     return {
       canReadFocus: true,
       roleLabel: "E-Board Member",
-      title: "Follow up with owners before creating more work.",
+      title: "Use the chapter event lane before opening more work.",
       summary:
-        "Use this actions view to move not-started and in-progress owners, connect them to events, and make proof reminders concrete.",
-      primaryHref: "/rush-month/actions",
-      primaryLabel: "Review owner list",
-      secondaryHref: "/rush-month/events",
-      secondaryLabel: "Check events",
+        "Use the leader shell to connect owners to real events, check attendance posture, and keep points tied to what actually happened.",
+      primaryHref: getLaunchLaneLeaderEventsHref(),
+      primaryLabel: "Open leader events",
+      secondaryHref: getLaunchLaneLeaderAttendanceHref(),
+      secondaryLabel: "Check attendance",
       assignmentCreateTitle: "Assignment creation is execution planning",
       assignmentCreateSummary:
-        "The disabled assignment form previews the next owner handoff, but the immediate E-Board job is to clear stuck owners and event proof plans.",
+        "The internal assignment form can stay available for review, but the visible E-Board job is to keep events and attendance moving.",
       safetyNote:
-        "E-Board execution remains read-only. Assignment saves, reminders, Luma writes, proof uploads, and external automation remain disabled.",
+        "E-Board execution remains read-only. Visible work stays in the event-and-points lane while broader assignment and proof modules remain disabled.",
       items: [
         {
           label: "Owners to move",
@@ -127,18 +134,18 @@ export function getLeaderActionsFocus(
   return {
     canReadFocus: true,
     roleLabel: "Chapter Leader",
-    title: "Use actions to balance owner follow-up and assignment planning.",
+    title: "Use the leader shell to balance events, attendance, and points.",
     summary:
-      "This read-only view helps leaders inspect owner movement, proof posture, and disabled assignment creation before any browser save is approved.",
-    primaryHref: "/rush-month/review",
-    primaryLabel: "Open follow-up",
-    secondaryHref: "/rush-month/actions",
-    secondaryLabel: "Open actions",
+      "This read-only view helps leaders inspect chapter rhythm without surfacing non-core assignment or proof modules as the main path.",
+    primaryHref: getLaunchLaneLeaderEventsHref(),
+    primaryLabel: "Open leader events",
+    secondaryHref: getLaunchLaneLeaderPointsHref(),
+    secondaryLabel: "See chapter points",
     assignmentCreateTitle: "Assignment creation stays gated",
     assignmentCreateSummary:
-      "Review owner role, proof requirement, points, KPI, audit, and outbox posture without saving.",
+      "Review owner role, proof requirement, points, KPI, audit, and outbox posture internally without making it the main leader path.",
     safetyNote:
-      "Leader assignment saves, reminders, proof uploads, and external automation remain disabled.",
+      "Leader assignment saves, reminders, proof uploads, and external automation remain disabled while the visible shell stays simpler.",
     items: [
       {
         label: "Needs follow-up",

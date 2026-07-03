@@ -3,6 +3,15 @@ import {
   getMobileVisualSmokeChecks,
   type MobileVisualSmokeCheck,
 } from "@/services/design-qa-readiness";
+import {
+  isEventsPointsLaunchLaneEnabled,
+  isEventsPointsLaunchLaneSmokePath,
+} from "@/services/launch-lane-product-focus";
+import {
+  canReadAdminReviewSurface,
+  getActorSurfaceFamily,
+  type ActorSurfaceFamily,
+} from "@/services/role-visibility";
 
 export type RouteSmokePriority = "critical" | "important" | "support";
 
@@ -43,11 +52,9 @@ export type RouteSmokeManifest = {
 export function getRouteSmokeManifest(
   actor: LocalActorContext,
 ): RouteSmokeManifest {
-  if (
-    actor.audience !== "admin" &&
-    actor.audience !== "ds_admin" &&
-    actor.audience !== "super_admin"
-  ) {
+  const surfaceFamily = getActorSurfaceFamily(actor);
+
+  if (!canReadAdminReviewSurface(actor)) {
     return {
       canReadManifest: false,
       title: "Route smoke manifest hidden for this role",
@@ -58,13 +65,15 @@ export function getRouteSmokeManifest(
     };
   }
 
-  const routes = withMobileReviewMetadata(routeSmokeItems);
+  const routes = withMobileReviewMetadata(getVisibleRouteSmokeItems());
 
   return {
     canReadManifest: true,
-    title: getTitle(actor),
+    title: getTitle(surfaceFamily),
     summary:
-      "Use this manifest for manual browser smoke checks across the core Rush Month and SLT Prep MVP routes, local actor roles, and Goal 147 mobile-review metadata.",
+      isEventsPointsLaunchLaneEnabled()
+        ? "Use this manifest for manual browser smoke checks across the login, member, leader, staff, and admin routes that make up the current events-and-points launch lane."
+        : "Use this manifest for manual browser smoke checks across the core Rush Month and SLT Prep MVP routes, local actor roles, and Goal 147 mobile-review metadata.",
     routes,
     counts: {
       totalRoutes: routes.length,
@@ -75,6 +84,16 @@ export function getRouteSmokeManifest(
       externalWritesExpected: 0,
     },
   };
+}
+
+function getVisibleRouteSmokeItems(): RouteSmokeItem[] {
+  if (!isEventsPointsLaunchLaneEnabled()) {
+    return routeSmokeItems;
+  }
+
+  return launchLaneRouteSmokeItems.filter((route) =>
+    isEventsPointsLaunchLaneSmokePath(route.path),
+  );
 }
 
 function withMobileReviewMetadata(routes: RouteSmokeItem[]): RouteSmokeItem[] {
@@ -357,43 +376,13 @@ const routeSmokeItems: RouteSmokeItem[] = [
   },
   {
     path: "/admin/phase-2",
-    label: "Phase 2 safe prep review",
+    label: "Admin Phase 2 closeout review",
     priority: "critical",
     audiences: ["admin", "ds_admin", "super_admin"],
     expectedResult:
-      "Admin reviewers see the Phase 2 issue map, readiness groups, environment checklist, auth/onboarding plan, write-promotion sequence, mock-only boundary, and next approval steps for MED-471 through MED-486.",
+      "Admin reviewers see one clean starting route for the Phase 2 closeout packet, staff dry run, onboarding preflight, design QA, pilot scope, first hosted write, and integration hold.",
     safetyAssertion:
-      "Phase 2 review must not enable live Supabase or Vercel setup, credentials, live auth, browser writes, proof uploads, DB migrations, production deploys, or external automation.",
-  },
-  {
-    path: "/admin/environment-setup",
-    label: "Environment setup foundation",
-    priority: "critical",
-    audiences: ["admin", "ds_admin", "super_admin"],
-    expectedResult:
-      "Admin reviewers see the MED-472 environment plan for local, preview, staging, and production, plus env-var boundaries, callback patterns, and owner expectations.",
-    safetyAssertion:
-      "Environment review must not create live projects, add secrets, promote deployments, change DNS, or expose service-role credentials.",
-  },
-  {
-    path: "/admin/auth-onboarding",
-    label: "Auth and onboarding foundation",
-    priority: "critical",
-    audiences: ["admin", "ds_admin", "super_admin"],
-    expectedResult:
-      "Admin reviewers see the MED-473 callback route, identity source of truth, role-routing plan, profile rules, ownership decisions, and blocked live-auth actions.",
-    safetyAssertion:
-      "Auth review must not create hosted users, auto-approve membership, trust browser-only identity, or enable production sign-in flows.",
-  },
-  {
-    path: "/admin/security-gate",
-    label: "RLS and security release gate",
-    priority: "critical",
-    audiences: ["admin", "ds_admin", "super_admin"],
-    expectedResult:
-      "Admin reviewers see the MED-474 security gate checks, current local evidence, hosted proof requirements, and blocked live security actions before any write is approved.",
-    safetyAssertion:
-      "Security review must not run hosted migrations, enable storage/uploads, allow production browser writes, or point the app at production Supabase without sign-off.",
+      "Phase 2 closeout review must not approve live pilot access, enable production auth, enable browser writes, enable uploads, or turn on external systems.",
   },
   {
     path: "/admin/review-path",
@@ -466,6 +455,56 @@ const routeSmokeItems: RouteSmokeItem[] = [
       "Production user creation, profile edits, role writes, membership approvals, chapter edits, campaign template edits, coach assignment changes, and external sends remain disabled.",
   },
   {
+    path: "/admin/permissions",
+    label: "Admin permission registry",
+    priority: "important",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Backend reviewers see canonical roles, scopes, landing routes, route families, and local actor coverage without enabling writes.",
+    safetyAssertion:
+      "Permission review must not approve role writes, membership approvals, external sends, or hosted policy changes.",
+  },
+  {
+    path: "/admin/committees",
+    label: "Admin committee registry",
+    priority: "important",
+    audiences: ["admin", "super_admin"],
+    expectedResult:
+      "HQ reviewers see committee owner lanes, linked campaigns, sample actions, and blocked mutation posture.",
+    safetyAssertion:
+      "Committee review must not enable role reassignment, campaign editing, reminders, or external sends.",
+  },
+  {
+    path: "/admin/workflows",
+    label: "Admin workflow registry",
+    priority: "important",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Backend reviewers see onboarding, membership, write, proof, SLT, coach, and SOP lanes with mock-safe status.",
+    safetyAssertion:
+      "Workflow review must not enable production auth, browser writes, uploads, or external systems.",
+  },
+  {
+    path: "/admin/sop-library",
+    label: "Admin SOP library",
+    priority: "important",
+    audiences: ["admin", "super_admin"],
+    expectedResult:
+      "Backend reviewers see campaign workflow definitions and can open builder tabs for steps, roles, completion, KPIs, comms, preview, and version history.",
+    safetyAssertion:
+      "SOP library review must not enable admin editing, version publish, or external automation.",
+  },
+  {
+    path: "/admin/sop-builder/rush-month?tab=steps",
+    label: "Admin SOP builder",
+    priority: "important",
+    audiences: ["admin", "super_admin"],
+    expectedResult:
+      "Backend reviewers see a campaign-specific workflow builder with tab state and real route links into the existing product surfaces.",
+    safetyAssertion:
+      "SOP builder review must not enable admin edits, live writes, or external systems.",
+  },
+  {
     path: "/admin/database-security",
     label: "Admin database security",
     priority: "critical",
@@ -521,7 +560,7 @@ const routeSmokeItems: RouteSmokeItem[] = [
     priority: "critical",
     audiences: ["admin", "ds_admin", "super_admin"],
     expectedResult:
-      "HQ staff can see the implemented Phase 2 subset order for membership approval, leader assignment, action-start, proof metadata, leader proof decisions, HQ proof decisions, and coach decisions.",
+      "HQ staff can see the safe promotion order for action-start, proof metadata, HQ proof decisions, leader assignments, and coach decisions.",
     safetyAssertion:
       "The planner must not enable production auth, browser writes, proof uploads, public proof sharing, or external automation.",
   },
@@ -587,16 +626,183 @@ const routeSmokeItems: RouteSmokeItem[] = [
   },
 ];
 
-function getTitle(actor: LocalActorContext): string {
-  switch (actor.audience) {
-    case "admin":
+const launchLaneRouteSmokeItems: RouteSmokeItem[] = [
+  {
+    path: "/",
+    label: "Role-aware home handoff",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "ds_admin"],
+    expectedResult:
+      "Shows a simple role-aware handoff into the member, leader, staff, or admin workspace without exposing unrelated modules.",
+    safetyAssertion:
+      "Home handoff must not submit work, write profile data, or send external automation.",
+  },
+  {
+    path: "/offline",
+    label: "Offline recovery",
+    priority: "support",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "ds_admin"],
+    expectedResult:
+      "Shows the offline shell with clear recovery copy and no private event or chapter data leakage.",
+    safetyAssertion:
+      "Offline mode must not cache private data, submit writes, or trigger external sends.",
+  },
+  {
+    path: "/login",
+    label: "Single sign-in entry",
+    priority: "critical",
+    audiences: [
+      "chapter_member",
+      "chapter_leader",
+      "coach",
+      "admin",
+      "ds_admin",
+      "super_admin",
+    ],
+    expectedResult:
+      "Shows one sign-in surface where authentication decides the workspace and the role card is not the source of truth.",
+    safetyAssertion:
+      "Login review must not enable production auth, profile writes, membership writes, or external sends.",
+  },
+  {
+    path: "/profile",
+    label: "Profile and role scope",
+    priority: "support",
+    audiences: [
+      "chapter_member",
+      "chapter_leader",
+      "coach",
+      "admin",
+      "ds_admin",
+      "super_admin",
+    ],
+    expectedResult:
+      "Shows the current role, chapter or staff scope, and the safe next route in the launch lane.",
+    safetyAssertion:
+      "Profile review must not save role changes, chapter changes, or external writes.",
+  },
+  {
+    path: "/app",
+    label: "Member home",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "ds_admin"],
+    expectedResult:
+      "Member home stays mobile-first and centered on the next event, RSVP progress, points earned, and chapter leaderboard movement.",
+    safetyAssertion:
+      "Member home must not expose admin tools, hidden modules, or unrelated write lanes.",
+  },
+  {
+    path: "/app/events",
+    label: "Member events",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "ds_admin"],
+    expectedResult:
+      "Members see chapter events, RSVP posture, attendance follow-up, and points eligibility in one simple event list.",
+    safetyAssertion:
+      "Event browsing must not trigger live attendance imports, outbox sends, or unrelated campaign workflows.",
+  },
+  {
+    path: "/app/events/chapter-event-ucla-kickoff",
+    label: "Member event detail",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "ds_admin"],
+    expectedResult:
+      "The event detail explains RSVP state, attendance impact, and how the event will move points and the leaderboard.",
+    safetyAssertion:
+      "Event detail review must not bypass assignment rules, record attendance directly, or send external automation.",
+  },
+  {
+    path: "/app/points",
+    label: "Member points and leaderboard",
+    priority: "critical",
+    audiences: ["chapter_member", "chapter_leader", "coach", "admin", "ds_admin"],
+    expectedResult:
+      "Members see their recent event-based point awards, chapter standing, and why leaderboard movement changed.",
+    safetyAssertion:
+      "Points review must not mutate the ledger, rankings, or external systems.",
+  },
+  {
+    path: "/leader",
+    label: "Leader command center",
+    priority: "critical",
+    audiences: ["chapter_leader", "coach", "admin", "super_admin"],
+    expectedResult:
+      "Leaders can create or link events, watch RSVPs, confirm attendance posture, and move chapter points from one focused command surface.",
+    safetyAssertion:
+      "Leader review must not expose unrelated backend tooling or hidden module writes.",
+  },
+  {
+    path: "/staff",
+    label: "Staff command center",
+    priority: "critical",
+    audiences: ["coach", "admin", "super_admin"],
+    expectedResult:
+      "Staff can compare chapter event health, RSVP gaps, attendance gaps, and leaderboard movement across the rollout.",
+    safetyAssertion:
+      "Staff review must not enable member writes, external sends, or non-core module drift.",
+  },
+  {
+    path: "/admin",
+    label: "Admin control center",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Admin stays focused on launch controls, audit posture, Luma readiness, and pilot safety instead of acting like the main product.",
+    safetyAssertion:
+      "Admin review must not enable broad writes, production auth, or external systems.",
+  },
+  {
+    path: "/admin/launch-gate",
+    label: "Launch gate",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Reviewers can see the production blockers for the event loop in plain language before any wider rollout.",
+    safetyAssertion:
+      "Launch gate review must not approve live launch, external sends, or production configuration changes by itself.",
+  },
+  {
+    path: "/admin/audit-log",
+    label: "Audit log",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Reviewers can confirm the event loop leaves readable audit evidence without exposing private payloads or secrets.",
+    safetyAssertion:
+      "Audit review must not edit, delete, or export sensitive rows.",
+  },
+  {
+    path: "/admin/integration-outbox",
+    label: "Integration outbox",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Reviewers can verify the Luma and points loop posture while broader external systems remain off.",
+    safetyAssertion:
+      "Outbox review must not trigger sends, retries, or payload edits.",
+  },
+  {
+    path: "/admin/pilot-scope",
+    label: "Pilot scope",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Reviewers can see the one-chapter and first-five-chapter plan with named safety boundaries for the rollout.",
+    safetyAssertion:
+      "Pilot scope review must not invite users, enable writes, or broaden the launch without explicit approval.",
+  },
+];
+
+function getTitle(surfaceFamily: ActorSurfaceFamily): string {
+  switch (surfaceFamily) {
+    case "staff":
       return "Admin route smoke manifest";
     case "ds_admin":
       return "DS Admin route safety manifest";
     case "super_admin":
       return "Full local route smoke manifest";
-    case "chapter_member":
-    case "chapter_leader":
+    case "member":
+    case "leader":
     case "coach":
       return "Route smoke manifest hidden for this role";
   }

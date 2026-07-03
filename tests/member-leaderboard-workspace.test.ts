@@ -13,11 +13,12 @@ describe("member leaderboard workspace", () => {
     const workspace = getMemberLeaderboardWorkspace(actor, recognition);
 
     expect(workspace.canReadLeaderboard).toBe(true);
-    expect(workspace.title).toBe("Your Rush Month leaderboard");
-    expect(workspace.nextStep.href).toBe("/rush-month/actions");
-    expect(workspace.nextStep.ctaLabel).toBe("Open my actions");
+    expect(workspace.title).toBe("Your chapter leaderboard");
+    expect(workspace.nextStep.href).toBe("/app/events?source=points");
+    expect(workspace.nextStep.ctaLabel).toBe("Open events");
     expect(workspace.browserWritesExpected).toBe(0);
     expect(workspace.externalWritesExpected).toBe(0);
+    expect(workspace.summary).toContain("stays read-only");
     expect(workspace.safetyNotes.join(" ")).toContain("mock_read_only");
     expect(workspace.safetyNotes.join(" ")).toContain("No points write");
   });
@@ -35,9 +36,27 @@ describe("member leaderboard workspace", () => {
     );
 
     expect(leaderWorkspace.title).toBe("Chapter member leaderboard");
-    expect(leaderWorkspace.nextStep.href).toBe("/rush-month/actions");
+    expect(leaderWorkspace.nextStep.href).toBe("/leader?view=events");
     expect(coachWorkspace.title).toBe("Portfolio chapter leaderboard");
-    expect(coachWorkspace.nextStep.href).toBe("/coach");
+    expect(coachWorkspace.nextStep.href).toBe("/staff?view=chapters");
+  });
+
+  it("maps committee members to member next actions and committee chairs to leader follow-up", () => {
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
+    const committeeChair = getMockLocalActorContext("committee.chair@mymedlife.test");
+    const committeeMemberWorkspace = getMemberLeaderboardWorkspace(
+      committeeMember,
+      getMemberRecognitionSummary(committeeMember, data),
+    );
+    const committeeChairWorkspace = getMemberLeaderboardWorkspace(
+      committeeChair,
+      getMemberRecognitionSummary(committeeChair, data),
+    );
+
+    expect(committeeMemberWorkspace.title).toBe("Your chapter leaderboard");
+    expect(committeeMemberWorkspace.nextStep.href).toBe("/app/events?source=points");
+    expect(committeeChairWorkspace.title).toBe("Chapter member leaderboard");
+    expect(committeeChairWorkspace.nextStep.href).toBe("/leader?view=events");
   });
 
   it("keeps DS Admin out of student points truth", () => {

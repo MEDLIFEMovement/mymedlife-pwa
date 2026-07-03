@@ -18,8 +18,10 @@ import {
 
 describe("rush month service", () => {
   it("returns role-based assignment visibility", () => {
-    expect(getAssignmentsForRole(assignments, "member")).toEqual([
-      expect.objectContaining({ lane: "Member" }),
+    expect(getAssignmentsForRole(assignments, "member").map((assignment) => assignment.id)).toEqual([
+      "member-push",
+      "share-rush-flyer",
+      "welcome-table",
     ]);
     expect(getAssignmentsForRole(assignments, "leader")).toHaveLength(assignments.length);
     expect(getAssignmentsForRole(assignments, "coach")).not.toContainEqual(
@@ -34,12 +36,16 @@ describe("rush month service", () => {
       chapterRoles: ["General Member"],
     });
 
-    expect(visible).toEqual([expect.objectContaining({ id: "member-push" })]);
+    expect(visible.map((assignment) => assignment.id)).toEqual([
+      "member-push",
+      "share-rush-flyer",
+      "welcome-table",
+    ]);
   });
 
   it("finds assignments by id", () => {
     expect(getAssignmentById(assignments, "member-push")?.title).toBe(
-      "Run the general member invite push",
+      "Invite 3 friends to the Intro GBM",
     );
     expect(getAssignmentById(assignments, "missing")).toBeUndefined();
   });
@@ -79,7 +85,7 @@ describe("rush month service", () => {
   it("calculates points from approved assignments", () => {
     expect(calculatePointsSummary(assignments)).toEqual({
       earned: 10,
-      available: 95,
+      available: 135,
       approvedActions: 1,
     });
   });
@@ -87,7 +93,7 @@ describe("rush month service", () => {
   it("calculates KPI summary from mock data", () => {
     expect(calculateKpiSummary(assignments, integrationEvents)).toEqual({
       invitePushes: 1,
-      proofPending: 2,
+      proofPending: 3,
       eventsLinked: 1,
       coachDecision: "intervene",
     });

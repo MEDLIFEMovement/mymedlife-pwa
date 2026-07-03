@@ -4,7 +4,10 @@ import { AppNavigation } from "@/components/app-navigation";
 import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getLandingRouteForActor } from "@/services/landing-route";
+import { isEventsPointsLaunchLaneEnabled } from "@/services/launch-lane-product-focus";
 import {
+  getActorSurfaceFamily,
   type MobileNavigationItem,
   getMobileQuickNavigationForActor,
   getNavigationForActor,
@@ -15,6 +18,10 @@ type AppShellProps = {
   actor?: LocalActorContext;
   chromeMode?: "default" | "mobile-app";
   debugToolsPlacement?: "before-content" | "after-content";
+  hideDesktopRail?: boolean;
+  hideTopHeader?: boolean;
+  showMobileQuickItemHelpers?: boolean;
+  showDebugTools?: boolean;
   mobileQuickItemsOverride?: MobileNavigationItem[];
 };
 
@@ -23,75 +30,468 @@ export function AppShell({
   children,
   chromeMode,
   debugToolsPlacement = "after-content",
+  hideDesktopRail = false,
+  hideTopHeader = false,
+  showMobileQuickItemHelpers = true,
+  showDebugTools = true,
   mobileQuickItemsOverride,
 }: AppShellProps) {
+  const surfaceFamily = actor ? getActorSurfaceFamily(actor) : null;
+  const isMemberShell = surfaceFamily === "member";
+  const isCommandSurface = surfaceFamily !== null && surfaceFamily !== "member";
   const resolvedChromeMode =
-    chromeMode ?? (actor?.audience === "chapter_member" ? "mobile-app" : "default");
+    chromeMode ?? (isMemberShell ? "mobile-app" : "default");
+  const shellVariant =
+    isCommandSurface ? "command" : actor && !isMemberShell ? "compact" : "hero";
+  const maxWidthClassName = isCommandSurface
+    ? "max-w-[92rem]"
+    : isMemberShell
+      ? "max-w-[44rem]"
+      : "max-w-6xl";
   const navItems = getNavigationForActor(actor);
   const quickItems = mobileQuickItemsOverride ?? getMobileQuickNavigationForActor(actor);
-  const debugTools = actor ? (
-    <>
-      <LocalActorNotice actor={actor} />
-      <LocalRoleSwitcher actor={actor} />
-    </>
+  const shellCopy = getShellCopy(actor);
+  const showCommandSummary = !isCommandSurface;
+  const showSharedTopHeader = !hideTopHeader;
+  const showSharedDesktopRail = isCommandSurface && !hideDesktopRail;
+  const sidebarCopy = getSidebarCopy(surfaceFamily);
+  const debugActor = actor && showDebugTools ? actor : null;
+  const shellBadge = getShellBadge(actor);
+  const headerChrome = getHeaderChromeClasses(surfaceFamily, isCommandSurface);
+  const mainChrome = getMainChromeClasses(surfaceFamily, resolvedChromeMode, isCommandSurface);
+  const debugTools = debugActor ? (
+    <details className="app-surface rounded-[1.65rem] p-4">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+        <div>
+          <p className="app-eyebrow app-eyebrow-slate">Preview role</p>
+          <p className="app-copy mt-2">
+            Switch this browser between seeded member, leader, staff, and admin views without
+            losing your place in the app.
+          </p>
+        </div>
+        <span className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-xs font-semibold text-slate-600">
+          Browser only
+        </span>
+      </summary>
+      <div className="mt-4 grid gap-3">
+        <LocalActorNotice actor={debugActor} />
+        <LocalRoleSwitcher actor={debugActor} />
+      </div>
+    </details>
   ) : null;
 
   return (
     <main
       className={[
-        "min-h-screen px-4 pb-28 sm:px-6 sm:pb-10 lg:px-8",
-        resolvedChromeMode === "mobile-app" ? "pt-2 sm:pt-4" : "pt-4",
+        "min-h-screen px-4 sm:px-6 sm:pb-10 lg:px-8",
+        mainChrome,
+        resolvedChromeMode === "mobile-app"
+          ? "pb-[calc(11rem+env(safe-area-inset-bottom))]"
+          : "pb-28",
+        resolvedChromeMode === "mobile-app" ? "pt-2 sm:pt-4" : isCommandSurface ? "pt-3" : "pt-4",
       ].join(" ")}
     >
       <a
         href="#main-content"
-        className="sr-only rounded-full bg-[#f7d05e] px-4 py-2 text-sm font-semibold text-[#08224c] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+        className="sr-only rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-[#08224c] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
       >
         Skip to main content
       </a>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <header
-          className={[
-            "rounded-[2rem] border p-4 shadow-[0_18px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl",
-            resolvedChromeMode === "mobile-app"
-              ? "hidden border-[#5d8ff6]/20 bg-[#081a3a]/92 sm:block"
-              : "border-white/12 bg-white/[0.06]",
-          ].join(" ")}
-        >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <Link href="/" className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#f7d05e]">
-                myMEDLIFE
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xl font-semibold text-white">
-                  Chapter operating system
-                </p>
-                <span className="rounded-full border border-[#f7d05e]/20 bg-[#f7d05e]/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#f9df8b]">
-                  Pilot-safe
-                </span>
-              </div>
-              <p className="max-w-xl text-xs leading-5 text-white/52">
-                Built to show each role what to do next while keeping live writes
-                and external automations disabled until approved.
-              </p>
-            </Link>
+      <div
+        className={[
+          `mx-auto flex w-full ${maxWidthClassName}`,
+          showSharedDesktopRail
+            ? "gap-4 lg:grid lg:grid-cols-[18rem_minmax(0,1fr)] lg:items-start"
+            : "flex-col gap-4",
+        ].join(" ")}
+      >
+        {showSharedDesktopRail ? (
+          <div className="min-w-0">
             <AppNavigation
+              layout="sidebar"
               mode={resolvedChromeMode}
+              surfaceFamily={surfaceFamily ?? undefined}
+              heading={sidebarCopy.heading}
+              summary={sidebarCopy.summary}
               navItems={navItems}
               quickItems={quickItems}
+              showQuickItemHelpers={showMobileQuickItemHelpers}
             />
           </div>
-        </header>
+        ) : null}
+        <div className="min-w-0 flex flex-col gap-4">
+        {showSharedTopHeader ? (
+          <header
+            className={[
+              "border backdrop-blur-xl",
+              resolvedChromeMode === "mobile-app"
+                ? "hidden sm:block"
+                : "",
+              headerChrome,
+              shellVariant === "command"
+                ? "rounded-[1.15rem] px-4 py-3"
+                : shellVariant === "compact"
+                ? isCommandSurface
+                  ? "rounded-[1.35rem] px-4 py-3"
+                  : "rounded-[1.65rem] p-4"
+                : "rounded-[2rem] p-4",
+            ].join(" ")}
+          >
+            <div
+              className={[
+                "flex flex-col gap-4",
+                shellVariant === "command"
+                  ? "lg:flex-row lg:items-center lg:justify-between"
+                  : shellVariant === "compact"
+                  ? isCommandSurface
+                    ? "xl:grid xl:grid-cols-[minmax(0,0.68fr)_minmax(0,1.32fr)] xl:items-center"
+                    : "xl:grid xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] xl:items-center"
+                  : isMemberShell
+                    ? ""
+                    : "lg:flex-row lg:items-center lg:justify-between",
+              ].join(" ")}
+            >
+              <Link
+                href={actor ? getLandingRouteForActor(actor) : "/"}
+                className={shellVariant === "compact" ? "space-y-1.5" : "space-y-1"}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#2563eb]">
+                    {shellCopy.eyebrow}
+                  </p>
+                  {shellBadge ? (
+                    <span className={shellBadge.className}>{shellBadge.label}</span>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap items-end gap-2">
+                  <p
+                    className={
+                      shellVariant === "command"
+                        ? "text-[1rem] font-semibold text-slate-950 sm:text-[1.12rem]"
+                        : shellVariant === "compact"
+                        ? isCommandSurface
+                          ? "text-[1.08rem] font-semibold text-slate-950 sm:text-[1.2rem]"
+                          : "text-[1.05rem] font-semibold text-slate-950 sm:text-[1.15rem]"
+                        : "text-xl font-semibold text-slate-950"
+                    }
+                  >
+                    {shellCopy.title}
+                  </p>
+                  {shellCopy.tags.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {shellCopy.tags
+                        .slice(
+                          0,
+                          shellVariant === "command"
+                            ? 1
+                            : shellVariant === "compact"
+                              ? 2
+                              : shellCopy.tags.length,
+                        )
+                        .map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full border border-slate-200 bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-600"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                    </div>
+                  ) : null}
+                </div>
+                {showCommandSummary ? (
+                  <p
+                    className={[
+                      "leading-5 text-slate-600",
+                      shellVariant === "command"
+                        ? "max-w-xl text-[0.74rem]"
+                        : shellVariant === "compact"
+                        ? isCommandSurface
+                          ? "max-w-xl text-[0.75rem]"
+                          : "max-w-2xl text-[0.78rem]"
+                        : "max-w-xl text-xs",
+                    ].join(" ")}
+                  >
+                    {shellCopy.summary}
+                  </p>
+                ) : null}
+              </Link>
+            </div>
+          </header>
+        ) : null}
         {debugToolsPlacement === "before-content" ? debugTools : null}
-        <div id="main-content" tabIndex={-1} className="flex flex-col gap-5">
+        <div
+          id="main-content"
+          tabIndex={-1}
+          className={resolvedChromeMode === "mobile-app" ? "flex flex-col gap-4 sm:gap-5" : "flex flex-col gap-5"}
+        >
           {children}
         </div>
         {resolvedChromeMode === "mobile-app" ? (
-          <AppNavigation mode={resolvedChromeMode} navItems={navItems} quickItems={quickItems} />
+          <AppNavigation
+            mode={resolvedChromeMode}
+            surfaceFamily={surfaceFamily ?? undefined}
+            navItems={navItems}
+            quickItems={quickItems}
+            showQuickItemHelpers={showMobileQuickItemHelpers}
+          />
         ) : null}
         {debugToolsPlacement === "after-content" ? debugTools : null}
+        </div>
       </div>
     </main>
   );
+}
+
+type ShellCopy = {
+  eyebrow: string;
+  title: string;
+  summary: string;
+  tags: string[];
+};
+
+type SidebarCopy = {
+  heading: string;
+  summary: string;
+};
+
+type ShellBadge = {
+  label: string;
+  className: string;
+};
+
+function getHeaderChromeClasses(
+  surfaceFamily: ReturnType<typeof getActorSurfaceFamily> | null,
+  isCommandSurface: boolean,
+): string {
+  if (!isCommandSurface) {
+    return "border-slate-200 bg-white/92 shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
+  }
+
+  switch (surfaceFamily) {
+    case "leader":
+      return "border-[#bfdbfe]/90 bg-[#fbfdff]/90 shadow-[0_12px_28px_rgba(37,99,235,0.06)]";
+    case "coach":
+      return "border-[#dbeafe]/90 bg-white/88 shadow-[0_12px_28px_rgba(37,99,235,0.05)]";
+    case "staff":
+      return "border-slate-200/90 bg-white/86 shadow-[0_10px_24px_rgba(15,23,42,0.05)]";
+    case "ds_admin":
+      return "border-slate-200/90 bg-[#fbfdff]/94 shadow-[0_10px_24px_rgba(15,23,42,0.05)]";
+    case "super_admin":
+      return "border-slate-200/90 bg-[#fafcff]/94 shadow-[0_10px_24px_rgba(15,23,42,0.05)]";
+    case "member":
+    default:
+      return "border-slate-200/90 bg-white/92 shadow-[0_18px_48px_rgba(15,23,42,0.08)]";
+  }
+}
+
+function getMainChromeClasses(
+  surfaceFamily: ReturnType<typeof getActorSurfaceFamily> | null,
+  resolvedChromeMode: "default" | "mobile-app",
+  isCommandSurface: boolean,
+): string {
+  if (resolvedChromeMode === "mobile-app") {
+    return "bg-[radial-gradient(circle_at_top_left,rgba(93,143,246,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#fbfdff_43%,#f3f8ff_100%)]";
+  }
+
+  if (!isCommandSurface) {
+    return "bg-[radial-gradient(circle_at_top_left,rgba(93,143,246,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#fbfdff_43%,#f3f8ff_100%)]";
+  }
+
+  switch (surfaceFamily) {
+    case "leader":
+      return "bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.06),transparent_24%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#fbfdff_48%,#f4f8ff_100%)]";
+    case "coach":
+      return "bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.04),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.04),transparent_18%),linear-gradient(180deg,#ffffff_0%,#fcfdff_50%,#f7fbff_100%)]";
+    case "staff":
+      return "bg-[radial-gradient(circle_at_top_left,rgba(93,143,246,0.04),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.035),transparent_18%),linear-gradient(180deg,#ffffff_0%,#fcfdff_50%,#f7fbff_100%)]";
+    case "ds_admin":
+      return "bg-[radial-gradient(circle_at_top_left,rgba(100,116,139,0.04),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.03),transparent_18%),linear-gradient(180deg,#ffffff_0%,#fcfdff_50%,#f7fbff_100%)]";
+    case "super_admin":
+      return "bg-[radial-gradient(circle_at_top_left,rgba(15,23,42,0.04),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.03),transparent_18%),linear-gradient(180deg,#ffffff_0%,#fcfdff_50%,#f7fbff_100%)]";
+    case "member":
+    default:
+      return "bg-[radial-gradient(circle_at_top_left,rgba(93,143,246,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(93,143,246,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#fbfdff_43%,#f3f8ff_100%)]";
+  }
+}
+
+function getShellCopy(actor?: LocalActorContext): ShellCopy {
+  if (!actor) {
+    return {
+      eyebrow: "myMEDLIFE",
+      title: "myMEDLIFE",
+      summary:
+        "Sign in to continue into the right role-based experience for your chapter or team.",
+      tags: [],
+    };
+  }
+
+  const primaryChapter = actor.chapterNames[0] ?? "myMEDLIFE";
+  switch (actor.primaryCanonicalRole) {
+    case "student_member":
+    case "committee_member":
+    case "traveler":
+      return {
+        eyebrow: actor.primaryCanonicalRole === "traveler"
+          ? "SLT traveler view"
+          : "General member app",
+        title: primaryChapter,
+        summary:
+          actor.primaryCanonicalRole === "traveler"
+            ? "Stay focused on trip prep, deadlines, readiness, and the next travel task."
+            : "Stay focused on events, RSVP, attendance, points, and the next clear step.",
+        tags: [
+          actor.chapterRoles[0] ?? "Student member",
+          actor.primaryCanonicalRole === "traveler" ? "SLT Prep enabled" : "Member app",
+          actor.primaryCanonicalRole === "traveler" ? "Trip Prep live" : "Event loop live",
+          "Mobile-first",
+        ],
+      };
+    case "committee_chair":
+    case "eboard_officer":
+    case "vice_president":
+    case "president":
+      return {
+        eyebrow: "Leadership command center",
+        title: "Student Leadership Command Center",
+        summary:
+          "Create events, watch RSVPs, confirm attendance, and award points without extra clutter.",
+        tags: [actor.chapterRoles[0] ?? "Leader", "Desktop or tablet", "Chapter-wide"],
+      };
+    case "coach":
+    case "sales_coach":
+      return {
+        eyebrow: "Coach command center",
+        title: "Coach / Staff Command Center",
+        summary:
+          "Watch chapter event health, attendance, and leaderboard movement without turning on extra systems.",
+        tags: [
+          actor.coachPortfolioChapterNames.length > 1
+            ? `${actor.coachPortfolioChapterNames.length} chapter portfolio`
+            : `1 chapter portfolio`,
+          "Support view",
+          "Approvals gated",
+        ],
+      };
+    case "department_staff":
+    case "sales_admin":
+      return {
+        eyebrow: "Staff command center",
+        title: "Staff Command Center",
+        summary:
+          "Review chapter events, attendance, and leaderboard movement from one staff-facing surface.",
+        tags: [actor.staffRoles[0] ?? "HQ admin", "Operations view", "Approvals gated"],
+      };
+    case "ds_admin":
+      return {
+        eyebrow: "DS admin backend",
+        title: "DS Admin Backend",
+        summary:
+          "Inspect mock-only integration posture, outbox safety, and write-readiness evidence without reading protected chapter operations data.",
+        tags: ["DS admin", "Outbox review", "Read-only"],
+      };
+    case "super_admin":
+      return {
+        eyebrow: "Super admin backend",
+        title: "Super Admin Backend",
+        summary:
+          "Inspect command-center surfaces, launch readiness, audit posture, and internal configuration lanes from one backend shell.",
+        tags: ["Super admin", "Backend tools", "Role-aware"],
+      };
+  }
+}
+
+function getSidebarCopy(surfaceFamily: ReturnType<typeof getActorSurfaceFamily> | null): SidebarCopy {
+  switch (surfaceFamily) {
+    case "leader":
+      return {
+        heading: "Leader navigation",
+        summary: "Overview, events, attendance, and leaderboard.",
+      };
+    case "coach":
+      return {
+        heading: "Coach navigation",
+        summary: "Portfolio chapters, events, attendance, and leaderboard.",
+      };
+    case "staff":
+      return {
+        heading: "Staff navigation",
+        summary: "Chapters, events, attendance, and leaderboard.",
+      };
+    case "ds_admin":
+    case "super_admin":
+      return {
+        heading: "Admin navigation",
+        summary: isEventsPointsLaunchLaneEnabled()
+          ? "Luma pilot, launch gates, audit proof, outbox safety, and system checks."
+          : "Permissions, integrations, audit posture, workflows, and launch gates.",
+      };
+    case "member":
+    default:
+      return {
+        heading: "Navigation",
+        summary: "Move through the surface that matches your role.",
+      };
+  }
+}
+
+function getShellBadge(actor?: LocalActorContext): ShellBadge | null {
+  if (!actor) {
+    return {
+      label: "Role-aware",
+      className:
+        "rounded-full border border-[#2563eb]/35 bg-[#dbeafe] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+    };
+  }
+
+  switch (actor.primaryCanonicalRole) {
+    case "student_member":
+    case "committee_member":
+      return {
+        label: "Member app",
+        className:
+          "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+      };
+    case "traveler":
+      return {
+        label: "SLT prep",
+        className:
+          "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+      };
+    case "committee_chair":
+    case "eboard_officer":
+    case "vice_president":
+    case "president":
+      return {
+        label: "Leader shell",
+        className:
+          "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+      };
+    case "coach":
+    case "sales_coach":
+      return {
+        label: "Coach surface",
+        className:
+          "rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]",
+      };
+    case "department_staff":
+    case "sales_admin":
+      return {
+        label: "Staff surface",
+        className:
+          "rounded-full border border-slate-200 bg-[#eef4ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
+      };
+    case "ds_admin":
+      return {
+        label: "DS backend",
+        className:
+          "rounded-full border border-slate-200 bg-[#eef4ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
+      };
+    case "super_admin":
+      return {
+        label: "Super admin",
+        className:
+          "rounded-full border border-slate-200 bg-[#eef4ff] px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-slate-600",
+      };
+  }
 }

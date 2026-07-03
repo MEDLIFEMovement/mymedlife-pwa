@@ -1,6 +1,9 @@
 import { canSubmitProofForAssignment } from "@/services/local-action-contracts";
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { canReadAssignment } from "@/services/role-visibility";
+import {
+  canReadAssignment,
+  getActorSurfaceFamily,
+} from "@/services/role-visibility";
 import type { Assignment } from "@/shared/types/domain";
 
 export type ActionProofHandoffPhase =
@@ -45,7 +48,7 @@ export function getActionProofHandoffWorkspace(
     phase,
     ...getPhaseCopy(phase, assignment),
     roleNote: getRoleNote(actor, canSubmitProof),
-    nextBestAction: getNextBestAction(phase, assignment, canSubmitProof),
+    nextBestAction: getNextBestAction(actor, phase, assignment, canSubmitProof),
     checklist: getChecklist(assignment),
     futureStructuredEvents: [
       "proof_handoff_opened",
@@ -141,25 +144,26 @@ function getRoleNote(actor: LocalActorContext, canSubmitProof: boolean): string 
       return "As an Action Committee Member, help capture the story while it is still fresh.";
     }
 
-    return "You can prepare the proof/testimonial context for this action in the local preview.";
+    return "You can prepare the proof/testimonial context for this action here.";
   }
 
-  switch (actor.audience) {
+  switch (getActorSurfaceFamily(actor)) {
     case "coach":
       return "Coaches can read this handoff as a chapter-health signal, but they should not submit student proof.";
-    case "admin":
-      return "Admins can inspect proof posture and HQ review needs, but this panel does not publish proof.";
+    case "staff":
+      return "Staff can inspect proof posture and HQ review needs, but this panel does not publish proof.";
     case "super_admin":
       return "Super Admin can inspect the full local handoff while keeping writes and external sends disabled.";
     case "ds_admin":
       return "DS Admin should inspect integration safety only, not student proof truth.";
-    case "chapter_leader":
-    case "chapter_member":
+    case "leader":
+    case "member":
       return "This role can read the handoff, but cannot submit proof for this specific assignment.";
   }
 }
 
 function getNextBestAction(
+  actor: LocalActorContext,
   phase: ActionProofHandoffPhase,
   assignment: Assignment,
   canSubmitProof: boolean,
@@ -186,6 +190,13 @@ function getNextBestAction(
   }
 
   if (canSubmitProof) {
+    if (getActorSurfaceFamily(actor) === "member") {
+      return {
+        href: `/rush-month/actions/${assignment.id}?step=submit#submit-evidence`,
+        label: "Open submit evidence",
+      };
+    }
+
     return {
       href: "/proof-library/upload",
       label: "Preview proof intake",

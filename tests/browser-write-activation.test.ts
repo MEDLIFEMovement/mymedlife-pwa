@@ -75,7 +75,7 @@ describe("browser write activation gate", () => {
 
   it("keeps proof-submission browser control disabled for an allowed member", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
-    const assignment = requireAssignment("member-push");
+    const assignment = requireAssignment("share-rush-flyer");
     const gate = getProofSubmissionBrowserWriteGate(actor, assignment, {
       evidenceType: "bridge_video",
       summary: "This bridge video explains why the Rush Month invite push worked.",
@@ -479,7 +479,7 @@ describe("browser write activation gate", () => {
 
   it("blocks Coach from the proof-submission write plan", () => {
     const actor = getMockLocalActorContext("coach@mymedlife.test");
-    const assignment = requireAssignment("member-push");
+    const assignment = requireAssignment("share-rush-flyer");
     const gate = getProofSubmissionBrowserWriteGate(actor, assignment, {
       evidenceType: "bridge_video",
       summary: "Coach should not submit student proof from this local contract.",

@@ -1,5 +1,12 @@
+import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
+import {
+  getLaunchLaneLeaderAttendanceHref,
+  getLaunchLaneLeaderEventsHref,
+  getLaunchLaneLeaderPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { LeaderEvidenceFollowUpBoard } from "@/services/leader-evidence-follow-up";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
 
 export type LeaderReviewFocusItem = {
   label: string;
@@ -24,17 +31,17 @@ export function getLeaderReviewFocus(
   actor: LocalActorContext,
   board: LeaderEvidenceFollowUpBoard,
 ): LeaderReviewFocus {
-  if (actor.audience !== "chapter_leader" || !board.canReadBoard) {
+  if (getActorSurfaceFamily(actor) !== "leader" || !board.canReadBoard) {
     return {
       canReadFocus: false,
-      roleLabel: actor.audienceLabel,
+      roleLabel: getActorPrimaryRoleLabel(actor),
       title: "Leader review focus hidden for this role",
       summary:
         "Only chapter-leader preview personas see proof accountability and owner follow-up guidance here.",
-      primaryHref: "/rush-month/review",
-      primaryLabel: "Open proof review",
-      secondaryHref: "/rush-month/dashboard",
-      secondaryLabel: "Open dashboard",
+      primaryHref: getLaunchLaneLeaderAttendanceHref(),
+      primaryLabel: "Check attendance",
+      secondaryHref: getLaunchLaneLeaderEventsHref(),
+      secondaryLabel: "Open leader events",
       safetyNote:
         "Proof decisions, proof uploads, public sharing, exports, reminders, and AI summaries remain disabled.",
       items: [],
@@ -45,30 +52,30 @@ export function getLeaderReviewFocus(
     return {
       canReadFocus: true,
       roleLabel: "President / VP",
-      title: "Keep proof accountable without taking over HQ sharing.",
+      title: "Keep follow-through accountable without opening HQ review lanes.",
       summary:
-        "Use this queue to confirm what is ready for HQ, what still needs owner context, and whether the chapter is accountable before more proof is requested.",
-      primaryHref: "/rush-month/review",
-      primaryLabel: "Review proof posture",
-      secondaryHref: "/chapter/members",
-      secondaryLabel: "Check owner coverage",
+        "Use attendance posture and chapter points to confirm what is actually complete, what still needs owner follow-through, and whether the chapter is ready for the next event push.",
+      primaryHref: getLaunchLaneLeaderAttendanceHref(),
+      primaryLabel: "Check attendance",
+      secondaryHref: getLaunchLaneLeaderPointsHref(),
+      secondaryLabel: "See chapter points",
       safetyNote:
-        "President / VP can inspect readiness, but approve, reject, request-changes, upload, publish, export, reminder, and AI writes remain disabled or HQ-only.",
+        "President / VP can inspect readiness, but leader proof decisions, uploads, publishing, reminders, and AI writes remain disabled or HQ-only.",
       items: [
         {
-          label: "HQ-ready",
+          label: "Ready to confirm",
           value: `${board.counts.hqReview}`,
-          note: "Submitted proof waiting on HQ posture, not chapter publishing.",
+          note: "Visible items that look complete enough for the chapter to stop chasing.",
         },
         {
           label: "Needs context",
           value: `${board.counts.memberFollowUp}`,
-          note: "Owners need clearer story detail before HQ can learn from it.",
+          note: "Owners still need clearer story detail before the event loop feels complete.",
         },
         {
-          label: "Decision authority",
-          value: "HQ only",
-          note: "Chapter leaders do not approve broad sharing from this MVP route.",
+          label: "HQ review lane",
+          value: "Hidden",
+          note: "The visible leader shell stays inside attendance and points while HQ review remains parked.",
         },
       ],
     };
@@ -78,15 +85,15 @@ export function getLeaderReviewFocus(
     return {
       canReadFocus: true,
       roleLabel: "E-Board Member",
-      title: "Turn proof gaps into owner follow-up before review stalls.",
+      title: "Turn follow-up gaps into the next event and attendance cycle.",
       summary:
-        "Use this queue to find owners who need a concrete proof reminder, connect the ask back to events, and keep HQ review from waiting on missing context.",
-      primaryHref: "/rush-month/actions",
-      primaryLabel: "Follow up with owners",
-      secondaryHref: "/rush-month/events",
-      secondaryLabel: "Check event proof",
+        "Use the leader event lane to connect owner follow-up back to a real event, then use attendance to see whether the chapter actually closed the loop.",
+      primaryHref: getLaunchLaneLeaderEventsHref(),
+      primaryLabel: "Open leader events",
+      secondaryHref: getLaunchLaneLeaderAttendanceHref(),
+      secondaryLabel: "Check attendance",
       safetyNote:
-        "E-Board can coordinate owner follow-up, but approve, reject, request-changes, upload, publish, export, reminder, and AI writes remain disabled or HQ-only.",
+        "E-Board can coordinate owner follow-up, but proof decisions, uploads, publishing, reminders, and AI writes remain disabled or HQ-only.",
       items: [
         {
           label: "Owners to nudge",
@@ -94,9 +101,9 @@ export function getLeaderReviewFocus(
           note: "Assignments needing proof or better testimonial context.",
         },
         {
-          label: "Ready for HQ",
+          label: "Ready to close",
           value: `${board.counts.hqReview}`,
-          note: "Submitted proof that should not be changed by chapter operators.",
+          note: "Visible items that look complete enough to stop slowing the event loop.",
         },
         {
           label: "External sends",
@@ -110,15 +117,15 @@ export function getLeaderReviewFocus(
   return {
     canReadFocus: true,
     roleLabel: "Chapter Leader",
-    title: "Use proof review to separate follow-up from HQ decisions.",
+    title: "Use attendance and points to separate follow-up from noise.",
     summary:
-      "This queue helps chapter leaders see what needs owner context and what is ready for HQ review without granting sharing authority.",
-    primaryHref: "/rush-month/review",
-    primaryLabel: "Review proof queue",
-    secondaryHref: "/rush-month/actions",
-    secondaryLabel: "Open actions",
+      "This read-only view helps chapter leaders see what still needs owner context without making proof review the center of the visible launch lane.",
+    primaryHref: getLaunchLaneLeaderAttendanceHref(),
+    primaryLabel: "Check attendance",
+    secondaryHref: getLaunchLaneLeaderPointsHref(),
+    secondaryLabel: "See chapter points",
     safetyNote:
-      "Chapter leader proof follow-up remains read-only. HQ sharing decisions and external automation remain disabled.",
+      "Chapter leader follow-up remains read-only. HQ sharing decisions and external automation remain disabled.",
     items: [
       {
         label: "Follow-up",
@@ -126,14 +133,14 @@ export function getLeaderReviewFocus(
         note: "Visible proof items needing a clearer owner next step.",
       },
       {
-        label: "HQ review",
+        label: "Ready to close",
         value: `${board.counts.hqReview}`,
-        note: "Submitted proof waiting for HQ posture.",
+        note: "Visible items that look complete enough to stop slowing the loop.",
       },
       {
-        label: "Decision authority",
-        value: "restricted",
-        note: "Only Admin or Super Admin can preview HQ sharing decisions.",
+        label: "HQ lane",
+        value: "parked",
+        note: "Only Admin or Super Admin should use the broader HQ review surfaces.",
       },
     ],
   };

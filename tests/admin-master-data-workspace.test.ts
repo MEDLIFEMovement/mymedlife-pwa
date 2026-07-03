@@ -15,7 +15,7 @@ describe("admin master data workspace", () => {
     expect(workspace.title).toBe("Admin master data inventory");
     expect(workspace.nextStep.href).toBe("/onboarding");
     expect(workspace.counts).toEqual({
-      users: 9,
+      users: 14,
       roles: 9,
       chapters: 1,
       campaignTemplates: campaignShells.length,

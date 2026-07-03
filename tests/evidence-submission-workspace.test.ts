@@ -11,19 +11,17 @@ describe("evidence submission workspace", () => {
     expect(workspace.title).toBe("Submit proof for your next action");
     expect(workspace.nextSubmission).toEqual(
       expect.objectContaining({
-        assignmentId: "member-push",
+        assignmentId: "share-rush-flyer",
         status: "ready_to_submit",
         canPrepareNow: true,
         canUseLocalWritePath: true,
         isRecommended: true,
-        actionHref: "/rush-month/actions/member-push",
-        proofIntakeHref: "/proof-library/upload",
-        proofIntakeLabel: "Preview proof intake",
+        actionHref: "/rush-month/actions/share-rush-flyer",
+        proofIntakeHref: "/rush-month/actions/share-rush-flyer?step=submit#submit-evidence",
+        proofIntakeLabel: "Open submit evidence",
       }),
     );
-    expect(workspace.nextSubmission?.storyPrompt).toContain(
-      "Message screenshot, invite list, or event RSVP link",
-    );
+    expect(workspace.nextSubmission?.storyPrompt).toContain("Use the proof requirement");
     expect(workspace.nextSubmission?.preparationChecklist).toEqual(
       expect.arrayContaining([
         "What happened, in plain English?",
@@ -39,9 +37,9 @@ describe("evidence submission workspace", () => {
     expect(workspace.submissionPacket).toEqual(
       expect.objectContaining({
         title: "Goal 158 proof submission packet",
-        assignmentId: "member-push",
+        assignmentId: "share-rush-flyer",
         localFunction: "app.submit_assignment_proof_metadata",
-        targetRoute: "/rush-month/actions/member-push",
+        targetRoute: "/rush-month/actions/share-rush-flyer",
         reviewRoute: "/rush-month/review",
         currentResultCode: "write_disabled",
         futureResultCode: "proof_submitted",
@@ -53,7 +51,7 @@ describe("evidence submission workspace", () => {
       }),
     );
     expect(workspace.submissionPacket?.payload.summary).toContain(
-      "Message screenshot, invite list, or event RSVP link",
+      "Use the proof requirement",
     );
     expect(workspace.submissionPacket?.readinessChecks).toEqual(
       expect.arrayContaining([
@@ -119,7 +117,9 @@ describe("evidence submission workspace", () => {
     ).toEqual([
       ["open-home", "approved_internal"],
       ["assign-eboard", "waiting_review"],
-      ["member-push", "ready_to_submit"],
+      ["member-push", "action_not_ready"],
+      ["share-rush-flyer", "ready_to_submit"],
+      ["welcome-table", "waiting_review"],
       ["proof-pack", "changes_requested"],
     ]);
   });

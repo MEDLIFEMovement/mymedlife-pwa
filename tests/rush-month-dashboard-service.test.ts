@@ -24,8 +24,8 @@ describe("rush month dashboard service", () => {
       "Proof and points",
     ]);
     expect(dashboard.nextStep.href).toBe("/rush-month/actions/member-push");
-    expect(dashboard.visibleAssignments).toHaveLength(1);
-    expect(dashboard.eventPlans).toHaveLength(2);
+    expect(dashboard.visibleAssignments).toHaveLength(3);
+    expect(dashboard.eventPlans).toHaveLength(4);
     expect(dashboard.proofItems).toHaveLength(1);
     expect(dashboard.leaderboard).toHaveLength(5);
     expect(dashboard.metrics.map((metric) => metric.label)).toContain("Points earned");
@@ -118,10 +118,10 @@ describe("rush month dashboard service", () => {
   it("counts assignment statuses for visible operating summaries", () => {
     expect(getAssignmentStatusCounts(data.assignments)).toEqual({
       approved: 1,
-      submitted: 1,
+      submitted: 2,
       inProgress: 1,
       changesRequested: 1,
-      notStarted: 1,
+      notStarted: 2,
     });
   });
 });

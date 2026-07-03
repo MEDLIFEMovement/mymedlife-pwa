@@ -13,14 +13,17 @@ describe("leader evidence follow-up", () => {
     expect(board.rows.map((row) => [row.assignmentId, row.lane])).toEqual([
       ["open-home", "closed_internal"],
       ["assign-eboard", "hq_review"],
-      ["member-push", "member_follow_up"],
+      ["member-push", "not_ready"],
+      ["share-rush-flyer", "member_follow_up"],
+      ["welcome-table", "hq_review"],
       ["proof-pack", "member_follow_up"],
     ]);
     expect(board.counts).toEqual(
       expect.objectContaining({
-        total: 4,
+        total: 6,
         memberFollowUp: 2,
-        hqReview: 1,
+        hqReview: 2,
+        notReady: 1,
         closedInternal: 1,
         leaderActionsEnabled: 0,
         hqSharingWritesEnabled: 0,
@@ -32,7 +35,7 @@ describe("leader evidence follow-up", () => {
   it("flags member proof gaps as leader-nudge-only future work", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const board = getLeaderEvidenceFollowUpBoard(actor);
-    const memberPush = board.rows.find((row) => row.assignmentId === "member-push");
+    const memberPush = board.rows.find((row) => row.assignmentId === "share-rush-flyer");
 
     expect(memberPush).toEqual(
       expect.objectContaining({
@@ -45,6 +48,21 @@ describe("leader evidence follow-up", () => {
     );
     expect(memberPush?.leaderNextStep).toContain("Nudge the owner");
     expect(memberPush?.hqBoundary).toContain("HQ still decides");
+  });
+
+  it("treats committee chairs as part of the leader-owned evidence follow-up surface", () => {
+    const actor = getMockLocalActorContext("committee.chair@mymedlife.test");
+    const board = getLeaderEvidenceFollowUpBoard(actor);
+    const memberPush = board.rows.find((row) => row.assignmentId === "share-rush-flyer");
+
+    expect(board.canReadBoard).toBe(true);
+    expect(board.title).toBe("Leader evidence follow-up");
+    expect(memberPush).toEqual(
+      expect.objectContaining({
+        lane: "member_follow_up",
+        canLeaderNudge: true,
+      }),
+    );
   });
 
   it("lets coaches inspect evidence follow-up as a chapter-health signal", () => {
@@ -96,6 +114,16 @@ describe("leader evidence follow-up", () => {
     expect(dsAdmin.canReadBoard).toBe(false);
     expect(dsAdmin.rows).toEqual([]);
     expect(dsAdmin.summary).toContain("should not read student proof follow-up");
+  });
+
+  it("treats committee members as part of the member-owned hidden evidence boundary", () => {
+    const board = getLeaderEvidenceFollowUpBoard(
+      getMockLocalActorContext("committee.member@mymedlife.test"),
+    );
+
+    expect(board.canReadBoard).toBe(false);
+    expect(board.rows).toEqual([]);
+    expect(board.summary).toContain("Members see their own proof status");
   });
 
   it("names future structured events and keeps outbox destinations disabled", () => {

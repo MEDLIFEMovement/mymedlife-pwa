@@ -4,7 +4,7 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getProofSharingReviewBoard } from "@/services/proof-sharing-review";
 
 describe("proof sharing review", () => {
-  it("gives admins an HQ proof-sharing review board with publishing disabled", () => {
+  it("gives admins a proof-sharing desk with publishing disabled", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const board = getProofSharingReviewBoard(actor, proofLibraryItems);
 
@@ -31,7 +31,7 @@ describe("proof sharing review", () => {
       expect.arrayContaining(["bridge_video", "alumni_ugc"]),
     );
     expect(board.rows[0]?.reviewState).toBe("needs_consent_or_context");
-    expect(board.rows[0]?.privacyBoundary).toContain("private");
+    expect(board.rows[0]?.privacyBoundary).toContain("internal staff review");
     expect(board.rows[0]?.deletionBoundary).toContain("audit");
   });
 
@@ -58,12 +58,19 @@ describe("proof sharing review", () => {
 
   it("hides HQ proof-sharing review from members and DS Admin", () => {
     const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const committeeMember = getMockLocalActorContext("committee.member@mymedlife.test");
     const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
     const memberBoard = getProofSharingReviewBoard(member, proofLibraryItems);
+    const committeeMemberBoard = getProofSharingReviewBoard(
+      committeeMember,
+      proofLibraryItems,
+    );
     const dsAdminBoard = getProofSharingReviewBoard(dsAdmin, proofLibraryItems);
 
     expect(memberBoard.canReadBoard).toBe(false);
     expect(memberBoard.rows).toEqual([]);
+    expect(committeeMemberBoard.canReadBoard).toBe(false);
+    expect(committeeMemberBoard.rows).toEqual([]);
     expect(dsAdminBoard.canReadBoard).toBe(false);
     expect(dsAdminBoard.rows).toEqual([]);
   });

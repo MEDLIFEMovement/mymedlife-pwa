@@ -13,6 +13,17 @@ import {
   type AuthSessionState,
   type AuthSessionStatus,
 } from "@/services/auth-session";
+import {
+  getCanonicalLandingSurface,
+  getCanonicalRoleAssignments,
+  getCanonicalRoles,
+  getCanonicalScopes,
+  getHighestOperationalCanonicalRole,
+  type CanonicalLandingSurface,
+  type CanonicalRole,
+  type CanonicalRoleAssignment,
+  type CanonicalScope,
+} from "@/services/canonical-role-scope";
 import type { DataSourceMeta, DataSourceStatus } from "@/services/read-only-app-data";
 import type { User } from "@/shared/types/domain";
 import type {
@@ -54,6 +65,11 @@ export type LocalActorContext = {
   accessSummary: string;
   chapterRoles: string[];
   staffRoles: string[];
+  canonicalRoleAssignments: CanonicalRoleAssignment[];
+  canonicalRoles: CanonicalRole[];
+  canonicalScopes: CanonicalScope[];
+  primaryCanonicalRole: CanonicalRole;
+  defaultLandingSurface: CanonicalLandingSurface;
   chapterNames: string[];
   coachPortfolioChapterNames: string[];
   isLocalOnly: boolean;
@@ -67,6 +83,7 @@ export type LocalActorOption = {
   staffRoles: string[];
   chapterNames: string[];
   coachPortfolioChapterNames: string[];
+  includeTravelerRole?: boolean;
 };
 
 type LocalActorSnapshot = {
@@ -103,6 +120,16 @@ export const localActorOptions: LocalActorOption[] = [
     coachPortfolioChapterNames: [],
   },
   {
+    email: "traveler.a@mymedlife.test",
+    displayName: "Taylor Traveler",
+    audience: "chapter_member",
+    chapterRoles: ["General Member"],
+    staffRoles: [],
+    chapterNames: [mockChapter.name],
+    coachPortfolioChapterNames: [],
+    includeTravelerRole: true,
+  },
+  {
     email: "committee.member@mymedlife.test",
     displayName: "Nia Committee",
     audience: "chapter_member",
@@ -130,6 +157,15 @@ export const localActorOptions: LocalActorOption[] = [
     coachPortfolioChapterNames: [],
   },
   {
+    email: "vice.president@mymedlife.test",
+    displayName: "Val Vice President",
+    audience: "chapter_leader",
+    chapterRoles: ["Vice President"],
+    staffRoles: [],
+    chapterNames: [mockChapter.name],
+    coachPortfolioChapterNames: [],
+  },
+  {
     email: "eboard.a@mymedlife.test",
     displayName: "Eli E-Board",
     audience: "chapter_leader",
@@ -148,11 +184,38 @@ export const localActorOptions: LocalActorOption[] = [
     coachPortfolioChapterNames: [mockChapter.name],
   },
   {
+    email: "sales.coach@mymedlife.test",
+    displayName: "Sky Sales Coach",
+    audience: "coach",
+    chapterRoles: [],
+    staffRoles: ["Sales Coach"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [mockChapter.name],
+  },
+  {
     email: "admin@mymedlife.test",
-    displayName: "Ari Admin",
+    displayName: "Ari Staff",
     audience: "admin",
     chapterRoles: [],
-    staffRoles: ["Admin"],
+    staffRoles: ["Staff", "Admin"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "general.staff@mymedlife.test",
+    displayName: "Gina General Staff",
+    audience: "admin",
+    chapterRoles: [],
+    staffRoles: ["General Staff"],
+    chapterNames: [],
+    coachPortfolioChapterNames: [],
+  },
+  {
+    email: "sales.admin@mymedlife.test",
+    displayName: "Rae Sales Admin",
+    audience: "admin",
+    chapterRoles: [],
+    staffRoles: ["Sales Admin"],
     chapterNames: [],
     coachPortfolioChapterNames: [],
   },
@@ -288,6 +351,24 @@ export async function getSupabaseLocalActorContext(
     actorMemberships.map((item) => item.role_key),
     actorStaffRoles.map((item) => item.role_key),
   );
+  const chapterRoles = actorMemberships.map((item) => roleKeyToLabel(item.role_key));
+  const staffRoles = actorStaffRoles.map((item) => roleKeyToLabel(item.role_key));
+  const canonicalRoleAssignments = getCanonicalRoleAssignments({
+    audience,
+    chapterRoles,
+    staffRoles,
+    databaseRoleKeys: [
+      ...actorMemberships.map((item) => item.role_key),
+      ...actorStaffRoles.map((item) => item.role_key),
+    ],
+    includeBreakglassScope:
+      audience === "super_admin" ||
+      actorStaffRoles.some((item) => item.role_key === "super_admin"),
+  });
+  const canonicalRoles = getCanonicalRoles(canonicalRoleAssignments);
+  const canonicalScopes = getCanonicalScopes(canonicalRoleAssignments);
+  const primaryCanonicalRole =
+    getHighestOperationalCanonicalRole(canonicalRoleAssignments);
 
   return {
     source: {
@@ -306,8 +387,13 @@ export async function getSupabaseLocalActorContext(
     audience,
     audienceLabel: audienceToLabel(audience),
     accessSummary: audienceToAccessSummary(audience),
-    chapterRoles: actorMemberships.map((item) => roleKeyToLabel(item.role_key)),
-    staffRoles: actorStaffRoles.map((item) => roleKeyToLabel(item.role_key)),
+    chapterRoles,
+    staffRoles,
+    canonicalRoleAssignments,
+    canonicalRoles,
+    canonicalScopes,
+    primaryCanonicalRole,
+    defaultLandingSurface: getCanonicalLandingSurface(primaryCanonicalRole),
     chapterNames,
     coachPortfolioChapterNames,
     isLocalOnly,
@@ -322,6 +408,17 @@ export function getMockLocalActorContext(
   authSessionStatus: AuthSessionStatus = "disabled",
 ): LocalActorContext {
   const option = findLocalActorOption(selectedEmail);
+  const canonicalRoleAssignments = getCanonicalRoleAssignments({
+    audience: option.audience,
+    chapterRoles: option.chapterRoles,
+    staffRoles: option.staffRoles,
+    includeTravelerRole: option.includeTravelerRole,
+    includeBreakglassScope: option.audience === "super_admin",
+  });
+  const canonicalRoles = getCanonicalRoles(canonicalRoleAssignments);
+  const canonicalScopes = getCanonicalScopes(canonicalRoleAssignments);
+  const primaryCanonicalRole =
+    getHighestOperationalCanonicalRole(canonicalRoleAssignments);
 
   return {
     source: {
@@ -342,6 +439,11 @@ export function getMockLocalActorContext(
     accessSummary: audienceToAccessSummary(option.audience),
     chapterRoles: option.chapterRoles,
     staffRoles: option.staffRoles,
+    canonicalRoleAssignments,
+    canonicalRoles,
+    canonicalScopes,
+    primaryCanonicalRole,
+    defaultLandingSurface: getCanonicalLandingSurface(primaryCanonicalRole),
     chapterNames: option.chapterNames,
     coachPortfolioChapterNames: option.coachPortfolioChapterNames,
     isLocalOnly: true,
@@ -493,7 +595,7 @@ function findChapterName(chapters: ChapterRow[], chapterId: string) {
 }
 
 function findKnownLocalActorOption(selectedEmail: string | null | undefined) {
-  const normalizedEmail = selectedEmail?.trim().toLowerCase();
+  const normalizedEmail = normalizeLocalActorEmail(selectedEmail);
   if (!normalizedEmail) {
     return null;
   }
@@ -502,12 +604,25 @@ function findKnownLocalActorOption(selectedEmail: string | null | undefined) {
 }
 
 function findLocalActorOption(selectedEmail: string) {
-  const normalizedEmail = selectedEmail.toLowerCase();
+  const normalizedEmail = normalizeLocalActorEmail(selectedEmail) ?? defaultLocalActorEmail;
 
   return (
     findKnownLocalActorOption(normalizedEmail) ??
     localActorOptions[0]
   );
+}
+
+function normalizeLocalActorEmail(selectedEmail: string | null | undefined) {
+  const trimmedEmail = selectedEmail?.trim();
+  if (!trimmedEmail) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(trimmedEmail).trim().toLowerCase();
+  } catch {
+    return trimmedEmail.toLowerCase();
+  }
 }
 
 function roleKeyToLabel(roleKey: DatabaseRoleKey) {
@@ -523,7 +638,7 @@ function roleKeyToLabel(roleKey: DatabaseRoleKey) {
     case "coach":
       return "Coach";
     case "admin":
-      return "Admin";
+      return "Staff";
     case "ds_admin":
       return "DS Admin";
     case "super_admin":
@@ -541,7 +656,7 @@ function audienceToLabel(audience: ActorAudience) {
     case "coach":
       return "Coach";
     case "admin":
-      return "Admin";
+      return "Staff";
     case "ds_admin":
       return "DS Admin";
     case "super_admin":
@@ -557,9 +672,9 @@ function audienceToAccessSummary(audience: ActorAudience) {
     case "chapter_leader":
       return "Leader view: chapter-scoped campaign progress, assignments, readiness, and member follow-up.";
     case "coach":
-      return "Coach view: assigned portfolio chapters, readiness, risk signals, closeouts, and KPI movement.";
+      return "Staff view: assigned portfolio chapters, readiness, risk signals, closeouts, and KPI movement.";
     case "admin":
-      return "Admin view: staff-safe campaign, chapter, proof-sharing, and support context.";
+      return "Staff view: approved department dashboards, queues, proof-sharing, and support context.";
     case "ds_admin":
       return "DS Admin view: integration configuration context only; student truth stays in the app.";
     case "super_admin":

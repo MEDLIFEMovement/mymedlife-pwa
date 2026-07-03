@@ -88,7 +88,7 @@ describe("assignment creation result states", () => {
         actor,
         {
           ...validAssignmentInput,
-          title: "Run the general member invite push",
+          title: "Invite 3 friends to the Intro GBM",
         },
         assignments,
       ),

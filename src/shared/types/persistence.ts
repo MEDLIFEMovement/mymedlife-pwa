@@ -38,6 +38,15 @@ export type RiskSeverity = "low" | "medium" | "high" | "critical";
 export type RiskStatus = "open" | "watching" | "escalated" | "resolved" | "dismissed";
 export type RiskVisibility = "leader_visible" | "coach_private";
 export type CloseoutStatus = "draft" | "submitted" | "validated" | "returned" | "archived";
+export type ChapterEventStatus =
+  | "idea"
+  | "planning"
+  | "published"
+  | "promoting"
+  | "completed"
+  | "feedback_collected"
+  | "shared"
+  | "canceled";
 export type AssignmentPriority = "low" | "normal" | "high" | "urgent";
 export type AssignmentStatus =
   | "not_started"
@@ -105,6 +114,11 @@ export type ExternalSyncStatus =
   | "pending"
   | "failed"
   | "disabled";
+export type RolloutEnvironment = "local" | "staging" | "production";
+export type FeatureFlagApprovalPolicy =
+  | "standard"
+  | "production_confirmation"
+  | "production_blocked";
 
 type Timestamp = string;
 type Uuid = string;
@@ -368,6 +382,63 @@ export type ApprovalRow = {
   created_at: Timestamp;
 };
 
+export type ChapterEventRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid | null;
+  phase_id: Uuid | null;
+  action_committee_id: Uuid | null;
+  assignment_id: Uuid | null;
+  title: string;
+  event_type: string;
+  status: ChapterEventStatus;
+  planned_by_user_id: Uuid | null;
+  owner_user_id: Uuid | null;
+  starts_at: Timestamp | null;
+  ends_at: Timestamp | null;
+  promotion_summary: string | null;
+  attendance_count: number | null;
+  eligible_member_count: number | null;
+  attendance_rate: number | null;
+  nps_score: number | null;
+  feedback_summary: string | null;
+  warehouse_status: ExternalSyncStatus;
+  luma_event_link_id: Uuid | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type LumaEventLinkRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  campaign_id: Uuid | null;
+  phase_id: Uuid | null;
+  chapter_event_id: Uuid | null;
+  luma_event_id: string | null;
+  luma_event_url: string | null;
+  status: ExternalSyncStatus;
+  linked_by: Uuid | null;
+  linked_at: Timestamp | null;
+  last_imported_at: Timestamp | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type ChapterLumaCalendarRow = {
+  id: Uuid;
+  chapter_id: Uuid;
+  environment: RolloutEnvironment;
+  calendar_id: string;
+  calendar_label: string;
+  is_default: boolean;
+  status: ExternalSyncStatus;
+  linked_by: Uuid | null;
+  linked_at: Timestamp | null;
+  notes: string | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
 export type PointsEventRow = {
   id: Uuid;
   chapter_id: Uuid;
@@ -443,6 +514,35 @@ export type AutomationOutboxRow = {
   locked_at: Timestamp | null;
   sent_at: Timestamp | null;
   last_error: string | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type FeatureFlagRow = {
+  id: Uuid;
+  flag_key: string;
+  environment: RolloutEnvironment;
+  label: string;
+  description: string;
+  enabled: boolean;
+  approval_policy: FeatureFlagApprovalPolicy;
+  controls_external_write: boolean;
+  created_by: Uuid | null;
+  updated_by: Uuid | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+};
+
+export type ThemeSettingRow = {
+  id: Uuid;
+  setting_key: string;
+  environment: RolloutEnvironment;
+  label: string;
+  value: string;
+  value_type: string;
+  group_name: string;
+  created_by: Uuid | null;
+  updated_by: Uuid | null;
   created_at: Timestamp;
   updated_at: Timestamp;
 };

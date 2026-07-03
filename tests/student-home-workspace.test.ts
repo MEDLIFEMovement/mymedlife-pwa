@@ -12,7 +12,7 @@ describe("student home workspace", () => {
 
     expect(workspace.greeting).toBe("Hi, Sofia");
     expect(workspace.chapterName).toBe("UCLA MEDLIFE");
-    expect(workspace.startNextAction.href).toBe("/rush-month/actions/member-push");
+    expect(workspace.startNextAction.href).toBe("/app/events?source=home");
     expect(workspace.startNextAction.label).toBe("Start next action");
     expect(workspace.campaign.href).toBe("/rush-month");
     expect(workspace.campaign.campaignsHref).toBe("/campaigns");
@@ -28,8 +28,8 @@ describe("student home workspace", () => {
     const actor = getMockLocalActorContext("committee.member@mymedlife.test");
     const workspace = getStudentHomeWorkspace(actor, data);
 
-    expect(workspace.campaign.progressPercent).toBe(60);
-    expect(workspace.campaign.progressLabel).toBe("3 of 5 Rush Month steps are moving.");
+    expect(workspace.campaign.progressPercent).toBe(57);
+    expect(workspace.campaign.progressLabel).toBe("4 of 7 Rush Month steps are moving.");
     expect(workspace.stats.find((stat) => stat.label === "Points")?.value).toBe("10");
     expect(workspace.leaderMessage.authorName).toBe("Priya President");
     expect(workspace.safetyNote).toContain("mock-safe");

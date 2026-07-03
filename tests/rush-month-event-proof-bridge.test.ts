@@ -14,7 +14,7 @@ describe("rush month event proof bridge", () => {
       href: "/proof-library/upload",
       label: "Preview proof intake",
     });
-    expect(workspace.rows).toHaveLength(2);
+    expect(workspace.rows).toHaveLength(4);
     expect(workspace.rows[0]?.steps.map((step) => step.futureEventType)).toEqual([
       "chapter_event_attended",
       "event_feedback_submitted",
@@ -30,8 +30,10 @@ describe("rush month event proof bridge", () => {
     expect(workspace.title).toContain("Support the event");
     expect(workspace.summary).toContain("event action");
     expect(workspace.rows.map((row) => row.title)).toEqual([
-      "Freshman welcome social",
-      "Health equity intro Med Talk",
+      "Tabling at Bruin Walk",
+      "Intro GBM",
+      "Rush Week Social",
+      "Member Orientation",
     ]);
   });
 
@@ -41,7 +43,10 @@ describe("rush month event proof bridge", () => {
 
     expect(workspace.mode).toBe("committee_chair");
     expect(workspace.title).toContain("Close the loop");
-    expect(workspace.rows.map((row) => row.title)).toEqual(["Freshman welcome social"]);
+    expect(workspace.rows.map((row) => row.title)).toEqual([
+      "Tabling at Bruin Walk",
+      "Rush Week Social",
+    ]);
     expect(workspace.primaryCta.href).toBe("/action-committees");
   });
 

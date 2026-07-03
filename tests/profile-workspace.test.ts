@@ -12,7 +12,7 @@ describe("profile workspace", () => {
 
     expect(workspace.title).toBe("Your myMEDLIFE profile");
     expect(workspace.profileLabel).toBe("General Member");
-    expect(workspace.nextStep.href).toBe("/rush-month/actions/member-push");
+    expect(workspace.nextStep.href).toBe("/app/events?source=home");
     expect(workspace.identityRows.map((row) => row.label)).toEqual([
       "Name",
       "Email",
@@ -36,7 +36,7 @@ describe("profile workspace", () => {
     expect(
       workspace.scopeRows.find((row) => row.label === "Coach portfolio")?.value,
     ).toBe("UCLA MEDLIFE");
-    expect(workspace.nextStep.href).toBe("/coach");
+    expect(workspace.nextStep.href).toBe("/staff?view=chapters");
     expect(workspace.counts.coachPortfolioChapters).toBe(1);
     expect(workspace.counts.membershipWritesExpected).toBe(0);
   });

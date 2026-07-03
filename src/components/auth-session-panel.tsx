@@ -3,51 +3,56 @@ import { signOut } from "@/app/login/actions";
 import type { AuthSessionState } from "@/services/auth-session";
 
 type AuthSessionPanelProps = {
+  redirectTo?: string;
   session: AuthSessionState;
 };
 
-export function AuthSessionPanel({ session }: AuthSessionPanelProps) {
-  const isHostedStaging = session.isHostedStaging;
-
+export function AuthSessionPanel({
+  redirectTo = "/",
+  session,
+}: AuthSessionPanelProps) {
   if (session.status !== "signed_in" || !session.user) {
-    return (
-      <section className="rounded-[2rem] border border-amber-300/20 bg-amber-300/10 p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100">
-          Auth status
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold text-white">
-          {isHostedStaging ? "No staging session yet" : "No local session yet"}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-white/68">{session.message}</p>
-      </section>
-    );
+    return null;
   }
 
   return (
-    <section className="rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-5">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-        {isHostedStaging ? "Signed in on staging" : "Signed in locally"}
+    <section
+      className="rounded-2xl p-8"
+      style={{
+        background: "#161b22",
+        border: "1px solid rgba(255,255,255,0.07)",
+        boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
+      }}
+    >
+      <p
+        className="text-xs font-semibold uppercase tracking-wide"
+        style={{ color: "#6b7280" }}
+      >
+        Current session
       </p>
-      <h2 className="mt-2 text-2xl font-semibold text-white">
+      <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-white">
         {session.user.displayName}
       </h2>
-      <p className="mt-2 text-sm leading-6 text-white/68">{session.user.email}</p>
-      <p className="mt-3 text-sm leading-6 text-white/64">
-        {isHostedStaging
-          ? "This confirms the hosted staging Supabase Auth cookie flow works on staging.mymedlife.org. Role-aware routes now prefer the signed-in staging identity while production auth remains blocked."
-          : "This confirms the local Supabase Auth cookie flow works. Role-aware app routes now prefer this local session over the debug actor email when the matching fake profile exists."}
+      <p className="mt-1 text-sm text-[#9ca3af]">{session.user.email}</p>
+      <p className="mt-4 text-sm leading-6 text-[#9ca3af]">
+        This account is ready to continue into its role-based workspace.
       </p>
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+      <div className="mt-6 grid gap-3">
         <Link
-          href="/rush-month"
-          className="rounded-full bg-emerald-300 px-4 py-2 text-center text-sm font-semibold text-[#06211d]"
+          href={redirectTo}
+          className="rounded-xl py-3 text-center text-sm font-bold text-white transition-all"
+          style={{ background: "#b8253a" }}
         >
-          Continue to Rush Month
+          Continue into myMEDLIFE
         </Link>
         <form action={signOut}>
           <button
             type="submit"
-            className="w-full rounded-full border border-white/14 px-4 py-2 text-sm font-semibold text-white/78 transition hover:border-white/28 hover:text-white sm:w-auto"
+            className="w-full rounded-xl border px-4 py-3 text-sm font-semibold text-[#f3f4f6] transition"
+            style={{
+              borderColor: "rgba(255,255,255,0.08)",
+              background: "#0d1117",
+            }}
           >
             Sign out
           </button>

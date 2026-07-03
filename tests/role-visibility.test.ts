@@ -2,13 +2,16 @@ import { describe, expect, it } from "vitest";
 import { assignments } from "@/data/mock-rush-month";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
+  canReadAdminIntegrationsSecurity,
   canReadChapterData,
   canReadIntegrationOutbox,
+  getActorSurfaceFamily,
   getMobileQuickNavigationForActor,
   getNavigationForActor,
   getVisibleAdminPanelsForActor,
   getVisibleAssignmentsForActor,
   getVisibleRiskFlagsForActor,
+  isMemberSurfaceFamily,
 } from "@/services/role-visibility";
 import type { RiskFlagRow } from "@/shared/types/persistence";
 
@@ -17,21 +20,19 @@ describe("role visibility service", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const visibleAssignments = getVisibleAssignmentsForActor(actor, assignments);
 
-    expect(visibleAssignments).toHaveLength(1);
+    expect(visibleAssignments).toHaveLength(3);
     expect(visibleAssignments.every((assignment) => assignment.lane === "Member")).toBe(true);
   });
 
   it("keeps action committee members in member-lane visibility", () => {
     const actor = getMockLocalActorContext("committee.member@mymedlife.test");
     const visibleAssignments = getVisibleAssignmentsForActor(actor, assignments);
+    const navLabels = getNavigationForActor(actor).map((item) => item.label);
 
     expect(actor.chapterRoles).toEqual(["Action Committee Member"]);
-    expect(visibleAssignments).toHaveLength(1);
+    expect(visibleAssignments).toHaveLength(3);
     expect(visibleAssignments.every((assignment) => assignment.lane === "Member")).toBe(true);
-    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Home");
-    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("My Actions");
-    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Points");
-    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Profile");
+    expect(navLabels).toEqual(["Home", "Events", "Points", "Profile"]);
   });
 
   it("lets chapter leaders read member and leader work but not coach-only work", () => {
@@ -51,7 +52,7 @@ describe("role visibility service", () => {
     expect(visibleAssignments.map((assignment) => assignment.lane)).toContain("Member");
     expect(visibleAssignments.map((assignment) => assignment.lane)).toContain("Leader");
     expect(visibleAssignments.some((assignment) => assignment.lane === "Coach")).toBe(false);
-    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Members");
+    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Attendance");
   });
 
   it("keeps DS Admin out of student and chapter truth while allowing outbox read", () => {
@@ -61,6 +62,7 @@ describe("role visibility service", () => {
     expect(getVisibleAssignmentsForActor(actor, assignments)).toEqual([]);
     expect(getVisibleRiskFlagsForActor(actor, fakeRisks)).toEqual([]);
     expect(canReadIntegrationOutbox(actor)).toBe(true);
+    expect(canReadAdminIntegrationsSecurity(actor)).toBe(true);
     expect(getVisibleAdminPanelsForActor(actor).map((panel) => panel.key)).toEqual([
       "integration_outbox",
     ]);
@@ -76,15 +78,13 @@ describe("role visibility service", () => {
     ]);
   });
 
-  it("gives admin proof/support panels without DS outbox ownership", () => {
+  it("keeps staff out of the DS admin backend panels", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
 
     expect(canReadChapterData(actor)).toBe(true);
     expect(canReadIntegrationOutbox(actor)).toBe(false);
-    expect(getVisibleAdminPanelsForActor(actor).map((panel) => panel.key)).toEqual([
-      "support_context",
-      "proof_sharing",
-    ]);
+    expect(canReadAdminIntegrationsSecurity(actor)).toBe(false);
+    expect(getVisibleAdminPanelsForActor(actor)).toEqual([]);
   });
 
   it("gives super admin full local oversight", () => {
@@ -93,6 +93,7 @@ describe("role visibility service", () => {
     expect(getVisibleAssignmentsForActor(actor, assignments)).toHaveLength(assignments.length);
     expect(getVisibleRiskFlagsForActor(actor, fakeRisks)).toHaveLength(fakeRisks.length);
     expect(canReadIntegrationOutbox(actor)).toBe(true);
+    expect(canReadAdminIntegrationsSecurity(actor)).toBe(true);
     expect(getVisibleAdminPanelsForActor(actor).map((panel) => panel.key)).toEqual([
       "support_context",
       "proof_sharing",
@@ -109,36 +110,99 @@ describe("role visibility service", () => {
     const admin = getMockLocalActorContext("admin@mymedlife.test");
     const superAdmin = getMockLocalActorContext("super.admin@mymedlife.test");
 
-    expect(getNavigationForActor(member).map((item) => item.label)).toContain("My Actions");
-    expect(getNavigationForActor(leader).map((item) => item.label)).toContain("Members");
-    expect(getNavigationForActor(coach).map((item) => item.label)).toContain("Staff Center");
-    expect(getNavigationForActor(admin).map((item) => item.label)).toContain("Staff Center");
-    expect(getNavigationForActor(superAdmin).map((item) => item.label)).toContain(
-      "Staff Center",
-    );
+    expect(getNavigationForActor(member).map((item) => item.label)).toEqual([
+      "Home",
+      "Events",
+      "Points",
+      "Profile",
+    ]);
+    expect(getNavigationForActor(leader).map((item) => item.label)).toEqual([
+      "Overview",
+      "Events",
+      "Attendance",
+      "Leaderboard",
+    ]);
+    expect(getNavigationForActor(leader).find((item) => item.label === "Attendance")).toEqual({
+      href: "/leader?view=attendance",
+      label: "Attendance",
+    });
+    expect(getNavigationForActor(coach).map((item) => item.label)).toEqual([
+      "Portfolio",
+      "Events",
+      "Leaderboard",
+    ]);
+    expect(getNavigationForActor(admin).map((item) => item.label)).toEqual([
+      "Chapters",
+      "Events",
+      "Leaderboard",
+    ]);
+    expect(getNavigationForActor(superAdmin).map((item) => item.label)).toEqual([
+      "Admin Home",
+      "Outbox",
+      "Audit Log",
+      "Launch Gate",
+      "Pilot Scope",
+      "Profile",
+    ]);
     expect(getNavigationForActor(dsAdmin)).toEqual([
-      { href: "/admin", label: "Integration Outbox" },
-      { href: "/admin/first-write", label: "First Write Safety" },
-      { href: "/admin/write-sequence", label: "Write Sequence Safety" },
-      { href: "/admin/proof-write", label: "Proof Packet Safety" },
-      { href: "/admin/hq-proof-write", label: "HQ Decision Safety" },
-      { href: "/admin/assignment-write", label: "Assignment Safety" },
-      { href: "/admin/coach-write", label: "Coach Safety" },
-      { href: "/admin/pilot-scope", label: "Pilot Safety" },
-      { href: "/admin/staff-dry-run", label: "Dry Run Safety" },
+      { href: "/admin", label: "Admin Home" },
+      { href: "/admin/integration-outbox", label: "Outbox" },
+      { href: "/admin/audit-log", label: "Audit Log" },
+      { href: "/admin/launch-gate", label: "Launch Gate" },
+      { href: "/admin/pilot-scope", label: "Pilot Scope" },
       { href: "/profile", label: "Profile" },
     ]);
+  });
+
+  it("maps the richer canonical roles into the expected surface families", () => {
+    expect(getActorSurfaceFamily(getMockLocalActorContext("committee.member@mymedlife.test"))).toBe(
+      "member",
+    );
+    expect(getActorSurfaceFamily(getMockLocalActorContext("committee.chair@mymedlife.test"))).toBe(
+      "leader",
+    );
+    expect(getActorSurfaceFamily(getMockLocalActorContext("coach@mymedlife.test"))).toBe(
+      "coach",
+    );
+    expect(getActorSurfaceFamily(getMockLocalActorContext("admin@mymedlife.test"))).toBe(
+      "staff",
+    );
+    expect(getActorSurfaceFamily(getMockLocalActorContext("ds.admin@mymedlife.test"))).toBe(
+      "ds_admin",
+    );
+    expect(isMemberSurfaceFamily(getMockLocalActorContext("committee.member@mymedlife.test"))).toBe(
+      true,
+    );
+    expect(isMemberSurfaceFamily(getMockLocalActorContext("leader.a@mymedlife.test"))).toBe(
+      false,
+    );
   });
 
   it("gives members a mobile quick path to home, campaigns, events, points, and profile", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
-      { href: "/", label: "Home", helper: "Today" },
-      { href: "/campaigns", label: "Campaigns", helper: "Goals" },
-      { href: "/rush-month/events", label: "Events", helper: "Meet" },
-      { href: "/rush-month/leaderboard", label: "Points", helper: "Rank" },
+      { href: "/app", label: "Home", helper: "Today" },
+      { href: "/app/events", label: "Events", helper: "Meet" },
+      { href: "/app/points", label: "Points", helper: "Rank" },
       { href: "/profile", label: "Profile", helper: "Me" },
+    ]);
+  });
+
+  it("keeps traveler accounts inside the same focused member navigation during the launch lane", () => {
+    const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
+
+    expect(getNavigationForActor(actor).map((item) => item.label)).toEqual([
+      "Home",
+      "Events",
+      "Points",
+      "Profile",
+    ]);
+    expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
+      "Home",
+      "Events",
+      "Points",
+      "Profile",
     ]);
   });
 
@@ -146,10 +210,25 @@ describe("role visibility service", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
-      "Rush",
-      "People",
-      "Review",
-      "Loop",
+      "Home",
+      "Events",
+      "Attendance",
+      "Leaderboard",
+    ]);
+    expect(getMobileQuickNavigationForActor(actor)[2]).toEqual({
+      href: "/leader?view=attendance",
+      label: "Attendance",
+      helper: "Check-in",
+    });
+  });
+
+  it("keeps coach mobile navigation inside the owned portfolio flow", () => {
+    const actor = getMockLocalActorContext("coach@mymedlife.test");
+
+    expect(getMobileQuickNavigationForActor(actor)).toEqual([
+      { href: "/staff?view=chapters", label: "Portfolio", helper: "Chapters" },
+      { href: "/staff?view=events", label: "Events", helper: "Health" },
+      { href: "/staff?view=leaderboard", label: "Leaderboard", helper: "Rank" },
     ]);
   });
 
@@ -157,15 +236,11 @@ describe("role visibility service", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
-      { href: "/admin", label: "Outbox", helper: "Safety" },
-      { href: "/admin/first-write", label: "Write", helper: "No sends" },
-      { href: "/admin/write-sequence", label: "Sequence", helper: "No sends" },
-      { href: "/admin/phase-2", label: "Phase 2", helper: "Review" },
-      { href: "/admin/proof-write", label: "Proof", helper: "No uploads" },
-      { href: "/admin/hq-proof-write", label: "HQ", helper: "No publish" },
-      { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
-      { href: "/admin/coach-write", label: "Coach", helper: "No sends" },
-      { href: "/admin/pilot-scope", label: "Pilot", helper: "No sends" },
+      { href: "/admin", label: "Admin", helper: "Home" },
+      { href: "/admin/integration-outbox", label: "Queue", helper: "Off" },
+      { href: "/admin/audit-log", label: "Audit", helper: "Proof" },
+      { href: "/admin/launch-gate", label: "Gate", helper: "Ready" },
+      { href: "/admin/pilot-scope", label: "Scope", helper: "Pilot" },
     ]);
   });
 
@@ -174,14 +249,10 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Admin",
-      "Write",
-      "Sequence",
-      "Phase 2",
-      "Proof",
-      "HQ",
-      "Assign",
-      "Coach",
-      "Pilot",
+      "Queue",
+      "Audit",
+      "Gate",
+      "Scope",
     ]);
   });
 });

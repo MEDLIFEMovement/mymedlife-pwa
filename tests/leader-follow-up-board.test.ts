@@ -12,9 +12,9 @@ describe("leader follow-up board", () => {
 
     expect(board.canReadBoard).toBe(true);
     expect(board.title).toBe("Leader follow-up board");
-    expect(board.counts.total).toBe(4);
-    expect(board.counts.needsFollowUp).toBe(3);
-    expect(board.counts.readyToReview).toBe(1);
+    expect(board.counts.total).toBe(6);
+    expect(board.counts.needsFollowUp).toBe(5);
+    expect(board.counts.readyToReview).toBe(2);
     expect(board.counts.remindersEnabled).toBe(0);
     expect(board.rows[0]?.status).toBe("submitted");
     expect(board.rows[0]?.nextHref).toBe("/rush-month/review");
