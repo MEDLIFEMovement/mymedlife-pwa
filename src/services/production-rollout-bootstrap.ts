@@ -71,6 +71,35 @@ export type ProductionRolloutBootstrapOptions = {
   minimumChapterCount?: number;
 };
 
+export function formatProductionRolloutBootstrapReadiness(
+  readiness: ProductionRolloutBootstrapReadiness,
+): string {
+  const lines = [
+    readiness.ready
+      ? "Production rollout packet: READY"
+      : "Production rollout packet: NOT READY",
+    "",
+    "Counts:",
+    `- active chapters: ${readiness.counts.activeChapters}`,
+    `- users: ${readiness.counts.users}`,
+    `- approved memberships: ${readiness.counts.approvedMemberships}`,
+    `- active staff roles: ${readiness.counts.activeStaffRoles}`,
+    `- active coach assignments: ${readiness.counts.activeCoachAssignments}`,
+    `- active campaigns: ${readiness.counts.activeCampaigns}`,
+    "",
+    "Blockers:",
+    ...formatList(readiness.blockers, "None"),
+    "",
+    "Warnings:",
+    ...formatList(readiness.warnings, "None"),
+    "",
+    "Next steps:",
+    ...formatList(readiness.nextSteps, "None"),
+  ];
+
+  return lines.join("\n");
+}
+
 const leaderRoleKeys = new Set([
   "action_committee_chair",
   "e_board_member",
@@ -113,8 +142,9 @@ export function getProductionRolloutBootstrapReadiness(
   const chapterIds = new Set(packet.chapters.map((chapter) => chapter.id));
 
   if (activeChapters.length < minimumChapterCount) {
+    const chapterLabel = minimumChapterCount === 1 ? "chapter" : "chapters";
     blockers.push(
-      `Add at least ${minimumChapterCount} active chapters before the 30-chapter rollout. Current active chapters: ${activeChapters.length}.`,
+      `Add at least ${minimumChapterCount} active ${chapterLabel} before production rollout. Current active chapters: ${activeChapters.length}.`,
     );
   }
 
@@ -327,4 +357,12 @@ function containsSecretLikeField(value: unknown): boolean {
   }
 
   return false;
+}
+
+function formatList(items: string[], emptyText: string) {
+  if (items.length === 0) {
+    return [`- ${emptyText}`];
+  }
+
+  return items.map((item) => `- ${item}`);
 }

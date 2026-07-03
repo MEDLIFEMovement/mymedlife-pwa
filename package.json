@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "hosted:smoke": "node scripts/hosted-auth-smoke.mjs",
+    "rollout:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-packet.mjs",
     "supabase:start": "pnpm dlx supabase@2.106.0 start",
     "supabase:reset": "pnpm dlx supabase@2.106.0 db reset",
     "supabase:test": "pnpm dlx supabase@2.106.0 test db"
