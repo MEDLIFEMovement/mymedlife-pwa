@@ -70,6 +70,27 @@ describe("production rollout bootstrap readiness", () => {
     expect(readiness.blockers).toContain("Add at least one DS Admin or Super Admin for launch controls.");
   });
 
+  it("names empty packet sections so launch owners know which CSVs to fill", () => {
+    const readiness = getProductionRolloutBootstrapReadiness({
+      chapters: [],
+      users: [],
+      memberships: [],
+      staffRoles: [],
+      coachAssignments: [],
+      campaigns: [],
+    });
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toEqual(
+      expect.arrayContaining([
+        "Add launch users to users.csv before production rollout.",
+        "Add approved chapter memberships to memberships.csv before production rollout.",
+        "Add active coach assignments to coach-assignments.csv before production rollout.",
+        "Add active launch campaigns to campaigns.csv before production rollout.",
+      ]),
+    );
+  });
+
   it("formats a human-readable readiness report for launch reviewers", () => {
     const readiness = getProductionRolloutBootstrapReadiness(
       createCompletePacket(1),
