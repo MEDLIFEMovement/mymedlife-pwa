@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { mockChapter } from "@/data/mock-rush-month";
 import {
   createSupabaseReadonlyClient,
-  getHostedStagingSessionReadonlyClient,
+  getHostedSessionReadonlyClient,
   getSupabaseReadConfig,
   type SupabaseReadonlyClient,
 } from "@/lib/supabase-readonly";
@@ -274,14 +274,14 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
     }
   }
 
-  const hostedStagingSession = await getHostedStagingSessionReadonlyClient();
+  const hostedSession = await getHostedSessionReadonlyClient();
 
-  if (hostedStagingSession.enabled) {
+  if (hostedSession.enabled) {
     try {
       return await getSupabaseLocalActorContext(
-        hostedStagingSession.client,
+        hostedSession.client,
         resolvedActor.email,
-        actorContextMessage(resolvedActor, hostedStagingSession.reason),
+        actorContextMessage(resolvedActor, hostedSession.reason),
         resolvedActor.identitySource,
         resolvedActor.authSessionStatus,
         false,
@@ -292,9 +292,9 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
         error instanceof Error
           ? actorContextMessage(
               resolvedActor,
-              `Hosted staging actor read failed, so mock fallback is active: ${error.message}`,
+              `Hosted actor read failed, so mock fallback is active: ${error.message}`,
             )
-          : "Hosted staging actor read failed, so mock fallback is active.",
+          : "Hosted actor read failed, so mock fallback is active.",
         "supabase_error",
         resolvedActor.identitySource,
         resolvedActor.authSessionStatus,
@@ -304,7 +304,7 @@ export async function getLocalActorContext(): Promise<LocalActorContext> {
 
   return getMockLocalActorContext(
     resolvedActor.email,
-    actorContextMessage(resolvedActor, hostedStagingSession.reason),
+    actorContextMessage(resolvedActor, hostedSession.reason),
     "mock_fallback",
     resolvedActor.identitySource,
     resolvedActor.authSessionStatus,

@@ -44,7 +44,7 @@ export type SupabaseReadonlyClient = {
   ) => Promise<TRow[]>;
 };
 
-export type HostedStagingSessionReadonlyResult =
+export type HostedSessionReadonlyResult =
   | {
       enabled: true;
       client: SupabaseReadonlyClient;
@@ -54,6 +54,7 @@ export type HostedStagingSessionReadonlyResult =
       enabled: false;
       reason: string;
     };
+export type HostedStagingSessionReadonlyResult = HostedSessionReadonlyResult;
 
 export function getSupabaseReadConfig(env: EnvSource = process.env): SupabaseReadConfig {
   if (env.MYMEDLIFE_DATA_SOURCE !== "supabase") {
@@ -170,7 +171,7 @@ export async function createSupabaseReadonlyAccess(
     if (!sessionResult.error && accessToken) {
       const reason = authConfig.isLocalOnly
         ? "Reading local Supabase data with the signed-in auth session."
-        : "Reading hosted staging Supabase data with the signed-in reviewer session.";
+        : `Reading hosted ${authConfig.environment} Supabase data with the signed-in reviewer session.`;
 
       return {
         enabled: true,
@@ -195,7 +196,7 @@ export async function createSupabaseReadonlyAccess(
         enabled: false,
         reason: authConfig.isLocalOnly
           ? "Using mock data because no signed-in local Supabase session is active."
-          : "Using mock data because no signed-in hosted staging reviewer session is active.",
+          : `Using mock data because no signed-in hosted ${authConfig.environment} reviewer session is active.`,
         isLocalOnly: authConfig.isLocalOnly,
         mode: "mock_fallback",
       };
@@ -247,9 +248,15 @@ export function createSupabaseQueryReadonlyClient(
 export async function getHostedStagingSessionReadonlyClient(
   env: EnvSource = process.env,
 ): Promise<HostedStagingSessionReadonlyResult> {
+  return getHostedSessionReadonlyClient(env);
+}
+
+export async function getHostedSessionReadonlyClient(
+  env: EnvSource = process.env,
+): Promise<HostedSessionReadonlyResult> {
   const { client, config } = await createLocalSupabaseServerClient(env);
 
-  if (!client || !config.isHostedStaging) {
+  if (!client || config.isLocalOnly || !config.enabled) {
     return {
       enabled: false,
       reason: config.reason,
@@ -268,7 +275,7 @@ export async function getHostedStagingSessionReadonlyClient(
   return {
     enabled: true,
     client: createSupabaseQueryReadonlyClient(client),
-    reason: "Reading hosted staging Supabase data for the signed-in session.",
+    reason: `Reading hosted ${config.environment} Supabase data for the signed-in session.`,
   };
 }
 

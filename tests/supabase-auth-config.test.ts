@@ -50,7 +50,7 @@ describe("Supabase auth config", () => {
     ).toMatchObject({
       enabled: false,
       reason:
-        "Local Supabase Auth refuses non-localhost URLs until production auth is explicitly approved.",
+        "Local Supabase Auth refuses non-localhost URLs. Use staging_supabase or production_supabase for hosted auth.",
     });
   });
 
@@ -145,6 +145,72 @@ describe("Supabase auth config", () => {
       enabled: true,
       mode: "staging_supabase",
       isHostedStaging: true,
+    });
+  });
+
+  it("enables hosted production auth only for the approved production host and project", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://fnlhontvvprwgooevzdl.supabase.co/",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "production-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      mode: "production_supabase",
+      environment: "production",
+      url: "https://fnlhontvvprwgooevzdl.supabase.co",
+      isLocalOnly: false,
+      isHostedStaging: false,
+      reason:
+        "Hosted production Supabase Auth is enabled only for www.mymedlife.org against the approved production Supabase project.",
+    });
+  });
+
+  it("refuses the staging site URL in hosted production mode", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://fnlhontvvprwgooevzdl.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "production-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      reason:
+        "Hosted production Supabase Auth only runs when NEXT_PUBLIC_SITE_URL resolves to https://www.mymedlife.org.",
+    });
+  });
+
+  it("refuses the staging Supabase project in hosted production mode", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "production-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      reason:
+        "Hosted production Supabase Auth refuses the staging Supabase project. Use the approved production Supabase project for www.mymedlife.org.",
+    });
+  });
+
+  it("keeps hosted production auth disabled while any write or upload flag is on", () => {
+    expect(
+      getSupabaseAuthConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://fnlhontvvprwgooevzdl.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "production-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
+        MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      reason:
+        "Hosted production Supabase Auth stays disabled until all write and upload flags are off. Turn off: MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE.",
     });
   });
 

@@ -89,6 +89,32 @@ describe("auth session service", () => {
     });
   });
 
+  it("uses hosted production session copy when the production gate is active", async () => {
+    const state = await getAuthSessionState(
+      createFakeAuthReader({
+        data: { user: null },
+        error: { name: "AuthSessionMissingError", message: "Auth session missing!" },
+      }),
+      {
+        enabled: true,
+        mode: "production_supabase",
+        environment: "production",
+        url: "https://fnlhontvvprwgooevzdl.supabase.co",
+        anonKey: "production-publishable-key",
+        isLocalOnly: false,
+        isHostedStaging: false,
+        reason: "Hosted production auth is enabled.",
+      },
+    );
+
+    expect(state).toMatchObject({
+      status: "signed_out",
+      environment: "production",
+      isHostedStaging: false,
+      message: "No hosted production Supabase Auth session is active.",
+    });
+  });
+
   it("reports unexpected auth errors without treating them as signed in", async () => {
     const state = await getAuthSessionState(
       createFakeAuthReader({
