@@ -134,9 +134,19 @@ function parseCsvTable(
         );
       }
 
-      return Object.fromEntries(
+      const parsedRow = Object.fromEntries(
         normalizedHeaders.map((header, index) => [header, row[index].trim()]),
       );
+
+      for (const requiredHeader of headers.required) {
+        if (!parsedRow[requiredHeader]) {
+          throw new Error(
+            `${tableName} CSV row ${rowIndex + 2} is missing required value ${requiredHeader}.`,
+          );
+        }
+      }
+
+      return parsedRow;
     });
 }
 
@@ -292,6 +302,8 @@ function requireValue(value: string, allowed: readonly string[], label: string) 
 
 function omitEmpty<T extends Record<string, unknown>>(value: T): T {
   return Object.fromEntries(
-    Object.entries(value).filter(([, entryValue]) => entryValue !== ""),
+    Object.entries(value).filter(
+      ([, entryValue]) => entryValue !== "" && entryValue !== undefined,
+    ),
   ) as T;
 }

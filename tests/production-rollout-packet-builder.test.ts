@@ -63,6 +63,11 @@ describe("production rollout packet builder", () => {
     });
 
     expect(packet.chapters[0]?.name).toBe("Boston College, MEDLIFE");
+    expect(packet.chapters[0]).toEqual({
+      id: "chapter-bc",
+      name: "Boston College, MEDLIFE",
+      campus: "Boston College",
+    });
   });
 
   it("rejects unsupported columns so secrets do not sneak into packets", () => {
@@ -95,5 +100,20 @@ describe("production rollout packet builder", () => {
     ).toThrow(
       'Invalid membership roleKey "owner". Expected one of: general_member, action_committee_member, action_committee_chair, e_board_member, president_vp.',
     );
+  });
+
+  it("rejects blank required values even when the column exists", () => {
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables({
+        chapters: "id,name,campus\n,UCLA MEDLIFE,UCLA",
+        users: "email,displayName\nleader@medlifemovement.org,Leader",
+        memberships:
+          "email,chapterId,roleKey\nleader@medlifemovement.org,chapter-ucla,president_vp",
+        staffRoles: "email,roleKey\nadmin@medlifemovement.org,admin",
+        coachAssignments:
+          "coachEmail,chapterId,coachType\ncoach@medlifemovement.org,chapter-ucla,portfolio",
+        campaigns: "chapterId,name,slug\nchapter-ucla,Rush Month,rush-month-ucla",
+      }),
+    ).toThrow("chapters CSV row 2 is missing required value id.");
   });
 });
