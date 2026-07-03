@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { getMockLocalActorContext } from "@/services/local-actor-context";
+import {
+  getMissingProfileActorContext,
+  getMockLocalActorContext,
+} from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn((href: string) => {
@@ -65,5 +68,20 @@ describe("root page", () => {
       getSignedInActor("general.staff@mymedlife.test"),
     );
     await expect(RootPage()).rejects.toThrow("NEXT_REDIRECT:/staff?view=chapters");
+  });
+
+  it("routes signed-in users without app profiles to onboarding", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMissingProfileActorContext(
+        "nellis@medlifemovement.org",
+        "Profile setup required.",
+      ),
+    );
+
+    const { default: RootPage } = await import("@/app/page");
+
+    await expect(RootPage()).rejects.toThrow("NEXT_REDIRECT:/onboarding");
   });
 });

@@ -4,7 +4,10 @@ import {
   getLandingRouteForActor,
   getLandingRouteForLocalActorEmail,
 } from "@/services/landing-route";
-import { getMockLocalActorContext } from "@/services/local-actor-context";
+import {
+  getMissingProfileActorContext,
+  getMockLocalActorContext,
+} from "@/services/local-actor-context";
 
 describe("landing route service", () => {
   it("maps current local personas to their owned default surfaces", () => {
@@ -59,6 +62,17 @@ describe("landing route service", () => {
     expect(getLandingRouteForLocalActorEmail("sales.admin@mymedlife.test")).toBe(
       "/staff?view=chapters",
     );
+  });
+
+  it("routes signed-in auth users without app profiles to onboarding", () => {
+    expect(
+      getLandingRouteForActor(
+        getMissingProfileActorContext(
+          "nellis@medlifemovement.org",
+          "Profile setup required.",
+        ),
+      ),
+    ).toBe("/onboarding");
   });
 
   it("adds source query params without dropping existing route state", () => {

@@ -20,10 +20,14 @@ export type LandingRouteSource =
 export function getLandingRouteForActor(
   actor: Pick<
     LocalActorContext,
-    "defaultLandingSurface" | "primaryCanonicalRole"
+    "defaultLandingSurface" | "primaryCanonicalRole" | "source"
   >,
   source?: LandingRouteSource,
 ): string {
+  if (actor.source.status === "auth_profile_missing") {
+    return appendLandingRouteSource("/onboarding", source);
+  }
+
   return appendLandingRouteSource(
     getDefaultLandingRouteForRole(
       actor.primaryCanonicalRole,
