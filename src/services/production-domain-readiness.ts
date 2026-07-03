@@ -29,7 +29,11 @@ export type ProductionDomainReadinessResult = {
 };
 
 const godaddyParkingAddresses = new Set(["3.33.130.190", "15.197.148.33"]);
-const vercelApexAddress = "76.76.21.21";
+const vercelApexAddresses = new Set([
+  "76.76.21.21",
+  "216.150.1.1",
+  "216.150.16.1",
+]);
 const appCopyMarkers = ["myMEDLIFE", "Use one account"];
 const parkingMarkers = ["window.location.href=\"/lander\"", "GoDaddy", "godaddy"];
 
@@ -95,7 +99,9 @@ function vercelApexCheck(
 ): ProductionDomainReadinessCheck {
   return {
     label: "Root domain points to Vercel apex address",
-    passed: dns.addresses.includes(vercelApexAddress),
+    passed:
+      dns.addresses.length > 0 &&
+      dns.addresses.every((address) => vercelApexAddresses.has(address)),
     detail: formatDnsDetail(dns),
   };
 }
