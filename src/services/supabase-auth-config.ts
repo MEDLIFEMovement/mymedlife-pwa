@@ -3,14 +3,15 @@ type EnvSource = Record<string, string | undefined>;
 export type SupabaseAuthMode =
   | "disabled"
   | "local_supabase"
-  | "staging_supabase";
+  | "staging_supabase"
+  | "production_supabase";
 
-export type SupabaseAuthEnvironment = "local" | "staging";
+export type SupabaseAuthEnvironment = "local" | "staging" | "production";
 
 export type SupabaseAuthConfig =
   | {
       enabled: true;
-      mode: "local_supabase" | "staging_supabase";
+      mode: "local_supabase" | "staging_supabase" | "production_supabase";
       environment: SupabaseAuthEnvironment;
       url: string;
       anonKey: string;
@@ -42,6 +43,11 @@ const blockedHostedWriteFlags = [
   "MYMEDLIFE_ENABLE_PRIVATE_PROOF_UPLOAD_WRITE",
   "MYMEDLIFE_ALLOW_PROOF_UPLOADS",
 ] as const;
+const blockedProductionWriteFlags = [
+  ...blockedHostedWriteFlags,
+  "MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES",
+  "MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE",
+] as const;
 
 export function getSupabaseAuthConfig(
   env: EnvSource = process.env,
@@ -56,13 +62,17 @@ export function getSupabaseAuthConfig(
     return getHostedStagingSupabaseAuthConfig(env);
   }
 
+  if (mode === "production_supabase") {
+    return getHostedProductionSupabaseAuthConfig(env);
+  }
+
   return disabledConfig({
     mode: "disabled",
     environment: "local",
     isLocalOnly: true,
     isHostedStaging: false,
     reason:
-      "Supabase Auth is disabled because MYMEDLIFE_AUTH_MODE is not set to local_supabase or staging_supabase.",
+      "Supabase Auth is disabled because MYMEDLIFE_AUTH_MODE is not set to local_supabase, staging_supabase, or production_supabase.",
   });
 }
 
@@ -101,7 +111,7 @@ function getLocalSupabaseAuthConfig(env: EnvSource): SupabaseAuthConfig {
       isLocalOnly: true,
       isHostedStaging: false,
       reason:
-        "Local Supabase Auth refuses non-localhost URLs until production auth is explicitly approved.",
+        "Local Supabase Auth refuses non-localhost URLs. Use staging_supabase or production_supabase for hosted auth.",
     });
   }
 
@@ -195,6 +205,75 @@ function getHostedStagingSupabaseAuthConfig(env: EnvSource): SupabaseAuthConfig 
   };
 }
 
+function getHostedProductionSupabaseAuthConfig(
+  env: EnvSource,
+): SupabaseAuthConfig {
+  const url = readSupabaseUrl(env);
+  const anonKey = readSupabaseBrowserKey(env);
+  const siteUrl = readSiteUrl(env);
+
+  if (!url || !anonKey) {
+    return disabledConfig({
+      mode: "production_supabase",
+      environment: "production",
+      isLocalOnly: false,
+      isHostedStaging: false,
+      reason:
+        "Hosted production Supabase Auth is disabled because the production URL or browser key is missing.",
+    });
+  }
+
+  if (!siteUrl || !isProductionSiteUrl(siteUrl)) {
+    return disabledConfig({
+      mode: "production_supabase",
+      environment: "production",
+      isLocalOnly: false,
+      isHostedStaging: false,
+      reason:
+        "Hosted production Supabase Auth only runs when NEXT_PUBLIC_SITE_URL resolves to https://www.mymedlife.org.",
+    });
+  }
+
+  if (!isHostedProductionSupabaseUrl(url)) {
+    const projectRef = getSupabaseProjectRef(url);
+
+    return disabledConfig({
+      mode: "production_supabase",
+      environment: "production",
+      isLocalOnly: false,
+      isHostedStaging: false,
+      reason:
+        projectRef === stagingSupabaseProjectRef
+          ? "Hosted production Supabase Auth refuses the staging Supabase project. Use the approved production Supabase project for www.mymedlife.org."
+          : `Hosted production Supabase Auth only allows the production Supabase project ${productionSupabaseProjectRef}.`,
+    });
+  }
+
+  const enabledWriteFlags = getEnabledWriteFlags(env, blockedProductionWriteFlags);
+
+  if (enabledWriteFlags.length > 0) {
+    return disabledConfig({
+      mode: "production_supabase",
+      environment: "production",
+      isLocalOnly: false,
+      isHostedStaging: false,
+      reason: `Hosted production Supabase Auth stays disabled until all write and upload flags are off. Turn off: ${enabledWriteFlags.join(", ")}.`,
+    });
+  }
+
+  return {
+    enabled: true,
+    mode: "production_supabase",
+    environment: "production",
+    url: stripTrailingSlash(url),
+    anonKey,
+    isLocalOnly: false,
+    isHostedStaging: false,
+    reason:
+      "Hosted production Supabase Auth is enabled only for www.mymedlife.org against the approved production Supabase project.",
+  };
+}
+
 function readSupabaseUrl(env: EnvSource): string | undefined {
   return env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_URL;
 }
@@ -257,6 +336,10 @@ function isHostedStagingSupabaseUrl(url: string): boolean {
   return getSupabaseProjectRef(url) === stagingSupabaseProjectRef;
 }
 
+function isHostedProductionSupabaseUrl(url: string): boolean {
+  return getSupabaseProjectRef(url) === productionSupabaseProjectRef;
+}
+
 function getSupabaseProjectRef(url: string): string | null {
   try {
     const parsed = new URL(url);
@@ -272,7 +355,14 @@ function getSupabaseProjectRef(url: string): string | null {
 }
 
 function getEnabledHostedWriteFlags(env: EnvSource): string[] {
-  return blockedHostedWriteFlags.filter((flag) => env[flag] === "true");
+  return getEnabledWriteFlags(env, blockedHostedWriteFlags);
+}
+
+function getEnabledWriteFlags(
+  env: EnvSource,
+  flags: readonly string[],
+): string[] {
+  return flags.filter((flag) => env[flag] === "true");
 }
 
 function disabledConfig(config: {
