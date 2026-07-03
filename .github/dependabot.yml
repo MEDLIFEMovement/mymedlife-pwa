@@ -1,0 +1,56 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - security
+    commit-message:
+      prefix: deps
+      include: scope
+    groups:
+      next-react-runtime:
+        patterns:
+          - next
+          - react
+          - react-dom
+        update-types:
+          - minor
+          - patch
+      supabase-client:
+        patterns:
+          - "@supabase/*"
+        update-types:
+          - minor
+          - patch
+      tooling:
+        patterns:
+          - "@types/*"
+          - eslint
+          - eslint-config-next
+          - tailwindcss
+          - typescript
+          - vitest
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:30"
+      timezone: America/New_York
+    labels:
+      - dependencies
+      - security
+    commit-message:
+      prefix: deps
+      include: scope
