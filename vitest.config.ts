@@ -8,6 +8,11 @@ export default defineConfig({
     },
   },
   test: {
+    coverage: {
+      include: ["src/**/*.{ts,tsx}"],
+      reporter: ["text", "lcov"],
+    },
+    exclude: ["tests/e2e/**", "node_modules/**", ".next/**", "dist/**"],
     globals: false,
   },
 });
