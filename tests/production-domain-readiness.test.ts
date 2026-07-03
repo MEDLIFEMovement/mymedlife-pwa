@@ -15,7 +15,7 @@ describe("production domain readiness", () => {
       .toContain("Production domain readiness: READY");
   });
 
-  it("passes with the current Vercel-recommended apex records", () => {
+  it("passes with the alternate Vercel apex/CNAME records", () => {
     const result = getProductionDomainReadiness({
       ...createReadySnapshot(),
       apex: {
