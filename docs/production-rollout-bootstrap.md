@@ -80,6 +80,42 @@ Prepare one reviewed packet with these sections:
 }
 ```
 
+Teams can build that JSON packet from six simple spreadsheet exports:
+
+```bash
+pnpm rollout:build \
+  --chapters chapters.csv \
+  --users users.csv \
+  --memberships memberships.csv \
+  --staff-roles staff-roles.csv \
+  --coach-assignments coach-assignments.csv \
+  --campaigns campaigns.csv \
+  --out production-rollout-packet.json
+```
+
+Expected CSV headers:
+
+- `chapters.csv`: `id,name,campus,region,status`
+- `users.csv`: `email,displayName`
+- `memberships.csv`: `email,chapterId,roleKey,status`
+- `staff-roles.csv`: `email,roleKey,status`
+- `coach-assignments.csv`: `coachEmail,chapterId,coachType,status`
+- `campaigns.csv`: `chapterId,name,slug,status`
+
+`region` and `status` are optional where listed. Do not add password, token,
+API key, secret, or extra helper columns; unsupported columns are rejected.
+
+Allowed values:
+
+- Membership `roleKey`: `general_member`, `action_committee_member`,
+  `action_committee_chair`, `e_board_member`, `president_vp`
+- Staff `roleKey`: `coach`, `admin`, `ds_admin`, `super_admin`
+- Coach assignment `coachType`: `expansion`, `portfolio`
+- Chapter `status`: `active`, `inactive`, `archived`
+- Membership `status`: `requested`, `approved`, `rejected`, `inactive`
+- Staff and coach assignment `status`: `active`, `inactive`, `ended`
+- Campaign `status`: `draft`, `active`, `complete`, `archived`
+
 ## Readiness Rules
 
 The packet is not ready until all of these are true:
