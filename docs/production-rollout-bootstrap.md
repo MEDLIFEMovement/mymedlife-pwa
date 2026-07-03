@@ -102,6 +102,16 @@ The validator lives in:
 - `src/services/production-rollout-bootstrap.ts`
 - `tests/production-rollout-bootstrap.test.ts`
 
+Run it before any production import:
+
+```bash
+pnpm rollout:check path/to/production-rollout-packet.json
+```
+
+The command prints the packet counts, blockers, warnings, and next steps. It
+exits with a failure code when the packet is not ready, so it can also be used
+in a review checklist or CI job.
+
 ## Safe Production Sequence
 
 1. Prepare the packet from real chapter and staff data.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatProductionRolloutBootstrapReadiness,
   getProductionRolloutBootstrapReadiness,
   type ProductionRolloutBootstrapPacket,
 } from "@/services/production-rollout-bootstrap";
@@ -25,7 +26,7 @@ describe("production rollout bootstrap readiness", () => {
 
     expect(readiness.ready).toBe(false);
     expect(readiness.blockers).toContain(
-      "Add at least 30 active chapters before the 30-chapter rollout. Current active chapters: 2.",
+      "Add at least 30 active chapters before production rollout. Current active chapters: 2.",
     );
   });
 
@@ -67,6 +68,22 @@ describe("production rollout bootstrap readiness", () => {
     expect(readiness.blockers).toContain("Chapter 01 MEDLIFE needs one active launch campaign.");
     expect(readiness.blockers).toContain("Add at least one active admin staff role for day-one support.");
     expect(readiness.blockers).toContain("Add at least one DS Admin or Super Admin for launch controls.");
+  });
+
+  it("formats a human-readable readiness report for launch reviewers", () => {
+    const readiness = getProductionRolloutBootstrapReadiness(
+      createCompletePacket(1),
+    );
+
+    expect(formatProductionRolloutBootstrapReadiness(readiness)).toContain(
+      "Production rollout packet: NOT READY",
+    );
+    expect(formatProductionRolloutBootstrapReadiness(readiness)).toContain(
+      "- active chapters: 1",
+    );
+    expect(formatProductionRolloutBootstrapReadiness(readiness)).toContain(
+      "Add at least 30 active chapters before production rollout.",
+    );
   });
 });
 
