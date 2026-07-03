@@ -1,4 +1,4 @@
-type EventLoopTone = "blue" | "slate" | "yellow" | "gold";
+export type EventLoopTone = "blue" | "slate" | "yellow" | "gold";
 
 type EventLoopPillProps = {
   label: string;
@@ -24,14 +24,14 @@ export function EventLoopPill({ label, detail, tone }: EventLoopPillProps) {
   );
 }
 
-type EventLoopStripItem = {
+export type EventLoopStripItem = {
   label: string;
   detail: string;
   tone: EventLoopTone;
 };
 
 type EventLoopStripProps = {
-  items: EventLoopStripItem[];
+  items: readonly EventLoopStripItem[];
   className?: string;
 };
 

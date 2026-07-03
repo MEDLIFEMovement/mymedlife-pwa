@@ -10,7 +10,7 @@ import {
 const data = getMockReadOnlyAppData("Testing dashboard.");
 
 describe("rush month dashboard service", () => {
-  it("gives members a simple next action, events, proof, and leaderboard", () => {
+  it("gives members an event-first path with points visible in the same loop", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
@@ -26,12 +26,13 @@ describe("rush month dashboard service", () => {
       "Current phase objective:",
     );
     expect(dashboard.actionGroups.map((group) => group.label)).toEqual([
-      "Invite push",
+      "Next event",
       "Rush event",
-      "Proof and points",
+      "Points and leaderboard",
     ]);
-    expect(dashboard.nextStep.href).toBe("/rush-month/actions/member-push");
-    expect(dashboard.nextStep.summary).toContain("prepare proof for:");
+    expect(dashboard.nextStep.href).toBe("/app/events?source=home");
+    expect(dashboard.nextStep.ctaLabel).toBe("Open events");
+    expect(dashboard.nextStep.summary).toContain("attendance drive points");
     expect(dashboard.visibleAssignments).toHaveLength(3);
     expect(dashboard.eventPlans).toHaveLength(4);
     expect(dashboard.proofItems).toHaveLength(1);
@@ -45,11 +46,11 @@ describe("rush month dashboard service", () => {
 
     expect(dashboard.roleLabel).toBe("Action Committee Member");
     expect(dashboard.phaseSummary.status).toBe("Planning");
-    expect(dashboard.nextStep.ctaLabel).toBe("Open my next action");
+    expect(dashboard.nextStep.ctaLabel).toBe("Open events");
     expect(dashboard.actionGroups.map((group) => group.label)).toEqual([
-      "Invite push",
+      "Next event",
       "Rush event",
-      "Proof and points",
+      "Points and leaderboard",
     ]);
   });
 
@@ -59,32 +60,32 @@ describe("rush month dashboard service", () => {
 
     expect(dashboard.surfaceFamily).toBe("leader");
     expect(dashboard.roleLabel).toBe("President / VP");
-    expect(dashboard.nextStep.href).toBe("/rush-month/review");
-    expect(dashboard.nextStep.ctaLabel).toBe("Open approval queue");
+    expect(dashboard.nextStep.href).toBe("/leader?view=attendance");
+    expect(dashboard.nextStep.ctaLabel).toBe("Open attendance");
     expect(dashboard.actionGroups.map((group) => group.href)).toEqual([
-      "/rush-month/actions",
-      "/rush-month/review",
-      "/rush-month/events",
+      "/leader?view=events",
+      "/leader?view=attendance",
+      "/leader?view=leaderboard",
     ]);
     expect(dashboard.roleFocus?.roleLabel).toBe("President / VP");
-    expect(dashboard.roleFocus?.primaryHref).toBe("/rush-month/review");
-    expect(dashboard.roleFocus?.secondaryHref).toBe("/chapter/members");
+    expect(dashboard.roleFocus?.primaryHref).toBe("/leader?view=attendance");
+    expect(dashboard.roleFocus?.secondaryHref).toBe("/leader?view=leaderboard");
     expect(dashboard.visibleAssignments.some((assignment) => assignment.lane === "Leader")).toBe(
       true,
     );
-    expect(dashboard.alerts.join(" ")).toContain("role coverage");
+    expect(dashboard.alerts.join(" ")).toContain("attendance and points");
   });
 
   it("gives E-Board owner follow-up and event execution focus", () => {
     const actor = getMockLocalActorContext("eboard.a@mymedlife.test");
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
-    expect(dashboard.nextStep.href).toBe("/rush-month/actions");
-    expect(dashboard.nextStep.ctaLabel).toBe("Open team actions");
+    expect(dashboard.nextStep.href).toBe("/leader?view=events");
+    expect(dashboard.nextStep.ctaLabel).toBe("Open event loop");
     expect(dashboard.roleFocus?.roleLabel).toBe("E-Board Member");
-    expect(dashboard.roleFocus?.primaryHref).toBe("/rush-month/actions");
-    expect(dashboard.roleFocus?.secondaryHref).toBe("/rush-month/events");
-    expect(dashboard.roleFocus?.safetyNote).toContain("Luma writes");
+    expect(dashboard.roleFocus?.primaryHref).toBe("/leader?view=events");
+    expect(dashboard.roleFocus?.secondaryHref).toBe("/leader?view=attendance");
+    expect(dashboard.roleFocus?.safetyNote).toContain("approved live path");
     expect(dashboard.alerts.join(" ")).toContain("execution follow-up");
   });
 
@@ -95,7 +96,7 @@ describe("rush month dashboard service", () => {
     expect(dashboard.roleLabel).toBe("Coach");
     expect(dashboard.phaseSummary.label).toBe("Week 1: Make MEDLIFE visible on campus");
     expect(dashboard.phaseSummary.status).toBe("Planning");
-    expect(dashboard.nextStep.href).toBe("/coach");
+    expect(dashboard.nextStep.href).toBe("/staff?view=chapters");
     expect(dashboard.metrics.map((metric) => metric.label)).toContain("Coach decision");
     expect(dashboard.integrationEvents).toEqual([]);
     expect(dashboard.outboxItems).toEqual([]);
@@ -120,9 +121,9 @@ describe("rush month dashboard service", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const dashboard = getRushMonthDashboardForActor(actor, data);
 
-    expect(dashboard.nextStep.href).toBe("/rush-month/review");
+    expect(dashboard.nextStep.href).toBe("/staff?view=chapters");
     expect(dashboard.integrationEvents).toEqual([]);
-    expect(dashboard.alerts.join(" ")).toContain("proof");
+    expect(dashboard.alerts.join(" ")).toContain("event loop");
   });
 
   it("gives super admin the full local dashboard including integration posture", () => {

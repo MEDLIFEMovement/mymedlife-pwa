@@ -107,6 +107,7 @@ export function getAdminAuditLogReview(
       auditPreflight: buildAuditPreflightChecklist({
         canReadRows: false,
         hiddenRows: data.auditLogs.length,
+        hiddenRolloutControlRows: countRolloutControlAuditRows(data.auditLogs),
         rows: [],
       }),
       counts: emptyCounts(data.auditLogs.length),
@@ -134,6 +135,7 @@ export function getAdminAuditLogReview(
     auditPreflight: buildAuditPreflightChecklist({
       canReadRows: true,
       hiddenRows: 0,
+      hiddenRolloutControlRows: 0,
       rows,
     }),
     counts: {
@@ -152,10 +154,12 @@ export function getAdminAuditLogReview(
 function buildAuditPreflightChecklist({
   canReadRows,
   hiddenRows,
+  hiddenRolloutControlRows,
   rows,
 }: {
   canReadRows: boolean;
   hiddenRows: number;
+  hiddenRolloutControlRows: number;
   rows: AdminAuditLogReviewRow[];
 }): AdminAuditPreflightChecklist {
   const hasVisibleRows = rows.length > 0;
@@ -167,6 +171,10 @@ function buildAuditPreflightChecklist({
   const rowsWithBeforeAfter = rows.filter((row) => {
     return row.beforeSummary !== "none" || row.afterSummary !== "none";
   }).length;
+  const visibleFeatureFlagRows = rows.filter((row) => row.action === "feature_flag_updated")
+    .length;
+  const visibleThemeSettingRows = rows.filter((row) => row.action === "theme_setting_updated")
+    .length;
 
   const items: AdminAuditPreflightItem[] = [
     {
@@ -236,6 +244,26 @@ function buildAuditPreflightChecklist({
         ? `${rowsWithReason} of ${rows.length} visible row(s) include a reason.`
         : "Reason details stay hidden from this role by design.",
       routeEvidence: ["/admin/audit-log", "/admin/review-path"],
+      browserWritesExpected: 0,
+      externalWritesExpected: 0,
+    },
+    {
+      key: "rollout_control_audit",
+      label: "Prove rollout-control audit rows",
+      status: canReadRows
+        ? visibleFeatureFlagRows > 0 && visibleThemeSettingRows > 0
+          ? "ready"
+          : "watch"
+        : "watch",
+      question: "Can reviewers confirm that feature-flag and theme changes are producing real audit rows?",
+      requiredEvidence:
+        "Before the control layer is treated as production-ready, audit readback should show at least one `feature_flag_updated` row and one `theme_setting_updated` row.",
+      currentPosture: canReadRows
+        ? `${visibleFeatureFlagRows} visible feature-flag row(s) and ${visibleThemeSettingRows} visible theme-setting row(s) are present.`
+        : hiddenRolloutControlRows > 0
+          ? `${hiddenRolloutControlRows} rollout-control audit row(s) exist, but Admin or Super Admin must confirm row-level details.`
+          : "No rollout-control audit rows are confirmed for this role yet.",
+      routeEvidence: ["/admin/feature-flags", "/admin/theme", "/admin/audit-log"],
       browserWritesExpected: 0,
       externalWritesExpected: 0,
     },
@@ -355,4 +383,11 @@ function emptyAuditPreflightChecklist(): AdminAuditPreflightChecklist {
       secretsShown: 0,
     },
   };
+}
+
+function countRolloutControlAuditRows(rows: readonly AuditLogRow[]): number {
+  return rows.filter((row) => {
+    return row.action === "feature_flag_updated" ||
+      row.action === "theme_setting_updated";
+  }).length;
 }

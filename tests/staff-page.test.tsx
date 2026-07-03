@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
@@ -7,6 +7,9 @@ import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 vi.mock("next/navigation", () => ({
   usePathname: () => "/staff",
   useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
+  }),
 }));
 
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
@@ -27,64 +30,67 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
   };
 });
 
+function getSignedInActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-in test actor.",
+    "mock_fallback",
+    "local_auth_session",
+    "signed_in",
+  );
+}
+
 describe("staff page", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns members to their owned student surface when the staff route is blocked", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing member-blocked staff page."),
+      getMockReadOnlyAppData("Testing member redirect from staff route."),
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(await StaffPage({}));
-
-    expect(html).toContain("This staff command center is not visible to this role.");
-    expect(html).toContain('href="/app"');
-    expect(html).toContain(">Open student home<");
+    await expect(StaffPage({})).rejects.toThrow("NEXT_REDIRECT:/app");
   });
 
-  it("returns chapter leaders to their owned chapter surface when the staff route is blocked", async () => {
+  it("returns chapter leaders to their owned leader surface when the staff route is blocked", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("leader.a@mymedlife.test"),
+      getSignedInActor("leader.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing blocked staff page."),
+      getMockReadOnlyAppData("Testing leader redirect from staff route."),
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(await StaffPage({}));
-
-    expect(html).toContain("This staff command center is not visible to this role.");
-    expect(html).toContain('href="/leader?view=overview"');
-    expect(html).toContain(">Open leader home<");
+    await expect(StaffPage({})).rejects.toThrow("NEXT_REDIRECT:/leader?view=overview");
   });
 
-  it("keeps DS Admin on admin safety lanes when the staff route is blocked", async () => {
+  it("keeps DS Admin in the admin backend when the staff route is blocked", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("ds.admin@mymedlife.test"),
+      getSignedInActor("ds.admin@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing DS-blocked staff page."),
+      getMockReadOnlyAppData("Testing DS redirect from staff route."),
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(await StaffPage({}));
-
-    expect(html).toContain('href="/admin"');
-    expect(html).toContain(">Open admin safety review<");
+    await expect(StaffPage({})).rejects.toThrow("NEXT_REDIRECT:/admin");
   });
 
-  it("lets the default staff route open with the portfolio table surface as the first readable command center state", async () => {
+  it("sends signed-out reviewers to login before opening the staff command center", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -92,499 +98,134 @@ describe("staff page", () => {
       getMockLocalActorContext("general.staff@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff portfolio page."),
+      getMockReadOnlyAppData("Testing signed-out staff redirect."),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+
+    await expect(StaffPage({})).rejects.toThrow(
+      "NEXT_REDIRECT:/login?redirectTo=%2Fstaff%3Fview%3Dchapters",
+    );
+  });
+
+  it("renders the Figma-owned staff command center for staff users", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing staff command center page."),
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
     const html = renderToStaticMarkup(await StaffPage({}));
 
-    expect(html).toContain("Event and points pulse");
-    expect(html).toContain("Luma");
-    expect(html).toContain("RSVP");
+    expect(html).toContain("myMEDLIFE");
+    expect(html).toContain("Staff Command Center");
+    expect(html).toContain("Portfolio Overview");
+    expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Campaigns<");
+    expect(html).toContain(">Events<");
+    expect(html).toContain(">Proof / UGC<");
+    expect(html).toContain(">Best Practices<");
+    expect(html).toContain(">SOPs<");
+    expect(html).toContain(">Admin<");
+    expect(html).toContain("Organization Leaderboard");
+    expect(html).toContain("RSVPs");
     expect(html).toContain("Attendance");
     expect(html).toContain("Points");
+    expect(html).toContain("Luma Event Loop");
+    expect(html).toContain("Lead Scoring Signal");
+    expect(html).toContain("Staff should see chapter event creation, RSVP conversion, confirmed attendance");
+  });
+
+  it("keeps coaches inside the same /staff workspace while showing the coach lens", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("coach@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing coach workspace on the staff route."),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(await StaffPage({}));
+
+    expect(html).toContain("myMEDLIFE");
+    expect(html).toContain("Coach Command Center");
     expect(html).toContain("Portfolio Overview");
-    expect(html).toContain("Chapters Active");
-    expect(html).toContain("M.S.");
-    expect(html).toContain("J.O.");
-    expect(html).not.toContain("Sofia Growth Lead");
-    expect(html).not.toContain("Naomi Outreach Lead");
-    expect(html).not.toContain("Command center nav");
-    expect(html).not.toContain("Live rows");
-    expect(html).not.toMatch(
-      /<a[^>]*href="\/staff\?view=chapters&amp;campaign=rush-month"[^>]*>Chapters<\/a>/,
-    );
-    expect(html).not.toMatch(
-      /<a[^>]*href="\/staff\?view=campaigns&amp;campaign=rush-month"[^>]*>Campaigns<\/a>/,
-    );
-    expect(html).not.toContain("Quick tools");
-    expect(html).toContain("Search chapter, school, student...");
-    expect(html).toContain('aria-label="Risk filter"');
-    expect(html).toContain('aria-label="Country filter"');
-    expect(html).toContain('aria-label="Campaign filter"');
-    expect(html).toContain('aria-label="Coach filter"');
-    expect(html).toContain("Healthy");
-    expect(html).toContain("At-Risk");
-    expect(html).toContain("Intervene");
-    expect(html).toContain("Chapter Engagement");
-    expect(html).toContain("Grow the Movement");
-    expect(html).toContain("Leadership Transition");
-    expect(html).toContain("Start a Chapter");
-    expect(html).toContain("Aisha Kamara");
-    expect(html).toContain("Carlos Quispe");
-    expect(html).toContain("Fernanda Lima");
-    expect(html).toContain("James Okafor");
-    expect(html).toContain("Lucia Herrera");
-    expect(html).toContain("Maria Santos");
-    expect(html).toContain("Samuel Mutua");
-    expect(html).toContain(">Review At-Risk<");
-    expect(html).toContain('/staff?view=chapters&amp;campaign=rush-month&amp;risk=medium');
-    expect(html).toContain(">Export<");
-    expect(html).not.toContain('type="submit"');
-    expect(html).toContain("Chapters Active");
-    expect(html.indexOf("Chapters Active")).toBeLessThan(
-      html.indexOf("Search chapter, school, student..."),
-    );
-    expect(html).not.toContain("Mock-seeded review data");
-    expect(html).not.toContain("Local preview tools");
-    expect(html).not.toContain("Review only");
+    expect(html).toContain('href="/staff?view=chapters');
+    expect(html).not.toContain('href="/coach?view=chapters');
   });
 
-  it("lets the proof-review route open with the moderation queue and selected review state as the primary surface", async () => {
+  it("redirects campaign operations into the staff events lane during launch mode", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
+      getSignedInActor("general.staff@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff proof-review page."),
+      getMockReadOnlyAppData("Testing staff campaigns view."),
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
+    await expect(
+      StaffPage({
         searchParams: Promise.resolve({
-          view: "proof_ugc",
-          proofQueue: "selected",
-          proofType: "bridge_video",
-          proof: "proof-unam-bridge-video",
+          view: "campaigns",
+          campaign: "rush-month",
         }),
       }),
-    );
-
-    expect(html).toContain(">Proof / UGC Review Queue</h1>");
-    expect(html).toContain("UNAM Mexico City");
-    expect(html).toContain("Selected review state");
-    expect(html).toContain("Approve for");
-    expect(html).toContain("Recommended use");
-    expect(html).not.toContain("Visible chapters");
-    expect(html).not.toContain("Mock-seeded review data");
+    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=events&campaign=rush-month");
   });
 
-  it("lets the feed-studio route open with the curation workspace as the primary surface", async () => {
+  it("redirects the proof queue into the staff leaderboard lane during launch mode", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
+      getSignedInActor("general.staff@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff feed-studio page."),
+      getMockReadOnlyAppData("Testing staff proof queue view."),
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "feed_studio",
-        }),
-      }),
-    );
-
-    expect(html).toContain(">Feed Curation Studio</h1>");
-    expect(html).toContain("Audience targeting");
-    expect(html).toContain("Feed preview");
-    expect(html).toContain("Schedule");
-    expect(html).not.toContain("Visible chapters");
-    expect(html).not.toContain("Mock-seeded review data");
-  });
-
-  it("preserves the selected best-practice state when the staff library route is reopened from a share flow", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing selected best-practice page."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "best_practices",
-          bestPractice: "practice-why-i-travel",
-          practiceCampaign: "moving_mountains",
-          practiceCountry: "mexico",
-        }),
-      }),
-    );
-
-    expect(html).toContain("Selected practice");
-    expect(html).toContain("Selected for sharing");
-    expect(html).toContain("Why I Travel");
-    expect(html).toContain("UNAM Mexico City is the currently selected practice");
-  });
-
-  it("preserves the best-practice source context when staff opens Feed Studio from the library", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing feed studio best-practice handoff."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "feed_studio",
-          bestPractice: "practice-why-i-travel",
-          practiceCampaign: "moving_mountains",
-          practiceCountry: "mexico",
-        }),
-      }),
-    );
-
-    expect(html).toContain("Best practice source");
-    expect(html).toContain("Opened from the best-practice library");
-    expect(html).toContain("Return to best practices");
-    expect(html).toContain("Why I Travel");
-  });
-
-  it("keeps the default proof-review panel phrased like a product review surface, not an internal checklist", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff proof-review empty panel."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
+    await expect(
+      StaffPage({
         searchParams: Promise.resolve({
           view: "proof_ugc",
         }),
       }),
-    );
-
-    expect(html).toContain("Proof / UGC Review Queue");
-    expect(html).toContain(
-      "Select a content card to review whether it is ready to reuse, where it should be shared, and what context still needs a human decision.",
-    );
-    expect(html).not.toContain("approval tiers");
-    expect(html).not.toContain("coaching note context");
+    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=leaderboard");
   });
 
-  it("lets the HubSpot route open with chapter intelligence as the primary surface", async () => {
+  it("cleans legacy launch-lane views back into the owned staff command-center route family", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
+      getSignedInActor("general.staff@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff hubspot page."),
+      getMockReadOnlyAppData("Testing staff legacy-view cleanup."),
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
+
+    await expect(
+      StaffPage({
         searchParams: Promise.resolve({
           view: "hubspot",
-        }),
-      }),
-    );
-
-    expect(html).toContain(">HubSpot + Portfolio Intelligence</h1>");
-    expect(html).toContain("HubSpot CRM Profile");
-    expect(html).toContain("Conversion Funnel");
-    expect(html).not.toContain("Visible chapters");
-    expect(html).not.toContain("Mock-seeded review data");
-  });
-
-  it("lets the campaigns route open with campaign operations as the primary surface", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff campaigns page."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "campaigns",
-        }),
-      }),
-    );
-
-    expect(html).toContain(">Campaign Operations</h1>");
-    expect(html).toContain("Current workflow state");
-    expect(html).toContain("v2.1");
-    expect(html).toContain("No event created");
-    expect(html).toContain("Visible execution rows");
-    expect(html).not.toContain("Visible chapters");
-    expect(html).not.toContain("Quick tools");
-    expect(html).not.toContain("Mock-seeded review data");
-  });
-
-  it("keeps the selected campaign risk lane visible and narrows the execution table on the same route", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff campaign risk-lane selection."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "campaigns",
-          campaignRisk: "evidence_stuck",
-        }),
-      }),
-    );
-
-    expect(html).toContain("Evidence Stuck");
-    expect(html).toContain("Viewing lane");
-    expect(html).toContain("Filtered by Evidence Stuck");
-    expect(html).toContain("Execution table is narrowed to this risk lane.");
-    expect(html).toContain("Yale University");
-    expect(html).toContain("UNMSM Lima");
-    expect(html).toContain('href="/staff?view=campaigns&amp;campaign=rush-month"');
-    expect(html).toContain("Clear filter");
-  });
-
-  it("lets the feed-analytics route open with the content-performance surface as the primary view", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff feed analytics page."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "feed_analytics",
-        }),
-      }),
-    );
-
-    expect(html).toContain(">Feed Analytics</h1>");
-    expect(html).toContain("Post Performance");
-    expect(html).toContain("How Stanford captured 91 leads in one weekend");
-    expect(html).toContain("Total Views");
-    expect(html).not.toContain("Visible chapters");
-    expect(html).not.toContain("Feed Studio source");
-    expect(html).not.toContain("Opened from a curation draft");
-    expect(html).not.toContain("Mock-seeded review data");
-  });
-
-  it("lets the feed-analytics route open a selected-post impact panel when the clickthrough includes a post context", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff feed analytics impact panel."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "feed_analytics",
-          feedDraft: "proof-florida-event-recap-feed",
-          feedRole: "leader",
-          feedAudience: "selected_chapters",
-          feedPost: "feed-post-faith-story",
-        }),
-      }),
-    );
-
-    expect(html).toContain("Feed Analytics");
-    expect(html).toContain("Impact Analysis");
-    expect(html).toContain("Did content drive action?");
-    expect(html).not.toContain("Selected post");
-    expect(html).not.toContain("Visible chapters");
-    expect(html).toContain("Faith&#x27;s story");
-    expect(html).toContain("Return to Feed Studio");
-    expect(html).toContain("Open member review");
-    expect(html).toContain("University of Nairobi");
-    expect(html).toContain("University of Ghana");
-    expect(html.indexOf("Impact Analysis")).toBeLessThan(
-      html.indexOf("Total Views"),
-    );
-    expect(html).not.toContain("Mock-seeded review data");
-  });
-
-  it("lets the best-practices route open with the library surface as the primary view", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff best practices page."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "best_practices",
-        }),
-      }),
-    );
-
-    expect(html).toContain(">Best Practices Library</h1>");
-    expect(html).toContain("Share to Feed");
-    expect(html).toContain("Send to Coaches");
-    expect(html).toContain("All Campaigns");
-    expect(html).toContain("All Countries");
-    expect(html).not.toContain("Visible chapters");
-    expect(html).not.toContain("Quick tools");
-    expect(html).not.toContain("Mock-seeded review data");
-  });
-
-  it("opens the chapter drawer as a staff-owned route state with decision posture and drawer quick links", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff chapter drawer page."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "chapters",
-          chapter: "chapter-yale",
-          decision: "intervene",
-          risk: "medium",
-          country: "usa",
-          coach: "james",
-          portfolioCampaign: "rush_month",
-          q: "Yale",
-        }),
-      }),
-    );
-
-    expect(html).toContain("Yale University");
-    expect(html).toContain("Campaign KPIs");
-    expect(html).toContain("Quick links");
-    expect(html).toContain("HubSpot CRM");
-    expect(html).not.toContain("Luma Events");
-    expect(html).not.toContain("Decision workspace");
-    expect(html).not.toContain("Focus now");
-    expect(html).not.toContain("Recent signals");
-    expect(html).not.toContain("Intervention posture selected");
-    expect(html).not.toContain("Follow-up debt is growing");
-    expect(html).not.toContain("Proof review is backing up");
-    expect(html).toMatch(
-      /href="\/staff\?view=campaigns[^"]*chapter=chapter-yale[^"]*decision=intervene"/,
-    );
-    expect(html).toMatch(
-      /href="\/staff\?view=best_practices[^"]*chapter=chapter-yale[^"]*decision=intervene"/,
-    );
-    expect(html).not.toContain("Future n8n reminder workflow");
-    expect(html).not.toContain("Future CRM handoff payload");
-    expect(html).toContain("Assign Intervention");
-    expect(html).toContain("Open Proof Queue");
-    expect(html).not.toContain("Mock-seeded review data");
-  });
-
-  it("shows the member-home handoff when the HQ lens is opened from the home role jump", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff role-jump handoff."),
-    );
-
-    const { default: StaffPage } = await import("@/app/staff/page");
-    const html = renderToStaticMarkup(
-      await StaffPage({
-        searchParams: Promise.resolve({
-          view: "admin",
+          campaign: "rush-month",
           source: "member_home",
         }),
       }),
-    );
-
-    expect(html).toContain("Member app handoff");
-    expect(html).toContain("Platform Admin");
-    expect(html).toContain(">Admin Console</h1>");
-    expect(html).toContain("Opened from UCLA MEDLIFE into Admin Console");
-    expect(html).toContain("member-home role handoff");
-    expect(html).toContain("View integration events");
-    expect(html).toContain("Open workflow registry");
-    expect(html).toContain("Student view");
-    expect(html).toContain("Total Chapters");
-    expect(html).toContain("Active Users");
-    expect(html).toContain("Campaigns Running");
-    expect(html).toContain("Automation Jobs");
-    expect(html).toContain("User &amp; Role Management");
-    expect(html).toContain("Portfolio Management");
-    expect(html).toContain("Campaign Templates");
-    expect(html).toContain("Audit Logs");
-    expect(html).toContain("Automation Outbox (n8n)");
-    expect(html).toContain("System health: 5 of 6 integrations active");
-    expect(html).toContain("Admin Console");
-    expect(html.indexOf("Opened from UCLA MEDLIFE into Admin Console")).toBeLessThan(
-      html.indexOf("Integration Status"),
-    );
-    expect(html).toContain("/staff?view=admin&amp;source=member_home#integration-status");
-    expect(html).toContain('id="integration-status"');
-    expect(html).not.toContain("Portfolio chapters");
-    expect(html).not.toContain("Portfolio Overview");
-    expect(html).not.toContain("Permission Registry");
-    expect(html).toContain(
-      'href="/local-preview?selectedEmail=member.a%40mymedlife.test&amp;returnTo=%2Fapp"',
-    );
+    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=chapters&campaign=rush-month&source=member_home");
   });
 });

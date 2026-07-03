@@ -3,8 +3,16 @@ import {
   getVisibleCampaignShellsForActor,
 } from "@/services/campaign-ops-service";
 import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
+import {
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { buildMemberActionRouteHref } from "@/services/member-action-route-href";
+import {
+  buildMemberLaunchLaneEventDetailHref,
+  getMemberLaunchLaneEventRows,
+} from "@/services/member-launch-lane-events";
+import { shouldShowTravelerPrepEntry } from "@/services/launch-lane-product-focus";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import { getRoleNextActionBrief } from "@/services/role-next-actions";
@@ -102,6 +110,7 @@ export function getStudentHomeWorkspace(
   const visibleCampaigns = getVisibleCampaignShellsForActor(actor);
   const activeCampaign = visibleCampaigns.find((campaign) => campaign.status === "active");
   const eventPlans = getEventPlansForCampaign("rush-month");
+  const liveEventRows = getMemberLaunchLaneEventRows(actor, data);
   const eventRows = getRushMonthEventReadinessWorkspace(actor).rows;
   const runtime = getSopWorkflowRuntime("rush-month");
   const recognition = getMemberRecognitionSummary(actor, data);
@@ -128,7 +137,7 @@ export function getStudentHomeWorkspace(
   const campaignWeekLabel = runtime?.currentStep?.title
     ? `Current checkpoint: ${runtime.currentStep.title}`
     : data.campaign.weekLabel;
-  const travelerPrep = hasTravelerAccess(actor)
+  const travelerPrep = hasTravelerAccess(actor) && shouldShowTravelerPrepEntry()
     ? {
         href: "/app/slt-prep?source=home",
         title: "SLT Prep",
@@ -149,7 +158,7 @@ export function getStudentHomeWorkspace(
         : "Your chapter is in Rush Month. Keep this week simple: take the next action, show up to the right event, and help one more student feel like MEDLIFE is worth joining. The event loop matters most right now: RSVP, show up, confirm attendance, and let points move the chapter leaderboard.",
     startNextAction: {
       href: getMemberHomeActionHref(nextActionBrief.primaryHref),
-      label: "Start next action",
+      label: nextActionBrief.primaryLabel,
       detail: nextActionBrief.title,
     },
     campaign: {
@@ -190,8 +199,10 @@ export function getStudentHomeWorkspace(
       },
       {
         label: "Upcoming events",
-        value: `${eventPlans.length}`,
-        note: firstEvent
+        value: `${liveEventRows.length > 0 ? liveEventRows.length : eventPlans.length}`,
+        note: liveEventRows[0]
+          ? `Next: ${liveEventRows[0].title} · RSVP and attendance drive points`
+          : firstEvent
           ? `Next: ${firstEvent.title} · RSVP and attendance drive points`
           : "Rush Month events will show here.",
       },
@@ -204,7 +215,10 @@ export function getStudentHomeWorkspace(
       },
     ],
     assignedActions: activeMemberAssignments.map(toActionCard),
-    upcomingEvents: getHomeUpcomingEvents(eventRows),
+    upcomingEvents:
+      liveEventRows.length > 0
+        ? getHomeUpcomingEventsFromLiveRows(liveEventRows)
+        : getHomeUpcomingEvents(eventRows),
     points: {
       total: selectedMember?.points ?? data.pointsSummary.earned,
       rankLabel: selectedMember
@@ -215,7 +229,7 @@ export function getStudentHomeWorkspace(
       recognition:
         selectedMember?.recognition ??
         "Your approved actions will show up here as recognition grows.",
-      href: "/rush-month/leaderboard",
+      href: getLaunchLaneMemberPointsHref(),
       leaderboardPreview: recognition.leaderboard.slice(0, 4),
     },
     coachMessage: {
@@ -282,7 +296,12 @@ function toActionCard(assignment: Assignment): StudentHomeActionCard {
     dueLabel: assignment.dueLabel,
     status: assignment.status,
     points: assignment.points,
-    href: buildMemberActionRouteHref(assignment.id, { source: "home" }),
+    href:
+      assignment.status === "submitted" ||
+      assignment.status === "approved" ||
+      assignment.status === "changes_requested"
+        ? getLaunchLaneMemberPointsHref("points")
+        : getLaunchLaneMemberEventsHref("home"),
   };
 }
 
@@ -293,7 +312,7 @@ function getMemberHomeActionHref(href: string) {
     return href;
   }
 
-  return buildMemberActionRouteHref(match[1], { source: "home" });
+  return getLaunchLaneMemberEventsHref("home");
 }
 
 function getHomeUpcomingEvents(
@@ -323,8 +342,22 @@ function getHomeUpcomingEvents(
       locationLabel: row.memberLocationLabel,
       rsvpLabel: row.memberRsvpLabel,
       rsvpState: row.memberRsvpState,
-      href: `/rush-month/events/${row.id}?source=home`,
+      href: buildMemberLaunchLaneEventDetailHref(row.id, "home"),
     }));
+}
+
+function getHomeUpcomingEventsFromLiveRows(
+  rows: ReturnType<typeof getMemberLaunchLaneEventRows>,
+): StudentHomeEventCard[] {
+  return rows.slice(0, 2).map((row) => ({
+    id: row.id,
+    title: row.title,
+    timing: row.memberDateTimeLabel,
+    locationLabel: row.memberLocationLabel,
+    rsvpLabel: row.memberRsvpLabel,
+    rsvpState: row.memberRsvpState,
+    href: buildMemberLaunchLaneEventDetailHref(row.id, "home"),
+  }));
 }
 
 function sectionPriority(section: "this_week" | "coming_up") {

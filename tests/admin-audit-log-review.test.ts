@@ -22,6 +22,30 @@ describe("admin audit log review", () => {
           reason: "Local action start test.",
           created_at: "2026-06-15T00:00:00Z",
         },
+        {
+          id: "audit-2",
+          actor_user_id: "ds-admin-1",
+          chapter_id: null,
+          action: "feature_flag_updated",
+          target_table: "feature_flags",
+          target_id: "flag-1",
+          before_value: { enabled: false },
+          after_value: { enabled: true, environment: "staging" },
+          reason: "Open the staging reviewer path.",
+          created_at: "2026-06-15T00:01:00Z",
+        },
+        {
+          id: "audit-3",
+          actor_user_id: "super-admin-1",
+          chapter_id: null,
+          action: "theme_setting_updated",
+          target_table: "theme_settings",
+          target_id: "theme-1",
+          before_value: { value: "#5d8ff6" },
+          after_value: { value: "#2563eb", environment: "staging" },
+          reason: "Align the staging shell with the blue-white palette.",
+          created_at: "2026-06-15T00:02:00Z",
+        },
       ]),
     );
 
@@ -30,7 +54,7 @@ describe("admin audit log review", () => {
     expect(review.title).toBe("Admin audit readback");
     expect(review.posture).toBe("persisted_readback_visible");
     expect(review.counts).toEqual({
-      visibleRows: 1,
+      visibleRows: 3,
       hiddenRows: 0,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
@@ -48,8 +72,8 @@ describe("admin audit log review", () => {
     );
     expect(review.auditPreflight.title).toBe("Write-audit preflight checklist");
     expect(review.auditPreflight.counts).toEqual({
-      total: 6,
-      ready: 6,
+      total: 7,
+      ready: 7,
       watch: 0,
       blocked: 0,
       browserWritesEnabled: 0,
@@ -61,9 +85,21 @@ describe("admin audit log review", () => {
       "target_readback",
       "before_after",
       "reason_note",
+      "rollout_control_audit",
       "visibility_boundary",
       "retention_export_lock",
     ]);
+    expect(
+      review.auditPreflight.items.find(
+        (item) => item.key === "rollout_control_audit",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        status: "ready",
+        currentPosture:
+          "1 visible feature-flag row(s) and 1 visible theme-setting row(s) are present.",
+      }),
+    );
     expect(review.auditPreflight.blockedControls).toContain(
       "approve production writes",
     );
@@ -81,9 +117,9 @@ describe("admin audit log review", () => {
     expect(review.posture).toBe("mock_intent_only");
     expect(review.rows).toEqual([]);
     expect(review.auditPreflight.counts).toEqual({
-      total: 6,
+      total: 7,
       ready: 2,
-      watch: 4,
+      watch: 5,
       blocked: 0,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
@@ -94,9 +130,15 @@ describe("admin audit log review", () => {
       "target_readback",
       "before_after",
       "reason_note",
+      "rollout_control_audit",
       "visibility_boundary",
       "retention_export_lock",
     ]);
+    expect(
+      review.auditPreflight.items.find(
+        (item) => item.key === "rollout_control_audit",
+      )?.status,
+    ).toBe("watch");
     expect(review.auditPreflight.blockedControls).toEqual(
       expect.arrayContaining([
         "edit audit rows",
@@ -135,9 +177,9 @@ describe("admin audit log review", () => {
     expect(review.rows).toEqual([]);
     expect(review.summary).toContain("row-level chapter/member audit details");
     expect(review.auditPreflight.counts).toEqual({
-      total: 6,
+      total: 7,
       ready: 3,
-      watch: 3,
+      watch: 4,
       blocked: 0,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
@@ -148,6 +190,11 @@ describe("admin audit log review", () => {
         (item) => item.key === "visibility_boundary",
       )?.currentPosture,
     ).toContain("1 row(s) hidden from this role.");
+    expect(
+      review.auditPreflight.items.find(
+        (item) => item.key === "rollout_control_audit",
+      )?.currentPosture,
+    ).toBe("No rollout-control audit rows are confirmed for this role yet.");
   });
 
   it("hides the review from chapter and coach roles", () => {

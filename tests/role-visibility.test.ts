@@ -32,7 +32,7 @@ describe("role visibility service", () => {
     expect(actor.chapterRoles).toEqual(["Action Committee Member"]);
     expect(visibleAssignments).toHaveLength(3);
     expect(visibleAssignments.every((assignment) => assignment.lane === "Member")).toBe(true);
-    expect(navLabels).toEqual(["Home", "Campaigns", "Events", "Points", "Profile"]);
+    expect(navLabels).toEqual(["Home", "Events", "Points", "Profile"]);
   });
 
   it("lets chapter leaders read member and leader work but not coach-only work", () => {
@@ -52,7 +52,7 @@ describe("role visibility service", () => {
     expect(visibleAssignments.map((assignment) => assignment.lane)).toContain("Member");
     expect(visibleAssignments.map((assignment) => assignment.lane)).toContain("Leader");
     expect(visibleAssignments.some((assignment) => assignment.lane === "Coach")).toBe(false);
-    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Member Pipeline");
+    expect(getNavigationForActor(actor).map((item) => item.label)).toContain("Attendance");
   });
 
   it("keeps DS Admin out of student and chapter truth while allowing outbox read", () => {
@@ -112,81 +112,46 @@ describe("role visibility service", () => {
 
     expect(getNavigationForActor(member).map((item) => item.label)).toEqual([
       "Home",
-      "Campaigns",
       "Events",
       "Points",
       "Profile",
     ]);
     expect(getNavigationForActor(leader).map((item) => item.label)).toEqual([
       "Overview",
-      "Leaderboard",
-      "Member Pipeline",
-      "Member Profile",
-      "Committees",
       "Events",
-      "Impact",
-      "Bridge Videos",
-      "Succession",
-      "Feed Analytics",
+      "Attendance",
+      "Leaderboard",
     ]);
-    expect(
-      getNavigationForActor(leader).find((item) => item.label === "Member Pipeline"),
-    ).toEqual({
-      href: "/leader?view=members",
-      label: "Member Pipeline",
+    expect(getNavigationForActor(leader).find((item) => item.label === "Attendance")).toEqual({
+      href: "/leader?view=attendance",
+      label: "Attendance",
     });
     expect(getNavigationForActor(coach).map((item) => item.label)).toEqual([
       "Portfolio",
-      "Chapter Detail",
-      "Campaigns",
-      "Support Notes",
-      "Trip Prep",
-      "Profile",
+      "Events",
+      "Leaderboard",
     ]);
     expect(getNavigationForActor(admin).map((item) => item.label)).toEqual([
       "Chapters",
-      "Campaigns",
-      "Proof / UGC",
-      "Feed Studio",
-      "Feed Analytics",
-      "HubSpot",
-      "Best Practices",
-      "Admin",
-      "Profile",
+      "Events",
+      "Leaderboard",
     ]);
     expect(getNavigationForActor(superAdmin).map((item) => item.label)).toEqual([
       "Admin Home",
-      "Phase 2",
-      "Permissions",
-      "Committees",
-      "Workflows",
-      "Integrations",
-      "Review Path",
-      "Nick Review",
-      "Release Readiness",
-      "Launch Gate",
-      "Audit Log",
-      "Operations",
-      "Design QA",
-      "Staff Dry Run",
+      "Luma Pilot",
       "Outbox",
-      "Database Security",
-      "System Health",
+      "Audit Log",
+      "Launch Gate",
       "Pilot Scope",
-      "SOP Library",
-      "Master Data",
       "Profile",
     ]);
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Admin Home" },
-      { href: "/admin/phase-2", label: "Phase 2" },
-      { href: "/admin/integrations", label: "Integrations" },
-      { href: "/admin/permissions", label: "Permissions" },
-      { href: "/admin/workflows", label: "Workflows" },
-      { href: "/admin/staff-dry-run", label: "Staff Dry Run" },
+      { href: "/admin/luma-live-pilot", label: "Luma Pilot" },
       { href: "/admin/integration-outbox", label: "Outbox" },
-      { href: "/admin/database-security", label: "Database Security" },
-      { href: "/admin/system-health", label: "System Health" },
+      { href: "/admin/audit-log", label: "Audit Log" },
+      { href: "/admin/launch-gate", label: "Launch Gate" },
+      { href: "/admin/pilot-scope", label: "Pilot Scope" },
       { href: "/profile", label: "Profile" },
     ]);
   });
@@ -220,30 +185,25 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
       { href: "/app", label: "Home", helper: "Today" },
-      { href: "/campaigns", label: "Campaigns", helper: "Goals" },
-      { href: "/rush-month/events", label: "Events", helper: "Meet" },
-      { href: "/rush-month/leaderboard", label: "Points", helper: "Rank" },
+      { href: "/app/events", label: "Events", helper: "Meet" },
+      { href: "/app/points", label: "Points", helper: "Rank" },
       { href: "/profile", label: "Profile", helper: "Me" },
     ]);
   });
 
-  it("adds SLT Prep into the member workspace for traveler accounts", () => {
+  it("keeps traveler accounts inside the same focused member navigation during the launch lane", () => {
     const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
 
     expect(getNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Home",
-      "Campaigns",
       "Events",
       "Points",
-      "SLT Prep",
       "Profile",
     ]);
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Home",
-      "Campaigns",
       "Events",
       "Points",
-      "SLT Prep",
       "Profile",
     ]);
   });
@@ -253,14 +213,14 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Home",
-      "Pipeline",
       "Events",
-      "Succession",
+      "Attendance",
+      "Leaderboard",
     ]);
-    expect(getMobileQuickNavigationForActor(actor)[1]).toEqual({
-      href: "/leader?view=members",
-      label: "Pipeline",
-      helper: "People",
+    expect(getMobileQuickNavigationForActor(actor)[2]).toEqual({
+      href: "/leader?view=attendance",
+      label: "Attendance",
+      helper: "Check-in",
     });
   });
 
@@ -268,10 +228,9 @@ describe("role visibility service", () => {
     const actor = getMockLocalActorContext("coach@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
-      { href: "/staff?view=chapters", label: "Portfolio", helper: "Overview" },
-      { href: "/staff?view=chapter_detail", label: "Chapter", helper: "Focus" },
-      { href: "/staff?view=campaigns", label: "Campaigns", helper: "Support" },
-      { href: "/staff?view=support_notes#support-notes", label: "Notes", helper: "Staff" },
+      { href: "/staff?view=chapters", label: "Portfolio", helper: "Chapters" },
+      { href: "/staff?view=events", label: "Events", helper: "Health" },
+      { href: "/staff?view=leaderboard", label: "Leaderboard", helper: "Rank" },
     ]);
   });
 
@@ -279,10 +238,12 @@ describe("role visibility service", () => {
     const actor = getMockLocalActorContext("ds.admin@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
-      { href: "/admin/integrations", label: "Keys", helper: "Lock" },
-      { href: "/admin/permissions", label: "Roles", helper: "Scope" },
-      { href: "/admin/workflows", label: "Flows", helper: "Map" },
+      { href: "/admin", label: "Admin", helper: "Home" },
+      { href: "/admin/luma-live-pilot", label: "Pilot", helper: "Luma" },
       { href: "/admin/integration-outbox", label: "Queue", helper: "Off" },
+      { href: "/admin/audit-log", label: "Audit", helper: "Proof" },
+      { href: "/admin/launch-gate", label: "Gate", helper: "Ready" },
+      { href: "/admin/pilot-scope", label: "Scope", helper: "Pilot" },
     ]);
   });
 
@@ -291,11 +252,11 @@ describe("role visibility service", () => {
 
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Admin",
-      "Roles",
-      "Committees",
-      "Flows",
-      "SOP",
-      "Data",
+      "Pilot",
+      "Queue",
+      "Audit",
+      "Gate",
+      "Scope",
     ]);
   });
 });

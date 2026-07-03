@@ -160,10 +160,19 @@ export function VisualTabStrip({
   className,
   iconClassName,
 }: VisualTabStripProps) {
+  const gridClassName =
+    items.length >= 4
+      ? "sm:grid-cols-2 xl:grid-cols-4"
+      : items.length === 3
+        ? "sm:grid-cols-3"
+        : items.length === 2
+          ? "sm:grid-cols-2"
+          : "sm:grid-cols-1";
+
   return (
     <nav
       aria-label={label}
-      className={`grid gap-2 ${items.length >= 4 ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-2"} ${className ?? ""}`.trim()}
+      className={`grid gap-2 ${gridClassName} ${className ?? ""}`.trim()}
     >
       {items.map((item) => (
         <Link
@@ -172,7 +181,7 @@ export function VisualTabStrip({
           aria-current={item.active ? "page" : undefined}
           className={
             item.active
-              ? "inline-flex min-h-11 items-center rounded-[1.35rem] border-[#bfdbfe] bg-[#fbfdff] px-4 py-2.5 text-sm font-semibold text-[#2563eb]"
+              ? "inline-flex min-h-11 items-center rounded-[1.35rem] border border-[#bfdbfe] bg-[#fbfdff] px-4 py-2.5 text-sm font-semibold text-[#2563eb]"
               : "inline-flex min-h-11 items-center rounded-[1.35rem] border border-slate-200 bg-[#dbeafe] px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#fbfdff]"
           }
         >

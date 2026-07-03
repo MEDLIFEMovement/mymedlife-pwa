@@ -1,3 +1,8 @@
+import {
+  isEventsPointsLaunchLaneEnabled,
+  isEventsPointsLaunchLaneVisibleRouteHref,
+} from "@/services/launch-lane-product-focus";
+
 export type AppRouteRegistryItem = {
   href: string;
   label: string;
@@ -7,6 +12,9 @@ export type AppRouteRegistryItem = {
 const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/", label: "Home", routeType: "exact" },
   { href: "/app", label: "Member app", routeType: "exact" },
+  { href: "/app/events", label: "Member events", routeType: "exact" },
+  { href: "/app/events/", label: "Member event detail", routeType: "prefix" },
+  { href: "/app/points", label: "Member points", routeType: "exact" },
   { href: "/app/slt-prep", label: "Member SLT prep", routeType: "exact" },
   { href: "/leader", label: "Leader app", routeType: "exact" },
   { href: "/profile", label: "Profile", routeType: "exact" },
@@ -52,7 +60,10 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/admin/launch-gate", label: "Admin launch gate", routeType: "exact" },
   { href: "/admin/audit-log", label: "Admin audit log", routeType: "exact" },
   { href: "/admin/integrations", label: "Admin integrations", routeType: "exact" },
+  { href: "/admin/feature-flags", label: "Admin feature flags", routeType: "exact" },
+  { href: "/admin/theme", label: "Admin theme settings", routeType: "exact" },
   { href: "/admin/integration-outbox", label: "Admin integration outbox", routeType: "exact" },
+  { href: "/admin/luma-live-pilot", label: "Admin Luma live pilot", routeType: "exact" },
   { href: "/admin/master-data", label: "Admin master data", routeType: "exact" },
   { href: "/admin/permissions", label: "Admin permissions", routeType: "exact" },
   { href: "/admin/committees", label: "Admin committees", routeType: "exact" },
@@ -74,13 +85,20 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
 ];
 
 export function getAppRouteRegistry(): AppRouteRegistryItem[] {
-  return appRouteRegistry;
+  if (!isEventsPointsLaunchLaneEnabled()) {
+    return appRouteRegistry;
+  }
+
+  return appRouteRegistry.filter((route) =>
+    isEventsPointsLaunchLaneVisibleRouteHref(route.href),
+  );
 }
 
 export function isKnownAppRouteHref(href: string): boolean {
   const normalizedHref = normalizeHref(href);
+  const visibleRoutes = getAppRouteRegistry();
 
-  return appRouteRegistry.some((route) => {
+  return visibleRoutes.some((route) => {
     if (route.routeType === "exact") {
       return normalizedHref === route.href;
     }

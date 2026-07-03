@@ -1,5 +1,10 @@
 import type { MemberActionRouteSource } from "@/services/member-action-route-href";
+import {
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
+import type { LaunchLaneMemberPointsReadback } from "@/services/launch-lane-points-readback";
 import { EventLoopStrip } from "@/components/event-loop-strip";
 import {
   PanelButton,
@@ -10,41 +15,29 @@ import {
 
 type MemberPointsRecognitionPanelProps = {
   recognition: MemberRecognitionSummary;
-  selectedCampaignId?: string;
+  chapterName: string;
   source?: MemberActionRouteSource | null;
+  liveReadback?: LaunchLaneMemberPointsReadback | null;
 };
 
 export function MemberPointsRecognitionPanel({
   recognition,
-  selectedCampaignId,
+  chapterName,
   source,
+  liveReadback,
 }: MemberPointsRecognitionPanelProps) {
   if (!recognition.canReadRecognition) {
     return null;
   }
-
-  const selectedCampaign =
-    recognition.campaignPoints.find((campaign) => campaign.id === selectedCampaignId) ??
-    recognition.campaignPoints[0] ??
-    null;
-  const visibleCampaignPoints = selectedCampaign ? [selectedCampaign] : recognition.campaignPoints.slice(0, 1);
   const sourceContext = getMemberPointsSourceContext(source);
-  const campaignFocusHref = (campaignId: string) => {
-    const searchParams = new URLSearchParams();
-    searchParams.set("campaign", campaignId);
-
-    if (source) {
-      searchParams.set("source", source);
-    }
-
-    return `/rush-month/leaderboard?${searchParams.toString()}#campaign-focus`;
-  };
+  const launchLaneEventsHref = getLaunchLaneMemberEventsHref("points");
+  const launchLanePointsHref = getLaunchLaneMemberPointsHref("points");
 
   return (
     <div className="grid gap-3">
       <SurfacePanel tone="info" className="overflow-hidden rounded-[2rem] p-4">
         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
-          UCLA MEDLIFE
+          {chapterName}
         </p>
         <h1 className="mt-2 text-[2.1rem] font-semibold leading-tight text-slate-950 sm:text-[2.5rem]">
           Points &amp; Recognition
@@ -62,7 +55,7 @@ export function MemberPointsRecognitionPanel({
           <PointsHeroCard
             label="Next earn"
             title={recognition.recentApprovedActions[0]?.pointsLabel ?? "+10 pts"}
-            detail="Open a real action from the points route"
+            detail="Open events from the points route"
           />
         </div>
         {sourceContext ? (
@@ -120,74 +113,79 @@ export function MemberPointsRecognitionPanel({
               { label: "Events", detail: "Explore Luma-backed moments", tone: "blue" },
               { label: "RSVP", detail: "Confirm attendance intent", tone: "blue" },
               { label: "Attendance", detail: "Record who showed up", tone: "gold" },
-              { label: "Points", detail: "Leaderboard refresh after review", tone: "yellow" },
+              { label: "Points", detail: "Leaderboard refresh after attendance", tone: "yellow" },
             ]}
           />
         <div className="mt-4 flex flex-wrap gap-2">
-          <PanelButton href="/rush-month/events" variant="secondary">
+          <PanelButton href={launchLaneEventsHref} variant="secondary">
             Open events
           </PanelButton>
-          <PanelButton href="/rush-month/leaderboard">Open leaderboard</PanelButton>
+          <PanelButton href={launchLanePointsHref}>Open leaderboard</PanelButton>
         </div>
       </SurfacePanel>
 
-      <SurfacePanel>
-        <p className="app-eyebrow app-eyebrow-blue">Points by Campaign</p>
-        <div className="mt-3 grid gap-2.5">
-          {visibleCampaignPoints.map((campaign) => {
-            const isSelected = selectedCampaign?.id === campaign.id;
-            const width = Math.max(
-              8,
-              Math.min(100, Math.round((campaign.earned / campaign.available) * 100)),
-            );
-            const panelClassName = isSelected
-              ? "rounded-[1.4rem] border border-[#bfdbfe] bg-[#fbfdff] p-3.5 transition"
-              : "rounded-[1.4rem] border-slate-200 bg-[#dbeafe] p-3.5 transition hover:border-[#bfdbfe] hover:bg-[#fbfdff]";
-            const buttonLabel = isSelected ? "Open campaign focus" : "Select campaign focus";
+      {liveReadback ? (
+        <SurfacePanel>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="app-eyebrow app-eyebrow-blue">Live pilot readback</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950">
+                {liveReadback.eventTitle}
+              </h2>
+              <p className="mt-2 text-sm text-slate-600">{liveReadback.timing}</p>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700">
+                {liveReadback.memberStatusDetail}
+              </p>
+            </div>
+            <StatusPill
+              tone={liveReadback.memberPointsAwarded > 0 ? "blue" : liveReadback.attendanceCount > 0 ? "gold" : "white"}
+            >
+              {liveReadback.memberStatusLabel}
+            </StatusPill>
+          </div>
 
-            return (
-              <SurfacePanel
-                as="article"
-                key={campaign.label}
-                className={panelClassName}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-base font-semibold text-slate-950">{campaign.label}</h2>
-                  <StatusPill tone={isSelected ? "blue" : "white"}>
-                    {campaign.earned} / {campaign.available} pts
-                  </StatusPill>
-                </div>
-                <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#f8fbff]">
-                  <div
-                    className="h-full rounded-full bg-[#2b5fb4]"
-                    style={{ width: `${width}%` }}
-                  />
-                </div>
-                <span aria-current={isSelected ? "page" : undefined}>
-                  <PanelButton
-                    href={campaignFocusHref(campaign.id)}
-                    className="mt-3 rounded-[1.2rem]"
-                  >
-                    {buttonLabel}
-                  </PanelButton>
-                </span>
-              </SurfacePanel>
-            );
-          })}
-        </div>
-      </SurfacePanel>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard
+              label="RSVPs"
+              value={`${liveReadback.rsvpCount}`}
+              note="Signed-in member intent plus chapter guest count."
+            />
+            <StatCard
+              label="Attendance"
+              value={`${liveReadback.attendanceCount}`}
+              note="Confirmed attendance from the event loop."
+            />
+            <StatCard
+              label="Event points"
+              value={`${liveReadback.eventPointsAwarded}`}
+              note="Points already reflected for this specific event."
+            />
+            <StatCard
+              label="Your event points"
+              value={`${liveReadback.memberPointsAwarded}`}
+              note={`Chapter total: ${liveReadback.chapterTotalPoints} pts`}
+            />
+          </div>
 
-      {selectedCampaign ? (
-        <SurfacePanel tone="info" id="campaign-focus">
-          <p className="app-eyebrow app-eyebrow-blue">Campaign focus</p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950">{selectedCampaign.label}</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-700">{selectedCampaign.detail}</p>
-          <PanelButton
-            href={recognition.explainer.ctaHref}
-            className="mt-4"
-          >
-            {recognition.explainer.ctaLabel}
-          </PanelButton>
+          <div className="mt-4 rounded-[1.4rem] border border-slate-200 bg-[#fbfdff] p-4">
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Next step in this event loop
+            </p>
+            <p className="mt-2 text-sm font-semibold text-slate-950">
+              {liveReadback.nextStepLabel}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              {liveReadback.nextStepDetail}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <PanelButton href={liveReadback.eventDetailHref} variant="secondary">
+                Open event detail
+              </PanelButton>
+              <PanelButton href={liveReadback.leaderboardHref}>
+                Open leaderboard
+              </PanelButton>
+            </div>
+          </div>
         </SurfacePanel>
       ) : null}
 
@@ -220,7 +218,7 @@ export function MemberPointsRecognitionPanel({
         <div className="flex items-end justify-between gap-3">
           <div>
             <p className="app-eyebrow app-eyebrow-blue">
-              Chapter Leaderboard {"\u2014"} Rush Month
+              Chapter Leaderboard
             </p>
           </div>
         </div>
@@ -246,7 +244,7 @@ export function MemberPointsRecognitionPanel({
       </SurfacePanel>
 
       <SurfacePanel>
-        <p className="app-eyebrow app-eyebrow-blue">Recent Approved Actions</p>
+        <p className="app-eyebrow app-eyebrow-blue">Recent points activity</p>
         <div className="mt-3 grid gap-2.5">
           {recognition.recentApprovedActions.map((action) => (
             <SurfacePanel
@@ -263,8 +261,8 @@ export function MemberPointsRecognitionPanel({
                   {action.pointsLabel}
                 </StatusPill>
               </div>
-              <PanelButton href={action.href} className="mt-3 w-full rounded-[1.2rem]">
-                Open action
+              <PanelButton href={launchLaneEventsHref} className="mt-3 w-full rounded-[1.2rem]">
+                Open event loop
               </PanelButton>
             </SurfacePanel>
           ))}
@@ -275,10 +273,10 @@ export function MemberPointsRecognitionPanel({
         <p className="app-eyebrow app-eyebrow-blue">{recognition.explainer.title}</p>
         <p className="mt-3 text-sm leading-7 text-slate-700">{recognition.explainer.body}</p>
         <PanelButton
-          href={recognition.explainer.ctaHref}
+          href={launchLaneEventsHref}
           className="mt-4 border border-[#bfdbfe] bg-white text-[#2563eb]"
         >
-          {recognition.explainer.ctaLabel} →
+          Open events →
         </PanelButton>
       </SurfacePanel>
     </div>
@@ -292,23 +290,15 @@ function getMemberPointsSourceContext(source: MemberActionRouteSource | null | u
         eyebrow: "From home",
         compactDetail:
           "Home handed you into recognition as part of the weekly loop. Review progress here and still jump back without losing the member-home context.",
-        href: "/",
+        href: "/app",
         backLabel: "Back to home",
-      };
-    case "campaigns":
-      return {
-        eyebrow: "From campaigns",
-        compactDetail:
-          "Campaign context explains why these points matter. Use recognition here without losing the larger campaign loop you came from.",
-        href: "/campaigns",
-        backLabel: "Back to campaigns",
       };
     case "events":
       return {
         eyebrow: "From events",
         compactDetail:
           "Events can turn into recognition when the follow-up is real. Review points here, then return to the event loop if you still need that context.",
-        href: "/rush-month/events",
+        href: getLaunchLaneMemberEventsHref("events"),
         backLabel: "Back to events",
       };
     case "profile":
@@ -372,8 +362,8 @@ function getBadgeIconClassName(tone: MemberRecognitionSummary["badges"][number][
 
 function getBadgeDetail(label: string) {
   switch (label) {
-    case "Rush Starter":
-      return "Complete first Rush Month action";
+    case "Event Starter":
+      return "Attend your first chapter event";
     case "Connector":
       return "Invite 10+ members to a chapter event";
     case "Evidence Pro":

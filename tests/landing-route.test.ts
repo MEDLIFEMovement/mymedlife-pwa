@@ -12,7 +12,7 @@ describe("landing route service", () => {
       "/app",
     );
     expect(getLandingRouteForActor(getMockLocalActorContext("traveler.a@mymedlife.test"))).toBe(
-      "/app/slt-prep",
+      "/app",
     );
     expect(getLandingRouteForActor(getMockLocalActorContext("leader.a@mymedlife.test"))).toBe(
       "/leader?view=overview",
@@ -42,7 +42,7 @@ describe("landing route service", () => {
 
   it("can derive a landing route directly from a preview actor email", () => {
     expect(getLandingRouteForLocalActorEmail("traveler.a@mymedlife.test")).toBe(
-      "/app/slt-prep",
+      "/app",
     );
     expect(getLandingRouteForLocalActorEmail("leader.a@mymedlife.test")).toBe(
       "/leader?view=overview",

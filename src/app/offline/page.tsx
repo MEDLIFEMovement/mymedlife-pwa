@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 };
 
 const recoveryLinks = [
-  { href: "/", label: "Home" },
-  { href: "/rush-month", label: "Rush Month" },
-  { href: "/rush-month/actions", label: "Actions" },
+  { href: "/app", label: "Home" },
+  { href: "/app/events", label: "Events" },
+  { href: "/app/points", label: "Points" },
 ];
 
 export default function OfflinePage() {
@@ -42,8 +42,8 @@ export default function OfflinePage() {
         </div>
 
         <p className="mt-8 rounded-[1.15rem] border border-[#2563eb]/26 bg-[#dbeafe] p-3 text-xs leading-5 text-slate-600">
-          Offline mode does not submit assignments, upload proof, update points,
-          send nudges, or run external automation.
+          Offline mode does not RSVP, import attendance, update points, send
+          nudges, or run external automation.
         </p>
       </section>
     </main>

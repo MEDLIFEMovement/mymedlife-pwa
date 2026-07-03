@@ -1,6 +1,10 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { buildMemberActionRouteHref } from "@/services/member-action-route-href";
+import {
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
+import { buildMemberLaunchLaneEventDetailHref } from "@/services/member-launch-lane-events";
 import { getVisibleAssignmentsForActor } from "@/services/role-visibility";
 import {
   getSopWorkflowRuntime,
@@ -52,8 +56,8 @@ export type MemberRushMonthCampaignOverview = {
     href: string;
   };
   primaryActions: {
-    viewActionsHref: string;
-    submitEvidenceHref: string;
+    openEventsHref: string;
+    openPointsHref: string;
   };
 };
 
@@ -62,7 +66,6 @@ export function getMemberRushMonthCampaignOverview(
   data: ReadOnlyAppData,
 ): MemberRushMonthCampaignOverview {
   const visibleAssignments = getVisibleAssignmentsForActor(actor, data.assignments);
-  const proofReadyAssignment = pickProofReadyAssignment(visibleAssignments);
   const runtime = getSopWorkflowRuntime("rush-month");
   const campaignShell = getCampaignShellBySlug("rush-month");
   const currentStep = runtime?.currentStep ?? null;
@@ -113,16 +116,11 @@ export function getMemberRushMonthCampaignOverview(
       sourceLabel: "Luma",
       timing: "Thu Nov 15 · 6:00 PM · Ackerman 2100",
       momentumLabel: "23 RSVPs so far",
-      href: "/rush-month/events/event-rush-med-talk-001?source=campaigns",
+      href: buildMemberLaunchLaneEventDetailHref("event-rush-med-talk-001", "campaigns"),
     },
     primaryActions: {
-      viewActionsHref: "/rush-month/actions?source=campaigns",
-      submitEvidenceHref: proofReadyAssignment
-        ? buildMemberActionRouteHref(proofReadyAssignment.id, {
-            source: "campaigns",
-            step: "submit",
-          })
-        : "/rush-month/evidence?source=campaigns",
+      openEventsHref: getLaunchLaneMemberEventsHref("campaigns"),
+      openPointsHref: getLaunchLaneMemberPointsHref("campaigns"),
     },
   };
 }
@@ -180,16 +178,6 @@ function buildCampaignKpis(
       progressLabel: "36% of goal",
     },
   ];
-}
-
-function pickProofReadyAssignment(
-  assignments: ReadOnlyAppData["assignments"],
-) {
-  return (
-    assignments.find((assignment) => assignment.status === "changes_requested") ??
-    assignments.find((assignment) => assignment.status === "in_progress") ??
-    null
-  );
 }
 
 function getCampaignProgress(assignments: readonly Assignment[]) {

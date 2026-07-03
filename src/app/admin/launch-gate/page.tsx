@@ -4,6 +4,10 @@ import { AdminAppShell } from "@/components/admin-app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { ProductionLaunchGatePanel } from "@/components/production-launch-gate-panel";
 import { RestrictedState } from "@/components/restricted-state";
+import {
+  getPilotEventLoopReadModel,
+  type EventLoopReadModel,
+} from "@/services/event-loop";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getProductionLaunchGate } from "@/services/production-launch-gate";
@@ -22,8 +26,14 @@ export default async function AdminLaunchGatePage() {
     getLocalActorContext(),
     getReadOnlyAppData(),
   ]);
-  const gate = getProductionLaunchGate(actor);
-  const nextStep = getNextStep(actor);
+  const lumaReadModel = getPilotEventLoopReadModel({
+    mode: "staging",
+    data,
+  });
+  const gate = getProductionLaunchGate(actor, process.env, {
+    lumaReadModel,
+  });
+  const nextStep = getNextStep(actor, lumaReadModel);
 
   return (
     <AdminAppShell actor={actor}>
@@ -66,7 +76,7 @@ export default async function AdminLaunchGatePage() {
             </div>
           </section>
 
-          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
             <MiniStat label="Gates" value={`${gate.counts.total}`} />
             <MiniStat label="Local" value={`${gate.counts.localEvidenceReady}`} />
             <MiniStat label="Blocked" value={`${gate.counts.blockedBeforeLive}`} />
@@ -74,6 +84,7 @@ export default async function AdminLaunchGatePage() {
               label="Evidence"
               value={`${gate.counts.launchEvidenceChecks}`}
             />
+            <MiniStat label="Env" value={`${gate.counts.environmentReadinessItems}`} />
             <MiniStat label="Launch" value={gate.launchReady ? "yes" : "no"} />
             <MiniStat label="Writes" value={`${gate.browserWritesEnabled}`} />
           </section>
@@ -85,7 +96,20 @@ export default async function AdminLaunchGatePage() {
   );
 }
 
-function getNextStep(actor: LocalActorContext) {
+function getNextStep(
+  actor: LocalActorContext,
+  lumaReadModel: EventLoopReadModel,
+) {
+  if (
+    canReadAdminIntegrationsSecurity(actor) &&
+    isHostedLumaPointsProofMissing(lumaReadModel)
+  ) {
+    return {
+      label: "Open Luma live pilot",
+      href: "/admin/luma-live-pilot",
+    };
+  }
+
   if (getActorSurfaceFamily(actor) === "ds_admin") {
     return {
       label: "Open integration outbox",
@@ -97,6 +121,15 @@ function getNextStep(actor: LocalActorContext) {
     label: "Open system health",
     href: "/admin/system-health",
   };
+}
+
+function isHostedLumaPointsProofMissing(
+  lumaReadModel: EventLoopReadModel,
+) {
+  return !(
+    lumaReadModel.summary.attendanceCount > 0 &&
+    lumaReadModel.summary.pointsAwarded > 0
+  );
 }
 
 function MiniStat({ label, value }: { label: string; value: string }) {

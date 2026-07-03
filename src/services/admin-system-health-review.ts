@@ -72,7 +72,7 @@ export function getAdminSystemHealthReview(
   }
 
   const environmentSafety = getEnvironmentSafetySummary(actor, env);
-  const checks = getSystemHealthChecks(data, environmentSafety.counts);
+  const checks = getSystemHealthChecks(data, environmentSafety.counts, env);
 
   return {
     canReadReview: true,
@@ -97,11 +97,13 @@ function getSystemHealthChecks(
     blocked: number;
     watch: number;
   },
+  env: EnvironmentSafetyInput = {},
 ): AdminSystemHealthCheck[] {
   const routeCount = getAppRouteRegistry().length;
   const disabledOutboxCount = data.outboxItems.filter((item) => {
     return item.status === "disabled";
   }).length;
+  const controlLayerSource = env.MYMEDLIFE_CONTROL_LAYER_SOURCE ?? "defaults";
 
   return [
     {
@@ -158,6 +160,22 @@ function getSystemHealthChecks(
       nextStep:
         "Require actor, target, before/after, reason, and timestamp readback for every promoted write.",
       routeEvidence: ["/admin", "/admin/first-write"],
+    },
+    {
+      key: "rollout_controls",
+      label: "Feature flags and theme persistence",
+      ownerLane: "DS / Platform",
+      status:
+        controlLayerSource === "supabase" ? "needs_review" : "mock_safe",
+      signal:
+        controlLayerSource === "supabase"
+          ? "Runtime theme and feature flags are pointed at Supabase-backed control tables. Confirm the admin control pages no longer show the persistence warning and that one feature-flag save plus one theme save record audit rows."
+          : "Runtime theme and feature flags still use default or env fallback posture.",
+      nextStep:
+        controlLayerSource === "supabase"
+          ? "Open /admin/feature-flags and /admin/theme, confirm the persistence warning is gone, and capture one audited save in each lane."
+          : "Keep the control layer on fallback posture until the rollout-controls migration is readable and audited in the target environment.",
+      routeEvidence: ["/admin/feature-flags", "/admin/theme"],
     },
     {
       key: "outbox_safety",

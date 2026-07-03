@@ -1,6 +1,10 @@
 import Link from "next/link";
 
 import type { MemberActionRouteSource } from "@/services/member-action-route-href";
+import {
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { MemberRushMonthCampaignOverview } from "@/services/member-rush-month-campaign-overview";
 import { EventLoopStrip } from "@/components/event-loop-strip";
 import { PanelButton, StatCard, SurfacePanel, VisualTabStrip } from "@/components/visual-primitives";
@@ -206,11 +210,11 @@ export function MemberRushMonthCampaignPanel({
       </details>
 
       <SurfacePanel tone="info">
-        <p className="app-eyebrow app-eyebrow-blue">Campaign actions</p>
+        <p className="app-eyebrow app-eyebrow-blue">Campaign next steps</p>
         <div className="mt-3 flex flex-wrap gap-2.5">
-          <PanelButton href={overview.primaryActions.viewActionsHref}>View my actions</PanelButton>
-          <PanelButton href={overview.primaryActions.submitEvidenceHref} variant="secondary">
-            Submit evidence
+          <PanelButton href={overview.primaryActions.openEventsHref}>Open events</PanelButton>
+          <PanelButton href={overview.primaryActions.openPointsHref} variant="secondary">
+            Open leaderboard
           </PanelButton>
         </div>
       </SurfacePanel>
@@ -245,7 +249,7 @@ function getMemberCampaignSourceContext(source: MemberActionRouteSource | null |
         eyebrow: "From home",
         compactDetail:
           "Home surfaced this as the next campaign to understand. Keep that same weekly thread while you review it here.",
-        href: "/",
+        href: "/app",
         backLabel: "Back to home",
       };
     case "events":
@@ -253,7 +257,7 @@ function getMemberCampaignSourceContext(source: MemberActionRouteSource | null |
         eyebrow: "From events",
         compactDetail:
           "Events handed you back to the bigger Rush Month loop without losing the original event thread.",
-        href: "/rush-month/events",
+        href: getLaunchLaneMemberEventsHref("events"),
         backLabel: "Back to events",
       };
     case "points":
@@ -261,7 +265,7 @@ function getMemberCampaignSourceContext(source: MemberActionRouteSource | null |
         eyebrow: "From points",
         compactDetail:
           "Points opened the campaign that explains why the recognition matters. Review the loop, then head back to the scoreboard.",
-        href: "/rush-month/leaderboard",
+        href: getLaunchLaneMemberPointsHref("points"),
         backLabel: "Back to points",
       };
     default:

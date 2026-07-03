@@ -3,6 +3,7 @@ import {
   getHighestOperationalCanonicalRole,
   type CanonicalRole,
 } from "@/services/canonical-role-scope";
+import { getTravelerPrimaryLandingHref } from "@/services/launch-lane-product-focus";
 import {
   localActorOptions,
   type LocalActorContext,
@@ -94,7 +95,7 @@ function getDefaultLandingRouteForRole(
     case "committee_member":
       return "/app";
     case "traveler":
-      return "/app/slt-prep";
+      return getTravelerPrimaryLandingHref();
     case "committee_chair":
     case "eboard_officer":
     case "vice_president":
@@ -124,7 +125,7 @@ function getDefaultLandingRouteForRole(
     case "admin_backend":
       return "/admin";
     case "slt_prep":
-      return "/app/slt-prep";
+      return getTravelerPrimaryLandingHref();
     default:
       return "/app";
   }

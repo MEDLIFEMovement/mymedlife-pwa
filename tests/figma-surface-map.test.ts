@@ -29,19 +29,17 @@ describe("Figma surface map", () => {
     expect(workspace.greeting).toContain("Hi, Sofia");
     expect(workspace.campaign.href).toBe("/campaigns?source=home");
     expect(workspace.campaign.campaignsHref).toBe("/campaigns");
-    expect(workspace.startNextAction.href).toBe("/rush-month/actions/member-push?source=home");
-    expect(workspace.points.href).toBe("/rush-month/leaderboard");
+    expect(workspace.startNextAction.href).toBe("/app/events?source=home");
+    expect(workspace.points.href).toBe("/app/points");
     expect(workspace.upcomingEvents.map((event) => event.href)).toEqual([
-      "/rush-month/events/event-rush-med-talk-001?source=home",
-      "/rush-month/events/event-rush-social-001?source=home",
+      "/app/events/chapter-event-ucla-kickoff?source=home",
     ]);
-    expect(workspace.upcomingEvents.map((event) => event.rsvpLabel)).toEqual([
-      "RSVP",
-      "RSVP'd",
+    expect(workspace.upcomingEvents.map((event) => event.rsvpLabel)).toEqual(["RSVP'd"]);
+    expect(workspace.assignedActions.map((action) => action.href)).toEqual([
+      "/app/events?source=home",
+      "/app/events?source=home",
+      "/app/points?source=points",
     ]);
-    expect(workspace.assignedActions.every((action) => {
-      return action.href.startsWith("/rush-month/actions/");
-    })).toBe(true);
     expect(homeSurfaceJumps).toEqual([
       {
         label: "Leader Hub",
@@ -90,38 +88,29 @@ describe("Figma surface map", () => {
       "Leader review confirms chapter completion",
     ]);
     expect(overview.primaryActions).toEqual({
-      viewActionsHref: "/rush-month/actions?source=campaigns",
-      submitEvidenceHref:
-        "/rush-month/actions/share-rush-flyer?step=submit&source=campaigns#submit-evidence",
+      openEventsHref: "/app/events?source=campaigns",
+      openPointsHref: "/app/points?source=campaigns",
     });
   });
 
-  it("keeps the chapter leader command center aligned to the clickable leadership views", () => {
+  it("keeps the chapter leader command center aligned to the launch-mode leadership views", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
 
     expect(commandCenter.viewOptions.map((option) => option.label)).toEqual([
-      "Overview",
-      "Leaderboard",
-      "Member Pipeline",
-      "Member Profile",
-      "Committees",
+      "Chapter Home",
       "Events",
-      "Impact",
-      "Bridge Videos",
-      "Succession",
-      "Feed Analytics",
+      "Leaderboard",
     ]);
     expect(commandCenter.quickActions.map((action) => action.label)).toEqual([
       "Create Event",
-      "Assign Action",
+      "Confirm Attendance",
       "Review Members",
-      "Promote Emerging Leader",
-      "Share Bridge Video",
+      "Review Leaderboard",
     ]);
   });
 
-  it("keeps the staff command center aligned to the eight-screen internal nav from the mockup", () => {
+  it("keeps the staff command center aligned to the launch-mode command-center route options", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const commandCenter = getStaffCommandCenter(actor, data, {
       routeBase: "/staff",
@@ -130,13 +119,8 @@ describe("Figma surface map", () => {
 
     expect(commandCenter.viewOptions.map((option) => option.label)).toEqual([
       "Chapters",
-      "Campaigns",
-      "Proof / UGC",
-      "Feed Studio",
-      "Feed Analytics",
-      "HubSpot",
-      "Best Practices",
-      "Admin",
+      "Events",
+      "Leaderboard",
     ]);
     expect(commandCenter.selectedView).toBe("admin");
     expect(commandCenter.adminWorkspace.title).toBe("System Health");

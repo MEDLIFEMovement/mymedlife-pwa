@@ -1,147 +1,95 @@
-import { StaffAppShell } from "@/components/staff-app-shell";
-import { EventOutboxLog } from "@/components/event-outbox-log";
-import { RestrictedState } from "@/components/restricted-state";
+import { redirect } from "next/navigation";
+
+import { FigmaStaffCommandCenter } from "@/components/figma-staff-command-center";
 import { getLandingRouteForActor } from "@/services/landing-route";
-import { StaffCommandCenterPanel } from "@/components/staff-command-center-panel";
+import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
-import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getStaffCommandCenter } from "@/services/staff-command-center";
+import { getStaffLaunchLaneCanonicalHref } from "@/services/staff-launch-lane";
+import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("staff");
 export const dynamic = "force-dynamic";
 
 type StaffPageProps = {
-  searchParams?: Promise<{
-    bestPractice?: string;
-    campaign?: string;
-    campaignRisk?: string;
-    chapter?: string;
-    coach?: string;
-    country?: string;
-    decision?: string;
-    portfolioCampaign?: string;
-    proof?: string;
-    proofQueue?: string;
-    proofType?: string;
-    feedAudience?: string;
-    feedDraft?: string;
-    feedPost?: string;
-    hubspotChapter?: string;
-    practiceCampaign?: string;
-    practiceCountry?: string;
-    feedRole?: string;
-    q?: string;
-    risk?: string;
-    source?: string;
-    view?: string;
-  }>;
+  searchParams?: Promise<Record<string, string | undefined>>;
 };
 
-export default async function StaffPage(props: StaffPageProps) {
-  return renderStaffPage({
-    searchParams: props.searchParams,
-  });
-}
-
-async function renderStaffPage({
-  searchParams,
-}: {
-  searchParams?: StaffPageProps["searchParams"];
-}) {
-  const emptySearchParams: {
-    bestPractice?: string;
-    campaign?: string;
-    campaignRisk?: string;
-    chapter?: string;
-    coach?: string;
-    country?: string;
-    decision?: string;
-    portfolioCampaign?: string;
-    proof?: string;
-    proofQueue?: string;
-    proofType?: string;
-    feedAudience?: string;
-    feedDraft?: string;
-    feedPost?: string;
-    hubspotChapter?: string;
-    practiceCampaign?: string;
-    practiceCountry?: string;
-    feedRole?: string;
-    q?: string;
-    risk?: string;
-    source?: string;
-    view?: string;
-  } = {};
-  const [data, actor, search] = await Promise.all([
-    getReadOnlyAppData(),
+export default async function StaffPage({ searchParams }: StaffPageProps) {
+  const emptySearchParams: Record<string, string | undefined> = {};
+  const [actor, search, data] = await Promise.all([
     getLocalActorContext(),
     searchParams ?? Promise.resolve(emptySearchParams),
+    getReadOnlyAppData(),
   ]);
+
+  if (shouldRedirectActorToLogin(actor)) {
+    redirect(buildLoginRedirectHref("/staff?view=chapters"));
+  }
+
+  if (!canReadStaffWorkspace(actor)) {
+    redirect(getLandingRouteForActor(actor));
+  }
+
+  const launchLaneCanonicalHref = getStaffLaunchLaneCanonicalHref(search);
+
+  if (launchLaneCanonicalHref) {
+    redirect(launchLaneCanonicalHref);
+  }
+
   const commandCenter = getStaffCommandCenter(actor, data, {
     routeBase: "/staff",
+    source: search.source,
+    view: search.view,
     campaign: search.campaign,
     campaignRisk: search.campaignRisk,
-    bestPractice: search.bestPractice,
-    chapterId: search.chapter,
-    coach: search.coach,
+    risk: search.risk,
     country: search.country,
-    decision: search.decision,
+    coach: search.coach,
     portfolioCampaign: search.portfolioCampaign,
+    query: search.q,
+    chapterId: search.chapter,
+    decision: search.decision,
     proof: search.proof,
     proofQueue: search.proofQueue,
     proofType: search.proofType,
-    feedAudience: search.feedAudience,
     feedDraft: search.feedDraft,
     feedPost: search.feedPost,
     hubspotChapter: search.hubspotChapter,
-    practiceCampaign: search.practiceCampaign,
+    bestPractice: search.bestPractice,
     practiceCountry: search.practiceCountry,
+    practiceCampaign: search.practiceCampaign,
     feedRole: search.feedRole,
-    query: search.q,
-    risk: search.risk,
-    source: search.source,
-    view: search.view,
+    feedAudience: search.feedAudience,
   });
+
+  if (search.view && !commandCenter.viewOptions.some((option) => option.key === search.view)) {
+    redirect(buildCanonicalStaffHref(search, commandCenter.selectedView));
+  }
+
+  return <FigmaStaffCommandCenter commandCenter={commandCenter} />;
+}
+
+function canReadStaffWorkspace(actor: Awaited<ReturnType<typeof getLocalActorContext>>) {
   const surfaceFamily = getActorSurfaceFamily(actor);
-  const restrictedNextHref = getLandingRouteForActor(actor);
-  const restrictedNextLabel =
-      surfaceFamily === "ds_admin"
-      ? "Open admin safety review"
-      : surfaceFamily === "leader"
-        ? "Open leader home"
-        : surfaceFamily === "member"
-          ? "Open student home"
-          : "Open your owned surface";
+  return surfaceFamily === "coach" || surfaceFamily === "staff";
+}
 
-  return (
-    <StaffAppShell
-      actor={actor}
-      showDebugTools={!commandCenter.canReadCommandCenter}
-    >
-      {commandCenter.canReadCommandCenter ? (
-        <>
-          <StaffCommandCenterPanel commandCenter={commandCenter} />
+function buildCanonicalStaffHref(
+  searchParams: Record<string, string | undefined>,
+  view: string,
+) {
+  const params = new URLSearchParams();
 
-          {commandCenter.selectedView === "admin" &&
-          commandCenter.canReadDetailedOutbox ? (
-            <EventOutboxLog
-              events={data.integrationEvents}
-              outboxItems={data.outboxItems}
-            />
-          ) : null}
-        </>
-      ) : (
-        <>
-          <RestrictedState
-            title="This staff command center is not visible to this role."
-            message="Members and chapter leaders should use their student or chapter operating routes. DS Admin should keep using the admin safety lanes for integration and outbox review."
-            nextHref={restrictedNextHref}
-            nextLabel={restrictedNextLabel}
-          />
-        </>
-      )}
-    </StaffAppShell>
-  );
+  for (const [key, value] of Object.entries(searchParams)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  params.set("view", view);
+
+  return `/staff?${params.toString()}`;
 }

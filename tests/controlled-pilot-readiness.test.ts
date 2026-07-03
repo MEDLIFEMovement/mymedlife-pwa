@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getControlledPilotReadiness } from "@/services/controlled-pilot-readiness";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
+import { getStagingLumaEventLoopReadModel } from "@/services/staging-luma-event-loop";
 
 describe("controlled pilot readiness", () => {
   it("marks staff dry run ready but real student pilot not ready", () => {
@@ -59,8 +60,42 @@ describe("controlled pilot readiness", () => {
         "auth_onboarding",
         "pilot_writes",
         "proof_consent_storage",
+        "luma_points_proof",
       ]),
     );
+  });
+
+  it("surfaces the hosted Luma attendance-to-points blocker when staging proof has no points yet", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const baseline = getStagingLumaEventLoopReadModel("staging");
+    const readiness = getControlledPilotReadiness(actor, {
+      lumaReadModel: {
+        ...baseline,
+        summary: {
+          ...baseline.summary,
+          rsvpCount: 1,
+          attendanceCount: 0,
+          pointsAwarded: 0,
+        },
+      },
+    });
+
+    expect(
+      readiness.gates.find((gate) => gate.key === "luma_points_proof")?.status,
+    ).toBe("blocked_before_pilot");
+    expect(readiness.plainEnglishVerdict).toContain("approved guest list");
+    expect(readiness.recommendedNextMove).toContain("approved guest list");
+  });
+
+  it("marks the hosted Luma attendance-to-points proof ready once points are visible", () => {
+    const actor = getMockLocalActorContext("admin@mymedlife.test");
+    const readiness = getControlledPilotReadiness(actor, {
+      lumaReadModel: getStagingLumaEventLoopReadModel("staging"),
+    });
+
+    expect(
+      readiness.gates.find((gate) => gate.key === "luma_points_proof")?.status,
+    ).toBe("ready_now");
   });
 
   it("keeps DS Admin eligible without making external integrations live", () => {
@@ -73,7 +108,8 @@ describe("controlled pilot readiness", () => {
     expect(readiness.canReadReadiness).toBe(true);
     expect(readiness.title).toBe("DS Admin controlled pilot safety readiness");
     expect(externalIntegrations?.status).toBe("blocked_before_scale");
-    expect(externalIntegrations?.plainEnglish).toContain("should stay disabled");
+    expect(externalIntegrations?.plainEnglish).toContain("Only the approved Luma event loop");
+    expect(externalIntegrations?.plainEnglish).toContain("non-approved Luma behavior");
   });
 
   it("marks recorded pilot chapter, event posture, and coach owner as ready-now gates", () => {
@@ -88,6 +124,9 @@ describe("controlled pilot readiness", () => {
     try {
       const readiness = getControlledPilotReadiness(
         getMockLocalActorContext("admin@mymedlife.test"),
+        {
+          lumaReadModel: getStagingLumaEventLoopReadModel("staging"),
+        },
       );
 
       expect(

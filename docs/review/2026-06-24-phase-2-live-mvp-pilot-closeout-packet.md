@@ -7,7 +7,9 @@ Status:
 - controlled live MVP pilot is not yet approved
 - production launch is out of scope for this packet
 - repo support now exists for explicit hosted staging review auth plus narrow staging-only `action_started` and proof metadata gates
-- those staging gates remain disabled by default and still block uploads, public proof, and external writes
+- the staging-only Luma event loop is now the approved external-family proof exception under review
+- uploads, public proof, and all non-approved external writes remain blocked
+- hosted staging Supabase now has the rollout-control tables; remaining closeout risk is Vercel env alignment plus real signed-in proof
 
 ## Goal of this packet
 
@@ -30,7 +32,7 @@ Close Phase 2 at the smallest safe real pilot:
 - Hosted target: `staging.mymedlife.org`
 - Integration hold:
   - HubSpot writes off
-  - Luma writes off
+  - Luma limited to the approved staging-only event, RSVP, attendance, and points proof loop
   - n8n off
   - warehouse / Power BI off
   - SMS / email off
@@ -121,6 +123,12 @@ Required proof before any broader write opens:
   - `/admin/integration-outbox`
   - `/admin/pilot-scope`
   - `/admin/first-write`
+  - `/admin/luma-live-pilot` cross-role proof matrix
+
+Use `/admin/luma-live-pilot` as the top-level readback checkpoint for the
+approved Luma event loop. It should summarize whether the member, leader,
+staff, and admin surfaces are all telling the same event -> RSVP ->
+attendance -> points -> leaderboard story from the stored staging proof rows.
 
 ## Still blocked in this Phase 2 closeout step
 
@@ -130,7 +138,7 @@ Required proof before any broader write opens:
 - HQ proof decisions
 - coach decisions
 - HubSpot writes
-- Luma writes
+- non-approved Luma behavior outside the staging-only event loop
 - n8n writes
 - warehouse / Power BI writes
 - SMS / email / AI actions
@@ -172,7 +180,11 @@ As of 2026-06-24, the closeout criteria separate into three buckets:
 - hosted auth does not yet have approved reviewer-path evidence
 - hosted `action_started` does not yet have before/after staging proof
 - the hosted proof/review loop does not yet have end-to-end staging evidence
+- the staged Luma RSVP lane is not proven until the guest is visible in Luma's approved guest list, not just until myMEDLIFE records a local RSVP proof row
 - leader, staff, DS/admin, audit, and outbox readback do not yet have hosted proof captured from staging
+- `/admin/feature-flags` and `/admin/theme` still need one real signed-in
+  DS/Admin save each so the new hosted rollout-control tables produce visible
+  audit proof
 
 ## What Phase 2 completion means
 
@@ -193,4 +205,4 @@ Phase 2 completion does **not** mean:
 Current honest reading:
 - Phase 2 is review-ready and tightly framed
 - Phase 2 is not yet complete
-- the remaining gap is real hosted proof plus named human approvals, not more product-surface expansion
+- the remaining gap is real hosted proof plus named human approvals, and the sharpest hosted blocker is still the Luma RSVP-to-attendance-to-points loop, not more product-surface expansion

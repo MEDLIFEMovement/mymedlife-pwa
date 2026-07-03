@@ -26,17 +26,10 @@ describe("member recognition", () => {
       "This Week",
       "Chapter Rank",
     ]);
-    expect(recognition.campaignPoints.map((item) => item.label)).toEqual([
-      "Rush Month",
-      "Spring Showcase (prev.)",
-      "Community Health Fair",
-    ]);
-    expect(recognition.campaignPoints.map((item) => item.id)).toEqual([
-      "rush-month",
-      "spring-showcase",
-      "community-health-fair",
-    ]);
-    expect(recognition.badges.map((badge) => badge.label)).toContain("Rush Starter");
+    expect(recognition.campaignPoints.map((item) => item.label)).toEqual(["Event loop"]);
+    expect(recognition.campaignPoints.map((item) => item.id)).toEqual(["event-loop"]);
+    expect(recognition.topStats[0]?.note).toBe("Earned in the live event loop");
+    expect(recognition.badges.map((badge) => badge.label)).toContain("Event Starter");
     expect(recognition.recentApprovedActions.length).toBeGreaterThan(0);
     expect(recognition.recentApprovedActions.map((action) => action.title)).toEqual([
       "Welcome one new student at tabling",
@@ -46,7 +39,7 @@ describe("member recognition", () => {
     ]);
     expect(
       recognition.recentApprovedActions.every((action) => {
-        return action.href.startsWith("/rush-month/actions/") && action.href.endsWith("?source=points");
+        return action.href === "/app/points?source=points";
       }),
     ).toBe(true);
     expect(
@@ -58,7 +51,7 @@ describe("member recognition", () => {
       }),
     ).toBe(false);
     expect(recognition.explainer.title).toBe("How points work");
-    expect(recognition.explainer.ctaHref).toBe("/rush-month/actions/member-push?source=points");
+    expect(recognition.explainer.ctaHref).toBe("/app/events?source=points");
     expect(recognition.impacts[0]?.note).toContain("points event rows");
     expect(recognition.impacts[1]?.note).toContain("KPI event rows");
     expect(recognition.pointsLedgerPosture).toBe("mock_read_only");

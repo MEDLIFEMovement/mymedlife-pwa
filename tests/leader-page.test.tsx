@@ -30,13 +30,23 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
   };
 });
 
+function getSignedInActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-in test actor.",
+    "mock_fallback",
+    "local_auth_session",
+    "signed_in",
+  );
+}
+
 describe("leader page", () => {
-  it("returns members to their owned student surface instead of showing the chapter shell", async () => {
+  it("returns members to their owned student surface instead of showing the leader shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing member redirect from leader route."),
@@ -47,7 +57,7 @@ describe("leader page", () => {
     await expect(LeaderPage({})).rejects.toThrow("NEXT_REDIRECT:/app");
   });
 
-  it("opens the leader shell directly for chapter leadership actors", async () => {
+  it("sends signed-out reviewers to login before opening the command center", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -55,15 +65,92 @@ describe("leader page", () => {
       getMockLocalActorContext("leader.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing leader page."),
+      getMockReadOnlyAppData("Testing signed-out leader redirect."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    await expect(LeaderPage({})).rejects.toThrow(
+      "NEXT_REDIRECT:/login?redirectTo=%2Fleader%3Fview%3Doverview",
+    );
+  });
+
+  it("renders the student leadership command center as the real leader workspace", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader command center page."),
     );
 
     const { default: LeaderPage } = await import("@/app/leader/page");
     const html = renderToStaticMarkup(await LeaderPage({}));
 
     expect(html).toContain("Leadership Center");
-    expect(html).toContain("Leader Overview");
-    expect(html).toContain("Active Campaign");
+    expect(html).toContain("Chapter Dashboard · Jun 2025");
     expect(html).toContain("Boston College MEDLIFE");
+    expect(html).toContain("Create Event");
+    expect(html).toContain("Assign Action");
+    expect(html).toContain("Promote Emerging Leader");
+    expect(html).toContain("Chapter Metrics — June 2025");
+    expect(html).toContain("Risk Alerts");
+    expect(html).toContain("This Week&#x27;s Priority");
+    expect(html).toContain("Weekly Points Trend");
+    expect(html).not.toContain("Leader navigation");
+    expect(html).not.toContain("Live event controls");
+    expect(html).not.toContain("Leader event tracking");
+  });
+
+  it("renders the events view inside the command center instead of the old parked launch lane", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader events view."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "events",
+        }),
+      }),
+    );
+
+    expect(html).toContain(">Events<");
+    expect(html).toContain("Chapter Leadership Home");
+    expect(html).toContain("Create Event");
+    expect(html).toContain("href=\"/leader?view=events&amp;quickAction=create_event\"");
+    expect(html).toContain("Create Event");
+    expect(html).not.toContain("Live event controls");
+    expect(html).not.toContain("Simple attendance list");
+  });
+
+  it("parks bridge-video review inside the leader leaderboard lane during launch mode", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing bridge video review."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "bridge_videos",
+        }),
+      }),
+    ).rejects.toThrow("NEXT_REDIRECT:/leader?view=leaderboard");
   });
 });

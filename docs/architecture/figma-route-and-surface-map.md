@@ -155,7 +155,7 @@ Do not reduce the Make references to:
 
 We are trying to mirror the screen families, not just the art direction.
 
-## 0. Role-Based Login Workspace
+## 0. Login Workspace
 
 Reference mockup:
 
@@ -163,7 +163,7 @@ Reference mockup:
 
 Primary role:
 
-- authenticated user selecting a workspace entry point
+- unauthenticated user entering the platform through one shared sign-in screen
 
 ### Route map
 
@@ -171,51 +171,44 @@ Primary role:
 
 ### First-viewport contract
 
-- workspace-oriented sign-in copy
-- six workspace entry cards
-- access-boundary summary
-- seeded account sign-in panel
-- role-aware redirect selection
+- centered logo + wordmark
+- simple sign-in copy
+- one email field
+- one password field
+- forgot-password text action
+- one primary sign-in button
 
 ### Required clickthroughs
 
-- General Member card -> `/login?redirectTo=/app`
-- Student Leader card -> `/login?redirectTo=/leader`
-- Sales Coach / Sales Staff card -> `/login?redirectTo=/staff`
-- Staff card -> `/login?redirectTo=/staff`
-- Data Solutions / Admin card -> `/login?redirectTo=/admin`
-- Super Admin card -> `/login?redirectTo=/admin`
-- seeded account sign-in -> role-specific shell after auth
+- sign in -> role-specific shell after auth
+- nested redirect target preserved through `redirectTo`
+- signed-in session card -> continue into the routed workspace
+- signed-in session card -> sign out
 
 ### Required states
 
 - default sign-in
-- workspace card selected
-- seeded account ready
 - signed-in session summary
 - disabled-auth / review-mode state
 - unsafe redirect rejected
 
 ### Data domains
 
-- workspace entries
 - seeded review accounts
 - auth session state
 - redirect target
-- current access boundaries
+- current signed-in user
 
 ### Component families
 
-- workspace intro hero
-- workspace entry cards
-- seeded account form
-- access-boundary panel
-- session status panel
+- login wordmark block
+- centered sign-in card
+- session status card
 
 ### Boundaries
 
-- the selected workspace card is only an entry point, not the access rule
-- actual post-auth landing still comes from the authenticated role and permission set
+- the login screen is not the role authority
+- actual post-auth landing comes from the authenticated role and permission set
 - nested owned destinations like SLT Prep should remain selectable when present in the redirect target
 
 ## Implementation Dimensions

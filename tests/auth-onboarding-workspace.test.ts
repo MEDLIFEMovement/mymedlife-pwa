@@ -31,7 +31,7 @@ describe("auth onboarding workspace", () => {
     const workspace = getAuthOnboardingWorkspace(actor);
 
     expect(workspace.title).toBe("Chapter onboarding approval path");
-    expect(workspace.nextStep.href).toBe("/chapter/members");
+    expect(workspace.nextStep.href).toBe("/leader?view=members");
     expect(
       workspace.stepRows.find((step) => step.key === "membership_approved")
         ?.actorCanOwn,
@@ -55,7 +55,7 @@ describe("auth onboarding workspace", () => {
     );
 
     expect(chair.title).toBe("Chapter onboarding approval path");
-    expect(chair.nextStep.href).toBe("/chapter/members");
+    expect(chair.nextStep.href).toBe("/leader?view=members");
     expect(
       chair.stepRows.find((step) => step.key === "membership_approved")?.actorCanOwn,
     ).toBe(false);

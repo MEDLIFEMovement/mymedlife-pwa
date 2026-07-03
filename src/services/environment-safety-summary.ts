@@ -8,6 +8,7 @@ import { getSupabaseAuthConfig } from "@/services/supabase-auth-config";
 
 export type EnvironmentSafetyInput = {
   MYMEDLIFE_DATA_SOURCE?: string;
+  MYMEDLIFE_CONTROL_LAYER_SOURCE?: string;
   MYMEDLIFE_AUTH_MODE?: string;
   MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH?: string;
   MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS?: string;
@@ -174,6 +175,7 @@ export function getEnvironmentSafetySummary(
 function readEnvironmentSafetyInput(): EnvironmentSafetyInput {
   return {
     MYMEDLIFE_DATA_SOURCE: process.env.MYMEDLIFE_DATA_SOURCE,
+    MYMEDLIFE_CONTROL_LAYER_SOURCE: process.env.MYMEDLIFE_CONTROL_LAYER_SOURCE,
     MYMEDLIFE_AUTH_MODE: process.env.MYMEDLIFE_AUTH_MODE,
     MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH:
       process.env.MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH,

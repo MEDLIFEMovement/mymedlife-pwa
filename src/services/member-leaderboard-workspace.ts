@@ -1,5 +1,7 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { buildMemberActionRouteHref } from "@/services/member-action-route-href";
+import {
+  getLaunchLaneWorkspaceNextStep,
+} from "@/services/events-points-launch-lane";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
 import {
   getActorSurfaceFamily,
@@ -27,9 +29,6 @@ export type MemberLeaderboardWorkspace = {
 export function getMemberLeaderboardWorkspace(
   actor: LocalActorContext,
   recognition: MemberRecognitionSummary,
-  memberNextActionHref = buildMemberActionRouteHref("member-push", {
-    source: "points",
-  }),
 ): MemberLeaderboardWorkspace {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
@@ -61,7 +60,7 @@ export function getMemberLeaderboardWorkspace(
     title: getTitle(surfaceFamily),
     summary:
       "See points, rank, recognition, and chapter impact in one student-friendly readout. This recognition surface stays read-only until the approved points ledger is live.",
-    nextStep: getNextStep(surfaceFamily, memberNextActionHref),
+    nextStep: getNextStep(surfaceFamily),
     safetyNotes: [
       `Points ledger posture: ${recognition.pointsLedgerPosture}.`,
       "No points write, KPI write, leaderboard mutation, member nudge, or external send is expected from this page.",
@@ -92,7 +91,7 @@ function getEyebrow(surfaceFamily: ActorSurfaceFamily): string {
 function getTitle(surfaceFamily: ActorSurfaceFamily): string {
   switch (surfaceFamily) {
     case "member":
-      return "Your Rush Month leaderboard";
+      return "Your chapter leaderboard";
     case "leader":
       return "Chapter member leaderboard";
     case "coach":
@@ -108,46 +107,45 @@ function getTitle(surfaceFamily: ActorSurfaceFamily): string {
 
 function getNextStep(
   surfaceFamily: ActorSurfaceFamily,
-  memberNextActionHref: string,
 ): MemberLeaderboardNextStep {
   switch (surfaceFamily) {
     case "member":
       return {
-        label: "Move your rank by doing the next action",
-        href: memberNextActionHref,
-        ctaLabel: "Open next action",
+        ...getLaunchLaneWorkspaceNextStep(surfaceFamily),
+        label: "Move your rank by showing up to the next event",
+        ctaLabel: "Open events",
         summary:
-          "Complete your assigned Rush Month action and submit proof when the write path is approved.",
+          "Start with the next chapter event. RSVP, attend, and let verified attendance move the chapter leaderboard.",
       };
     case "leader":
       return {
-        label: "Use recognition to guide follow-up",
-        href: "/rush-month/actions",
-        ctaLabel: "Open team actions",
+        ...getLaunchLaneWorkspaceNextStep(surfaceFamily),
+        label: "Use recognition to guide event follow-through",
+        ctaLabel: "Open leader events",
         summary:
-          "Look for members who need a nudge, then keep assignment and proof decisions in the leader workflow.",
+          "Use the chapter board to see who is showing up, then keep event planning, attendance, and points in one leader loop.",
       };
     case "coach":
       return {
-        label: "Connect recognition to campaign health",
-        href: "/coach",
-        ctaLabel: "Open coach readout",
+        ...getLaunchLaneWorkspaceNextStep(surfaceFamily),
+        label: "Connect recognition to chapter event health",
+        ctaLabel: "Open chapters",
         summary:
-          "Use recognition as one signal alongside overdue work, pending evidence, KPIs, and risks.",
+          "Use leaderboard changes as one signal alongside RSVP, attendance, and simple chapter risk posture.",
       };
     case "staff":
       return {
-        label: "Keep points governance separate from launch approval",
-        href: "/admin",
-        ctaLabel: "Open admin review",
+        ...getLaunchLaneWorkspaceNextStep(surfaceFamily),
+        label: "Keep chapter points grounded in the chapter list",
+        ctaLabel: "Open chapters",
         summary:
-          "Review recognition locally, then keep production points approval behind auth, RLS, and audit gates.",
+          "Review the org board, then drop back into chapter event posture instead of branching into unrelated modules.",
       };
     case "super_admin":
       return {
-        label: "Confirm the full local recognition boundary",
-        href: "/admin",
-        ctaLabel: "Open super admin review",
+        ...getLaunchLaneWorkspaceNextStep(surfaceFamily),
+        label: "Confirm the recognition boundary from admin",
+        ctaLabel: "Open admin",
         summary:
           "Inspect the leaderboard while keeping production points, role, chapter, and integration writes disabled.",
       };

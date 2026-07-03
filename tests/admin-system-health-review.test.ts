@@ -25,9 +25,9 @@ describe("admin system health review", () => {
     expect(review.externalWritesEnabled).toBe(0);
     expect(review.secretsShown).toBe(0);
     expect(review.counts).toEqual({
-      total: 9,
+      total: 10,
       localReady: 3,
-      mockSafe: 2,
+      mockSafe: 3,
       needsReview: 0,
       blockedBeforeLive: 4,
     });
@@ -36,6 +36,7 @@ describe("admin system health review", () => {
       "data_source",
       "environment_flags",
       "audit_readback",
+      "rollout_controls",
       "outbox_safety",
       "production_auth",
       "proof_storage",
@@ -89,6 +90,7 @@ describe("admin system health review", () => {
       },
       {
         MYMEDLIFE_DATA_SOURCE: "supabase",
+        MYMEDLIFE_CONTROL_LAYER_SOURCE: "supabase",
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_READS: "true",
       },
     );
@@ -104,6 +106,14 @@ describe("admin system health review", () => {
     expect(
       review.checks.find((check) => check.key === "environment_flags")?.status,
     ).toBe("needs_review");
+    expect(
+      review.checks.find((check) => check.key === "rollout_controls"),
+    ).toEqual(
+      expect.objectContaining({
+        status: "needs_review",
+        routeEvidence: ["/admin/feature-flags", "/admin/theme"],
+      }),
+    );
   });
 
   it("hides system health from chapter and coach roles", () => {

@@ -48,41 +48,22 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/login")).toBe(true);
     expect(isKnownAppRouteHref("/offline")).toBe(true);
     expect(isKnownAppRouteHref("/profile")).toBe(true);
-    expect(isKnownAppRouteHref("/onboarding")).toBe(true);
-    expect(isKnownAppRouteHref("/slt-prep")).toBe(true);
-    expect(isKnownAppRouteHref("/slt-prep/staff")).toBe(true);
-    expect(isKnownAppRouteHref("/slt-prep/flights")).toBe(true);
-    expect(isKnownAppRouteHref("/slt-prep/checklist/medical-clearance")).toBe(true);
-    expect(isKnownAppRouteHref("/rush-month/leaderboard")).toBe(true);
-    expect(isKnownAppRouteHref("/campaigns/rush-month")).toBe(true);
-    expect(isKnownAppRouteHref("/rush-month/events/event-rush-social-001")).toBe(
-      true,
-    );
-    expect(isKnownAppRouteHref("/rush-month/actions/member-push")).toBe(true);
-    expect(isKnownAppRouteHref("/chapter?view=members")).toBe(true);
-    expect(isKnownAppRouteHref("/chapter?view=member_profile&member=member-ivy")).toBe(
-      true,
-    );
+    expect(isKnownAppRouteHref("/app/events")).toBe(true);
+    expect(isKnownAppRouteHref("/app/events/chapter-event-ucla-kickoff")).toBe(true);
+    expect(isKnownAppRouteHref("/app/points")).toBe(true);
+    expect(isKnownAppRouteHref("/leader?view=attendance")).toBe(true);
     expect(isKnownAppRouteHref("/staff")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/phase-2")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/review-path")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/nick-review")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/release-readiness")).toBe(true);
     expect(isKnownAppRouteHref("/admin/launch-gate")).toBe(true);
     expect(isKnownAppRouteHref("/admin/audit-log")).toBe(true);
     expect(isKnownAppRouteHref("/admin/integration-outbox")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/master-data")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/permissions")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/committees")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/workflows")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/sop-library")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/sop-builder/rush-month?tab=steps")).toBe(
-      true,
-    );
-    expect(isKnownAppRouteHref("/admin/database-security")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/system-health")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/design-qa")).toBe(true);
-    expect(isKnownAppRouteHref("/admin/operations")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/luma-live-pilot")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/pilot-scope")).toBe(true);
+    expect(isKnownAppRouteHref("/rush-month/leaderboard")).toBe(false);
+    expect(isKnownAppRouteHref("/campaigns/rush-month")).toBe(false);
+    expect(isKnownAppRouteHref("/chapter?view=members")).toBe(false);
+    expect(isKnownAppRouteHref("/slt-prep")).toBe(false);
+    expect(isKnownAppRouteHref("/admin/phase-2")).toBe(false);
+    expect(isKnownAppRouteHref("/admin/sop-library")).toBe(false);
     expect(isKnownAppRouteHref("/unknown")).toBe(false);
   });
 });

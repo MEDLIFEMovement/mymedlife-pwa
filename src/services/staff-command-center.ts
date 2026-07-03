@@ -3,6 +3,15 @@ import {
   getCampaignShells,
 } from "@/services/campaign-ops-service";
 import { getCoachPortfolioReadiness } from "@/services/coach-portfolio-readiness";
+import {
+  getLaunchLaneOrgLeaderboardRows,
+  getLaunchLaneOrgPointsReadback,
+  getLaunchLaneStaffChapterReadback,
+  type LaunchLaneOrgLeaderboardRow,
+  type LaunchLaneOrgPointsReadback,
+  type LaunchLaneStaffChapterReadback,
+} from "@/services/launch-lane-points-readback";
+import { isEventsPointsLaunchLaneEnabled } from "@/services/launch-lane-product-focus";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { buildStudentHomePreviewHref } from "@/services/local-preview-route";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
@@ -16,6 +25,8 @@ import type { IntegrationEvent, OutboxItem } from "@/shared/types/domain";
 
 export type StaffCommandCenterView =
   | "chapters"
+  | "events"
+  | "leaderboard"
   | "campaigns"
   | "proof_ugc"
   | "feed_studio"
@@ -645,6 +656,7 @@ export type StaffCommandCenter = {
   title: string;
   summary: string;
   sampleLabel: string | null;
+  launchLaneFocused: boolean;
   sourceContext: StaffCommandCenterSourceContext | null;
   selectedView: StaffCommandCenterView;
   selectedCampaignSlug: string;
@@ -682,6 +694,9 @@ export type StaffCommandCenter = {
   bestPracticeCampaignFilters: StaffPortfolioFilterOption<StaffBestPracticeCampaignFilter>[];
   portfolioSummaryCards: StaffPortfolioSummaryCard[];
   chapterRows: StaffChapterPortfolioRow[];
+  launchLaneChapterRows: LaunchLaneStaffChapterReadback[];
+  launchLaneOrgReadback: LaunchLaneOrgPointsReadback;
+  launchLaneOrgLeaderboardRows: LaunchLaneOrgLeaderboardRow[];
   selectedChapter: StaffChapterDrawer | null;
   campaignCards: StaffCampaignOperationCard[];
   campaignOperations: StaffCampaignOperationsOverview;
@@ -735,6 +750,8 @@ export type StaffCommandCenterOptions = {
 
 const staffViewLabels: Record<StaffCommandCenterView, string> = {
   chapters: "Chapters",
+  events: "Events",
+  leaderboard: "Leaderboard",
   campaigns: "Campaigns",
   proof_ugc: "Proof / UGC",
   feed_studio: "Feed Studio",
@@ -2005,6 +2022,7 @@ export function getStaffCommandCenter(
   const feedAudienceMode = parseFeedAudienceMode(options.feedAudience);
   const searchQuery = options.query?.trim() ?? "";
   const selectedView = parseStaffCommandCenterView(options.view);
+  const launchLaneFocused = isEventsPointsLaunchLaneEnabled();
   const surfaceFamily = getActorSurfaceFamily(actor);
   const routeBase =
     options.routeBase ?? (surfaceFamily === "coach" ? "/coach" : "/staff");
@@ -2022,6 +2040,9 @@ export function getStaffCommandCenter(
     portfolioCampaignFilter,
     searchQuery,
   }, routeBase);
+  const launchLaneChapterRows = getLaunchLaneStaffChapterReadback(data);
+  const launchLaneOrgReadback = getLaunchLaneOrgPointsReadback(data);
+  const launchLaneOrgLeaderboardRows = getLaunchLaneOrgLeaderboardRows(data);
   const selectedChapterId = getSelectedChapterId(chapterRows, options.chapterId);
   const allProofReviewItems = getProofReviewItems(routeBase);
   const proofReviewItems = getFilteredProofReviewItems(allProofReviewItems, {
@@ -2221,9 +2242,10 @@ export function getStaffCommandCenter(
         : "Staff Command Center",
     summary:
       surfaceFamily === "coach"
-        ? "Review assigned chapter health, proof and consent posture, coach follow-up load, and chapter support decisions without turning on live writes."
-        : "Review chapter portfolio health, campaign operations, proof and consent gates, feed curation, HubSpot-ready follow-up posture, and admin health without turning on live writes.",
+        ? "Review assigned chapter event health, Luma posture, RSVPs, attendance, and points before deciding where coaching support should move next."
+        : "Review chapter event health, Luma posture, RSVPs, attendance, and organization-wide points movement without turning on unrelated modules.",
     sampleLabel: null,
+    launchLaneFocused,
     sourceContext:
       getProofReviewBestPracticesSourceContext(
         options.source,
@@ -2443,6 +2465,9 @@ export function getStaffCommandCenter(
     ),
     portfolioSummaryCards: getPortfolioSummaryCards(chapterRows),
     chapterRows,
+    launchLaneChapterRows,
+    launchLaneOrgReadback,
+    launchLaneOrgLeaderboardRows,
     selectedChapter,
     campaignCards,
     campaignOperations: getCampaignOperationsOverview(
@@ -5954,7 +5979,11 @@ function getViewOptions(
   feedPreviewRole?: StaffFeedPreviewRole,
   feedAudienceMode?: StaffFeedAudienceMode,
 ): StaffCommandCenterViewOption[] {
-  return (Object.keys(staffViewLabels) as StaffCommandCenterView[]).map((key) => ({
+  const visibleViews = isEventsPointsLaunchLaneEnabled()
+    ? (["chapters", "events", "leaderboard"] as StaffCommandCenterView[])
+    : (Object.keys(staffViewLabels) as StaffCommandCenterView[]);
+
+  return visibleViews.map((key) => ({
     key,
     label: staffViewLabels[key],
     href: getHref({
@@ -6721,6 +6750,7 @@ function emptyStaffCommandCenter(): StaffCommandCenter {
     summary:
       "This staff route is reserved for coach and HQ support personas. Members and chapter leaders should use their operating routes.",
     sampleLabel: null,
+    launchLaneFocused: isEventsPointsLaunchLaneEnabled(),
     sourceContext: null,
     selectedView: "chapters",
     selectedCampaignSlug: "rush-month",
@@ -6759,6 +6789,20 @@ function emptyStaffCommandCenter(): StaffCommandCenter {
     bestPracticeCampaignFilters: [],
     portfolioSummaryCards: [],
     chapterRows: [],
+    launchLaneChapterRows: [],
+    launchLaneOrgReadback: {
+      totalRsvps: 0,
+      totalAttendance: 0,
+      totalPoints: 0,
+      chaptersWithPoints: 0,
+      topChapterName: null,
+      topChapterPoints: 0,
+      featuredEventTitle: null,
+      featuredEventChapterName: null,
+      featuredEventAttendanceCount: 0,
+      featuredEventPointsAwarded: 0,
+    },
+    launchLaneOrgLeaderboardRows: [],
     selectedChapter: null,
     campaignCards: [],
     campaignOperations: {

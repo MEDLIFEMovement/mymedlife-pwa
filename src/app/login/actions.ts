@@ -1,8 +1,10 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { normalizeLoginRedirect } from "@/services/auth-session";
+import { localActorPreviewCookieName } from "@/services/local-actor-context";
 
 export type LoginActionState = {
   status: "idle" | "disabled" | "error";
@@ -68,6 +70,9 @@ export async function signOut() {
   if (client) {
     await client.auth.signOut();
   }
+
+  const cookieStore = await cookies();
+  cookieStore.delete(localActorPreviewCookieName);
 
   redirect("/login");
 }

@@ -50,7 +50,8 @@ Please confirm or replace only the fields you want to change:
    - Confirm who owns alerting, backup, rollback, and incident handling for the pilot window.
 
 7. External integration hold
-   - Confirm HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off.
+   - Confirm HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off.
+   - The only approved exception under review is the staging-only Luma event/RSVP/attendance/points loop.
 
 If the current defaults are acceptable, a reply of `approved as written` is enough.
 If something needs to change, please reply with only the fields you want updated.
@@ -91,7 +92,8 @@ Por favor confirmen o reemplacen solo los campos que quieran cambiar:
    - Confirmar quién es responsable de alertas, backup, rollback y manejo de incidentes durante el piloto.
 
 7. Mantener integraciones apagadas
-   - Confirmar que HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email y AI siguen apagados.
+   - Confirmar que HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email y AI siguen apagados.
+   - La unica excepcion aprobada en revision es el flujo de Luma solo en staging para evento/RSVP/asistencia/puntos.
 
 Si los valores por defecto funcionan, basta con responder `approved as written`.
 Si algo debe cambiar, respondan solo con los campos que quieran actualizar.

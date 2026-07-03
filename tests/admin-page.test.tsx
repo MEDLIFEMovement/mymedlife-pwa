@@ -7,6 +7,9 @@ import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 vi.mock("next/navigation", () => ({
   usePathname: () => "/admin",
   useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
+  }),
 }));
 
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
@@ -27,13 +30,23 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
   };
 });
 
+function getSignedInActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-in test actor.",
+    "mock_fallback",
+    "local_auth_session",
+    "signed_in",
+  );
+}
+
 describe("admin page", () => {
   it("returns members to their owned student surface when the admin route is blocked", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing member-blocked admin page."),
@@ -54,7 +67,7 @@ describe("admin page", () => {
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("ds.admin@mymedlife.test"),
+      getSignedInActor("ds.admin@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing admin overview page."),
@@ -65,63 +78,32 @@ describe("admin page", () => {
 
     expect(html).toContain("Backend route family");
     expect(html).toContain('href="/admin"');
-    expect(html).toContain('href="/admin/phase-2"');
     expect(html).toContain("Event loop");
     expect(html).toContain("Luma event creation, RSVP, attendance, and points stay app-owned.");
-    expect(html).toContain('href="/admin/permissions"');
-    expect(html).toContain('href="/admin/committees"');
-    expect(html).toContain('href="/admin/workflows"');
-    expect(html).toContain('href="/admin/sop-builder/rush-month?tab=steps"');
-    expect(html).toContain('href="/admin/review-path"');
-    expect(html).toContain('href="/admin/nick-review"');
-    expect(html).toContain('href="/admin/release-readiness"');
-    expect(html).toContain('href="/admin/launch-gate"');
+    expect(html).toContain('href="/admin/luma-live-pilot"');
+    expect(html).toContain('href="/admin/integration-outbox"');
     expect(html).toContain('href="/admin/audit-log"');
-    expect(html).toContain('href="/admin/operations"');
-    expect(html).toContain('href="/admin/design-qa"');
-    expect(html).toContain('href="/admin/staff-dry-run"');
+    expect(html).toContain('href="/admin/launch-gate"');
     expect(html).toContain('href="/admin/pilot-scope"');
-    expect(html).toContain('href="/admin/first-write"');
-    expect(html).toContain('href="/admin/write-sequence"');
-    expect(html).toContain('href="/admin/proof-write"');
-    expect(html).toContain('href="/admin/hq-proof-write"');
-    expect(html).toContain('href="/admin/assignment-write"');
-    expect(html).toContain('href="/admin/coach-write"');
-    expect(html).toContain('href="/admin/sop-library"');
-    expect(html).toContain('href="/admin/master-data"');
     expect(html).toContain(">Overview<");
     expect(html).toContain("DS and Super Admin context is role-aware and read-only.");
     expect(html).toContain("What this admin surface actually owns");
-    expect(html).toContain("Permission Registry");
-    expect(html).toContain("Workflow Registry");
-    expect(html).toContain("SOP Builder");
-    expect(html).toContain("Integrations &amp; API Keys");
+    expect(html).toContain("Keep this overview narrow while the launch lane is active");
+    expect(html).toContain("Review the loop, not the whole platform");
+    expect(html).toContain("Review in this order");
+    expect(html).toContain("Keep the reviewer path human-sized");
+    expect(html).toContain("Hidden on purpose");
+    expect(html).toContain("Broader modules stay out of the way for now");
+    expect(html).toContain("Luma Pilot");
     expect(html).toContain("Integration Outbox");
-    expect(html).toContain("Database Security");
-    expect(html).toContain("System Health");
-    expect(html).toContain("Master Data");
-    expect(html).toContain("First Write Drill");
-    expect(html).toContain("Write Sequence");
-    expect(html).toContain("Proof Packet");
-    expect(html).toContain("HQ Proof Packet");
-    expect(html).toContain("Assignment Packet");
-    expect(html).toContain("Coach Decision Packet");
-    expect(html).toContain("Stakeholder Review Path");
-    expect(html).toContain("Live MVP Closeout");
-    expect(html).toContain("Nick Review Packet");
-    expect(html).toContain("Release Readiness");
-    expect(html).toContain("Production Launch Gate");
     expect(html).toContain("Audit Log");
-    expect(html).toContain("Production Operations");
-    expect(html).toContain("Design QA");
-    expect(html).toContain("Staff Dry Run");
+    expect(html).toContain("Production Launch Gate");
     expect(html).toContain("Pilot Scope");
-    expect(html).toContain("Write Sequence");
-    expect(html).toContain("Coach Decision");
-    expect(html).toContain("SOP Library");
-    expect(html).toContain("System health signals");
-    expect(html).toContain("4 local checks are visible here.");
+    expect(html).toContain("Events + Points");
+    expect(html).toContain("SOP Builder");
+    expect(html).toContain("Feature flags");
+    expect(html).toContain("Non-approved integrations");
+    expect(html).not.toContain("Role-routed internal context only.");
     expect(html).not.toContain("System health placeholders");
-    expect(html).not.toContain("Committee Registry");
   });
 });

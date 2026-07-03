@@ -6,13 +6,13 @@ import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 const data = getMockReadOnlyAppData("Testing profile workspace.");
 
 describe("profile workspace", () => {
-  it("shows members their local profile, chapter scope, and next action", () => {
+  it("shows members their local profile, chapter scope, and next event route", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const workspace = getProfileWorkspace(actor, data);
 
     expect(workspace.title).toBe("Your myMEDLIFE profile");
     expect(workspace.profileLabel).toBe("General Member");
-    expect(workspace.nextStep.href).toBe("/rush-month/actions/member-push?source=profile");
+    expect(workspace.nextStep.href).toBe("/app/events?source=home");
     expect(workspace.identityRows.map((row) => row.label)).toEqual([
       "Name",
       "Email",
@@ -48,12 +48,10 @@ describe("profile workspace", () => {
     );
 
     expect(committeeMember.title).toBe("Your myMEDLIFE profile");
-    expect(committeeMember.nextStep.href).toBe(
-      "/rush-month/actions/member-push?source=profile",
-    );
+    expect(committeeMember.nextStep.href).toBe("/app/events?source=home");
     expect(committeeChair.title).toBe("Leader profile and role scope");
     expect(committeeChair.profileLabel).toBe("Action Committee Chair");
-    expect(committeeChair.nextStep.href).toBe("/rush-month/review");
+    expect(committeeChair.nextStep.href).toBe("/leader?view=events");
   });
 
   it("shows coach portfolio scope without enabling coach assignment writes", () => {
@@ -68,7 +66,7 @@ describe("profile workspace", () => {
     expect(
       workspace.scopeRows.find((row) => row.label === "Coach portfolio")?.value,
     ).toBe("UCLA MEDLIFE");
-    expect(workspace.nextStep.href).toBe("/coach");
+    expect(workspace.nextStep.href).toBe("/staff?view=chapters");
     expect(workspace.counts.coachPortfolioChapters).toBe(1);
     expect(workspace.counts.membershipWritesExpected).toBe(0);
   });

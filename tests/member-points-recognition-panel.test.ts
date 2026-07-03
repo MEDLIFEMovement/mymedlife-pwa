@@ -3,17 +3,23 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { MemberPointsRecognitionPanel } from "@/components/member-points-recognition-panel";
+import { getLaunchLaneMemberPointsReadback } from "@/services/launch-lane-points-readback";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 describe("member points recognition panel", () => {
-  it("renders the mobile points route with a single active campaign focus, recent approvals, and explainer sections visible in the Figma prototype", () => {
+  it("renders the mobile points route with event-loop readback, recent approvals, and explainer sections visible in the simplified launch lane", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing member points recognition.");
     const recognition = getMemberRecognitionSummary(actor, data);
+    const liveReadback = getLaunchLaneMemberPointsReadback(actor, data);
     const html = renderToStaticMarkup(
-      createElement(MemberPointsRecognitionPanel, { recognition }),
+      createElement(MemberPointsRecognitionPanel, {
+        recognition,
+        chapterName: "UCLA MEDLIFE",
+        liveReadback,
+      }),
     );
 
     expect(html).toContain("UCLA MEDLIFE");
@@ -24,43 +30,45 @@ describe("member points recognition panel", () => {
     expect(html).toContain("Leaderboard");
     expect(html).toContain("Event loop");
     expect(html).toContain("Events create attendance, attendance creates points.");
+    expect(html).toContain("Live pilot readback");
+    expect(html).toContain("Attendance confirmed; points pending");
+    expect(html).toContain("Your event points");
+    expect(html).toContain("Next step in this event loop");
+    expect(html).toContain("Open event detail");
     expect(html).toContain("Total Points");
-    expect(html).toContain("Points by Campaign");
-    expect(html).toContain("Rush Month");
+    expect(html).not.toContain("Launch lane focus");
     expect(html).not.toContain("Spring Showcase (prev.)");
     expect(html).toContain("Badges Earned");
-    expect(html).toContain("Rush Starter");
-    expect(html).toContain("Complete first Rush Month action");
+    expect(html).toContain("Event Starter");
+    expect(html).toContain("Attend your first chapter event");
     expect(html).toContain("Top 3 on leaderboard for 2 weeks");
-    expect(html).toContain("Campaign focus");
-    expect(html).toContain("Recognition on this campaign should reward the real invite");
-    expect(html).toContain("Chapter Leaderboard — Rush Month");
-    expect(html).toContain("Recent Approved Actions");
+    expect(html).toContain("Chapter Leaderboard");
+    expect(html).toContain("Recent points activity");
     expect(html).toContain("How points work");
-    expect(html).toContain("See how to earn more points");
-    expect(html).toContain("/rush-month/actions/member-push?source=points");
-    expect(html).toContain("/rush-month/leaderboard?campaign=rush-month#campaign-focus");
+    expect(html).toContain("Open events →");
+    expect(html).toContain("/app/events?source=points");
     expect(html).toContain("Welcome one new student at tabling");
-    expect(html).toContain("href=\"/rush-month/actions/welcome-table?source=points\"");
+    expect(html).toContain("Open event loop");
     expect(html).not.toContain("Open the chapter home and align the leader team");
     expect(html).not.toContain("Assign Rush Month outreach owners");
   });
 
-  it("keeps the same-route campaign focus state on the active campaign card", () => {
+  it("ignores the old campaign selector and keeps the points surface focused on the core loop", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing member points campaign focus.");
     const recognition = getMemberRecognitionSummary(actor, data);
+    const liveReadback = getLaunchLaneMemberPointsReadback(actor, data);
     const html = renderToStaticMarkup(
       createElement(MemberPointsRecognitionPanel, {
         recognition,
-        selectedCampaignId: "rush-month",
+        chapterName: "UCLA MEDLIFE",
+        liveReadback,
       }),
     );
 
-    expect(html).toContain("Campaign focus");
-    expect(html).toContain("Recognition on this campaign should reward the real invite");
-    expect(html).toContain("See how to earn more points");
-    expect(html).toContain("aria-current=\"page\"");
+    expect(html).toContain("Event loop");
+    expect(html).toContain("Events create attendance, attendance creates points.");
+    expect(html).not.toContain("Launch lane focus");
     expect(html).not.toContain("Spring Showcase (prev.)");
   });
 
@@ -68,10 +76,13 @@ describe("member points recognition panel", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const data = getMockReadOnlyAppData("Testing member points home handoff.");
     const recognition = getMemberRecognitionSummary(actor, data);
+    const liveReadback = getLaunchLaneMemberPointsReadback(actor, data);
     const html = renderToStaticMarkup(
       createElement(MemberPointsRecognitionPanel, {
         recognition,
+        chapterName: "UCLA MEDLIFE",
         source: "home",
+        liveReadback,
       }),
     );
 
@@ -80,8 +91,25 @@ describe("member points recognition panel", () => {
       "Home handed you into recognition as part of the weekly loop. Review progress here and still jump back without losing the member-home context.",
     );
     expect(html).toContain("Back to home");
-    expect(html).toContain("/rush-month/leaderboard?campaign=rush-month&amp;source=home#campaign-focus");
-    expect(html).toContain("/rush-month/actions/member-push?source=points");
+    expect(html).toContain('href="/app"');
+    expect(html).toContain("/app/events?source=points");
     expect(html.indexOf("Points &amp; Recognition")).toBeLessThan(html.indexOf("From home"));
+  });
+
+  it("renders the active chapter label instead of hardcoding a single chapter name", () => {
+    const actor = getMockLocalActorContext("member.a@mymedlife.test");
+    const data = getMockReadOnlyAppData("Testing dynamic chapter label on points.");
+    const recognition = getMemberRecognitionSummary(actor, data);
+    const liveReadback = getLaunchLaneMemberPointsReadback(actor, data);
+    const html = renderToStaticMarkup(
+      createElement(MemberPointsRecognitionPanel, {
+        recognition,
+        chapterName: "McGill MEDLIFE",
+        liveReadback,
+      }),
+    );
+
+    expect(html).toContain("McGill MEDLIFE");
+    expect(html).not.toContain("UCLA MEDLIFE");
   });
 });

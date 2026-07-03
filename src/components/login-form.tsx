@@ -6,28 +6,24 @@ import { signInWithPassword, type LoginActionState } from "@/app/login/actions";
 
 type LoginFormProps = {
   redirectTo?: string;
+  signInEnabled?: boolean;
+  initialStatus?: LoginActionState["status"];
+  initialMessage?: string;
+  initialEmail?: string;
 };
 
-const fakeAccounts = [
-  "member.a@mymedlife.test",
-  "committee.member@mymedlife.test",
-  "committee.chair@mymedlife.test",
-  "leader.a@mymedlife.test",
-  "eboard.a@mymedlife.test",
-  "coach@mymedlife.test",
-  "general.staff@mymedlife.test",
-  "admin@mymedlife.test",
-  "ds.admin@mymedlife.test",
-  "super.admin@mymedlife.test",
-];
-
-const initialLoginActionState: LoginActionState = {
-  status: "idle",
-  message: "Choose a seeded myMEDLIFE account to continue.",
-  email: "member.a@mymedlife.test",
-};
-
-export function LoginForm({ redirectTo = "/app" }: LoginFormProps) {
+export function LoginForm({
+  redirectTo = "/",
+  signInEnabled = true,
+  initialStatus = "idle",
+  initialMessage = "Use one account. myMEDLIFE routes you into the right workspace after sign-in.",
+  initialEmail = "",
+}: LoginFormProps) {
+  const initialLoginActionState: LoginActionState = {
+    status: initialStatus,
+    message: initialMessage,
+    email: initialEmail,
+  };
   const [state, formAction] = useActionState(
     signInWithPassword,
     initialLoginActionState,
@@ -36,79 +32,127 @@ export function LoginForm({ redirectTo = "/app" }: LoginFormProps) {
   return (
     <form
       action={formAction}
-      className="app-surface rounded-[2rem] p-5"
+      className="space-y-5 rounded-2xl p-8"
+      style={{
+        background: "#161b22",
+        border: "1px solid rgba(255,255,255,0.07)",
+        boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
+      }}
     >
       <input type="hidden" name="redirectTo" value={redirectTo} />
-      <div className="space-y-2">
-        <p className="app-eyebrow app-eyebrow-blue">
-          Seeded account access
-        </p>
-        <h2 className="text-2xl font-semibold text-slate-950">Sign in with a seeded account</h2>
-        <p className="text-sm leading-6 text-slate-600">
-          Choose a member, leader, staff, admin, or traveler account to open the
-          matching myMEDLIFE experience.
-        </p>
-      </div>
-
-      <div className="mt-5 grid gap-4">
-        <label className="grid gap-2 text-sm font-semibold text-slate-950">
+      <div>
+        <label
+          className="mb-1.5 block text-xs font-semibold uppercase tracking-wide"
+          style={{ color: "#6b7280" }}
+        >
           Email
           <input
             name="email"
             type="email"
             defaultValue={state.email}
-            list="fake-local-accounts"
             autoComplete="email"
-            className="rounded-2xl border border-slate-200 bg-[#dbeafe] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
+            placeholder="you@example.com"
+            className="w-full rounded-xl border-[1.5px] border-white/10 bg-[#0d1117] px-4 py-2.5 text-sm text-[#f3f4f6] transition-all placeholder:text-[#6b7280] focus:border-[#b8253a] focus:outline-none focus:ring-2 focus:ring-[#b8253a]/20 disabled:opacity-60"
+            disabled={!signInEnabled}
           />
         </label>
-        <datalist id="fake-local-accounts">
-          {fakeAccounts.map((email) => (
-            <option key={email} value={email} />
-          ))}
-        </datalist>
+      </div>
 
-        <label className="grid gap-2 text-sm font-semibold text-slate-950">
+      <div>
+        <div className="mb-1.5 flex items-center justify-between">
+          <label
+            className="text-xs font-semibold uppercase tracking-wide"
+            style={{ color: "#6b7280" }}
+          >
+            Password
+          </label>
+          <button
+            type="button"
+            className="text-xs font-medium transition-opacity hover:opacity-70"
+            style={{ color: "#b8253a" }}
+            title="Password reset is not available in this review build."
+          >
+            Forgot password?
+          </button>
+        </div>
+        <label className="sr-only">
           Password
           <input
             name="password"
             type="password"
             defaultValue="password"
             autoComplete="current-password"
-            className="rounded-2xl border border-slate-200 bg-[#dbeafe] px-4 py-3 text-base text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#5d8ff6]"
+            placeholder="••••••••"
+            className="w-full rounded-xl border-[1.5px] border-white/10 bg-[#0d1117] px-4 py-2.5 text-sm text-[#f3f4f6] transition-all placeholder:text-[#6b7280] focus:border-[#b8253a] focus:outline-none focus:ring-2 focus:ring-[#b8253a]/20 disabled:opacity-60"
+            disabled={!signInEnabled}
           />
         </label>
       </div>
 
-      <div
-        role="status"
-        className={[
-          "mt-4 rounded-2xl border px-4 py-3 text-sm leading-6",
-          state.status === "error"
-            ? "border-blue-200 bg-blue-50 text-blue-700"
-            : state.status === "disabled"
-              ? "border-blue-200 bg-blue-50 text-blue-700"
-              : "border-slate-200 bg-[#dbeafe] text-slate-600",
-        ].join(" ")}
-      >
-        {state.message}
-      </div>
+      {state.status !== "idle" ? (
+        <div
+          role="status"
+          className={[
+            "rounded-lg border px-3 py-2 text-xs leading-5",
+            state.status === "error" ? "text-[#fca5a5]" : "text-[#93c5fd]",
+          ].join(" ")}
+          style={{
+            background:
+              state.status === "error"
+                ? "rgba(184,37,58,0.15)"
+                : "rgba(37,99,235,0.12)",
+            borderColor:
+              state.status === "error"
+                ? "rgba(184,37,58,0.3)"
+                : "rgba(37,99,235,0.24)",
+          }}
+        >
+          {state.message}
+        </div>
+      ) : null}
 
-      <SubmitButton />
+      <SubmitButton signInEnabled={signInEnabled} />
     </form>
   );
 }
 
-function SubmitButton() {
+function SubmitButton({ signInEnabled }: { signInEnabled: boolean }) {
   const { pending } = useFormStatus();
 
   return (
     <button
       type="submit"
-      disabled={pending}
-      className="mt-5 w-full rounded-full bg-[#2563eb] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] disabled:cursor-wait disabled:opacity-70"
+      disabled={pending || !signInEnabled}
+      className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition-all disabled:opacity-50"
+      style={{ background: "#b8253a" }}
     >
-      {pending ? "Signing in..." : "Continue"}
+      {pending ? (
+        <>
+          <svg
+            className="h-4 w-4 animate-spin"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 0 1 8-8v8z"
+            />
+          </svg>
+          Signing in...
+        </>
+      ) : (
+        "Sign in"
+      )}
     </button>
   );
 }

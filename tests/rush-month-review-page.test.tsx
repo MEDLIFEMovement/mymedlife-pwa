@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
-import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/rush-month/review",
   useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
+  }),
 }));
 
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
@@ -18,89 +19,58 @@ vi.mock("@/services/local-actor-context", async (importOriginal) => {
   };
 });
 
-vi.mock("@/services/read-only-app-data", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/services/read-only-app-data")>();
-
-  return {
-    ...actual,
-    getReadOnlyAppData: vi.fn(),
-  };
-});
+function getSignedInActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-in test actor.",
+    "mock_fallback",
+    "local_auth_session",
+    "signed_in",
+  );
+}
 
 describe("rush month review page", () => {
-  it("opens the leader proof-review route with follow-up accountability and decision posture", async () => {
+  it("parks leaders on the leader events workspace instead of the older review lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("leader.a@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing rush month review page."),
+      getSignedInActor("leader.a@mymedlife.test"),
     );
 
     const { default: ReviewPage } = await import("@/app/rush-month/review/page");
-    const html = renderToStaticMarkup(await ReviewPage({}));
 
-    expect(html).toContain("Chapter proof follow-up");
-    expect(html).toContain("Leader proof review");
-    expect(html).toContain("Keep proof accountable without taking over HQ sharing.");
-    expect(html).toContain("Chapter follow-up");
-    expect(html).toContain("Chapter decisions");
-    expect(html).toContain("Leaders can follow up; HQ controls sharing");
-    expect(html).toContain("Chapter proof decision board");
-    expect(html).toContain("/chapter/members");
-    expect(html).not.toContain("Proof sharing desk");
-    expect(html).not.toContain("Approve for later sharing");
-    expect(html).not.toContain("Sharing decision unavailable");
-    expect(html).not.toContain("Sharing decision outcomes");
-    expect(html).not.toContain("Chapter decision outcomes");
-    expect(html).not.toContain("Chapter decision preview");
-    expect(html).not.toContain("Chapter decision unavailable");
-    expect(html).not.toContain("Local preview tools");
-    expect(html).not.toContain("Review only");
+    await expect(ReviewPage()).rejects.toThrow("NEXT_REDIRECT:/leader?view=events");
   });
 
-  it("keeps the HQ sharing queue visible for admin-owned review context", async () => {
+  it("parks member, staff, and admin review traffic back into the launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
+    const { default: ReviewPage } = await import("@/app/rush-month/review/page");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing admin rush month review page."),
+    await expect(ReviewPage()).rejects.toThrow("NEXT_REDIRECT:/app/events");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
     );
+    await expect(ReviewPage()).rejects.toThrow("NEXT_REDIRECT:/staff?view=events");
 
-    const { default: ReviewPage } = await import("@/app/rush-month/review/page");
-    const html = renderToStaticMarkup(await ReviewPage({}));
-
-    expect(html).toContain("HQ proof-sharing review");
-    expect(html).toContain("Proof sharing desk");
-    expect(html).toContain("Approve for later sharing");
-    expect(html).toContain("Sharing decision unavailable");
-    expect(html).not.toContain("Local preview tools");
-    expect(html).not.toContain("Review only");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("super.admin@mymedlife.test"),
+    );
+    await expect(ReviewPage()).rejects.toThrow("NEXT_REDIRECT:/admin");
   });
 
-  it("keeps the technical leader decision diagnostics limited to super-admin review", async () => {
+  it("sends signed-out reviewers to login before opening the parked review route", async () => {
     const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("super.admin@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing super admin rush month review page."),
+      getMockLocalActorContext("member.a@mymedlife.test"),
     );
 
     const { default: ReviewPage } = await import("@/app/rush-month/review/page");
-    const html = renderToStaticMarkup(await ReviewPage({}));
 
-    expect(html).toContain("Chapter decision outcomes");
-    expect(html).toContain("Chapter decision preview");
-    expect(html).toContain("Chapter decision unavailable");
-    expect(html).toContain("HQ proof-sharing review");
-    expect(html).toContain("Sharing decision outcomes");
+    await expect(ReviewPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/login?redirectTo=%2Frush-month%2Freview",
+    );
   });
 });

@@ -1,17 +1,7 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
 
-import { LeaderAppShell } from "@/components/leader-app-shell";
-import { ChapterMembershipWorkspacePanel } from "@/components/chapter-membership-workspace-panel";
-import { DataSourceNotice } from "@/components/data-source-notice";
-import { MembershipApprovalServerActionPanel } from "@/components/membership-approval-server-action-panel";
-import { RestrictedState } from "@/components/restricted-state";
-import { getChapterMemberRoleFocus } from "@/services/chapter-member-role-focus";
-import { getChapterMembershipWorkspace } from "@/services/chapter-membership-workspace";
-import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import type { MembershipApprovalResultCode } from "@/services/membership-approval-result-states";
-import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { getActorSurfaceFamily } from "@/services/role-visibility";
+import { getChapterMembersRouteRedirectHref } from "@/services/owned-route-redirect";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("chapterMembers");
@@ -28,131 +18,8 @@ type ChapterMembersSearchParams = {
 };
 
 export default async function ChapterMembersPage({
-  searchParams,
+  searchParams: _searchParams,
 }: ChapterMembersPageProps) {
-  const emptySearchParams: ChapterMembersSearchParams = {};
-  const [data, actor, search] = await Promise.all([
-    getReadOnlyAppData(),
-    getLocalActorContext(),
-    searchParams ?? Promise.resolve(emptySearchParams),
-  ]);
-  const workspace = getChapterMembershipWorkspace(actor, data);
-  const memberRoleFocus = getChapterMemberRoleFocus(actor, workspace);
-  const surfaceFamily = getActorSurfaceFamily(actor);
-  const membershipApprovalResultCode = parseMembershipApprovalResultCode(
-    search.membershipApprovalResult,
-  );
-  const scopedMembershipApprovalResultCode =
-    workspace.membershipApprovalPacket?.joinRequestId === search.joinRequestId
-      ? membershipApprovalResultCode
-      : membershipApprovalResultCode;
-  const restrictedNextHref = getLandingRouteForActor(actor);
-  const restrictedNextLabel =
-    surfaceFamily === "ds_admin"
-      ? "Open integration safety"
-      : surfaceFamily === "leader"
-        ? "Open chapter home"
-        : surfaceFamily === "member"
-          ? "Open student home"
-          : surfaceFamily === "coach"
-            ? "Open coach dashboard"
-            : "Open your owned surface";
-
-  return (
-    <LeaderAppShell actor={actor}>
-      <DataSourceNotice source={data.source} />
-
-      {workspace.canReadWorkspace ? (
-        <>
-          {memberRoleFocus.canReadFocus ? (
-            <section className="rounded-[2rem] border border-slate-200 bg-white p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
-                {memberRoleFocus.roleLabel}
-              </p>
-              <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
-                <div>
-                  <h2 className="text-2xl font-semibold text-slate-950">
-                    {memberRoleFocus.title}
-                  </h2>
-                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                    {memberRoleFocus.summary}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    href={memberRoleFocus.primaryHref}
-                    className="rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
-                  >
-                    {memberRoleFocus.primaryLabel}
-                  </Link>
-                  <Link
-                    href={memberRoleFocus.secondaryHref}
-                    className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-                  >
-                    {memberRoleFocus.secondaryLabel}
-                  </Link>
-                </div>
-              </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                {memberRoleFocus.items.map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
-                      {item.label}
-                    </p>
-                    <p className="mt-2 text-2xl font-semibold text-slate-950">
-                      {item.value}
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      {item.note}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
-                {memberRoleFocus.safetyNote}
-              </p>
-            </section>
-          ) : null}
-          <MembershipApprovalServerActionPanel
-            packet={workspace.membershipApprovalPacket}
-            members={workspace.members}
-            joinRequests={workspace.joinRequests}
-            resultCode={scopedMembershipApprovalResultCode}
-            applicantEmail={search.applicantEmail}
-            joinRequestId={search.joinRequestId}
-          />
-          <ChapterMembershipWorkspacePanel workspace={workspace} />
-        </>
-      ) : (
-        <RestrictedState
-          title={workspace.title}
-          message={workspace.summary}
-          nextHref={restrictedNextHref}
-          nextLabel={restrictedNextLabel}
-        />
-      )}
-    </LeaderAppShell>
-  );
-}
-
-function parseMembershipApprovalResultCode(
-  value: string | undefined,
-): MembershipApprovalResultCode | undefined {
-  switch (value) {
-    case "membership_approved":
-    case "audit_reason_required":
-    case "crm_sync_disabled":
-    case "duplicate_membership":
-    case "join_request_not_found":
-    case "missing_auth":
-    case "permission_denied":
-    case "profile_not_ready":
-    case "role_assignment_invalid":
-    case "server_error":
-    case "welcome_disabled":
-    case "write_disabled":
-      return value;
-    default:
-      return undefined;
-  }
+  const actor = await getLocalActorContext();
+  redirect(getChapterMembersRouteRedirectHref(actor));
 }

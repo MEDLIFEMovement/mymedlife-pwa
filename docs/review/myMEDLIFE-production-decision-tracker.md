@@ -34,7 +34,7 @@ decisions.
 | Smallest proof/review loop | Metadata submit -> leader review -> audit trail is the approved loop. | None; default approved. | Chapter / HQ |
 | Production environment ownership | DS/platform owns production Supabase, Vercel, DNS, secrets, and backup/restore; security approval is routed through GitHub/Copilot/Codex Security. | None; default approved. | Platform / Security |
 | Monitoring and incident response | One named incident owner, one backup owner, one pilot alert channel, and the existing rollback path as the stop mechanism are approved. | None; default approved. | Platform / Operations |
-| External integration hold | HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off. | None; default approved. | DS |
+| External integration hold | HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off. The only approved exception under review is the staging-only Luma event/RSVP/attendance/points loop. | None; default approved. | DS |
 
 ## What Would Count As Progress
 

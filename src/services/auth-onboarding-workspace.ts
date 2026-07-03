@@ -441,7 +441,7 @@ function getNextStep(actor: LocalActorContext): AuthOnboardingWorkspace["nextSte
     case "leader":
       return {
         label: "Review member roles",
-        href: "/chapter/members",
+        href: "/leader?view=members",
         detail:
           "Use the roster to review join-request and role-coverage posture before approving any real membership flow.",
       };

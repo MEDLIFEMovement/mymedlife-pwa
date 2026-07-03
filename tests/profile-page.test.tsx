@@ -7,6 +7,9 @@ import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 vi.mock("next/navigation", () => ({
   usePathname: () => "/profile",
   useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
+  }),
 }));
 
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
@@ -27,13 +30,23 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
   };
 });
 
+function getSignedInActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-in test actor.",
+    "mock_fallback",
+    "local_auth_session",
+    "signed_in",
+  );
+}
+
 describe("profile page", () => {
   it("lets the member profile route render as a member-owned mobile surface instead of a generic profile hero", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing profile page."),
@@ -51,9 +64,10 @@ describe("profile page", () => {
     expect(html).toContain(
       "Keep this surface centered on identity, role, and the next step. Recognition and points stay visible lower on the route instead of turning profile into a second dashboard, so profile can hand you back to the event-and-points loop when you are ready to move again.",
     );
-    expect(html).toContain("Finish: Invite 3 friends to the Intro GBM");
-    expect(html).toContain("/campaigns?source=profile");
-    expect(html).toContain("/rush-month/leaderboard?source=profile");
+    expect(html).toContain("Next chapter moment");
+    expect(html).toContain("Open events");
+    expect(html).toContain("/app/events?source=profile");
+    expect(html).toContain("/app/points?source=profile");
     expect(html).not.toContain("Earned across visible campaigns");
     expect(html).not.toContain("Friendly chapter-only visibility");
     expect(html.indexOf("About you")).toBeLessThan(
@@ -73,32 +87,21 @@ describe("profile page", () => {
     expect(html).not.toContain("Fake local account used for role review.");
   });
 
-  it("keeps the coach profile route inside product-facing command-center copy instead of review-only tooling", async () => {
+  it("returns coach traffic to the owned staff workspace instead of opening a side profile product", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("coach@mymedlife.test"),
+      getSignedInActor("coach@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing coach profile page."),
     );
 
     const { default: ProfilePage } = await import("@/app/profile/page");
-    const html = renderToStaticMarkup(await ProfilePage());
 
-    expect(html).toContain("Coach profile and portfolio scope");
-    expect(html).toContain("Current role");
-    expect(html).toContain("Next focus");
-    expect(html).toContain("Open Staff Command Center");
-    expect(html).toContain("/staff?view=chapters");
-    expect(html).toContain("Coach portfolio");
-    expect(html).toContain("Staff view");
-    expect(html).not.toContain("Data source status");
-    expect(html).not.toContain("Safety boundary");
-    expect(html).not.toContain("Local preview tools");
-    expect(html).not.toContain("Review only");
-    expect(html).not.toContain("What should I do next?");
-    expect(html).not.toContain("Active scope");
+    await expect(ProfilePage()).rejects.toThrow(
+      "NEXT_REDIRECT:/staff?view=chapters",
+    );
   });
 });

@@ -89,7 +89,7 @@ Do not declare parity from spacing and color alone. A screen is only "mapped"
 when its routes, visible states, and clickthrough destinations are accounted
 for.
 
-## 0. Role-Based Login Workspace
+## 0. Login Workspace
 
 Reference mockup:
 
@@ -97,7 +97,7 @@ Reference mockup:
 
 Primary role:
 
-- authenticated user choosing a workspace entry point
+- unauthenticated user entering through one shared sign-in page
 
 ### Route map
 
@@ -105,25 +105,20 @@ Primary role:
 
 ### First-viewport contract
 
-- workspace-oriented sign-in copy
-- six workspace entry cards
-- seeded account sign-in panel
-- access-boundary explanation
-- selected-workspace state
+- centered logo + wordmark
+- simple sign-in copy
+- one sign-in card
+- signed-in session card when applicable
 
 ### Required clickthroughs
 
-- General Member -> `/login?redirectTo=/app`
-- Student Leader -> `/login?redirectTo=/leader`
-- Sales Coach / Sales Staff -> `/login?redirectTo=/staff`
-- Staff -> `/login?redirectTo=/staff`
-- Data Solutions / Admin -> `/login?redirectTo=/admin`
-- Super Admin -> `/login?redirectTo=/admin`
+- sign in -> role-routed workspace
+- signed-in session summary -> continue into redirect target
+- signed-in session summary -> sign out
 
 ### Required states
 
 - default sign-in
-- selected workspace card
 - signed-in session summary
 - disabled / review-mode session
 - nested redirect preserved
@@ -131,24 +126,20 @@ Primary role:
 
 ### Data domains
 
-- workspace cards
 - seeded review accounts
 - auth session state
 - redirect target
-- access boundaries
+- current signed-in user
 
 ### Component families
 
-- intro hero
-- workspace card grid
-- seeded account form
+- login wordmark block
+- centered sign-in card
 - session summary panel
-- boundary summary panel
 
 ### Boundaries
 
-- the clicked workspace is only an entry point
-- post-auth routing must still be role-driven
+- login copy can reference workspaces, but post-auth routing stays role-driven
 - nested owned destinations like `/app/slt-prep` should stay available when selected through the redirect target
 
 ## Cross-Surface Build Rules

@@ -5,7 +5,10 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/rush-month/leaderboard",
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
+  }),
+  usePathname: () => "/app/points",
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -27,20 +30,30 @@ vi.mock("@/services/read-only-app-data", async (importOriginal) => {
   };
 });
 
+function getSignedInActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-in test actor.",
+    "mock_fallback",
+    "local_auth_session",
+    "signed_in",
+  );
+}
+
 describe("leaderboard page", () => {
   it("lets the member leaderboard route open with the member points surface only", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing leaderboard page."),
     );
 
     const { default: RushMonthLeaderboardPage } = await import(
-      "@/app/rush-month/leaderboard/page"
+      "@/app/app/points/page"
     );
     const html = renderToStaticMarkup(await RushMonthLeaderboardPage({}));
 
@@ -48,9 +61,11 @@ describe("leaderboard page", () => {
     expect(html).not.toContain("Mock-seeded review data");
     expect(html).not.toContain("What should I do next?");
     expect(html).not.toContain("Points loop");
-    expect(html).toContain("Recent Approved Actions");
+    expect(html).toContain("Live pilot readback");
+    expect(html).toContain("Attendance confirmed; points pending");
+    expect(html).toContain("Recent points activity");
     expect(html).toContain("How points work");
-    expect(html).toContain("Chapter Leaderboard — Rush Month");
+    expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("Welcome one new student at tabling");
     expect(html).not.toContain("Open the chapter home and align the leader team");
     expect(html).not.toContain("Assign Rush Month outreach owners");
@@ -63,14 +78,14 @@ describe("leaderboard page", () => {
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("committee.member@mymedlife.test"),
+      getSignedInActor("committee.member@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing committee-member leaderboard page."),
     );
 
     const { default: RushMonthLeaderboardPage } = await import(
-      "@/app/rush-month/leaderboard/page"
+      "@/app/app/points/page"
     );
     const html = renderToStaticMarkup(await RushMonthLeaderboardPage({}));
 
@@ -79,19 +94,19 @@ describe("leaderboard page", () => {
     expect(html).not.toContain("Points loop");
   });
 
-  it("keeps campaign focus on the same leaderboard route when a campaign query is selected", async () => {
+  it("ignores the old campaign query and keeps the points surface focused on the core loop", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing leaderboard campaign focus."),
     );
 
     const { default: RushMonthLeaderboardPage } = await import(
-      "@/app/rush-month/leaderboard/page"
+      "@/app/app/points/page"
     );
     const html = renderToStaticMarkup(
       await RushMonthLeaderboardPage({
@@ -99,10 +114,10 @@ describe("leaderboard page", () => {
       }),
     );
 
-    expect(html).toContain("Campaign focus");
-    expect(html).toContain("Rush Month");
-    expect(html).toContain("See how to earn more points");
-    expect(html).toContain("/rush-month/leaderboard?campaign=rush-month#campaign-focus");
+    expect(html).toContain("Points &amp; Recognition");
+    expect(html).toContain("Event loop");
+    expect(html).toContain("Events create attendance, attendance creates points.");
+    expect(html).not.toContain("Launch lane focus");
   });
 
   it("keeps the home handoff visible across the member points route", async () => {
@@ -110,14 +125,14 @@ describe("leaderboard page", () => {
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing leaderboard home handoff."),
     );
 
     const { default: RushMonthLeaderboardPage } = await import(
-      "@/app/rush-month/leaderboard/page"
+      "@/app/app/points/page"
     );
     const html = renderToStaticMarkup(
       await RushMonthLeaderboardPage({
@@ -131,8 +146,33 @@ describe("leaderboard page", () => {
     );
     expect(html).toContain("Back to home");
     expect(html).toContain('href="/app"');
-    expect(html).toContain("/rush-month/leaderboard?campaign=rush-month&amp;source=home#campaign-focus");
     expect(html.indexOf("Points &amp; Recognition")).toBeLessThan(html.indexOf("From home"));
+  });
+
+  it("folds a legacy campaign-origin points landing into the standard member points surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leaderboard campaign handoff."),
+    );
+
+    const { default: RushMonthLeaderboardPage } = await import(
+      "@/app/app/points/page"
+    );
+    const html = renderToStaticMarkup(
+      await RushMonthLeaderboardPage({
+        searchParams: Promise.resolve({ source: "campaigns" }),
+      }),
+    );
+
+    expect(html).toContain("Points &amp; Recognition");
+    expect(html).not.toContain("From campaigns");
+    expect(html).toContain('href="/app/events?source=points"');
+    expect(html).not.toContain('href="/campaigns"');
   });
 
   it("keeps the profile handoff visible across the member points route", async () => {
@@ -140,14 +180,14 @@ describe("leaderboard page", () => {
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("member.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing leaderboard profile handoff."),
     );
 
     const { default: RushMonthLeaderboardPage } = await import(
-      "@/app/rush-month/leaderboard/page"
+      "@/app/app/points/page"
     );
     const html = renderToStaticMarkup(
       await RushMonthLeaderboardPage({
@@ -161,7 +201,38 @@ describe("leaderboard page", () => {
     );
     expect(html).toContain("Back to profile");
     expect(html).toContain('href="/profile"');
-    expect(html).toContain("/rush-month/leaderboard?campaign=rush-month&amp;source=profile#campaign-focus");
     expect(html.indexOf("Points &amp; Recognition")).toBeLessThan(html.indexOf("From profile"));
+  });
+
+  it("sends signed-out reviewers through login before showing the member points route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("member.a@mymedlife.test"),
+    );
+
+    const { default: RushMonthLeaderboardPage } = await import(
+      "@/app/app/points/page"
+    );
+
+    await expect(RushMonthLeaderboardPage({})).rejects.toThrow(
+      "NEXT_REDIRECT:/login?redirectTo=%2Fapp%2Fpoints",
+    );
+  });
+
+  it("returns leaders to the leader points workspace instead of rendering the shared member leaderboard", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+
+    const { default: RushMonthLeaderboardPage } = await import(
+      "@/app/app/points/page"
+    );
+
+    await expect(RushMonthLeaderboardPage({})).rejects.toThrow(
+      "NEXT_REDIRECT:/leader?view=leaderboard",
+    );
   });
 });

@@ -1,3 +1,4 @@
+import type { EventLoopReadModel } from "@/services/event-loop";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getPhase2PilotRegistry } from "@/services/phase-2-pilot-registry";
 import {
@@ -58,6 +59,9 @@ export type ControlledPilotReadiness = {
 
 export function getControlledPilotReadiness(
   actor: LocalActorContext,
+  options: {
+    lumaReadModel?: EventLoopReadModel;
+  } = {},
 ): ControlledPilotReadiness {
   const surfaceFamily = getActorSurfaceFamily(actor);
 
@@ -78,18 +82,24 @@ export function getControlledPilotReadiness(
 
   const pilotRegistry = getPhase2PilotRegistry();
   const stages = getPilotStages(pilotRegistry);
-  const gates = getPilotGates(pilotRegistry);
+  const gates = getPilotGates(pilotRegistry, options.lumaReadModel);
   const statuses = [...stages, ...gates].map((item) => item.status);
+  const lumaProofGate = gates.find((gate) => gate.key === "luma_points_proof");
+  const lumaProofMissing = lumaProofGate?.status === "blocked_before_pilot";
 
   return {
     canReadReadiness: true,
     title: getTitle(surfaceFamily),
     verdict: "staff_dry_run_ready_not_student_pilot",
     plainEnglishVerdict:
-      "The app is ready for a staff dry run of the Rush Month operating loop, but it is not ready to invite real students until pilot scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership are approved.",
+      lumaProofMissing
+        ? "The app is ready for a staff dry run of the Rush Month operating loop, but it is not ready to invite real students until the RSVP guest is visible in Luma's approved guest list, one real Luma check-in proves attendance-to-points readback, and pilot scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership are approved."
+        : "The app is ready for a staff dry run of the Rush Month operating loop, but it is not ready to invite real students until pilot scope, staging, auth, writes, proof consent/storage, event/NPS handling, and support ownership are approved.",
     recommendedNextMove:
-      pilotRegistry.counts.ownersRecorded > 0 ||
-      pilotRegistry.counts.defaultsRecorded > 0
+      lumaProofMissing
+        ? "Use `/admin/luma-live-pilot` to verify the RSVP guest appears in Luma's approved guest list, complete one real host-side Luma check-in, rerun attendance import, then confirm points, leaderboard, audit, and outbox readback before any student invitations."
+        : pilotRegistry.counts.ownersRecorded > 0 ||
+            pilotRegistry.counts.defaultsRecorded > 0
         ? "Use `/admin/phase-2`, `/admin/pilot-scope`, and `/admin/first-write` to confirm the recorded pilot answers, then approve staging/auth/write gates before any student invitations."
         : "Run a staff dry run with fake users, pick one pilot chapter or internal test group, then approve staging/auth/write gates before any student invitations.",
     stages,
@@ -154,6 +164,7 @@ function getPilotStages(
         "Staging URL exists.",
         "Secrets and environment flags are reviewed.",
         "Mobile and accessibility smoke checks pass.",
+        "Hosted `/admin/luma-live-pilot` proof shows the RSVP guest in Luma's approved guest list, then one checked-in attendee creating points and leaderboard readback.",
       ],
     },
     {
@@ -171,6 +182,7 @@ function getPilotStages(
         "Open `/admin/pilot-scope` and confirm the selected scope is the smallest safe pilot.",
         "Auth/onboarding is approved.",
         "First write path and rollback plan are approved.",
+        "One hosted Luma proof run verifies the RSVP guest in Luma's approved guest list and produces real points and leaderboard readback.",
         "Proof consent language is approved.",
       ],
     },
@@ -192,6 +204,7 @@ function getPilotStages(
 
 function getPilotGates(
   pilotRegistry: ReturnType<typeof getPhase2PilotRegistry>,
+  lumaReadModel?: EventLoopReadModel,
 ): PilotReadinessGate[] {
   const pilotChapter = pilotRegistry.defaults.find(
     (item) => item.key === "pilot_chapter",
@@ -258,6 +271,14 @@ function getPilotGates(
         "Approve consent language and storage rules before enabling uploads.",
     },
     {
+      key: "luma_points_proof",
+      label: "Hosted Luma attendance to points proof",
+      owner: "HQ ops",
+      status: getLumaPointsProofStatus(lumaReadModel),
+      plainEnglish: getLumaPointsProofPlainEnglish(lumaReadModel),
+      nextStep: getLumaPointsProofNextStep(lumaReadModel),
+    },
+    {
       key: "event_nps_path",
       label: "Event attendance and NPS path",
       owner: "HQ ops",
@@ -266,11 +287,11 @@ function getPilotGates(
       plainEnglish:
         eventNpsPosture?.status === "recorded_final"
           ? `The first pilot currently records ${eventNpsPosture.value} for event attendance and NPS posture.`
-          : "The first pilot must decide whether event attendance/NPS starts manually or through Luma integration.",
+          : "The first pilot must confirm the Luma event/RSVP/attendance/points loop and keep NPS support manual-first.",
       nextStep:
         eventNpsPosture?.status === "recorded_final"
           ? "Keep the recorded event/NPS posture unless the team explicitly replaces it during pilot approval."
-          : "Choose manual import first or approve a narrow Luma read/import plan.",
+          : "Use the approved Luma event-loop staging proof, then confirm NPS reminders and downstream automation remain off.",
     },
     {
       key: "coach_support",
@@ -293,11 +314,63 @@ function getPilotGates(
       owner: "Data solutions",
       status: "blocked_before_scale",
       plainEnglish:
-        "HubSpot, Luma writes, n8n, warehouse, Power BI, SMS, email, and AI should stay disabled for the first pilot unless separately approved.",
+        "Only the approved Luma event loop may be rehearsed for the first pilot; HubSpot, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior stay disabled.",
       nextStep:
-        "Keep external writes off until the app source-of-truth loop is stable.",
+        "Keep non-approved external writes off until the app source-of-truth loop and Luma event path are stable.",
     },
   ];
+}
+
+function getLumaPointsProofStatus(
+  lumaReadModel?: EventLoopReadModel,
+): PilotReadinessStatus {
+  if (!lumaReadModel) {
+    return "blocked_before_pilot";
+  }
+
+  if (
+    lumaReadModel.summary.attendanceCount > 0 &&
+    lumaReadModel.summary.pointsAwarded > 0
+  ) {
+    return "ready_now";
+  }
+
+  return "blocked_before_pilot";
+}
+
+function getLumaPointsProofPlainEnglish(
+  lumaReadModel?: EventLoopReadModel,
+): string {
+  if (!lumaReadModel) {
+    return "The pilot still needs one hosted Luma proof run where the RSVP guest appears in Luma's approved guest list and a checked-in attendee creates real points and leaderboard readback.";
+  }
+
+  if (
+    lumaReadModel.summary.attendanceCount > 0 &&
+    lumaReadModel.summary.pointsAwarded > 0
+  ) {
+    return `Hosted staging now shows ${lumaReadModel.summary.attendanceCount} attendance row(s) and ${lumaReadModel.summary.pointsAwarded} point(s) through the Luma event loop readback.`;
+  }
+
+  if (lumaReadModel.summary.rsvpCount > 0 && lumaReadModel.summary.lumaLinkReady) {
+    return `Hosted staging shows the Luma event and RSVP path, but only ${lumaReadModel.summary.attendanceCount} attendance row(s) and ${lumaReadModel.summary.pointsAwarded} point(s). The pilot still needs the RSVP guest to appear in Luma's approved guest list and one real checked-in attendee before it can claim attendance-to-points proof.`;
+  }
+
+  return "The Luma event loop has not yet proven a real attendance-to-points result on hosted staging.";
+}
+
+function getLumaPointsProofNextStep(
+  lumaReadModel?: EventLoopReadModel,
+): string {
+  if (
+    lumaReadModel &&
+    lumaReadModel.summary.attendanceCount > 0 &&
+    lumaReadModel.summary.pointsAwarded > 0
+  ) {
+    return "Keep `/admin/luma-live-pilot`, `/admin/audit-log`, and `/admin/integration-outbox` aligned with the recorded hosted proof before widening pilot scope.";
+  }
+
+  return "Verify the RSVP guest appears in Luma's approved guest list, check in one approved guest in Luma host tools, rerun `/admin/luma-live-pilot` attendance import, then confirm points, leaderboard, audit, and outbox readback while all other external systems stay off.";
 }
 
 function getTitle(surfaceFamily: ActorSurfaceFamily): string {

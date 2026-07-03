@@ -34,7 +34,7 @@ describe("admin permissions workspace", () => {
     );
     expect(workspace.personaRows.find((row) => row.email === "traveler.a@mymedlife.test"))
       .toMatchObject({
-        defaultRoute: "/app/slt-prep",
+        defaultRoute: "/app",
         ownedSurface: "slt prep",
       });
     expect(workspace.personaRows.find((row) => row.email === "leader.a@mymedlife.test"))

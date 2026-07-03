@@ -27,7 +27,7 @@ describe("proof-submission write readiness", () => {
     ).toMatchObject({
       enabled: false,
       reason:
-        "Proof-submission browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true only after local auth and RLS are ready.",
+        "Proof-submission browser-facing writes remain disabled. Turn on the Proof metadata write control only after local auth and RLS are ready.",
     });
 
     expect(

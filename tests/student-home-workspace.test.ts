@@ -6,7 +6,7 @@ import { getStudentHomeWorkspace } from "@/services/student-home-workspace";
 const data = getMockReadOnlyAppData("Testing student home workspace.");
 
 describe("student home workspace", () => {
-  it("builds a member-first home with routes for next action, campaigns, events, and points", () => {
+  it("builds a member-first home with routes for events, campaigns, and points", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
     const workspace = getStudentHomeWorkspace(actor, data);
 
@@ -15,8 +15,8 @@ describe("student home workspace", () => {
     expect(workspace.chapterMeta).toBe(
       "General Member • UCLA • Current checkpoint: Make MEDLIFE visible on campus",
     );
-    expect(workspace.startNextAction.href).toBe("/rush-month/actions/member-push?source=home");
-    expect(workspace.startNextAction.label).toBe("Start next action");
+    expect(workspace.startNextAction.href).toBe("/app/events?source=home");
+    expect(workspace.startNextAction.label).toBe("Open events");
     expect(workspace.campaign.href).toBe("/campaigns?source=home");
     expect(workspace.campaign.campaignsHref).toBe("/campaigns");
     expect(workspace.campaign.summary).toBe(
@@ -29,23 +29,19 @@ describe("student home workspace", () => {
     expect(workspace.campaign.activeMemberCount).toBe(22);
     expect(workspace.campaign.totalMemberCount).toBe(34);
     expect(workspace.upcomingEvents.map((event) => event.href)).toEqual([
-      "/rush-month/events/event-rush-med-talk-001?source=home",
-      "/rush-month/events/event-rush-social-001?source=home",
+      "/app/events/chapter-event-ucla-kickoff?source=home",
     ]);
-    expect(workspace.upcomingEvents.map((event) => event.rsvpLabel)).toEqual([
-      "RSVP",
-      "RSVP'd",
-    ]);
+    expect(workspace.upcomingEvents.map((event) => event.rsvpLabel)).toEqual(["RSVP'd"]);
     expect(workspace.upcomingEvents[0]).toMatchObject({
-      title: "Intro GBM",
-      timing: "Thu Nov 15 · 6:00 PM - 8:00 PM",
-      locationLabel: "Ackerman 2100",
-      rsvpState: "open",
+      title: "Rush Month kickoff social",
+      timing: "Sun Nov 15 · 10:00 AM - 12:00 PM",
+      locationLabel: "Bruin Plaza",
+      rsvpState: "registered",
     });
     expect(workspace.assignedActions.map((action) => action.href)).toEqual([
-      "/rush-month/actions/member-push?source=home",
-      "/rush-month/actions/share-rush-flyer?source=home",
-      "/rush-month/actions/welcome-table?source=home",
+      "/app/events?source=home",
+      "/app/events?source=home",
+      "/app/points?source=points",
     ]);
     expect(workspace.assignedActions.map((action) => action.title)).toEqual([
       "Invite 3 friends to the Intro GBM",
@@ -57,7 +53,7 @@ describe("student home workspace", () => {
       "in_progress",
       "submitted",
     ]);
-    expect(workspace.points.href).toBe("/rush-month/leaderboard");
+    expect(workspace.points.href).toBe("/app/points");
     expect(workspace.points.total).toBe(145);
     expect(workspace.points.weeklyMomentumLabel).toBe("+75 this week");
     expect(workspace.points.rankDetail).toBe("Chapter rank #3");
@@ -91,16 +87,10 @@ describe("student home workspace", () => {
     expect(workspace.travelerPrep).toBeNull();
   });
 
-  it("exposes an SLT Prep entry point when the member is also a traveler", () => {
+  it("keeps traveler-specific prep parked while the member launch lane stays focused on events and points", () => {
     const actor = getMockLocalActorContext("traveler.a@mymedlife.test");
     const workspace = getStudentHomeWorkspace(actor, data);
 
-    expect(workspace.travelerPrep).toEqual({
-      href: "/app/slt-prep?source=home",
-      title: "SLT Prep",
-      summary:
-        "Traveler-ready students can jump into trip prep, deadlines, flights, and checklist items from the member app.",
-      ctaLabel: "Open SLT Prep",
-    });
+    expect(workspace.travelerPrep).toBeNull();
   });
 });

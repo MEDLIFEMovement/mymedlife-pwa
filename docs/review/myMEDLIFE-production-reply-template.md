@@ -27,7 +27,7 @@ First hosted write: action_started
 Smallest proof/review loop: metadata submit -> leader review -> audit trail
 Production environment ownership: DS/platform, with GitHub/Copilot/Codex Security on security approval
 Monitoring / incident response: named incident owner, backup owner, and pilot alert channel
-External integration hold: stay off
+External integration hold: HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off; only the staging-only approved Luma loop is in scope
 ```
 
 ## Notes

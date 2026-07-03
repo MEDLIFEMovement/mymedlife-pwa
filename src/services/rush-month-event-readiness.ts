@@ -2,9 +2,9 @@ import {
   getActionCommittees,
   getEventPlansForCampaign,
 } from "@/services/campaign-ops-service";
+import { getEventRsvpPosture } from "@/services/event-loop";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
-import { getRushMonthEventRsvpPosture } from "@/services/rush-month-event-rsvp";
 import {
   getSopWorkflowRuntime,
   getWorkflowCurrentPhaseExitSignal,
@@ -148,7 +148,7 @@ function toEventReadinessRow(
   eventPlan: ChapterEventPlan,
   actor: LocalActorContext,
 ): RushMonthEventReadinessRow {
-  const rsvpPosture = getRushMonthEventRsvpPosture(actor, eventPlan);
+  const rsvpPosture = getEventRsvpPosture(actor, eventPlan);
 
   return {
     id: eventPlan.id,

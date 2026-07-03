@@ -32,9 +32,12 @@ export function StaffCommandCenterPanel({
     return null;
   }
 
+  const isLaunchLaneFocused = commandCenter.launchLaneFocused;
   const isAdminView = commandCenter.selectedView === "admin";
   const isBestPracticesView = commandCenter.selectedView === "best_practices";
   const isCampaignsView = commandCenter.selectedView === "campaigns";
+  const isEventsView = commandCenter.selectedView === "events";
+  const isLeaderboardView = commandCenter.selectedView === "leaderboard";
   const isFeedStudioView = commandCenter.selectedView === "feed_studio";
   const isFeedAnalyticsView = commandCenter.selectedView === "feed_analytics";
   const isHubSpotView = commandCenter.selectedView === "hubspot";
@@ -137,6 +140,10 @@ export function StaffCommandCenterPanel({
   ).length;
   const selectedSurfaceLabel = isAdminView
     ? "Integration health, outbox review, and audit visibility"
+    : isEventsView
+    ? "Luma events, RSVP posture, attendance, and points by chapter"
+    : isLeaderboardView
+    ? "Organization-wide points leaderboard across visible chapters"
     : isBestPracticesView
     ? selectedBestPracticeCard?.title ?? "Reusable operating patterns with chapter-share actions"
     : isCampaignsView
@@ -154,6 +161,13 @@ export function StaffCommandCenterPanel({
   const portfolioOverviewSummary = `${commandCenter.chapterRows.length} chapter${
     commandCenter.chapterRows.length === 1 ? "" : "s"
   } · ${selectedCampaignName} active · Last updated 2 min ago`;
+  const launchLaneOverviewSummary = `${commandCenter.launchLaneChapterRows.length} chapter${
+    commandCenter.launchLaneChapterRows.length === 1 ? "" : "s"
+  } · ${commandCenter.launchLaneOrgReadback.totalRsvps} RSVP${
+    commandCenter.launchLaneOrgReadback.totalRsvps === 1 ? "" : "s"
+  } · ${commandCenter.launchLaneOrgReadback.totalAttendance} confirmed attendee${
+    commandCenter.launchLaneOrgReadback.totalAttendance === 1 ? "" : "s"
+  } · ${commandCenter.launchLaneOrgReadback.totalPoints.toLocaleString()} points`;
   const prioritySummary = isAdminView
     ? commandCenter.adminWorkspace.subtitle
     : (
@@ -174,6 +188,10 @@ export function StaffCommandCenterPanel({
     ? "myMEDLIFE Staff Command Center"
     : isCoachSurface
     ? "Coach portfolio"
+    : isEventsView
+    ? "Luma event operations"
+    : isLeaderboardView
+    ? "Organization leaderboard"
     : isBestPracticesView
     ? "Best practice library"
     : isCampaignsView
@@ -208,7 +226,9 @@ export function StaffCommandCenterPanel({
   const filterCopy = isCoachSurface
     ? "Filter assigned chapters by risk or search by campus, lead, coach, or next step."
     : isStaffChapterOverview
-    ? portfolioOverviewSummary
+    ? isLaunchLaneFocused
+      ? launchLaneOverviewSummary
+      : portfolioOverviewSummary
     : "Filter the portfolio by chapter risk or search by campus, coach, or next step.";
   const snapshotEyebrow = isCoachSurface ? "Staff snapshot" : "Portfolio snapshot";
   const snapshotSectionTitle = isCoachSurface
@@ -255,6 +275,12 @@ export function StaffCommandCenterPanel({
       selectedViewLabel,
       selectedProofQueueLabel,
       selectedProofTypeLabel,
+    ]
+    : isLaunchLaneFocused
+    ? [
+      selectedViewLabel,
+      selectedSurfaceLabel,
+      `${commandCenter.launchLaneOrgReadback.totalPoints.toLocaleString()} org points`,
     ]
     : [
       selectedViewLabel,
@@ -390,6 +416,24 @@ export function StaffCommandCenterPanel({
         note: "Visible items that still need consent resolution before reuse",
       },
     ]
+    : isLaunchLaneFocused
+    ? [
+      {
+        label: "Chapters",
+        value: `${commandCenter.launchLaneChapterRows.length}`,
+        note: "Chapter calendars visible in the event loop.",
+      },
+      {
+        label: "RSVPs",
+        value: `${commandCenter.launchLaneOrgReadback.totalRsvps}`,
+        note: "Intent captured across visible Luma-linked events.",
+      },
+      {
+        label: "Points",
+        value: commandCenter.launchLaneOrgReadback.totalPoints.toLocaleString(),
+        note: "Attendance-backed leaderboard movement.",
+      },
+    ]
     : [
       {
         label: "Visible chapters",
@@ -410,13 +454,25 @@ export function StaffCommandCenterPanel({
     ];
   const heroPrimaryValue = isAdminView
     ? `${commandCenter.adminWorkspace.failedCount}`
+    : isLaunchLaneFocused
+    ? commandCenter.launchLaneOrgReadback.totalPoints.toLocaleString()
     : `${commandCenter.chapterRows.length}`;
-  const heroPrimaryLabel = isAdminView ? "Failed jobs" : "Live rows";
+  const heroPrimaryLabel = isAdminView
+    ? "Failed jobs"
+    : isLaunchLaneFocused
+    ? "Org points"
+    : "Live rows";
   const heroContextLabels = isAdminView
     ? [
       `${highRiskCount} chapter${highRiskCount === 1 ? "" : "s"} need intervention`,
       `${commandCenter.adminWorkspace.integrationStatuses.length} integrations visible`,
       `${commandCenter.adminWorkspace.auditRows.length} audit row${commandCenter.adminWorkspace.auditRows.length === 1 ? "" : "s"}`,
+    ]
+    : isLaunchLaneFocused
+    ? [
+      selectedViewLabel,
+      `${commandCenter.launchLaneOrgReadback.totalRsvps} RSVP${commandCenter.launchLaneOrgReadback.totalRsvps === 1 ? "" : "s"}`,
+      `${commandCenter.launchLaneOrgReadback.totalAttendance} attendee${commandCenter.launchLaneOrgReadback.totalAttendance === 1 ? "" : "s"}`,
     ]
     : [
       selectedViewLabel,
@@ -434,6 +490,19 @@ export function StaffCommandCenterPanel({
         label: "Audit rows",
         value: `${commandCenter.adminWorkspace.auditRows.length}`,
         note: "Most recent actions visible in the current review window.",
+      },
+    ]
+    : isLaunchLaneFocused
+    ? [
+      {
+        label: "Events",
+        value: `${commandCenter.launchLaneChapterRows.filter((row) => row.chapterEventId).length}`,
+        note: "Chapters with a visible next event.",
+      },
+      {
+        label: "Attendance",
+        value: `${commandCenter.launchLaneOrgReadback.totalAttendance}`,
+        note: "Confirmed event check-ins feeding points.",
       },
     ]
     : [
@@ -494,6 +563,12 @@ export function StaffCommandCenterPanel({
       selectedProofQueueLabel,
       selectedProofTypeLabel,
     ]
+    : isLaunchLaneFocused
+    ? [
+      selectedViewLabel,
+      `${commandCenter.launchLaneOrgReadback.totalRsvps} RSVPs`,
+      `${commandCenter.launchLaneOrgReadback.totalPoints.toLocaleString()} points`,
+    ]
     : [
       selectedViewLabel,
       `${visibleInterventionCount} need intervention`,
@@ -506,12 +581,13 @@ export function StaffCommandCenterPanel({
   const heroTitleClassName = isStaffChapterOverview
     ? "text-[1.7rem] font-semibold leading-tight text-slate-950"
     : "text-[2rem] font-semibold leading-tight text-slate-950";
-  const useCompactStaffToolbar = isCoachSurface;
+  const useCompactStaffToolbar =
+    commandCenter.routeBase === "/staff" || isCoachSurface;
   const useMinimalStaffChapterStrip = isStaffChapterOverview;
   const sourceContext = commandCenter.sourceContext;
   const showMemberHomeAdminHandoffFirst =
     isAdminView && sourceContext?.eyebrow === "Member app handoff";
-  const showTopViewStrip = isCoachSurface && !showMemberHomeAdminHandoffFirst;
+  const showTopViewStrip = useCompactStaffToolbar && !showMemberHomeAdminHandoffFirst;
   const showSidebarQuickActions = isCoachSurface && !useCompactStaffToolbar;
   const outerShellClassName = useCompactStaffToolbar
     ? "grid gap-4"
@@ -537,12 +613,15 @@ export function StaffCommandCenterPanel({
   const topShellNavClassName = useCompactStaffToolbar
     ? "flex snap-x gap-2 overflow-x-auto pb-1 xl:flex-1"
     : "flex snap-x gap-2 overflow-x-auto pb-1";
-  const topStripAlertLabel =
-    visibleInterventionCount > 0
+  const topStripAlertLabel = isLaunchLaneFocused
+    ? commandCenter.launchLaneOrgReadback.topChapterName
+      ? `${commandCenter.launchLaneOrgReadback.topChapterName} leads with ${commandCenter.launchLaneOrgReadback.topChapterPoints.toLocaleString()} pts`
+      : "Leaderboard waiting on attendance"
+    : visibleInterventionCount > 0
       ? `${visibleInterventionCount} chapter${visibleInterventionCount === 1 ? "" : "s"} need intervention`
       : "Portfolio healthy";
   const topStripAlertClassName =
-    visibleInterventionCount > 0
+    isLaunchLaneFocused || visibleInterventionCount > 0
       ? "border border-white/10 bg-white/10 text-white"
       : "border border-white/10 bg-white/10 text-white/85";
   const topViewStrip = (
@@ -557,7 +636,7 @@ export function StaffCommandCenterPanel({
               {useMinimalStaffChapterStrip ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <p className={topShellEyebrowClassName}>myMEDLIFE</p>
-                  <span className={topShellTitleClassName}>Staff Command Center</span>
+                  <span className={topShellTitleClassName}>{commandCenter.title}</span>
                 </div>
               ) : (
                 <>
@@ -609,7 +688,7 @@ export function StaffCommandCenterPanel({
                       ? "text-[#08224c]"
                       : "text-white"
                     : useCompactStaffToolbar
-                      ? "text-white/62"
+                      ? "text-[#c7d7f5]"
                       : "text-slate-500",
                 ].join(" ")}
               >
@@ -618,12 +697,17 @@ export function StaffCommandCenterPanel({
               <Link
                 href={option.href}
                 aria-current={commandCenter.selectedView === option.key ? "page" : undefined}
+                style={
+                  useCompactStaffToolbar && commandCenter.selectedView !== option.key
+                    ? { color: "#f8fbff" }
+                    : undefined
+                }
                 className={[
                   "block rounded-[0.95rem] px-3.5 py-2 pl-10 text-sm font-semibold transition",
                   useCompactStaffToolbar
                     ? commandCenter.selectedView === option.key
                       ? "border border-white/10 bg-white text-[#08224c] shadow-[0_16px_32px_rgba(2,14,38,0.2)]"
-                      : "border border-white/12 bg-white/10 text-white/82 hover:border-white/24 hover:bg-white/16 hover:text-white"
+                      : "border border-[#254064] bg-[#13294c] text-[#dbeafe] hover:border-[#7fb5ff] hover:bg-[#19345f] hover:text-white"
                     : commandCenter.selectedView === option.key
                       ? "bg-[#0b5fc4] text-white shadow-[0_16px_32px_rgba(37,99,235,0.18)]"
                       : "border border-slate-200 bg-white text-slate-600 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
@@ -1008,48 +1092,92 @@ export function StaffCommandCenterPanel({
               ) : null}
             </div>
 
-            <div className="mt-2.5 grid gap-2.5 xl:grid-cols-6">
-              {commandCenter.portfolioSummaryCards.map((card) => (
-                <PortfolioSummaryTile key={card.label} card={card} />
-              ))}
+            <div className="mt-2.5 grid gap-2.5 xl:grid-cols-4">
+              {isLaunchLaneFocused ? (
+                <>
+                  <HeroMiniStat
+                    label="Chapters"
+                    value={`${commandCenter.launchLaneChapterRows.length}`}
+                    note="Visible chapter calendars in the launch lane."
+                  />
+                  <HeroMiniStat
+                    label="RSVPs"
+                    value={`${commandCenter.launchLaneOrgReadback.totalRsvps}`}
+                    note="Luma-backed intent across visible chapters."
+                  />
+                  <HeroMiniStat
+                    label="Attendance"
+                    value={`${commandCenter.launchLaneOrgReadback.totalAttendance}`}
+                    note="Confirmed check-ins ready for points."
+                  />
+                  <HeroMiniStat
+                    label="Points"
+                    value={commandCenter.launchLaneOrgReadback.totalPoints.toLocaleString()}
+                    note="Organization leaderboard movement."
+                  />
+                </>
+              ) : (
+                commandCenter.portfolioSummaryCards.map((card) => (
+                  <PortfolioSummaryTile key={card.label} card={card} />
+                ))
+              )}
             </div>
 
-            <StaffPortfolioToolbar
-              routeBase={commandCenter.routeBase}
-              searchQuery={commandCenter.searchQuery}
-              riskFilter={commandCenter.riskFilter}
-              countryFilter={commandCenter.countryFilter}
-              portfolioCampaignFilter={commandCenter.portfolioCampaignFilter}
-              coachFilter={commandCenter.coachFilter}
-              riskFilters={commandCenter.riskFilters}
-              countryFilters={commandCenter.countryFilters}
-              portfolioCampaignFilters={commandCenter.portfolioCampaignFilters}
-              coachFilters={commandCenter.coachFilters}
-              reviewAtRiskHref={
-                commandCenter.riskFilters.find((filter) => filter.key === "medium")?.href ??
-                `${commandCenter.routeBase}?view=chapters&risk=medium`
-              }
-              chapterRows={commandCenter.chapterRows}
-            />
+            {!isLaunchLaneFocused ? (
+              <StaffPortfolioToolbar
+                routeBase={commandCenter.routeBase}
+                searchQuery={commandCenter.searchQuery}
+                riskFilter={commandCenter.riskFilter}
+                countryFilter={commandCenter.countryFilter}
+                portfolioCampaignFilter={commandCenter.portfolioCampaignFilter}
+                coachFilter={commandCenter.coachFilter}
+                riskFilters={commandCenter.riskFilters}
+                countryFilters={commandCenter.countryFilters}
+                portfolioCampaignFilters={commandCenter.portfolioCampaignFilters}
+                coachFilters={commandCenter.coachFilters}
+                reviewAtRiskHref={
+                  commandCenter.riskFilters.find((filter) => filter.key === "medium")?.href ??
+                  `${commandCenter.routeBase}?view=chapters&risk=medium`
+                }
+                chapterRows={commandCenter.chapterRows}
+              />
+            ) : null}
 
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 {commandCenter.chapterRows.length} chapter{commandCenter.chapterRows.length === 1 ? "" : "s"}
               </p>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href={commandCenter.portfolioCampaignViewHref}
-                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
-                >
-                  Open Campaign View
-                </Link>
-                <Link
-                  href={commandCenter.portfolioBestPracticesViewHref}
-                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
-                >
-                  Send Coach Packet
-                </Link>
-              </div>
+              {isLaunchLaneFocused ? (
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`${commandCenter.routeBase}?view=events`}
+                    className="rounded-full border border-[#bfdbfe] bg-white px-3.5 py-1.5 text-sm font-semibold text-[#0b5fc4] transition hover:border-[#93c5fd] hover:bg-[#eef5ff]"
+                  >
+                    Open Events
+                  </Link>
+                  <Link
+                    href={`${commandCenter.routeBase}?view=leaderboard`}
+                    className="rounded-full bg-[#0b5fc4] px-3.5 py-1.5 text-sm font-semibold text-white transition hover:bg-[#084b9f]"
+                  >
+                    Open Leaderboard
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={commandCenter.portfolioCampaignViewHref}
+                    className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                  >
+                    Open Campaign View
+                  </Link>
+                  <Link
+                    href={commandCenter.portfolioBestPracticesViewHref}
+                    className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                  >
+                    Send Coach Packet
+                  </Link>
+                </div>
+              )}
             </div>
           </section>
         ) : null}
@@ -1077,6 +1205,10 @@ function renderView(
   const drawerEyebrow = isCoachSurface ? "Coach chapter drawer" : "Chapter drawer";
 
   switch (commandCenter.selectedView) {
+    case "events":
+      return <StaffLaunchEventsView commandCenter={commandCenter} />;
+    case "leaderboard":
+      return <StaffLaunchLeaderboardView commandCenter={commandCenter} />;
     case "campaigns":
       return <CampaignOperationsView overview={commandCenter.campaignOperations} />;
     case "proof_ugc":
@@ -1733,10 +1865,17 @@ function renderView(
       return (
         <section className="relative grid gap-4">
           <SectionCard eyebrow={chapterSectionEyebrow} title={chapterSectionTitle}>
-            <ChapterPortfolioTable
-              rows={commandCenter.chapterRows}
-              selectedChapterId={commandCenter.selectedChapterId}
-            />
+            {commandCenter.launchLaneFocused ? (
+              <LaunchLaneChapterReadbackTable
+                rows={commandCenter.launchLaneChapterRows}
+                routeBase={commandCenter.routeBase}
+              />
+            ) : (
+              <ChapterPortfolioTable
+                rows={commandCenter.chapterRows}
+                selectedChapterId={commandCenter.selectedChapterId}
+              />
+            )}
           </SectionCard>
 
           {commandCenter.selectedChapter ? (
@@ -1768,6 +1907,221 @@ function renderView(
         </section>
       );
   }
+}
+
+function StaffLaunchEventsView({
+  commandCenter,
+}: {
+  commandCenter: StaffCommandCenter;
+}) {
+  const rows = commandCenter.launchLaneChapterRows;
+  const eventCount = rows.filter((row) => row.chapterEventId).length;
+
+  return (
+    <section className="grid gap-4">
+      <SectionCard eyebrow="Luma event loop" title="Events, RSVPs, attendance, and points">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <HeroMiniStat
+            label="Event calendars"
+            value={`${rows.filter((row) => row.calendarReady).length}`}
+            note="Chapters mapped to a ready Luma calendar."
+          />
+          <HeroMiniStat
+            label="Visible events"
+            value={`${eventCount}`}
+            note="Chapter events currently feeding the launch loop."
+          />
+          <HeroMiniStat
+            label="RSVPs"
+            value={`${commandCenter.launchLaneOrgReadback.totalRsvps}`}
+            note="Intent captured before the event."
+          />
+          <HeroMiniStat
+            label="Attendance"
+            value={`${commandCenter.launchLaneOrgReadback.totalAttendance}`}
+            note="Confirmed check-ins that can award points."
+          />
+        </div>
+      </SectionCard>
+
+      <SectionCard eyebrow="Chapter event readback" title="Luma event posture by chapter">
+        <LaunchLaneChapterReadbackTable
+          rows={rows}
+          routeBase={commandCenter.routeBase}
+        />
+      </SectionCard>
+    </section>
+  );
+}
+
+function StaffLaunchLeaderboardView({
+  commandCenter,
+}: {
+  commandCenter: StaffCommandCenter;
+}) {
+  const readback = commandCenter.launchLaneOrgReadback;
+
+  return (
+    <section className="grid gap-4">
+      <SectionCard eyebrow="Organization leaderboard" title="Attendance-backed points">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <HeroMiniStat
+            label="Org points"
+            value={readback.totalPoints.toLocaleString()}
+            note="All visible chapter points from event attendance."
+          />
+          <HeroMiniStat
+            label="Chapters scoring"
+            value={`${readback.chaptersWithPoints}`}
+            note="Chapters with at least one points row."
+          />
+          <HeroMiniStat
+            label="Top chapter"
+            value={readback.topChapterName ?? "Pending"}
+            note={
+              readback.topChapterName
+                ? `${readback.topChapterPoints.toLocaleString()} points`
+                : "Attendance has not created a leader yet."
+            }
+          />
+          <HeroMiniStat
+            label="Featured event"
+            value={`${readback.featuredEventAttendanceCount}`}
+            note={
+              readback.featuredEventTitle
+                ? `${readback.featuredEventTitle}: ${readback.featuredEventPointsAwarded.toLocaleString()} pts`
+                : "No event selected yet."
+            }
+          />
+        </div>
+      </SectionCard>
+
+      <SectionCard eyebrow="Leaderboard table" title="Chapter points across the organization">
+        {commandCenter.launchLaneOrgLeaderboardRows.length > 0 ? (
+          <div className="app-surface overflow-hidden rounded-[1.25rem]">
+            <div className="overflow-x-auto">
+              <table className="min-w-[48rem] text-left text-sm text-slate-700">
+                <thead className="bg-[#dbeafe] text-xs uppercase tracking-[0.18em] text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3">Rank</th>
+                    <th className="px-4 py-3">Chapter</th>
+                    <th className="px-4 py-3">Points</th>
+                    <th className="px-4 py-3">Events</th>
+                    <th className="px-4 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {commandCenter.launchLaneOrgLeaderboardRows.map((row, index) => (
+                    <tr key={row.chapterName} className="border-t border-slate-200">
+                      <td className="px-4 py-3 font-semibold text-slate-950">
+                        #{index + 1}
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-slate-950">
+                        {row.chapterName}
+                      </td>
+                      <td className="px-4 py-3">
+                        {row.points.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3">{row.eventCount}</td>
+                      <td className="px-4 py-3">
+                        <LaunchLaneStatusPill label={row.statusLabel} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm leading-6 text-slate-600">
+            The organization leaderboard will appear after attendance creates the first point rows.
+          </p>
+        )}
+      </SectionCard>
+    </section>
+  );
+}
+
+function LaunchLaneChapterReadbackTable({
+  rows,
+  routeBase,
+}: {
+  rows: StaffCommandCenter["launchLaneChapterRows"];
+  routeBase: StaffCommandCenter["routeBase"];
+}) {
+  if (rows.length === 0) {
+    return (
+      <p className="text-sm leading-6 text-slate-600">
+        No chapter event data is visible yet.
+      </p>
+    );
+  }
+
+  return (
+    <div className="app-surface overflow-hidden rounded-[1.25rem]">
+      <div className="overflow-x-auto">
+        <table className="min-w-[62rem] text-left text-sm text-slate-700">
+          <thead className="bg-[#dbeafe] text-xs uppercase tracking-[0.18em] text-slate-500">
+            <tr>
+              <th className="px-4 py-3">Chapter</th>
+              <th className="px-4 py-3">Luma calendar</th>
+              <th className="px-4 py-3">Next event</th>
+              <th className="px-4 py-3">RSVPs</th>
+              <th className="px-4 py-3">Attendance</th>
+              <th className="px-4 py-3">Points</th>
+              <th className="px-4 py-3">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const detailHref = row.detailHref
+                ? row.detailHref.replace("/staff", routeBase)
+                : `${routeBase}?view=events`;
+
+              return (
+                <tr key={row.id} className="border-t border-slate-200 transition hover:bg-[#dbeafe]/70">
+                  <td className="px-4 py-3 align-top">
+                    <Link
+                      href={detailHref}
+                      className="font-semibold text-slate-950 hover:text-[#1d4ed8]"
+                    >
+                      {row.name}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <p className="font-semibold text-slate-950">{row.calendarLabel}</p>
+                    <p className="mt-1 text-xs text-slate-500">{row.calendarStatusLabel}</p>
+                  </td>
+                  <td className="px-4 py-3 align-top">{row.nextEvent}</td>
+                  <td className="px-4 py-3 align-top">{row.rsvps}</td>
+                  <td className="px-4 py-3 align-top">{row.attendance}</td>
+                  <td className="px-4 py-3 align-top">{row.points.toLocaleString()}</td>
+                  <td className="px-4 py-3 align-top">
+                    <LaunchLaneStatusPill label={row.risk} />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function LaunchLaneStatusPill({ label }: { label: string }) {
+  const className =
+    label === "Healthy"
+      ? "border-[#bfdbfe] bg-[#eef5ff] text-[#1d4ed8]"
+      : label === "No RSVPs" || label === "No upcoming events"
+        ? "border-[#2563eb]/35 bg-[#dbeafe] text-[#0b5fc4]"
+        : "border-[#facc15]/50 bg-[#fef9c3] text-[#854d0e]";
+
+  return (
+    <span className={["rounded-full border px-2.5 py-1 text-xs font-semibold", className].join(" ")}>
+      {label}
+    </span>
+  );
 }
 
 function ChapterPortfolioTable({
@@ -3692,6 +4046,10 @@ function getSelectedViewSurfaceTitle(view: StaffCommandCenter["selectedView"]) {
   switch (view) {
     case "chapters":
       return "Portfolio Overview";
+    case "events":
+      return "Event Operations";
+    case "leaderboard":
+      return "Organization Leaderboard";
     case "campaigns":
       return "Campaign Operations";
     case "proof_ugc":
@@ -3722,6 +4080,25 @@ function StaffViewIcon({ view }: { view: StaffCommandCenterView }) {
           <rect x="13" y="5" width="7" height="6" rx="1.6" />
           <rect x="4" y="13" width="7" height="6" rx="1.6" />
           <rect x="13" y="13" width="7" height="6" rx="1.6" />
+        </svg>
+      );
+    case "events":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <rect x="4" y="5" width="16" height="15" rx="2.2" />
+          <path d="M8 3.5v3" />
+          <path d="M16 3.5v3" />
+          <path d="M4 9h16" />
+          <path d="m9 14 2 2 4-4" />
+        </svg>
+      );
+    case "leaderboard":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M5 19V9" />
+          <path d="M12 19V5" />
+          <path d="M19 19v-7" />
+          <path d="M4 19h16" />
         </svg>
       );
     case "campaigns":

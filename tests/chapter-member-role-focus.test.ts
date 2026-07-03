@@ -19,8 +19,8 @@ describe("chapter member role focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("President / VP");
-    expect(focus.primaryHref).toBe("/chapter/members");
-    expect(focus.secondaryHref).toBe("/rush-month/review");
+    expect(focus.primaryHref).toBe("/leader?view=attendance");
+    expect(focus.secondaryHref).toBe("/leader?view=leaderboard");
     expect(focus.title).toContain("chapter coverage");
     expect(focus.safetyNote).toContain("roster approvals");
     expect(focus.items.map((item) => item.label)).toEqual([
@@ -35,8 +35,8 @@ describe("chapter member role focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("E-Board Member");
-    expect(focus.primaryHref).toBe("/rush-month/actions");
-    expect(focus.secondaryHref).toBe("/action-committees");
+    expect(focus.primaryHref).toBe("/leader?view=events");
+    expect(focus.secondaryHref).toBe("/leader?view=attendance");
     expect(focus.title).toContain("roster gaps");
     expect(focus.safetyNote).toContain("E-Board can coordinate");
     expect(focus.items.map((item) => item.label)).toEqual([
@@ -51,8 +51,8 @@ describe("chapter member role focus", () => {
 
     expect(focus.canReadFocus).toBe(true);
     expect(focus.roleLabel).toBe("Chapter Leader");
-    expect(focus.primaryHref).toBe("/chapter/members");
-    expect(focus.secondaryHref).toBe("/rush-month/actions");
+    expect(focus.primaryHref).toBe("/leader?view=attendance");
+    expect(focus.secondaryHref).toBe("/leader?view=leaderboard");
     expect(focus.safetyNote).toContain("read-only");
   });
 

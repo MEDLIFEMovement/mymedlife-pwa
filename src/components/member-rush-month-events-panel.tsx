@@ -1,36 +1,64 @@
 import Link from "next/link";
 
+import {
+  getLaunchLaneMemberPointsHref,
+} from "@/services/events-points-launch-lane";
+import type { MemberLaunchLaneEventRow } from "@/services/member-launch-lane-events";
+import { buildMemberLaunchLaneEventDetailHref } from "@/services/member-launch-lane-events";
+import type { LaunchLaneResultNotice, MemberLaunchLaneRsvpCard } from "@/services/luma-launch-lane-workspace";
 import type { MemberActionRouteSource } from "@/services/member-action-route-href";
-import type { RushMonthEventReadinessWorkspace } from "@/services/rush-month-event-readiness";
 import { EventLoopStrip } from "@/components/event-loop-strip";
+import { MemberLiveRsvpCard } from "@/components/member-live-rsvp-card";
 import { PanelButton, SurfacePanel, StatusPill } from "@/components/visual-primitives";
 
 type MemberRushMonthEventsPanelProps = {
-  workspace: RushMonthEventReadinessWorkspace;
+  rows: Array<
+    Pick<
+      MemberLaunchLaneEventRow,
+      | "id"
+      | "title"
+      | "memberDateTimeLabel"
+      | "memberLocationLabel"
+      | "memberCampaignLabel"
+      | "memberPointsLabel"
+      | "memberRsvpLabel"
+      | "memberRsvpState"
+      | "memberLumaLabel"
+    >
+  >;
+  chapterName: string;
   source?: MemberActionRouteSource | null;
+  liveRsvpCard?: MemberLaunchLaneRsvpCard | null;
+  liveRsvpEnabled?: boolean;
+  resultNotice?: LaunchLaneResultNotice;
+  rsvpAction?: (formData: FormData) => void | Promise<void>;
 };
 
 export function MemberRushMonthEventsPanel({
-  workspace,
+  rows,
+  chapterName,
   source,
+  liveRsvpCard,
+  liveRsvpEnabled = false,
+  resultNotice,
+  rsvpAction,
 }: MemberRushMonthEventsPanelProps) {
-  const thisWeekRows = workspace.rows.filter((row) => row.memberSection === "this_week");
-  const comingUpRows = workspace.rows.filter((row) => row.memberSection === "coming_up");
-  const visibleRows = [...thisWeekRows, ...comingUpRows];
-  const sourceContext = getMemberEventsSourceContext(source);
+  const normalizedSource = normalizeMemberEventsSource(source);
+  const sourceContext = getMemberEventsSourceContext(normalizedSource);
+  const rsvpReturnTo = normalizedSource ? `/app/events?source=${normalizedSource}` : "/app/events";
 
   return (
     <section className="grid gap-3">
       <section className="app-surface-info overflow-hidden rounded-[2rem] p-4">
         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
-          UCLA MEDLIFE
+          {chapterName}
         </p>
         <h1 className="mt-2 text-[2.1rem] font-semibold leading-none text-slate-950 sm:text-[2.45rem]">
           Events
         </h1>
         <p className="mt-2.5 max-w-[19rem] text-sm leading-6 text-slate-600">
-          Show up where your chapter is active, RSVP fast, and keep the Rush Month
-          loop moving.
+          Show up where your chapter is active, RSVP fast, and keep the chapter
+          event loop moving.
         </p>
         {sourceContext ? (
           <div className="mt-4 rounded-[1.3rem] border border-slate-200 bg-white p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
@@ -62,7 +90,7 @@ export function MemberRushMonthEventsPanel({
         <p className="mt-2 text-sm leading-7 text-slate-700">
           Luma holds the event, RSVP shows intent, attendance confirms who
           actually showed, and points move the chapter leaderboard after the
-          event is reviewed.
+          chapter confirms attendance.
         </p>
         <EventLoopStrip
           className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4"
@@ -75,12 +103,23 @@ export function MemberRushMonthEventsPanel({
         />
       </section>
 
-      {visibleRows.length > 0 ? (
+      {liveRsvpCard ? (
+        <MemberLiveRsvpCard
+          card={liveRsvpCard}
+          returnTo={rsvpReturnTo}
+          leaderboardHref={getLaunchLaneMemberPointsHref(normalizedSource ?? "events")}
+          enabled={liveRsvpEnabled}
+          action={rsvpAction}
+          resultNotice={resultNotice}
+        />
+      ) : null}
+
+      {rows.length > 0 ? (
       <SurfacePanel>
         <p className="text-sm font-semibold tracking-[0.02em] text-slate-500">Coming Up</p>
         <div className="mt-3 grid gap-3">
-          {visibleRows.map((row) => (
-            <MemberEventCard key={row.id} row={row} source={source} />
+          {rows.map((row) => (
+            <MemberEventCard key={row.id} row={row} source={normalizedSource} />
           ))}
         </div>
       </SurfacePanel>
@@ -93,12 +132,12 @@ function MemberEventCard({
   row,
   source,
 }: {
-  row: RushMonthEventReadinessWorkspace["rows"][number];
+  row: MemberRushMonthEventsPanelProps["rows"][number];
   source?: MemberActionRouteSource | null;
 }) {
   const isRegistered = row.memberRsvpState === "registered";
   const detailSource = source ?? "events";
-  const detailHref = `/rush-month/events/${row.id}?source=${detailSource}`;
+  const detailHref = buildMemberLaunchLaneEventDetailHref(row.id, detailSource);
 
   return (
     <article className="rounded-[1.5rem] border border-slate-200 bg-[#dbeafe] p-3.5">
@@ -150,23 +189,15 @@ function getMemberEventsSourceContext(source: MemberActionRouteSource | null | u
         eyebrow: "From home",
         compactDetail:
           "Home surfaced this events list as the next place to show up. Keep that chapter moment tied to the weekly loop you came from.",
-        href: "/",
+        href: "/app",
         backLabel: "Back to home",
-      };
-    case "campaigns":
-      return {
-        eyebrow: "From campaigns",
-        compactDetail:
-          "Campaign context explains why these events matter. Choose the right chapter moment without losing the larger Rush Month loop.",
-        href: "/campaigns",
-        backLabel: "Back to campaigns",
       };
     case "points":
       return {
         eyebrow: "From points",
         compactDetail:
           "Recognition should still point you toward a real chapter moment. Use this route to find the event that can move the next action forward.",
-        href: "/rush-month/leaderboard",
+        href: getLaunchLaneMemberPointsHref(),
         backLabel: "Back to points",
       };
     case "profile":
@@ -180,4 +211,14 @@ function getMemberEventsSourceContext(source: MemberActionRouteSource | null | u
     default:
       return null;
   }
+}
+
+function normalizeMemberEventsSource(
+  source: MemberActionRouteSource | null | undefined,
+) {
+  if (source === "campaigns") {
+    return null;
+  }
+
+  return source ?? null;
 }

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { getAuthSessionState } from "@/services/auth-session";
+import { getResolvedFeatureFlagEnv } from "@/services/runtime-feature-flags";
 import {
   getActionStartWriteConfig,
   isUuid,
@@ -39,7 +40,8 @@ export async function submitAssignmentProofAction(formData: FormData) {
 export async function startAssignmentActionForLocalSupabase(
   assignmentId: string,
 ): Promise<ActionStartServerResult> {
-  const config = getActionStartWriteConfig();
+  const resolvedEnv = await getResolvedFeatureFlagEnv(["action_started_write"]);
+  const config = getActionStartWriteConfig(resolvedEnv);
 
   if (!config.enabled) {
     return {
@@ -60,7 +62,9 @@ export async function startAssignmentActionForLocalSupabase(
     };
   }
 
-  const { client, config: authConfig } = await createLocalSupabaseServerClient();
+  const { client, config: authConfig } = await createLocalSupabaseServerClient(
+    resolvedEnv,
+  );
 
   if (!client) {
     return {
@@ -79,7 +83,9 @@ export async function startAssignmentActionForLocalSupabase(
       code: "missing_auth",
       assignmentId,
       plainEnglishMessage:
-        "Sign in with a local Supabase seed user before starting this action.",
+        authConfig.isLocalOnly
+          ? "Sign in with a local Supabase seed user before starting this action."
+          : "Sign in through the approved staging reviewer path before starting this action.",
     };
   }
 
@@ -115,7 +121,8 @@ export async function submitAssignmentProofForLocalSupabase(
   const evidenceType = parseProofEvidenceType(formData.get("evidenceType"));
   const proofSummary = String(formData.get("proofSummary") ?? "").trim();
   const proofUrl = String(formData.get("proofUrl") ?? "").trim();
-  const config = getProofSubmissionWriteConfig();
+  const resolvedEnv = await getResolvedFeatureFlagEnv(["proof_metadata_write"]);
+  const config = getProofSubmissionWriteConfig(resolvedEnv);
 
   if (!config.enabled) {
     return {
@@ -156,7 +163,9 @@ export async function submitAssignmentProofForLocalSupabase(
     };
   }
 
-  const { client, config: authConfig } = await createLocalSupabaseServerClient();
+  const { client, config: authConfig } = await createLocalSupabaseServerClient(
+    resolvedEnv,
+  );
 
   if (!client) {
     return {
@@ -175,7 +184,9 @@ export async function submitAssignmentProofForLocalSupabase(
       code: "missing_auth",
       assignmentId,
       plainEnglishMessage:
-        "Sign in with a local Supabase seed user before submitting proof.",
+        authConfig.isLocalOnly
+          ? "Sign in with a local Supabase seed user before submitting proof."
+          : "Sign in through the approved staging reviewer path before submitting proof.",
     };
   }
 

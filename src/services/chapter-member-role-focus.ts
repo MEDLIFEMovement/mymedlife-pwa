@@ -1,4 +1,9 @@
 import { getActorPrimaryRoleLabel } from "@/services/actor-role-display";
+import {
+  getLaunchLaneLeaderAttendanceHref,
+  getLaunchLaneLeaderEventsHref,
+  getLaunchLaneLeaderPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { ChapterMembershipWorkspace } from "@/services/chapter-membership-workspace";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
@@ -33,10 +38,10 @@ export function getChapterMemberRoleFocus(
       title: "Member role focus hidden for this role",
       summary:
         "Only chapter-leader preview personas see role coverage and execution guidance here.",
-      primaryHref: "/chapter/members",
-      primaryLabel: "Open members",
-      secondaryHref: "/rush-month/dashboard",
-      secondaryLabel: "Open dashboard",
+      primaryHref: getLaunchLaneLeaderAttendanceHref(),
+      primaryLabel: "Check attendance",
+      secondaryHref: getLaunchLaneLeaderEventsHref(),
+      secondaryLabel: "Open leader events",
       safetyNote:
         "Join approvals, role changes, committee moves, member deactivation, reminders, and external writes remain disabled.",
       items: [],
@@ -51,15 +56,15 @@ export function getChapterMemberRoleFocus(
     return {
       canReadFocus: true,
       roleLabel: "President / VP",
-      title: "Keep chapter coverage clear before the next growth push.",
+      title: "Keep chapter coverage visible through attendance and follow-through.",
       summary:
-        "Use this roster to check pending joins, thin leadership coverage, and chapter access decisions before the chapter takes on more Rush Month work.",
-      primaryHref: "/chapter/members",
-      primaryLabel: "Review role coverage",
-      secondaryHref: "/rush-month/review",
-      secondaryLabel: "Check proof accountability",
+        "Use attendance posture, open work, and thin leadership signals before the chapter takes on more Rush Month activity.",
+      primaryHref: getLaunchLaneLeaderAttendanceHref(),
+      primaryLabel: "Check attendance",
+      secondaryHref: getLaunchLaneLeaderPointsHref(),
+      secondaryLabel: "Check chapter points",
       safetyNote:
-        "President / VP can inspect join readiness, but roster approvals, role changes, committee moves, member deactivation, reminders, and external sends remain paused.",
+        "President / VP can inspect chapter coverage, but roster approvals, role changes, committee moves, member deactivation, reminders, and external sends remain paused.",
       items: [
         {
           label: "Join requests",
@@ -87,12 +92,12 @@ export function getChapterMemberRoleFocus(
       title: "Turn roster gaps into committee and owner follow-up.",
       summary:
         "Use this roster to see who has open work, who needs proof follow-up, and which committee lanes need a real owner before the next event push.",
-      primaryHref: "/rush-month/actions",
-      primaryLabel: "Move open work",
-      secondaryHref: "/action-committees",
-      secondaryLabel: "Check committee lanes",
+      primaryHref: getLaunchLaneLeaderEventsHref(),
+      primaryLabel: "Open chapter events",
+      secondaryHref: getLaunchLaneLeaderAttendanceHref(),
+      secondaryLabel: "Check attendance",
       safetyNote:
-        "E-Board can coordinate follow-up, but join approvals, role changes, committee moves, member deactivation, reminders, and external writes remain disabled.",
+        "E-Board can coordinate follow-up, but the visible route should stay focused on events, attendance, and points while approvals and external writes remain disabled.",
       items: [
         {
           label: "Open actions",
@@ -116,13 +121,13 @@ export function getChapterMemberRoleFocus(
   return {
     canReadFocus: true,
     roleLabel: "Chapter Leader",
-    title: "Use the roster to separate coverage needs from held approvals.",
+    title: "Use attendance and follow-through to separate coverage needs from held approvals.",
     summary:
-      "This read-only workspace helps chapter leaders inspect role coverage, member follow-up, and held roster actions without changing access.",
-    primaryHref: "/chapter/members",
-    primaryLabel: "Review roster",
-    secondaryHref: "/rush-month/actions",
-    secondaryLabel: "Open actions",
+      "This read-only workspace helps chapter leaders inspect member follow-up and coverage signals without turning roster changes into the main visible lane.",
+    primaryHref: getLaunchLaneLeaderAttendanceHref(),
+    primaryLabel: "Check attendance",
+    secondaryHref: getLaunchLaneLeaderPointsHref(),
+    secondaryLabel: "Check chapter points",
     safetyNote:
       "Chapter leader membership work remains read-only. Permission-changing controls and external automation stay disabled.",
     items: [

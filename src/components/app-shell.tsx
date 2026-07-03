@@ -5,6 +5,7 @@ import { LocalActorNotice } from "@/components/local-actor-notice";
 import { LocalRoleSwitcher } from "@/components/local-role-switcher";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { getLandingRouteForActor } from "@/services/landing-route";
+import { isEventsPointsLaunchLaneEnabled } from "@/services/launch-lane-product-focus";
 import {
   getActorSurfaceFamily,
   type MobileNavigationItem,
@@ -17,6 +18,7 @@ type AppShellProps = {
   actor?: LocalActorContext;
   chromeMode?: "default" | "mobile-app";
   debugToolsPlacement?: "before-content" | "after-content";
+  hideDesktopRail?: boolean;
   hideTopHeader?: boolean;
   showMobileQuickItemHelpers?: boolean;
   showDebugTools?: boolean;
@@ -28,6 +30,7 @@ export function AppShell({
   children,
   chromeMode,
   debugToolsPlacement = "after-content",
+  hideDesktopRail = false,
   hideTopHeader = false,
   showMobileQuickItemHelpers = true,
   showDebugTools = true,
@@ -50,7 +53,7 @@ export function AppShell({
   const shellCopy = getShellCopy(actor);
   const showCommandSummary = !isCommandSurface;
   const showSharedTopHeader = !hideTopHeader;
-  const showSharedDesktopRail = isCommandSurface;
+  const showSharedDesktopRail = isCommandSurface && !hideDesktopRail;
   const sidebarCopy = getSidebarCopy(surfaceFamily);
   const debugActor = actor && showDebugTools ? actor : null;
   const shellBadge = getShellBadge(actor);
@@ -335,12 +338,12 @@ function getShellCopy(actor?: LocalActorContext): ShellCopy {
         title: primaryChapter,
         summary:
           actor.primaryCanonicalRole === "traveler"
-            ? "Stay focused on your trip-prep steps, readiness status, deadlines, and next travel task without staff-heavy controls."
-            : "Stay focused on your next action, campaign progress, events, points, and trip prep without staff-heavy controls.",
+            ? "Stay focused on trip prep, deadlines, readiness, and the next travel task."
+            : "Stay focused on events, RSVP, attendance, points, and the next clear step.",
         tags: [
           actor.chapterRoles[0] ?? "Student member",
           actor.primaryCanonicalRole === "traveler" ? "SLT Prep enabled" : "Member app",
-          actor.primaryCanonicalRole === "traveler" ? "Trip Prep live" : "Rush Month live",
+          actor.primaryCanonicalRole === "traveler" ? "Trip Prep live" : "Event loop live",
           "Mobile-first",
         ],
       };
@@ -352,7 +355,7 @@ function getShellCopy(actor?: LocalActorContext): ShellCopy {
         eyebrow: "Leadership command center",
         title: "Student Leadership Command Center",
         summary:
-          "Run the chapter with member follow-up, committee health, impact signals, and leadership pipeline views in one role-specific surface.",
+          "Create events, watch RSVPs, confirm attendance, and award points without extra clutter.",
         tags: [actor.chapterRoles[0] ?? "Leader", "Desktop or tablet", "Chapter-wide"],
       };
     case "coach":
@@ -361,7 +364,7 @@ function getShellCopy(actor?: LocalActorContext): ShellCopy {
         eyebrow: "Coach command center",
         title: "Coach / Staff Command Center",
         summary:
-          "Scan chapter health, intervention risk, proof posture, and next support decisions without turning on live writes or external sends.",
+          "Watch chapter event health, attendance, and leaderboard movement without turning on extra systems.",
         tags: [
           actor.coachPortfolioChapterNames.length > 1
             ? `${actor.coachPortfolioChapterNames.length} chapter portfolio`
@@ -376,7 +379,7 @@ function getShellCopy(actor?: LocalActorContext): ShellCopy {
         eyebrow: "Staff command center",
         title: "Staff Command Center",
         summary:
-          "Review chapter operations, proof-sharing posture, launch gates, and internal readiness from one staff-facing command surface.",
+          "Review chapter events, attendance, and leaderboard movement from one staff-facing surface.",
         tags: [actor.staffRoles[0] ?? "HQ admin", "Operations view", "Approvals gated"],
       };
     case "ds_admin":
@@ -403,23 +406,25 @@ function getSidebarCopy(surfaceFamily: ReturnType<typeof getActorSurfaceFamily> 
     case "leader":
       return {
         heading: "Leader navigation",
-        summary: "Chapter overview, members, committees, events, impact, and succession.",
+        summary: "Overview, events, attendance, and leaderboard.",
       };
     case "coach":
       return {
         heading: "Coach navigation",
-        summary: "Portfolio chapters, chapter detail, campaigns, support notes, and traveler prep.",
+        summary: "Portfolio chapters, events, attendance, and leaderboard.",
       };
     case "staff":
       return {
         heading: "Staff navigation",
-        summary: "Chapters, campaigns, proof review, feed tools, HubSpot, and support notes.",
+        summary: "Chapters, events, attendance, and leaderboard.",
       };
     case "ds_admin":
     case "super_admin":
       return {
         heading: "Admin navigation",
-        summary: "Permissions, integrations, audit posture, workflows, and launch gates.",
+        summary: isEventsPointsLaunchLaneEnabled()
+          ? "Luma pilot, launch gates, audit proof, outbox safety, and system checks."
+          : "Permissions, integrations, audit posture, workflows, and launch gates.",
       };
     case "member":
     default:

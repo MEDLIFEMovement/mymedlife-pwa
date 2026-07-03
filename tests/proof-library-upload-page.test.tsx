@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/proof-library/upload",
   useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
+  }),
 }));
 
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
@@ -18,28 +20,21 @@ vi.mock("@/services/local-actor-context", async (importOriginal) => {
 });
 
 describe("proof upload page", () => {
-  it("opens the proof-upload handoff with proof prep, consent context, and held actions", async () => {
+  it("returns members to the points loop instead of the proof-upload prep route", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("leader.a@mymedlife.test"),
+      getMockLocalActorContext("member.a@mymedlife.test"),
     );
 
     const { default: ProofUploadPage } = await import("@/app/proof-library/upload/page");
-    const html = renderToStaticMarkup(await ProofUploadPage({}));
 
-    expect(html).toContain("Proof preparation");
-    expect(html).toContain("File is prepared, but not saved yet.");
-    expect(html).toContain("Consent and context");
-    expect(html).toContain("Broader proof actions stay paused.");
-    expect(html).toContain("Future proof path");
-    expect(html).toContain("Future handoffs stay paused");
-    expect(html).toContain("Proof upload path preview");
-    expect(html).not.toContain("These actions are intentionally locked.");
-    expect(html).not.toContain("Automation-ready, still disabled");
+    await expect(ProofUploadPage({})).rejects.toThrow(
+      "NEXT_REDIRECT:/app/points?source=points",
+    );
   });
 
-  it("keeps the bridge-video handoff visible when chapter leaders open proof upload from the command center", async () => {
+  it("returns leaders to the leader points workspace instead of the proof-upload prep route", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
@@ -47,21 +42,14 @@ describe("proof upload page", () => {
     );
 
     const { default: ProofUploadPage } = await import("@/app/proof-library/upload/page");
-    const html = renderToStaticMarkup(
-      await ProofUploadPage({
+
+    await expect(
+      ProofUploadPage({
         searchParams: Promise.resolve({
           source: "chapter_bridge_video",
-          returnTo:
-            "/chapter?view=bridge_videos&source=feed_analytics&member=member-maya&q=Sofia&feedPost=feed-post-slt-recap",
+          returnTo: "/leader?view=bridge_videos",
         }),
       }),
-    );
-
-    expect(html).toContain("From bridge videos");
-    expect(html).toContain("Stay in the bridge-video story flow.");
-    expect(html).toContain("Back to bridge library");
-    expect(html).toContain(
-      'href="/chapter?view=bridge_videos&amp;source=feed_analytics&amp;member=member-maya&amp;q=Sofia&amp;feedPost=feed-post-slt-recap"',
-    );
+    ).rejects.toThrow("NEXT_REDIRECT:/leader?view=leaderboard");
   });
 });

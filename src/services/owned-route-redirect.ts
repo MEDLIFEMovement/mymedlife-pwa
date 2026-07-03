@@ -1,4 +1,19 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  getLaunchLaneMemberCoreHref,
+  getLaunchLaneMemberPointsHref,
+  getLaunchLaneCampaignsRedirectHref,
+  getLaunchLaneFocusHref,
+  getLaunchLaneLeaderEventsHref,
+  getLaunchLaneLegacyCoachRedirectHref,
+  getLaunchLaneProofRedirectHref,
+  getLaunchLaneStaffEventsHref,
+} from "@/services/events-points-launch-lane";
+import { buildMemberLaunchLaneEventDetailHref } from "@/services/member-launch-lane-events";
+import { getActorSurfaceFamily } from "@/services/role-visibility";
+
+type ChapterRouteSearchParams = Record<string, string | undefined>;
+type LaunchLaneRouteFamily = "app" | "legacy";
 
 export function getCampaignsRouteRedirectHref(
   actor: LocalActorContext,
@@ -6,55 +21,47 @@ export function getCampaignsRouteRedirectHref(
     campaignSlug?: string;
   } = {},
 ): string | null {
-  const campaignQuery = options.campaignSlug
-    ? `&campaign=${options.campaignSlug}`
-    : "";
-
-  switch (actor.primaryCanonicalRole) {
-    case "coach":
-    case "sales_coach":
-      return `/staff?view=campaigns${campaignQuery}`;
-    case "department_staff":
-      return `/staff?view=campaigns${campaignQuery}`;
-    case "sales_admin":
-    case "super_admin":
-      return `/staff?view=campaigns${campaignQuery}`;
-    case "ds_admin":
-      return "/admin";
-    case "student_member":
-    case "traveler":
-    case "committee_member":
-    case "committee_chair":
-    case "eboard_officer":
-    case "vice_president":
-    case "president":
-      return null;
-  }
+  return getLaunchLaneCampaignsRedirectHref(actor, {
+    campaignSlug: options.campaignSlug,
+  });
 }
 
 export function getProofLibraryRouteRedirectHref(
   actor: LocalActorContext,
 ): string | null {
-  switch (actor.primaryCanonicalRole) {
+  return getLaunchLaneProofRedirectHref(actor);
+}
+
+export function getRushMonthActionsRouteRedirectHref(
+  actor: LocalActorContext,
+  options: {
+    source?: string;
+  } = {},
+): string | null {
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
+      return getLaunchLaneMemberCoreHref(parseMemberActionSource(options.source));
+    case "leader":
+      return getLaunchLaneLeaderEventsHref();
     case "coach":
-    case "sales_coach":
-      return "/staff?view=support_notes#support-notes";
-    case "department_staff":
-      return "/staff?view=proof_ugc";
-    case "sales_admin":
-    case "super_admin":
-      return "/staff?view=proof_ugc";
+    case "staff":
+      return getLaunchLaneStaffEventsHref({ campaignSlug: "rush-month" });
     case "ds_admin":
+    case "super_admin":
       return "/admin";
-    case "student_member":
-    case "traveler":
-    case "committee_member":
-    case "committee_chair":
-    case "eboard_officer":
-    case "vice_president":
-    case "president":
-      return null;
   }
+}
+
+export function getRushMonthHomeRouteRedirectHref(
+  actor: LocalActorContext,
+): string {
+  return getLaunchLaneFocusHref(getActorSurfaceFamily(actor), "home");
+}
+
+export function getRushMonthNonCoreRouteRedirectHref(
+  actor: LocalActorContext,
+): string {
+  return getLaunchLaneFocusHref(getActorSurfaceFamily(actor), "events");
 }
 
 export function getRushMonthEventsRouteRedirectHref(
@@ -62,62 +69,193 @@ export function getRushMonthEventsRouteRedirectHref(
   options: {
     eventId?: string;
     source?: string;
+    routeFamily?: LaunchLaneRouteFamily;
   } = {},
 ): string | null {
-  const eventQuery = options.eventId ? `&event=${options.eventId}` : "";
-
-  switch (actor.primaryCanonicalRole) {
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
+      return options.routeFamily === "app"
+        ? null
+        : getMemberEventRedirectHref(options);
+    case "leader":
+      return getLaunchLaneLeaderEventsHref(options.eventId);
     case "coach":
-    case "sales_coach":
-      return `/staff?view=campaigns&campaign=rush-month${eventQuery}`;
-    case "department_staff":
-      return `/staff?view=campaigns&campaign=rush-month${eventQuery}`;
-    case "sales_admin":
-    case "super_admin":
-      return `/staff?view=campaigns&campaign=rush-month${eventQuery}`;
+    case "staff":
+      return getLaunchLaneStaffEventsHref({
+        campaignSlug: "rush-month",
+        eventId: options.eventId,
+      });
     case "ds_admin":
+    case "super_admin":
       return "/admin";
-    case "traveler":
-      return "/slt-prep";
-    case "student_member":
-    case "committee_member":
-    case "committee_chair":
-      return null;
-    case "eboard_officer":
-    case "vice_president":
-    case "president":
-      if (
-        options.source === "chapter_create_event" ||
-        options.source === "chapter_event_review"
-      ) {
-        return null;
-      }
+  }
+}
 
-      return eventQuery ? `/chapter?view=events${eventQuery}` : "/chapter?view=events";
+export function getRushMonthLeaderboardRouteRedirectHref(
+  actor: LocalActorContext,
+  options: {
+    source?: string;
+    routeFamily?: LaunchLaneRouteFamily;
+  } = {},
+): string | null {
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
+      return options.routeFamily === "app"
+        ? null
+        : getMemberLeaderboardRedirectHref(options.source);
+    case "leader":
+      return getLaunchLaneFocusHref("leader", "points");
+    case "coach":
+    case "staff":
+      return getLaunchLaneFocusHref("staff", "points");
+    case "ds_admin":
+    case "super_admin":
+      return "/admin";
   }
 }
 
 export function getRushMonthActionDetailRouteRedirectHref(
   actor: LocalActorContext,
+  options: {
+    eventId?: string;
+    source?: string;
+  } = {},
 ): string | null {
-  switch (actor.primaryCanonicalRole) {
-    case "student_member":
-    case "committee_member":
-      return null;
-    case "traveler":
-      return "/slt-prep";
-    case "committee_chair":
-    case "eboard_officer":
-    case "vice_president":
-    case "president":
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
+      return getMemberActionDetailRedirectHref(options);
+    case "leader":
+      return getLaunchLaneLeaderEventsHref();
     case "coach":
-    case "sales_coach":
-      return "/rush-month/actions";
-    case "department_staff":
-      return "/staff?view=campaigns&campaign=rush-month";
-    case "sales_admin":
-    case "super_admin":
+    case "staff":
+      return getLaunchLaneStaffEventsHref({ campaignSlug: "rush-month" });
     case "ds_admin":
-      return "/rush-month/actions";
+    case "super_admin":
+      return "/admin";
   }
+}
+
+export function getCoachRouteRedirectHref(
+  actor: LocalActorContext,
+  searchParams: Record<string, string | undefined> = {},
+) {
+  return getLaunchLaneLegacyCoachRedirectHref(actor, searchParams);
+}
+
+export function getActionCommitteesRouteRedirectHref(
+  actor: LocalActorContext,
+): string {
+  return getLaunchLaneFocusHref(getActorSurfaceFamily(actor), "events");
+}
+
+export function getChapterRouteRedirectHref(
+  actor: LocalActorContext,
+  searchParams: ChapterRouteSearchParams = {},
+): string {
+  if (getActorSurfaceFamily(actor) !== "leader") {
+    return getLaunchLaneFocusHref(getActorSurfaceFamily(actor), "home");
+  }
+
+  return withQuery("/leader", {
+    ...searchParams,
+    view: searchParams.view ?? "overview",
+  });
+}
+
+export function getChapterMembersRouteRedirectHref(
+  actor: LocalActorContext,
+): string {
+  switch (getActorSurfaceFamily(actor)) {
+    case "member":
+      return "/app";
+    case "leader":
+      return "/leader?view=members";
+    case "coach":
+    case "staff":
+      return "/staff?view=chapters";
+    case "ds_admin":
+    case "super_admin":
+      return "/admin";
+  }
+}
+
+function withQuery(baseHref: string, query: Record<string, string | undefined>) {
+  const searchParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      searchParams.set(key, value);
+    }
+  }
+
+  const queryString = searchParams.toString();
+
+  if (!queryString) {
+    return baseHref;
+  }
+
+  return `${baseHref}?${queryString}`;
+}
+
+function parseMemberActionSource(source: string | undefined) {
+  switch (source) {
+    case "home":
+    case "campaigns":
+    case "evidence":
+    case "events":
+    case "points":
+    case "profile":
+      return source;
+    default:
+      return null;
+  }
+}
+
+function getMemberActionDetailRedirectHref(options: {
+  eventId?: string;
+  source?: string;
+}) {
+  const source = parseMemberActionSource(options.source);
+
+  if (source === "profile") {
+    return "/profile";
+  }
+
+  if (source === "points" || source === "evidence") {
+    return getLaunchLaneMemberPointsHref("points");
+  }
+
+  if (options.eventId) {
+    return buildMemberLaunchLaneEventDetailHref(options.eventId, source ?? "events");
+  }
+
+  return getLaunchLaneMemberCoreHref(source);
+}
+
+function getMemberEventRedirectHref(options: {
+  eventId?: string;
+  source?: string;
+}) {
+  const source = parseMemberActionSource(options.source);
+
+  if (options.eventId) {
+    return buildMemberLaunchLaneEventDetailHref(options.eventId, source ?? "events");
+  }
+
+  return getLaunchLaneFocusHref("member", "events");
+}
+
+function getMemberLeaderboardRedirectHref(source: string | undefined) {
+  const parsedSource = parseMemberActionSource(source);
+
+  if (
+    parsedSource === "home" ||
+    parsedSource === "events" ||
+    parsedSource === "points" ||
+    parsedSource === "profile"
+  ) {
+    return getLaunchLaneMemberPointsHref(parsedSource);
+  }
+
+  return getLaunchLaneFocusHref("member", "points");
 }

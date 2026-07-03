@@ -39,7 +39,12 @@ export type MinimumPilotPath = {
   label: string;
   route: string;
   localActorEmail: string;
-  pilotMode: "staff_rehearsal" | "first_live_candidate" | "manual_first" | "blocked";
+  pilotMode:
+    | "staff_rehearsal"
+    | "first_live_candidate"
+    | "controlled_luma_pilot"
+    | "manual_first"
+    | "blocked";
   whatMustWork: string;
   structuredEvents: string[];
   safetyBoundary: string;
@@ -145,7 +150,7 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
     plainEnglishSummary:
       "Use this planner to choose and close the smallest safe first live MVP pilot before broader students, uploads, or integrations are activated. The default finish line is one hosted staging chapter, one campaign, one narrow write loop, one proof/review loop, and named human owners for pause and rollback.",
     recommendedScope:
-      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-10 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one support/pause channel, and `action_started` as the first hosted write while every external integration stays manual or disabled.",
+      "Recommended first real pilot: UCLA MEDLIFE as the planning default, Rush Month only, 5-10 student users, one chapter leader owner, one coach owner, one HQ/admin owner, one DS owner, one support/pause channel, `action_started` as the first hosted write, and the approved Luma event/RSVP/attendance/points loop as the only external-family pilot path.",
     closeoutDefaults,
     ownerSlots,
     approvalReplyGuide: [
@@ -159,8 +164,8 @@ export function getPilotScopePlanner(actor: LocalActorContext): PilotScopePlanne
     decisions,
     safetyRules: [
       "Do not invite real students until staging, auth, first write path, proof consent, and support owner are approved.",
-      "Keep Luma, HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes disabled for the first pilot unless separately approved.",
-      "Use manual event attendance/NPS handling first unless the team approves a narrow Luma read/import path.",
+      "Keep HubSpot, n8n, warehouse, Power BI, SMS, email, AI, and non-approved Luma behavior disabled for the first pilot.",
+      "Use the approved Luma event/RSVP/attendance/points loop only after hosted staging proof and rollback ownership are recorded.",
       "Treat bridge videos/testimonials as HQ-owned proof; chapter leaders can help collect them but do not approve network-wide sharing.",
       "Use fake or staff-only data during dry runs. Do not mix real student data into local review.",
     ],
@@ -232,11 +237,12 @@ function getPilotCandidates(): PilotScopeCandidate[] {
         "staging environment",
         "auth/onboarding",
         "first write path via /admin/first-write",
+        "Luma event-loop proof via /admin/luma-live-pilot",
         "proof consent/storage posture",
         "named coach/support owner",
       ],
       mustStayManualOrDisabled: [
-        "Luma writes",
+        "non-approved Luma behavior",
         "HubSpot sync",
         "n8n automation",
         "warehouse exports",
@@ -339,20 +345,22 @@ function getMinimumPilotPath(): MinimumPilotPath[] {
       safetyBoundary: "Assignment creation and reminders can stay disabled in the first pilot.",
     },
     {
-      key: "event_nps_manual",
-      label: "Event attendance and NPS run manually first",
+      key: "event_luma_loop",
+      label: "Luma event, RSVP, attendance, and points loop",
       route: "/rush-month/events",
       localActorEmail: "leader.a@mymedlife.test",
-      pilotMode: "manual_first",
+      pilotMode: "controlled_luma_pilot",
       whatMustWork:
-        "Event owners, student action, NPS prompt, and proof prompt should be clear even if Luma import is manual.",
+        "The pilot event must connect Luma event identity, member RSVP, attendance import, points award, and leaderboard impact without turning on reminders or broad automation.",
       structuredEvents: [
         "luma_event_linked",
-        "luma_attendance_import_mocked",
+        "luma_rsvp_recorded",
+        "luma_attendance_imported",
+        "event_points_awarded",
         "kpi_event_recorded",
       ],
       safetyBoundary:
-        "No Luma writes, NPS reminders, n8n workflow, or warehouse export should run in the first pilot.",
+        "Only the approved Luma event-loop path may run; Luma reminders, webhooks, NPS automation, n8n workflow, HubSpot sync, and warehouse export stay off.",
     },
     {
       key: "proof_intake",
@@ -404,13 +412,13 @@ function getPilotDecisions(): PilotScopeDecision[] {
     },
     {
       key: "event_nps",
-      label: "Choose manual versus Luma/NPS import",
+      label: "Confirm the Luma event loop and manual NPS posture",
       owner: "HQ ops",
       status: "needs_decision",
       recommendation:
-        "Start with manual event/NPS handling and structured event logs before any Luma automation.",
+        "Use the approved Luma event/RSVP/attendance/points loop for the pilot, but keep NPS handling manual-first and do not enable reminders, webhooks, or downstream automation.",
       whyItMatters:
-        "Rush Month can prove the student behavior loop before external event automation adds failure modes.",
+        "Events and points are the core product loop, while NPS and downstream automation can wait until attendance and leaderboard behavior are proven.",
     },
     {
       key: "proof_rules",
@@ -438,9 +446,9 @@ function getPilotDecisions(): PilotScopeDecision[] {
       owner: "Data solutions",
       status: "staff_ready",
       recommendation:
-        "Use the outbox for visibility only; do not send HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, or AI writes.",
+        "Use the outbox for visibility only outside the approved Luma event loop; do not send HubSpot, n8n, warehouse, Power BI, SMS, email, AI, or non-approved Luma writes.",
       whyItMatters:
-        "The app/Supabase operating loop must be stable before external systems start reacting to it.",
+        "The app/Supabase operating loop and the controlled Luma event path must be stable before any other external system starts reacting to pilot behavior.",
     },
   ];
 }

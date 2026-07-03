@@ -13,6 +13,7 @@ import {
   type ChapterMemberRow,
 } from "@/services/chapter-membership-workspace";
 import { getLeaderActionsFocus } from "@/services/leader-actions-focus";
+import { isEventsPointsLaunchLaneEnabled } from "@/services/launch-lane-product-focus";
 import type { LocalActorContext } from "@/services/local-actor-context";
 import { buildStudentHomePreviewHref } from "@/services/local-preview-route";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
@@ -654,7 +655,7 @@ export type ChapterLeaderCommandCenterOptions = {
 const mockLeaderProfileId = "member-sofia-profile";
 
 const commandCenterViewLabels: Record<ChapterLeaderCommandCenterView, string> = {
-  overview: "Overview",
+  overview: "Chapter Home",
   leaderboard: "Leaderboard",
   members: "Member Pipeline",
   member_profile: "Member Profile",
@@ -938,6 +939,17 @@ const commandCenterNavGroups: ChapterLeaderCommandCenterNavGroup[] = [
   },
 ];
 
+const launchLaneCommandCenterNavGroups: ChapterLeaderCommandCenterNavGroup[] = [
+  {
+    label: "Chapter",
+    viewKeys: ["overview"],
+  },
+  {
+    label: "Event Loop",
+    viewKeys: ["events", "leaderboard"],
+  },
+];
+
 const chapterPointsTrendSample: ChapterLeaderCommandCenterTrendPoint[] = [
   { label: "Apr W1", value: 920 },
   { label: "Apr W2", value: 1080 },
@@ -1023,7 +1035,7 @@ const memberProfileDetailById: Record<string, Omit<
     leadershipActions: [
       { label: "Promote to Chair", href: "/leader?view=succession&member=member-sofia-president", tone: "primary" },
       { label: "Schedule Values Interview", href: "/leader?view=member_profile&member=member-sofia-president&quickAction=schedule_values_interview", tone: "secondary" },
-      { label: "Assign Leadership Action", href: "/leader?view=member_profile&member=member-sofia-president&quickAction=assign_leadership_action", tone: "secondary" },
+      { label: "Open Event Context", href: "/leader?view=member_profile&member=member-sofia-president&quickAction=assign_leadership_action", tone: "secondary" },
       { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-sofia-president", tone: "secondary" },
       { label: "Add Note", href: "/leader?view=member_profile&member=member-sofia-president&quickAction=add_leader_note", tone: "secondary" },
     ],
@@ -1080,7 +1092,7 @@ const memberProfileDetailById: Record<string, Omit<
     leadershipActions: [
       { label: "Promote to Chair", href: "/leader?view=succession&member=member-zara", tone: "primary" },
       { label: "Schedule Values Interview", href: "/leader?view=members&member=member-zara", tone: "secondary" },
-      { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "secondary" },
+      { label: "Open Event Context", href: "/rush-month/actions", tone: "secondary" },
       { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-zara", tone: "secondary" },
       { label: "Add Note", href: "/leader?view=member_profile&member=member-zara&quickAction=add_leader_note", tone: "secondary" },
     ],
@@ -1137,7 +1149,7 @@ const memberProfileDetailById: Record<string, Omit<
     leadershipActions: [
       { label: "Promote to Chair", href: "/leader?view=succession&member=member-ivy", tone: "secondary" },
       { label: "Schedule Values Interview", href: "/leader?view=members&member=member-ivy&pipeline=follow_up", tone: "primary" },
-      { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "secondary" },
+      { label: "Open Event Context", href: "/rush-month/actions", tone: "secondary" },
       { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-ivy", tone: "secondary" },
       { label: "Add Note", href: "/leader?view=member_profile&member=member-ivy&quickAction=add_leader_note", tone: "secondary" },
     ],
@@ -1184,7 +1196,7 @@ const memberProfileDetailById: Record<string, Omit<
     leadershipActions: [
       { label: "Promote to Chair", href: "/leader?view=succession&member=member-maya", tone: "secondary" },
       { label: "Schedule Values Interview", href: "/leader?view=members&member=member-maya", tone: "secondary" },
-      { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
+      { label: "Open Event Context", href: "/rush-month/actions", tone: "primary" },
       { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-maya", tone: "secondary" },
       { label: "Add Note", href: "/leader?view=member_profile&member=member-maya&quickAction=add_leader_note", tone: "secondary" },
     ],
@@ -1231,7 +1243,7 @@ const memberProfileDetailById: Record<string, Omit<
     leadershipActions: [
       { label: "Promote to Chair", href: "/leader?view=succession&member=member-leo", tone: "secondary" },
       { label: "Schedule Values Interview", href: "/leader?view=members&member=member-leo", tone: "secondary" },
-      { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
+      { label: "Open Event Context", href: "/rush-month/actions", tone: "primary" },
       { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-leo", tone: "primary" },
       { label: "Add Note", href: "/leader?view=member_profile&member=member-leo&quickAction=add_leader_note", tone: "secondary" },
     ],
@@ -1278,7 +1290,7 @@ const memberProfileDetailById: Record<string, Omit<
     leadershipActions: [
       { label: "Promote to Chair", href: "/leader?view=succession&member=member-nina", tone: "secondary" },
       { label: "Schedule Values Interview", href: "/leader?view=members&member=member-nina", tone: "secondary" },
-      { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
+      { label: "Open Event Context", href: "/rush-month/actions", tone: "primary" },
       { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-nina", tone: "secondary" },
       { label: "Add Note", href: "/leader?view=member_profile&member=member-nina&quickAction=add_leader_note", tone: "secondary" },
     ],
@@ -1325,7 +1337,7 @@ const memberProfileDetailById: Record<string, Omit<
     leadershipActions: [
       { label: "Promote to Chair", href: "/leader?view=succession&member=member-omar", tone: "secondary" },
       { label: "Schedule Values Interview", href: "/leader?view=members&member=member-omar", tone: "secondary" },
-      { label: "Assign Leadership Action", href: "/rush-month/actions", tone: "primary" },
+      { label: "Open Event Context", href: "/rush-month/actions", tone: "primary" },
       { label: "Nominate for E-Board", href: "/leader?view=succession&member=member-omar", tone: "secondary" },
       { label: "Add Note", href: "/leader?view=member_profile&member=member-omar&quickAction=add_leader_note", tone: "secondary" },
     ],
@@ -1347,6 +1359,7 @@ export function getChapterLeaderCommandCenter(
   }
 
   const selectedView = parseChapterLeaderCommandCenterView(options.view);
+  const launchLaneFocused = isEventsPointsLaunchLaneEnabled();
   const selectedSource = parseChapterLeaderSource(options.source);
   const selectedPipelineFilter = parsePipelineFilter(options.pipeline);
   const selectedLeaderboardMetric = parseLeaderboardMetric(options.leaderboardMetric);
@@ -1671,7 +1684,9 @@ export function getChapterLeaderCommandCenter(
       searchQuery: pipelineSearchQuery,
       bridgeVideoFilter: selectedBridgeVideoFilter,
     }),
-    navGroups: commandCenterNavGroups,
+    navGroups: launchLaneFocused
+      ? launchLaneCommandCenterNavGroups
+      : commandCenterNavGroups,
     pipelineFilterOptions: getPipelineFilterOptions({
       view: selectedView,
       source: selectedSource,
@@ -1846,7 +1861,7 @@ function getChapterLeaderSourceContext(
         eyebrow: "Member app handoff",
         title: `Opened from ${context.originChapterName} into Leader Hub`,
         summary:
-          `This leadership view was opened from the ${context.originChapterName} member-home role handoff. Keep review anchored to the student-facing Rush Month loop, with a clear path back to Student view instead of treating this like a disconnected dashboard.`,
+          `This leadership view was opened from the ${context.originChapterName} member-home handoff. Keep the next move anchored to the student event loop: open events, confirm attendance, and watch points move without treating this like a disconnected dashboard.`,
         preview: {
           heading: "Leader Hub",
           chapterLabel: context.originChapterName,
@@ -1857,25 +1872,25 @@ function getChapterLeaderSourceContext(
               note: "Approved members currently visible to this chapter.",
             },
             {
-              label: "Tasks assigned",
-              value: `${context.openAssignmentCount}`,
-              note: "Open chapter assignments still owned by students right now.",
+              label: "Attendance rate",
+              value: context.attendanceRateLabel,
+              note: "Visible chapter event attendance this month.",
             },
             {
-              label: "Tasks overdue",
+              label: "Events with proof",
+              value: context.eventsWithProofLabel,
+              note: "Event cadence that already shows visible follow-through.",
+            },
+            {
+              label: "Follow-up needed",
               value: `${context.followUpCount}`,
-              note: "Assignments or follow-through lanes that still need a leader decision.",
-            },
-            {
-              label: "Evidence pending",
-              value: `${context.proofFollowUpCount}`,
-              note: "Proof follow-up items still waiting for a visible review move.",
+              note: "Members or event moves still waiting for a leader decision.",
             },
           ],
           sections: [
             {
-              title: "Rush Month Progress",
-              summary: `${context.actionsCompletedValue} actions completed, ${context.eventsWithProofLabel} events with proof, and ${context.attendanceRateLabel} attendance this month.`,
+              title: "Event Pulse",
+              summary: `${context.actionsCompletedValue} visible member actions, ${context.eventsWithProofLabel} events with proof, and ${context.attendanceRateLabel} attendance this month.`,
               href: buildChapterLeaderCommandCenterHref("overview", {
                 source: "member_home",
               }),
@@ -1893,39 +1908,44 @@ function getChapterLeaderSourceContext(
             },
             {
               title: "Member Status",
-              summary: `${context.visiblePipelineCount} visible members are in the pipeline, and ${context.followUpCount} currently need follow-up.`,
+              summary: `${context.visiblePipelineCount} visible members are in the pipeline, and ${context.followUpCount} still need RSVP or follow-through attention.`,
               href: buildChapterLeaderCommandCenterHref("members", {
                 source: "member_home",
               }),
               hrefLabel: "Review members",
             },
             {
-              title: "Evidence Queue",
-              summary: `${context.proofFollowUpCount} proof follow-up items are waiting for leader review inside the Rush Month loop.`,
-              href: "/rush-month/review",
-              hrefLabel: "Review proof",
+              title: "Attendance Follow-Up",
+              summary: `${context.proofFollowUpCount} attendance or proof follow-up items still need confirmation before points stay trustworthy.`,
+              href: buildChapterLeaderCommandCenterHref("events", {
+                source: "member_home",
+                quickAction: "assign_action",
+              }),
+              hrefLabel: "Confirm attendance",
             },
           ],
         },
         actions: [
           {
-            label: "Review all 7",
+            label: "Review members",
             href: buildChapterLeaderCommandCenterHref("members", {
               source: "member_home",
               quickAction: "review_members",
             }),
           },
           {
-            label: "Assign action",
-            href: buildChapterLeaderCommandCenterHref("members", {
+            label: "Confirm attendance",
+            href: buildChapterLeaderCommandCenterHref("events", {
               source: "member_home",
-              pipelineFilter: "follow_up",
               quickAction: "assign_action",
             }),
           },
           {
-            label: "Review evidence",
-            href: "/rush-month/review",
+            label: "Open leaderboard",
+            href: buildChapterLeaderCommandCenterHref("leaderboard", {
+              source: "member_home",
+              leaderboardMetric: "attendance",
+            }),
           },
           {
             label: "Student view",
@@ -2314,20 +2334,13 @@ export function buildChapterLeaderCommitteeFlowHref(options: {
   pipelineFilter?: ChapterLeaderPipelineFilter;
   searchQuery?: string;
 }) {
-  const searchParams = new URLSearchParams();
-  const returnTo = buildChapterLeaderCommandCenterHref("committees", {
+  return buildChapterLeaderCommandCenterHref("committees", {
     source: options.source,
     memberId: options.memberId,
     committeeId: options.committeeId,
     pipelineFilter: options.pipelineFilter,
     searchQuery: options.searchQuery,
-    quickAction: "add_committee",
   });
-
-  searchParams.set("source", "chapter_add_committee");
-  searchParams.set("returnTo", returnTo);
-
-  return `/action-committees?${searchParams.toString()}`;
 }
 
 export function buildChapterLeaderProofUploadHref(options: {
@@ -2340,8 +2353,7 @@ export function buildChapterLeaderProofUploadHref(options: {
   bridgeVideoId?: string | null;
   feedPostId?: string | null;
 }) {
-  const searchParams = new URLSearchParams();
-  const returnTo = buildChapterLeaderCommandCenterHref("bridge_videos", {
+  return buildChapterLeaderCommandCenterHref("bridge_videos", {
     source: options.source,
     memberId: options.memberId,
     impactStoryId: options.impactStoryId,
@@ -2351,11 +2363,6 @@ export function buildChapterLeaderProofUploadHref(options: {
     bridgeVideoId: options.bridgeVideoId,
     feedPostId: options.feedPostId,
   });
-
-  searchParams.set("source", "chapter_bridge_video");
-  searchParams.set("returnTo", returnTo);
-
-  return `/proof-library/upload?${searchParams.toString()}`;
 }
 
 export function parseChapterLeaderCommandCenterView(
@@ -2662,11 +2669,17 @@ function getViewOptions(input: {
   searchQuery: string;
   bridgeVideoFilter?: ChapterLeaderBridgeVideoFilterKey;
 }): ChapterLeaderCommandCenterViewOption[] {
-  return (
-    Object.entries(commandCenterViewLabels) as Array<
-      [ChapterLeaderCommandCenterView, string]
-    >
-  ).map(([key, label]) => ({
+  const visibleEntries = isEventsPointsLaunchLaneEnabled()
+    ? ([
+        ["overview", commandCenterViewLabels.overview],
+        ["events", commandCenterViewLabels.events],
+        ["leaderboard", commandCenterViewLabels.leaderboard],
+      ] as Array<[ChapterLeaderCommandCenterView, string]>)
+    : (Object.entries(commandCenterViewLabels) as Array<
+        [ChapterLeaderCommandCenterView, string]
+      >);
+
+  return visibleEntries.map(([key, label]) => ({
     key,
     label,
     href: buildChapterLeaderCommandCenterHref(key, {
@@ -2745,7 +2758,7 @@ function getPipelineFilterOptions(input: {
 
 function getWeeklyPriorityTitle(actor: LocalActorContext) {
   if (actor.chapterRoles.includes("President / VP")) {
-    return "Activate Member Engagement committee, collect bridge videos from all chairs, and push the SLT sign-up campaign.";
+    return "Create the next Luma event, confirm attendance, and make sure points move the leaderboard.";
   }
 
   if (actor.chapterRoles.includes("E-Board Member")) {
@@ -3034,16 +3047,11 @@ function getMetrics(input: {
     return [
       { label: "Active Members", value: "84", note: "+6 from last month" },
       { label: "Events Created", value: "12", note: "This month" },
+      { label: "Luma RSVPs", value: "823", note: "Across visible events" },
       { label: "Attendance Rate", value: "67%", note: "-4% vs last month" },
-      { label: "Actions Completed", value: "156", note: "+24 this week" },
-      { label: "Evidence Submitted", value: "89", note: "of 156 actions" },
-      { label: "Bridge Videos", value: "9", note: "Submitted this month" },
       { label: "Points This Week", value: "1,480", note: "+11% vs last week" },
-      { label: "Funds Raised", value: "$8,400", note: "70% of $12k goal" },
-      { label: "SLT Participants", value: "18", note: "Signed up this cycle" },
-      { label: "Volunteer Hours", value: "284", note: "Local impact" },
-      { label: "Clinic Patients", value: "420", note: "Global MEDLIFE impact" },
-      { label: "Meals Served", value: "1,840", note: "Community partners" },
+      { label: "Chapter Rank", value: "#3", note: "Regional leaderboard" },
+      { label: "Org Rank", value: "Top 15%", note: "All chapters" },
     ];
   }
 
@@ -3132,11 +3140,6 @@ function getQuickActions(
     feedPostId?: string | null;
   } = {},
 ): ChapterLeaderCommandCenterQuickAction[] {
-  const pipelineFilter =
-    context.pipelineFilter && context.pipelineFilter !== "all"
-      ? context.pipelineFilter
-      : "follow_up";
-
   return [
     {
       label: "Create Event",
@@ -3150,15 +3153,14 @@ function getQuickActions(
       tone: "primary",
     },
     {
-      label: "Assign Action",
-      href: buildChapterLeaderCommandCenterHref("members", {
+      label: "Confirm Attendance",
+      href: buildChapterLeaderCommandCenterHref("events", {
         source: context.source,
         memberId: selectedMemberId,
-        pipelineFilter,
-        searchQuery: context.searchQuery,
+        eventCommitteeFilter: context.eventCommitteeFilter,
         quickAction: "assign_action",
       }),
-      helper: "Owner and proof handoff",
+      helper: "RSVP follow-up and point-ready roster",
       tone: "primary",
     },
     {
@@ -3174,28 +3176,13 @@ function getQuickActions(
       tone: "secondary",
     },
     {
-      label: "Promote Emerging Leader",
-      href: buildChapterLeaderCommandCenterHref("succession", {
+      label: "Review Leaderboard",
+      href: buildChapterLeaderCommandCenterHref("leaderboard", {
         source: context.source,
         memberId: selectedMemberId,
-        pipelineFilter: context.pipelineFilter,
-        searchQuery: context.searchQuery,
-        quickAction: "promote_emerging_leader",
+        leaderboardMetric: "attendance",
       }),
-      helper: "Succession preview only",
-      tone: "secondary",
-    },
-    {
-      label: "Share Bridge Video",
-      href: buildChapterLeaderCommandCenterHref("bridge_videos", {
-        source: context.source,
-        memberId: selectedMemberId,
-        impactStoryId: context.impactStoryId,
-        bridgeVideoFilter: context.bridgeVideoFilter,
-        feedPostId: context.feedPostId,
-        quickAction: "share_bridge_video",
-      }),
-      helper: "Story curation and handoff",
+      helper: "Chapter rank and points movement",
       tone: "secondary",
     },
   ];
@@ -3301,46 +3288,48 @@ function getRiskAlerts(input: {
   if (thinOrMissingRoles.length > 0) {
     alerts.push({
       severity: "high",
-      title: "Member Engagement committee has no chair — inactive for 3 weeks",
+      title: "Next event needs an owner before RSVP momentum drops",
       summary:
-        "This lane still has no visible owner, so open the committee view and assign a chair before the next chapter push loses more follow-through.",
-      href: buildChapterLeaderCommandCenterHref("committees", {
-        committeeId: "committee-member-engagement",
+        "Pick the leader who owns the next Luma event, RSVP check, and day-of attendance plan before the chapter push loses follow-through.",
+      href: buildChapterLeaderCommandCenterHref("events", {
+        eventCommitteeFilter: "recruitment",
       }),
-      hrefLabel: "Open committee",
+      hrefLabel: "Open events",
     });
   }
 
   if (input.workspace.counts.pendingRequests > 0) {
     alerts.push({
       severity: "medium",
-      title: "Fundraising committee has low activity — only 9 actions completed this month",
+      title: "RSVP conversion needs attention before the next event",
       summary:
-        "Fundraising is active but stalled, so open the committee lane and tighten owner follow-through before the next campaign push.",
-      href: buildChapterLeaderCommandCenterHref("committees", {
-        committeeId: "committee-fundraising",
+        "A group of interested students has not turned into attendance yet. Review the RSVP list and decide who needs a reminder before event day.",
+      href: buildChapterLeaderCommandCenterHref("events", {
+        eventCommitteeFilter: "recruitment",
       }),
-      hrefLabel: "Open fundraising",
+      hrefLabel: "Open RSVPs",
     });
   }
 
   if (input.workspace.counts.proofFollowUps > 0) {
     alerts.push({
       severity: "medium",
-      title: "No bridge videos submitted this month from 3 of 7 committees",
+      title: "Attendance confirmation is blocking points",
       summary:
-        "Several committee lanes still have no reusable bridge story this month, so open the bridge-video library and close the missing submissions.",
-      href: buildChapterLeaderCommandCenterHref("bridge_videos"),
-      hrefLabel: "Open bridge videos",
+        "Some event activity has not become confirmed check-ins yet. Close attendance so the leaderboard reflects the chapter's real work.",
+      href: buildChapterLeaderCommandCenterHref("events", {
+        eventCommitteeFilter: "all",
+      }),
+      hrefLabel: "Confirm attendance",
     });
   }
 
   if (input.eventCount > 0) {
     alerts.push({
       severity: "medium",
-      title: "Follow-up overdue after 'Tabling: Quad Recruitment' (Jun 15)",
+      title: "Leaderboard movement is waiting on event follow-up",
       summary:
-        "The recruitment event still needs visible follow-up, so open the event review and close the next-step gap before those leads go cold.",
+        "The recruitment event still needs visible follow-up, so open the event review and make sure attendance-backed points are reflected.",
       href: buildChapterLeaderCommandCenterHref("events", {
         eventCommitteeFilter: "recruitment",
         eventId: "bc-event-quad-tabling",
@@ -3364,7 +3353,7 @@ function getPipelineItems(
     statusLabel: "Pending join",
     laneLabel: request.requestedCommitteeLane,
     summary: request.nextStep,
-    href: "/chapter/members",
+    href: buildChapterLeaderCommandCenterHref("members"),
   }));
 
   const memberItems = members
@@ -3685,7 +3674,7 @@ function getMockLeaderProfile(context: {
         tone: "secondary",
       },
       {
-        label: "Assign Leadership Action",
+        label: "Open Event Context",
         href: buildLeaderProfileHref("assign_leadership_action"),
         tone: "secondary",
       },
@@ -3799,6 +3788,7 @@ function getMemberLeadershipActionHref(
         quickAction: "schedule_values_interview",
       });
     case "Assign Leadership Action":
+    case "Open Event Context":
       return buildChapterLeaderCommandCenterHref("member_profile", {
         memberId,
         source: context.source,

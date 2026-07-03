@@ -29,7 +29,7 @@ make a live pilot safe.
 3. First hosted write: `action_started`
 4. Smallest proof / review loop: metadata submit -> leader review -> audit trail
 5. Production environment ownership: DS/platform with GitHub/Copilot/Codex Security on security approval
-6. External integration hold: stay off for now
+6. External integration hold: stay off for now, except for the approved staging-only Luma event/RSVP/attendance/points proof loop
 7. Support / pause channel: one dedicated launch Slack channel, with email backup, and the primary approver as pause authority
 8. Monitoring and incident response: one named incident owner, one backup owner, one pilot alert channel, and the existing rollback path as the stop mechanism
 

@@ -33,12 +33,10 @@ describe("member rush month campaign panel", () => {
     expect(html).toContain("Assigned Actions by Role");
     expect(html).toContain("/campaigns?role=general-members#role-focus");
     expect(html).toContain("/campaigns?role=action-committee-chairs#role-focus");
-    expect(html).toContain("View my actions");
-    expect(html).toContain("/rush-month/actions?source=campaigns");
-    expect(html).toContain("Submit evidence");
-    expect(html).toContain(
-      "/rush-month/actions/share-rush-flyer?step=submit&amp;source=campaigns#submit-evidence",
-    );
+    expect(html).toContain("Open events");
+    expect(html).toContain("/app/events?source=campaigns");
+    expect(html).toContain("Open leaderboard");
+    expect(html).toContain("/app/points?source=campaigns");
   });
 
   it("can render a same-route role focus state inside the campaign surface", () => {
@@ -78,7 +76,7 @@ describe("member rush month campaign panel", () => {
     expect(html).toContain("Back to profile");
     expect(html).toContain("/campaigns?role=general-members&amp;source=profile#role-focus");
     expect(html).toContain("/campaigns?role=action-committee-chairs&amp;source=profile#role-focus");
-    expect(html).toContain("/rush-month/actions?source=campaigns");
+    expect(html).toContain("/app/events?source=campaigns");
     expect(html.indexOf("Rush Month")).toBeLessThan(html.indexOf("From profile"));
   });
 });

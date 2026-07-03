@@ -35,6 +35,9 @@ describe("read-only app data service", () => {
       "risk_flags",
       "campaign_closeouts",
       "evidence_items",
+      "chapter_events",
+      "luma_event_links",
+      "chapter_luma_calendars",
       "events",
       "points_events",
       "kpi_events",
@@ -51,6 +54,8 @@ describe("read-only app data service", () => {
     expect(data.chapter.name).toBe("UCLA MEDLIFE");
     expect(data.campaign.name).toBe("Rush Month");
     expect(data.campaign.weekLabel).toBe("Invite week");
+    expect(data.chapterRows).toHaveLength(1);
+    expect(data.campaignRows).toHaveLength(1);
     expect(data.assignments).toEqual([
       expect.objectContaining({
         title: "Invite three students",
@@ -70,7 +75,29 @@ describe("read-only app data service", () => {
         status: "pending_review",
       }),
     ]);
+    expect(data.chapterEventRows).toEqual([
+      expect.objectContaining({
+        id: "chapter-event-1",
+        title: "Intro GBM",
+      }),
+    ]);
+    expect(data.lumaEventLinkRows).toEqual([
+      expect.objectContaining({
+        id: "luma-link-1",
+        luma_event_id: "evt-1",
+      }),
+    ]);
+    expect(data.chapterLumaCalendarRows).toEqual([
+      expect.objectContaining({
+        id: "chapter-luma-1",
+        chapter_id: "chapter-1",
+        calendar_id: "cal-ucla-1234",
+      }),
+    ]);
     expect(data.eventRows).toHaveLength(1);
+    expect(data.allChapterEventRows).toHaveLength(1);
+    expect(data.allLumaEventLinkRows).toHaveLength(1);
+    expect(data.allPointsEventRows).toHaveLength(1);
     expect(data.pointsEventRows).toHaveLength(1);
     expect(data.kpiEventRows).toHaveLength(1);
     expect(data.integrationEventRows).toHaveLength(1);
@@ -344,6 +371,66 @@ const fakeRows: Record<string, unknown[]> = {
       nps_score: null,
       activity_label: "Invite push",
       submitted_at: "2026-06-15T00:00:00Z",
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  chapter_events: [
+    {
+      id: "chapter-event-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      phase_id: "phase-1",
+      action_committee_id: null,
+      assignment_id: "assignment-1",
+      title: "Intro GBM",
+      event_type: "social",
+      status: "published",
+      planned_by_user_id: "leader-1",
+      owner_user_id: "leader-1",
+      starts_at: "2026-06-16T18:00:00Z",
+      ends_at: "2026-06-16T20:00:00Z",
+      promotion_summary: "Member recruitment event.",
+      attendance_count: 18,
+      eligible_member_count: 42,
+      attendance_rate: 0.42,
+      nps_score: 70,
+      feedback_summary: "Strong turnout.",
+      warehouse_status: "disabled",
+      luma_event_link_id: "luma-link-1",
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  luma_event_links: [
+    {
+      id: "luma-link-1",
+      chapter_id: "chapter-1",
+      campaign_id: "campaign-1",
+      phase_id: "phase-1",
+      chapter_event_id: "chapter-event-1",
+      luma_event_id: "evt-1",
+      luma_event_url: "https://lu.ma/evt-1",
+      status: "mocked",
+      linked_by: "leader-1",
+      linked_at: "2026-06-15T00:00:00Z",
+      last_imported_at: null,
+      created_at: "2026-06-15T00:00:00Z",
+      updated_at: "2026-06-15T00:00:00Z",
+    },
+  ],
+  chapter_luma_calendars: [
+    {
+      id: "chapter-luma-1",
+      chapter_id: "chapter-1",
+      environment: "local",
+      calendar_id: "cal-ucla-1234",
+      calendar_label: "UCLA chapter calendar",
+      is_default: false,
+      status: "linked",
+      linked_by: "leader-1",
+      linked_at: "2026-06-15T00:00:00Z",
+      notes: "Saved in app for the local event loop.",
       created_at: "2026-06-15T00:00:00Z",
       updated_at: "2026-06-15T00:00:00Z",
     },

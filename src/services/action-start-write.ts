@@ -83,7 +83,7 @@ export function getActionStartWriteConfig(
         isLocalOnly: false,
         externalWritesEnabled: false,
         reason:
-          "Hosted staging action-start writes remain disabled. Set MYMEDLIFE_ENABLE_STAGING_ACTION_START_WRITE=true only after staging auth, pilot scope, and rollback ownership are approved.",
+          "Hosted staging action-start writes remain disabled. Turn on the staging Action started write control in /admin/feature-flags only after staging auth, pilot scope, and rollback ownership are approved.",
       };
     }
 
@@ -108,13 +108,13 @@ export function getActionStartWriteConfig(
 
   if (env.MYMEDLIFE_ENABLE_ACTION_START_WRITE !== "true") {
     return {
-      enabled: false,
-      isLocalOnly: true,
-      externalWritesEnabled: false,
-      reason:
-        "Action-start browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_ACTION_START_WRITE=true only after local auth and RLS are ready.",
-    };
-  }
+        enabled: false,
+        isLocalOnly: true,
+        externalWritesEnabled: false,
+        reason:
+          "Action-start browser-facing writes remain disabled. Turn on the Action started write control only after local auth and RLS are ready.",
+      };
+    }
 
   return {
     enabled: true,

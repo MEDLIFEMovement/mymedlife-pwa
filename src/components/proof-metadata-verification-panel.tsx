@@ -16,6 +16,19 @@ export function ProofMetadataVerificationPanel({
     return null;
   }
 
+  const isHostedStaging = packet.verificationPacket.envSettings.some((setting) => {
+    return setting.key === "MYMEDLIFE_AUTH_MODE" && setting.value === "staging_supabase";
+  });
+  const settingsLabel = isHostedStaging
+    ? "Required staging review settings"
+    : "Required local env settings";
+  const emptyStateMessage = isHostedStaging
+    ? "Prove the first hosted action-start drill on staging before testing proof metadata."
+    : "Run the first action-start drill against local Supabase before testing proof metadata.";
+  const readbackIntro = isHostedStaging
+    ? "After the hosted proof metadata test runs, this section should show observed assignment, evidence, event, integration, disabled outbox, and audit proof. It is read-only and does not trigger the write."
+    : "After the local proof metadata test runs, this section should show observed assignment, evidence, event, integration, disabled outbox, and audit proof. It is read-only and does not trigger the write.";
+
   return (
     <section className="rounded-[2rem] border border-blue-300/20 bg-blue-300/10 p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -83,8 +96,7 @@ export function ProofMetadataVerificationPanel({
             No proof-ready assignment found
           </h2>
           <p className="mt-2 text-sm leading-6 text-white/64">
-            Run the first action-start drill against local Supabase before testing
-            proof metadata.
+            {emptyStateMessage}
           </p>
         </article>
       )}
@@ -110,7 +122,7 @@ export function ProofMetadataVerificationPanel({
         <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.9fr]">
           <article className="rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
             <p className="text-sm font-semibold text-white">
-              Required local env settings
+              {settingsLabel}
             </p>
             <div className="mt-3 grid gap-2">
               {packet.verificationPacket.envSettings.map((setting) => (
@@ -211,9 +223,7 @@ export function ProofMetadataVerificationPanel({
           Post-proof readback evidence
         </h2>
         <p className="mt-2 text-sm leading-6 text-white/62">
-          After the local proof metadata test runs, this section should show
-          observed assignment, evidence, event, integration, disabled outbox, and
-          audit proof. It is read-only and does not trigger the write.
+          {readbackIntro}
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {packet.readbackEvidence.map((item) => (

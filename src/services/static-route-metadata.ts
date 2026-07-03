@@ -46,6 +46,9 @@ export type StaticRouteMetadataKey =
   | "adminLaunchGate"
   | "adminAuditLog"
   | "adminIntegrations"
+  | "adminFeatureFlags"
+  | "adminTheme"
+  | "adminLumaLivePilot"
   | "adminIntegrationProvider"
   | "adminIntegrationAudit"
   | "adminIntegrationOutbox"
@@ -92,7 +95,7 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
   login: {
     title: "Local Sign In",
     description:
-      "Local Supabase Auth sign-in for fake myMEDLIFE seed users and session readiness.",
+      "Sign in to myMEDLIFE and let the app route each user into the correct workspace.",
   },
   chapter: {
     title: "Student Leadership Command Center",
@@ -281,6 +284,21 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Admin Integrations",
     description:
       "DS-only secure provider configuration with write-only credential posture, masked metadata, and audited server-only actions.",
+  },
+  adminFeatureFlags: {
+    title: "Admin Feature Flags",
+    description:
+      "Supabase-backed rollout controls for review auth, write gates, Luma loop posture, and blocked production integrations.",
+  },
+  adminTheme: {
+    title: "Admin Theme Settings",
+    description:
+      "Supabase-backed theme tokens for the white-blue app shell across local, staging, and production review.",
+  },
+  adminLumaLivePilot: {
+    title: "Admin Luma Live Pilot",
+    description:
+      "Staging-only Luma event, RSVP, attendance, points, audit, and outbox proof route with production still blocked.",
   },
   adminIntegrationProvider: {
     title: "Provider Configuration",

@@ -11,12 +11,13 @@ Status:
 1. [myMEDLIFE-production-approval-request.md](./myMEDLIFE-production-approval-request.md)
 2. [myMEDLIFE-production-go-no-go-matrix.md](./myMEDLIFE-production-go-no-go-matrix.md)
 3. [myMEDLIFE-production-launch-checklist.md](./myMEDLIFE-production-launch-checklist.md)
-4. [2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md](./2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md)
-5. [myMEDLIFE-production-approval-email-draft.md](./myMEDLIFE-production-approval-email-draft.md)
-6. [myMEDLIFE-production-next-steps-after-reply.md](./myMEDLIFE-production-next-steps-after-reply.md)
-7. [myMEDLIFE-staging-reviewer-access-guide.md](./myMEDLIFE-staging-reviewer-access-guide.md)
-8. [myMEDLIFE-production-decision-tracker.md](./myMEDLIFE-production-decision-tracker.md)
-9. [myMEDLIFE-production-reply-template.md](./myMEDLIFE-production-reply-template.md)
+4. [../architecture/phase-2-live-environment-setup-checklist.md](../architecture/phase-2-live-environment-setup-checklist.md)
+5. [2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md](./2026-06-24-phase-2-live-mvp-pilot-closeout-packet.md)
+6. [myMEDLIFE-production-approval-email-draft.md](./myMEDLIFE-production-approval-email-draft.md)
+7. [myMEDLIFE-production-next-steps-after-reply.md](./myMEDLIFE-production-next-steps-after-reply.md)
+8. [myMEDLIFE-staging-reviewer-access-guide.md](./myMEDLIFE-staging-reviewer-access-guide.md)
+9. [myMEDLIFE-production-decision-tracker.md](./myMEDLIFE-production-decision-tracker.md)
+10. [myMEDLIFE-production-reply-template.md](./myMEDLIFE-production-reply-template.md)
 
 ## What Reviewers Should Decide
 

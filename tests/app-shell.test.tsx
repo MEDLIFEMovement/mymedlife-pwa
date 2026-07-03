@@ -69,7 +69,8 @@ describe("app shell", () => {
     expect(html).toContain("Member surface");
     expect(html).toContain("Mobile quick navigation");
     expect(html).toContain("Home");
-    expect(html).toContain("Campaigns");
+    expect(html).toContain("Events");
+    expect(html).toContain("Points");
     expect(html).toContain("Profile");
     expect(html).toContain("pb-[calc(11rem+env(safe-area-inset-bottom))]");
     expect(html).not.toMatch(
@@ -86,5 +87,26 @@ describe("app shell", () => {
     expect(html).toContain("Action Committee Member");
     expect(html).not.toContain("Student member view");
     expect(html).toContain("Member surface");
+  });
+
+  it("keeps the coach and staff shell copy centered on events, attendance, and leaderboard movement", () => {
+    const coach = getMockLocalActorContext("coach@mymedlife.test");
+    const staff = getMockLocalActorContext("general.staff@mymedlife.test");
+
+    const coachHtml = renderToStaticMarkup(
+      <AppShell actor={coach}>
+        <section>Coach surface</section>
+      </AppShell>,
+    );
+    const staffHtml = renderToStaticMarkup(
+      <AppShell actor={staff}>
+        <section>Staff surface</section>
+      </AppShell>,
+    );
+
+    expect(coachHtml).toContain("Portfolio chapters, events, attendance, and leaderboard.");
+    expect(coachHtml).not.toContain("Portfolio chapters, events, points, and risks.");
+    expect(staffHtml).toContain("Chapters, events, attendance, and leaderboard.");
+    expect(staffHtml).not.toContain("Chapters, events, points, and risks.");
   });
 });

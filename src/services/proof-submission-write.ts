@@ -113,7 +113,7 @@ export function getProofSubmissionWriteConfig(
         externalWritesEnabled: false,
         uploadsEnabled: false,
         reason:
-          "Hosted staging proof-submission writes remain disabled. Set MYMEDLIFE_ENABLE_STAGING_PROOF_SUBMISSION_WRITE=true only after staging auth, first-write proof, and rollback ownership are approved.",
+          "Hosted staging proof-submission writes remain disabled. Turn on the staging Proof metadata write control in /admin/feature-flags only after staging auth, first-write proof, and rollback ownership are approved.",
       };
     }
 
@@ -140,14 +140,14 @@ export function getProofSubmissionWriteConfig(
 
   if (env.MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE !== "true") {
     return {
-      enabled: false,
-      isLocalOnly: true,
-      externalWritesEnabled: false,
-      uploadsEnabled: false,
-      reason:
-        "Proof-submission browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_PROOF_SUBMISSION_WRITE=true only after local auth and RLS are ready.",
-    };
-  }
+        enabled: false,
+        isLocalOnly: true,
+        externalWritesEnabled: false,
+        uploadsEnabled: false,
+        reason:
+          "Proof-submission browser-facing writes remain disabled. Turn on the Proof metadata write control only after local auth and RLS are ready.",
+      };
+    }
 
   return {
     enabled: true,

@@ -6,6 +6,7 @@ import { RestrictedState } from "@/components/restricted-state";
 import { getFirstWriteActivationDrill } from "@/services/first-write-activation-drill";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getResolvedFeatureFlagEnv } from "@/services/runtime-feature-flags";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
@@ -13,11 +14,12 @@ export const metadata = getStaticRouteMetadata("adminFirstWrite");
 export const dynamic = "force-dynamic";
 
 export default async function FirstWritePage() {
-  const [data, actor] = await Promise.all([
+  const [data, actor, resolvedEnv] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
+    getResolvedFeatureFlagEnv(["staging_review_auth", "action_started_write"]),
   ]);
-  const drill = getFirstWriteActivationDrill(actor, data);
+  const drill = getFirstWriteActivationDrill(actor, data, resolvedEnv);
 
   return (
     <AdminAppShell actor={actor}>

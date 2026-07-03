@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/action-committees",
   useSearchParams: () => new URLSearchParams(),
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
+  }),
 }));
 
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
@@ -17,47 +18,56 @@ vi.mock("@/services/local-actor-context", async (importOriginal) => {
   };
 });
 
+function getSignedInActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-in test actor.",
+    "mock_fallback",
+    "local_auth_session",
+    "signed_in",
+  );
+}
+
 describe("action committees page", () => {
-  it("opens the committee workspace route with the role-aware handoff and operating examples", async () => {
+  it("parks leaders back into the leader events lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("leader.a@mymedlife.test"),
+      getSignedInActor("leader.a@mymedlife.test"),
     );
 
     const { default: ActionCommitteesPage } = await import("@/app/action-committees/page");
-    const html = renderToStaticMarkup(await ActionCommitteesPage({}));
 
-    expect(html).toContain("Action committees");
-    expect(html).toContain("Role-aware committee workspace");
-    expect(html).toContain("What should I do next?");
-    expect(html).toContain("Priority event focus");
-    expect(html).toContain("Event operating examples");
-    expect(html).toContain("Open related campaign");
+    await expect(ActionCommitteesPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/leader?view=events",
+    );
   });
 
-  it("keeps the chapter-committees handoff visible across the broader committee workspace", async () => {
+  it("parks members back into the member events lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("leader.a@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
 
     const { default: ActionCommitteesPage } = await import("@/app/action-committees/page");
-    const html = renderToStaticMarkup(
-      await ActionCommitteesPage({
-        searchParams: Promise.resolve({
-          source: "chapter_add_committee",
-          returnTo: "/chapter?view=committees&committee=committee-events&quickAction=add_committee",
-        }),
-      }),
+
+    await expect(ActionCommitteesPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/app/events",
+    );
+  });
+
+  it("sends signed-out reviewers to login before opening the parked action-committees route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getMockLocalActorContext("member.a@mymedlife.test"),
     );
 
-    expect(html).toContain("From chapter committees");
-    expect(html).toContain("The committee health lane is still the review context.");
-    expect(html).toContain("Back to chapter committees");
-    expect(html).toContain(
-      'href="/chapter?view=committees&amp;committee=committee-events&amp;quickAction=add_committee"',
+    const { default: ActionCommitteesPage } = await import("@/app/action-committees/page");
+
+    await expect(ActionCommitteesPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/login?redirectTo=%2Faction-committees",
     );
   });
 });

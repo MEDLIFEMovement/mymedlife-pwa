@@ -1,16 +1,16 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { buildChapterLeaderAssignmentFlowHref } from "@/services/chapter-leader-command-center";
 import { ChapterLeaderEventCommitteeFilterSelect } from "@/components/chapter-leader-event-committee-filter-select";
 import { ChapterLeaderLeaderboardRegionFilterSelect } from "@/components/chapter-leader-leaderboard-region-filter-select";
 import { ChapterLeaderPipelineFilterSelect } from "@/components/chapter-leader-pipeline-filter-select";
 import { EventLoopStrip } from "@/components/event-loop-strip";
 import {
-  buildChapterLeaderAssignmentFlowHref,
+  buildChapterLeaderCommandCenterHref,
   buildChapterLeaderCommitteeFlowHref,
   buildChapterLeaderEventFlowHref,
   buildChapterLeaderProofUploadHref,
-  buildChapterLeaderCommandCenterHref,
   type ChapterLeaderCommandCenter,
   type ChapterLeaderCommandCenterCommitteeCard,
   type ChapterLeaderCommandCenterEventCard,
@@ -35,23 +35,6 @@ export function ChapterLeaderCommandCenterPanel({
   }
 
   const isOverview = commandCenter.selectedView === "overview";
-  const heroActions = orderCommandCenterActions(commandCenter.quickActions, [
-    "Create Event",
-    "Assign Action",
-  ]);
-  const overviewQuickActions = orderCommandCenterActions(commandCenter.quickActions, [
-    "Review Members",
-    "Assign Action",
-    "Promote Emerging Leader",
-    "Create Event",
-    "Share Bridge Video",
-  ]);
-  const dashboardHeading = getDashboardHeading(commandCenter.eventsOverview.monthLabel);
-  const healthRankingLabel = getHealthRankingLabel(commandCenter);
-  const showMemberHomeHandoff = commandCenter.selectedSource === "member_home";
-  const memberHomeHandoffPreview = showMemberHomeHandoff
-    ? commandCenter.sourceContext?.preview ?? null
-    : null;
   const preservedChapterState = {
     source: commandCenter.selectedSource,
     memberId: commandCenter.navigationMemberId,
@@ -65,6 +48,64 @@ export function ChapterLeaderCommandCenterPanel({
     searchQuery: commandCenter.pipelineSearchQuery,
     feedPostId: commandCenter.selectedFeedPostId,
   } as const;
+  const createEventHref = buildChapterLeaderCommandCenterHref("events", {
+    source: preservedChapterState.source,
+    memberId: preservedChapterState.memberId,
+    eventCommitteeFilter: commandCenter.selectedEventCommitteeFilter,
+    pipelineFilter: preservedChapterState.pipelineFilter,
+    searchQuery: preservedChapterState.searchQuery,
+    quickAction: "create_event",
+  });
+  const assignActionHref = buildChapterLeaderAssignmentFlowHref({
+    source: preservedChapterState.source,
+    memberId: preservedChapterState.memberId,
+    pipelineFilter: preservedChapterState.pipelineFilter,
+    searchQuery: preservedChapterState.searchQuery,
+  });
+  const heroActions: ChapterLeaderCommandCenterQuickAction[] = [
+    {
+      label: "Create Event",
+      href: createEventHref,
+      helper: "Open the event lane",
+      tone: "primary",
+    },
+    {
+      label: "Confirm Attendance",
+      href: assignActionHref,
+      helper: "Check RSVPs and point-ready attendance",
+      tone: "secondary",
+    },
+  ];
+  const overviewQuickActions: ChapterLeaderCommandCenterQuickAction[] = [
+    {
+      label: "Create Event",
+      href: createEventHref,
+      helper: "Open the event lane",
+      tone: "primary",
+    },
+    {
+      label: "Confirm Attendance",
+      href: assignActionHref,
+      helper: "Check RSVPs and point-ready attendance",
+      tone: "secondary",
+    },
+    {
+      label: "Open Leaderboard",
+      href: buildChapterLeaderCommandCenterHref("leaderboard", {
+        source: preservedChapterState.source,
+        memberId: preservedChapterState.memberId,
+        leaderboardMetric: "attendance",
+      }),
+      helper: "Show chapter points movement",
+      tone: "secondary",
+    },
+  ];
+  const dashboardHeading = getDashboardHeading(commandCenter.eventsOverview.monthLabel);
+  const healthRankingLabel = getHealthRankingLabel(commandCenter);
+  const showMemberHomeHandoff = commandCenter.selectedSource === "member_home";
+  const memberHomeHandoffPreview = showMemberHomeHandoff
+    ? commandCenter.sourceContext?.preview ?? null
+    : null;
 
   return (
     <section className="grid gap-4 xl:grid-cols-[17.25rem_minmax(0,1fr)] xl:items-start">
@@ -174,7 +215,7 @@ export function ChapterLeaderCommandCenterPanel({
                               "pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 transition",
                               commandCenter.selectedView === option.key
                                 ? "text-white"
-                                : "text-white/55",
+                                : "text-[#c7d7f5]",
                             ].join(" ")}
                           >
                             <ChapterNavIcon view={option.key} />
@@ -184,14 +225,19 @@ export function ChapterLeaderCommandCenterPanel({
                             aria-current={
                               commandCenter.selectedView === option.key ? "page" : undefined
                             }
+                            style={
+                              commandCenter.selectedView === option.key
+                                ? undefined
+                                : { color: "#f8fbff" }
+                            }
                             className={[
                               "block rounded-[1rem] px-3 py-2.5 pl-11 text-sm font-semibold transition",
                               commandCenter.selectedView === option.key
                                 ? "border border-white/10 bg-[#2563eb] text-white shadow-[0_10px_24px_rgba(37,99,235,0.22)]"
-                                : "border border-white/10 bg-white/5 text-white/80 hover:border-[#93c5fd]/40 hover:bg-white/10 hover:text-white",
+                                : "border border-[#254064] bg-[#13294c] text-[#dbeafe] hover:border-[#7fb5ff] hover:bg-[#19345f] hover:text-white",
                             ].join(" ")}
                           >
-                            {option.label}
+                            {option.key === "overview" ? "Chapter Home" : option.label}
                           </Link>
                         </div>
                       ))}
@@ -246,20 +292,24 @@ export function ChapterLeaderCommandCenterPanel({
 
         {isOverview ? (
           <div className="grid gap-4">
-            <section className="app-surface-info rounded-[1.85rem] p-5">
-              <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr] xl:items-start">
+            <section className="rounded-[1.95rem] border border-[#0f172a] bg-[#07192E] p-5 shadow-[0_18px_48px_rgba(15,23,42,0.18)]">
+              <div className="grid gap-5 xl:grid-cols-[auto_minmax(0,1fr)_18rem] xl:items-start">
+                <div className="xl:pt-1">
+                  <HealthScoreRing score={commandCenter.healthScore} />
+                </div>
+
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#2563eb]">
-                    Leader Overview
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#93c5fd]">
+                    Chapter Home
                   </p>
                   <div className="mt-3 min-w-0">
-                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-500">
-                        {dashboardHeading}
-                      </p>
-                    <h1 className="mt-2 text-[1.9rem] font-semibold leading-[1.05] text-slate-950 sm:text-[2.1rem]">
+                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-[#93c5fd]">
+                      {dashboardHeading}
+                    </p>
+                    <h1 className="mt-2 text-[1.9rem] font-semibold leading-[1.05] text-white sm:text-[2.1rem]">
                       {commandCenter.chapterName}
                     </h1>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                    <p className="mt-2 text-sm leading-6 text-[#bfdbfe]">
                       {commandCenter.sidebarLeaderLabel}
                       {", "}
                       {commandCenter.sidebarLeaderRoleLabel}
@@ -489,20 +539,20 @@ function renderView(
           {commandCenter.activeQuickAction === "export_members" ? (
             <SectionCard
               eyebrow="Export Members"
-              title="Start from the member pipeline, then open the roster export lane."
+              title="Start from the member pipeline and keep the roster context visible."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <p className="text-sm leading-6 text-slate-600">
                   Keep the pipeline filters, the active member context, and the chapter-owned
-                  readiness view visible while you decide what roster slice actually needs to
-                  travel. Once the export target is clear, open the broader membership workspace
-                  without losing the command-center context.
+                  readiness view visible while you decide what roster slice actually needs
+                  attention. Stay in the chapter pipeline first, then decide later whether any
+                  export is truly needed.
                 </p>
                 <Link
-                  href="/chapter/members"
+                  href="/leader?view=members"
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
-                  Open roster export
+                  Open member pipeline
                 </Link>
               </div>
             </SectionCard>
@@ -510,20 +560,20 @@ function renderView(
           {commandCenter.activeQuickAction === "add_member" ? (
             <SectionCard
               eyebrow="Add Member"
-              title="Start from the member pipeline, then open the intake lane."
+              title="Start from the member pipeline and keep join pressure visible."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <p className="text-sm leading-6 text-slate-600">
                   Keep pipeline coverage, join-request pressure, and the active chapter context
                   visible while you confirm whether this is a roster add, a membership approval,
-                  or a role-shaping follow-up. Once that is clear, open the broader membership
-                  workspace without dropping the chapter-owned review state.
+                  or a role-shaping follow-up. Stay in the leader-owned pipeline first so the
+                  review context does not jump to a separate product lane.
                 </p>
                 <Link
-                  href="/chapter/members"
+                  href="/leader?view=members"
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
-                  Open member intake
+                  Open member pipeline
                 </Link>
               </div>
             </SectionCard>
@@ -577,31 +627,6 @@ function renderView(
                     Open member review
                   </Link>
                 </div>
-              </div>
-            </SectionCard>
-          ) : null}
-          {commandCenter.activeQuickAction === "assign_action" ? (
-            <SectionCard
-              eyebrow="Assign Action"
-              title="Start from the member pipeline, then open the assignment lane."
-            >
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                <p className="text-sm leading-6 text-slate-600">
-                  Keep the selected member and pipeline context visible while you confirm who
-                  needs the next push. Once the right student is in focus, open the assignment
-                  flow without losing the chapter-owned review state.
-                </p>
-                <Link
-                  href={buildChapterLeaderAssignmentFlowHref({
-                    source: commandCenter.selectedSource,
-                    memberId: commandCenter.selectedMemberId,
-                    pipelineFilter: commandCenter.selectedPipelineFilter,
-                    searchQuery: commandCenter.pipelineSearchQuery,
-                  })}
-                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
-                >
-                  Open assignment flow
-                </Link>
               </div>
             </SectionCard>
           ) : null}
@@ -676,7 +701,7 @@ function renderView(
 
             <div className="flex flex-col gap-3 rounded-[1.25rem] border border-slate-200 bg-[#dbeafe]/90 p-3.5 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex flex-col gap-3 xl:min-w-[34rem] xl:flex-1 xl:flex-row xl:items-center">
-                <form action="/chapter" method="get" className="min-w-0 xl:flex-[1.15]">
+                <form action="/leader" method="get" className="min-w-0 xl:flex-[1.15]">
                   <input type="hidden" name="view" value="members" />
                   <label className="sr-only" htmlFor="member-pipeline-search">
                     Search members
@@ -977,13 +1002,12 @@ function renderView(
           {commandCenter.activeQuickAction === "add_committee" ? (
             <SectionCard
               eyebrow="Add Committee"
-              title="Open the committee lane with ownership and operating health in mind."
+              title="Stay inside the committee lane while you review ownership and operating health."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <p className="text-sm leading-6 text-slate-600">
                   Start from the chapter committees view so the new lane stays attached to chair
-                  coverage, chapter health, and the visible operating system before you move into
-                  the broader committee workspace.
+                  coverage, chapter health, and the visible operating system before you continue.
                 </p>
                 <Link
                   href={buildChapterLeaderCommitteeFlowHref({
@@ -995,7 +1019,7 @@ function renderView(
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
-                  Open committee flow
+                  Open committee lane
                 </Link>
               </div>
             </SectionCard>
@@ -1129,11 +1153,11 @@ function renderView(
                 <div className="mt-4 flex flex-col gap-3 rounded-[1rem] border border-white/80 bg-white/80 p-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1d4ed8]">
-                      Broader committee workspace
+                      Committee lane
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       Keep the chair, next event, and next move visible here first. Once the
-                      chapter context feels clear, continue into the broader committee workspace.
+                      chapter context feels clear, continue inside the committee lane.
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
@@ -1160,7 +1184,7 @@ function renderView(
                       })}
                       className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                     >
-                      Open committee workspace
+                      Open committee lane
                     </Link>
                   </div>
                 </div>
@@ -1205,6 +1229,31 @@ function renderView(
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
                   Open event flow
+                </Link>
+              </div>
+            </SectionCard>
+          ) : null}
+          {commandCenter.activeQuickAction === "assign_action" ? (
+            <SectionCard
+              eyebrow="Confirm Attendance"
+              title="Start from RSVPs, then confirm who attended and earned points."
+            >
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <p className="text-sm leading-6 text-slate-600">
+                  Keep the active event, RSVP posture, and chapter context visible while you
+                  confirm the attendance roster. Once attendance is clear, the points and
+                  leaderboard movement become much easier to trust.
+                </p>
+                <Link
+                  href={buildChapterLeaderAssignmentFlowHref({
+                    source: commandCenter.selectedSource,
+                    memberId: commandCenter.navigationMemberId,
+                    pipelineFilter: commandCenter.selectedPipelineFilter,
+                    searchQuery: commandCenter.pipelineSearchQuery,
+                  })}
+                  className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Open attendance flow
                 </Link>
               </div>
             </SectionCard>
@@ -1702,12 +1751,12 @@ function renderView(
           {commandCenter.activeQuickAction === "submit_bridge_video" ? (
             <SectionCard
               eyebrow="Submit Bridge Video"
-              title="Start from the bridge-video library, then open the proof lane."
+              title="Start from the bridge-video library, then keep the story in the bridge-video lane."
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                 <p className="text-sm leading-6 text-slate-600">
                   Keep the current story context, category filter, and member lens visible first
-                  so the submission starts from a real chapter bridge story instead of a generic
+                  so the submission starts from a real chapter bridge story instead of a detached
                   upload task.
                 </p>
                 <Link
@@ -1723,7 +1772,7 @@ function renderView(
                   })}
                   className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
                 >
-                  Open proof lane
+                  Open bridge-video lane
                 </Link>
               </div>
             </SectionCard>
@@ -2481,7 +2530,7 @@ function QuickActionLink({
         action.tone === "primary"
           ? "bg-[#2563eb] text-white hover:bg-[#2d6cf4]"
           : variant === "hero"
-            ? "border border-white/18 bg-white/[0.12] text-white shadow-[0_10px_26px_rgba(2,14,38,0.16)] hover:border-white/28 hover:bg-white/[0.18]"
+            ? "border border-white bg-white text-[#08224c] shadow-[0_10px_26px_rgba(2,14,38,0.16)] hover:border-[#bfdbfe] hover:bg-[#eaf2ff] hover:text-[#08224c]"
             : variant === "sidebar"
               ? "border border-white/10 bg-white/[0.05] text-white/82 hover:border-white/18 hover:bg-white/[0.1] hover:text-white"
             : "border border-slate-200 bg-white text-slate-700 hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950",
@@ -2490,15 +2539,6 @@ function QuickActionLink({
       {action.label}
     </Link>
   );
-}
-
-function orderCommandCenterActions(
-  actions: ChapterLeaderCommandCenterQuickAction[],
-  orderedLabels: string[],
-) {
-  return orderedLabels
-    .map((label) => actions.find((action) => action.label === label))
-    .filter((action): action is ChapterLeaderCommandCenterQuickAction => Boolean(action));
 }
 
 function getChapterMetricsHeading(commandCenter: ChapterLeaderCommandCenter) {
@@ -2535,6 +2575,60 @@ function ContextPill({ label }: { label: string }) {
     <span className="rounded-full border border-white/28 bg-white/92 px-3 py-1 text-xs font-semibold text-slate-800">
       {label}
     </span>
+  );
+}
+
+function HealthScoreRing({ score }: { score: number }) {
+  const size = 108;
+  const strokeWidth = 10;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clampedScore = Math.max(0, Math.min(100, score));
+  const progress = circumference * (1 - clampedScore / 100);
+  const strokeColor =
+    clampedScore >= 80 ? "#2563eb" : clampedScore >= 64 ? "#f59e0b" : "#ef4444";
+
+  return (
+    <div className="flex h-[7.25rem] w-[7.25rem] items-center justify-center rounded-[1.7rem] border border-white/12 bg-white/[0.06]">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="rgba(255,255,255,0.16)"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={progress}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+        <text
+          x="50%"
+          y="46%"
+          textAnchor="middle"
+          className="fill-white text-[1.5rem] font-semibold"
+        >
+          {clampedScore}
+        </text>
+        <text
+          x="50%"
+          y="62%"
+          textAnchor="middle"
+          className="fill-[#bfdbfe] text-[0.62rem] font-semibold uppercase tracking-[0.18em]"
+        >
+          / 100
+        </text>
+      </svg>
+    </div>
   );
 }
 
@@ -3042,28 +3136,29 @@ function renderMemberProfileQuickActionState(
         </SectionCard>
       );
     case "assign_leadership_action":
-      const assignmentLaneHref = buildChapterLeaderAssignmentFlowHref({
+      const memberEventFlowHref = buildChapterLeaderEventFlowHref({
         source: commandCenter.selectedSource,
         memberId: member.id,
         pipelineFilter: commandCenter.selectedPipelineFilter,
         searchQuery: commandCenter.pipelineSearchQuery,
+        quickAction: "assign_action",
       });
       return (
         <SectionCard
-          eyebrow="Assign Leadership Action"
-          title="Start from this member profile, then open the action-assignment lane."
+          eyebrow="Open Event Context"
+          title="Start from this member profile, then open the event and attendance lane."
         >
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <p className="text-sm leading-6 text-slate-600">
-              Keep the person-level context visible while you confirm what stretch action would
-              actually test growth, consistency, or leadership readiness. Then hand off into the
-              broader action flow with this decision anchored to a real student.
+              Keep the person-level context visible while you confirm which events, RSVP follow-up,
+              and attendance signals actually explain this member&apos;s momentum. Then open the
+              broader event flow with the chapter context still anchored to a real student.
             </p>
             <Link
-              href={assignmentLaneHref}
+              href={memberEventFlowHref}
               className="inline-flex rounded-full bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white"
             >
-              Open leadership action flow
+              Open event flow
             </Link>
           </div>
         </SectionCard>
@@ -4429,7 +4524,7 @@ function getInitials(value: string) {
 }
 
 function getDashboardHeading(monthLabel: string) {
-  return `Leadership Dashboard · ${monthLabel.replace("June", "Jun")}`;
+  return `Chapter Dashboard · ${monthLabel.replace("June", "Jun")}`;
 }
 
 function getProgressValue(value: string) {

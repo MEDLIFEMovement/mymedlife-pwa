@@ -1,14 +1,18 @@
 import { EventLoopStrip } from "@/components/event-loop-strip";
+import {
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+} from "@/services/events-points-launch-lane";
+import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
-import type { StudentHomeWorkspace } from "@/services/student-home-workspace";
 import { PanelButton, SurfacePanel, StatCard } from "@/components/visual-primitives";
 
 type MemberProfilePanelProps = {
   chapterName: string;
   displayName: string;
   workspace: ProfileWorkspace;
-  studentHome: StudentHomeWorkspace;
+  studentHome: MvpMemberHome;
   recognition: MemberRecognitionSummary;
 };
 
@@ -21,10 +25,10 @@ export function MemberProfilePanel({
 }: MemberProfilePanelProps) {
   const firstName = displayName.split(" ")[0] ?? displayName;
   const visibleBadges = recognition.badges.slice(0, 4);
-  const featuredHomeAction = studentHome.assignedActions[0];
-  const featuredHomeEvent = studentHome.upcomingEvents[0] ?? null;
-  const nextStepTitle = featuredHomeAction?.title ?? workspace.nextStep.detail;
-  const nextStepHref = workspace.nextStep.href;
+  const featuredHomeEvent = studentHome.primaryEvent;
+  const launchLaneEventsHref = getLaunchLaneMemberEventsHref("profile");
+  const launchLanePointsHref = getLaunchLaneMemberPointsHref("profile");
+  const nextStepTitle = featuredHomeEvent?.title ?? "Open the next chapter event";
 
   return (
     <section className="grid gap-4">
@@ -80,12 +84,12 @@ export function MemberProfilePanel({
             />
             <ProfileHeroCard
               label="Points"
-              title={`${studentHome.points.total} pts`}
-              detail={studentHome.points.rankDetail}
+              title={`${studentHome.pointsTotal} pts`}
+              detail={studentHome.pointsDetail}
             />
             <ProfileHeroCard
               label="Leaderboard"
-              title={studentHome.points.rankLabel}
+              title={studentHome.pointsRankLabel}
               detail="Open the chapter board from profile"
             />
           </div>
@@ -109,11 +113,11 @@ export function MemberProfilePanel({
                 <ProfilePulseCard label="RSVP" value={featuredHomeEvent?.rsvpLabel ?? "Open"} />
                 <ProfilePulseCard
                   label="Attendance"
-                  value={studentHome.points.weeklyMomentumLabel}
+                  value={studentHome.attendanceStatusLabel}
                 />
                 <ProfilePulseCard
                   label="Points"
-                  value={`${studentHome.points.total} pts`}
+                  value={`${studentHome.pointsTotal} pts`}
                 />
               </div>
             </div>
@@ -146,43 +150,43 @@ export function MemberProfilePanel({
             },
             {
               label: "Attendance",
-              detail: studentHome.points.weeklyMomentumLabel,
+              detail: studentHome.attendanceStatusLabel,
               tone: "gold",
             },
             {
               label: "Points",
-              detail: `${studentHome.points.total} pts`,
+              detail: `${studentHome.pointsTotal} pts`,
               tone: "yellow",
             },
           ]}
         />
         <div className="mt-4 flex flex-wrap gap-2">
-          <PanelButton href="/rush-month/events?source=profile" variant="secondary">
+          <PanelButton href={launchLaneEventsHref} variant="secondary">
             Open events
           </PanelButton>
-          <PanelButton href="/rush-month/leaderboard?source=profile">Open leaderboard</PanelButton>
+          <PanelButton href={launchLanePointsHref}>Open leaderboard</PanelButton>
         </div>
       </SurfacePanel>
 
       <SurfacePanel tone="info">
-        <p className="app-eyebrow app-eyebrow-blue">Next step</p>
+        <p className="app-eyebrow app-eyebrow-blue">Next chapter moment</p>
         <h2 className="mt-2 text-2xl font-semibold text-slate-950">
-          Finish: {nextStepTitle}
+          {nextStepTitle}
         </h2>
         <p className="mt-3 text-sm leading-7 text-slate-700">
-          Pick up the next step that matters most without losing your place in the
-          member experience.
+          Keep profile lightweight. From here, the next useful move is to open an
+          event, RSVP or check attendance, and then watch the chapter points move.
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <PanelButton href={nextStepHref}>
-            {workspace.nextStep.label}
+          <PanelButton href={launchLaneEventsHref}>
+            Open events
           </PanelButton>
           <PanelButton
-            href={`${studentHome.campaign.campaignsHref}?source=profile`}
+            href={launchLanePointsHref}
             variant="secondary"
             className="bg-white text-slate-700"
           >
-            Open campaign
+            Open points
           </PanelButton>
         </div>
       </SurfacePanel>
@@ -220,7 +224,7 @@ export function MemberProfilePanel({
             <h2 className="mt-2 text-2xl font-semibold text-slate-950">Recognition</h2>
           </div>
           <PanelButton
-            href="/rush-month/leaderboard?source=profile"
+            href={launchLanePointsHref}
             variant="secondary"
             className="px-3 py-2 text-xs"
           >
@@ -234,7 +238,7 @@ export function MemberProfilePanel({
             </span>
           ))}
         </div>
-        <p className="mt-4 text-sm leading-6 text-slate-600">{studentHome.points.recognition}</p>
+        <p className="mt-4 text-sm leading-6 text-slate-600">{studentHome.recognition}</p>
       </SurfacePanel>
     </section>
   );

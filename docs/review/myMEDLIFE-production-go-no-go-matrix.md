@@ -23,7 +23,7 @@ human decisions.
 | Smallest proof/review loop | Chapter / HQ | Approved | Metadata submit -> leader review -> audit trail |
 | Production environment ownership | Platform / Security | Approved | DS/platform owns production Supabase, Vercel, DNS, secrets, and backup/restore; security approval routed through GitHub/Copilot/Codex Security |
 | Monitoring and incident response | Platform / Operations | Approved | One named incident owner, one backup owner, one pilot alert channel, and the existing rollback path as the stop mechanism |
-| External integrations hold | DS | Approved | HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off |
+| External integrations hold | DS | Approved | HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off; only the approved staging-only Luma event loop is in scope for proof |
 
 ## What Is Already True
 

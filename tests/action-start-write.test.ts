@@ -26,7 +26,7 @@ describe("action-start write readiness", () => {
     ).toMatchObject({
       enabled: false,
       reason:
-        "Action-start browser-facing writes remain disabled. Set MYMEDLIFE_ENABLE_ACTION_START_WRITE=true only after local auth and RLS are ready.",
+        "Action-start browser-facing writes remain disabled. Turn on the Action started write control only after local auth and RLS are ready.",
     });
 
     expect(

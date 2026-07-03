@@ -1,6 +1,9 @@
 import { rushMonthLeaderboard } from "@/data/mock-leaderboard";
 import type { LocalActorContext } from "@/services/local-actor-context";
-import { buildMemberActionRouteHref } from "@/services/member-action-route-href";
+import {
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { ReadOnlyAppData } from "@/services/read-only-app-data";
 import {
   getActorSurfaceFamily,
@@ -98,7 +101,6 @@ export function getMemberRecognitionSummary(
 
   const sortedLeaderboard = sortLeaderboard(leaderboard);
   const selectedRow = findSelectedMember(actor, sortedLeaderboard) ?? sortedLeaderboard[0];
-  const nextVisibleAssignment = getVisibleAssignmentsForActor(actor, data.assignments)[0];
   const selectedMember = selectedRow
     ? {
         displayName: selectedRow.displayName,
@@ -148,32 +150,16 @@ export function getMemberRecognitionSummary(
     topStats: buildTopStats(selectedMember, data),
     campaignPoints: [
       {
-        id: "rush-month",
-        label: "Rush Month",
+        id: "event-loop",
+        label: "Event loop",
         earned: selectedRow?.points ?? data.pointsSummary.earned,
         available: 150,
         detail:
-          "Recognition on this campaign should reward the real invite, RSVP, follow-up, and proof loop that moves chapter momentum.",
-      },
-      {
-        id: "spring-showcase",
-        label: "Spring Showcase (prev.)",
-        earned: 45,
-        available: 100,
-        detail:
-          "Earlier campaign points can stay visible as history without pulling attention away from the current Rush Month loop.",
-      },
-      {
-        id: "community-health-fair",
-        label: "Community Health Fair",
-        earned: 25,
-        available: 80,
-        detail:
-          "This campaign shows how chapter service and recruitment stories can still support recognition across the wider member journey.",
+          "Recognition in the launch lane should reward the real event, RSVP, attendance, and follow-through that moves chapter momentum.",
       },
     ],
     badges: [
-      { label: "Rush Starter", tone: "gold" },
+      { label: "Event Starter", tone: "gold" },
       { label: "Connector", tone: "blue" },
       { label: "Evidence Pro", tone: "blue" },
       { label: "Chapter MVP", tone: "slate" },
@@ -184,9 +170,7 @@ export function getMemberRecognitionSummary(
       body:
         "Points come from meaningful action, approved follow-through, and evidence that helps the chapter learn what worked.",
       ctaLabel: "See how to earn more points",
-      ctaHref: nextVisibleAssignment
-        ? buildMemberActionRouteHref(nextVisibleAssignment.id, { source: "points" })
-        : "/rush-month/actions",
+      ctaHref: getLaunchLaneMemberEventsHref("points"),
     },
     pointsLedgerPosture: "mock_read_only",
   };
@@ -205,7 +189,7 @@ function buildTopStats(
     {
       label: "Total Points",
       value: `${selectedRow?.points ?? data.pointsSummary.earned}`,
-      note: "Earned across visible campaigns",
+      note: "Earned in the live event loop",
     },
     {
       label: "This Week",
@@ -233,7 +217,7 @@ function buildRecentApprovedActions(
       title: assignment.title,
       detail: `${assignment.kpi} · Due ${assignment.dueLabel}`,
       pointsLabel: `+${assignment.points} pts`,
-      href: buildMemberActionRouteHref(assignment.id, { source: "points" }),
+      href: getLaunchLaneMemberPointsHref("points"),
     }));
   }
 
@@ -242,7 +226,7 @@ function buildRecentApprovedActions(
       title: "Welcome one new student at tabling",
       detail: "Tabling welcome completed · Due Nov 14",
       pointsLabel: "+10 pts",
-      href: buildMemberActionRouteHref("welcome-table", { source: "points" }),
+      href: getLaunchLaneMemberPointsHref("points"),
     },
   ];
 }

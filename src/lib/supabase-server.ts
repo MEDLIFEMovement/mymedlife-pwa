@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { getResolvedFeatureFlagEnv } from "@/services/runtime-feature-flags";
 import {
   getSupabaseAuthConfig,
   type SupabaseAuthConfig,
@@ -18,7 +19,11 @@ type LocalSupabaseServerClientResult =
 export async function createLocalSupabaseServerClient(
   env: Record<string, string | undefined> = process.env,
 ): Promise<LocalSupabaseServerClientResult> {
-  const config = getSupabaseAuthConfig(env);
+  const resolvedEnv =
+    env.MYMEDLIFE_AUTH_MODE === "staging_supabase"
+      ? await getResolvedFeatureFlagEnv(["staging_review_auth"], env)
+      : env;
+  const config = getSupabaseAuthConfig(resolvedEnv);
 
   if (!config.enabled) {
     return { config, client: null };

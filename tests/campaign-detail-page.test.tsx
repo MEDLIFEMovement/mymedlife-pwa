@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
@@ -23,39 +22,22 @@ vi.mock("@/services/local-actor-context", async (importOriginal) => {
   };
 });
 
+function getSignedInActor(email: string) {
+  return getMockLocalActorContext(
+    email,
+    "Using signed-in test actor.",
+    "mock_fallback",
+    "local_auth_session",
+    "signed_in",
+  );
+}
+
 describe("campaign detail page", () => {
-  it("lets chapter leaders open the campaign detail surface directly", async () => {
+  it("returns members to the member events loop instead of opening campaign detail", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("leader.a@mymedlife.test"),
-    );
-
-    const { default: CampaignDetailPage } = await import("@/app/campaigns/[campaignSlug]/page");
-    const html = renderToStaticMarkup(
-      await CampaignDetailPage({
-        params: Promise.resolve({ campaignSlug: "rush-month" }),
-      }),
-    );
-
-    expect(html).toContain("Rush Month");
-    expect(html).toContain("Open active Rush Month loop");
-    expect(html).toContain("active campaign");
-    expect(html).toContain("Chapter-ready examples");
-    expect(html).toContain("Story and proof follow-through");
-    expect(html).toContain("Ecosystem boundaries");
-    expect(html).toContain("Keep broader routing on hold for this campaign.");
-    expect(html).not.toContain("External sends are disabled for this campaign.");
-    expect(html).not.toContain("active campaign shell");
-    expect(html).not.toContain("Mock/local only");
-    expect(html).not.toContain("HQ sharing posture");
-  });
-
-  it("routes coaches into the coach-owned campaigns state with the selected campaign preserved", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("coach@mymedlife.test"),
+      getSignedInActor("member.a@mymedlife.test"),
     );
 
     const { default: CampaignDetailPage } = await import("@/app/campaigns/[campaignSlug]/page");
@@ -64,14 +46,14 @@ describe("campaign detail page", () => {
       CampaignDetailPage({
         params: Promise.resolve({ campaignSlug: "rush-month" }),
       }),
-    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=campaigns&campaign=rush-month");
+    ).rejects.toThrow("NEXT_REDIRECT:/app/events?source=campaigns");
   });
 
-  it("routes staff reviewers into the staff-owned campaigns state with the selected campaign preserved", async () => {
+  it("returns leaders to the leader events workspace instead of opening campaign detail", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("admin@mymedlife.test"),
+      getSignedInActor("leader.a@mymedlife.test"),
     );
 
     const { default: CampaignDetailPage } = await import("@/app/campaigns/[campaignSlug]/page");
@@ -80,54 +62,38 @@ describe("campaign detail page", () => {
       CampaignDetailPage({
         params: Promise.resolve({ campaignSlug: "rush-month" }),
       }),
-    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=campaigns&campaign=rush-month");
+    ).rejects.toThrow("NEXT_REDIRECT:/leader?view=events");
   });
 
-  it("shows workflow-engine posture on the Planning / Goal Setting campaign detail lane", async () => {
+  it("preserves the selected campaign when staff enters through a legacy campaign detail url", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("leader.a@mymedlife.test"),
+      getSignedInActor("admin@mymedlife.test"),
     );
 
     const { default: CampaignDetailPage } = await import("@/app/campaigns/[campaignSlug]/page");
-    const html = renderToStaticMarkup(
-      await CampaignDetailPage({
-        params: Promise.resolve({ campaignSlug: "planning-goal-setting" }),
-      }),
-    );
 
-    expect(html).toContain("Planning / Goal Setting");
-    expect(html).toContain("Deepened starter campaign");
-    expect(html).toContain("Operation permissions");
-    expect(html).toContain("Validators and handoffs");
-    expect(html).toContain("Risk and escalation posture");
-    expect(html).toContain("Imported source coverage");
-    expect(html).toContain("Feature flag posture");
-    expect(html).toContain("Source trace posture");
-    expect(html).toContain("Goal alignment meeting prompt");
-    expect(html).toContain("Run A source map");
-    expect(html).toContain("workflow.planning_goal_setting.builder_preview");
-    expect(html).toContain("publish approve");
+    await expect(
+      CampaignDetailPage({
+        params: Promise.resolve({ campaignSlug: "rush-month" }),
+      }),
+    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=events&campaign=rush-month");
   });
 
-  it("shows workflow-backed current-state posture on the Chapter Engagement campaign detail lane", async () => {
+  it("sends signed-out reviewers to login before opening parked campaign detail", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getMockLocalActorContext("leader.a@mymedlife.test"),
+      getMockLocalActorContext("member.a@mymedlife.test"),
     );
 
     const { default: CampaignDetailPage } = await import("@/app/campaigns/[campaignSlug]/page");
-    const html = renderToStaticMarkup(
-      await CampaignDetailPage({
-        params: Promise.resolve({ campaignSlug: "chapter-engagement" }),
-      }),
-    );
 
-    expect(html).toContain("Chapter Engagement");
-    expect(html).toContain("Current workflow state");
-    expect(html).toContain("v0 reviewed");
-    expect(html).toContain("source template version");
+    await expect(
+      CampaignDetailPage({
+        params: Promise.resolve({ campaignSlug: "rush-month" }),
+      }),
+    ).rejects.toThrow("NEXT_REDIRECT:/login?redirectTo=%2Fcampaigns%2Frush-month");
   });
 });

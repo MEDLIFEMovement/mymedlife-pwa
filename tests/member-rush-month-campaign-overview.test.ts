@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { assignments as mockAssignments } from "@/data/mock-rush-month";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRushMonthCampaignOverview } from "@/services/member-rush-month-campaign-overview";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -75,28 +74,16 @@ describe("member rush month campaign overview", () => {
       "Story or outcome proof stays metadata-first",
       "Leader review confirms chapter completion",
     ]);
-    expect(overview.primaryActions.viewActionsHref).toBe("/rush-month/actions?source=campaigns");
-    expect(overview.primaryActions.submitEvidenceHref).toBe(
-      "/rush-month/actions/share-rush-flyer?step=submit&source=campaigns#submit-evidence",
-    );
+    expect(overview.primaryActions.openEventsHref).toBe("/app/events?source=campaigns");
+    expect(overview.primaryActions.openPointsHref).toBe("/app/points?source=campaigns");
   });
 
-  it("keeps the campaign-origin proof route when no proof-ready assignment is available", () => {
+  it("keeps campaign next steps in the core event-and-points loop", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
-    const memberPushAssignment = mockAssignments.find(
-      (assignment) => assignment.id === "member-push",
-    );
-
-    expect(memberPushAssignment).toBeDefined();
-
-    const data = {
-      ...getMockReadOnlyAppData("Testing campaign proof fallback."),
-      assignments: memberPushAssignment ? [memberPushAssignment] : [],
-    };
+    const data = getMockReadOnlyAppData("Testing campaign next-step fallback.");
     const overview = getMemberRushMonthCampaignOverview(actor, data);
 
-    expect(overview.primaryActions.submitEvidenceHref).toBe(
-      "/rush-month/evidence?source=campaigns",
-    );
+    expect(overview.primaryActions.openEventsHref).toBe("/app/events?source=campaigns");
+    expect(overview.primaryActions.openPointsHref).toBe("/app/points?source=campaigns");
   });
 });

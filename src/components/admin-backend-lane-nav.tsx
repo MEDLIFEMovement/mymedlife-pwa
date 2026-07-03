@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { StatusPill } from "@/components/visual-primitives";
+import { isEventsPointsLaunchLaneEnabled } from "@/services/events-points-launch-lane";
 
 type AdminBackendLaneKey =
   | "overview"
   | "phase_2"
   | "integrations"
+  | "feature_flags"
+  | "theme"
   | "permissions"
   | "committees"
   | "workflows"
@@ -15,6 +18,7 @@ type AdminBackendLaneKey =
   | "assignment_write"
   | "coach_write"
   | "integration_outbox"
+  | "luma_live_pilot"
   | "database_security"
   | "system_health"
   | "sop_library"
@@ -51,6 +55,16 @@ const baseLanes = [
     href: "/admin/integrations",
   },
   {
+    key: "feature_flags",
+    label: "Feature Flags",
+    href: "/admin/feature-flags",
+  },
+  {
+    key: "theme",
+    label: "Theme",
+    href: "/admin/theme",
+  },
+  {
     key: "permissions",
     label: "Permissions",
     href: "/admin/permissions",
@@ -69,6 +83,11 @@ const baseLanes = [
     key: "integration_outbox",
     label: "Outbox",
     href: "/admin/integration-outbox",
+  },
+  {
+    key: "luma_live_pilot",
+    label: "Luma Pilot",
+    href: "/admin/luma-live-pilot",
   },
   {
     key: "database_security",
@@ -183,13 +202,14 @@ export function AdminBackendLaneNav({
   builderLink,
   showIntegrations = false,
 }: AdminBackendLaneNavProps) {
+  const launchLaneFocus = isEventsPointsLaunchLaneEnabled();
   const resolvedBuilderLink =
     builderLink ??
     ({
       href: "/admin/sop-builder/rush-month?tab=steps",
       label: "SOP Builder",
     } as const);
-  const lanes = [
+  const allPrimaryLanes = [
     ...baseLanes.filter((lane) => showIntegrations || lane.key !== "integrations"),
     {
       key: "sop_builder" as const,
@@ -197,6 +217,9 @@ export function AdminBackendLaneNav({
       href: resolvedBuilderLink.href,
     },
   ];
+  const visiblePrimaryLanes = allPrimaryLanes;
+  const visibleReviewPacketLanes = reviewPacketLanes;
+  const visibleWritePacketLanes = writePacketLanes;
 
   return (
     <section className="app-surface-info rounded-[1.75rem] p-5">
@@ -207,16 +230,18 @@ export function AdminBackendLaneNav({
             <StatusPill tone="blue">DS-owned lane</StatusPill>
           </div>
           <h2 className="text-xl font-semibold text-slate-950">
-            Keep internal tooling inside one owned admin lane
+            {launchLaneFocus
+              ? "Keep the admin lane centered on the live event loop"
+              : "Keep internal tooling inside one owned admin lane"}
           </h2>
           <p className="max-w-3xl text-sm leading-6 text-slate-600">
-            Permissions, committees, workflows, SOP tooling, and approval packets should stay
-            visibly connected so reviewers can move across backend routes without falling back
-            into the broader staff command-center surface.
+            {launchLaneFocus
+              ? "The main product stays centered on Luma, RSVP, attendance, points, and launch proof. Backend review routes remain visibly connected here so DS/admin reviewers can inspect the guardrails without hunting."
+              : "Permissions, committees, workflows, SOP tooling, and approval packets should stay visibly connected so reviewers can move across backend routes without falling back into the broader staff command-center surface."}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {lanes.map((lane) => {
+          {visiblePrimaryLanes.map((lane) => {
             const selected = lane.key === current;
 
             return (
@@ -248,56 +273,62 @@ export function AdminBackendLaneNav({
       </div>
 
       <div className="mt-5 border-t border-slate-200/80 pt-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-          Review packets
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {reviewPacketLanes.map((lane) => {
-            const selected = lane.key === current;
+        {visibleReviewPacketLanes.length > 0 ? (
+          <>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Review packets
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {visibleReviewPacketLanes.map((lane) => {
+                const selected = lane.key === current;
 
-            return (
-              <Link
-                key={lane.key}
-                href={lane.href}
-                aria-current={selected ? "page" : undefined}
-                className={
-                  selected
-                    ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
-                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
-                }
-              >
-                {lane.label}
-              </Link>
-            );
-          })}
-        </div>
+                return (
+                  <Link
+                    key={lane.key}
+                    href={lane.href}
+                    aria-current={selected ? "page" : undefined}
+                    className={
+                      selected
+                        ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
+                        : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eef5ff] hover:text-slate-950"
+                    }
+                  >
+                    {lane.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </>
+        ) : null}
       </div>
 
-      <div className="mt-4 border-t border-slate-200/80 pt-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-          Write packets
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {writePacketLanes.map((lane) => {
-            const selected = lane.key === current;
+      {visibleWritePacketLanes.length > 0 ? (
+        <div className="mt-4 border-t border-slate-200/80 pt-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Write packets
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {visibleWritePacketLanes.map((lane) => {
+              const selected = lane.key === current;
 
-            return (
-              <Link
-                key={lane.key}
-                href={lane.href}
-                aria-current={selected ? "page" : undefined}
-                className={
-                  selected
-                    ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
-                    : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eff6ff] hover:text-slate-950"
-                }
-              >
-                {lane.label}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={lane.key}
+                  href={lane.href}
+                  aria-current={selected ? "page" : undefined}
+                  className={
+                    selected
+                      ? "rounded-full border border-[#bfdbfe] bg-[#dbeafe] px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] shadow-[0_10px_22px_rgba(59,115,231,0.12)]"
+                      : "rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-[#bfdbfe] hover:bg-[#eff6ff] hover:text-slate-950"
+                  }
+                >
+                  {lane.label}
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }
@@ -350,12 +381,39 @@ function AdminLaneIcon({ lane }: { lane: AdminBackendLaneKey }) {
           <path d="M19.5 12H17" />
         </svg>
       );
+    case "feature_flags":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M6 6h8" />
+          <path d="M6 12h12" />
+          <path d="M6 18h9" />
+          <circle cx="16" cy="6" r="2" />
+          <circle cx="10" cy="18" r="2" />
+        </svg>
+      );
+    case "theme":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M12 3c4.97 0 9 4.03 9 9 0 3.31-2.69 6-6 6h-1.5a1.5 1.5 0 0 1 0-3H15a2 2 0 0 0 0-4h-1a3 3 0 0 1-3-3V3Z" />
+          <circle cx="7.5" cy="10.5" r="1" />
+          <circle cx="9.5" cy="7.5" r="1" />
+          <circle cx="13.5" cy="7.5" r="1" />
+        </svg>
+      );
     case "integration_outbox":
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
           <path d="M5 6.5h14v11H5z" />
           <path d="M5 10h14" />
           <path d="M8 14h3" />
+        </svg>
+      );
+    case "luma_live_pilot":
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={iconClassName}>
+          <path d="M12 3.5 13.8 8l4.7.4-3.6 2.9 1.2 4.5L12 13.2 7.9 15.8l1.2-4.5-3.6-2.9L10.2 8 12 3.5Z" />
+          <path d="M18.5 16.5 20 18l-1.5 1.5" />
+          <path d="M5.5 16.5 4 18l1.5 1.5" />
         </svg>
       );
     case "first_write":

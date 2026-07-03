@@ -36,7 +36,7 @@ The following defaults are now approved by the primary approver:
    - Security approval: GitHub/Copilot/Codex Security.
 
 6. External integration hold
-   - Approved default: HubSpot, Luma, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off.
+   - Approved default: HubSpot, Shopify, n8n, warehouse, Power BI, SMS, email, and AI stay off; only the approved staging-only Luma event/RSVP/attendance/points loop is in scope for hosted proof.
 
 7. Support / pause channel
    - Approved default: one dedicated launch Slack channel, with email backup, and the primary approver as pause authority.

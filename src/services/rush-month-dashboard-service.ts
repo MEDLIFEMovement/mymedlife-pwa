@@ -20,6 +20,15 @@ import {
   getWorkflowCurrentPhaseExitSignal,
   getWorkflowCurrentPhaseObjective,
 } from "@/services/sop-workflow-runtime";
+import {
+  getLaunchLaneLeaderAttendanceHref,
+  getLaunchLaneLeaderEventsHref,
+  getLaunchLaneLeaderPointsHref,
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+  getLaunchLaneStaffEventsHref,
+  getLaunchLaneStaffPointsHref,
+} from "@/services/events-points-launch-lane";
 import type { Assignment } from "@/shared/types/domain";
 import type {
   DashboardActionGroup,
@@ -281,10 +290,10 @@ function getDashboardSummary(
       return "This student view keeps the week simple: your next action, events to attend, points, leaderboard, and proof prompts.";
     case "leader":
       return hasChapterRole(actor, "President / VP")
-        ? "This President / VP view emphasizes approval queues, member-role readiness, chapter KPIs, and the decisions that keep Rush Month safe."
+        ? "This President / VP view emphasizes attendance, chapter coverage, and the decisions that keep points believable."
         : hasChapterRole(actor, "E-Board Member")
-          ? "This E-Board view emphasizes owner follow-up, event execution, proof reminders, and the next action committee moves."
-          : "This leader view combines assignments, event plans, proof follow-up, member recognition, and KPI signals.";
+          ? "This E-Board view emphasizes owner follow-up, event execution, attendance, and the next chapter move."
+          : "This leader view stays centered on events, attendance, and points.";
     case "coach":
       return "This coach view focuses on readiness, overdue or stuck work, proof flow, risk signals, and the decision state.";
     case "staff":
@@ -303,64 +312,57 @@ function getDashboardNextStep(
 ): DashboardNextStep {
   switch (surfaceFamily) {
     case "member": {
-      const nextMemberAssignment =
-        visibleAssignments.find((assignment) => assignment.status !== "approved") ??
-        visibleAssignments[0];
-
       return {
-        label: nextMemberAssignment?.title ?? "Check your Rush Month action",
-        href: nextMemberAssignment
-          ? `/rush-month/actions/${nextMemberAssignment.id}`
-          : "/rush-month/actions",
-        summary: nextMemberAssignment
-          ? `Open the assignment detail, confirm why it matters, and prepare proof for: ${nextMemberAssignment.evidenceRequired}`
-          : "Open your visible actions and confirm what proof or testimonial is needed.",
-        ctaLabel: "Open my next action",
+        label: "Open the next Rush Month event",
+        href: getLaunchLaneMemberEventsHref("home"),
+        summary:
+          "Keep the member loop simple: open the event, RSVP, show up, and let attendance drive points instead of sending members into side modules.",
+        ctaLabel: "Open events",
       };
     }
     case "leader":
       if (hasChapterRole(actor, "President / VP")) {
         return {
-          label: "Review proof and role decisions before the week scales",
-          href: "/rush-month/review",
+          label: "Confirm attendance before the chapter scales",
+          href: getLaunchLaneLeaderAttendanceHref(),
           summary:
-            "Check submitted or changes-requested proof, confirm owners are accountable, and use the member workspace before approving wider chapter movement.",
-          ctaLabel: "Open approval queue",
+            "Keep the launch lane grounded in real behavior: who RSVP'd, who showed up, and whether the chapter has earned the next points move.",
+          ctaLabel: "Open attendance",
         };
       }
 
       if (hasChapterRole(actor, "E-Board Member")) {
         return {
-          label: "Move event owners and stuck assignments",
-          href: "/rush-month/actions",
+          label: "Run the next event and attendance cycle",
+          href: getLaunchLaneLeaderEventsHref(),
           summary:
-            "Check which owners are not started or in progress, then use the events and action committee surfaces to keep work moving.",
-          ctaLabel: "Open team actions",
+            "Stay inside one leader loop: set the event, watch RSVP posture, confirm attendance, and let points follow from the same view.",
+          ctaLabel: "Open event loop",
         };
       }
 
       return {
-        label: "Unblock pending proof and owner follow-up",
-        href: "/rush-month/review",
+        label: "Keep the chapter event loop moving",
+        href: getLaunchLaneLeaderEventsHref(),
         summary:
-          "Review submitted or stuck proof, check event owners, and make sure every active action has a clear next step.",
-        ctaLabel: "Open follow-up queue",
+          "Use leader events, attendance, and points to keep the chapter simple enough to run every week without extra side modules.",
+        ctaLabel: "Open leader events",
       };
     case "coach":
       return {
-        label: "Review the advance / hold / intervene state",
-        href: "/coach",
+        label: "Review chapter event health",
+        href: "/staff?view=chapters",
         summary:
-          "Use assignment status, proof flow, risks, and KPI movement to decide whether the chapter needs help.",
-        ctaLabel: "Open coach readout",
+          "Use chapter-by-chapter event, RSVP, attendance, and points posture before deciding where support is needed.",
+        ctaLabel: "Open chapters",
       };
     case "staff":
       return {
-        label: "Review HQ proof-sharing posture",
-        href: "/rush-month/review",
+        label: "Review event, attendance, and points across the pilot",
+        href: "/staff?view=chapters",
         summary:
-          "HQ can decide what proof or testimonials should be shared later. No publishing happens in this mock-safe app.",
-        ctaLabel: "Open HQ review",
+          "Keep the staff story narrow: which chapter has the next event, who RSVPd, who attended, and how points moved.",
+        ctaLabel: "Open staff view",
       };
     case "ds_admin":
       return {
@@ -387,8 +389,6 @@ function getDashboardActionGroups(
   assignments: Assignment[],
   eventCount: number,
 ): DashboardActionGroup[] {
-  const nextAssignment =
-    assignments.find((assignment) => assignment.status !== "approved") ?? assignments[0];
   const proofFollowUpCount = getAssignmentStatusCounts(assignments).submitted +
     getAssignmentStatusCounts(assignments).changesRequested;
 
@@ -396,12 +396,11 @@ function getDashboardActionGroups(
     case "member":
       return [
         {
-          label: "Invite push",
+          label: "Next event",
           summary:
-            nextAssignment?.instructions ??
-            "Open your next action and finish the outreach step that moves the week forward.",
-          href: nextAssignment ? `/rush-month/actions/${nextAssignment.id}` : "/rush-month/actions",
-          linkLabel: "Open action",
+            "Open the upcoming event first so RSVP, attendance, and chapter momentum stay in one visible member loop.",
+          href: getLaunchLaneMemberEventsHref("home"),
+          linkLabel: "Open events",
         },
         {
           label: "Rush event",
@@ -410,82 +409,82 @@ function getDashboardActionGroups(
           linkLabel: "See events",
         },
         {
-          label: "Proof and points",
+          label: "Points and leaderboard",
           summary:
-            "Submit a clean proof note, then track how your work shows up in recognition and leaderboard posture.",
-          href: "/rush-month/leaderboard",
+            "Use the leaderboard to confirm how attendance-backed activity shows up for you and for the chapter.",
+          href: getLaunchLaneMemberPointsHref("points"),
           linkLabel: "See points",
         },
       ];
     case "leader":
       return [
         {
-          label: "Owner follow-up",
+          label: "Event setup",
           summary:
-            "Keep each visible assignment owned by a real person with a due date and proof expectation.",
-          href: "/rush-month/actions",
-          linkLabel: "Open actions",
+            "Create the next chapter event or tighten the current one before the week drifts.",
+          href: getLaunchLaneLeaderEventsHref(),
+          linkLabel: "Open events",
         },
         {
-          label: "Proof review",
-          summary: `${proofFollowUpCount} visible proof or review item${proofFollowUpCount === 1 ? "" : "s"} still need a clear chapter decision posture.`,
-          href: "/rush-month/review",
-          linkLabel: "Open review",
+          label: "Attendance confirm",
+          summary: `${proofFollowUpCount} visible follow-up item${proofFollowUpCount === 1 ? "" : "s"} still signal where attendance, no-shows, or next-owner follow-through need attention.`,
+          href: getLaunchLaneLeaderAttendanceHref(),
+          linkLabel: "Check attendance",
         },
         {
-          label: "Event readiness",
+          label: "Chapter leaderboard",
           summary:
-            "Use the event surface to keep invite energy tied to actual chapter moments and Luma-safe follow-up.",
-          href: "/rush-month/events",
-          linkLabel: "Check events",
+            "Use points to confirm that attendance is turning into visible chapter momentum.",
+          href: getLaunchLaneLeaderPointsHref(),
+          linkLabel: "See points",
         },
       ];
     case "coach":
       return [
         {
-          label: "Campaign health",
+          label: "Portfolio chapters",
           summary:
-            "Review the chapter decision posture, open work, and whether the phase should advance or pause.",
-          href: "/coach",
-          linkLabel: "Open coach view",
+            "Use the chapter list first so the support story stays grounded in event health and points movement.",
+          href: "/staff?view=chapters",
+          linkLabel: "Open chapters",
         },
         {
-          label: "Assignments",
+          label: "Live events",
           summary:
-            "Check whether visible owners are moving or whether the chapter is stalling behind overdue work.",
-          href: "/rush-month/actions",
-          linkLabel: "Review assignments",
-        },
-        {
-          label: "Proof and events",
-          summary:
-            "Use evidence and event posture to decide whether the chapter has believable student momentum.",
-          href: "/rush-month/events",
+            "Check which chapter event is next, where RSVP posture is soft, and where attendance could fall off.",
+          href: getLaunchLaneStaffEventsHref({ campaignSlug: "rush-month" }),
           linkLabel: "Open events",
+        },
+        {
+          label: "Points watch",
+          summary:
+            "Use chapter and org leaderboard movement to spot which chapters need intervention.",
+          href: getLaunchLaneStaffPointsHref(),
+          linkLabel: "See points",
         },
       ];
     case "staff":
       return [
         {
-          label: "HQ review",
+          label: "Chapter list",
           summary:
-            "Inspect proof and chapter support posture before broader sharing is considered.",
-          href: "/rush-month/review",
-          linkLabel: "Open review",
+            "Keep the staff view anchored in a simple rollout question: which chapters are actually running the loop well.",
+          href: "/staff?view=chapters",
+          linkLabel: "Open chapters",
         },
         {
-          label: "Proof library",
+          label: "Event pulse",
           summary:
-            "Check what stories or testimonials are strong enough to help other chapters later.",
-          href: "/rush-month/evidence",
-          linkLabel: "Open evidence",
+            "Review chapter events, RSVP counts, attendance counts, and the next moments that need support.",
+          href: getLaunchLaneStaffEventsHref({ campaignSlug: "rush-month" }),
+          linkLabel: "Open events",
         },
         {
-          label: "Support signals",
+          label: "Organization leaderboard",
           summary:
-            "Use the command-center routes to understand which chapters need help and what remains mock-only.",
-          href: "/staff",
-          linkLabel: "Open staff view",
+            "Use chapter and org points to see whether event energy is turning into consistent chapter movement.",
+          href: getLaunchLaneStaffPointsHref(),
+          linkLabel: "See points",
         },
       ];
     case "ds_admin":
@@ -558,28 +557,28 @@ function getDashboardRoleFocus(
       roleLabel: "President / VP",
       title: "Approval and chapter-accountability focus",
       summary:
-        "Use this view to decide what needs approval, which role gaps block progress, and whether the chapter is ready for the next Rush Month push.",
-      primaryHref: "/rush-month/review",
-      primaryLabel: "Review proof decisions",
-      secondaryHref: "/chapter/members",
-      secondaryLabel: "Check role coverage",
+        "Use this view to decide whether the chapter is ready to scale the next event based on attendance, role coverage, and points movement.",
+      primaryHref: getLaunchLaneLeaderAttendanceHref(),
+      primaryLabel: "Check attendance",
+      secondaryHref: getLaunchLaneLeaderPointsHref(),
+      secondaryLabel: "See points",
       safetyNote:
-        "This is a read-only approval posture. Membership approvals, proof decisions, assignment saves, and role changes remain disabled.",
+        "This is a read-only launch posture. Attendance, points, event saves, and role changes still require the approved live path.",
       items: [
         {
-          label: "Approval queue",
+          label: "Attendance to confirm",
           value: `${pendingFollowUp}`,
-          note: "Submitted or changes-requested items need a clear decision posture.",
+          note: "Visible follow-up items still need the chapter to confirm who actually showed up or closed the loop.",
         },
         {
-          label: "Chapter KPI",
-          value: data.kpiSummary.coachDecision,
-          note: "Use KPI posture before expanding the next chapter push.",
+          label: "Chapter points",
+          value: `${data.pointsSummary.earned}`,
+          note: "Use chapter points movement before expanding the next chapter push.",
         },
         {
           label: "Role coverage",
           value: actor.chapterRoles.join(", "),
-          note: "This fake persona previews President / VP accountability only.",
+          note: "Role coverage should help the chapter run the loop without extra modules.",
         },
       ],
     };
@@ -590,28 +589,28 @@ function getDashboardRoleFocus(
       roleLabel: "E-Board Member",
       title: "Execution and owner-follow-up focus",
       summary:
-        "Use this view to keep owners moving, check event follow-through, and make sure proof reminders are concrete enough for members.",
-      primaryHref: "/rush-month/actions",
-      primaryLabel: "Open owner follow-up",
-      secondaryHref: "/rush-month/events",
-      secondaryLabel: "Check events",
+        "Use this view to keep the event loop moving: create or adjust the event, confirm attendance, and make sure points follow a real chapter moment.",
+      primaryHref: getLaunchLaneLeaderEventsHref(),
+      primaryLabel: "Open events",
+      secondaryHref: getLaunchLaneLeaderAttendanceHref(),
+      secondaryLabel: "Check attendance",
       safetyNote:
-        "This is a read-only execution posture. Assignment saves, reminders, Luma writes, and proof uploads remain disabled.",
+        "This is a read-only execution posture. Event saves, attendance imports, and point writes still depend on the approved live path.",
       items: [
         {
           label: "Active owners",
           value: `${activeOwners}`,
-          note: "Not-started or in-progress actions that need E-Board follow-up.",
+          note: "Not-started or in-progress work that still needs E-Board follow-through around the event loop.",
         },
         {
           label: "Events linked",
           value: `${data.kpiSummary.eventsLinked}`,
-          note: "Mock event posture only; no Luma write is triggered.",
+          note: "Mock Luma posture only; no live write is triggered from this surface.",
         },
         {
-          label: "Proof follow-up",
+          label: "Attendance + points",
           value: `${pendingFollowUp}`,
-          note: "Items that need clearer proof, testimonial context, or HQ review.",
+          note: "Use the attendance lane to clear the items keeping the next points move from feeling believable.",
         },
       ],
     };
@@ -621,28 +620,28 @@ function getDashboardRoleFocus(
     roleLabel: "Chapter Leader",
     title: "Leader operating focus",
     summary:
-      "Use this view to balance owner follow-up, proof posture, and chapter KPI movement.",
-    primaryHref: "/rush-month/review",
-    primaryLabel: "Open follow-up",
-    secondaryHref: "/rush-month/actions",
-    secondaryLabel: "Open actions",
+      "Use this view to balance event readiness, attendance follow-through, and chapter points movement.",
+    primaryHref: getLaunchLaneLeaderEventsHref(),
+    primaryLabel: "Open events",
+    secondaryHref: getLaunchLaneLeaderPointsHref(),
+    secondaryLabel: "See points",
     safetyNote:
-      "This is read-only leader guidance. Browser writes and external sends remain disabled.",
+      "This is read-only leader guidance. Browser writes, attendance imports, and external sends remain disabled.",
     items: [
       {
         label: "Needs follow-up",
         value: `${pendingFollowUp}`,
-        note: "Visible proof/action items waiting for a clearer decision.",
+        note: "Visible follow-up items waiting for the chapter to close the event loop clearly.",
       },
       {
         label: "Active owners",
         value: `${activeOwners}`,
-        note: "Visible owners still moving work forward.",
+        note: "Visible owners still moving the chapter event loop forward.",
       },
       {
-        label: "Events linked",
-        value: `${data.kpiSummary.eventsLinked}`,
-        note: "Mock Luma posture only.",
+        label: "Chapter points",
+        value: `${data.pointsSummary.earned}`,
+        note: "Use points movement to confirm whether the chapter loop is working.",
       },
     ],
   };
@@ -736,8 +735,8 @@ function getDashboardAlerts(
     case "leader":
       if (hasChapterRole(actor, "President / VP")) {
         return [
-          `${counts.submitted + counts.changesRequested} proof/action item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} need a decision posture before the chapter scales.`,
-          "Use the member workspace to inspect role coverage before approving new work.",
+          `${counts.submitted + counts.changesRequested} follow-up item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} still affects whether the chapter is really ready to scale.`,
+          "Use attendance and points before widening the next event push.",
         ];
       }
 
@@ -746,23 +745,23 @@ function getDashboardAlerts(
 
         return [
           `${activeOwnerCount} owner${activeOwnerCount === 1 ? "" : "s"} ${activeOwnerCount === 1 ? "needs" : "need"} execution follow-up.`,
-          "Keep action committees focused on events and student action, not passive meetings.",
+          "Keep the visible leader work centered on events, attendance, and points.",
         ];
       }
 
       return [
-        `${counts.submitted + counts.changesRequested} visible proof/action item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} need follow-up.`,
-        "Keep action committees focused on events and student action, not passive meetings.",
+        `${counts.submitted + counts.changesRequested} visible follow-up item${counts.submitted + counts.changesRequested === 1 ? "" : "s"} still needs the event loop to be closed clearly.`,
+        "Keep the visible leader work centered on events, attendance, and points.",
       ];
     case "coach":
       return [
         `${riskCount} visible risk signal${riskCount === 1 ? "" : "s"} need coach attention.`,
-        "Use proof, event movement, and assignment status before logging advance / hold / intervene.",
+        "Use event movement, attendance posture, and points before logging advance / hold / intervene.",
       ];
     case "staff":
       return [
-        `${proofItemCount} Rush Month proof item${proofItemCount === 1 ? "" : "s"} can be reviewed for future sharing posture.`,
-        "Do not publish proof or trigger external syncs from this mock-safe app.",
+        `${proofItemCount} follow-up item${proofItemCount === 1 ? "" : "s"} still sits behind the visible event loop, but the staff lane stays focused on chapters, events, and points.`,
+        "Do not trigger external syncs from this pilot lane.",
       ];
     case "super_admin":
       return [

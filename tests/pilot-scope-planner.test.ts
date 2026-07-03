@@ -47,20 +47,21 @@ describe("pilot scope planner", () => {
     ).toContain("/admin/staff-dry-run");
   });
 
-  it("keeps the first minimum path narrow and event/NPS manual first", () => {
+  it("keeps the first minimum path narrow with the Luma event loop isolated", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const planner = getPilotScopePlanner(actor);
     const actionStart = planner.minimumPilotPath.find(
       (step) => step.key === "action_start",
     );
     const eventNps = planner.minimumPilotPath.find(
-      (step) => step.key === "event_nps_manual",
+      (step) => step.key === "event_luma_loop",
     );
 
     expect(actionStart?.pilotMode).toBe("first_live_candidate");
     expect(actionStart?.structuredEvents).toContain("action_started");
-    expect(eventNps?.pilotMode).toBe("manual_first");
-    expect(eventNps?.safetyBoundary).toContain("No Luma writes");
+    expect(eventNps?.pilotMode).toBe("controlled_luma_pilot");
+    expect(eventNps?.structuredEvents).toContain("luma_attendance_imported");
+    expect(eventNps?.safetyBoundary).toContain("Only the approved Luma event-loop path");
   });
 
   it("names the decisions that still block a real student pilot", () => {
@@ -81,7 +82,7 @@ describe("pilot scope planner", () => {
     expect(
       planner.decisions.find((decision) => decision.key === "external_writes")
         ?.recommendation,
-    ).toContain("do not send");
+    ).toContain("outside the approved Luma event loop");
     expect(planner.approvalReplyGuide[0]).toContain("approved as written");
   });
 

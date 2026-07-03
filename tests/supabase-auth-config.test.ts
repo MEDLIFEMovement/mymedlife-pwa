@@ -65,7 +65,7 @@ describe("Supabase auth config", () => {
       mode: "staging_supabase",
       isLocalOnly: false,
       reason:
-        "Hosted staging Supabase Auth is disabled until MYMEDLIFE_ENABLE_STAGING_REVIEW_AUTH=true is set for an approved staging review.",
+        "Hosted staging Supabase Auth is disabled until the staging Review auth control is turned on in /admin/feature-flags for an approved review window.",
     });
   });
 

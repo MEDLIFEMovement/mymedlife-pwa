@@ -50,34 +50,31 @@ vi.mock("@/services/auth-session", () => ({
 }));
 
 describe("login page", () => {
-  it("renders a workspace-oriented login surface instead of an internal milestone page", async () => {
+  it("renders the centered Figma-backed sign-in surface instead of the old review layout", async () => {
     const { default: LoginPage } = await import("@/app/login/page");
     const html = renderToStaticMarkup(await LoginPage({}));
 
+    expect(html).toContain("myMEDLIFE");
+    expect(html).toContain("Sign in to your workspace");
+    expect(html).toContain("Email");
+    expect(html).toContain("Password");
+    expect(html).toContain("Forgot password?");
+    expect(html).toContain("you@example.com");
     expect(html).toContain("Sign in");
-    expect(html).toContain("Choose your myMEDLIFE workspace.");
-    expect(html).toContain("Eligible travelers also see SLT Prep");
-    expect(html).toContain("General Member");
-    expect(html).toContain("Student Leader");
-    expect(html).toContain("Sales Coach / Sales Staff");
-    expect(html).toContain("Staff");
-    expect(html).toContain("Data Solutions / Admin");
-    expect(html).toContain("general.staff@mymedlife.test");
-    expect(html).toContain("Current access boundaries");
-    expect(html).toContain("actual role and permission");
-    expect(html).toContain("See onboarding flow");
-    expect(html).toContain("Use a seeded account");
-    expect(html).toContain("Sign in with a seeded account");
-    expect(html).toContain("Seeded account access");
-    expect(html).toContain("Continue");
-    expect(html).toContain("No signed-in account yet");
-    expect(html).not.toContain("Goal 58");
-    expect(html).not.toContain("Local sign-in is the bridge from review mode to real MVP behavior.");
-    expect(html).not.toContain("How to test locally");
-    expect(html).not.toContain("Local Supabase Auth");
-    expect(html).not.toContain("Sign in to the local MVP");
-    expect(html).not.toContain("Sign in locally");
-    expect(html).toContain("/staff");
+    expect(html).toContain("All rights reserved.");
+    expect(html).toContain('value="/"');
+    expect(html).toContain("Seeded sign-in is not configured for this test run.");
+    expect(html).toContain("disabled");
+    expect(html).not.toContain("General Member");
+    expect(html).not.toContain("Choose your myMEDLIFE workspace.");
+    expect(html).not.toContain("Members");
+    expect(html).not.toContain("Student leaders");
+    expect(html).not.toContain("Coaches and staff");
+    expect(html).not.toContain("DS and admin");
+    expect(html).not.toContain("Review posture");
+    expect(html).not.toContain("Use a seeded account");
+    expect(html).not.toContain("No signed-in account yet");
+    expect(html).not.toContain("/admin");
   });
 
   it("keeps a nested workspace redirect such as SLT Prep intact", async () => {

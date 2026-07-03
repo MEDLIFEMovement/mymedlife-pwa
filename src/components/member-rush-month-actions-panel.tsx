@@ -2,6 +2,10 @@ import Link from "next/link";
 
 import { AssignmentCard } from "@/components/assignment-card";
 import {
+  getLaunchLaneMemberEventsHref,
+  getLaunchLaneMemberPointsHref,
+} from "@/services/events-points-launch-lane";
+import {
   type MemberActionRouteSource,
   buildMemberActionRouteHref,
 } from "@/services/member-action-route-href";
@@ -129,22 +133,22 @@ export function MemberRushMonthActionsPanel({
 
       <section className="grid gap-3 sm:grid-cols-3">
         <MemberRouteLink
-          href={buildMemberCompanionRouteHref("/campaigns", source)}
-          eyebrow="Campaign"
-          title="See why this week matters"
-          detail="Go back to the Rush Month campaign view for KPIs and chapter context."
-        />
-        <MemberRouteLink
-          href={buildMemberCompanionRouteHref("/rush-month/events", source)}
+          href={getLaunchLaneMemberEventsHref(source ?? undefined)}
           eyebrow="Events"
-          title="Turn events into action"
-          detail="Use the event flow when your task depends on a chapter moment or RSVP."
+          title="Stay with the event loop"
+          detail="Open the chapter event tied to this work so RSVP, attendance, and points stay in one place."
         />
         <MemberRouteLink
-          href={buildMemberEvidenceRouteHref(source)}
-          eyebrow="Proof"
-          title="See what happens after you submit"
-          detail="Your proof queue shows what is ready, waiting, or needs more context."
+          href={getLaunchLaneMemberPointsHref(source ?? undefined)}
+          eyebrow="Points"
+          title="See the point impact"
+          detail="Use the leaderboard to confirm how completed work changes chapter momentum."
+        />
+        <MemberRouteLink
+          href="/profile"
+          eyebrow="Profile"
+          title="Return to your role view"
+          detail="Profile keeps your identity, role, and next step close without opening extra modules."
         />
       </section>
     </section>
@@ -155,21 +159,21 @@ function getMemberActionsSourceContext(source: MemberActionRouteSource | null | 
   switch (source) {
     case "campaigns":
       return {
-        eyebrow: "From campaigns",
-        title: "These actions came from the Rush Month campaign view.",
+        eyebrow: "From a parked route",
+        title: "These actions were handed off from the launch lane.",
         detail:
-          "Stay inside the campaign loop: pick the next task, finish it clearly, and keep the proof tied to the same Rush Month context you just reviewed.",
-        href: "/campaigns",
-        backLabel: "Back to campaigns",
+          "Campaign browsing is parked during this launch pass. Use the action list to finish the work, then return to the member event loop instead of reopening a separate campaign surface.",
+        href: getLaunchLaneMemberEventsHref("campaigns"),
+        backLabel: "Back to events",
       };
     case "evidence":
       return {
-        eyebrow: "From proof",
-        title: "These actions came from your proof queue.",
+        eyebrow: "From a parked route",
+        title: "These actions were handed off from your proof queue.",
         detail:
-          "The proof route should send you back into the exact member work that still needs context, evidence, or one cleaner story before review.",
-        href: "/rush-month/evidence",
-        backLabel: "Back to proof",
+          "Proof browsing is parked during this launch pass. Use the action list to finish the work, then return to points and recognition instead of opening a separate proof surface.",
+        href: getLaunchLaneMemberPointsHref("points"),
+        backLabel: "Back to points",
       };
     case "home":
       return {
@@ -177,7 +181,7 @@ function getMemberActionsSourceContext(source: MemberActionRouteSource | null | 
         title: "These actions came from your member home priority.",
         detail:
           "The home screen handed you into this action list as the next step for the week. Keep the task flow simple and return once you know what to do next.",
-        href: "/",
+        href: "/app",
         backLabel: "Back to home",
       };
     case "events":
@@ -186,7 +190,7 @@ function getMemberActionsSourceContext(source: MemberActionRouteSource | null | 
         title: "These actions came from the events route.",
         detail:
           "Use the actions list to finish the concrete follow-up an event surfaced, then keep the proof connected to that same chapter moment.",
-        href: "/rush-month/events",
+        href: getLaunchLaneMemberEventsHref("events"),
         backLabel: "Back to events",
       };
     case "points":
@@ -195,7 +199,7 @@ function getMemberActionsSourceContext(source: MemberActionRouteSource | null | 
         title: "These actions came from points and recognition.",
         detail:
           "Recognition should keep moving you toward a real next action. Finish the task here, then return once the points loop makes sense again.",
-        href: "/rush-month/leaderboard",
+        href: getLaunchLaneMemberPointsHref("points"),
         backLabel: "Back to points",
       };
     case "profile":
@@ -253,35 +257,4 @@ function MemberRouteLink({
       <p className="mt-2 text-sm leading-6 text-slate-600">{detail}</p>
     </Link>
   );
-}
-
-function buildMemberCompanionRouteHref(
-  href: "/campaigns" | "/rush-month/events",
-  source: MemberActionRouteSource | null | undefined,
-) {
-  if (!source) {
-    return href;
-  }
-
-  const supportedSourcesByHref: Record<typeof href, MemberActionRouteSource[]> = {
-    "/campaigns": ["home", "events", "points", "profile"],
-    "/rush-month/events": ["home", "campaigns", "points", "profile"],
-  };
-
-  if (!supportedSourcesByHref[href].includes(source)) {
-    return href;
-  }
-
-  const searchParams = new URLSearchParams();
-  searchParams.set("source", source);
-
-  return `${href}?${searchParams.toString()}`;
-}
-
-function buildMemberEvidenceRouteHref(source: MemberActionRouteSource | null | undefined) {
-  if (!source || source === "evidence") {
-    return "/rush-month/evidence";
-  }
-
-  return `/rush-month/evidence?source=${source}`;
 }

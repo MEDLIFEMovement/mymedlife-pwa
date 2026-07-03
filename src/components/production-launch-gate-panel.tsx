@@ -1,6 +1,7 @@
 import type {
   ProductionLaunchGate,
   ProductionLaunchEvidenceCheck,
+  ProductionEnvironmentReadinessItem,
   ProductionLaunchGateItem,
 } from "@/services/production-launch-gate";
 
@@ -27,12 +28,16 @@ export function ProductionLaunchGatePanel({
             {gate.summary}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-6">
           <MiniStat label="Launch" value={gate.launchReady ? "yes" : "no"} />
           <MiniStat label="Blocked" value={`${gate.counts.blockedBeforeLive}`} />
           <MiniStat
             label="Evidence"
             value={`${gate.counts.launchEvidenceChecks}`}
+          />
+          <MiniStat
+            label="Env"
+            value={`${gate.counts.environmentReadinessItems}`}
           />
           <MiniStat label="Writes" value={`${gate.browserWritesEnabled}`} />
           <MiniStat label="Sends" value={`${gate.externalWritesEnabled}`} />
@@ -69,6 +74,34 @@ export function ProductionLaunchGatePanel({
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {gate.launchEvidenceChecks.map((check) => (
             <LaunchEvidenceCard key={check.key} check={check} />
+          ))}
+        </div>
+      </article>
+
+      <article className="mt-5 rounded-3xl border border-white/10 bg-[#bfdbfe]/40 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/70">
+              Supabase and Vercel readiness
+            </p>
+            <h3 className="mt-2 text-xl font-semibold text-white">
+              Production environment packet
+            </h3>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-white/62">
+              Confirm the production project, env vars, callbacks, DNS, backups,
+              rollback, and support ownership before a live pilot. This packet
+              records evidence needs only; it does not reveal or set secrets.
+            </p>
+          </div>
+          <MiniStat
+            label="Items"
+            value={`${gate.counts.environmentReadinessItems}`}
+          />
+        </div>
+
+        <div className="mt-4 grid gap-3 xl:grid-cols-2">
+          {gate.environmentReadiness.map((item) => (
+            <EnvironmentReadinessCard key={item.key} item={item} />
           ))}
         </div>
       </article>
@@ -172,6 +205,84 @@ function LaunchEvidenceCard({ check }: { check: ProductionLaunchEvidenceCheck })
           <dd className="mt-1 text-white/58">{check.blockedUntil}</dd>
         </div>
       </dl>
+    </div>
+  );
+}
+
+function EnvironmentReadinessCard({
+  item,
+}: {
+  item: ProductionEnvironmentReadinessItem;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[#0b66cc]/70 p-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <span className="rounded-full border border-blue-300/30 bg-blue-300/15 px-3 py-1 text-xs font-semibold text-blue-100">
+            {item.status.replaceAll("_", " ")}
+          </span>
+          <h4 className="mt-3 text-base font-semibold text-white">
+            {item.label}
+          </h4>
+          <p className="mt-1 text-xs leading-5 text-white/46">
+            {item.ownerLane}
+          </p>
+        </div>
+        <MiniToken label="Secrets" value={`${item.secretsShown}`} />
+      </div>
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <Checklist title="Required evidence" items={item.requiredEvidence} />
+        <Checklist title="Safe defaults" items={item.safeDefaults} />
+      </div>
+
+      {item.envVarManifest ? (
+        <div className="mt-3 rounded-2xl bg-white/[0.05] p-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">
+            Env-var manifest
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {item.envVarManifest.map((group) => (
+              <div key={group.label}>
+                <p className="text-xs font-semibold text-white/58">
+                  {group.label}
+                </p>
+                <ul className="mt-2 grid gap-1">
+                  {group.names.map((name) => (
+                    <li
+                      key={name}
+                      className="font-mono text-[0.72rem] leading-5 text-white/62"
+                    >
+                      {name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <p className="mt-3 text-xs leading-5 text-white/58">
+        Blocked until: {item.blockedUntil}
+      </p>
+    </div>
+  );
+}
+
+function Checklist({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-2xl bg-white/[0.05] p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/38">
+        {title}
+      </p>
+      <ul className="mt-2 grid gap-2">
+        {items.map((item) => (
+          <li key={item} className="text-sm leading-6 text-white/62">
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

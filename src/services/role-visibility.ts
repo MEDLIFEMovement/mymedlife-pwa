@@ -1,4 +1,8 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import {
+  isEventsPointsLaunchLaneEnabled,
+  shouldShowTravelerPrepEntry,
+} from "@/services/launch-lane-product-focus";
 import type { Assignment } from "@/shared/types/domain";
 import type { RiskFlagRow } from "@/shared/types/persistence";
 
@@ -31,59 +35,34 @@ export type ActorSurfaceFamily =
   | "ds_admin"
   | "super_admin";
 
-const baseNavigation: NavigationItem[] = [
-  { href: "/app", label: "Home" },
-  { href: "/campaigns", label: "Campaigns" },
-  { href: "/rush-month", label: "Rush Month" },
-  { href: "/rush-month/dashboard", label: "My Week" },
-  { href: "/rush-month/leaderboard", label: "Leaderboard" },
-  { href: "/rush-month/events", label: "Events" },
-  { href: "/rush-month/loop", label: "Loop" },
-  { href: "/rush-month/actions", label: "My Actions" },
-  { href: "/profile", label: "Profile" },
-];
-
 const chapterLeaderNavigation: NavigationItem[] = [
   { href: "/leader?view=overview", label: "Overview" },
-  { href: "/leader?view=leaderboard", label: "Leaderboard" },
-  { href: "/leader?view=members", label: "Member Pipeline" },
-  { href: "/leader?view=member_profile", label: "Member Profile" },
-  { href: "/leader?view=committees", label: "Committees" },
   { href: "/leader?view=events", label: "Events" },
-  { href: "/leader?view=impact", label: "Impact" },
-  { href: "/leader?view=bridge_videos", label: "Bridge Videos" },
-  { href: "/leader?view=succession", label: "Succession" },
-  { href: "/leader?view=feed_analytics", label: "Feed Analytics" },
+  { href: "/leader?view=attendance", label: "Attendance" },
+  { href: "/leader?view=leaderboard", label: "Leaderboard" },
 ];
 
 const coachNavigation: NavigationItem[] = [
   { href: "/staff?view=chapters", label: "Portfolio" },
-  { href: "/staff?view=chapter_detail", label: "Chapter Detail" },
-  { href: "/staff?view=campaigns", label: "Campaigns" },
-  { href: "/staff?view=support_notes#support-notes", label: "Support Notes" },
-  { href: "/slt-prep/staff", label: "Trip Prep" },
-  { href: "/profile", label: "Profile" },
+  { href: "/staff?view=events", label: "Events" },
+  { href: "/staff?view=leaderboard", label: "Leaderboard" },
 ];
 
 const staffNavigation: NavigationItem[] = [
   { href: "/staff?view=chapters", label: "Chapters" },
-  { href: "/staff?view=campaigns", label: "Campaigns" },
-  { href: "/staff?view=proof_ugc", label: "Proof / UGC" },
-  { href: "/staff?view=feed_studio", label: "Feed Studio" },
-  { href: "/staff?view=feed_analytics", label: "Feed Analytics" },
-  { href: "/staff?view=hubspot", label: "HubSpot" },
-  { href: "/staff?view=best_practices", label: "Best Practices" },
-  { href: "/staff?view=admin", label: "Admin" },
-  { href: "/profile", label: "Profile" },
+  { href: "/staff?view=events", label: "Events" },
+  { href: "/staff?view=leaderboard", label: "Leaderboard" },
 ];
 
-const adminBackendNavigation: NavigationItem[] = [
+const fullAdminBackendNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
   { href: "/admin/phase-2", label: "Phase 2" },
   { href: "/admin/permissions", label: "Permissions" },
   { href: "/admin/committees", label: "Committees" },
   { href: "/admin/workflows", label: "Workflows" },
   { href: "/admin/integrations", label: "Integrations" },
+  { href: "/admin/feature-flags", label: "Feature Flags" },
+  { href: "/admin/theme", label: "Theme" },
   { href: "/admin/review-path", label: "Review Path" },
   { href: "/admin/nick-review", label: "Nick Review" },
   { href: "/admin/release-readiness", label: "Release Readiness" },
@@ -93,6 +72,7 @@ const adminBackendNavigation: NavigationItem[] = [
   { href: "/admin/design-qa", label: "Design QA" },
   { href: "/admin/staff-dry-run", label: "Staff Dry Run" },
   { href: "/admin/integration-outbox", label: "Outbox" },
+  { href: "/admin/luma-live-pilot", label: "Luma Pilot" },
   { href: "/admin/database-security", label: "Database Security" },
   { href: "/admin/system-health", label: "System Health" },
   { href: "/admin/pilot-scope", label: "Pilot Scope" },
@@ -101,14 +81,27 @@ const adminBackendNavigation: NavigationItem[] = [
   { href: "/profile", label: "Profile" },
 ];
 
-const dsAdminNavigation: NavigationItem[] = [
+const focusedAdminBackendNavigation: NavigationItem[] = [
+  { href: "/admin", label: "Admin Home" },
+  { href: "/admin/luma-live-pilot", label: "Luma Pilot" },
+  { href: "/admin/integration-outbox", label: "Outbox" },
+  { href: "/admin/audit-log", label: "Audit Log" },
+  { href: "/admin/launch-gate", label: "Launch Gate" },
+  { href: "/admin/pilot-scope", label: "Pilot Scope" },
+  { href: "/profile", label: "Profile" },
+];
+
+const fullDsAdminNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
   { href: "/admin/phase-2", label: "Phase 2" },
   { href: "/admin/integrations", label: "Integrations" },
+  { href: "/admin/feature-flags", label: "Feature Flags" },
+  { href: "/admin/theme", label: "Theme" },
   { href: "/admin/permissions", label: "Permissions" },
   { href: "/admin/workflows", label: "Workflows" },
   { href: "/admin/staff-dry-run", label: "Staff Dry Run" },
   { href: "/admin/integration-outbox", label: "Outbox" },
+  { href: "/admin/luma-live-pilot", label: "Luma Pilot" },
   { href: "/admin/database-security", label: "Database Security" },
   { href: "/admin/system-health", label: "System Health" },
   { href: "/profile", label: "Profile" },
@@ -168,6 +161,22 @@ export function canReadAdminIntegrationsSecurity(
   return family === "ds_admin" || family === "super_admin";
 }
 
+export function canManageLaunchLaneEvents(actor: LocalActorContext): boolean {
+  const family = getActorSurfaceFamily(actor);
+
+  return family === "leader" || family === "ds_admin" || family === "super_admin";
+}
+
+export function canImportLaunchLaneAttendance(actor: LocalActorContext): boolean {
+  const family = getActorSurfaceFamily(actor);
+
+  return family === "leader" || family === "staff" || family === "ds_admin" || family === "super_admin";
+}
+
+export function canWriteLaunchLaneMemberRsvp(actor: LocalActorContext): boolean {
+  return getActorSurfaceFamily(actor) === "member";
+}
+
 export function canReadAdminReviewSurface(actor: LocalActorContext): boolean {
   const family = getActorSurfaceFamily(actor);
 
@@ -211,9 +220,8 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
   if (!actor) {
     return [
       { href: "/login", label: "Sign In" },
-      ...baseNavigation,
-      { href: "/rush-month/evidence", label: "Proof" },
-      { href: "/rush-month/review", label: "Review" },
+      { href: "/app/events", label: "Events" },
+      { href: "/app/points", label: "Points" },
       { href: "/staff?view=chapters", label: "Staff" },
       { href: "/admin", label: "Admin" },
     ];
@@ -223,10 +231,9 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
     case "member":
       return [
         { href: "/app", label: "Home" },
-        { href: "/campaigns", label: "Campaigns" },
-        { href: "/rush-month/events", label: "Events" },
-        { href: "/rush-month/leaderboard", label: "Points" },
-        ...(hasTravelerAccess(actor)
+        { href: "/app/events", label: "Events" },
+        { href: "/app/points", label: "Points" },
+        ...(hasTravelerAccess(actor) && shouldShowTravelerPrepEntry()
           ? [{ href: "/app/slt-prep", label: "SLT Prep" }]
           : []),
         { href: "/profile", label: "Profile" },
@@ -238,9 +245,13 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
     case "staff":
       return staffNavigation;
     case "ds_admin":
-      return dsAdminNavigation;
+      return isEventsPointsLaunchLaneEnabled()
+        ? focusedAdminBackendNavigation
+        : fullDsAdminNavigation;
     case "super_admin":
-      return adminBackendNavigation;
+      return isEventsPointsLaunchLaneEnabled()
+        ? focusedAdminBackendNavigation
+        : fullAdminBackendNavigation;
   }
 }
 
@@ -250,8 +261,8 @@ export function getMobileQuickNavigationForActor(
   if (!actor) {
     return [
       { href: "/login", label: "Sign In", helper: "Auth" },
-      { href: "/rush-month", label: "Rush", helper: "Campaign" },
-      { href: "/rush-month/actions", label: "Actions", helper: "Work" },
+      { href: "/app/events", label: "Events", helper: "Meet" },
+      { href: "/app/points", label: "Points", helper: "Rank" },
       { href: "/admin", label: "Admin", helper: "Review" },
     ];
   }
@@ -260,48 +271,66 @@ export function getMobileQuickNavigationForActor(
     case "member":
       return [
         { href: "/app", label: "Home", helper: "Today" },
-        { href: "/campaigns", label: "Campaigns", helper: "Goals" },
-        { href: "/rush-month/events", label: "Events", helper: "Meet" },
-        { href: "/rush-month/leaderboard", label: "Points", helper: "Rank" },
-        ...(hasTravelerAccess(actor)
+        { href: "/app/events", label: "Events", helper: "Meet" },
+        { href: "/app/points", label: "Points", helper: "Rank" },
+        ...(hasTravelerAccess(actor) && shouldShowTravelerPrepEntry()
           ? [{ href: "/app/slt-prep", label: "SLT Prep", helper: "Trip" }]
           : []),
         { href: "/profile", label: "Profile", helper: "Me" },
       ];
     case "leader":
       return [
-        { href: "/leader?view=overview", label: "Home", helper: "Health" },
-        { href: "/leader?view=members", label: "Pipeline", helper: "People" },
+        { href: "/leader?view=overview", label: "Home", helper: "Events" },
         { href: "/leader?view=events", label: "Events", helper: "Plan" },
-        { href: "/leader?view=succession", label: "Succession", helper: "Leaders" },
+        { href: "/leader?view=attendance", label: "Attendance", helper: "Check-in" },
+        { href: "/leader?view=leaderboard", label: "Leaderboard", helper: "Rank" },
       ];
     case "coach":
       return [
-        { href: "/staff?view=chapters", label: "Portfolio", helper: "Overview" },
-        { href: "/staff?view=chapter_detail", label: "Chapter", helper: "Focus" },
-        { href: "/staff?view=campaigns", label: "Campaigns", helper: "Support" },
-        { href: "/staff?view=support_notes#support-notes", label: "Notes", helper: "Staff" },
+        { href: "/staff?view=chapters", label: "Portfolio", helper: "Chapters" },
+        { href: "/staff?view=events", label: "Events", helper: "Health" },
+        { href: "/staff?view=leaderboard", label: "Leaderboard", helper: "Rank" },
       ];
     case "staff":
       return [
-        { href: "/admin", label: "Admin", helper: "Review" },
-        { href: "/admin/workflows", label: "Flows", helper: "Map" },
-        { href: "/admin/proof-write", label: "Proof", helper: "Packet" },
-        { href: "/admin/hq-proof-write", label: "HQ", helper: "Review" },
-        { href: "/admin/assignment-write", label: "Assign", helper: "No sends" },
-        { href: "/admin/coach-write", label: "Coach", helper: "No sends" },
-        { href: "/admin/pilot-scope", label: "Pilot", helper: "Scope" },
+        { href: "/staff?view=chapters", label: "Chapters", helper: "List" },
+        { href: "/staff?view=events", label: "Events", helper: "Watch" },
+        { href: "/staff?view=leaderboard", label: "Leaderboard", helper: "Rank" },
       ];
     case "ds_admin":
+      if (isEventsPointsLaunchLaneEnabled()) {
+        return [
+          { href: "/admin", label: "Admin", helper: "Home" },
+          { href: "/admin/luma-live-pilot", label: "Pilot", helper: "Luma" },
+          { href: "/admin/integration-outbox", label: "Queue", helper: "Off" },
+          { href: "/admin/audit-log", label: "Audit", helper: "Proof" },
+          { href: "/admin/launch-gate", label: "Gate", helper: "Ready" },
+          { href: "/admin/pilot-scope", label: "Scope", helper: "Pilot" },
+        ];
+      }
       return [
         { href: "/admin/integrations", label: "Keys", helper: "Lock" },
+        { href: "/admin/feature-flags", label: "Flags", helper: "Pilot" },
+        { href: "/admin/theme", label: "Theme", helper: "Shell" },
         { href: "/admin/permissions", label: "Roles", helper: "Scope" },
         { href: "/admin/workflows", label: "Flows", helper: "Map" },
         { href: "/admin/integration-outbox", label: "Queue", helper: "Off" },
       ];
     case "super_admin":
+      if (isEventsPointsLaunchLaneEnabled()) {
+        return [
+          { href: "/admin", label: "Admin", helper: "Home" },
+          { href: "/admin/luma-live-pilot", label: "Pilot", helper: "Luma" },
+          { href: "/admin/integration-outbox", label: "Queue", helper: "Off" },
+          { href: "/admin/audit-log", label: "Audit", helper: "Proof" },
+          { href: "/admin/launch-gate", label: "Gate", helper: "Ready" },
+          { href: "/admin/pilot-scope", label: "Scope", helper: "Pilot" },
+        ];
+      }
       return [
         { href: "/admin", label: "Admin", helper: "Home" },
+        { href: "/admin/feature-flags", label: "Flags", helper: "Pilot" },
+        { href: "/admin/theme", label: "Theme", helper: "Shell" },
         { href: "/admin/permissions", label: "Roles", helper: "Scope" },
         { href: "/admin/committees", label: "Committees", helper: "Owners" },
         { href: "/admin/workflows", label: "Flows", helper: "Map" },

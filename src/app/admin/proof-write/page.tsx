@@ -6,6 +6,7 @@ import { RestrictedState } from "@/components/restricted-state";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getProofMetadataPacket } from "@/services/proof-metadata-verification-packet";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
+import { getResolvedFeatureFlagEnv } from "@/services/runtime-feature-flags";
 import { canReadAdminIntegrationsSecurity } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
@@ -13,11 +14,16 @@ export const metadata = getStaticRouteMetadata("adminProofWrite");
 export const dynamic = "force-dynamic";
 
 export default async function ProofWritePage() {
-  const [data, actor] = await Promise.all([
+  const [data, actor, resolvedEnv] = await Promise.all([
     getReadOnlyAppData(),
     getLocalActorContext(),
+    getResolvedFeatureFlagEnv([
+      "staging_review_auth",
+      "action_started_write",
+      "proof_metadata_write",
+    ]),
   ]);
-  const packet = getProofMetadataPacket(actor, data);
+  const packet = getProofMetadataPacket(actor, data, resolvedEnv);
 
   return (
     <AdminAppShell actor={actor}>

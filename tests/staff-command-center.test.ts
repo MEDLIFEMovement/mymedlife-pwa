@@ -21,9 +21,11 @@ describe("staff command center", () => {
     expect(getStaffCommandCenter(admin, data).title).toBe("Staff Command Center");
     expect(getStaffCommandCenter(superAdmin, data).canReadCommandCenter).toBe(true);
     expect(getStaffCommandCenter(superAdmin, data).title).toBe("Staff Command Center");
-    expect(getStaffCommandCenter(admin, data).viewOptions.map((item) => item.label)).toContain(
-      "Admin",
-    );
+    expect(getStaffCommandCenter(admin, data).viewOptions.map((item) => item.label)).toEqual([
+      "Chapters",
+      "Events",
+      "Leaderboard",
+    ]);
   });
 
   it("keeps the default staff nav neutral when campaign context was not explicitly chosen", () => {
@@ -36,11 +38,11 @@ describe("staff command center", () => {
     expect(commandCenter.viewOptions.find((item) => item.key === "chapters")?.href).toBe(
       "/staff?view=chapters",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "campaigns")?.href).toBe(
-      "/staff?view=campaigns",
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toBe(
+      "/staff?view=events",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "feed_analytics")?.href).toBe(
-      "/staff?view=feed_analytics",
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toBe(
+      "/staff?view=leaderboard",
     );
   });
 
@@ -178,13 +180,13 @@ describe("staff command center", () => {
     );
     expect(commandCenter.portfolioBestPracticesViewHref).toContain("chapter=chapter-yale");
     expect(commandCenter.portfolioBestPracticesViewHref).toContain("decision=intervene");
-    expect(commandCenter.viewOptions.find((item) => item.key === "campaigns")?.href).toContain(
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toContain(
       "chapter=chapter-yale",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "campaigns")?.href).toContain(
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toContain(
       "decision=intervene",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "best_practices")?.href).toContain(
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toContain(
       "decision=intervene",
     );
   });
@@ -289,7 +291,7 @@ describe("staff command center", () => {
     expect(commandCenter.chapterRows[0]?.detailHref).toContain("country=usa");
     expect(commandCenter.chapterRows[0]?.detailHref).toContain("coach=james");
     expect(commandCenter.chapterRows[0]?.detailHref).toContain("portfolioCampaign=rush_month");
-    expect(commandCenter.viewOptions.find((item) => item.key === "campaigns")?.href).toContain(
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toContain(
       "country=usa",
     );
     expect(commandCenter.quickActions.find((item) => item.label === "Open proof queue")?.href).toContain(
@@ -523,10 +525,10 @@ describe("staff command center", () => {
     expect(commandCenter.bestPracticeCards[0]?.shareHref).toContain(
       "source=portfolio_overview",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "best_practices")?.href).toContain(
+    expect(commandCenter.viewOptions.find((item) => item.key === "leaderboard")?.href).toContain(
       "source=portfolio_overview",
     );
-    expect(commandCenter.viewOptions.find((item) => item.key === "campaigns")?.href).toContain(
+    expect(commandCenter.viewOptions.find((item) => item.key === "events")?.href).toContain(
       "source=portfolio_overview",
     );
   });
@@ -596,7 +598,7 @@ describe("staff command center", () => {
       "Production Launch Gate",
       "Production Operations",
     ]);
-    expect(commandCenter.viewOptions.find((item) => item.key === "admin")?.href).toContain(
+    expect(commandCenter.viewOptions.find((item) => item.key === "chapters")?.href).toContain(
       "source=member_home",
     );
   });
@@ -775,42 +777,29 @@ describe("staff command center", () => {
     );
 
     expect(defaultHtml).toContain("Portfolio Overview");
-    expect(defaultHtml).toContain("Rush Month active");
-    expect(defaultHtml).toContain("Chapters Active");
-    expect(defaultHtml).toContain("M.S.");
-    expect(defaultHtml).toContain("J.O.");
-    expect(defaultHtml).not.toContain("Sofia Growth Lead");
-    expect(defaultHtml).not.toContain("Naomi Outreach Lead");
-    expect(defaultHtml).toContain("Evidence Pending");
-    expect(defaultHtml).toContain("HubSpot Tasks");
-    expect(defaultHtml).toContain('aria-label="Risk filter"');
-    expect(defaultHtml).toContain('aria-label="Country filter"');
-    expect(defaultHtml).toContain('aria-label="Campaign filter"');
-    expect(defaultHtml).toContain('aria-label="Coach filter"');
+    expect(defaultHtml).toContain("Luma, RSVP, attendance, and points should stay visible together.");
+    expect(defaultHtml).toContain("Luma calendar");
+    expect(defaultHtml).toContain("Next event");
+    expect(defaultHtml).toContain("RSVPs");
+    expect(defaultHtml).toContain("Attendance");
+    expect(defaultHtml).toContain("Points");
+    expect(defaultHtml).toContain("UCLA MEDLIFE");
+    expect(defaultHtml).toContain("UCLA chapter calendar");
+    expect(defaultHtml).not.toContain("Evidence Pending");
+    expect(defaultHtml).not.toContain("HubSpot Tasks");
+    expect(defaultHtml).not.toContain('aria-label="Risk filter"');
+    expect(defaultHtml).not.toContain('aria-label="Country filter"');
+    expect(defaultHtml).not.toContain('aria-label="Campaign filter"');
+    expect(defaultHtml).not.toContain('aria-label="Coach filter"');
     expect(defaultHtml).toContain("Healthy");
-    expect(defaultHtml).toContain("At-Risk");
-    expect(defaultHtml).toContain("Intervene");
-    expect(defaultHtml).toContain("Chapter Engagement");
-    expect(defaultHtml).toContain("Grow the Movement");
-    expect(defaultHtml).toContain("Leadership Transition");
-    expect(defaultHtml).toContain("Start a Chapter");
-    expect(defaultHtml).toContain("Aisha Kamara");
-    expect(defaultHtml).toContain("Carlos Quispe");
-    expect(defaultHtml).toContain("Fernanda Lima");
-    expect(defaultHtml).toContain("James Okafor");
-    expect(defaultHtml).toContain("Lucia Herrera");
-    expect(defaultHtml).toContain("Maria Santos");
-    expect(defaultHtml).toContain("Samuel Mutua");
-    expect(defaultHtml).toContain(">Review At-Risk<");
-    expect(defaultHtml).toContain('/staff?view=chapters&amp;campaign=rush-month&amp;risk=medium');
-    expect(defaultHtml).toContain(">Export<");
-    expect(defaultHtml.indexOf("HubSpot Tasks")).toBeLessThan(
-      defaultHtml.indexOf('aria-label="Risk filter"'),
-    );
+    expect(defaultHtml).toContain("No RSVPs");
+    expect(defaultHtml).toContain("Low attendance");
+    expect(defaultHtml).toContain(">Open Events<");
+    expect(defaultHtml).toContain(">Open Leaderboard<");
     expect(defaultHtml).not.toContain('type="submit"');
     expect(defaultHtml).not.toContain("Command center nav");
-    expect(defaultHtml).toContain("Evidence ⏳");
-    expect(defaultHtml).toContain("Last Active");
+    expect(defaultHtml).not.toContain("Evidence ⏳");
+    expect(defaultHtml).not.toContain("Last Active");
     expect(defaultHtml).not.toContain("Which support signals are moving across the portfolio?");
     expect(defaultHtml).not.toContain("Live rows");
     expect(defaultHtml).not.toContain("Scan chapter health, open the drawer, and move support where risk is rising.");
@@ -976,14 +965,18 @@ describe("staff command center", () => {
 
     expect(html).not.toContain("Command center nav");
     expect(html).toContain("Chapters");
-    expect(html).toContain("Rush Month active");
+    expect(html).toContain("Events");
+    expect(html).toContain("Leaderboard");
     expect(html).not.toContain(
       "Move across chapters, campaigns, proof, content, CRM, and admin health.",
     );
     expect(html).not.toContain("Quick tools");
     expect(html).toContain("Portfolio Overview");
-    expect(html).toContain("Search chapter, school, student...");
-    expect(html).toContain("Open Campaign View");
+    expect(html).toContain("Luma, RSVP, attendance, and points should stay visible together.");
+    expect(html).toContain("Open Events");
+    expect(html).toContain("Open Leaderboard");
+    expect(html).not.toContain("Search chapter, school, student...");
+    expect(html).not.toContain("Open Campaign View");
     expect(html).not.toContain("Review posture");
     expect(html).not.toContain("Read-only");
     expect(html).not.toContain("Staff Command Center sample");
