@@ -236,6 +236,24 @@ This command checks all of the following in one report:
 It is read-only. It does not create users, write Supabase rows, change DNS,
 change Vercel settings, upload files, or enable integrations.
 
+## Production Live Data Count Check
+
+After the reviewed packet is applied by the approved production owner, verify the
+live Supabase launch tables with:
+
+```bash
+pnpm production:data-counts
+```
+
+This command uses the linked Supabase production project and only returns
+aggregate counts. It does not show user names or emails, create rows, apply
+migrations, change Auth, change RLS, upload files, or enable integrations.
+
+The count check is not a replacement for the rollout packet validator. It proves
+that production has enough table volume for launch, while the packet validator
+still proves row-by-row ownership: which user belongs to which chapter, which
+coach owns each chapter, and which campaign each chapter starts with.
+
 ## Production Route Smoke Check
 
 After each production deployment, verify the four core public routes:

@@ -18,6 +18,7 @@
     "rollout:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-packet.mjs",
     "rollout:handoff": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-handoff.mjs",
     "production:launch-check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-core-production-launch-readiness.mjs",
+    "production:data-counts": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-live-data-counts.mjs",
     "production:domain": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-domain-readiness.mjs",
     "production:smoke": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/production-core-route-smoke.mjs",
     "supabase:start": "pnpm dlx supabase@2.106.0 start",
