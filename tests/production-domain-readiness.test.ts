@@ -15,6 +15,42 @@ describe("production domain readiness", () => {
       .toContain("Production domain readiness: READY");
   });
 
+  it("passes with the current Vercel-recommended apex records", () => {
+    const result = getProductionDomainReadiness({
+      ...createReadySnapshot(),
+      apex: {
+        domain: "mymedlife.org",
+        addresses: ["216.150.1.1", "216.150.16.1"],
+        cnames: [],
+      },
+      www: {
+        domain: "www.mymedlife.org",
+        addresses: [],
+        cnames: ["6e73350b5a40ce7a.vercel-dns-016.com"],
+      },
+    });
+
+    expect(result.ready).toBe(true);
+  });
+
+  it("fails when the root domain has non-Vercel DNS", () => {
+    const result = getProductionDomainReadiness({
+      ...createReadySnapshot(),
+      apex: {
+        domain: "mymedlife.org",
+        addresses: ["203.0.113.10"],
+        cnames: [],
+      },
+    });
+
+    expect(result.ready).toBe(false);
+    expect(result.checks).toContainEqual({
+      label: "Root domain points to Vercel apex address",
+      passed: false,
+      detail: "mymedlife.org addresses: 203.0.113.10; cnames: none",
+    });
+  });
+
   it("fails while GoDaddy parking DNS is still active", () => {
     const result = getProductionDomainReadiness({
       ...createReadySnapshot(),
