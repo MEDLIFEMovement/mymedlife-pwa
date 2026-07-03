@@ -112,6 +112,30 @@ The command prints the packet counts, blockers, warnings, and next steps. It
 exits with a failure code when the packet is not ready, so it can also be used
 in a review checklist or CI job.
 
+## Production Route Smoke Check
+
+After each production deployment, verify the four core public routes:
+
+```bash
+pnpm production:smoke https://mymedlife-pwa.vercel.app
+```
+
+This checks that:
+
+- `/login` returns the myMEDLIFE login page.
+- `/app` redirects unauthenticated users to login with the student feed return
+  path preserved.
+- `/leader` redirects unauthenticated users to login with the student command
+  center return path preserved.
+- `/staff` redirects unauthenticated users to login with the staff command
+  center return path preserved.
+
+Once DNS is attached, run the same check against:
+
+```bash
+pnpm production:smoke https://www.mymedlife.org
+```
+
 ## Safe Production Sequence
 
 1. Prepare the packet from real chapter and staff data.
