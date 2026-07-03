@@ -80,16 +80,22 @@ Prepare one reviewed packet with these sections:
 }
 ```
 
-Teams can build that JSON packet from six simple spreadsheet exports:
+Teams can start from blank CSV templates:
+
+```bash
+pnpm rollout:templates --out rollout-csv
+```
+
+Then fill those files with real MEDLIFE data and build the JSON packet:
 
 ```bash
 pnpm rollout:build \
-  --chapters chapters.csv \
-  --users users.csv \
-  --memberships memberships.csv \
-  --staff-roles staff-roles.csv \
-  --coach-assignments coach-assignments.csv \
-  --campaigns campaigns.csv \
+  --chapters rollout-csv/chapters.csv \
+  --users rollout-csv/users.csv \
+  --memberships rollout-csv/memberships.csv \
+  --staff-roles rollout-csv/staff-roles.csv \
+  --coach-assignments rollout-csv/coach-assignments.csv \
+  --campaigns rollout-csv/campaigns.csv \
   --out production-rollout-packet.json
 ```
 
