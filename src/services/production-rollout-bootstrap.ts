@@ -148,6 +148,26 @@ export function getProductionRolloutBootstrapReadiness(
     );
   }
 
+  if (packet.users.length === 0) {
+    blockers.push("Add launch users to users.csv before production rollout.");
+  }
+
+  if (approvedMemberships.length === 0) {
+    blockers.push(
+      "Add approved chapter memberships to memberships.csv before production rollout.",
+    );
+  }
+
+  if (activeCoachAssignments.length === 0) {
+    blockers.push(
+      "Add active coach assignments to coach-assignments.csv before production rollout.",
+    );
+  }
+
+  if (activeCampaigns.length === 0) {
+    blockers.push("Add active launch campaigns to campaigns.csv before production rollout.");
+  }
+
   addDuplicateBlockers(
     blockers,
     packet.users.map((user) => normalizeEmail(user.email)),
