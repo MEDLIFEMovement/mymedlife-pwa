@@ -86,6 +86,9 @@ Teams can start from blank CSV templates:
 pnpm rollout:templates --out rollout-csv
 ```
 
+For the plain-English data request, owner map, and review checklist, use
+`docs/production-rollout-data-collection.md`.
+
 Then fill those files with real MEDLIFE data and build the JSON packet:
 
 ```bash
