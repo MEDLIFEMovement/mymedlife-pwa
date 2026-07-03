@@ -96,7 +96,7 @@ export function getProductionLaunchGate(
     title: getTitle(actor),
     verdict: "not_live_ready",
     summary:
-      "This gate gathers the local evidence that exists today and the exact evidence still missing before myMEDLIFE can move from local MVP review to a live student pilot.",
+      "This gate gathers the deployed evidence that exists today and the exact evidence still missing before myMEDLIFE can move from production deployment to a 30-chapter live rollout.",
     launchReady: false,
     browserWritesEnabled: 0,
     externalWritesEnabled: 0,
@@ -117,6 +117,32 @@ export function getProductionLaunchGate(
 
 export function getProductionLaunchEvidenceChecks(): ProductionLaunchEvidenceCheck[] {
   return [
+    {
+      key: "production_domain_dns",
+      label: "Production domain DNS",
+      ownerLane: "Platform and DNS",
+      status: "missing_before_pilot",
+      requiredEvidence:
+        "`www.mymedlife.org` points to Vercel, no longer serves GoDaddy parking, and `pnpm production:domain https://www.mymedlife.org` reports READY.",
+      reviewRoute: "/admin/environment-setup",
+      acceptanceSignal:
+        "Vercel verifies `mymedlife.org` and `www.mymedlife.org`, and `/login` serves the myMEDLIFE app copy on the public domain.",
+      blockedUntil:
+        "GoDaddy DNS parking records are removed, Vercel DNS records are live, and the production domain readiness check is green.",
+    },
+    {
+      key: "thirty_chapter_rollout_packet",
+      label: "30-chapter rollout packet",
+      ownerLane: "Launch Operations and DS",
+      status: "missing_before_pilot",
+      requiredEvidence:
+        "A real production packet for at least 30 active chapters passes `pnpm rollout:check`, and `pnpm rollout:handoff` is reviewed before production Auth users or app rows are created.",
+      reviewRoute: "/admin/master-data",
+      acceptanceSignal:
+        "The packet has real users, chapters, approved memberships, staff roles, coach assignments, launch campaigns, no fake emails, and no secret-like fields.",
+      blockedUntil:
+        "The 30-chapter packet and handoff are approved, applied through the approved production path, and signed-in role readback passes.",
+    },
     {
       key: "staging_url",
       label: "Staging deployment URL",

@@ -16,9 +16,9 @@ describe("production launch gate", () => {
       total: 8,
       localEvidenceReady: 1,
       blockedBeforeLive: 7,
-      launchEvidenceChecks: 9,
+      launchEvidenceChecks: 11,
     });
-    expect(gate.launchEvidenceChecks).toHaveLength(9);
+    expect(gate.launchEvidenceChecks).toHaveLength(11);
     expect(gate.finalReviewPrompt).toContain("production writes");
   });
 
@@ -120,6 +120,8 @@ describe("production launch gate", () => {
     const evidenceKeys = gate.launchEvidenceChecks.map((check) => check.key);
 
     expect(evidenceKeys).toEqual([
+      "production_domain_dns",
+      "thirty_chapter_rollout_packet",
       "staging_url",
       "staging_supabase",
       "auth_callbacks",
@@ -139,6 +141,20 @@ describe("production launch gate", () => {
           check.blockedUntil.length > 20,
       ),
     ).toBe(true);
+    expect(
+      gate.launchEvidenceChecks.find((check) => check.key === "production_domain_dns")
+        ?.requiredEvidence,
+    ).toContain("pnpm production:domain https://www.mymedlife.org");
+    expect(
+      gate.launchEvidenceChecks.find(
+        (check) => check.key === "thirty_chapter_rollout_packet",
+      )?.requiredEvidence,
+    ).toContain("pnpm rollout:check");
+    expect(
+      gate.launchEvidenceChecks.find(
+        (check) => check.key === "thirty_chapter_rollout_packet",
+      )?.requiredEvidence,
+    ).toContain("pnpm rollout:handoff");
     expect(
       gate.launchEvidenceChecks.find((check) => check.key === "device_qa_signoff")
         ?.requiredEvidence,

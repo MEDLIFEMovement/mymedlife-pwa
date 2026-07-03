@@ -49,15 +49,15 @@ export function ProductionLaunchGatePanel({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-100/70">
-              Staging and pilot proof
+              Production launch proof
             </p>
             <h3 className="mt-2 text-xl font-semibold text-white">
               Launch evidence checklist
             </h3>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-white/62">
-              Collect the Goal 150 launch evidence checklist before moving from
-              local review to staging approval, live pilot setup, production
-              writes, or student invitations.
+              Collect domain, 30-chapter packet, auth, security, device, and
+              operations evidence before moving from deployed app to live
+              production users, production writes, or student invitations.
             </p>
           </div>
           <MiniStat
