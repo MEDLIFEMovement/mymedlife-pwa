@@ -29,7 +29,7 @@ export type AuthSessionState = {
   status: AuthSessionStatus;
   isLocalOnly: boolean;
   isHostedStaging: boolean;
-  environment: "local" | "staging";
+  environment: "local" | "staging" | "production";
   message: string;
   user:
     | {
@@ -160,6 +160,17 @@ function getAuthSessionCopy(config?: SupabaseAuthConfig) {
       isLocalOnly: false,
       isHostedStaging: true,
       environment: "staging" as const,
+    };
+  }
+
+  if (config?.environment === "production" && !config.isLocalOnly) {
+    return {
+      authLabel: "Hosted production Supabase Auth",
+      signedOutMessage: "No hosted production Supabase Auth session is active.",
+      signedInMessage: "Hosted production Supabase Auth session is active.",
+      isLocalOnly: false,
+      isHostedStaging: false,
+      environment: "production" as const,
     };
   }
 
