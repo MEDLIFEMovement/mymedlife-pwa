@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "hosted:smoke": "node scripts/hosted-auth-smoke.mjs",
+    "rollout:templates": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-csv-templates.mjs",
     "rollout:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-production-rollout-packet.mjs",
     "rollout:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-packet.mjs",
     "production:smoke": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/production-core-route-smoke.mjs",
