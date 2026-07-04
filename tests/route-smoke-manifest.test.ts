@@ -10,7 +10,7 @@ describe("route smoke manifest", () => {
     expect(manifest.canReadManifest).toBe(true);
     expect(manifest.title).toBe("Admin route smoke manifest");
     expect(manifest.summary).toContain("events-and-points launch lane");
-    expect(manifest.counts.totalRoutes).toBe(15);
+    expect(manifest.counts.totalRoutes).toBe(16);
     expect(manifest.counts.criticalRoutes).toBeGreaterThan(10);
     expect(manifest.counts.mobileVisualChecks).toBe(1);
     expect(manifest.counts.browserWritesExpected).toBe(0);
@@ -38,6 +38,7 @@ describe("route smoke manifest", () => {
         "/admin/launch-gate",
         "/admin/audit-log",
         "/admin/integration-outbox",
+        "/admin/integrations/luma",
         "/admin/pilot-scope",
       ]),
     );
@@ -70,6 +71,10 @@ describe("route smoke manifest", () => {
       manifest.routes.find((route) => route.path === "/admin/integration-outbox")
         ?.safetyAssertion,
     ).toContain("must not trigger sends");
+    expect(
+      manifest.routes.find((route) => route.path === "/admin/integrations/luma")
+        ?.safetyAssertion,
+    ).toContain("must not expose keys");
     expect(
       manifest.routes.every((route) => route.safetyAssertion.length > 0),
     ).toBe(true);

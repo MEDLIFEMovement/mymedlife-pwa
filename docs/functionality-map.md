@@ -20,8 +20,8 @@ Purpose: give reviewers a plain map from visible app surfaces to the simple back
 | Behavior | Current owner | Routes/shells using it | Write posture |
 |---|---|---|---|
 | Event discovery/readback | `src/services/member-launch-lane-events.ts`, `src/services/rush-month-event-detail.ts` | `/app`, `/rush-month/events`, leader/staff event cards | read/mock-safe |
-| Luma calendar mapping | `src/services/chapter-luma-calendars.ts`, `src/services/chapter-luma-calendar-store.ts` | event surfaces and future admin Luma setup | server/env only |
-| Luma staging loop | `src/services/staging-luma-event-loop.ts` | older MED-494 PR and future Luma status route | staging-only when approved |
+| Luma calendar mapping | `src/services/chapter-luma-calendars.ts`, `src/services/chapter-luma-calendar-store.ts` | event surfaces and `/admin/integrations/luma` | server/env only |
+| Luma staging loop/status | `src/services/staging-luma-event-loop.ts`, `src/services/admin-luma-integration-status.ts` | event surfaces, `/admin/integrations/luma`, `/admin/integration-outbox` | staging/mock-safe, no production writes |
 | RSVP state | `src/services/rush-month-event-rsvp.ts` | member event detail/check-in shell | local/staging-safe unless Luma RSVP flags approved |
 | Attendance state | `src/services/launch-lane-event-snapshots.ts`, `src/services/event-loop.ts` | member/leader/staff event views | local/mock-safe |
 | Points policy/readback | `src/services/launch-lane-points-policy.ts`, `src/services/launch-lane-points-readback.ts`, `src/services/points-kpi-ledger.ts` | `/app` points, leader/staff leaderboards | read/mock-safe until materialization approved |
@@ -30,6 +30,7 @@ Purpose: give reviewers a plain map from visible app surfaces to the simple back
 | Proof metadata | `src/services/proof-submission-write.ts` | member evidence screens | flag-gated metadata only |
 | Leader proof decision | `src/services/leader-proof-decision-write.ts` | leader proof/review surfaces | flag-gated local/staging only |
 | Admin user/chapter management | `src/services/admin-management-write.ts`, `src/services/admin-chapter-management-write.ts` | `/admin/users`, `/admin/chapters` | flag-gated, audit required |
+| Chapter type classification | `src/services/chapter-type.ts`, admin/staff/leader shell labels | admin chapter list/detail/forms, staff chapter list/detail, leader header | read/staging-safe; hosted RPC persistence later |
 | Audit log | `src/services/admin-audit-log-review.ts` | `/admin/audit-log` | readback/review |
 | Integration outbox | `src/services/admin-integration-outbox-workspace.ts` | `/admin/integration-outbox` | live sends remain disabled |
 
@@ -37,7 +38,7 @@ Purpose: give reviewers a plain map from visible app surfaces to the simple back
 
 | Button family | Visible in | Intended first backend target | Current status | Next safe implementation step |
 |---|---|---|---|---|
-| Create/Stage Event | `/leader`, `/staff` | local myMEDLIFE event, then approved Luma staging create/update | `placeholder_blocked` | add dedicated Luma admin status/config route before write controls |
+| Create/Stage Event | `/leader`, `/staff` | local myMEDLIFE event, then approved Luma staging create/update | `placeholder_blocked` | use `/admin/integrations/luma` for provider readiness before write controls |
 | RSVP | `/app`, event detail | local RSVP state, then approved Luma RSVP writeback | `placeholder_blocked` | prove one staging RSVP with no email send |
 | Check-in / attendance | `/app`, leader/staff event views | local attendance state, then Luma attendance import | `placeholder_blocked` | import staging attendance readback only |
 | Points / leaderboard | `/app`, `/leader`, `/staff`, `/admin` | points policy/readback services | `wired_staging` | materialize only after audit and duplicate handling |
@@ -47,7 +48,8 @@ Purpose: give reviewers a plain map from visible app surfaces to the simple back
 | Promote emerging leader | `/leader` | future role/pipeline update service | `placeholder_blocked` | product decision on promotion model |
 | Feed/story sharing | `/app`, `/leader`, `/staff` | feed/outbox/proof sharing services | `placeholder_blocked` | consent and moderation gate first |
 | NPS send / content send | `/staff` | external-send outbox | `placeholder_blocked` | keep disabled until send policy approved |
-| API keys / integrations | `/admin` | server-only secret/provider abstraction | `needs_decision` | build secret-free Luma status before any provider write |
+| Luma provider setup | `/admin/integrations/luma` | secret-free provider status and outbox safety service | `wired_staging` | keep create/update/import controls blocked until separately approved |
+| API keys / integrations | `/admin` | server-only secret/provider abstraction | `needs_decision` | keep raw-key entry out of browser routes |
 
 ## Route Guard Contract
 

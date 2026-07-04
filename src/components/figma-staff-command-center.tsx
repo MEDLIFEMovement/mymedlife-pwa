@@ -250,6 +250,12 @@ function RiskPill({ level }: { level: RiskLevel }) {
   );
 }
 
+function chapterLaunchTypeLabel(chapter: Pick<Chapter, "school">) {
+  return chapter.school.toLowerCase().includes("high school")
+    ? "High School Chapter"
+    : "College / University Chapter";
+}
+
 function CampaignBadge({ status }: { status: CampaignStatus }) {
   const map: Record<CampaignStatus, string> = {
     "on-track": "bg-sky-50 text-sky-700 border border-sky-200",
@@ -458,6 +464,7 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{chapter.country}</span>
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{chapter.activeMembers} members</span>
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{chapter.eventsThisYear} events this year</span>
+              <span className="rounded-full bg-primary/8 px-2 py-0.5 font-semibold text-primary">{chapterLaunchTypeLabel(chapter)}</span>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
@@ -728,7 +735,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
             <thead>
               <tr className="bg-muted/40 border-b border-border">
                 {[
-                  "#", "Chapter", "Coach", "Region", "Events/Yr", "Events/Mo",
+                  "#", "Chapter", "Type", "Coach", "Region", "Events/Yr", "Events/Mo",
                   "Leads", "RSVPs", "Attended", "Lead→Event %", "Avg NPS", "Points/Yr"
                 ].map(h => (
                   <th key={h} className="px-3 py-2.5 text-left text-muted-foreground font-semibold uppercase tracking-wider whitespace-nowrap text-[10px]">{h}</th>
@@ -746,6 +753,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
                       <div className="font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">{ch.name}</div>
                       <div className="text-muted-foreground text-[10px]">{ch.country}</div>
                     </td>
+                    <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{chapterLaunchTypeLabel(ch)}</td>
                     <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{ch.coach.split(" ")[0]}</td>
                     <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{ch.medlifeRegion}</td>
                     <td className="px-3 py-2.5 font-mono font-bold text-foreground text-center">{ch.eventsThisYear}</td>

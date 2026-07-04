@@ -61,6 +61,14 @@ describe("admin chapter management server action", () => {
       buildAdminChapterForm({
         operation: "update_chapter",
         chapterId: "00000000-0000-4000-8000-000000000201",
+        chapterType: "not-a-real-type",
+      }),
+      "invalid_chapter_type",
+    );
+    await expectAdminChapterFailure(
+      buildAdminChapterForm({
+        operation: "update_chapter",
+        chapterId: "00000000-0000-4000-8000-000000000201",
         status: "deleted",
       }),
       "invalid_status",
@@ -315,6 +323,7 @@ function buildAdminChapterForm(input: {
   operation: string;
   auditReason?: string;
   campus?: string;
+  chapterType?: string;
   chapterId?: string;
   confirmation?: string;
   name?: string;
@@ -331,6 +340,11 @@ function buildAdminChapterForm(input: {
   );
 
   if (input.campus !== undefined) formData.set("campus", input.campus);
+  if (input.chapterType !== undefined) {
+    formData.set("chapterType", input.chapterType);
+  } else if (input.operation === "create_chapter") {
+    formData.set("chapterType", "college_university");
+  }
   if (input.chapterId) formData.set("chapterId", input.chapterId);
   if (input.confirmation !== undefined) {
     formData.set("confirmation", input.confirmation);

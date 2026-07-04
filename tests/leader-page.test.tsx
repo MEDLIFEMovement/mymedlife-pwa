@@ -94,6 +94,7 @@ describe("leader page", () => {
     expect(html).toContain("Leadership Center");
     expect(html).toContain("Chapter Dashboard · Jun 2025");
     expect(html).toContain("Boston College MEDLIFE");
+    expect(html).toContain("College / University Chapter");
     expect(html).toContain("Create Event");
     expect(html).toContain("Assign Task");
     expect(html).toContain("Promote Emerging Leader");

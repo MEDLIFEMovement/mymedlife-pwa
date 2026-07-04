@@ -8,7 +8,7 @@ import {
   ArrowRight, Plus, Search, Eye, Edit, TrendingUp, TrendingDown,
   Heart, Zap, BookOpen, Share2, Play, ThumbsUp, MessageSquare,
   Upload, Download, X, Activity, Target, Flag, Shield,
-  Award, Flame, Sparkles, ExternalLink, MapPin, ArrowLeft, Bookmark
+  Award, Flame, Sparkles, ExternalLink, MapPin, ArrowLeft, Bookmark, Building2
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar,
@@ -429,6 +429,7 @@ function HomeScreen({ onAssignAction, onPromote, onCreateEvent }: { onAssignActi
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-500/20 text-blue-200 rounded-full text-[11px] font-semibold border border-blue-500/30"><Flame size={10}/>Rush Month</span>
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500/20 text-amber-200 rounded-full text-[11px] font-semibold border border-amber-500/30"><Target size={10}/>Moving Mountains</span>
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-500/20 text-purple-200 rounded-full text-[11px] font-semibold border border-purple-500/30"><Globe size={10}/>SLT Promotion</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/10 text-blue-100 rounded-full text-[11px] font-semibold border border-white/20"><Building2 size={10}/>College / University Chapter</span>
             </div>
           </div>
         </div>

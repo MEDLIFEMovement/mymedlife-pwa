@@ -50,6 +50,7 @@ const baseChapter: ManagedChapter = {
   name: "UCLA MEDLIFE",
   school: "UCLA",
   region: "West Coast",
+  chapterType: "college_university",
   status: "active",
   coachOwnerId: null,
   staffOwnerIds: [],
@@ -237,6 +238,7 @@ describe("admin management service", () => {
         name: "Emory MEDLIFE",
         school: "Emory University",
         region: "Southeast",
+        chapterType: "high_school" as const,
         coachOwnerId: "coach-1",
         status: "archived" as const,
       },
@@ -248,6 +250,9 @@ describe("admin management service", () => {
       chapters[1],
     ]);
     expect(searchManagedChapters(chapters, { status: "archived" })).toEqual([
+      chapters[1],
+    ]);
+    expect(searchManagedChapters(chapters, { chapterType: "high_school" })).toEqual([
       chapters[1],
     ]);
   });

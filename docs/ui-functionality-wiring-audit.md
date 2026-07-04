@@ -76,7 +76,7 @@ The exact Figma shells are present for the member app, Student Leadership Center
 | Users / Chapters admin | `/admin/users`, `/admin/chapters` | DS/Super Admin | Audited local/staging write panels where approved | admin management write services | DS/Super Admin | admin write flags | `wired_staging` |
 | Audit log | `/admin/audit-log` | DS/Super Admin | Readback/review surface | `src/services/admin-audit-log-review.ts` | DS/Super Admin | none | `wired_staging` |
 | Integration outbox | `/admin/integration-outbox` | DS/Super Admin | Outbox safety/readback | `src/services/admin-integration-outbox-workspace.ts` | DS/Super Admin | external-send flags | `wired_staging` |
-| Luma integration status | missing dedicated route in this branch | DS/Super Admin | Not yet present as `/admin/integrations/luma` | future Luma admin status service | DS/Super Admin | Luma env flags | `needs_decision` |
+| Luma integration status | `/admin/integrations/luma` | DS/Super Admin | Secret-free provider mode, safe test posture, last sync, error log, and outbox status | `src/services/admin-luma-integration-status.ts` | DS Admin/Super Admin | Luma env flags | `wired_staging` |
 | API keys / provider setup | Admin shell | DS/Super Admin | Must remain secret-free | future server-only secret abstraction | DS/Super Admin + step-up | provider flags | `needs_decision` |
 
 ## `/app/slt-prep`
@@ -89,5 +89,6 @@ The exact Figma shells are present for the member app, Student Leadership Center
 ## Safety Notes For This PR
 
 - The Figma Create Event form now says `Event Staged`, not `Event Published`, and explicitly says no email, WhatsApp/SMS, Luma write, external send, or production publish occurred.
+- Chapter type now uses the approved values `high_school`, `college_university`, and `needs_review`; admin list/detail/forms, staff chapter list/detail, and leader chapter header show the approved labels.
 - PR #125 contains older Luma pilot work but is too stale to merge safely; it currently conflicts with 86 files against `main`.
 - HubSpot is not part of this run.
