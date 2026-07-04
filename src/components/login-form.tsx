@@ -61,6 +61,7 @@ export function LoginForm({
       <div>
         <div className="mb-1.5 flex items-center justify-between">
           <label
+            htmlFor="login-password"
             className="text-xs font-semibold uppercase tracking-wide"
             style={{ color: "#6b7280" }}
           >
@@ -75,18 +76,15 @@ export function LoginForm({
             Forgot password?
           </button>
         </div>
-        <label className="sr-only">
-          Password
-          <input
-            name="password"
-            type="password"
-            defaultValue="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            className="w-full rounded-xl border-[1.5px] border-white/10 bg-[#0d1117] px-4 py-2.5 text-sm text-[#f3f4f6] transition-all placeholder:text-[#6b7280] focus:border-[#b8253a] focus:outline-none focus:ring-2 focus:ring-[#b8253a]/20 disabled:opacity-60"
-            disabled={!signInEnabled}
-          />
-        </label>
+        <input
+          id="login-password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          placeholder="••••••••"
+          className="w-full rounded-xl border-[1.5px] border-white/10 bg-[#0d1117] px-4 py-2.5 text-sm text-[#f3f4f6] transition-all placeholder:text-[#6b7280] focus:border-[#b8253a] focus:outline-none focus:ring-2 focus:ring-[#b8253a]/20 disabled:opacity-60"
+          disabled={!signInEnabled}
+        />
       </div>
 
       {state.status !== "idle" ? (

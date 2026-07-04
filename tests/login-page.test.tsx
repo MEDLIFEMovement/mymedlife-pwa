@@ -58,6 +58,9 @@ describe("login page", () => {
     expect(html).toContain("Sign in to your workspace");
     expect(html).toContain("Email");
     expect(html).toContain("Password");
+    expect(html).toContain('id="login-password"');
+    expect(html).toContain('name="password"');
+    expect(html).toContain('type="password"');
     expect(html).toContain("Forgot password?");
     expect(html).toContain("you@example.com");
     expect(html).toContain("Sign in");
@@ -75,6 +78,8 @@ describe("login page", () => {
     expect(html).not.toContain("Use a seeded account");
     expect(html).not.toContain("No signed-in account yet");
     expect(html).not.toContain("/admin");
+    expect(html).not.toContain('class="sr-only"');
+    expect(html).not.toContain('value="password"');
   });
 
   it("keeps a nested workspace redirect such as SLT Prep intact", async () => {
