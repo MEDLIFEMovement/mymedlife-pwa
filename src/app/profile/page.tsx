@@ -1,5 +1,6 @@
 import { StudentAppShell } from "@/components/student-app-shell";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
+import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
@@ -9,6 +10,7 @@ import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 import { redirect } from "next/navigation";
 
 export const metadata = getStaticRouteMetadata("profile");
@@ -43,6 +45,9 @@ export default async function ProfilePage() {
       showMobileQuickItemHelpers={false}
       showDebugTools={false}
     >
+      {isPreviewWorkspaceAccess(actor, "student_app") ? (
+        <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+      ) : null}
       {studentHome && recognition ? (
         <MemberProfilePanel
           chapterName={studentHome.chapterName}

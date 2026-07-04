@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { FigmaLeaderCommandCenter } from "@/components/figma-leader-command-center";
+import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { getLaunchLaneLeaderEventReadback } from "@/services/launch-lane-points-readback";
@@ -9,6 +10,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessLeaderWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 
 export const metadata = getStaticRouteMetadata("leader");
 export const dynamic = "force-dynamic";
@@ -76,10 +78,15 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     )?.calendar_label ?? "Chapter calendar pending";
 
   return (
-    <FigmaLeaderCommandCenter
-      calendarLabel={calendarLabel}
-      commandCenter={commandCenter}
-      eventReadback={getLaunchLaneLeaderEventReadback(data)}
-    />
+    <>
+      {isPreviewWorkspaceAccess(actor, "leader_command_center") ? (
+        <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
+      ) : null}
+      <FigmaLeaderCommandCenter
+        calendarLabel={calendarLabel}
+        commandCenter={commandCenter}
+        eventReadback={getLaunchLaneLeaderEventReadback(data)}
+      />
+    </>
   );
 }

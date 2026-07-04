@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { FigmaMemberMobileHome } from "@/components/figma-member-mobile-home";
+import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { shouldShowTravelerPrepEntry } from "@/services/events-points-launch-lane";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
@@ -8,6 +9,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
+import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 
 type MemberHomePageProps = {
   searchParams?: Promise<{
@@ -39,9 +41,14 @@ export default async function MemberHomePage(props: MemberHomePageProps) {
   );
 
   return (
-    <FigmaMemberMobileHome
-      workspace={workspace}
-      showTravelerEntry={showTravelerEntry}
-    />
+    <>
+      {isPreviewWorkspaceAccess(actor, "student_app") ? (
+        <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+      ) : null}
+      <FigmaMemberMobileHome
+        workspace={workspace}
+        showTravelerEntry={showTravelerEntry}
+      />
+    </>
   );
 }

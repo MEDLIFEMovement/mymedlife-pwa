@@ -1,9 +1,9 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
-import type { CanonicalRole } from "@/services/canonical-role-scope";
 import {
   isEventsPointsLaunchLaneEnabled,
   shouldShowTravelerPrepEntry,
 } from "@/services/launch-lane-product-focus";
+import { canAccessWorkspace } from "@/services/workspace-access";
 import type { Assignment } from "@/shared/types/domain";
 import type { RiskFlagRow } from "@/shared/types/persistence";
 
@@ -57,6 +57,9 @@ const staffNavigation: NavigationItem[] = [
 
 const fullAdminBackendNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/chapters", label: "Chapters" },
+  { href: "/admin/access", label: "Access" },
   { href: "/admin/phase-2", label: "Phase 2" },
   { href: "/admin/permissions", label: "Permissions" },
   { href: "/admin/committees", label: "Committees" },
@@ -83,6 +86,9 @@ const fullAdminBackendNavigation: NavigationItem[] = [
 
 const focusedAdminBackendNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/chapters", label: "Chapters" },
+  { href: "/admin/access", label: "Access" },
   { href: "/admin/integration-outbox", label: "Outbox" },
   { href: "/admin/audit-log", label: "Audit Log" },
   { href: "/admin/launch-gate", label: "Launch Gate" },
@@ -92,6 +98,9 @@ const focusedAdminBackendNavigation: NavigationItem[] = [
 
 const fullDsAdminNavigation: NavigationItem[] = [
   { href: "/admin", label: "Admin Home" },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/chapters", label: "Chapters" },
+  { href: "/admin/access", label: "Access" },
   { href: "/admin/phase-2", label: "Phase 2" },
   { href: "/admin/integrations", label: "Integrations" },
   { href: "/admin/feature-flags", label: "Feature Flags" },
@@ -341,38 +350,19 @@ export function isMemberSurfaceFamily(actor: LocalActorContext): boolean {
 }
 
 export function canAccessMemberWorkspace(actor: LocalActorContext): boolean {
-  return hasAnyCanonicalRole(actor, [
-    "student_member",
-    "traveler",
-    "committee_member",
-    "committee_chair",
-    "eboard_officer",
-    "vice_president",
-    "president",
-  ]);
+  return canAccessWorkspace(actor, "student_app", { intent: "read" });
 }
 
 export function canAccessLeaderWorkspace(actor: LocalActorContext): boolean {
-  return hasAnyCanonicalRole(actor, [
-    "committee_chair",
-    "eboard_officer",
-    "vice_president",
-    "president",
-  ]);
+  return canAccessWorkspace(actor, "leader_command_center", { intent: "read" });
 }
 
 export function canAccessStaffWorkspace(actor: LocalActorContext): boolean {
-  return hasAnyCanonicalRole(actor, [
-    "coach",
-    "department_staff",
-    "sales_coach",
-    "sales_admin",
-    "super_admin",
-  ]);
+  return canAccessWorkspace(actor, "staff_command_center", { intent: "read" });
 }
 
 export function canAccessAdminWorkspace(actor: LocalActorContext): boolean {
-  return hasAnyCanonicalRole(actor, ["ds_admin", "super_admin"]);
+  return canAccessWorkspace(actor, "admin_backend", { intent: "read" });
 }
 
 export function hasTravelerAccess(actor: LocalActorContext): boolean {
@@ -403,13 +393,6 @@ export function getActorSurfaceFamily(
     case "super_admin":
       return "super_admin";
   }
-}
-
-function hasAnyCanonicalRole(
-  actor: LocalActorContext,
-  roles: readonly CanonicalRole[],
-): boolean {
-  return roles.some((role) => actor.canonicalRoles.includes(role));
 }
 
 const supportContextPanel: AdminPanel = {
