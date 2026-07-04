@@ -145,11 +145,13 @@ function AuditCard({
       </h2>
       <dl className="mt-4 grid gap-2 text-sm">
         <DetailRow label="actor" value={audit.actor} />
+        <DetailRow label="actor role" value={audit.actorRole} />
         <DetailRow label="action" value={audit.action} />
         <DetailRow label="target" value={`${audit.targetType}: ${audit.targetLabel}`} />
         <DetailRow label="old value" value={audit.oldValue} />
         <DetailRow label="new value" value={audit.newValue} />
         <DetailRow label="reason" value={audit.reason} />
+        <DetailRow label="timestamp" value={audit.timestamp} />
         <DetailRow label="environment" value={audit.environment} />
       </dl>
     </div>

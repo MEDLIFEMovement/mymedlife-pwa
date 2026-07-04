@@ -142,5 +142,8 @@ describe("admin management pages", () => {
     expect(html).toContain("Sensitive preview access");
     expect(html).toContain("access.denied");
     expect(html).toContain("access.preview_viewed");
+    expect(html).toContain("actor role");
+    expect(html).toContain("timestamp");
+    expect(html).toContain("environment");
   });
 });

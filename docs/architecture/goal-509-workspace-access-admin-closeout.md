@@ -87,6 +87,7 @@ hosted staging evidence before the goal can be called launch-ready.
 | Chapter destructive safeguards exist | `src/services/admin-chapter-management-write.ts`, `tests/admin-chapters-actions.test.ts`, `supabase/tests/database/rls_goal_509_chapters.test.sql` |
 | Access changes immediately affect allowed/default workspace | `tests/admin-management.test.ts`, `supabase/tests/database/rls_goal_509.test.sql`, RPC readback fields `default_workspace` and `allowed_workspaces` |
 | Tests cover access, admin, role, chapter, and destructive safeguards | `tests/workspace-access.test.ts`, `tests/admin-management.test.ts`, `tests/admin-users-actions.test.ts`, `tests/admin-chapters-actions.test.ts`, `supabase/tests/database/rls_goal_509.test.sql`, `supabase/tests/database/rls_goal_509_chapters.test.sql` |
+| Admin access matrix shows audit posture fields | `tests/admin-management-pages.test.tsx`, `src/components/admin-access-management-panel.tsx` |
 
 ## Safety Boundary
 
