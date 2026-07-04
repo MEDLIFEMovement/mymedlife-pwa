@@ -34,8 +34,8 @@ below refer to archive-internal paths.
 | Staff Command Center / Proof / UGC | `/staff?view=proof_ugc` | `/staff?view=proof_ugc` | Figma-derived Proof / UGC Review Queue page | `docs/figma-code/raw/staff-command-center/App.tsx`, `ProofUGCQueue` | fixed in PR #170 | Real href renders proof cards, consent posture, and queue summary with writes disabled. |
 | Staff Command Center / Best Practices | `/staff?view=best_practices` | `/staff?view=best_practices` | Figma-derived Best Practices Library page | `docs/figma-code/raw/staff-command-center/App.tsx`, `BestPracticesLibrary` | fixed in PR #170 | Real href renders filters, recommendation cards, and disabled share controls. |
 | Staff Command Center / Campaign SOPs | `/staff?view=sops` | `/staff?view=sops` | Figma-derived Campaign SOP Builder preview | `docs/figma-code/raw/staff-command-center/App.tsx`, `SOPLibraryScreen`, `SOPBuilderScreen` | fixed in PR #170 | Staff route renders SOP library/builder preview with publishing disabled; deeper `/admin/sop-library` route remains future work. |
-| Staff Command Center / Admin | `/staff?view=admin` | `/staff?view=admin` or `/admin` | Figma-derived System Health page in staff shell | `docs/figma-code/raw/staff-command-center/App.tsx`, `AdminRoleGate`, `AdminPanel`; login export has DS/Super Admin shells | fixed in PR #170 | Staff route renders integration posture, automation outbox, and audit log; `/admin` remains the protected backend. |
-| Admin backend | `/admin` | `/admin` | Existing secure admin backend with explicit missing-Figma notice | Dedicated Admin/DS backend Figma export not present; staff export has `AdminPanel` preview | correct placeholder | Route does not render Chapter. It now states `Figma page missing - implementation blocked` until a dedicated admin Figma export lands. |
+| Staff Command Center / Admin | `/staff?view=admin` | `/staff?view=admin` or `/admin` | Figma-derived System Health page in staff shell | `docs/figma-code/raw/staff-command-center/App.tsx`, `AdminRoleGate`, `AdminPanel`; login export has DS/Super Admin shells | fixed in PR #170 | Staff route renders integration posture, automation outbox, and audit log. |
+| Admin backend | `/admin` | `/admin` | Figma-derived DS Admin shell with vertical backend menu | `docs/figma-code/raw/staff-command-center/mock-data.tsx`, `AdminPanel`, `Sidebar`, `OverviewPage`, `UsersPage`, `SystemHealthPage`, `ApiKeysPage` | fixed in PR TBD | Route renders the exported admin shell with Users, Chapters, Modules, Luma Events, Points, Integrations, Audit Logs, System Health, API Keys, MCP Connections, and Settings. Secret-like Figma sample values are redacted before shipping. |
 | Chapter | `/chapter` | `/chapter` | Legacy chapter surface | No current dedicated route-level Figma export beyond leader/staff chapter screens | correct route, visual gap | Keep Chapter page only for Chapter route. Do not reuse it elsewhere. |
 | SLT Prep | `/app/slt-prep`, `/slt-prep` | `/app/slt-prep` and/or `/slt-prep` | Existing traveler readiness workflow with explicit missing-Figma notice | SLT Prep Figma export not present in local code package | correct placeholder | `/app/slt-prep` now renders the SLT Prep surface. It states `Figma page missing - implementation blocked` and does not reuse Chapter. |
 | SOP Builder | `/staff?view=sops` | `/staff?view=sops`; future `/admin/sop-library` and `/admin/sop-builder/[campaignSlug]` | Figma-derived Campaign SOP Builder preview in staff shell | `docs/figma-code/raw/staff-command-center/App.tsx`, SOP imports | fixed for visible staff nav | Staff route renders SOP library/builder preview with publishing disabled. Deeper admin SOP routes remain future work and are not visible nav targets in this pass. |
@@ -46,13 +46,12 @@ below refer to archive-internal paths.
    `feed_analytics`, `hubspot`) now show explicit missing-Figma states instead
    of parking into Chapters; they still need real Figma source before full
    implementation.
-2. `/admin` and `/slt-prep` now show explicit missing-Figma notices while
-   retaining their safe backend/traveler workflows until exact Figma source is
-   available.
+2. `/slt-prep` still shows an explicit missing-Figma notice while retaining the
+   safe traveler workflow until exact Figma source is available.
 
 ## Immediate Fix Order
 
 1. Deeper SOP Builder admin routes if staff preview is not enough for workflow
    configuration.
-2. Replace the `/admin` and `/slt-prep` notices with exact Figma ports when
-   those source files are approved.
+2. Replace the `/slt-prep` notice with an exact Figma port when that source file
+   is approved.
