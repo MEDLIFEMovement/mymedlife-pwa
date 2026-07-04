@@ -125,26 +125,27 @@ describe("staff page", () => {
     expect(html).toContain("myMEDLIFE");
     expect(html).toContain("Staff Command Center");
     expect(html).toContain('aria-label="Staff workspace menu"');
-    expect(html).toContain("bg-white/10 text-white");
-    expect(html).toContain('style="color:#FFFFFF"');
+    expect(html).toContain("bg-sidebar");
+    expect(html).toContain("text-sidebar-foreground/70");
     expect(html).toContain("Portfolio Overview");
+    expect(html).toContain('href="/staff?view=chapters"');
     expect(html).toContain(">Chapters<");
     expect(html).toContain(">Campaigns<");
-    expect(html).toContain(">Events<");
     expect(html).toContain(">Proof / UGC<");
     expect(html).toContain(">Best Practices<");
-    expect(html).toContain(">SOPs<");
+    expect(html).toContain(">Campaign SOPs<");
     expect(html).toContain(">Admin<");
-    expect(html).toContain("Organization Leaderboard");
+    expect(html).toContain('aria-disabled="true"');
+    expect(html).not.toContain('href="/admin/sop-library"');
+    expect(html).not.toContain("404");
     expect(html).toContain("RSVPs");
-    expect(html).toContain("Attendance");
-    expect(html).toContain("Points");
-    expect(html).toContain("Luma Event Loop");
-    expect(html).toContain("Lead Scoring Signal");
-    expect(html).toContain("Staff should see chapter event creation, RSVP conversion, confirmed attendance");
+    expect(html).toContain("Attended");
+    expect(html).toContain("Points/Yr");
+    expect(html).toContain("Lead→Event %");
+    expect(html).toContain("Avg Events / Month");
   });
 
-  it("keeps the selected staff menu item visibly active for the current view", async () => {
+  it("renders direct staff event route content without adding a non-Figma top-nav item", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -163,10 +164,66 @@ describe("staff page", () => {
     );
 
     expect(html).toContain("Staff workspace menu");
-    expect(html).toContain("border-[#F5A623] bg-[#F5A623] text-[#07192E]");
-    expect(html).toContain('style="color:#07192E"');
-    expect(html).toContain('href="/staff?view=events"');
+    expect(html).not.toContain('href="/staff?view=events"');
+    expect(html).not.toContain('href="/staff?view=leaderboard"');
     expect(html).toContain(">Events<");
+    expect(html).toContain("Luma Event Operations");
+    expect(html).toContain("Luma → RSVP → attendance → points");
+  });
+
+  it("opens the Figma chapter drawer when a route carries a selected chapter", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing staff selected chapter drawer."),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "chapters",
+          chapter: "chapter-northview",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Chapter Detail");
+    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("Lead → Event Funnel");
+    expect(html).toContain("Post-Event NPS");
+    expect(html).toContain("Coach Note");
+    expect(html).toContain("Send NPS Survey");
+  });
+
+  it("renders the Figma organization leaderboard lane for staff users", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing staff leaderboard lane."),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "leaderboard" }),
+      }),
+    );
+
+    expect(html).toContain("Organization Leaderboard");
+    expect(html).toContain("chapter standings · attendance points · lead scoring signal");
+    expect(html).toContain("Lead Scoring Signal");
+    expect(html).toContain("Chapter standings");
+    expect(html).toContain("Organization-wide points");
+    expect(html).toContain("UCLA MEDLIFE");
   });
 
   it("keeps coaches inside the same /staff workspace while showing the coach lens", async () => {

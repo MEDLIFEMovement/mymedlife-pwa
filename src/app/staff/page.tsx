@@ -69,7 +69,12 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     redirect(buildCanonicalStaffHref(search, commandCenter.selectedView));
   }
 
-  return <FigmaStaffCommandCenter commandCenter={commandCenter} />;
+  return (
+    <FigmaStaffCommandCenter
+      commandCenter={commandCenter}
+      requestedChapterId={search.chapter ?? null}
+    />
+  );
 }
 
 function canReadStaffWorkspace(actor: Awaited<ReturnType<typeof getLocalActorContext>>) {

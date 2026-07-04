@@ -3,6 +3,19 @@
 :root {
   --background: #f8fbff;
   --foreground: #10223f;
+  --card: #ffffff;
+  --card-foreground: #0c1a2e;
+  --primary: #1a4e8c;
+  --primary-foreground: #ffffff;
+  --secondary: #eaf0fb;
+  --secondary-foreground: #1a4e8c;
+  --muted-ui: #e2e8f2;
+  --muted-foreground: #5c6e8a;
+  --border-ui: rgba(12, 26, 46, 0.09);
+  --sidebar: #0e2145;
+  --sidebar-foreground: #c8d8ef;
+  --sidebar-accent: #1a3560;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
   --muted: rgba(16, 34, 63, 0.68);
   --panel: rgba(255, 255, 255, 0.88);
   --panel-strong: rgba(255, 255, 255, 0.96);
@@ -16,6 +29,19 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted-ui);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border-ui);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
   --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-ibm-plex-mono);
 }
