@@ -1,11 +1,11 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-unused-vars, react/no-unescaped-entities */
+/* eslint-disable react/no-unescaped-entities */
 
 import React, { useState } from "react";
 import {
-  ChevronRight, Plus, Calendar, Target, Globe, Heart, Zap, Star,
-  Video, Users, BookOpen, Sparkles, Bell, Share2, Upload, CheckCircle, X
+  ChevronRight, Calendar, Target, Globe, Heart, Star,
+  Users, BookOpen, Sparkles, Bell, Share2, Upload, CheckCircle
 } from "lucide-react";
 import { Activity, MessageSquare } from "lucide-react";
 
@@ -96,7 +96,6 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
   const [capacity,     setCapacity]     = useState("");
   const [rsvpDeadline, setRsvpDeadline] = useState("");
   const [shareChannels,setShareChannels] = useState<string[]>(["app"]);
-  const [emailMsg,     setEmailMsg]     = useState("");
   const [waMsg,        setWaMsg]        = useState("");
 
   const toggleChannel = (id: string) =>

@@ -1,9 +1,9 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions, react/no-unescaped-entities */
+/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-expressions, react/no-unescaped-entities */
 
 import React, { useState, useEffect } from "react";
-import { Heart, ExternalLink, Play, MapPin, X, ArrowLeft, Bookmark, Share2, Sparkles, TrendingUp, Star } from "lucide-react";
+import { Heart, ExternalLink, Play, MapPin, X, ArrowLeft, Bookmark, Sparkles, TrendingUp, Star } from "lucide-react";
 
 function Btn({ children, variant="primary", onClick, className="" }: {
   children: React.ReactNode; variant?: "primary"|"secondary"|"ghost"|"danger";

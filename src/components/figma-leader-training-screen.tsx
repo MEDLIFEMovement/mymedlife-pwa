@@ -1,9 +1,7 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import React, { useState, useMemo } from "react";
-import { BookOpen, Play, Upload, ExternalLink, Search, Plus, Star, Share2, Bell, Users, X, MessageSquare } from "lucide-react";
+import { BookOpen, Play, Upload, ExternalLink, Search, Plus, Star, Share2, Bell, Users } from "lucide-react";
 
 const NAVY = "#07192E";
 
@@ -34,25 +32,8 @@ function Btn({ children, variant="primary", onClick, className="" }: {
   return <button className={`${base} ${v} ${className}`} onClick={onClick}>{children}</button>;
 }
 
-function Kard({ label, value, sub, icon: Icon, accent="#1A56E8", trend }: {
-  label: string; value: string|number; sub?: string; accent?: string;
-  icon?: React.ComponentType<{size?:number; className?:string; style?: React.CSSProperties}>;
-  trend?: "up"|"down";
-}) {
-  return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col gap-2 relative overflow-hidden min-w-0">
-      <div className="absolute top-0 left-0 right-0 h-1 rounded-t-xl" style={{ background: accent }} />
-      {Icon && <Icon size={15} style={{ color: accent }} />}
-      <div className="text-2xl font-black text-slate-900 tabular-nums leading-none" style={{ fontFamily:"'JetBrains Mono', monospace" }}>{value}</div>
-      {sub && <div className="text-[11px] text-slate-400">{sub}</div>}
-      <div className="text-xs font-semibold text-slate-500">{label}</div>
-    </div>
-  );
-}
-
 // ─── Leadership & Resources Hub ──────────────────────────────────────
 
-const VALUES_TAGS = ["All", "Impeccable Character", "Fire / Agency", "Growth"];
 const ROLE_TAGS   = ["All Roles", "President", "VP / E-Board", "Committee Chair", "General Member"];
 
 type ResourceType = "video" | "deck" | "link";
@@ -235,7 +216,7 @@ const TYPE_META: Record<ResourceType, { label:string; icon:React.ComponentType<{
 
 export function TrainingScreen() {
   const [activeType,   setActiveType]   = useState<"all"|ResourceType>("all");
-  const [activeValue,  setActiveValue]  = useState("All");
+  const [activeValue]                   = useState("All");
   const [activeRole,   setActiveRole]   = useState("All Roles");
   const [search,       setSearch]       = useState("");
   const [expanded,     setExpanded]     = useState<number|null>(null);
