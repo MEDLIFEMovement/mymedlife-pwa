@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { assignments } from "@/data/mock-rush-month";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import {
+  canAccessAdminWorkspace,
+  canAccessLeaderWorkspace,
+  canAccessMemberWorkspace,
+  canAccessStaffWorkspace,
   canReadAdminIntegrationsSecurity,
   canReadChapterData,
   canReadIntegrationOutbox,
@@ -176,6 +180,39 @@ describe("role visibility service", () => {
     expect(isMemberSurfaceFamily(getMockLocalActorContext("leader.a@mymedlife.test"))).toBe(
       false,
     );
+  });
+
+  it("lets one assigned account access member, leader, and staff workspaces", () => {
+    const actor = {
+      ...getMockLocalActorContext("admin@mymedlife.test"),
+      chapterRoles: ["General Member", "President / VP"],
+      canonicalRoles: ["student_member", "president", "department_staff"],
+      canonicalScopes: ["own", "chapter", "department"],
+      primaryCanonicalRole: "department_staff",
+    } satisfies ReturnType<typeof getMockLocalActorContext>;
+
+    expect(getActorSurfaceFamily(actor)).toBe("staff");
+    expect(getNavigationForActor(actor).map((item) => item.label)).toEqual([
+      "Chapters",
+      "Events",
+      "Leaderboard",
+    ]);
+    expect(canAccessMemberWorkspace(actor)).toBe(true);
+    expect(canAccessLeaderWorkspace(actor)).toBe(true);
+    expect(canAccessStaffWorkspace(actor)).toBe(true);
+    expect(canAccessAdminWorkspace(actor)).toBe(false);
+  });
+
+  it("keeps admin access explicit while allowing super admin staff review", () => {
+    const dsAdmin = getMockLocalActorContext("ds.admin@mymedlife.test");
+    const superAdmin = getMockLocalActorContext("super.admin@mymedlife.test");
+
+    expect(canAccessAdminWorkspace(dsAdmin)).toBe(true);
+    expect(canAccessAdminWorkspace(superAdmin)).toBe(true);
+    expect(canAccessStaffWorkspace(dsAdmin)).toBe(false);
+    expect(canAccessStaffWorkspace(superAdmin)).toBe(true);
+    expect(canAccessMemberWorkspace(superAdmin)).toBe(false);
+    expect(canAccessLeaderWorkspace(superAdmin)).toBe(false);
   });
 
   it("gives members a mobile quick path to home, campaigns, events, points, and profile", () => {

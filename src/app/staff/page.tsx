@@ -5,7 +5,7 @@ import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { getActorSurfaceFamily } from "@/services/role-visibility";
+import { canAccessStaffWorkspace } from "@/services/role-visibility";
 import { getStaffCommandCenter } from "@/services/staff-command-center";
 import { getStaffLaunchLaneCanonicalHref } from "@/services/staff-launch-lane";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -73,8 +73,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
 }
 
 function canReadStaffWorkspace(actor: Awaited<ReturnType<typeof getLocalActorContext>>) {
-  const surfaceFamily = getActorSurfaceFamily(actor);
-  return surfaceFamily === "coach" || surfaceFamily === "staff";
+  return canAccessStaffWorkspace(actor);
 }
 
 function buildCanonicalStaffHref(

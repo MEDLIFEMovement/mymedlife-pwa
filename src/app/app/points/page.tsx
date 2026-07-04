@@ -12,7 +12,7 @@ import {
 } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { isMemberSurfaceFamily } from "@/services/role-visibility";
+import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("rushMonthLeaderboard");
@@ -28,7 +28,7 @@ export default async function AppPointsPage() {
     redirect(buildLoginRedirectHref("/app/points"));
   }
 
-  if (!isMemberSurfaceFamily(actor)) {
+  if (!canAccessMemberWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
   }
 

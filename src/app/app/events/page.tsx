@@ -9,7 +9,7 @@ import {
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberLaunchLaneEventRows } from "@/services/member-launch-lane-events";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { isMemberSurfaceFamily } from "@/services/role-visibility";
+import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("rushMonthEvents");
@@ -25,7 +25,7 @@ export default async function AppEventsPage() {
     redirect(buildLoginRedirectHref("/app/events"));
   }
 
-  if (!isMemberSurfaceFamily(actor)) {
+  if (!canAccessMemberWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
   }
 

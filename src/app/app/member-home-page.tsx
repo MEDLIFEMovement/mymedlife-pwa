@@ -7,7 +7,7 @@ import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/l
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { isMemberSurfaceFamily } from "@/services/role-visibility";
+import { canAccessMemberWorkspace } from "@/services/role-visibility";
 
 type MemberHomePageProps = {
   searchParams?: Promise<{
@@ -29,7 +29,7 @@ export default async function MemberHomePage(props: MemberHomePageProps) {
     redirect(buildLoginRedirectHref("/app"));
   }
 
-  if (!isMemberSurfaceFamily(actor) || landingRoute !== "/app") {
+  if (!canAccessMemberWorkspace(actor)) {
     redirect(landingRoute);
   }
 
