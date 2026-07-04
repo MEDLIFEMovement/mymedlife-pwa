@@ -1,4 +1,5 @@
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { CanonicalRole } from "@/services/canonical-role-scope";
 import {
   isEventsPointsLaunchLaneEnabled,
   shouldShowTravelerPrepEntry,
@@ -339,6 +340,41 @@ export function isMemberSurfaceFamily(actor: LocalActorContext): boolean {
   return getActorSurfaceFamily(actor) === "member";
 }
 
+export function canAccessMemberWorkspace(actor: LocalActorContext): boolean {
+  return hasAnyCanonicalRole(actor, [
+    "student_member",
+    "traveler",
+    "committee_member",
+    "committee_chair",
+    "eboard_officer",
+    "vice_president",
+    "president",
+  ]);
+}
+
+export function canAccessLeaderWorkspace(actor: LocalActorContext): boolean {
+  return hasAnyCanonicalRole(actor, [
+    "committee_chair",
+    "eboard_officer",
+    "vice_president",
+    "president",
+  ]);
+}
+
+export function canAccessStaffWorkspace(actor: LocalActorContext): boolean {
+  return hasAnyCanonicalRole(actor, [
+    "coach",
+    "department_staff",
+    "sales_coach",
+    "sales_admin",
+    "super_admin",
+  ]);
+}
+
+export function canAccessAdminWorkspace(actor: LocalActorContext): boolean {
+  return hasAnyCanonicalRole(actor, ["ds_admin", "super_admin"]);
+}
+
 export function hasTravelerAccess(actor: LocalActorContext): boolean {
   return actor.canonicalRoles.includes("traveler");
 }
@@ -367,6 +403,13 @@ export function getActorSurfaceFamily(
     case "super_admin":
       return "super_admin";
   }
+}
+
+function hasAnyCanonicalRole(
+  actor: LocalActorContext,
+  roles: readonly CanonicalRole[],
+): boolean {
+  return roles.some((role) => actor.canonicalRoles.includes(role));
 }
 
 const supportContextPanel: AdminPanel = {

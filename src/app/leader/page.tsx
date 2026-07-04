@@ -8,7 +8,7 @@ import { getLaunchLaneLeaderEventReadback } from "@/services/launch-lane-points-
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
-import { getActorSurfaceFamily } from "@/services/role-visibility";
+import { canAccessLeaderWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("leader");
@@ -48,7 +48,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     redirect(buildLoginRedirectHref("/leader?view=overview"));
   }
 
-  if (getActorSurfaceFamily(actor) !== "leader") {
+  if (!canAccessLeaderWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
   }
 

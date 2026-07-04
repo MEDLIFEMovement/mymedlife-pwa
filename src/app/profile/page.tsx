@@ -7,7 +7,7 @@ import { getProfileWorkspace } from "@/services/profile-workspace";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
-import { isMemberSurfaceFamily } from "@/services/role-visibility";
+import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { redirect } from "next/navigation";
 
@@ -20,7 +20,7 @@ export default async function ProfilePage() {
     getReadOnlyAppData(),
   ]);
   const workspace = getProfileWorkspace(actor, data);
-  const isMemberProfile = isMemberSurfaceFamily(actor);
+  const isMemberProfile = canAccessMemberWorkspace(actor);
   const studentHome = isMemberProfile
     ? getMvpMemberHome(actor, data)
     : null;
