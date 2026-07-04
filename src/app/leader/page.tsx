@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { FigmaLeaderCommandCenter } from "@/components/figma-leader-command-center";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
 import { getLandingRouteForActor } from "@/services/landing-route";
@@ -79,6 +80,7 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
 
   return (
     <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="leader_command_center" />
       {isPreviewWorkspaceAccess(actor, "leader_command_center") ? (
         <WorkspacePreviewBanner workspaceLabel="the Student Command Center" />
       ) : null}

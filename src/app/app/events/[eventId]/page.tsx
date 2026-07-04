@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import {
@@ -48,6 +49,7 @@ export default async function AppEventDetailPage({
 
   return (
     <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
       {isPreviewWorkspaceAccess(actor, "student_app") ? (
         <WorkspacePreviewBanner workspaceLabel="the General Student App" />
       ) : null}

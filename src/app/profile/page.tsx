@@ -1,5 +1,6 @@
 import { StudentAppShell } from "@/components/student-app-shell";
 import { MemberProfilePanel } from "@/components/member-profile-panel";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { getMemberRecognitionSummary } from "@/services/member-recognition";
@@ -45,6 +46,7 @@ export default async function ProfilePage() {
       showMobileQuickItemHelpers={false}
       showDebugTools={false}
     >
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
       {isPreviewWorkspaceAccess(actor, "student_app") ? (
         <WorkspacePreviewBanner workspaceLabel="the General Student App" />
       ) : null}

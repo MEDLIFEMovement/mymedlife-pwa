@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { FigmaAdminPanel } from "@/components/figma-admin-panel";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -21,5 +22,10 @@ export default async function AdminPage() {
     redirect(getLandingRouteForActor(actor));
   }
 
-  return <FigmaAdminPanel />;
+  return (
+    <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
+      <FigmaAdminPanel />
+    </>
+  );
 }

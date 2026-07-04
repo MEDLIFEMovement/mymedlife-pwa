@@ -113,4 +113,19 @@ describe("workspace access", () => {
     ]);
     expect(getWorkspaceHref("slt_prep")).toBe("/app/slt-prep");
   });
+
+  it("matches the manual URL guard policy from the workspace objective", () => {
+    const member = getMockLocalActorContext("member.a@mymedlife.test");
+    const leader = getMockLocalActorContext("leader.a@mymedlife.test");
+    const staff = getMockLocalActorContext("general.staff@mymedlife.test");
+
+    expect(canAccessWorkspace(member, "leader_command_center")).toBe(false);
+    expect(canAccessWorkspace(leader, "student_app")).toBe(true);
+    expect(canAccessWorkspace(leader, "admin_backend")).toBe(false);
+    expect(canAccessWorkspace(staff, "student_app", { intent: "read" })).toBe(true);
+    expect(canAccessWorkspace(staff, "leader_command_center", { intent: "read" })).toBe(true);
+    expect(canAccessWorkspace(staff, "student_app", { intent: "submit" })).toBe(false);
+    expect(canAccessWorkspace(staff, "leader_command_center", { intent: "approve" })).toBe(false);
+    expect(canAccessWorkspace(staff, "admin_backend")).toBe(false);
+  });
 });

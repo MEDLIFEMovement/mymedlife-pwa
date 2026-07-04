@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { FigmaMemberMobileHome } from "@/components/figma-member-mobile-home";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { shouldShowTravelerPrepEntry } from "@/services/events-points-launch-lane";
 import { getLandingRouteForActor } from "@/services/landing-route";
@@ -42,6 +43,7 @@ export default async function MemberHomePage(props: MemberHomePageProps) {
 
   return (
     <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
       {isPreviewWorkspaceAccess(actor, "student_app") ? (
         <WorkspacePreviewBanner workspaceLabel="the General Student App" />
       ) : null}

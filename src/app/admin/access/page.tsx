@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import {
@@ -67,8 +68,10 @@ export default async function AdminAccessPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
-      <div className="mx-auto max-w-7xl">
+    <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
+      <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
+        <div className="mx-auto max-w-7xl">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-400">
@@ -186,7 +189,8 @@ export default async function AdminAccessPage() {
             </div>
           ))}
         </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }
