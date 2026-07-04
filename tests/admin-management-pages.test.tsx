@@ -124,13 +124,21 @@ describe("admin management pages", () => {
     );
   });
 
-  it("blocks unauthorized users from every admin management route server-side", async () => {
+  it("blocks unauthorized users from the admin backend routes server-side", async () => {
     const actorModule = await import("@/services/local-actor-context");
+    const { default: AdminPage } = await import("@/app/admin/page");
     const { default: AdminUsersPage } = await import("@/app/admin/users/page");
     const { default: AdminChaptersPage } = await import("@/app/admin/chapters/page");
     const { default: AdminAccessPage } = await import("@/app/admin/access/page");
 
     for (const actorCase of blockedAdminRouteActors) {
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor(actorCase.email),
+      );
+      await expect(AdminPage(), actorCase.label).rejects.toThrow(
+        actorCase.expectedRedirect,
+      );
+
       vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
         getSignedInActor(actorCase.email),
       );
@@ -154,13 +162,21 @@ describe("admin management pages", () => {
     }
   });
 
-  it("allows DS Admin and Super Admin into every admin management route", async () => {
+  it("allows DS Admin and Super Admin into the admin backend routes", async () => {
     const actorModule = await import("@/services/local-actor-context");
+    const { default: AdminPage } = await import("@/app/admin/page");
     const { default: AdminUsersPage } = await import("@/app/admin/users/page");
     const { default: AdminChaptersPage } = await import("@/app/admin/chapters/page");
     const { default: AdminAccessPage } = await import("@/app/admin/access/page");
 
     for (const actorCase of allowedAdminRouteActors) {
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor(actorCase.email),
+      );
+      const adminHtml = renderToStaticMarkup(await AdminPage());
+      expect(adminHtml, actorCase.label).toContain("DS Admin");
+      expect(adminHtml, actorCase.label).toContain("API Keys");
+
       vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
         getSignedInActor(actorCase.email),
       );
