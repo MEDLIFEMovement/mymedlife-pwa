@@ -32,6 +32,24 @@ function getSignedInActor(email: string) {
   );
 }
 
+const blockedAdminRouteActors = [
+  {
+    email: "member.a@mymedlife.test",
+    expectedRedirect: "NEXT_REDIRECT:/app",
+    label: "general member",
+  },
+  {
+    email: "leader.a@mymedlife.test",
+    expectedRedirect: "NEXT_REDIRECT:/leader?view=overview",
+    label: "student leader",
+  },
+  {
+    email: "general.staff@mymedlife.test",
+    expectedRedirect: "NEXT_REDIRECT:/staff?view=chapters",
+    label: "non-DS staff",
+  },
+];
+
 describe("admin management pages", () => {
   it("renders DS Admin user management with filters, access summary, safeguards, and audit previews", async () => {
     const actorModule = await import("@/services/local-actor-context");
@@ -93,6 +111,36 @@ describe("admin management pages", () => {
     await expect(AdminUsersPage({})).rejects.toThrow(
       "NEXT_REDIRECT:/staff?view=chapters",
     );
+  });
+
+  it("blocks unauthorized users from every admin management route server-side", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const { default: AdminUsersPage } = await import("@/app/admin/users/page");
+    const { default: AdminChaptersPage } = await import("@/app/admin/chapters/page");
+    const { default: AdminAccessPage } = await import("@/app/admin/access/page");
+
+    for (const actorCase of blockedAdminRouteActors) {
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor(actorCase.email),
+      );
+      await expect(AdminUsersPage({}), actorCase.label).rejects.toThrow(
+        actorCase.expectedRedirect,
+      );
+
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor(actorCase.email),
+      );
+      await expect(AdminChaptersPage({}), actorCase.label).rejects.toThrow(
+        actorCase.expectedRedirect,
+      );
+
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor(actorCase.email),
+      );
+      await expect(AdminAccessPage(), actorCase.label).rejects.toThrow(
+        actorCase.expectedRedirect,
+      );
+    }
   });
 
   it("renders Super Admin chapter management with owner/module changes and destructive safeguards", async () => {
