@@ -68,6 +68,7 @@ export function AdminChaptersManagementPanel({
     enabled: false,
     externalWritesEnabled: false,
     isLocalOnly: true,
+    isHostedStaging: false,
     reason: "Admin chapter writes are locked until local Supabase write flags are approved.",
   },
 }: AdminChaptersManagementPanelProps) {

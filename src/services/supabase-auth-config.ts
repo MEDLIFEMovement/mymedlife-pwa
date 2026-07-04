@@ -47,6 +47,7 @@ const blockedProductionWriteFlags = [
   ...blockedHostedWriteFlags,
   "MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES",
   "MYMEDLIFE_ENABLE_MEMBERSHIP_APPROVAL_WRITE",
+  "MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE",
 ] as const;
 
 export function getSupabaseAuthConfig(

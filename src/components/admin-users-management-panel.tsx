@@ -166,6 +166,7 @@ export function AdminUsersManagementPanel({
   writeConfig = {
     enabled: false,
     isLocalOnly: true,
+    isHostedStaging: false,
     externalWritesEnabled: false,
     reason: "Admin access writes are disabled for this review.",
   },
