@@ -50,7 +50,7 @@ export function FigmaStaffCommandCenter({
       style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
     >
       <header className="relative z-30 shrink-0 border-b border-[#27364d] bg-[#07192E]">
-        <div className="flex h-12 items-center gap-6 px-5">
+        <div className="flex min-h-14 flex-wrap items-center gap-3 px-5 py-2 xl:flex-nowrap">
           <Link href="/staff?view=chapters" className="flex shrink-0 items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded bg-[#F5A623] text-xs font-black text-[#07192E]">
               M
@@ -64,34 +64,44 @@ export function FigmaStaffCommandCenter({
             </div>
           </Link>
 
-          <nav className="flex flex-1 items-center gap-0.5 overflow-x-auto">
+          <nav
+            aria-label="Staff workspace menu"
+            className="order-3 flex w-full items-center gap-2 overflow-x-auto pb-1 xl:order-none xl:w-auto xl:flex-1 xl:pb-0"
+          >
             {([
-              ["Chapters", "/staff?view=chapters", LayoutDashboard, true],
-              ["Campaigns", "/staff?view=campaigns", Megaphone, false],
-              ["Events", "/staff?view=events", Calendar, false],
-              ["Proof / UGC", "/staff?view=proof_ugc", Film, false],
-              ["Best Practices", "/staff?view=best_practices", BookOpen, false],
-              ["SOPs", "/admin/sop-library", GitBranch, false],
-              ["Admin", "/staff?view=admin", Settings, false],
-            ] satisfies Array<[string, string, LucideIcon, boolean]>).map(([label, href, Icon, active]) => (
-              <Link
-                key={String(label)}
-                href={String(href)}
-                className={[
-                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
-                  active
-                    ? "bg-[#1d2d49] text-white"
-                    : "text-[#dbeafe] hover:bg-[#14233a] hover:text-white",
-                ].join(" ")}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </Link>
-            ))}
+              ["Chapters", "/staff?view=chapters", LayoutDashboard, "chapters"],
+              ["Campaigns", "/staff?view=campaigns", Megaphone, "campaigns"],
+              ["Events", "/staff?view=events", Calendar, "events"],
+              ["Proof / UGC", "/staff?view=proof_ugc", Film, "proof_ugc"],
+              ["Best Practices", "/staff?view=best_practices", BookOpen, "best_practices"],
+              ["SOPs", "/admin/sop-library", GitBranch, "sops"],
+              ["Admin", "/staff?view=admin", Settings, "admin"],
+            ] satisfies Array<
+              [string, string, LucideIcon, StaffCommandCenter["selectedView"] | "sops"]
+            >).map(([label, href, Icon, key]) => {
+              const active = commandCenter.selectedView === key;
+
+              return (
+                <Link
+                  key={String(label)}
+                  href={String(href)}
+                  className={[
+                    "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all",
+                    active
+                      ? "border-[#F5A623] bg-[#F5A623] text-[#07192E] shadow-sm"
+                      : "border-white/15 bg-white/10 text-white hover:border-white/30 hover:bg-white/20",
+                  ].join(" ")}
+                  style={{ color: active ? "#07192E" : "#FFFFFF" }}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </Link>
+              );
+            })}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1">
+          <div className="order-2 ml-auto flex shrink-0 items-center gap-3 xl:order-none">
+            <div className="hidden items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1 sm:flex">
               <AlertTriangle className="h-3 w-3 text-red-400" />
               <span className="text-xs font-semibold text-red-300">
                 2 chapters need intervention

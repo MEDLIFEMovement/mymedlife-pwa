@@ -124,6 +124,9 @@ describe("staff page", () => {
 
     expect(html).toContain("myMEDLIFE");
     expect(html).toContain("Staff Command Center");
+    expect(html).toContain('aria-label="Staff workspace menu"');
+    expect(html).toContain("bg-white/10 text-white");
+    expect(html).toContain('style="color:#FFFFFF"');
     expect(html).toContain("Portfolio Overview");
     expect(html).toContain(">Chapters<");
     expect(html).toContain(">Campaigns<");
@@ -139,6 +142,31 @@ describe("staff page", () => {
     expect(html).toContain("Luma Event Loop");
     expect(html).toContain("Lead Scoring Signal");
     expect(html).toContain("Staff should see chapter event creation, RSVP conversion, confirmed attendance");
+  });
+
+  it("keeps the selected staff menu item visibly active for the current view", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing visible staff event menu state."),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "events" }),
+      }),
+    );
+
+    expect(html).toContain("Staff workspace menu");
+    expect(html).toContain("border-[#F5A623] bg-[#F5A623] text-[#07192E]");
+    expect(html).toContain('style="color:#07192E"');
+    expect(html).toContain('href="/staff?view=events"');
+    expect(html).toContain(">Events<");
   });
 
   it("keeps coaches inside the same /staff workspace while showing the coach lens", async () => {
