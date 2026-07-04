@@ -50,6 +50,17 @@ const blockedAdminRouteActors = [
   },
 ];
 
+const allowedAdminRouteActors = [
+  {
+    email: "ds.admin@mymedlife.test",
+    label: "DS Admin",
+  },
+  {
+    email: "super.admin@mymedlife.test",
+    label: "Super Admin",
+  },
+];
+
 describe("admin management pages", () => {
   it("renders DS Admin user management with filters, access summary, safeguards, and audit previews", async () => {
     const actorModule = await import("@/services/local-actor-context");
@@ -140,6 +151,33 @@ describe("admin management pages", () => {
       await expect(AdminAccessPage(), actorCase.label).rejects.toThrow(
         actorCase.expectedRedirect,
       );
+    }
+  });
+
+  it("allows DS Admin and Super Admin into every admin management route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const { default: AdminUsersPage } = await import("@/app/admin/users/page");
+    const { default: AdminChaptersPage } = await import("@/app/admin/chapters/page");
+    const { default: AdminAccessPage } = await import("@/app/admin/access/page");
+
+    for (const actorCase of allowedAdminRouteActors) {
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor(actorCase.email),
+      );
+      const usersHtml = renderToStaticMarkup(await AdminUsersPage({}));
+      expect(usersHtml, actorCase.label).toContain("User Access Management");
+
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor(actorCase.email),
+      );
+      const chaptersHtml = renderToStaticMarkup(await AdminChaptersPage({}));
+      expect(chaptersHtml, actorCase.label).toContain("Chapter Management");
+
+      vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+        getSignedInActor(actorCase.email),
+      );
+      const accessHtml = renderToStaticMarkup(await AdminAccessPage());
+      expect(accessHtml, actorCase.label).toContain("Access Matrix");
     }
   });
 
