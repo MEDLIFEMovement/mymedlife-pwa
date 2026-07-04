@@ -9,6 +9,9 @@ export default defineConfig({
   },
   test: {
     coverage: {
+      // Copied Figma shells are visual contract code; render/source-map tests cover
+      // their presence while coverage stays focused on app logic and services.
+      exclude: ["src/components/figma-*.tsx"],
       include: ["src/**/*.{ts,tsx}"],
       reporter: ["text", "lcov"],
     },
