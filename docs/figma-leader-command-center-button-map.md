@@ -94,7 +94,8 @@ attach behavior behind these exact controls instead of changing the shell.
 
 - `Back`
 - `Create another event`
-- `Publish Event`
+- Figma label `Publish Event`; implemented as `Stage Event` in the app until
+  approved Luma/production publishing is enabled.
 - Event type selection cards.
 - Location type buttons.
 - Share channel buttons.

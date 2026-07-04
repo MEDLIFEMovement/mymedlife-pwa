@@ -114,13 +114,16 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
         <CheckCircle size={40} className="text-green-500"/>
       </div>
       <div className="text-center max-w-md">
-        <h2 className="text-2xl font-black text-slate-900 mb-2">Event Published!</h2>
+        <h2 className="text-2xl font-black text-slate-900 mb-2">Event Staged!</h2>
         <p className="text-sm text-slate-500 leading-relaxed">
-          <strong className="text-slate-800">"{name}"</strong> is live.
-          {shareChannels.includes("app")       && " Sent to chapter app feed."}
-          {shareChannels.includes("instagram") && " Instagram template ready."}
-          {shareChannels.includes("email")     && " Email sent to members."}
-          {shareChannels.includes("whatsapp")  && " WhatsApp message sent."}
+          <strong className="text-slate-800">"{name}"</strong> is ready in the myMEDLIFE staging flow.
+          {shareChannels.includes("app")       && " Chapter feed preview prepared."}
+          {shareChannels.includes("instagram") && " Instagram template prepared."}
+          {shareChannels.includes("email")     && " Email preview prepared; no email was sent."}
+          {shareChannels.includes("whatsapp")  && " WhatsApp/SMS copy prepared; no message was sent."}
+        </p>
+        <p className="text-xs text-slate-400 mt-2">
+          Luma writes, external sends, and production publishing stay off until explicitly approved.
         </p>
       </div>
       <div className="flex gap-3">
@@ -130,7 +133,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
         </button>
         <button onClick={() => { setPublished(false); setName(""); setEventType(""); setDate(""); setStartTime(""); setEndTime(""); setDescription(""); setCommittee(""); }}
           className="px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors">
-          Create Another Event
+          Stage Another Event
         </button>
       </div>
     </div>
@@ -151,7 +154,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
           disabled={!canPublish}
           onClick={() => setPublished(true)}
           className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
-          <Share2 size={14}/>Publish Event
+          <Share2 size={14}/>Stage Event
           {shareChannels.length > 0 && <span className="bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{shareChannels.length}</span>}
         </button>
       </div>
@@ -274,7 +277,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
 
           {/* 6. Share & Publish */}
           <FormSection title="6. Share & Publish">
-            <p className="text-xs text-slate-500 mb-4">Choose where to share this event. You can share to the chapter app feed and/or push it to social channels.</p>
+            <p className="text-xs text-slate-500 mb-4">Choose the launch surfaces to prepare. Staging previews create copy and links only; they do not send messages or publish to production.</p>
             <div className="space-y-3">
               {SHARE_CHANNELS.map(ch => {
                 const Icon = ch.icon;
@@ -470,7 +473,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
 
             {/* Readiness checklist */}
             <div className="bg-white rounded-xl border border-slate-200 p-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ready to publish?</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ready to stage?</div>
               <div className="space-y-1.5">
                 {[
                   { label:"Event type selected",    done: !!eventType },
