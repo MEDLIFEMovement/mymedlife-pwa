@@ -125,15 +125,15 @@ describe("leader page", () => {
     );
 
     expect(html).toContain(">Events<");
-    expect(html).toContain("Chapter Leadership Home");
-    expect(html).toContain("Create Event");
-    expect(html).toContain("href=\"/leader?view=events&amp;quickAction=create_event\"");
-    expect(html).toContain("Create Event");
+    expect(html).toContain("Event Performance");
+    expect(html).toContain("Luma event creation, RSVP, attendance, and points");
+    expect(html).toContain("Luma readback");
+    expect(html).toContain("Moving Mountains Kickoff");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Simple attendance list");
   });
 
-  it("parks bridge-video review inside the leader leaderboard lane during launch mode", async () => {
+  it("renders route-specific leader screens instead of parking sidebar items", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -141,16 +141,64 @@ describe("leader page", () => {
       getSignedInActor("leader.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing bridge video review."),
+      getMockReadOnlyAppData("Testing route-specific leader screens."),
     );
 
     const { default: LeaderPage } = await import("@/app/leader/page");
-    await expect(
-      LeaderPage({
+    const bridgeHtml = renderToStaticMarkup(
+      await LeaderPage({
         searchParams: Promise.resolve({
           view: "bridge_videos",
         }),
       }),
-    ).rejects.toThrow("NEXT_REDIRECT:/leader?view=leaderboard");
+    );
+    const membersHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "members",
+        }),
+      }),
+    );
+    const committeesHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "committees",
+        }),
+      }),
+    );
+    const successionHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "succession",
+        }),
+      }),
+    );
+    const feedHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "feed_analytics",
+        }),
+      }),
+    );
+
+    expect(bridgeHtml).toContain("Bridge Video Hub");
+    expect(bridgeHtml).toContain("Chapters Using");
+    expect(bridgeHtml).not.toContain("Chapter Leaderboard");
+
+    expect(membersHtml).toContain("Member Pipeline");
+    expect(membersHtml).toContain("leadership growth and points");
+    expect(membersHtml).not.toContain("Chapter Metrics — June 2025");
+
+    expect(committeesHtml).toContain("Event Committees");
+    expect(committeesHtml).toContain("open actions");
+    expect(committeesHtml).not.toContain("Chapter Metrics — June 2025");
+
+    expect(successionHtml).toContain("Succession Planning");
+    expect(successionHtml).toContain("transition");
+    expect(successionHtml).not.toContain("Chapter Metrics — June 2025");
+
+    expect(feedHtml).toContain("Feed Analytics");
+    expect(feedHtml).toContain("Chapter feed engagement");
+    expect(feedHtml).not.toContain("Chapter Metrics — June 2025");
   });
 });

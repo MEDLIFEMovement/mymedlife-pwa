@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "coverage/**",
+    "docs/figma-code/raw/**",
     "playwright-report/**",
     "test-results/**",
     "next-env.d.ts",

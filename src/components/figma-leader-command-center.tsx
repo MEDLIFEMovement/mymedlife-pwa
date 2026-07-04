@@ -29,6 +29,22 @@ import type { LaunchLaneLeaderEventReadback } from "@/services/launch-lane-point
 const BLUE = "#1A56E8";
 const YELLOW = "#F5A623";
 
+type LeaderRouteView = ChapterLeaderCommandCenter["selectedView"];
+
+const leaderScreenTitles: Record<LeaderRouteView, string> = {
+  overview: "Chapter Leadership Home",
+  leaderboard: "Chapter Leaderboard",
+  members: "Member Pipeline",
+  member_profile: "Member Profile",
+  committees: "Event Committees",
+  events: "Event Performance",
+  impact: "Impact Dashboard",
+  bridge_videos: "Bridge Video Hub",
+  succession: "Succession Planning",
+  feed: "Feed Analytics",
+  feed_analytics: "Feed Analytics",
+};
+
 type FigmaLeaderCommandCenterProps = {
   calendarLabel: string;
   commandCenter: ChapterLeaderCommandCenter;
@@ -41,29 +57,30 @@ export function FigmaLeaderCommandCenter({
   eventReadback,
 }: FigmaLeaderCommandCenterProps) {
   const featuredEvent = eventReadback[0] ?? null;
+  const selectedView = commandCenter.selectedView;
   const navGroups = [
     {
       label: "Chapter",
       items: [
-        { label: "Home", href: "/leader?view=overview", icon: Home, active: true },
-        { label: "Leaderboard", href: "/leader?view=leaderboard", icon: Trophy },
-        { label: "Members", href: "/leader?view=members", icon: Users },
+        { key: "overview", label: "Home", href: "/leader?view=overview", icon: Home },
+        { key: "leaderboard", label: "Leaderboard", href: "/leader?view=leaderboard", icon: Trophy },
+        { key: "members", label: "Members", href: "/leader?view=members", icon: Users },
       ],
     },
     {
       label: "Operations",
       items: [
-        { label: "Committees", href: "/leader?view=committees", icon: Layers },
-        { label: "Events", href: "/leader?view=events", icon: Calendar },
-        { label: "Impact", href: "/leader?view=impact", icon: Heart },
+        { key: "committees", label: "Committees", href: "/leader?view=committees", icon: Layers },
+        { key: "events", label: "Events", href: "/leader?view=events", icon: Calendar },
+        { key: "impact", label: "Impact", href: "/leader?view=impact", icon: Heart },
       ],
     },
     {
       label: "Leadership",
       items: [
-        { label: "Bridge Videos", href: "/leader?view=bridge_videos", icon: Video },
-        { label: "Succession", href: "/leader?view=succession", icon: Award },
-        { label: "Feed Analytics", href: "/leader?view=feed_analytics", icon: Activity },
+        { key: "bridge_videos", label: "Bridge Videos", href: "/leader?view=bridge_videos", icon: Video },
+        { key: "succession", label: "Succession", href: "/leader?view=succession", icon: Award },
+        { key: "feed_analytics", label: "Feed Analytics", href: "/leader?view=feed_analytics", icon: Activity },
       ],
     },
   ];
@@ -117,7 +134,10 @@ export function FigmaLeaderCommandCenter({
               <div className="mb-1 px-3 text-[9px] font-bold uppercase tracking-widest text-blue-300/40">
                 {group.label}
               </div>
-              {group.items.map(({ label, href, icon: Icon, active }) => (
+              {group.items.map(({ key, label, href, icon: Icon }) => {
+                const active = selectedView === key || (selectedView === "member_profile" && key === "members");
+
+                return (
                 <Link
                   key={label}
                   href={href}
@@ -131,7 +151,8 @@ export function FigmaLeaderCommandCenter({
                   <Icon size={14} />
                   <span className="text-[11px] font-semibold">{label}</span>
                 </Link>
-              ))}
+                );
+              })}
             </div>
           ))}
         </nav>
@@ -154,7 +175,7 @@ export function FigmaLeaderCommandCenter({
       <main className="flex min-w-0 flex-1 flex-col overflow-y-auto">
         <div className="sticky top-0 z-20 flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-100/95 px-6 py-2.5 backdrop-blur-sm">
           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-            Chapter Leadership Home
+            {leaderScreenTitles[selectedView]}
           </span>
           <button
             type="button"
@@ -167,6 +188,7 @@ export function FigmaLeaderCommandCenter({
         </div>
 
         <div className="w-full max-w-[1400px] flex-1 p-6">
+          {selectedView === "overview" ? (
           <section className="space-y-5">
             <div className="flex items-start justify-between gap-6 rounded-2xl bg-[#07192E] p-6">
               <div className="flex items-start gap-6">
@@ -327,8 +349,536 @@ export function FigmaLeaderCommandCenter({
               </div>
             </div>
           </section>
+          ) : (
+            <LeaderRouteContent
+              calendarLabel={calendarLabel}
+              commandCenter={commandCenter}
+              eventReadback={eventReadback}
+              selectedView={selectedView}
+            />
+          )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function LeaderRouteContent({
+  calendarLabel,
+  commandCenter,
+  eventReadback,
+  selectedView,
+}: {
+  calendarLabel: string;
+  commandCenter: ChapterLeaderCommandCenter;
+  eventReadback: LaunchLaneLeaderEventReadback[];
+  selectedView: LeaderRouteView;
+}) {
+  switch (selectedView) {
+    case "leaderboard":
+      return <LeaderLeaderboardContent commandCenter={commandCenter} />;
+    case "members":
+      return <LeaderMembersContent commandCenter={commandCenter} />;
+    case "member_profile":
+      return <LeaderMemberProfileContent commandCenter={commandCenter} />;
+    case "committees":
+      return <LeaderCommitteesContent commandCenter={commandCenter} />;
+    case "events":
+      return (
+        <LeaderEventsContent
+          calendarLabel={calendarLabel}
+          commandCenter={commandCenter}
+          eventReadback={eventReadback}
+        />
+      );
+    case "impact":
+      return <LeaderImpactContent commandCenter={commandCenter} />;
+    case "bridge_videos":
+      return <LeaderBridgeVideosContent commandCenter={commandCenter} />;
+    case "succession":
+      return <LeaderSuccessionContent commandCenter={commandCenter} />;
+    case "feed":
+    case "feed_analytics":
+      return <LeaderFeedAnalyticsContent commandCenter={commandCenter} />;
+    case "overview":
+    default:
+      return null;
+  }
+}
+
+function LeaderLeaderboardContent({
+  commandCenter,
+}: {
+  commandCenter: ChapterLeaderCommandCenter;
+}) {
+  return (
+    <div className="space-y-5">
+      <LeaderHero title="Chapter Leaderboard" subtitle={commandCenter.leaderboardIdeaNote} icon={Trophy} />
+      <div className="grid gap-3 md:grid-cols-4">
+        {commandCenter.leaderboardFilters.slice(0, 4).map((filter) => (
+          <LeaderMetricCard
+            key={filter.key}
+            label={filter.label}
+            value={filter.isActive ? "Selected" : "View"}
+          />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {commandCenter.leaderboardChapters.map((chapter) => (
+          <article key={chapter.id} className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <div className="font-mono text-xs font-black text-blue-600">{chapter.rankLabel}</div>
+                <h2 className="mt-1 text-sm font-black text-slate-900">{chapter.chapterName}</h2>
+                <p className="text-xs text-slate-500">{chapter.countryLabel}</p>
+              </div>
+              <SmallPill label={chapter.healthLabel} />
+            </div>
+            <p className="mb-3 text-xs leading-5 text-slate-600">{chapter.quote}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {chapter.metrics.map((metric) => (
+                <MiniStat key={metric.label} label={metric.label} value={Number.parseInt(metric.value, 10) || 0} />
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LeaderMembersContent({ commandCenter }: { commandCenter: ChapterLeaderCommandCenter }) {
+  return (
+    <div className="space-y-5">
+      <LeaderHero
+        title="Member Pipeline"
+        subtitle={`${commandCenter.pipelineRows.length} of ${commandCenter.pipelineTotalCount} members visible · leadership growth and points`}
+        icon={Users}
+      />
+      <div className="grid gap-3 md:grid-cols-4">
+        {commandCenter.pipelineSnapshots.map((snapshot) => (
+          <LeaderMetricCard
+            key={snapshot.label}
+            label={snapshot.label}
+            note={snapshot.note}
+            value={snapshot.value}
+          />
+        ))}
+      </div>
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-4 py-3">
+          <SectionHeading>Member Pipeline</SectionHeading>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50">
+                {["Member", "Role", "Committee", "Points", "Events", "Evidence", "Next Step"].map(
+                  (header) => (
+                    <th
+                      key={header}
+                      className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wider text-slate-400"
+                    >
+                      {header}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {commandCenter.pipelineRows.map((row) => (
+                <tr key={row.id} className="border-b border-slate-100 last:border-0 hover:bg-blue-50/40">
+                  <td className="px-3 py-2.5">
+                    <Link href={row.profileHref} className="font-bold text-slate-900 hover:text-blue-600">
+                      {row.displayName}
+                    </Link>
+                    <div className="text-[10px] text-slate-400">{row.lastActiveLabel}</div>
+                  </td>
+                  <td className="px-3 py-2.5 text-slate-600">{row.roleLabel}</td>
+                  <td className="px-3 py-2.5 text-slate-600">{row.committeeLane}</td>
+                  <td className="px-3 py-2.5 font-mono font-black text-blue-600">
+                    {row.points.toLocaleString()}
+                  </td>
+                  <td className="px-3 py-2.5 text-slate-600">{row.eventsMadeLabel}</td>
+                  <td className="px-3 py-2.5 text-slate-600">{row.evidenceLabel}</td>
+                  <td className="min-w-52 px-3 py-2.5 text-slate-600">{row.nextStepLabel}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LeaderMemberProfileContent({
+  commandCenter,
+}: {
+  commandCenter: ChapterLeaderCommandCenter;
+}) {
+  const member = commandCenter.selectedMember;
+
+  if (!member) {
+    return <LeaderMissingContent title="Member Profile" />;
+  }
+
+  return (
+    <div className="space-y-5">
+      <LeaderHero title="Member Profile" subtitle={member.nextStep} icon={Users} />
+      <div className="grid gap-4 lg:grid-cols-[20rem_1fr]">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <Avatar name={member.displayName} color={BLUE} size={56} />
+          <h1 className="mt-4 text-lg font-black text-slate-900">{member.displayName}</h1>
+          <p className="text-sm text-slate-500">{member.roleLabel}</p>
+          <p className="mt-1 text-xs text-slate-500">{member.committeeLane}</p>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <LeaderMetricCard
+            label="Points"
+            value={member.points.toLocaleString()}
+            note={member.weeklyPointsDeltaLabel}
+          />
+          <LeaderMetricCard label="Events created" value={member.eventsCreatedLabel} />
+          <LeaderMetricCard
+            label="Actions"
+            value={String(member.completedActions)}
+            note={`${member.openAssignments} open`}
+          />
+          <LeaderMetricCard label="Bridge videos" value={member.bridgeVideosLabel} />
+          <LeaderMetricCard label="Readiness" value={member.readinessLabel} />
+          <LeaderMetricCard label="Last active" value={member.lastActiveLabel} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LeaderCommitteesContent({
+  commandCenter,
+}: {
+  commandCenter: ChapterLeaderCommandCenter;
+}) {
+  return (
+    <div className="space-y-5">
+      <LeaderHero
+        title="Event Committees"
+        subtitle={`${commandCenter.committeesOverview.activeCommitteesLabel} active · ${commandCenter.committeesOverview.totalOpenActionsLabel} open actions`}
+        icon={Layers}
+      />
+      <div className="grid gap-4 lg:grid-cols-3">
+        {commandCenter.committees.map((committee) => (
+          <article key={committee.id} className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-black text-slate-900">{committee.name}</h2>
+                <p className="text-xs text-slate-500">{committee.ownerLabel}</p>
+              </div>
+              <SmallPill label={committee.operatingStatusLabel} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <MiniTextStat label="Members" value={committee.memberCountLabel} />
+              <MiniTextStat label="Actions" value={committee.actionsDoneLabel} />
+              <MiniTextStat label="Events" value={committee.eventsCountLabel} />
+              <MiniTextStat label="KPI" value={committee.kpiLabel} />
+            </div>
+            <p className="mt-3 text-xs leading-5 text-slate-600">{committee.summary}</p>
+            <div className="mt-3 rounded-lg bg-blue-50 p-3 text-xs text-blue-900">
+              {committee.nextEventTitle} · {committee.nextEventTiming} · {committee.lumaStatusLabel}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LeaderEventsContent({
+  calendarLabel,
+  commandCenter,
+  eventReadback,
+}: {
+  calendarLabel: string;
+  commandCenter: ChapterLeaderCommandCenter;
+  eventReadback: LaunchLaneLeaderEventReadback[];
+}) {
+  return (
+    <div className="space-y-5">
+      <LeaderHero
+        title="Event Performance"
+        subtitle={`${calendarLabel} · Luma event creation, RSVP, attendance, and points`}
+        icon={Calendar}
+      />
+      <div className="grid gap-3 md:grid-cols-5">
+        <LeaderMetricCard
+          label="Events"
+          value={String(commandCenter.eventsOverview.totalEventsThisMonth)}
+          note={commandCenter.eventsOverview.monthLabel}
+        />
+        <LeaderMetricCard
+          label="Attendance"
+          value={commandCenter.eventsOverview.attendanceRateLabel}
+          note={commandCenter.eventsOverview.attendanceDeltaLabel}
+        />
+        <LeaderMetricCard
+          label="RSVP conversion"
+          value={commandCenter.eventsOverview.rsvpConversionLabel}
+        />
+        <LeaderMetricCard label="Proof" value={commandCenter.eventsOverview.eventsWithProofLabel} />
+        <LeaderMetricCard
+          label="Follow-up overdue"
+          value={String(commandCenter.eventsOverview.followUpsOverdue)}
+        />
+      </div>
+      {eventReadback.length > 0 ? (
+        <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+          <SectionHeading>Luma readback</SectionHeading>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            {eventReadback.slice(0, 3).map((event) => (
+              <div key={event.id} className="rounded-lg bg-white p-3">
+                <h2 className="text-sm font-bold text-slate-900">{event.title}</h2>
+                <p className="mt-1 text-xs text-slate-500">{event.statusLabel}</p>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  <MiniStat label="RSVPs" value={event.rsvpCount} />
+                  <MiniStat label="Attended" value={event.attendanceCount} />
+                  <MiniStat label="Points" value={event.pointsAwarded} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {commandCenter.events.map((event) => (
+          <article key={event.id} className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-black text-slate-900">{event.title}</h2>
+                <p className="text-xs text-slate-500">{event.lane} · {event.timing}</p>
+              </div>
+              <SmallPill label={event.lumaStatusLabel} />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <MiniTextStat label="RSVPs" value={event.rsvpCount?.toString() ?? "0"} />
+              <MiniTextStat label="Attended" value={event.attendedCount?.toString() ?? "0"} />
+              <MiniTextStat label="Rate" value={event.attendanceRateLabel} />
+            </div>
+            <p className="mt-3 text-xs leading-5 text-slate-600">{event.expectedStudentAction}</p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">{event.proofPrompt}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LeaderImpactContent({ commandCenter }: { commandCenter: ChapterLeaderCommandCenter }) {
+  return (
+    <div className="space-y-5">
+      <LeaderHero title="Impact Dashboard" subtitle="Local impact, global MEDLIFE outcomes, and campaign progress" icon={Heart} />
+      <div className="grid gap-3 md:grid-cols-4">
+        {commandCenter.impactCards.map((card) => (
+          <LeaderMetricCard key={card.label} label={card.label} value={card.value} note={card.note} />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        {commandCenter.impactHighlights.map((highlight) => (
+          <article key={highlight.id} className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
+              {highlight.eyebrow}
+            </div>
+            <div className="mt-2 font-mono text-2xl font-black text-slate-900">{highlight.value}</div>
+            <h2 className="mt-1 text-sm font-bold text-slate-900">{highlight.label}</h2>
+            <p className="mt-2 text-xs leading-5 text-slate-600">{highlight.summary}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LeaderBridgeVideosContent({
+  commandCenter,
+}: {
+  commandCenter: ChapterLeaderCommandCenter;
+}) {
+  return (
+    <div className="space-y-5">
+      <LeaderHero title="Bridge Video Hub" subtitle={commandCenter.bridgeVideoCultureNote} icon={Video} />
+      <div className="grid gap-3 md:grid-cols-4">
+        {commandCenter.bridgeVideoMetrics.map((metric) => (
+          <LeaderMetricCard key={metric.label} label={metric.label} value={metric.value} />
+        ))}
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        {commandCenter.bridgeVideoEntries.map((entry) => (
+          <article key={entry.id} className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-8 flex h-28 items-center justify-center rounded-lg bg-slate-900 text-white">
+              <Video size={24} />
+            </div>
+            <h2 className="text-sm font-black text-slate-900">{entry.title}</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              {entry.authorLabel} · {entry.categoryLabel} · {entry.submittedDateLabel}
+            </p>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              <MiniTextStat label="Views" value={entry.viewsLabel} />
+              <MiniTextStat label="Likes" value={entry.likesLabel} />
+              <MiniTextStat label="Using" value={entry.chaptersUsingLabel} />
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LeaderSuccessionContent({
+  commandCenter,
+}: {
+  commandCenter: ChapterLeaderCommandCenter;
+}) {
+  return (
+    <div className="space-y-5">
+      <LeaderHero
+        title="Succession Planning"
+        subtitle={commandCenter.successionOverview.transitionReadinessNote}
+        icon={Award}
+      />
+      <div className="grid gap-3 md:grid-cols-4">
+        <LeaderMetricCard label="E-board roles" value={commandCenter.successionOverview.eboardRolesFilledLabel} />
+        <LeaderMetricCard label="Committees" value={commandCenter.successionOverview.activeCommitteesLabel} />
+        <LeaderMetricCard label="Candidates" value={commandCenter.successionOverview.candidatesIdentifiedLabel} />
+        <LeaderMetricCard label="Readiness" value={commandCenter.successionOverview.transitionReadinessLabel} />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {commandCenter.successionCandidates.map((candidate) => (
+          <article key={candidate.id} className="rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-black text-slate-900">{candidate.displayName}</h2>
+                <p className="text-xs text-slate-500">
+                  {candidate.currentRole} · {candidate.committeeLabel}
+                </p>
+              </div>
+              <SmallPill label={candidate.badgeLabel} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <MiniTextStat label="Points" value={candidate.pointsLabel} />
+              <MiniTextStat label="Readiness" value={candidate.readinessLabel} />
+            </div>
+            <p className="mt-3 text-xs leading-5 text-slate-600">{candidate.reason}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LeaderFeedAnalyticsContent({
+  commandCenter,
+}: {
+  commandCenter: ChapterLeaderCommandCenter;
+}) {
+  return (
+    <div className="space-y-5">
+      <LeaderHero title="Feed Analytics" subtitle="Chapter feed engagement, event RSVPs, and action follow-through" icon={Activity} />
+      <div className="grid gap-3 md:grid-cols-4">
+        {commandCenter.feedMetrics.map((metric) => (
+          <LeaderMetricCard key={metric.label} label={metric.label} value={metric.value} />
+        ))}
+      </div>
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-200 px-4 py-3">
+          <SectionHeading>Feed posts</SectionHeading>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {commandCenter.feedPostRows.map((post) => (
+            <article key={post.id} className="grid gap-3 px-4 py-3 md:grid-cols-[1fr_auto]">
+              <div>
+                <h2 className="text-sm font-black text-slate-900">{post.title}</h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  {post.typeLabel} · {post.authorLabel} · {post.dateLabel}
+                </p>
+                <p className="mt-2 text-xs leading-5 text-slate-600">{post.summary}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 md:w-56">
+                <MiniTextStat label="Views" value={post.viewsLabel} />
+                <MiniTextStat label="Likes" value={post.likesLabel} />
+                <MiniTextStat label="Actions" value={post.actionsAfterLabel} />
+                <MiniTextStat label="RSVPs" value={post.rsvpsLabel} />
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LeaderHero({
+  title,
+  subtitle,
+  icon: Icon,
+}: {
+  title: string;
+  subtitle: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-6 rounded-2xl bg-[#07192E] p-6">
+      <div className="flex items-start gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+          <Icon size={20} />
+        </div>
+        <div>
+          <div className="mb-1 font-mono text-[10px] uppercase tracking-widest text-blue-300">
+            Student Leadership Command Center
+          </div>
+          <h1 className="text-2xl font-black text-white">{title}</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-blue-200">{subtitle}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LeaderMetricCard({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+      <div className="mt-2 font-mono text-2xl font-black text-slate-900">{value}</div>
+      {note ? <div className="mt-1 text-xs text-slate-500">{note}</div> : null}
+    </div>
+  );
+}
+
+function MiniTextStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-slate-50 p-2">
+      <div className="font-mono text-sm font-black text-slate-900">{value}</div>
+      <div className="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-400">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function LeaderMissingContent({ title }: { title: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+      <h1 className="text-base font-black text-slate-900">{title}</h1>
+      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
+        Figma page missing - implementation blocked. This leader route will not be parked into a
+        different command-center screen.
+      </p>
     </div>
   );
 }

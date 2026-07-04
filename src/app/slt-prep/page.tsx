@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
+import { FigmaMissingPageNotice } from "@/components/figma-missing-page-notice";
 import {
   SltPrepMiniStat,
   SltPrepSectionCard,
@@ -30,6 +31,12 @@ export default async function SltPrepPage() {
   return (
     <AppShell actor={actor} mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}>
       <DataSourceNotice source={data.source} />
+      <FigmaMissingPageNotice
+        route="/app/slt-prep and /slt-prep"
+        expectedSource="Final SLT Prep Figma export"
+        currentSurface="Existing traveler readiness workflow, not Chapter content"
+        nextStep="Replace this notice when the finished SLT Prep Figma code is available"
+      />
       <SltPrepSubnav items={[...sltTripPrepSubnavItems]} />
 
       {!workspace.canReadWorkspace || !workspace.traveler ? (

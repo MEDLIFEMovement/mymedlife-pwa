@@ -51,6 +51,7 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/app/events")).toBe(true);
     expect(isKnownAppRouteHref("/app/events/chapter-event-ucla-kickoff")).toBe(true);
     expect(isKnownAppRouteHref("/app/points")).toBe(true);
+    expect(isKnownAppRouteHref("/app/slt-prep")).toBe(true);
     expect(isKnownAppRouteHref("/leader?view=attendance")).toBe(true);
     expect(isKnownAppRouteHref("/staff")).toBe(true);
     expect(isKnownAppRouteHref("/admin/launch-gate")).toBe(true);

@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { FigmaLeaderCommandCenter } from "@/components/figma-leader-command-center";
 import { getChapterLeaderCommandCenter } from "@/services/chapter-leader-command-center";
 import { getLandingRouteForActor } from "@/services/landing-route";
-import { getLeaderLaunchLaneCanonicalHref } from "@/services/leader-launch-lane";
 import { getLaunchLaneLeaderEventReadback } from "@/services/launch-lane-points-readback";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -50,12 +49,6 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
 
   if (!canAccessLeaderWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
-  }
-
-  const launchLaneCanonicalHref = getLeaderLaunchLaneCanonicalHref(search);
-
-  if (launchLaneCanonicalHref) {
-    redirect(launchLaneCanonicalHref);
   }
 
   const commandCenter = getChapterLeaderCommandCenter(actor, data, {

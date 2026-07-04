@@ -33,6 +33,7 @@ export type StaffCommandCenterView =
   | "feed_analytics"
   | "hubspot"
   | "best_practices"
+  | "sops"
   | "admin";
 
 export type StaffRiskFilter = "all" | "high" | "medium" | "low";
@@ -760,6 +761,7 @@ const staffViewLabels: Record<StaffCommandCenterView, string> = {
   feed_analytics: "Feed Analytics",
   hubspot: "HubSpot",
   best_practices: "Best Practices",
+  sops: "Campaign SOPs",
   admin: "Admin",
 };
 
@@ -5992,9 +5994,7 @@ function getViewOptions(
   feedPreviewRole?: StaffFeedPreviewRole,
   feedAudienceMode?: StaffFeedAudienceMode,
 ): StaffCommandCenterViewOption[] {
-  const visibleViews = isEventsPointsLaunchLaneEnabled()
-    ? (["chapters", "events", "leaderboard"] as StaffCommandCenterView[])
-    : (Object.keys(staffViewLabels) as StaffCommandCenterView[]);
+  const visibleViews = Object.keys(staffViewLabels) as StaffCommandCenterView[];
 
   return visibleViews.map((key) => ({
     key,

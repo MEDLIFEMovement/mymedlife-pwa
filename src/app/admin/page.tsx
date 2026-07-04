@@ -10,6 +10,7 @@ import { DataSourceNotice } from "@/components/data-source-notice";
 import { DesignQaReadinessPanel } from "@/components/design-qa-readiness-panel";
 import { EnvironmentSafetySummaryPanel } from "@/components/environment-safety-summary-panel";
 import { EventOutboxLog } from "@/components/event-outbox-log";
+import { FigmaMissingPageNotice } from "@/components/figma-missing-page-notice";
 import { MetricCard } from "@/components/metric-card";
 import { MvpCoverageChecklistPanel } from "@/components/mvp-coverage-checklist-panel";
 import { MvpProgressMapPanel } from "@/components/mvp-progress-map-panel";
@@ -90,6 +91,12 @@ export default async function AdminPage() {
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
+      <FigmaMissingPageNotice
+        route="/admin"
+        expectedSource="Dedicated Admin/DS backend Figma export"
+        currentSurface="Existing secure admin backend, not Chapter content"
+        nextStep="Port the exact admin Figma page when that source is approved"
+      />
 
       <section className="rounded-[2rem] border border-sky-300/20 bg-sky-300/10 p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
