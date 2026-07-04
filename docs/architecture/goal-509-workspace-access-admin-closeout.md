@@ -139,6 +139,80 @@ launch-ready:
 9. Manual URL tests confirm unauthorized workspace access redirects server-side.
 10. Admin write flags are turned back off after the rehearsal.
 
+## Hosted Staging Rehearsal Script
+
+Run this only after PR 181 is approved and merged, and only against
+`https://staging.mymedlife.org`.
+
+Pre-check:
+
+1. Confirm the staging app is using the staging Supabase project, not production.
+2. Confirm a DS Admin or Super Admin reviewer can sign in on staging.
+3. Confirm the staging database has one safe target test user and one safe target
+   test chapter. Use test records only; do not rehearse on real students or live
+   chapter data.
+4. Confirm external sends, uploads, HubSpot, Luma, n8n, warehouse, Power BI, SMS,
+   email, and AI actions remain disabled.
+5. Turn on both staging rehearsal flags for the narrow rehearsal window:
+   - `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=true`
+   - `MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE=true`
+
+User access rehearsal:
+
+1. Sign in as DS Admin or Super Admin.
+2. Open `/admin/users`.
+3. Confirm the page shows `Server-backed access changes`.
+4. Search for the safe target test user.
+5. Use `Save chapter role` to promote the target user to a student leader role,
+   such as `action_committee_chair`, with a clear audit reason.
+6. Capture the result URL or screen showing
+   `adminAccessResult=admin_access_changed`.
+7. Open `/admin/access` and capture readback showing the target user's updated
+   allowed workspaces and default workspace.
+8. Sign in as the target user and confirm the user lands on `/leader`, can open
+   `/app`, and cannot open `/admin`.
+9. Return to `/admin/users`, use the demotion/removal control to remove leader
+   access, and capture readback showing leader access is removed.
+
+Chapter management rehearsal:
+
+1. Open `/admin/chapters`.
+2. Confirm the page shows `Server-backed chapter changes`.
+3. Use a safe test chapter to run one create or edit operation with a clear audit
+   reason.
+4. Use `Assign student leader` or the coach assignment control against a safe
+   test user and capture the success result.
+5. Use `Archive chapter` only on the safe test chapter and capture the success
+   result.
+6. Confirm hard delete remains blocked or unavailable for active/historical data.
+7. Open `/admin/access` or `/admin/audit-log` and capture audit rows for each
+   operation, including actor, actor role, target, action, old value, new value,
+   reason, timestamp, and environment.
+
+Manual route guard rehearsal:
+
+1. As a general member, manually open `/leader` and confirm redirect to `/app`.
+2. As a student leader, manually open `/app` and confirm access is allowed.
+3. As a student leader, manually open `/admin` and confirm redirect to
+   `/leader?view=overview`.
+4. As non-DS staff, manually open `/admin` and confirm redirect to
+   `/staff?view=chapters`.
+5. As staff, manually open `/app` and `/leader` and confirm the preview banner
+   says `Preview Mode - read-only`.
+
+Rollback:
+
+1. Turn off both staging rehearsal flags:
+   - `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=false`
+   - `MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE=false`
+2. Redeploy or refresh staging environment configuration as required by Vercel.
+3. Re-open `/admin/users` and `/admin/chapters` and confirm write controls return
+   to the locked posture.
+4. Confirm no external sends, uploads, or integration outbox sends fired during
+   the rehearsal.
+5. Post screenshots, result URLs, audit row IDs, and the flag-off confirmation to
+   MED-509 before marking the issue complete.
+
 ## Closeout Decision
 
 Local code and tests support the Goal 509 access/admin model. The goal should
