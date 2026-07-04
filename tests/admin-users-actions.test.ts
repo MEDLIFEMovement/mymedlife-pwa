@@ -1,6 +1,10 @@
+import { redirect } from "next/navigation";
 import { describe, expect, it, vi, afterEach } from "vitest";
 
-import { submitAdminUserAccessForLocalSupabase } from "@/app/admin/users/actions";
+import {
+  submitAdminUserAccessAction,
+  submitAdminUserAccessForLocalSupabase,
+} from "@/app/admin/users/actions";
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
@@ -41,6 +45,158 @@ describe("admin user access server action", () => {
     });
   });
 
+  it("redirects back to the admin user page with the safe result query", async () => {
+    const formData = buildAdminAccessForm({
+      operation: "set_staff_role",
+      roleKey: "coach",
+    });
+    formData.set("returnTo", "https://example.test/steal-session");
+
+    await submitAdminUserAccessAction(formData);
+
+    expect(redirect).toHaveBeenCalledWith(
+      "/admin/users?adminAccessResult=write_disabled&targetUserId=00000000-0000-4000-8000-000000000008&operation=set_staff_role",
+    );
+  });
+
+  it("rejects unsupported operations, invalid scopes, invalid roles, and short reasons", async () => {
+    enableAdminAccessWrites();
+
+    await expectAdminAccessFailure(
+      buildAdminAccessForm({
+        operation: "drop_user",
+      }),
+      "invalid_operation",
+    );
+    await expectAdminAccessFailure(
+      buildAdminAccessForm({
+        operation: "set_chapter_role",
+      }),
+      "invalid_scope",
+    );
+    await expectAdminAccessFailure(
+      buildAdminAccessForm({
+        operation: "set_staff_role",
+        roleKey: "owner",
+      }),
+      "invalid_role",
+    );
+
+    const shortReasonForm = buildAdminAccessForm({
+      operation: "set_staff_role",
+      roleKey: "coach",
+    });
+    shortReasonForm.set("auditReason", "too short");
+
+    await expectAdminAccessFailure(shortReasonForm, "audit_reason_required");
+  });
+
+  it("keeps mock user and chapter ids from triggering real writes", async () => {
+    enableAdminAccessWrites();
+
+    const mockScopedForm = buildAdminAccessForm({
+      operation: "set_chapter_role",
+      roleKey: "action_committee_chair",
+      chapterId: "mock-chapter",
+    });
+
+    await expectAdminAccessFailure(mockScopedForm, "target_not_found");
+  });
+
+  it("requires a local Supabase client and a signed-in admin session", async () => {
+    enableAdminAccessWrites();
+
+    await expectAdminAccessFailure(
+      buildAdminAccessForm({
+        operation: "set_staff_role",
+        roleKey: "coach",
+      }),
+      "write_disabled",
+      {
+        createServerClient: async () => ({
+          client: null,
+          config: { reason: "Local Supabase is not configured." },
+        }),
+      },
+    );
+
+    const fakeClient = buildRpcClient(
+      vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
+    );
+
+    await expectAdminAccessFailure(
+      buildAdminAccessForm({
+        operation: "set_staff_role",
+        roleKey: "coach",
+      }),
+      "missing_auth",
+      {
+        createServerClient: async () => ({
+          client: fakeClient,
+          config: { reason: "Test client is available." },
+        }),
+        getSessionState: async () => ({
+          status: "signed_out",
+          isLocalOnly: true,
+          isHostedStaging: false,
+          environment: "local",
+          message: "No session.",
+          user: null,
+        }),
+      },
+    );
+  });
+
+  it("maps RPC errors and empty RPC responses without reporting success", async () => {
+    enableAdminAccessWrites();
+
+    await expectAdminAccessFailure(
+      buildAdminAccessForm({
+        operation: "set_staff_role",
+        roleKey: "coach",
+      }),
+      "permission_denied",
+      {
+        createServerClient: async () => ({
+          client: buildRpcClient(
+            vi.fn().mockResolvedValue({
+              data: null,
+              error: {
+                code: "42501",
+                message: "DS Admin or Super Admin access required",
+              },
+            }),
+          ),
+          config: { reason: "Test client is available." },
+        }),
+        getSessionState: async () => signedInSession(),
+      },
+    );
+
+    await expectAdminAccessFailure(
+      buildAdminAccessForm({
+        operation: "set_staff_role",
+        roleKey: "coach",
+      }),
+      "server_error",
+      {
+        createServerClient: async () => ({
+          client: buildRpcClient(
+            vi.fn().mockResolvedValue({
+              data: [],
+              error: null,
+            }),
+          ),
+          config: { reason: "Test client is available." },
+        }),
+        getSessionState: async () => signedInSession(),
+      },
+    );
+  });
+
   it("maps a successful audited RPC response into an access-change result", async () => {
     enableAdminAccessWrites();
 
@@ -63,19 +219,7 @@ describe("admin user access server action", () => {
       ],
       error: null,
     });
-    type AdminAccessActionDeps = NonNullable<
-      Parameters<typeof submitAdminUserAccessForLocalSupabase>[1]
-    >;
-    type AdminAccessCreateServerClient = NonNullable<
-      AdminAccessActionDeps["createServerClient"]
-    >;
-    const fakeClient = {
-      schema: vi.fn(() => ({
-        rpc,
-      })),
-    } as Awaited<
-      ReturnType<AdminAccessCreateServerClient>
-    >["client"];
+    const fakeClient = buildRpcClient(rpc);
 
     const result = await submitAdminUserAccessForLocalSupabase(
       buildAdminAccessForm({
@@ -87,18 +231,7 @@ describe("admin user access server action", () => {
           client: fakeClient,
           config: { reason: "Test client is available." },
         }),
-        getSessionState: async () => ({
-          status: "signed_in",
-          isLocalOnly: true,
-          isHostedStaging: false,
-          environment: "local",
-          message: "Signed in.",
-          user: {
-            id: "00000000-0000-4000-8000-000000000006",
-            email: "super.admin@mymedlife.test",
-            displayName: "Sam Super",
-          },
-        }),
+        getSessionState: async () => signedInSession(),
       },
     );
 
@@ -118,6 +251,53 @@ describe("admin user access server action", () => {
     });
   });
 });
+
+type AdminAccessActionDeps = NonNullable<
+  Parameters<typeof submitAdminUserAccessForLocalSupabase>[1]
+>;
+type AdminAccessCreateServerClient = NonNullable<
+  AdminAccessActionDeps["createServerClient"]
+>;
+type AdminAccessClient = Awaited<ReturnType<AdminAccessCreateServerClient>>["client"];
+type AdminAccessResultCode = Awaited<
+  ReturnType<typeof submitAdminUserAccessForLocalSupabase>
+>["code"];
+
+async function expectAdminAccessFailure(
+  formData: FormData,
+  code: Exclude<AdminAccessResultCode, "admin_access_changed">,
+  deps?: AdminAccessActionDeps,
+) {
+  await expect(
+    submitAdminUserAccessForLocalSupabase(formData, deps),
+  ).resolves.toMatchObject({
+    success: false,
+    code,
+  });
+}
+
+function buildRpcClient(rpc: ReturnType<typeof vi.fn>): AdminAccessClient {
+  return {
+    schema: vi.fn(() => ({
+      rpc,
+    })),
+  } as AdminAccessClient;
+}
+
+function signedInSession() {
+  return {
+    status: "signed_in" as const,
+    isLocalOnly: true,
+    isHostedStaging: false,
+    environment: "local" as const,
+    message: "Signed in.",
+    user: {
+      id: "00000000-0000-4000-8000-000000000006",
+      email: "super.admin@mymedlife.test",
+      displayName: "Sam Super",
+    },
+  };
+}
 
 function enableAdminAccessWrites() {
   vi.stubEnv("MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES", "true");
