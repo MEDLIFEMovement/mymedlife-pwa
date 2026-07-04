@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -93,7 +95,7 @@ describe("leader page", () => {
     expect(html).toContain("Chapter Dashboard · Jun 2025");
     expect(html).toContain("Boston College MEDLIFE");
     expect(html).toContain("Create Event");
-    expect(html).toContain("Assign Action");
+    expect(html).toContain("Assign Task");
     expect(html).toContain("Promote Emerging Leader");
     expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Risk Alerts");
@@ -104,7 +106,7 @@ describe("leader page", () => {
     expect(html).not.toContain("Leader event tracking");
   });
 
-  it("renders the events view inside the command center instead of the old parked launch lane", async () => {
+  it("keeps query params from replacing the Figma-owned internal screen state", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -124,81 +126,29 @@ describe("leader page", () => {
       }),
     );
 
-    expect(html).toContain(">Events<");
+    expect(html).toContain("Chapter Leadership Home");
+    expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Event Performance");
-    expect(html).toContain("Luma event creation, RSVP, attendance, and points");
-    expect(html).toContain("Luma readback");
-    expect(html).toContain("Moving Mountains Kickoff");
+    expect(html).toContain("Create Event");
     expect(html).not.toContain("Live event controls");
-    expect(html).not.toContain("Simple attendance list");
+    expect(html).not.toContain("Luma readback");
   });
 
-  it("renders route-specific leader screens instead of parking sidebar items", async () => {
-    const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
-
-    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getSignedInActor("leader.a@mymedlife.test"),
+  it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
+      "utf8",
     );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing route-specific leader screens."),
-    );
+    const lineCount = source.split("\n").length;
 
-    const { default: LeaderPage } = await import("@/app/leader/page");
-    const bridgeHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "bridge_videos",
-        }),
-      }),
-    );
-    const membersHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "members",
-        }),
-      }),
-    );
-    const committeesHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "committees",
-        }),
-      }),
-    );
-    const successionHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "succession",
-        }),
-      }),
-    );
-    const feedHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "feed_analytics",
-        }),
-      }),
-    );
-
-    expect(bridgeHtml).toContain("Bridge Video Hub");
-    expect(bridgeHtml).toContain("Chapters Using");
-    expect(bridgeHtml).not.toContain("Chapter Leaderboard");
-
-    expect(membersHtml).toContain("Member Pipeline");
-    expect(membersHtml).toContain("leadership growth and points");
-    expect(membersHtml).not.toContain("Chapter Metrics — June 2025");
-
-    expect(committeesHtml).toContain("Event Committees");
-    expect(committeesHtml).toContain("open actions");
-    expect(committeesHtml).not.toContain("Chapter Metrics — June 2025");
-
-    expect(successionHtml).toContain("Succession Planning");
-    expect(successionHtml).toContain("transition");
-    expect(successionHtml).not.toContain("Chapter Metrics — June 2025");
-
-    expect(feedHtml).toContain("Feed Analytics");
-    expect(feedHtml).toContain("Chapter feed engagement");
-    expect(feedHtml).not.toContain("Chapter Metrics — June 2025");
+    expect(lineCount).toBeGreaterThanOrEqual(3950);
+    expect(lineCount).toBeLessThanOrEqual(3970);
+    expect(source).toContain('const [screen, setScreen] = useState<Screen>("home");');
+    expect(source).toContain("<Sidebar active={screen} onNav={setScreen}/>");
+    expect(source).toContain('screen==="events"');
+    expect(source).toContain('screen==="create-event"');
+    expect(source).toContain('screen==="stories"');
+    expect(source).toContain("CreateEventForm");
+    expect(source).toContain("MedlifeStoriesScreen");
   });
 });
