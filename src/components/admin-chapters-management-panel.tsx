@@ -14,7 +14,9 @@ import {
   managedChapterFixtures,
   managedUserFixtures,
 } from "@/services/admin-management-fixtures";
+import type { AdminAccessWriteConfig } from "@/services/admin-management-write";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { ReactNode } from "react";
 
 export type AdminChaptersSearchParams = {
   q?: string | string[];
@@ -22,13 +24,17 @@ export type AdminChaptersSearchParams = {
   coachOwnerId?: string | string[];
   status?: string | string[];
   chapterId?: string | string[];
+  adminChapterResult?: string | string[];
+  operation?: string | string[];
 };
 
 type AdminChaptersManagementPanelProps = {
   actor: LocalActorContext;
+  chapterAction?: (formData: FormData) => Promise<void> | void;
   chapters?: ManagedChapter[];
   searchParams?: AdminChaptersSearchParams;
   users?: ManagedUser[];
+  writeConfig?: AdminAccessWriteConfig;
 };
 
 type ChapterActionPreview = {
@@ -54,9 +60,16 @@ const statusOptions: Array<ManagedChapterStatus | "all"> = [
 
 export function AdminChaptersManagementPanel({
   actor,
+  chapterAction,
   chapters = managedChapterFixtures,
   searchParams = {},
   users = managedUserFixtures,
+  writeConfig = {
+    enabled: false,
+    externalWritesEnabled: false,
+    isLocalOnly: true,
+    reason: "Admin chapter writes are locked until local Supabase write flags are approved.",
+  },
 }: AdminChaptersManagementPanelProps) {
   const query = getSingleParam(searchParams.q);
   const region = getSingleParam(searchParams.region) || "all";
@@ -85,6 +98,14 @@ export function AdminChaptersManagementPanel({
   const coaches = users.filter((user) =>
     user.staffRoles.some((role) => role.toLowerCase().includes("coach")),
   );
+  const studentCandidates = users.filter(
+    (user) => user.chapterMemberships.length > 0 || user.staffRoles.length === 0,
+  );
+  const selectedStudentLeaderId = selectedChapter.studentLeaderIds[0] ?? "";
+  const chapterResult = getSingleParam(searchParams.adminChapterResult);
+  const resultOperation = getSingleParam(searchParams.operation);
+  const formsEnabled = Boolean(writeConfig.enabled && chapterAction);
+  const selectedChapterReturnTo = `/admin/chapters?chapterId=${selectedChapter.id}`;
 
   return (
     <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
@@ -300,6 +321,63 @@ export function AdminChaptersManagementPanel({
               records exist. Production hard delete requires Super Admin approval.
             </div>
 
+            <div className="mt-5 space-y-3 rounded border border-white/10 bg-[#0d1117] p-4">
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  Server-backed chapter changes
+                </h3>
+                <p className="mt-2 text-xs leading-5 text-slate-500">
+                  These forms submit to the audited `admin_manage_chapter` RPC.
+                  They stay locked unless local Supabase writes and admin access
+                  writes are explicitly enabled.
+                </p>
+              </div>
+              <StatusPill value={formsEnabled ? "writes-local-only" : "write_disabled"} />
+              <p className="text-xs leading-5 text-slate-500">{writeConfig.reason}</p>
+              {chapterResult ? (
+                <div className="rounded border border-sky-400/20 bg-sky-400/10 p-3 text-xs leading-5 text-sky-100">
+                  Last chapter action: <strong>{resultOperation || "unknown"}</strong>{" "}
+                  returned <strong>{chapterResult}</strong>.
+                </div>
+              ) : null}
+
+              <ChapterCreateForm action={chapterAction} disabled={!formsEnabled} />
+              <ChapterEditForm
+                action={chapterAction}
+                chapter={selectedChapter}
+                disabled={!formsEnabled}
+                returnTo={selectedChapterReturnTo}
+              />
+              <ChapterCoachForm
+                action={chapterAction}
+                chapter={selectedChapter}
+                coaches={coaches}
+                disabled={!formsEnabled || coaches.length === 0}
+                returnTo={selectedChapterReturnTo}
+              />
+              <ChapterStudentLeaderForm
+                action={chapterAction}
+                chapter={selectedChapter}
+                disabled={!formsEnabled || studentCandidates.length === 0}
+                returnTo={selectedChapterReturnTo}
+                users={studentCandidates}
+              />
+              <ChapterRemoveStudentLeaderForm
+                action={chapterAction}
+                chapter={selectedChapter}
+                disabled={!formsEnabled || selectedStudentLeaderId.length === 0}
+                returnTo={selectedChapterReturnTo}
+                selectedStudentLeaderId={selectedStudentLeaderId}
+                users={users}
+              />
+              <ChapterArchiveForm
+                action={chapterAction}
+                chapter={selectedChapter}
+                disabled={!formsEnabled}
+                returnTo={selectedChapterReturnTo}
+              />
+            </div>
+
             <div className="mt-5 space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
                 Action packet previews
@@ -313,6 +391,324 @@ export function AdminChaptersManagementPanel({
       </div>
     </main>
   );
+}
+
+function ChapterCreateForm({
+  action,
+  disabled,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  disabled: boolean;
+}) {
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel="Create chapter"
+      disabled={disabled}
+      operation="create_chapter"
+      title="Create chapter"
+    >
+      <FormInput disabled={disabled} label="Chapter name" name="name" placeholder="Test Pilot MEDLIFE" />
+      <FormInput disabled={disabled} label="School" name="campus" placeholder="Test Pilot University" />
+      <FormInput disabled={disabled} label="Region / portfolio" name="region" placeholder="West Coast" />
+      <input name="status" type="hidden" value="active" />
+    </AdminChapterForm>
+  );
+}
+
+function ChapterEditForm({
+  action,
+  chapter,
+  disabled,
+  returnTo,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  chapter: ManagedChapter;
+  disabled: boolean;
+  returnTo: string;
+}) {
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel="Save chapter profile"
+      chapterId={chapter.id}
+      disabled={disabled}
+      operation="update_chapter"
+      returnTo={returnTo}
+      title="Edit chapter profile"
+    >
+      <FormInput disabled={disabled} label="Chapter name" name="name" value={chapter.name} />
+      <FormInput disabled={disabled} label="School" name="campus" value={chapter.school} />
+      <FormInput disabled={disabled} label="Region / portfolio" name="region" value={chapter.region} />
+      <label className="space-y-1 text-xs text-slate-400">
+        Status
+        <select
+          className="w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+          defaultValue={chapter.status === "disabled" ? "inactive" : chapter.status}
+          disabled={disabled}
+          name="status"
+        >
+          <option value="active">active</option>
+          <option value="inactive">disabled</option>
+          <option value="archived">archived</option>
+        </select>
+      </label>
+    </AdminChapterForm>
+  );
+}
+
+function ChapterCoachForm({
+  action,
+  chapter,
+  coaches,
+  disabled,
+  returnTo,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  chapter: ManagedChapter;
+  coaches: ManagedUser[];
+  disabled: boolean;
+  returnTo: string;
+}) {
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel="Assign coach"
+      chapterId={chapter.id}
+      disabled={disabled}
+      operation="assign_coach"
+      returnTo={returnTo}
+      title="Assign coach owner"
+    >
+      <SelectField
+        disabled={disabled}
+        label="Coach"
+        name="targetUserId"
+        options={userOptions(coaches)}
+        value={chapter.coachOwnerId ?? coaches[0]?.id ?? ""}
+      />
+    </AdminChapterForm>
+  );
+}
+
+function ChapterStudentLeaderForm({
+  action,
+  chapter,
+  disabled,
+  returnTo,
+  users,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  chapter: ManagedChapter;
+  disabled: boolean;
+  returnTo: string;
+  users: ManagedUser[];
+}) {
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel="Assign student leader"
+      chapterId={chapter.id}
+      disabled={disabled}
+      operation="assign_student_leader"
+      returnTo={returnTo}
+      title="Assign student leader"
+    >
+      <SelectField
+        disabled={disabled}
+        label="Student"
+        name="targetUserId"
+        options={userOptions(users)}
+        value={chapter.studentLeaderIds[0] ?? users[0]?.id ?? ""}
+      />
+      <SelectField
+        disabled={disabled}
+        label="Leader role"
+        name="roleKey"
+        options={[
+          { label: "Action Committee Chair", value: "action_committee_chair" },
+          { label: "E-Board Member", value: "e_board_member" },
+          { label: "President / VP", value: "president_vp" },
+        ]}
+        value="action_committee_chair"
+      />
+    </AdminChapterForm>
+  );
+}
+
+function ChapterRemoveStudentLeaderForm({
+  action,
+  chapter,
+  disabled,
+  returnTo,
+  selectedStudentLeaderId,
+  users,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  chapter: ManagedChapter;
+  disabled: boolean;
+  returnTo: string;
+  selectedStudentLeaderId: string;
+  users: ManagedUser[];
+}) {
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel="Remove student leader"
+      chapterId={chapter.id}
+      confirmation="REMOVE STUDENT LEADER"
+      disabled={disabled}
+      operation="remove_student_leader"
+      returnTo={returnTo}
+      title="Remove student leader"
+    >
+      <SelectField
+        disabled={disabled}
+        label="Student leader"
+        name="targetUserId"
+        options={userOptions(
+          users.filter((user) => chapter.studentLeaderIds.includes(user.id)),
+        )}
+        value={selectedStudentLeaderId}
+      />
+    </AdminChapterForm>
+  );
+}
+
+function ChapterArchiveForm({
+  action,
+  chapter,
+  disabled,
+  returnTo,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  chapter: ManagedChapter;
+  disabled: boolean;
+  returnTo: string;
+}) {
+  return (
+    <AdminChapterForm
+      action={action}
+      buttonLabel="Archive chapter"
+      chapterId={chapter.id}
+      confirmation="ARCHIVE CHAPTER"
+      disabled={disabled}
+      operation="archive_chapter"
+      returnTo={returnTo}
+      title="Archive chapter"
+    />
+  );
+}
+
+function AdminChapterForm({
+  action,
+  buttonLabel,
+  chapterId,
+  children,
+  confirmation,
+  disabled,
+  operation,
+  returnTo = "/admin/chapters",
+  title,
+}: {
+  action?: (formData: FormData) => Promise<void> | void;
+  buttonLabel: string;
+  chapterId?: string;
+  children?: ReactNode;
+  confirmation?: string;
+  disabled: boolean;
+  operation: string;
+  returnTo?: string;
+  title: string;
+}) {
+  return (
+    <form action={action} className="space-y-3 rounded border border-white/10 bg-[#161b22] p-3">
+      <input name="operation" type="hidden" value={operation} />
+      <input name="returnTo" type="hidden" value={returnTo} />
+      {chapterId ? <input name="chapterId" type="hidden" value={chapterId} /> : null}
+      {confirmation ? <input name="confirmation" type="hidden" value={confirmation} /> : null}
+      <h4 className="text-sm font-semibold text-white">{title}</h4>
+      <div className="grid gap-3">{children}</div>
+      <FormInput
+        disabled={disabled}
+        label="Audit reason"
+        name="auditReason"
+        placeholder="Explain the approved admin change."
+      />
+      <button
+        className="w-full rounded bg-sky-500 px-3 py-2 text-sm font-semibold text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+        disabled={disabled}
+      >
+        {buttonLabel}
+      </button>
+    </form>
+  );
+}
+
+function FormInput({
+  disabled,
+  label,
+  name,
+  placeholder,
+  value,
+}: {
+  disabled: boolean;
+  label: string;
+  name: string;
+  placeholder?: string;
+  value?: string;
+}) {
+  return (
+    <label className="space-y-1 text-xs text-slate-400">
+      {label}
+      <input
+        className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+        defaultValue={value}
+        disabled={disabled}
+        name={name}
+        placeholder={placeholder}
+      />
+    </label>
+  );
+}
+
+function SelectField({
+  disabled,
+  label,
+  name,
+  options,
+  value,
+}: {
+  disabled: boolean;
+  label: string;
+  name: string;
+  options: Array<{ label: string; value: string }>;
+  value: string;
+}) {
+  return (
+    <label className="space-y-1 text-xs text-slate-400">
+      {label}
+      <select
+        className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+        defaultValue={value}
+        disabled={disabled || options.length === 0}
+        name={name}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function userOptions(users: ManagedUser[]) {
+  return users.map((user) => ({
+    label: `${user.name} (${user.email})`,
+    value: user.id,
+  }));
 }
 
 function buildChapterActionPreviews(
@@ -501,6 +897,18 @@ function StatusPill({ value }: { value: string }) {
     "super_admin_protected",
     "production_hard_delete_blocked",
     "chapter_has_active_data",
+    "write_disabled",
+    "missing_auth",
+    "permission_denied",
+    "target_not_found",
+    "audit_reason_required",
+    "invalid_operation",
+    "invalid_chapter",
+    "invalid_user",
+    "invalid_role",
+    "invalid_status",
+    "invalid_profile",
+    "server_error",
   ].includes(value);
 
   return (

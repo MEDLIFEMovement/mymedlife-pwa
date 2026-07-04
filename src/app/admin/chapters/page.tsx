@@ -11,6 +11,7 @@ import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/l
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessAdminWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import { submitAdminChapterAction } from "@/app/admin/chapters/actions";
 
 export const metadata = getStaticRouteMetadata("admin");
 export const dynamic = "force-dynamic";
@@ -39,9 +40,11 @@ export default async function AdminChaptersPage({
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
       <AdminChaptersManagementPanel
         actor={actor}
+        chapterAction={submitAdminChapterAction}
         chapters={directory.chapters}
         searchParams={resolvedSearchParams}
         users={directory.users}
+        writeConfig={directory.writeConfig}
       />
     </>
   );

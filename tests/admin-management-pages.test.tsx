@@ -115,6 +115,13 @@ describe("admin management pages", () => {
     expect(html).toContain("Soft delete chapter");
     expect(html).toContain("Hard delete safeguard");
     expect(html).toContain("chapter_has_active_data");
+    expect(html).toContain("Server-backed chapter changes");
+    expect(html).toContain("admin_manage_chapter");
+    expect(html).toContain("Create chapter");
+    expect(html).toContain("Save chapter profile");
+    expect(html).toContain("Assign coach");
+    expect(html).toContain("Assign student leader");
+    expect(html).toContain("write_disabled");
     expect(html).toContain("Historical events, attendance, and points records must be preserved.");
   });
 
