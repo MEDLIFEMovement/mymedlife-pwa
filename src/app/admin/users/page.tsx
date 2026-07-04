@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { FigmaAdminPanel } from "@/components/figma-admin-panel";
+import {
+  AdminUsersManagementPanel,
+  type AdminUsersSearchParams,
+} from "@/components/admin-users-management-panel";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
@@ -11,8 +14,15 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("admin");
 export const dynamic = "force-dynamic";
 
-export default async function AdminUsersPage() {
+type AdminUsersPageProps = {
+  searchParams?: Promise<AdminUsersSearchParams>;
+};
+
+export default async function AdminUsersPage({
+  searchParams,
+}: AdminUsersPageProps) {
   const actor = await getLocalActorContext();
+  const resolvedSearchParams = (await searchParams) ?? {};
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref("/admin/users"));
@@ -25,7 +35,10 @@ export default async function AdminUsersPage() {
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
-      <FigmaAdminPanel initialActive="users" />
+      <AdminUsersManagementPanel
+        actor={actor}
+        searchParams={resolvedSearchParams}
+      />
     </>
   );
 }
