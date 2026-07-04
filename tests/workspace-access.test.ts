@@ -9,7 +9,20 @@ import {
   isPreviewWorkspaceAccess,
   isStaffUser,
   isStudentLeader,
+  type WorkspaceActionIntent,
 } from "@/services/workspace-access";
+
+const previewWriteIntents: WorkspaceActionIntent[] = [
+  "write",
+  "submit",
+  "approve",
+  "reject",
+  "message",
+  "integration_trigger",
+  "check_in",
+  "points_change",
+  "delete",
+];
 
 describe("workspace access", () => {
   it("keeps general members in the student app by default", () => {
@@ -78,6 +91,10 @@ describe("workspace access", () => {
     expect(canAccessWorkspace(actor, "student_app", { intent: "read" })).toBe(true);
     expect(canAccessWorkspace(actor, "student_app", { intent: "submit" })).toBe(false);
     expect(canAccessWorkspace(actor, "leader_command_center", { intent: "approve" })).toBe(false);
+    for (const intent of previewWriteIntents) {
+      expect(canAccessWorkspace(actor, "student_app", { intent })).toBe(false);
+      expect(canAccessWorkspace(actor, "leader_command_center", { intent })).toBe(false);
+    }
   });
 
   it("keeps DS and Super Admin defaulted to the backend with preview-only student views", () => {

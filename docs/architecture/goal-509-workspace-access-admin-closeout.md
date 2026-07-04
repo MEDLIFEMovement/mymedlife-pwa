@@ -41,7 +41,9 @@ hosted staging evidence before the goal can be called launch-ready.
 - Staff/admin preview posture:
   - staff can read student and leader surfaces
   - preview surfaces show `Preview Mode - read-only`
-  - write intents are blocked in `canAccessWorkspace`
+  - submit, approve, reject, message, integration-trigger, check-in,
+    points-change, delete, and other write intents are blocked in
+    `canAccessWorkspace`
 - Admin user management:
   - list/search/filter
   - access summary
