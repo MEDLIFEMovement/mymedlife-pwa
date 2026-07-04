@@ -24,6 +24,26 @@ const previewWriteIntents: WorkspaceActionIntent[] = [
   "delete",
 ];
 
+const goalStudentLeaderRoles = [
+  "action_committee_chair",
+  "chapter_president",
+  "chapter_vice_president",
+  "chapter_director_events_action_committees",
+  "chapter_membership_leadership_development",
+  "chapter_marketing_proof_director",
+  "chapter_slt_director",
+  "chapter_moving_mountains_director",
+  "chapter_grow_the_movement_director",
+];
+
+const goalStaffRoles = [
+  "sales_coach",
+  "sales_admin",
+  "general_staff",
+  "ds_admin",
+  "super_admin",
+];
+
 describe("workspace access", () => {
   it("keeps general members in the student app by default", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
@@ -76,6 +96,24 @@ describe("workspace access", () => {
     ]);
   });
 
+  it("recognizes every student leader role named in the workspace goal", () => {
+    for (const roleKey of goalStudentLeaderRoles) {
+      const actor = {
+        roleKeys: [roleKey],
+      };
+
+      expect(isStudentLeader(actor), roleKey).toBe(true);
+      expect(getDefaultWorkspace(actor), roleKey).toBe("leader_command_center");
+      expect(getAllowedWorkspaces(actor).map((workspace) => workspace.key), roleKey).toEqual([
+        "student_app",
+        "leader_command_center",
+      ]);
+      expect(canAccessWorkspace(actor, "student_app", { intent: "switch" }), roleKey).toBe(true);
+      expect(canAccessWorkspace(actor, "leader_command_center", { intent: "switch" }), roleKey).toBe(true);
+      expect(canAccessWorkspace(actor, "admin_backend"), roleKey).toBe(false);
+    }
+  });
+
   it("gives staff a staff default and read-only previews of student surfaces", () => {
     const actor = getMockLocalActorContext("sales.coach@mymedlife.test");
 
@@ -118,6 +156,39 @@ describe("workspace access", () => {
     expect(canAccessWorkspace(dsAdmin, "staff_command_center")).toBe(false);
     expect(canAccessWorkspace(superAdmin, "staff_command_center")).toBe(true);
     expect(canAccessWorkspace(superAdmin, "leader_command_center", { intent: "message" })).toBe(false);
+  });
+
+  it("recognizes every staff role named in the workspace goal", () => {
+    const expectedDefaults: Record<string, string> = {
+      sales_coach: "staff_command_center",
+      sales_admin: "staff_command_center",
+      general_staff: "staff_command_center",
+      ds_admin: "admin_backend",
+      super_admin: "admin_backend",
+    };
+
+    for (const roleKey of goalStaffRoles) {
+      const actor = {
+        roleKeys: [roleKey],
+      };
+      const allowedWorkspaces = getAllowedWorkspaces(actor).map(
+        (workspace) => workspace.key,
+      );
+
+      expect(isStaffUser(actor), roleKey).toBe(true);
+      expect(getDefaultWorkspace(actor), roleKey).toBe(expectedDefaults[roleKey]);
+      expect(allowedWorkspaces, roleKey).toContain("student_app");
+      expect(allowedWorkspaces, roleKey).toContain("leader_command_center");
+      expect(isPreviewWorkspaceAccess(actor, "student_app"), roleKey).toBe(true);
+      expect(isPreviewWorkspaceAccess(actor, "leader_command_center"), roleKey).toBe(true);
+      expect(canAccessWorkspace(actor, "student_app", { intent: "read" }), roleKey).toBe(true);
+      expect(canAccessWorkspace(actor, "leader_command_center", { intent: "read" }), roleKey).toBe(true);
+
+      for (const intent of previewWriteIntents) {
+        expect(canAccessWorkspace(actor, "student_app", { intent }), roleKey).toBe(false);
+        expect(canAccessWorkspace(actor, "leader_command_center", { intent }), roleKey).toBe(false);
+      }
+    }
   });
 
   it("adds SLT Prep as an available workspace without stealing the student default", () => {
