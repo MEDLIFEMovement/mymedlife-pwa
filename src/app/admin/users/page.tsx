@@ -7,6 +7,7 @@ import {
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
+import { getAdminManagementDirectory } from "@/services/admin-management-data";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessAdminWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
@@ -23,6 +24,7 @@ export default async function AdminUsersPage({
 }: AdminUsersPageProps) {
   const actor = await getLocalActorContext();
   const resolvedSearchParams = (await searchParams) ?? {};
+  const directory = await getAdminManagementDirectory();
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref("/admin/users"));
@@ -37,7 +39,11 @@ export default async function AdminUsersPage({
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
       <AdminUsersManagementPanel
         actor={actor}
+        chapters={directory.chapters}
+        source={directory.source}
         searchParams={resolvedSearchParams}
+        users={directory.users}
+        writeConfig={directory.writeConfig}
       />
     </>
   );
