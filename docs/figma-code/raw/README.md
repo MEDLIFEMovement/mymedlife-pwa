@@ -12,6 +12,8 @@ The archive contains the exported code used as reference input for:
 - general student/member app
 - Student Leadership Command Center
 - Staff Command Center Dashboard
+  - the Staff shell is now copied into `src/components/figma-staff-command-center.tsx`
+    and guarded by `docs/figma-staff-command-center-button-map.md`
   - includes the DS Admin `AdminPanel` shell now used by `/admin`
 
 The staff export included demo strings that looked like provider API keys,
