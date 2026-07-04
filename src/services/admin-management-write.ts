@@ -27,9 +27,11 @@ export type AdminAccessWriteConfig =
 
 export type AdminAccessResultCode =
   | "admin_access_changed"
+  | "write_disabled"
   | "missing_auth"
   | "permission_denied"
   | "target_not_found"
+  | "confirmation_required"
   | "audit_reason_required"
   | "invalid_operation"
   | "invalid_role"
@@ -93,6 +95,8 @@ const adminAccessRoleKeys = new Set<DatabaseRoleKey>([
   "super_admin",
 ]);
 
+const adminUserManagementRoute = "/admin/users";
+
 export function getAdminAccessWriteConfig(
   env: Record<string, string | undefined> = process.env,
 ): AdminAccessWriteConfig {
@@ -142,6 +146,18 @@ export function mapAdminAccessRpcSuccess(
     plainEnglishMessage:
       "Admin access changed through the audited Supabase RPC. The app recorded the role, chapter or portfolio change plus an audit log. No external send happened.",
   };
+}
+
+export function getAdminAccessDisabledResult(
+  plainEnglishMessage: string,
+): AdminAccessServerResult {
+  return failureResult("write_disabled", plainEnglishMessage);
+}
+
+export function getAdminAccessConfirmationRequiredResult(
+  plainEnglishMessage: string,
+): AdminAccessServerResult {
+  return failureResult("confirmation_required", plainEnglishMessage);
 }
 
 export function mapAdminAccessRpcError(error: {
@@ -266,6 +282,26 @@ export function parseAdminAccessRole(
   const normalized = value.trim() as DatabaseRoleKey;
 
   return adminAccessRoleKeys.has(normalized) ? normalized : null;
+}
+
+export function normalizeAdminAccessReturnTo(
+  value: FormDataEntryValue | null,
+): string {
+  if (typeof value !== "string") {
+    return adminUserManagementRoute;
+  }
+
+  const trimmed = value.trim();
+
+  if (
+    !trimmed.startsWith(adminUserManagementRoute) ||
+    trimmed.startsWith("//") ||
+    trimmed.includes("://")
+  ) {
+    return adminUserManagementRoute;
+  }
+
+  return trimmed;
 }
 
 export function hasAdminAccessSupabaseIds(input: {

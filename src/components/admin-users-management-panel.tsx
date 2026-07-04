@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import { submitAdminUserAccessAction } from "@/app/admin/users/actions";
 import {
   changeManagedUserAccess,
   deleteManagedUser,
@@ -6,15 +8,21 @@ import {
   setManagedUserStatus,
   type AdminAuditRecord,
   type AdminMutationFailure,
+  type ManagedChapter,
   type ManagedUser,
   type ManagedUserStatus,
 } from "@/services/admin-management";
 import {
-  getManagedChapterName,
   managedChapterFixtures,
   managedUserFixtures,
 } from "@/services/admin-management-fixtures";
+import {
+  hasAdminAccessSupabaseIds,
+  type AdminAccessResultCode,
+  type AdminAccessWriteConfig,
+} from "@/services/admin-management-write";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { DataSourceMeta } from "@/services/read-only-app-data";
 import { getWorkspaceLabel } from "@/services/workspace-access";
 
 export type AdminUsersSearchParams = {
@@ -23,11 +31,18 @@ export type AdminUsersSearchParams = {
   chapterId?: string | string[];
   status?: string | string[];
   userId?: string | string[];
+  targetUserId?: string | string[];
+  adminAccessResult?: string | string[];
+  operation?: string | string[];
 };
 
 type AdminUsersManagementPanelProps = {
   actor: LocalActorContext;
+  chapters?: ManagedChapter[];
+  source?: DataSourceMeta;
   searchParams?: AdminUsersSearchParams;
+  users?: ManagedUser[];
+  writeConfig?: AdminAccessWriteConfig;
 };
 
 type UserActionPreview = {
@@ -65,30 +80,124 @@ const statusOptions: Array<ManagedUserStatus | "all"> = [
   "deleted",
 ];
 
+const chapterRoleOptions = [
+  { value: "general_member", label: "General Member" },
+  { value: "action_committee_member", label: "Action Committee Member" },
+  { value: "action_committee_chair", label: "Action Committee Chair" },
+  { value: "e_board_member", label: "E-Board Member" },
+  { value: "president_vp", label: "President / VP" },
+];
+
+const staffRoleOptions = [
+  { value: "coach", label: "Coach" },
+  { value: "admin", label: "Staff Admin" },
+  { value: "ds_admin", label: "DS Admin" },
+  { value: "super_admin", label: "Super Admin" },
+];
+
+const resultText: Record<
+  AdminAccessResultCode,
+  { label: string; tone: "success" | "warning" | "error" | "neutral" }
+> = {
+  admin_access_changed: {
+    label: "Access changed through the audited RPC. Reopen this user to verify allowed/default workspaces.",
+    tone: "success",
+  },
+  write_disabled: {
+    label: "Writes are disabled for this environment.",
+    tone: "warning",
+  },
+  missing_auth: {
+    label: "Sign in with a DS Admin or Super Admin account before changing access.",
+    tone: "error",
+  },
+  permission_denied: {
+    label: "This signed-in role is not allowed to change user access.",
+    tone: "error",
+  },
+  target_not_found: {
+    label: "The selected user or chapter is not backed by real Supabase UUID data.",
+    tone: "error",
+  },
+  confirmation_required: {
+    label: "The confirmation text was missing or did not match.",
+    tone: "warning",
+  },
+  audit_reason_required: {
+    label: "A clear audit reason is required.",
+    tone: "warning",
+  },
+  invalid_operation: {
+    label: "Choose a supported admin access operation.",
+    tone: "error",
+  },
+  invalid_role: {
+    label: "Choose a valid role for this access change.",
+    tone: "error",
+  },
+  invalid_scope: {
+    label: "Choose the required chapter or portfolio scope.",
+    tone: "error",
+  },
+  self_destructive_action_blocked: {
+    label: "Admins cannot perform destructive access changes on their own account.",
+    tone: "error",
+  },
+  super_admin_protected: {
+    label: "Only a Super Admin can change Super Admin access.",
+    tone: "error",
+  },
+  server_error: {
+    label: "The app could not safely change access. No external automation ran.",
+    tone: "error",
+  },
+};
+
 export function AdminUsersManagementPanel({
   actor,
+  chapters = managedChapterFixtures,
+  source = {
+    mode: "mock",
+    status: "mock_fallback",
+    message: "Using mock admin directory data.",
+  },
   searchParams = {},
+  users = managedUserFixtures,
+  writeConfig = {
+    enabled: false,
+    isLocalOnly: true,
+    externalWritesEnabled: false,
+    reason: "Admin access writes are disabled for this review.",
+  },
 }: AdminUsersManagementPanelProps) {
   const query = getSingleParam(searchParams.q);
   const role = getSingleParam(searchParams.role) || "all";
   const chapterId = getSingleParam(searchParams.chapterId);
   const rawStatus = getSingleParam(searchParams.status) || "all";
+  const resultCode = getAdminAccessResultCode(
+    getSingleParam(searchParams.adminAccessResult),
+  );
   const status = statusOptions.includes(rawStatus as ManagedUserStatus | "all")
     ? (rawStatus as ManagedUserStatus | "all")
     : "all";
-  const filteredUsers = searchManagedUsers(managedUserFixtures, {
+  const filteredUsers = searchManagedUsers(users, {
     query,
     role,
     chapterId,
     status,
   });
   const selectedUser =
-    managedUserFixtures.find(
-      (user) => user.id === getSingleParam(searchParams.userId),
+    users.find(
+      (user) =>
+        user.id ===
+        (getSingleParam(searchParams.targetUserId) ??
+          getSingleParam(searchParams.userId)),
     ) ??
     filteredUsers[0] ??
+    users[0] ??
     managedUserFixtures[0];
   const previews = buildUserActionPreviews(actor, selectedUser);
+  const returnTo = selectedUser ? `/admin/users?userId=${selectedUser.id}` : "/admin/users";
 
   return (
     <main className="min-h-screen bg-[#0d1117] px-6 py-8 text-slate-100">
@@ -117,18 +226,18 @@ export function AdminUsersManagementPanel({
         </header>
 
         <section className="grid gap-3 md:grid-cols-4">
-          <SummaryCard label="Directory users" value={String(managedUserFixtures.length)} />
+          <SummaryCard label="Directory users" value={String(users.length)} />
           <SummaryCard label="Filtered users" value={String(filteredUsers.length)} />
           <SummaryCard
             label="Pending invites"
             value={String(
-              managedUserFixtures.filter((user) => user.inviteStatus === "sent").length,
+              users.filter((user) => user.inviteStatus === "sent").length,
             )}
           />
           <SummaryCard
             label="Protected admins"
             value={String(
-              managedUserFixtures.filter((user) =>
+              users.filter((user) =>
                 user.staffRoles.some((role) =>
                   ["DS Admin", "Super Admin", "ds_admin", "super_admin"].includes(role),
                 ),
@@ -136,6 +245,29 @@ export function AdminUsersManagementPanel({
             )}
           />
         </section>
+
+        <section className="grid gap-3 rounded-lg border border-white/10 bg-[#161b22] p-4 text-sm md:grid-cols-2">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Data source
+            </p>
+            <p className="mt-1 font-semibold text-white">
+              {source.mode === "supabase" ? "Supabase-backed directory" : "Mock review directory"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-slate-400">{source.message}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Write gate
+            </p>
+            <p className="mt-1 font-semibold text-white">
+              {writeConfig.enabled ? "Local admin writes enabled" : "Admin writes locked"}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-slate-400">{writeConfig.reason}</p>
+          </div>
+        </section>
+
+        {resultCode ? <AdminAccessResultBanner code={resultCode} /> : null}
 
         <form className="rounded-lg border border-white/10 bg-[#161b22] p-4">
           <div className="grid gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr_auto]">
@@ -171,7 +303,7 @@ export function AdminUsersManagementPanel({
                 defaultValue={chapterId}
               >
                 <option value="">all</option>
-                {managedChapterFixtures.map((chapter) => (
+                {chapters.map((chapter) => (
                   <option key={chapter.id} value={chapter.id}>
                     {chapter.name}
                   </option>
@@ -239,10 +371,10 @@ export function AdminUsersManagementPanel({
                           <ChipList
                             values={[
                               ...user.chapterMemberships.map((item) =>
-                                getManagedChapterName(item.chapterId),
+                                getChapterName(chapters, item.chapterId),
                               ),
                               ...user.portfolioChapterIds.map((id) =>
-                                `Portfolio: ${getManagedChapterName(id)}`,
+                                `Portfolio: ${getChapterName(chapters, id)}`,
                               ),
                             ]}
                             empty="No chapter scope"
@@ -314,11 +446,266 @@ export function AdminUsersManagementPanel({
                 <ActionPreview key={preview.label} preview={preview} />
               ))}
             </div>
+
+            {selectedUser ? (
+              <AdminAccessServerForms
+                chapters={chapters}
+                returnTo={returnTo}
+                selectedUser={selectedUser}
+                writeConfig={writeConfig}
+              />
+            ) : null}
           </aside>
         </section>
       </div>
     </main>
   );
+}
+
+function AdminAccessResultBanner({ code }: { code: AdminAccessResultCode }) {
+  const state = resultText[code];
+  const toneClass =
+    state.tone === "success"
+      ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+      : state.tone === "warning"
+        ? "border-amber-300/30 bg-amber-300/10 text-amber-100"
+        : state.tone === "error"
+          ? "border-rose-300/30 bg-rose-300/10 text-rose-100"
+          : "border-sky-300/30 bg-sky-300/10 text-sky-100";
+
+  return (
+    <div className={`rounded-lg border px-4 py-3 text-sm ${toneClass}`} role="status">
+      <p className="font-semibold">Admin access result: {code.replaceAll("_", " ")}</p>
+      <p className="mt-1">{state.label}</p>
+    </div>
+  );
+}
+
+function AdminAccessServerForms({
+  chapters,
+  returnTo,
+  selectedUser,
+  writeConfig,
+}: {
+  chapters: ManagedChapter[];
+  returnTo: string;
+  selectedUser: ManagedUser;
+  writeConfig: AdminAccessWriteConfig;
+}) {
+  const hasRealIds = hasAdminAccessSupabaseIds({ targetUserId: selectedUser.id });
+  const formsEnabled = writeConfig.enabled && hasRealIds;
+  const defaultChapterId =
+    selectedUser.chapterMemberships[0]?.chapterId ?? chapters[0]?.id ?? "";
+  const currentStaffRole =
+    selectedUser.staffRoles.map(toRoleValue).find(Boolean) ?? "coach";
+
+  return (
+    <div className="mt-6 space-y-4">
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+          Server-backed access changes
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          These forms submit to the audited `admin_change_user_access` RPC. They stay locked
+          for mock IDs or when local Supabase write flags are off.
+        </p>
+      </div>
+
+      {!hasRealIds ? (
+        <div className="rounded border border-amber-400/20 bg-amber-400/10 p-3 text-xs leading-5 text-amber-100">
+          This selected user is mock-only, so the admin RPC cannot run. Sign in against
+          Supabase-backed local/staging data to test real access changes.
+        </div>
+      ) : null}
+
+      <AdminAccessFormShell
+        buttonLabel="Save chapter role"
+        disabled={!formsEnabled}
+        operation="set_chapter_role"
+        returnTo={returnTo}
+        selectedUser={selectedUser}
+      >
+        <SelectField disabled={!formsEnabled} label="Chapter" name="chapterId" options={chapterOptions(chapters)} value={defaultChapterId} />
+        <SelectField disabled={!formsEnabled} label="Role" name="roleKey" options={chapterRoleOptions} value="action_committee_chair" />
+      </AdminAccessFormShell>
+
+      <AdminAccessFormShell
+        buttonLabel="Remove chapter access"
+        confirmation="REMOVE CHAPTER ACCESS"
+        disabled={!formsEnabled}
+        operation="remove_chapter_membership"
+        returnTo={returnTo}
+        selectedUser={selectedUser}
+      >
+        <SelectField disabled={!formsEnabled} label="Chapter" name="chapterId" options={chapterOptions(chapters)} value={defaultChapterId} />
+      </AdminAccessFormShell>
+
+      <AdminAccessFormShell
+        buttonLabel="Assign staff role"
+        disabled={!formsEnabled}
+        operation="set_staff_role"
+        returnTo={returnTo}
+        selectedUser={selectedUser}
+      >
+        <SelectField disabled={!formsEnabled} label="Staff role" name="roleKey" options={staffRoleOptions} value="coach" />
+      </AdminAccessFormShell>
+
+      <AdminAccessFormShell
+        buttonLabel="Remove staff role"
+        confirmation="REMOVE STAFF ROLE"
+        disabled={!formsEnabled}
+        operation="remove_staff_role"
+        returnTo={returnTo}
+        selectedUser={selectedUser}
+      >
+        <SelectField disabled={!formsEnabled} label="Staff role" name="roleKey" options={staffRoleOptions} value={currentStaffRole} />
+      </AdminAccessFormShell>
+
+      <AdminAccessFormShell
+        buttonLabel="Assign coach portfolio"
+        disabled={!formsEnabled}
+        operation="set_coach_portfolio"
+        returnTo={returnTo}
+        selectedUser={selectedUser}
+      >
+        <SelectField disabled={!formsEnabled} label="Portfolio chapter" name="chapterId" options={chapterOptions(chapters)} value={defaultChapterId} />
+      </AdminAccessFormShell>
+
+      <AdminAccessFormShell
+        buttonLabel="Deactivate user"
+        confirmation="DEACTIVATE USER"
+        disabled={!formsEnabled}
+        operation="deactivate_user"
+        returnTo={returnTo}
+        selectedUser={selectedUser}
+      />
+    </div>
+  );
+}
+
+function AdminAccessFormShell({
+  buttonLabel,
+  children,
+  confirmation,
+  disabled,
+  operation,
+  returnTo,
+  selectedUser,
+}: {
+  buttonLabel: string;
+  children?: ReactNode;
+  confirmation?: string;
+  disabled: boolean;
+  operation: string;
+  returnTo: string;
+  selectedUser: ManagedUser;
+}) {
+  return (
+    <form action={submitAdminUserAccessAction} className="rounded border border-white/10 bg-[#0d1117] p-3">
+      <input type="hidden" name="operation" value={operation} />
+      <input type="hidden" name="targetUserId" value={selectedUser.id} />
+      <input type="hidden" name="returnTo" value={returnTo} />
+      <div className="grid gap-3">
+        {children}
+        {confirmation ? (
+          <label className="space-y-1 text-xs text-slate-400">
+            Confirmation
+            <input
+              className="w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
+              disabled={disabled}
+              name="confirmation"
+              placeholder={confirmation}
+            />
+          </label>
+        ) : null}
+        <label className="space-y-1 text-xs text-slate-400">
+          Audit reason
+          <textarea
+            className="min-h-20 w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
+            defaultValue={`MED-509 admin access rehearsal for ${selectedUser.email}.`}
+            disabled={disabled}
+            name="auditReason"
+          />
+        </label>
+        <button
+          className="rounded bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-slate-500"
+          disabled={disabled}
+          type="submit"
+        >
+          {buttonLabel}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SelectField({
+  disabled,
+  label,
+  name,
+  options,
+  value,
+}: {
+  disabled: boolean;
+  label: string;
+  name: string;
+  options: Array<{ label: string; value: string }>;
+  value: string;
+}) {
+  return (
+    <label className="space-y-1 text-xs text-slate-400">
+      {label}
+      <select
+        className="w-full rounded border border-white/10 bg-[#161b22] px-3 py-2 text-sm text-slate-100 disabled:cursor-not-allowed disabled:text-slate-500"
+        defaultValue={value}
+        disabled={disabled}
+        name={name}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function chapterOptions(chapters: ManagedChapter[]) {
+  return chapters.map((chapter) => ({
+    label: chapter.name,
+    value: chapter.id,
+  }));
+}
+
+function getAdminAccessResultCode(
+  value: string | undefined,
+): AdminAccessResultCode | null {
+  if (!value) {
+    return null;
+  }
+
+  return value in resultText ? (value as AdminAccessResultCode) : null;
+}
+
+function toRoleValue(role: string): string | null {
+  const normalized = role
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " ")
+    .replace(/\//g, " ")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (staffRoleOptions.some((option) => option.value === normalized)) {
+    return normalized;
+  }
+
+  if (normalized === "staff") {
+    return "admin";
+  }
+
+  return null;
 }
 
 function buildUserActionPreviews(
@@ -521,4 +908,8 @@ function getSingleParam(value: string | string[] | undefined): string {
   }
 
   return value ?? "";
+}
+
+function getChapterName(chapters: ManagedChapter[], chapterId: string) {
+  return chapters.find((chapter) => chapter.id === chapterId)?.name ?? chapterId;
 }
