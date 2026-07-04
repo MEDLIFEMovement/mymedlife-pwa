@@ -118,4 +118,54 @@ describe("home page", () => {
     expect(html).toContain("Chapter Leaderboard");
     expect(vi.mocked(navigationModule.redirect)).not.toHaveBeenCalled();
   });
+
+  it("lets student leaders keep the General Student App route without logging out", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const navigationModule = await import("next/navigation");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing student leader access to member home."),
+    );
+    vi.mocked(navigationModule.redirect).mockClear();
+
+    const { default: HomePage } = await import("@/app/app/page");
+    const html = renderToStaticMarkup(await HomePage({}));
+
+    expect(html).toContain("Available views");
+    expect(html).toContain("General Student App");
+    expect(html).toContain("Student Command Center");
+    expect(html).toContain('href="/leader?view=overview"');
+    expect(html).toContain("Upcoming Events");
+    expect(html).not.toContain("Preview Mode");
+    expect(vi.mocked(navigationModule.redirect)).not.toHaveBeenCalled();
+  });
+
+  it("lets staff preview the General Student App as read-only", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+    const navigationModule = await import("next/navigation");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing staff preview access to member home."),
+    );
+    vi.mocked(navigationModule.redirect).mockClear();
+
+    const { default: HomePage } = await import("@/app/app/page");
+    const html = renderToStaticMarkup(await HomePage({}));
+
+    expect(html).toContain("Preview Mode");
+    expect(html).toContain("read-only");
+    expect(html).toContain("General Student App");
+    expect(html).toContain("Student Command Center");
+    expect(html).toContain("Staff Command Center");
+    expect(html).toContain("Upcoming Events");
+    expect(vi.mocked(navigationModule.redirect)).not.toHaveBeenCalled();
+  });
 });

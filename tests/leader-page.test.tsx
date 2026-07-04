@@ -104,6 +104,28 @@ describe("leader page", () => {
     expect(html).not.toContain("Leader event tracking");
   });
 
+  it("lets staff preview the student leadership command center as read-only", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing staff leader-workspace preview."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(await LeaderPage({}));
+
+    expect(html).toContain("Preview Mode");
+    expect(html).toContain("read-only");
+    expect(html).toContain("Student Command Center");
+    expect(html).toContain("Leadership Center");
+    expect(html).toContain("General Student App");
+    expect(html).toContain("Staff Command Center");
+  });
+
   it("renders the events view inside the command center instead of the old parked launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");

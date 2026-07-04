@@ -67,9 +67,9 @@ hosted staging evidence before the goal can be called launch-ready.
 | --- | --- |
 | General member defaults to `/app` | `tests/workspace-access.test.ts`, `tests/home-page.test.tsx` |
 | Student leader defaults to `/leader` | `tests/workspace-access.test.ts`, `tests/leader-page.test.tsx` |
-| Student leader keeps `/app` access | `tests/workspace-access.test.ts` |
+| Student leader keeps `/app` access | `tests/workspace-access.test.ts`, `tests/home-page.test.tsx` |
 | Staff defaults to `/staff` | `tests/workspace-access.test.ts`, `tests/staff-page.test.tsx` |
-| Staff can preview `/app` and `/leader` read-only | `tests/workspace-access.test.ts`, `src/components/workspace-preview-banner.tsx` |
+| Staff can preview `/app` and `/leader` read-only | `tests/workspace-access.test.ts`, `tests/home-page.test.tsx`, `tests/leader-page.test.tsx`, `src/components/workspace-preview-banner.tsx` |
 | DS/Super Admin can access `/admin` | `tests/workspace-access.test.ts`, `tests/admin-management-pages.test.tsx` |
 | Profile menu includes views and logout | `tests/workspace-account-menu.test.tsx`, `src/components/workspace-account-menu.tsx` |
 | Logout redirects to `/login` and clears preview state | `tests/login-actions.test.ts`, `src/app/login/actions.ts` |
