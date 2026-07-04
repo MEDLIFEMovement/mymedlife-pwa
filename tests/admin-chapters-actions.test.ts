@@ -255,6 +255,62 @@ describe("admin chapter management server action", () => {
       auditLogId: "90000000-0000-4000-8000-000000000099",
     });
   });
+
+  it("supports the approved hosted staging chapter rehearsal flags with a signed-in staging session", async () => {
+    enableHostedStagingAdminChapterWrites();
+
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        {
+          operation: "archive_chapter",
+          chapter_id: "00000000-0000-4000-8000-000000000201",
+          membership_id: null,
+          coach_assignment_id: null,
+          audit_log_id: "90000000-0000-4000-8000-000000000109",
+          chapter_status: "archived",
+          active_member_count: 0,
+          active_event_count: 0,
+          historical_record_count: 30,
+        },
+      ],
+      error: null,
+    });
+    const fakeClient = buildRpcClient(rpc);
+
+    const result = await submitAdminChapterForLocalSupabase(
+      buildAdminChapterForm({
+        operation: "archive_chapter",
+        chapterId: "00000000-0000-4000-8000-000000000201",
+        confirmation: "ARCHIVE CHAPTER",
+      }),
+      {
+        createServerClient: async () => ({
+          client: fakeClient,
+          config: { reason: "Hosted staging Supabase client is available." },
+        }),
+        getSessionState: async () => signedInHostedStagingSession(),
+      },
+    );
+
+    expect(rpc).toHaveBeenCalledWith("admin_manage_chapter", {
+      operation_input: "archive_chapter",
+      chapter_uuid: "00000000-0000-4000-8000-000000000201",
+      name_input: null,
+      campus_input: null,
+      region_input: null,
+      status_input: null,
+      target_user_uuid: null,
+      role_key_input: null,
+      audit_reason_input: "MED-509 admin chapter test reason.",
+    });
+    expect(result).toMatchObject({
+      success: true,
+      code: "admin_chapter_changed",
+      chapterId: "00000000-0000-4000-8000-000000000201",
+      chapterStatus: "archived",
+      auditLogId: "90000000-0000-4000-8000-000000000109",
+    });
+  });
 });
 
 type AdminChapterActionDeps = NonNullable<
@@ -306,8 +362,35 @@ function signedInSession() {
   };
 }
 
+function signedInHostedStagingSession() {
+  return {
+    status: "signed_in" as const,
+    isLocalOnly: false,
+    isHostedStaging: true,
+    environment: "staging" as const,
+    message: "Signed into hosted staging.",
+    user: {
+      id: "00000000-0000-4000-8000-000000000006",
+      email: "super.admin@mymedlife.test",
+      displayName: "Sam Super",
+    },
+  };
+}
+
 function enableAdminChapterWrites() {
   vi.stubEnv("MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES", "true");
+  vi.stubEnv("MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE", "true");
+}
+
+function enableHostedStagingAdminChapterWrites() {
+  vi.stubEnv("MYMEDLIFE_AUTH_MODE", "staging_supabase");
+  vi.stubEnv(
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "https://rceupryepjgkdeqgxzrc.supabase.co",
+  );
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "staging-publishable-key");
+  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://staging.mymedlife.org");
+  vi.stubEnv("MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES", "true");
   vi.stubEnv("MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE", "true");
 }
 

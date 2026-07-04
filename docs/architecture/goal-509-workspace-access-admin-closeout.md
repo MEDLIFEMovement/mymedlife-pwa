@@ -87,6 +87,7 @@ hosted staging evidence before the goal can be called launch-ready.
 | Admin can create/edit/archive chapters | `src/app/admin/chapters/actions.ts`, `supabase/tests/database/rls_goal_509_chapters.test.sql` |
 | Admin can assign coaches and student leaders | `supabase/tests/database/rls_goal_509_chapters.test.sql`, `tests/admin-chapters-actions.test.ts` |
 | Chapter destructive safeguards exist | `src/services/admin-chapter-management-write.ts`, `tests/admin-chapters-actions.test.ts`, `supabase/tests/database/rls_goal_509_chapters.test.sql` |
+| Hosted staging admin user and chapter actions stay behind the approved staging flag posture | `tests/admin-users-actions.test.ts`, `tests/admin-chapters-actions.test.ts`, `tests/admin-management-write.test.ts`, `tests/supabase-auth-config.test.ts` |
 | Access changes immediately affect allowed/default workspace | `tests/admin-management.test.ts`, `supabase/tests/database/rls_goal_509.test.sql`, RPC readback fields `default_workspace` and `allowed_workspaces` |
 | Tests cover access, admin, role, chapter, and destructive safeguards | `tests/workspace-access.test.ts`, `tests/admin-management.test.ts`, `tests/admin-users-actions.test.ts`, `tests/admin-chapters-actions.test.ts`, `supabase/tests/database/rls_goal_509.test.sql`, `supabase/tests/database/rls_goal_509_chapters.test.sql` |
 | Admin access matrix shows audit posture fields | `tests/admin-management-pages.test.tsx`, `src/components/admin-access-management-panel.tsx` |
