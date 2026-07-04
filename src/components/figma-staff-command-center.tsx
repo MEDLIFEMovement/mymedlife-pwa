@@ -4,24 +4,33 @@ import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
+  Activity,
+  Award,
   BarChart3,
+  Bookmark,
   BookOpen,
   Calendar,
   ChevronDown,
   Download,
   Eye,
+  FileText,
   Film,
   GitBranch,
   Globe,
+  Info,
+  Link2,
   LayoutDashboard,
   Megaphone,
+  RotateCcw,
   Search,
   Send,
   Settings,
+  Shield,
   Star,
   Trophy,
   Users,
   X,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,11 +40,6 @@ type FigmaStaffCommandCenterProps = {
   commandCenter: StaffCommandCenter;
   requestedChapterId?: string | null;
 };
-
-type StaffCoreView = Extract<
-  StaffCommandCenter["selectedView"],
-  "chapters" | "events" | "leaderboard"
->;
 
 type FigmaStaffNavKey =
   | "chapters"
@@ -49,8 +53,7 @@ type FigmaStaffNavItem = {
   key: FigmaStaffNavKey;
   label: string;
   icon: LucideIcon;
-  href?: string;
-  reason?: string;
+  href: string;
 };
 
 type CampaignStatus = "on-track" | "behind" | "not-started" | "complete" | "paused";
@@ -99,35 +102,38 @@ const figmaStaffNavItems: FigmaStaffNavItem[] = [
     key: "campaigns",
     label: "Campaigns",
     icon: Megaphone,
-    reason: "Campaign operations are parked while the launch lane focuses on events and points.",
+    href: "/staff?view=campaigns",
   },
   {
     key: "proof_ugc",
     label: "Proof / UGC",
     icon: Film,
-    reason: "UGC review stays blocked until embed, upload, and consent security are approved.",
+    href: "/staff?view=proof_ugc",
   },
   {
     key: "best_practices",
     label: "Best Practices",
     icon: BookOpen,
-    reason: "Best-practice publishing is parked until the event and leaderboard loop is live.",
+    href: "/staff?view=best_practices",
   },
   {
     key: "sops",
     label: "Campaign SOPs",
     icon: GitBranch,
-    reason: "SOP Builder is not a production staff destination during this launch lane.",
+    href: "/staff?view=sops",
   },
   {
     key: "admin",
     label: "Admin",
     icon: Settings,
-    reason: "Admin tools live in the protected /admin backend for authorized users only.",
+    href: "/staff?view=admin",
   },
 ];
 
-const staffScreenCopy: Record<StaffCoreView, { title: string; summary: string }> = {
+const staffScreenCopy: Record<
+  StaffCommandCenter["selectedView"],
+  { title: string; summary: string }
+> = {
   chapters: {
     title: "Portfolio Overview",
     summary: "Rush Month active · Last updated 2 min ago",
@@ -140,7 +146,121 @@ const staffScreenCopy: Record<StaffCoreView, { title: string; summary: string }>
     title: "Organization Leaderboard",
     summary: "chapter standings · attendance points · lead scoring signal",
   },
+  campaigns: {
+    title: "Campaign Operations",
+    summary: "Rush Month · chapter events · intervention queue",
+  },
+  proof_ugc: {
+    title: "Proof / UGC Review Queue",
+    summary: "story links · consent gates · review-only publishing posture",
+  },
+  feed_studio: {
+    title: "Feed Studio",
+    summary: "Figma page missing · implementation blocked",
+  },
+  feed_analytics: {
+    title: "Feed Analytics",
+    summary: "Figma page missing · implementation blocked",
+  },
+  hubspot: {
+    title: "HubSpot Intelligence",
+    summary: "Figma page missing · implementation blocked",
+  },
+  best_practices: {
+    title: "Best Practices Library",
+    summary: "verified playbooks · chapter recommendations · safe sharing disabled",
+  },
+  sops: {
+    title: "Campaign SOP Builder",
+    summary: "workflow configuration · read-only staging preview",
+  },
+  admin: {
+    title: "System Health",
+    summary: "integration posture · automation outbox · audit log",
+  },
 };
+
+const staffCampaignNames = [
+  "Rush Month",
+  "SLT Promotion",
+  "Moving Mountains",
+  "Chapter Events",
+  "Leadership Transition",
+  "Chapter Organization and Planning",
+  "Social Media",
+];
+
+const proofUgcItems = [
+  {
+    id: "ugc-ucla-rush-reel",
+    title: "Rush Month kickoff reel",
+    platform: "Instagram",
+    chapter: "UCLA MEDLIFE",
+    campaign: "Rush Month",
+    visibility: "pending",
+    consent: "Consent pending",
+    summary: "Student-led recap showing event turnout and attendee testimonials.",
+  },
+  {
+    id: "ugc-bc-tabling",
+    title: "Tabling best-practice clip",
+    platform: "TikTok",
+    chapter: "Boston College MEDLIFE",
+    campaign: "Chapter Events",
+    visibility: "chapter",
+    consent: "Consent cleared",
+    summary: "Short clip showing QR check-in and points leaderboard callout.",
+  },
+  {
+    id: "ugc-yale-info-night",
+    title: "Info Night photo set",
+    platform: "Google Drive",
+    chapter: "Yale MEDLIFE",
+    campaign: "Rush Month",
+    visibility: "rejected",
+    consent: "Needs replacement release",
+    summary: "Private photos cannot be reused until consent is corrected.",
+  },
+] as const;
+
+const bestPracticeCards = [
+  {
+    id: "bp-qr-checkin",
+    type: "Event Ops",
+    title: "QR check-in at the entrance",
+    chapter: "UCLA MEDLIFE",
+    country: "USA",
+    campaign: "Rush Month",
+    engagementScore: 94,
+    why: "Leaders reminded students to RSVP before the event and scan at the door, which made attendance and points clean.",
+    kpiResult: "+38% RSVP-to-attendance conversion",
+    recommended: ["Boston College", "Yale", "McGill"],
+  },
+  {
+    id: "bp-leaderboard-moment",
+    type: "Points",
+    title: "Show rank movement during announcements",
+    chapter: "Boston College MEDLIFE",
+    country: "USA",
+    campaign: "Chapter Events",
+    engagementScore: 88,
+    why: "The leaderboard became a quick reason to complete follow-up tasks before leaving the event.",
+    kpiResult: "+420 points in one event week",
+    recommended: ["UCLA", "PUCP Lima", "Toronto"],
+  },
+  {
+    id: "bp-luma-copy",
+    type: "Luma",
+    title: "Use one clear Luma event title pattern",
+    chapter: "McGill MEDLIFE",
+    country: "Canada",
+    campaign: "Social Media",
+    engagementScore: 81,
+    why: "Consistent naming helped staff reconcile imported events and chapter-level standings.",
+    kpiResult: "0 duplicate event imports",
+    recommended: ["All pilot chapters"],
+  },
+] as const;
 
 export function FigmaStaffCommandCenter({
   commandCenter,
@@ -151,8 +271,8 @@ export function FigmaStaffCommandCenter({
   const featuredEvent = commandCenter.launchLaneOrgReadback.featuredEventTitle
     ? commandCenter.launchLaneOrgReadback
     : null;
-  const selectedCoreView = getSelectedCoreView(commandCenter.selectedView);
-  const screenCopy = staffScreenCopy[selectedCoreView];
+  const selectedView = commandCenter.selectedView;
+  const screenCopy = staffScreenCopy[selectedView];
 
   return (
     <main
@@ -181,38 +301,27 @@ export function FigmaStaffCommandCenter({
             aria-label="Staff workspace menu"
             className="flex flex-1 items-center gap-0.5 overflow-x-auto"
           >
-            {figmaStaffNavItems.map(({ key, label, href, icon: Icon, reason }) => {
-              const active = selectedCoreView === "chapters" && key === "chapters";
+            {figmaStaffNavItems.map(({ key, label, href, icon: Icon }) => {
+              const active = selectedView === key;
               const className = [
                 "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
                 active
                   ? "bg-sidebar-accent text-white"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-white",
-                href ? "" : "cursor-not-allowed opacity-45 hover:bg-transparent hover:text-sidebar-foreground/70",
               ]
                 .filter(Boolean)
                 .join(" ");
 
-              if (href) {
-                return (
-                  <Link key={key} href={href} className={className}>
-                    <Icon className="h-3.5 w-3.5" />
-                    {label}
-                  </Link>
-                );
-              }
-
               return (
-                <button
+                <Link
                   key={key}
-                  type="button"
-                  aria-disabled="true"
-                  title={reason}
+                  href={href}
                   className={className}
+                  aria-current={active ? "page" : undefined}
                 >
                   <Icon className="h-3.5 w-3.5" />
                   {label}
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -235,7 +344,7 @@ export function FigmaStaffCommandCenter({
         <div>
           <h1 className="text-base font-bold text-foreground">{screenCopy.title}</h1>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {selectedCoreView === "chapters" ? `${chapters.length} chapters · ` : ""}
+            {selectedView === "chapters" ? `${chapters.length} chapters · ` : ""}
             {screenCopy.summary}
           </p>
         </div>
@@ -244,18 +353,30 @@ export function FigmaStaffCommandCenter({
 
       <section className="flex flex-1 flex-col overflow-auto">
         <div className="mx-auto w-full max-w-[1600px] px-6 py-5">
-          {selectedCoreView === "chapters" ? (
+          {selectedView === "chapters" ? (
             <PortfolioOverviewContent
               chapters={chapters}
               featuredEvent={featuredEvent}
               initialSelectedChapterId={commandCenter.selectedChapterId ?? requestedChapterId}
             />
           ) : null}
-          {selectedCoreView === "events" ? (
+          {selectedView === "events" ? (
             <StaffEventsContent commandCenter={commandCenter} totals={totals} />
           ) : null}
-          {selectedCoreView === "leaderboard" ? (
+          {selectedView === "leaderboard" ? (
             <StaffLeaderboardContent commandCenter={commandCenter} totals={totals} />
+          ) : null}
+          {selectedView === "campaigns" ? <StaffCampaignsContent chapters={chapters} /> : null}
+          {selectedView === "proof_ugc" ? <StaffProofUgcContent /> : null}
+          {selectedView === "best_practices" ? <StaffBestPracticesContent /> : null}
+          {selectedView === "sops" ? <StaffSopsContent /> : null}
+          {selectedView === "admin" ? (
+            <StaffAdminFigmaContent commandCenter={commandCenter} />
+          ) : null}
+          {selectedView === "feed_studio" ||
+          selectedView === "feed_analytics" ||
+          selectedView === "hubspot" ? (
+            <FigmaMissingRouteContent view={selectedView} />
           ) : null}
         </div>
       </section>
@@ -1131,6 +1252,695 @@ function StaffLeaderboardContent({
   );
 }
 
+function StaffCampaignsContent({ chapters }: { chapters: FigmaChapter[] }) {
+  const [activeCampaign, setActiveCampaign] = useState("Rush Month");
+  const [regionFilter, setRegionFilter] = useState("all");
+  const [coachFilter, setCoachFilter] = useState("all");
+
+  const campaignChapters =
+    activeCampaign === "Rush Month" ||
+    activeCampaign === "Social Media" ||
+    activeCampaign === "Chapter Events"
+      ? chapters
+      : chapters.filter((chapter) => chapter.campaign === activeCampaign);
+  const atRiskChapters = campaignChapters.filter(
+    (chapter) => chapter.eventsThisMonth === 0 || chapter.attendance < 10,
+  );
+  const regions = [
+    "all",
+    ...Array.from(new Set(campaignChapters.map((chapter) => chapter.medlifeRegion))).sort(),
+  ];
+  const coaches = [
+    "all",
+    ...Array.from(new Set(campaignChapters.map((chapter) => chapter.coach))).sort(),
+  ];
+  const filtered = campaignChapters.filter((chapter) => {
+    if (regionFilter !== "all" && chapter.medlifeRegion !== regionFilter) {
+      return false;
+    }
+
+    if (coachFilter !== "all" && chapter.coach !== coachFilter) {
+      return false;
+    }
+
+    return true;
+  });
+  const suggestions = [
+    "Schedule a tabling or info event within the next 7 days",
+    "Contact chapter leaders directly by their approved staff channel",
+    "Review the chapter event planning checklist in myMEDLIFE",
+    "Book a 15-minute coach check-in call to unblock the chapter",
+    "Share a verified best-practice post from a high-performing chapter",
+    "Check if an SOP step is blocking event creation or approval",
+  ];
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap gap-2">
+        {staffCampaignNames.map((campaign) => (
+          <button
+            key={campaign}
+            type="button"
+            onClick={() => {
+              setActiveCampaign(campaign);
+              setRegionFilter("all");
+              setCoachFilter("all");
+            }}
+            className={[
+              "rounded-lg px-4 py-2 text-sm font-semibold transition-all",
+              activeCampaign === campaign
+                ? "bg-primary text-white shadow-sm"
+                : "border border-border bg-white text-muted-foreground hover:border-primary/40 hover:text-foreground",
+            ].join(" ")}
+          >
+            {campaign}
+          </button>
+        ))}
+      </div>
+
+      {atRiskChapters.length > 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-amber-800">
+                {atRiskChapters.length} chapter{atRiskChapters.length === 1 ? "" : "s"} at risk
+              </div>
+              <div className="mt-0.5 text-xs text-amber-700">
+                No events in the last month or attendance below 10.
+              </div>
+              <div className="mt-1 truncate text-xs text-amber-700">
+                {atRiskChapters.map((chapter) => chapter.name).join(", ")}
+              </div>
+            </div>
+            <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-amber-600">
+              <Info className="h-3 w-3" />
+              Review suggestions
+            </span>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_0.9fr]">
+        <div className="rounded-xl border border-border bg-white p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Megaphone className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">Suggested Actions for At-Risk Chapters</h2>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {suggestions.map((suggestion, index) => (
+              <div key={suggestion} className="rounded-lg bg-muted/50 p-3 text-xs text-foreground">
+                <span className="mr-2 font-mono font-bold text-primary">0{index + 1}</span>
+                {suggestion}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-white p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">Campaign Filters</h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <LabeledSelect
+              label="Region"
+              value={regionFilter}
+              onChange={setRegionFilter}
+              options={regions}
+              allLabel="All Regions"
+            />
+            <LabeledSelect
+              label="Coach"
+              value={coachFilter}
+              onChange={setCoachFilter}
+              options={coaches}
+              allLabel="All Coaches"
+            />
+          </div>
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+            This screen is read-only in staging. Event creation and outbound campaign nudges remain
+            behind the approved Luma/write gates.
+          </p>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-border bg-white">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="text-sm font-semibold text-foreground">{activeCampaign} chapters</div>
+          <span className="text-[10px] text-muted-foreground">
+            {filtered.length} visible · Luma, RSVP, attendance, points
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border bg-muted/40">
+                {["Chapter", "Coach", "Events/Mo", "RSVPs", "Attended", "Points/Yr", "Status"].map(
+                  (header) => (
+                    <th
+                      key={header}
+                      className="whitespace-nowrap px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                    >
+                      {header}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((chapter) => (
+                <tr key={chapter.id} className="border-b border-border last:border-0 hover:bg-secondary/40">
+                  <td className="px-3 py-2.5">
+                    <div className="font-semibold text-foreground">{chapter.name}</div>
+                    <div className="text-[10px] text-muted-foreground">{chapter.medlifeRegion}</div>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{chapter.coach}</td>
+                  <td className="px-3 py-2.5 font-mono text-foreground">
+                    {chapter.eventsThisMonth}
+                  </td>
+                  <td className="px-3 py-2.5 font-mono text-foreground">{chapter.rsvps}</td>
+                  <td className="px-3 py-2.5 font-mono text-foreground">{chapter.attendance}</td>
+                  <td className="px-3 py-2.5 font-mono font-bold text-primary">
+                    {chapter.totalPointsYear.toLocaleString()}
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <CampaignBadge status={chapter.campaignStatus} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StaffProofUgcContent() {
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [platformFilter, setPlatformFilter] = useState("all");
+  const filtered = proofUgcItems.filter((item) => {
+    if (statusFilter !== "all" && item.visibility !== statusFilter) {
+      return false;
+    }
+
+    if (platformFilter !== "all" && item.platform !== platformFilter) {
+      return false;
+    }
+
+    return true;
+  });
+  const platforms = ["all", ...Array.from(new Set(proofUgcItems.map((item) => item.platform)))];
+  const pendingCount = proofUgcItems.filter((item) => item.visibility === "pending").length;
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
+      <div className="flex min-w-0 flex-col gap-4">
+        <div className="rounded-xl border border-border bg-white p-4">
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <Link2 className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-foreground">Submit a story link</span>
+            <span className="text-xs text-muted-foreground">
+              paste from LinkedIn, Instagram, Facebook, Loom, YouTube, TikTok
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <input
+              aria-label="Story link review input"
+              disabled
+              placeholder="https://www.instagram.com/p/..."
+              className="flex-1 rounded-lg border border-border bg-muted/60 px-3 py-2 text-sm text-muted-foreground outline-none"
+            />
+            <button
+              type="button"
+              disabled
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white opacity-45"
+            >
+              <Send className="h-3.5 w-3.5" />
+              Review only
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Link fetching, uploads, embeds, and publishing are disabled until consent and security
+            gates are approved.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <SegmentedFilter
+            label="Status"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { key: "all", label: `All (${proofUgcItems.length})` },
+              { key: "pending", label: `Pending (${pendingCount})` },
+              { key: "chapter", label: "Approved" },
+              { key: "rejected", label: "Rejected" },
+            ]}
+          />
+          <LabeledSelect
+            label="Platform"
+            value={platformFilter}
+            onChange={setPlatformFilter}
+            options={platforms}
+            allLabel="All Platforms"
+          />
+        </div>
+
+        <div className="grid gap-3">
+          {filtered.map((item) => (
+            <article key={item.id} className="rounded-xl border border-border bg-white p-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Film className="h-4 w-4 text-primary" />
+                    <h2 className="font-semibold text-foreground">{item.title}</h2>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {item.chapter} · {item.campaign} · {item.platform}
+                  </p>
+                </div>
+                <ProofStatusPill status={item.visibility} />
+              </div>
+              <p className="text-sm leading-6 text-muted-foreground">{item.summary}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="rounded bg-secondary px-2 py-1 text-[10px] font-semibold text-primary">
+                  {item.consent}
+                </span>
+                <span className="rounded bg-muted px-2 py-1 text-[10px] font-semibold text-muted-foreground">
+                  No external publish
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <aside className="space-y-4">
+        <div className="rounded-xl border border-border bg-white p-4">
+          <div className="mb-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Queue Summary
+          </div>
+          {[
+            { label: "Pending review", value: pendingCount, color: "text-amber-600" },
+            {
+              label: "Approved",
+              value: proofUgcItems.filter((item) => item.visibility === "chapter").length,
+              color: "text-emerald-600",
+            },
+            {
+              label: "Rejected",
+              value: proofUgcItems.filter((item) => item.visibility === "rejected").length,
+              color: "text-red-500",
+            },
+            {
+              label: "Consent pending",
+              value: proofUgcItems.filter((item) => item.consent.includes("pending")).length,
+              color: "text-amber-600",
+            },
+          ].map((row) => (
+            <div key={row.label} className="flex items-center justify-between py-1.5">
+              <span className="text-xs text-muted-foreground">{row.label}</span>
+              <span className={`font-mono text-sm font-bold ${row.color}`}>{row.value}</span>
+            </div>
+          ))}
+        </div>
+        <StaffInfoCard
+          icon={Shield}
+          title="Consent & Visibility"
+          body="Every proof item stays private until consent, moderation, and destination rules are explicitly approved."
+        />
+      </aside>
+    </div>
+  );
+}
+
+function StaffBestPracticesContent() {
+  const [campaignFilter, setCampaignFilter] = useState("all");
+  const [regionFilter, setRegionFilter] = useState("all");
+  const regions = ["all", "USA", "Canada", "Peru", "International"];
+  const campaigns = ["all", ...Array.from(new Set(bestPracticeCards.map((card) => card.campaign)))];
+  const filtered = bestPracticeCards.filter((card) => {
+    if (campaignFilter !== "all" && card.campaign !== campaignFilter) {
+      return false;
+    }
+
+    if (regionFilter !== "all" && card.country !== regionFilter) {
+      return false;
+    }
+
+    return true;
+  });
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-white p-3">
+        <LabeledSelect
+          label="Campaign"
+          value={campaignFilter}
+          onChange={setCampaignFilter}
+          options={campaigns}
+          allLabel="All Campaigns"
+        />
+        <LabeledSelect
+          label="Region"
+          value={regionFilter}
+          onChange={setRegionFilter}
+          options={regions}
+          allLabel="All Regions"
+        />
+        <span className="ml-auto text-sm text-muted-foreground">
+          {filtered.length} best practices
+        </span>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {filtered.map((card) => (
+          <article
+            key={card.id}
+            className="overflow-hidden rounded-lg border border-border bg-white transition-shadow hover:shadow-md"
+          >
+            <div className="flex items-start justify-between border-b border-border p-4">
+              <div className="min-w-0 flex-1">
+                <div className="mb-1 flex items-center gap-2">
+                  <Award className="h-4 w-4 shrink-0 text-accent" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-accent">
+                    {card.type}
+                  </span>
+                </div>
+                <h2 className="font-bold leading-tight text-foreground">{card.title}</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {card.chapter} · {card.country} · {card.campaign}
+                </p>
+              </div>
+              <div className="ml-3 shrink-0 text-right">
+                <div className="text-xs text-muted-foreground">Eng. Score</div>
+                <div className="font-mono text-2xl font-bold text-primary">
+                  {card.engagementScore}
+                </div>
+              </div>
+            </div>
+            <div className="space-y-3 p-4">
+              <div>
+                <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Why it worked
+                </div>
+                <p className="text-xs leading-relaxed text-foreground">{card.why}</p>
+              </div>
+              <div className="rounded border border-emerald-100 bg-emerald-50 px-3 py-2">
+                <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+                  KPI Result
+                </div>
+                <div className="text-xs font-bold text-emerald-800">{card.kpiResult}</div>
+              </div>
+              <div>
+                <div className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Recommended for
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {card.recommended.map((chapter) => (
+                    <span
+                      key={chapter}
+                      className="rounded bg-secondary px-2 py-0.5 text-[10px] font-medium text-primary"
+                    >
+                      {chapter}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 px-4 pb-4">
+              <button
+                type="button"
+                disabled
+                className="flex flex-1 items-center justify-center gap-1 rounded bg-primary py-1.5 text-xs font-semibold text-white opacity-45"
+              >
+                <Send className="h-3 w-3" />
+                Share to Feed
+              </button>
+              <button
+                type="button"
+                disabled
+                className="flex flex-1 items-center justify-center gap-1 rounded bg-muted py-1.5 text-xs font-semibold text-foreground opacity-70"
+              >
+                <Bookmark className="h-3 w-3" />
+                Save
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StaffSopsContent() {
+  const [activeTab, setActiveTab] = useState("steps");
+  const tabs = ["steps", "role-matrix", "completion", "points-kpi", "comms", "preview", "version"];
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[20rem_1fr]">
+      <aside className="space-y-3">
+        {["Rush Month", "SLT Promotion", "Chapter Events"].map((campaign, index) => (
+          <div
+            key={campaign}
+            className={[
+              "rounded-xl border bg-white p-4",
+              index === 0 ? "border-primary/30 ring-2 ring-primary/10" : "border-border",
+            ].join(" ")}
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-foreground">{campaign}</h2>
+              <span className="rounded bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                draft
+              </span>
+            </div>
+            <p className="text-xs leading-5 text-muted-foreground">
+              Structured SOP template with phases, role actions, evidence, points, and KPI rules.
+            </p>
+          </div>
+        ))}
+      </aside>
+
+      <section className="rounded-xl border border-border bg-white">
+        <div className="border-b border-border p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <GitBranch className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">Campaign SOP Builder</h2>
+            <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+              publishing disabled
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={[
+                  "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
+                  activeTab === tab
+                    ? "bg-primary text-white"
+                    : "bg-muted text-muted-foreground hover:text-foreground",
+                ].join(" ")}
+              >
+                {formatSopTabLabel(tab)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-4 p-4 lg:grid-cols-3">
+          {getSopTabRows(activeTab).map((row) => (
+            <div key={row.title} className="rounded-lg border border-border bg-muted/30 p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold text-foreground">{row.title}</h3>
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">{row.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function StaffAdminFigmaContent({ commandCenter }: { commandCenter: StaffCommandCenter }) {
+  const integrations = [
+    { name: "HubSpot CRM", status: "off", lastSync: "not enabled" },
+    { name: "Luma Events", status: "read-only", lastSync: "staging readback" },
+    { name: "Data Hub / Warehouse", status: "off", lastSync: "not enabled" },
+    { name: "Power BI Reports", status: "off", lastSync: "not enabled" },
+    { name: "n8n Automation", status: "off", lastSync: "not enabled" },
+    { name: "AI Summary Engine", status: "mock", lastSync: "local only" },
+  ];
+  const outbox = [
+    {
+      event: "luma.calendar.read",
+      source: "Luma",
+      destination: "myMEDLIFE",
+      status: "read-only",
+      retries: 0,
+      error: "none",
+    },
+    {
+      event: "rsvp.confirmed",
+      source: "myMEDLIFE",
+      destination: "Luma",
+      status: "blocked",
+      retries: 0,
+      error: "write gate required",
+    },
+    {
+      event: "points.materialized",
+      source: "myMEDLIFE",
+      destination: "warehouse",
+      status: "blocked",
+      retries: 0,
+      error: "export disabled",
+    },
+  ];
+  const auditRows = [
+    { actor: "system", role: "System", action: "Rendered staff admin screen", object: "System Health" },
+    { actor: "reviewer", role: "Staff", action: "Inspected Luma posture", object: "Event loop" },
+    { actor: "system", role: "System", action: "Blocked external send", object: "Automation Outbox" },
+  ];
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+        <span className="font-semibold">Staging safety posture:</span> {commandCenter.safetyNote} No
+        production sends, provider writes, or automation runs are enabled from this screen.
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[22rem_1fr]">
+        <div className="overflow-hidden rounded-lg border border-border bg-white">
+          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+            <Activity className="h-3.5 w-3.5 text-primary" />
+            <span className="text-sm font-semibold text-foreground">Integration Status</span>
+          </div>
+          <div className="px-4 py-2">
+            {integrations.map((integration) => (
+              <div
+                key={integration.name}
+                className="flex items-center justify-between border-b border-border py-2 last:border-0"
+              >
+                <div>
+                  <div className="text-xs font-semibold text-foreground">{integration.name}</div>
+                  <div className="text-[10px] text-muted-foreground">{integration.lastSync}</div>
+                </div>
+                <SafeStatusPill status={integration.status} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-lg border border-border bg-white">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <div className="flex items-center gap-2">
+              <Zap className="h-3.5 w-3.5 text-primary" />
+              <span className="text-sm font-semibold text-foreground">Automation Outbox</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                0 sends
+              </span>
+              <button
+                type="button"
+                disabled
+                className="flex items-center gap-1 text-xs font-semibold text-muted-foreground opacity-60"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Retry disabled
+              </button>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border bg-muted/40">
+                  {["Event", "Source", "Destination", "Status", "Retries", "Error"].map((header) => (
+                    <th
+                      key={header}
+                      className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                    >
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {outbox.map((row) => (
+                  <tr key={row.event} className="border-b border-border last:border-0">
+                    <td className="px-3 py-2 font-mono font-medium text-foreground">{row.event}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{row.source}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{row.destination}</td>
+                    <td className="px-3 py-2">
+                      <SafeStatusPill status={row.status} />
+                    </td>
+                    <td className="px-3 py-2 text-center font-mono">{row.retries}</td>
+                    <td className="px-3 py-2 text-[10px] text-muted-foreground">{row.error}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-border bg-white">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+          <Shield className="h-3.5 w-3.5 text-primary" />
+          <span className="text-sm font-semibold text-foreground">Audit Log</span>
+        </div>
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-border bg-muted/40">
+              {["Actor", "Role", "Action", "Object", "Timestamp"].map((header) => (
+                <th
+                  key={header}
+                  className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {auditRows.map((row, index) => (
+              <tr key={`${row.action}-${index}`} className="border-b border-border last:border-0">
+                <td className="px-3 py-2.5 font-mono text-[11px] text-foreground">{row.actor}</td>
+                <td className="px-3 py-2.5 text-muted-foreground">{row.role}</td>
+                <td className="px-3 py-2.5 text-foreground">{row.action}</td>
+                <td className="px-3 py-2.5 text-muted-foreground">{row.object}</td>
+                <td className="px-3 py-2.5 font-mono text-[10px] text-muted-foreground">
+                  Jul 4 2026
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function FigmaMissingRouteContent({ view }: { view: StaffCommandCenter["selectedView"] }) {
+  return (
+    <div className="rounded-xl border border-dashed border-border bg-white p-8 text-center">
+      <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+        <FileText className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <h2 className="text-base font-bold text-foreground">{staffScreenCopy[view].title}</h2>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+        Figma page missing - implementation blocked. This route is intentionally not parked into
+        another staff screen so reviewers can see the gap directly.
+      </p>
+    </div>
+  );
+}
+
 function StaffInfoCard({
   icon: Icon,
   title,
@@ -1231,12 +2041,209 @@ function NpsScore({ score }: { score: number | null }) {
   );
 }
 
-function getSelectedCoreView(view: StaffCommandCenter["selectedView"]): StaffCoreView {
-  if (view === "events" || view === "leaderboard") {
-    return view;
-  }
+function LabeledSelect({
+  label,
+  value,
+  onChange,
+  options,
+  allLabel,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+  allLabel: string;
+}) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      <span className="relative">
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="w-full cursor-pointer appearance-none rounded-lg bg-muted/60 px-3 py-2 pr-7 text-sm font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20"
+        >
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option === "all" ? allLabel : option}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+      </span>
+    </label>
+  );
+}
 
-  return "chapters";
+function SegmentedFilter({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { key: string; label: string }[];
+}) {
+  return (
+    <div className="flex items-center gap-1 rounded-lg border border-border bg-white p-1">
+      <span className="sr-only">{label}</span>
+      {options.map((option) => (
+        <button
+          key={option.key}
+          type="button"
+          onClick={() => onChange(option.key)}
+          className={[
+            "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+            value === option.key
+              ? "bg-primary text-white"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground",
+          ].join(" ")}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ProofStatusPill({ status }: { status: (typeof proofUgcItems)[number]["visibility"] }) {
+  const className = {
+    pending: "bg-amber-100 text-amber-700",
+    chapter: "bg-emerald-100 text-emerald-700",
+    rejected: "bg-red-100 text-red-700",
+  }[status];
+
+  const label = {
+    pending: "Pending",
+    chapter: "Approved",
+    rejected: "Rejected",
+  }[status];
+
+  return (
+    <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${className}`}>
+      {label}
+    </span>
+  );
+}
+
+function SafeStatusPill({ status }: { status: string }) {
+  const className =
+    status === "read-only"
+      ? "bg-sky-100 text-sky-700"
+      : status === "mock"
+        ? "bg-violet-100 text-violet-700"
+        : status === "blocked" || status === "off"
+          ? "bg-slate-100 text-slate-700"
+          : "bg-amber-100 text-amber-700";
+
+  return (
+    <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${className}`}>
+      {status}
+    </span>
+  );
+}
+
+function formatSopTabLabel(tab: string) {
+  const labels: Record<string, string> = {
+    steps: "Steps",
+    "role-matrix": "Role Matrix",
+    completion: "Completion",
+    "points-kpi": "Points / KPI",
+    comms: "Comms",
+    preview: "Preview",
+    version: "Version",
+  };
+
+  return labels[tab] ?? tab;
+}
+
+function getSopTabRows(tab: string) {
+  const rows: Record<string, { title: string; body: string }[]> = {
+    steps: [
+      {
+        title: "Create Luma event",
+        body: "Chapter leaders draft the event, confirm the Luma calendar, and keep writes disabled until approved.",
+      },
+      {
+        title: "Drive RSVP conversion",
+        body: "Members discover the event, RSVP, and see the point impact before attendance is confirmed.",
+      },
+      {
+        title: "Confirm attendance",
+        body: "Leaders verify who attended before points move into the chapter and organization leaderboard.",
+      },
+    ],
+    "role-matrix": [
+      {
+        title: "Student member",
+        body: "Can discover events, RSVP, view status, and see points impact.",
+      },
+      {
+        title: "Chapter leader",
+        body: "Can inspect RSVPs, confirm attendance, and review proof after approval gates open.",
+      },
+      {
+        title: "Staff coach",
+        body: "Can monitor at-risk chapters and coach the event/points loop.",
+      },
+    ],
+    completion: [
+      {
+        title: "Attendance-backed completion",
+        body: "Completion requires Luma event identity, RSVP posture, attendance confirmation, and audit readback.",
+      },
+      {
+        title: "Blocked external sends",
+        body: "No HubSpot, SMS, email, n8n, warehouse, or AI action can fire from this draft template.",
+      },
+    ],
+    "points-kpi": [
+      {
+        title: "Event attendance points",
+        body: "Points are awarded only after attendance is confirmed and the audit row exists.",
+      },
+      {
+        title: "Lead scoring",
+        body: "Chapter and organization standings are visible as the early lead-scoring signal.",
+      },
+    ],
+    comms: [
+      {
+        title: "Reminder triggers",
+        body: "Reminder copy is defined here but disabled until explicit send approval.",
+      },
+      {
+        title: "Coach escalation",
+        body: "Escalation rules remain review-only while the pilot focuses on event data quality.",
+      },
+    ],
+    preview: [
+      {
+        title: "Member preview",
+        body: "Shows how the workflow appears in the student mobile app without allowing submissions.",
+      },
+      {
+        title: "Leader preview",
+        body: "Shows the chapter command-center view of RSVPs, attendance, and points.",
+      },
+    ],
+    version: [
+      {
+        title: "Draft",
+        body: "Current Rush Month workflow version is a draft and cannot publish from staging.",
+      },
+      {
+        title: "Review",
+        body: "Human approval is required before any workflow becomes a live production configuration.",
+      },
+    ],
+  };
+
+  return rows[tab] ?? rows.steps;
 }
 
 function getDashboardTotals(

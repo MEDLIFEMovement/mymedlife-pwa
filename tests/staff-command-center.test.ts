@@ -25,6 +25,14 @@ describe("staff command center", () => {
       "Chapters",
       "Events",
       "Leaderboard",
+      "Campaigns",
+      "Proof / UGC",
+      "Feed Studio",
+      "Feed Analytics",
+      "HubSpot",
+      "Best Practices",
+      "Campaign SOPs",
+      "Admin",
     ]);
   });
 

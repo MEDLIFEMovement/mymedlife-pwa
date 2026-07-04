@@ -135,7 +135,12 @@ describe("staff page", () => {
     expect(html).toContain(">Best Practices<");
     expect(html).toContain(">Campaign SOPs<");
     expect(html).toContain(">Admin<");
-    expect(html).toContain('aria-disabled="true"');
+    expect(html).toContain('href="/staff?view=campaigns"');
+    expect(html).toContain('href="/staff?view=proof_ugc"');
+    expect(html).toContain('href="/staff?view=best_practices"');
+    expect(html).toContain('href="/staff?view=sops"');
+    expect(html).toContain('href="/staff?view=admin"');
+    expect(html).not.toContain('aria-disabled="true"');
     expect(html).not.toContain('href="/admin/sop-library"');
     expect(html).not.toContain("404");
     expect(html).toContain("RSVPs");
@@ -247,7 +252,7 @@ describe("staff page", () => {
     expect(html).not.toContain('href="/coach?view=chapters');
   });
 
-  it("redirects campaign operations into the staff events lane during launch mode", async () => {
+  it("renders campaign operations as its own Figma-derived staff screen", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -259,17 +264,23 @@ describe("staff page", () => {
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
-    await expect(
-      StaffPage({
+    const html = renderToStaticMarkup(
+      await StaffPage({
         searchParams: Promise.resolve({
           view: "campaigns",
           campaign: "rush-month",
         }),
       }),
-    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=events&campaign=rush-month");
+    );
+
+    expect(html).toContain("Campaign Operations");
+    expect(html).toContain("Suggested Actions for At-Risk Chapters");
+    expect(html).toContain("Rush Month chapters");
+    expect(html).toContain("Luma, RSVP, attendance, points");
+    expect(html).not.toContain("Portfolio Overview");
   });
 
-  it("redirects the proof queue into the staff leaderboard lane during launch mode", async () => {
+  it("renders the proof and UGC review queue as its own Figma-derived staff screen", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -281,16 +292,22 @@ describe("staff page", () => {
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
-    await expect(
-      StaffPage({
+    const html = renderToStaticMarkup(
+      await StaffPage({
         searchParams: Promise.resolve({
           view: "proof_ugc",
         }),
       }),
-    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=leaderboard");
+    );
+
+    expect(html).toContain("Proof / UGC Review Queue");
+    expect(html).toContain("Submit a story link");
+    expect(html).toContain("Consent &amp; Visibility");
+    expect(html).toContain("No external publish");
+    expect(html).not.toContain("Organization Leaderboard");
   });
 
-  it("cleans legacy launch-lane views back into the owned staff command-center route family", async () => {
+  it("renders best practices, SOPs, and admin as dedicated Figma-derived staff screens", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -298,19 +315,69 @@ describe("staff page", () => {
       getSignedInActor("general.staff@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing staff legacy-view cleanup."),
+      getMockReadOnlyAppData("Testing dedicated staff views."),
     );
 
     const { default: StaffPage } = await import("@/app/staff/page");
+    const bestPracticesHtml = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "best_practices" }),
+      }),
+    );
+    const sopsHtml = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "sops" }),
+      }),
+    );
+    const adminHtml = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "admin" }),
+      }),
+    );
 
-    await expect(
-      StaffPage({
+    expect(bestPracticesHtml).toContain("Best Practices Library");
+    expect(bestPracticesHtml).toContain("Why it worked");
+    expect(bestPracticesHtml).toContain("Share to Feed");
+    expect(bestPracticesHtml).not.toContain("Portfolio Overview");
+
+    expect(sopsHtml).toContain("Campaign SOP Builder");
+    expect(sopsHtml).toContain("Role Matrix");
+    expect(sopsHtml).toContain("Points / KPI");
+    expect(sopsHtml).toContain("publishing disabled");
+    expect(sopsHtml).not.toContain("Portfolio Overview");
+
+    expect(adminHtml).toContain("System Health");
+    expect(adminHtml).toContain("Integration Status");
+    expect(adminHtml).toContain("Automation Outbox");
+    expect(adminHtml).toContain("Audit Log");
+    expect(adminHtml).toContain("0 sends");
+    expect(adminHtml).not.toContain("Portfolio Overview");
+  });
+
+  it("shows an explicit Figma-missing state instead of parking unsupported staff views", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing staff unsupported-view cleanup."),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
         searchParams: Promise.resolve({
           view: "hubspot",
           campaign: "rush-month",
           source: "member_home",
         }),
       }),
-    ).rejects.toThrow("NEXT_REDIRECT:/staff?view=chapters&campaign=rush-month&source=member_home");
+    );
+
+    expect(html).toContain("HubSpot Intelligence");
+    expect(html).toContain("Figma page missing - implementation blocked");
+    expect(html).not.toContain("Portfolio Overview");
   });
 });

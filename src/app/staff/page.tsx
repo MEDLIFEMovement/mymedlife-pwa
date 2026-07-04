@@ -7,7 +7,6 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessStaffWorkspace } from "@/services/role-visibility";
 import { getStaffCommandCenter } from "@/services/staff-command-center";
-import { getStaffLaunchLaneCanonicalHref } from "@/services/staff-launch-lane";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("staff");
@@ -31,12 +30,6 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
 
   if (!canReadStaffWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
-  }
-
-  const launchLaneCanonicalHref = getStaffLaunchLaneCanonicalHref(search);
-
-  if (launchLaneCanonicalHref) {
-    redirect(launchLaneCanonicalHref);
   }
 
   const commandCenter = getStaffCommandCenter(actor, data, {
