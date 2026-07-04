@@ -35,23 +35,24 @@ below refer to archive-internal paths.
 | Staff Command Center / Best Practices | `/staff?view=best_practices` | `/staff?view=best_practices` | Figma-derived Best Practices Library page | `docs/figma-code/raw/staff-command-center/App.tsx`, `BestPracticesLibrary` | fixed in PR #170 | Real href renders filters, recommendation cards, and disabled share controls. |
 | Staff Command Center / Campaign SOPs | `/staff?view=sops` | `/staff?view=sops` | Figma-derived Campaign SOP Builder preview | `docs/figma-code/raw/staff-command-center/App.tsx`, `SOPLibraryScreen`, `SOPBuilderScreen` | fixed in PR #170 | Staff route renders SOP library/builder preview with publishing disabled; deeper `/admin/sop-library` route remains future work. |
 | Staff Command Center / Admin | `/staff?view=admin` | `/staff?view=admin` or `/admin` | Figma-derived System Health page in staff shell | `docs/figma-code/raw/staff-command-center/App.tsx`, `AdminRoleGate`, `AdminPanel`; login export has DS/Super Admin shells | fixed in PR #170 | Staff route renders integration posture, automation outbox, and audit log; `/admin` remains the protected backend. |
-| Admin backend | `/admin` | `/admin` | Generic local `AppShell` admin review backend | `docs/figma-code/raw/login/App.tsx`, `DSAdminApp`, `SuperAdminApp`; staff export `AdminPanel` | correct as backend, visual gap | It does not render Chapter, but should be clearly documented as admin/backend until a dedicated admin Figma port lands. |
+| Admin backend | `/admin` | `/admin` | Existing secure admin backend with explicit missing-Figma notice | Dedicated Admin/DS backend Figma export not present; staff export has `AdminPanel` preview | correct placeholder | Route does not render Chapter. It now states `Figma page missing - implementation blocked` until a dedicated admin Figma export lands. |
 | Chapter | `/chapter` | `/chapter` | Legacy chapter surface | No current dedicated route-level Figma export beyond leader/staff chapter screens | correct route, visual gap | Keep Chapter page only for Chapter route. Do not reuse it elsewhere. |
-| SLT Prep | `/slt-prep` | `/app/slt-prep` and/or `/slt-prep` | Legacy `AppShell` SLT Prep workspace | SLT Prep Figma export not present in local code package | missing Figma source | Show explicit missing-Figma placeholder if exact SLT Prep source is unavailable; do not reuse Chapter. |
-| SOP Builder | Not in route tree; staff nav has disabled Campaign SOPs | `/admin/sop-library` and `/admin/sop-builder/[campaignSlug]` or `/staff?view=sops` | Missing route / disabled nav | `docs/figma-code/raw/staff-command-center/App.tsx`, SOP imports | missing wiring | Add explicit route or staff view. Do not silently park into another screen. |
+| SLT Prep | `/app/slt-prep`, `/slt-prep` | `/app/slt-prep` and/or `/slt-prep` | Existing traveler readiness workflow with explicit missing-Figma notice | SLT Prep Figma export not present in local code package | correct placeholder | `/app/slt-prep` now renders the SLT Prep surface. It states `Figma page missing - implementation blocked` and does not reuse Chapter. |
+| SOP Builder | `/staff?view=sops` | `/staff?view=sops`; future `/admin/sop-library` and `/admin/sop-builder/[campaignSlug]` | Figma-derived Campaign SOP Builder preview in staff shell | `docs/figma-code/raw/staff-command-center/App.tsx`, SOP imports | fixed for visible staff nav | Staff route renders SOP library/builder preview with publishing disabled. Deeper admin SOP routes remain future work and are not visible nav targets in this pass. |
 
 ## Route Reuse Problems To Fix First
 
-1. `/admin` and `/slt-prep` still use generic/legacy shells instead of a fully
-   exported Figma page structure.
-2. Unsupported staff subviews without local Figma pages (`feed_studio`,
+1. Unsupported staff subviews without local Figma pages (`feed_studio`,
    `feed_analytics`, `hubspot`) now show explicit missing-Figma states instead
    of parking into Chapters; they still need real Figma source before full
    implementation.
+2. `/admin` and `/slt-prep` now show explicit missing-Figma notices while
+   retaining their safe backend/traveler workflows until exact Figma source is
+   available.
 
 ## Immediate Fix Order
 
-1. Admin backend and SLT Prep placeholders where exact Figma source is
-   unavailable.
-2. Deeper SOP Builder admin routes if staff preview is not enough for workflow
+1. Deeper SOP Builder admin routes if staff preview is not enough for workflow
    configuration.
+2. Replace the `/admin` and `/slt-prep` notices with exact Figma ports when
+   those source files are approved.
