@@ -5,6 +5,7 @@ import {
   type AdminChaptersSearchParams,
 } from "@/components/admin-chapters-management-panel";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
+import { getAdminManagementDirectory } from "@/services/admin-management-data";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -23,6 +24,7 @@ export default async function AdminChaptersPage({
 }: AdminChaptersPageProps) {
   const actor = await getLocalActorContext();
   const resolvedSearchParams = (await searchParams) ?? {};
+  const directory = await getAdminManagementDirectory();
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref("/admin/chapters"));
@@ -37,7 +39,9 @@ export default async function AdminChaptersPage({
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
       <AdminChaptersManagementPanel
         actor={actor}
+        chapters={directory.chapters}
         searchParams={resolvedSearchParams}
+        users={directory.users}
       />
     </>
   );

@@ -8,9 +8,9 @@ import {
   type AdminMutationFailure,
   type ManagedChapter,
   type ManagedChapterStatus,
+  type ManagedUser,
 } from "@/services/admin-management";
 import {
-  getManagedUserName,
   managedChapterFixtures,
   managedUserFixtures,
 } from "@/services/admin-management-fixtures";
@@ -26,7 +26,9 @@ export type AdminChaptersSearchParams = {
 
 type AdminChaptersManagementPanelProps = {
   actor: LocalActorContext;
+  chapters?: ManagedChapter[];
   searchParams?: AdminChaptersSearchParams;
+  users?: ManagedUser[];
 };
 
 type ChapterActionPreview = {
@@ -52,7 +54,9 @@ const statusOptions: Array<ManagedChapterStatus | "all"> = [
 
 export function AdminChaptersManagementPanel({
   actor,
+  chapters = managedChapterFixtures,
   searchParams = {},
+  users = managedUserFixtures,
 }: AdminChaptersManagementPanelProps) {
   const query = getSingleParam(searchParams.q);
   const region = getSingleParam(searchParams.region) || "all";
@@ -61,23 +65,24 @@ export function AdminChaptersManagementPanel({
   const status = statusOptions.includes(rawStatus as ManagedChapterStatus | "all")
     ? (rawStatus as ManagedChapterStatus | "all")
     : "all";
-  const filteredChapters = searchManagedChapters(managedChapterFixtures, {
+  const filteredChapters = searchManagedChapters(chapters, {
     query,
     region,
     coachOwnerId,
     status,
   });
   const selectedChapter =
-    managedChapterFixtures.find(
+    chapters.find(
       (chapter) => chapter.id === getSingleParam(searchParams.chapterId),
     ) ??
     filteredChapters[0] ??
+    chapters[0] ??
     managedChapterFixtures[0];
   const previews = buildChapterActionPreviews(actor, selectedChapter);
   const regions = Array.from(
-    new Set(managedChapterFixtures.map((chapter) => chapter.region)),
+    new Set(chapters.map((chapter) => chapter.region)),
   );
-  const coaches = managedUserFixtures.filter((user) =>
+  const coaches = users.filter((user) =>
     user.staffRoles.some((role) => role.toLowerCase().includes("coach")),
   );
 
@@ -107,12 +112,12 @@ export function AdminChaptersManagementPanel({
         </header>
 
         <section className="grid gap-3 md:grid-cols-4">
-          <SummaryCard label="Managed chapters" value={String(managedChapterFixtures.length)} />
+          <SummaryCard label="Managed chapters" value={String(chapters.length)} />
           <SummaryCard label="Filtered chapters" value={String(filteredChapters.length)} />
           <SummaryCard
             label="Active members"
             value={String(
-              managedChapterFixtures.reduce(
+              chapters.reduce(
                 (total, chapter) => total + chapter.activeMemberCount,
                 0,
               ),
@@ -121,7 +126,7 @@ export function AdminChaptersManagementPanel({
           <SummaryCard
             label="Historical records"
             value={String(
-              managedChapterFixtures.reduce(
+              chapters.reduce(
                 (total, chapter) => total + chapter.historicalRecordCount,
                 0,
               ),
@@ -221,16 +226,16 @@ export function AdminChaptersManagementPanel({
                         <StatusPill value={chapter.status} />
                       </td>
                       <td className="px-5 py-4 text-xs leading-5 text-slate-400">
-                        <div>Coach: {getManagedUserName(chapter.coachOwnerId)}</div>
+                        <div>Coach: {getUserName(users, chapter.coachOwnerId)}</div>
                         <div>
                           Staff:{" "}
-                          {chapter.staffOwnerIds.map(getManagedUserName).join(", ") ||
+                          {chapter.staffOwnerIds.map((id) => getUserName(users, id)).join(", ") ||
                             "Unassigned"}
                         </div>
                       </td>
                       <td className="px-5 py-4">
                         <ChipList
-                          values={chapter.studentLeaderIds.map(getManagedUserName)}
+                          values={chapter.studentLeaderIds.map((id) => getUserName(users, id))}
                           empty="No student leaders"
                         />
                       </td>
@@ -268,18 +273,18 @@ export function AdminChaptersManagementPanel({
               </p>
             </div>
             <dl className="mt-4 grid gap-3 text-sm">
-              <DetailRow label="Coach owner" value={getManagedUserName(selectedChapter.coachOwnerId)} />
+              <DetailRow label="Coach owner" value={getUserName(users, selectedChapter.coachOwnerId)} />
               <DetailRow
                 label="Staff owners"
                 value={
-                  selectedChapter.staffOwnerIds.map(getManagedUserName).join(", ") ||
+                  selectedChapter.staffOwnerIds.map((id) => getUserName(users, id)).join(", ") ||
                   "Unassigned"
                 }
               />
               <DetailRow
                 label="Student leaders"
                 value={
-                  selectedChapter.studentLeaderIds.map(getManagedUserName).join(", ") ||
+                  selectedChapter.studentLeaderIds.map((id) => getUserName(users, id)).join(", ") ||
                   "Unassigned"
                 }
               />
@@ -517,4 +522,12 @@ function getSingleParam(value: string | string[] | undefined): string {
   }
 
   return value ?? "";
+}
+
+function getUserName(users: ManagedUser[], userId: string | null | undefined): string {
+  if (!userId) {
+    return "Unassigned";
+  }
+
+  return users.find((user) => user.id === userId)?.name ?? userId;
 }

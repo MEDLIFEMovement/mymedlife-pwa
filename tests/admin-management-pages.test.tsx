@@ -55,6 +55,12 @@ describe("admin management pages", () => {
     expect(html).toContain("Deactivate user");
     expect(html).toContain("Delete user safeguard");
     expect(html).toContain("Audit record preview");
+    expect(html).toContain("Server-backed access changes");
+    expect(html).toContain("admin_change_user_access");
+    expect(html).toContain("Save chapter role");
+    expect(html).toContain("Assign staff role");
+    expect(html).toContain("Assign coach portfolio");
+    expect(html).toContain("Admin writes locked");
     expect(html).toContain("Historical event, attendance, and points records remain preserved.");
   });
 
