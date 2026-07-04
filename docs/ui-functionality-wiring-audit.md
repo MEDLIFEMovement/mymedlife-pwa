@@ -60,7 +60,7 @@ The exact Figma shells are present for the member app, Student Leadership Center
 | Label / control | Component | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
 |---|---|---:|---|---|---|---|---|
 | Top nav: Chapters, Campaigns, Proof/UGC, Best Practices, Campaign SOPs, Admin | `src/components/figma-staff-command-center.tsx` | staff/coach/admin | Figma-owned screen state | future route-backed staff views | staff workspace | none | `wired_staging` |
-| Portfolio search/filter/sort/table | `figma-staff-command-center.tsx` | staff/coach | Local Figma table filtering/drawer | `src/services/staff-command-center.ts` | staff workspace | none | `wired_staging` |
+| Portfolio search/filter/sort/table | `figma-staff-command-center.tsx` | staff/coach | Local Figma table filtering/drawer, including approved chapter type filter labels | `src/services/staff-command-center.ts`, `src/services/staff-chapter-type.ts` | staff workspace | none | `wired_staging` |
 | Chapter detail drawer / NPS modal | `figma-staff-command-center.tsx` | staff/coach | Local drawer/modal; no send | future NPS/event service | staff workspace | external-send flags | `placeholder_blocked` |
 | Campaign operations tabs | `figma-staff-command-center.tsx` | staff | Local campaign tables | workflow/SOP runtime later | staff workspace | campaign flags | `wired_staging` |
 | Proof/UGC review queue | `figma-staff-command-center.tsx` | staff/admin | Local review UI only | proof sharing/review services | staff/admin | proof publish flags | `placeholder_blocked` |
@@ -89,6 +89,7 @@ The exact Figma shells are present for the member app, Student Leadership Center
 ## Safety Notes For This PR
 
 - The Figma Create Event form now says `Event Staged`, not `Event Published`, and explicitly says no email, WhatsApp/SMS, Luma write, external send, or production publish occurred.
-- Chapter type now uses the approved values `high_school`, `college_university`, and `needs_review`; admin list/detail/forms, staff chapter list/detail, and leader chapter header show the approved labels.
+- Chapter type now uses the approved values `high_school`, `college_university`, and `needs_review`; admin list/detail/forms, admin/staff chapter filters, staff chapter list/detail, and leader chapter header show the approved labels.
+- Luma disabled-mode fallback has service-level proof: local event prep, member RSVP, attendance, points, disabled outbox, and audit records still work when no Luma link or QR is available.
 - PR #125 contains older Luma pilot work but is too stale to merge safely; it currently conflicts with 86 files against `main`.
 - HubSpot is not part of this run.

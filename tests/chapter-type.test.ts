@@ -6,6 +6,12 @@ import {
   inferChapterTypeFromCampus,
   normalizeChapterType,
 } from "@/services/chapter-type";
+import {
+  getStaffChapterTypeFilterLabel,
+  getStaffChapterTypeLabel,
+  getStaffChapterTypeValue,
+  staffChapterTypeFilterOptions,
+} from "@/services/staff-chapter-type";
 
 describe("chapter type helpers", () => {
   it("uses the approved chapter type labels", () => {
@@ -33,5 +39,29 @@ describe("chapter type helpers", () => {
       "college_university",
     );
     expect(inferChapterTypeFromCampus("")).toBe("needs_review");
+  });
+
+  it("maps copied staff shell chapter data into the approved type filters", () => {
+    expect(staffChapterTypeFilterOptions).toEqual([
+      "all",
+      "high_school",
+      "college_university",
+      "needs_review",
+    ]);
+    expect(getStaffChapterTypeValue({
+      chapterType: "established",
+      school: "Mira Mesa High School",
+    })).toBe("high_school");
+    expect(getStaffChapterTypeValue({
+      chapterType: "new",
+      school: "Boston College",
+    })).toBe("needs_review");
+    expect(getStaffChapterTypeLabel({
+      chapterType: "growing",
+      school: "UCLA",
+    })).toBe("College / University Chapter");
+    expect(getStaffChapterTypeFilterLabel("college_university")).toBe(
+      "College / University",
+    );
   });
 });

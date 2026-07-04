@@ -115,7 +115,9 @@ describe("staff page", () => {
     expect(html).toContain("Points/Yr");
     expect(html).toContain("Search chapter or school");
     expect(html).toContain(">Type<");
+    expect(html).toContain("High School");
     expect(html).toContain("College / University Chapter");
+    expect(html).toContain("Needs Review");
     expect(html).toContain("Export");
   });
 

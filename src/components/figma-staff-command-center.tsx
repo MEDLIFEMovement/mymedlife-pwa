@@ -1,5 +1,4 @@
 "use client";
-
 /* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars */
 
 import { useState, useMemo, type ReactNode } from "react";
@@ -24,6 +23,7 @@ import {
   LibraryScreen as SOPLibraryScreen,
   BuilderScreen as SOPBuilderScreen,
 } from "@/components/figma-sop-builder";
+import { getStaffChapterTypeFilterLabel, getStaffChapterTypeLabel, getStaffChapterTypeValue, staffChapterTypeFilterOptions, type StaffLaunchChapterTypeFilter } from "@/services/staff-chapter-type";
 import type { SOPCampaign } from "@/components/figma-sop-builder";
 import { FigmaAdminPanel as AdminPanel } from "@/components/figma-admin-panel";
 
@@ -250,12 +250,6 @@ function RiskPill({ level }: { level: RiskLevel }) {
   );
 }
 
-function chapterLaunchTypeLabel(chapter: Pick<Chapter, "school">) {
-  return chapter.school.toLowerCase().includes("high school")
-    ? "High School Chapter"
-    : "College / University Chapter";
-}
-
 function CampaignBadge({ status }: { status: CampaignStatus }) {
   const map: Record<CampaignStatus, string> = {
     "on-track": "bg-sky-50 text-sky-700 border border-sky-200",
@@ -464,7 +458,7 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{chapter.country}</span>
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{chapter.activeMembers} members</span>
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{chapter.eventsThisYear} events this year</span>
-              <span className="rounded-full bg-primary/8 px-2 py-0.5 font-semibold text-primary">{chapterLaunchTypeLabel(chapter)}</span>
+              <span className="rounded-full bg-primary/8 px-2 py-0.5 font-semibold text-primary">{getStaffChapterTypeLabel(chapter)}</span>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
@@ -648,6 +642,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
   const [search, setSearch] = useState("");
   const [regionFilter, setRegionFilter] = useState("all");
   const [coachFilter, setCoachFilter] = useState("all");
+  const [chapterTypeFilter, setChapterTypeFilter] = useState<StaffLaunchChapterTypeFilter>("all");
   const [sortBy, setSortBy] = useState<"name"|"nps"|"events"|"leads"|"leadPct"|"points">("name");
   const [showSurvey, setShowSurvey] = useState(false);
 
@@ -659,6 +654,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
       if (search && !c.name.toLowerCase().includes(search.toLowerCase()) && !c.school.toLowerCase().includes(search.toLowerCase())) return false;
       if (regionFilter !== "all" && c.medlifeRegion !== regionFilter) return false;
       if (coachFilter !== "all" && c.coach !== coachFilter) return false;
+      if (chapterTypeFilter !== "all" && getStaffChapterTypeValue(c) !== chapterTypeFilter) return false;
       return true;
     });
     if (sortBy === "nps")     list = [...list].sort((a,b) => (b.avgNpsScore ?? -999) - (a.avgNpsScore ?? -999));
@@ -667,7 +663,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
     if (sortBy === "leadPct") list = [...list].sort((a,b) => b.leadAttendancePct - a.leadAttendancePct);
     if (sortBy === "points")  list = [...list].sort((a,b) => b.totalPointsYear - a.totalPointsYear);
     return list;
-  }, [search, regionFilter, coachFilter, sortBy]);
+  }, [search, regionFilter, coachFilter, chapterTypeFilter, sortBy]);
 
   const avgEventsPerMonth = (CHAPTERS.reduce((a,c) => a + c.eventsThisMonth, 0) / CHAPTERS.length).toFixed(1);
 
@@ -701,6 +697,13 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
             <option value="all">All Coaches</option>
             {coaches.filter(o => o !== "all").map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        </div>
+        <div className="relative">
+          <select value={chapterTypeFilter} onChange={e => setChapterTypeFilter(e.target.value as StaffLaunchChapterTypeFilter)}
+            className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
+            {staffChapterTypeFilterOptions.map(type => <option key={type} value={type}>{getStaffChapterTypeFilterLabel(type)}</option>)}
           </select>
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
@@ -753,7 +756,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
                       <div className="font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">{ch.name}</div>
                       <div className="text-muted-foreground text-[10px]">{ch.country}</div>
                     </td>
-                    <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{chapterLaunchTypeLabel(ch)}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{getStaffChapterTypeLabel(ch)}</td>
                     <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{ch.coach.split(" ")[0]}</td>
                     <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{ch.medlifeRegion}</td>
                     <td className="px-3 py-2.5 font-mono font-bold text-foreground text-center">{ch.eventsThisYear}</td>
