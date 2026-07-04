@@ -45,7 +45,7 @@ describe("Figma missing route placeholders", () => {
     vi.clearAllMocks();
   });
 
-  it("marks the admin backend as a missing Figma page instead of Chapter reuse", async () => {
+  it("renders the Figma admin backend shell with its vertical DS Admin menu", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -57,13 +57,24 @@ describe("Figma missing route placeholders", () => {
     );
 
     const { default: AdminPage } = await import("@/app/admin/page");
-    const html = renderToStaticMarkup(await AdminPage());
+    const html = renderToStaticMarkup(AdminPage());
 
-    expect(html).toContain("Figma page missing - implementation blocked");
-    expect(html).toContain("/admin");
-    expect(html).toContain("Existing secure admin backend, not Chapter content");
-    expect(html).toContain("Open the safe prep surface.");
+    expect(html).toContain("DS Admin · v2.4");
+    expect(html).toContain("Overview");
+    expect(html).toContain("Users");
+    expect(html).toContain("Chapters");
+    expect(html).toContain("Modules");
+    expect(html).toContain("Luma Events");
+    expect(html).toContain("Points");
+    expect(html).toContain("Integrations");
+    expect(html).toContain("Audit Logs");
+    expect(html).toContain("System Health");
+    expect(html).toContain("API Keys");
+    expect(html).toContain("MCP Connections");
+    expect(html).toContain("Settings");
+    expect(html).toContain("Launch Mode Active");
     expect(html).not.toContain("Chapter Dashboard · Jun 2025");
+    expect(html).not.toContain("Figma page missing - implementation blocked");
   });
 
   it("renders SLT Prep through /slt-prep with an explicit missing-Figma notice", async () => {

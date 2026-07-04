@@ -12,6 +12,7 @@ The archive contains the exported code used as reference input for:
 - general student/member app
 - Student Leadership Command Center
 - Staff Command Center Dashboard
+  - includes the DS Admin `AdminPanel` shell now used by `/admin`
 
 The staff export included demo strings that looked like provider API keys,
 tokens, and a demo password. Those values were replaced with obvious
