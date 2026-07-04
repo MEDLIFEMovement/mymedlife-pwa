@@ -11,11 +11,11 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("admin");
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function AdminUsersPage() {
   const actor = await getLocalActorContext();
 
   if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref("/admin"));
+    redirect(buildLoginRedirectHref("/admin/users"));
   }
 
   if (!canAccessAdminWorkspace(actor)) {
@@ -25,7 +25,7 @@ export default async function AdminPage() {
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
-      <FigmaAdminPanel />
+      <FigmaAdminPanel initialActive="users" />
     </>
   );
 }

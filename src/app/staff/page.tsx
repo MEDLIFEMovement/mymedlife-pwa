@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { FigmaStaffCommandCenter } from "@/components/figma-staff-command-center";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
@@ -25,7 +26,12 @@ export default async function StaffPage({}: StaffPageProps) {
     redirect(getLandingRouteForActor(actor));
   }
 
-  return <FigmaStaffCommandCenter />;
+  return (
+    <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="staff_command_center" />
+      <FigmaStaffCommandCenter />
+    </>
+  );
 }
 
 function canReadStaffWorkspace(actor: Awaited<ReturnType<typeof getLocalActorContext>>) {

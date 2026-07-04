@@ -3475,8 +3475,14 @@ const PAGES: Record<string, { title: string; subtitle: string }> = {
   settings: { title: "Settings", subtitle: "Admin configuration and access controls" },
 };
 
-export function FigmaAdminPanel({ onBack }: { onBack?: () => void }) {
-  const [active, setActive] = useState("overview");
+export function FigmaAdminPanel({
+  initialActive = "overview",
+  onBack,
+}: {
+  initialActive?: string;
+  onBack?: () => void;
+}) {
+  const [active, setActive] = useState(initialActive);
   const page = PAGES[active] ?? PAGES.overview;
 
   const renderPage = () => {

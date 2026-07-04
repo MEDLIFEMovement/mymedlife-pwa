@@ -50,14 +50,14 @@ describe("Figma missing route placeholders", () => {
     const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getSignedInActor("admin@mymedlife.test"),
+      getSignedInActor("super.admin@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
       getMockReadOnlyAppData("Testing admin missing-Figma placeholder."),
     );
 
     const { default: AdminPage } = await import("@/app/admin/page");
-    const html = renderToStaticMarkup(AdminPage());
+    const html = renderToStaticMarkup(await AdminPage());
 
     expect(html).toContain("DS Admin · v2.4");
     expect(html).toContain("Overview");

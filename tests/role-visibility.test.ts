@@ -17,6 +17,10 @@ import {
   getVisibleRiskFlagsForActor,
   isMemberSurfaceFamily,
 } from "@/services/role-visibility";
+import {
+  canAccessWorkspace,
+  isPreviewWorkspaceAccess,
+} from "@/services/workspace-access";
 import type { RiskFlagRow } from "@/shared/types/persistence";
 
 describe("role visibility service", () => {
@@ -142,6 +146,9 @@ describe("role visibility service", () => {
     ]);
     expect(getNavigationForActor(superAdmin).map((item) => item.label)).toEqual([
       "Admin Home",
+      "Users",
+      "Chapters",
+      "Access",
       "Outbox",
       "Audit Log",
       "Launch Gate",
@@ -150,6 +157,9 @@ describe("role visibility service", () => {
     ]);
     expect(getNavigationForActor(dsAdmin)).toEqual([
       { href: "/admin", label: "Admin Home" },
+      { href: "/admin/users", label: "Users" },
+      { href: "/admin/chapters", label: "Chapters" },
+      { href: "/admin/access", label: "Access" },
       { href: "/admin/integration-outbox", label: "Outbox" },
       { href: "/admin/audit-log", label: "Audit Log" },
       { href: "/admin/launch-gate", label: "Launch Gate" },
@@ -211,8 +221,15 @@ describe("role visibility service", () => {
     expect(canAccessAdminWorkspace(superAdmin)).toBe(true);
     expect(canAccessStaffWorkspace(dsAdmin)).toBe(false);
     expect(canAccessStaffWorkspace(superAdmin)).toBe(true);
-    expect(canAccessMemberWorkspace(superAdmin)).toBe(false);
-    expect(canAccessLeaderWorkspace(superAdmin)).toBe(false);
+    expect(canAccessMemberWorkspace(dsAdmin)).toBe(true);
+    expect(canAccessLeaderWorkspace(dsAdmin)).toBe(true);
+    expect(canAccessMemberWorkspace(superAdmin)).toBe(true);
+    expect(canAccessLeaderWorkspace(superAdmin)).toBe(true);
+    expect(isPreviewWorkspaceAccess(dsAdmin, "student_app")).toBe(true);
+    expect(isPreviewWorkspaceAccess(superAdmin, "leader_command_center")).toBe(true);
+    expect(canAccessWorkspace(dsAdmin, "student_app", { intent: "read" })).toBe(true);
+    expect(canAccessWorkspace(dsAdmin, "student_app", { intent: "submit" })).toBe(false);
+    expect(canAccessWorkspace(superAdmin, "leader_command_center", { intent: "approve" })).toBe(false);
   });
 
   it("gives members a mobile quick path to home, campaigns, events, points, and profile", () => {

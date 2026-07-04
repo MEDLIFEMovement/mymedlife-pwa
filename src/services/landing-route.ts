@@ -1,14 +1,17 @@
 import {
   getCanonicalRoleAssignments,
-  getHighestOperationalCanonicalRole,
-  type CanonicalRole,
 } from "@/services/canonical-role-scope";
-import { getTravelerPrimaryLandingHref } from "@/services/launch-lane-product-focus";
 import {
   localActorOptions,
   type LocalActorContext,
   type LocalActorOption,
 } from "@/services/local-actor-context";
+import {
+  getDefaultWorkspace,
+  getWorkspaceHref,
+  type WorkspaceAccessUser,
+  type WorkspaceKey,
+} from "@/services/workspace-access";
 
 export type LandingRouteSource =
   | "member_home"
@@ -20,7 +23,13 @@ export type LandingRouteSource =
 export function getLandingRouteForActor(
   actor: Pick<
     LocalActorContext,
-    "defaultLandingSurface" | "primaryCanonicalRole" | "source"
+    | "canonicalRoleAssignments"
+    | "canonicalRoles"
+    | "chapterRoles"
+    | "defaultLandingSurface"
+    | "primaryCanonicalRole"
+    | "source"
+    | "staffRoles"
   >,
   source?: LandingRouteSource,
 ): string {
@@ -29,10 +38,7 @@ export function getLandingRouteForActor(
   }
 
   return appendLandingRouteSource(
-    getDefaultLandingRouteForRole(
-      actor.primaryCanonicalRole,
-      actor.defaultLandingSurface,
-    ),
+    getWorkspaceRoute(getDefaultWorkspace(actor)),
     source,
   );
 }
@@ -52,7 +58,14 @@ export function getLandingRouteForLocalActorOption(
   });
 
   return appendLandingRouteSource(
-    getDefaultLandingRouteForRole(getHighestOperationalCanonicalRole(assignments)),
+    getWorkspaceRoute(
+      getDefaultWorkspace({
+        canonicalRoleAssignments: assignments,
+        chapterRoles: option.chapterRoles,
+        staffRoles: option.staffRoles,
+        includeTravelerRole: option.includeTravelerRole,
+      } satisfies WorkspaceAccessUser),
+    ),
     source,
   );
 }
@@ -90,47 +103,6 @@ export function appendLandingRouteSource(
   return `${pathname}${resolvedQuery ? `?${resolvedQuery}` : ""}${hash ? `#${hash}` : ""}`;
 }
 
-function getDefaultLandingRouteForRole(
-  role: CanonicalRole,
-  fallbackSurface?: LocalActorContext["defaultLandingSurface"],
-): string {
-  switch (role) {
-    case "student_member":
-    case "committee_member":
-      return "/app";
-    case "traveler":
-      return getTravelerPrimaryLandingHref();
-    case "committee_chair":
-    case "eboard_officer":
-    case "vice_president":
-    case "president":
-      return "/leader?view=overview";
-    case "coach":
-    case "sales_coach":
-      return "/staff?view=chapters";
-    case "department_staff":
-      return "/staff?view=chapters";
-    case "sales_admin":
-      return "/staff?view=chapters";
-    case "ds_admin":
-    case "super_admin":
-      return "/admin";
-  }
-
-  switch (fallbackSurface) {
-    case "student_home_mobile":
-      return "/app";
-    case "student_leadership_command_center":
-      return "/leader?view=overview";
-    case "coach_command_center":
-      return "/staff?view=chapters";
-    case "staff_hq_command_center":
-      return "/staff?view=chapters";
-    case "admin_backend":
-      return "/admin";
-    case "slt_prep":
-      return getTravelerPrimaryLandingHref();
-    default:
-      return "/app";
-  }
+function getWorkspaceRoute(workspace: WorkspaceKey): string {
+  return getWorkspaceHref(workspace);
 }
