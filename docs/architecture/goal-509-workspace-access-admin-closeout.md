@@ -72,7 +72,7 @@ hosted staging evidence before the goal can be called launch-ready.
 | Staff can preview `/app` and `/leader` read-only | `tests/workspace-access.test.ts`, `src/components/workspace-preview-banner.tsx` |
 | DS/Super Admin can access `/admin` | `tests/workspace-access.test.ts`, `tests/admin-management-pages.test.tsx` |
 | Profile menu includes views and logout | `tests/workspace-account-menu.test.tsx`, `src/components/workspace-account-menu.tsx` |
-| Logout redirects to `/login` | `src/app/login/actions.ts` |
+| Logout redirects to `/login` and clears preview state | `tests/login-actions.test.ts`, `src/app/login/actions.ts` |
 | Unauthorized cross-shell access is blocked server-side | `tests/leader-page.test.tsx`, `tests/staff-page.test.tsx`, `tests/admin-management-pages.test.tsx` |
 | `/admin/users` exists and is DS/Super Admin only | `src/app/admin/users/page.tsx`, `tests/admin-management-pages.test.tsx` |
 | Admin can view/search users | `src/components/admin-users-management-panel.tsx`, `tests/admin-management-pages.test.tsx`, `tests/admin-management-data.test.ts` |
