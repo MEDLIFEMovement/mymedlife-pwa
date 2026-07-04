@@ -96,9 +96,17 @@ enabled:
 - `MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES=true`
 - `MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE=true`
 
-The write config remains local-only and keeps external writes disabled. No
-HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, AI, proof-upload, or
-production-auth behavior is enabled by this lane.
+For the hosted staging rehearsal, the same admin action code can be enabled only
+on the approved staging auth path and only when both staging flags are present:
+
+- `MYMEDLIFE_AUTH_MODE=staging_supabase`
+- `MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES=true`
+- `MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE=true`
+
+The write config keeps external writes disabled in both local and hosted staging
+rehearsals. Production auth refuses the admin write flag. No HubSpot, Luma, n8n,
+warehouse, Power BI, SMS, email, AI, proof-upload, or production-auth behavior is
+enabled by this lane.
 
 Hard chapter delete is not exposed through the live chapter management RPC.
 User destructive actions require confirmation, a reason, actor checks, and Super

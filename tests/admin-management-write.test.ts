@@ -35,6 +35,85 @@ describe("admin management write mapping", () => {
     });
   });
 
+  it("allows hosted staging admin access writes only behind both staging flags", () => {
+    const stagingEnv = {
+      MYMEDLIFE_AUTH_MODE: "staging_supabase",
+      NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+      NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+    } satisfies Record<string, string>;
+
+    expect(
+      getAdminAccessWriteConfig({
+        ...stagingEnv,
+        MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      isLocalOnly: false,
+      isHostedStaging: true,
+      externalWritesEnabled: false,
+    });
+
+    expect(
+      getAdminAccessWriteConfig({
+        ...stagingEnv,
+        MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      isLocalOnly: false,
+      isHostedStaging: true,
+      externalWritesEnabled: false,
+    });
+
+    expect(
+      getAdminAccessWriteConfig({
+        ...stagingEnv,
+        MYMEDLIFE_ALLOW_STAGING_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: true,
+      isLocalOnly: false,
+      isHostedStaging: true,
+      externalWritesEnabled: false,
+    });
+  });
+
+  it("does not fall back to local writes in hosted auth modes", () => {
+    expect(
+      getAdminAccessWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      isLocalOnly: false,
+      isHostedStaging: true,
+    });
+
+    expect(
+      getAdminAccessWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://fnlhontvvprwgooevzdl.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "production-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ADMIN_ACCESS_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      isLocalOnly: false,
+      isHostedStaging: false,
+      externalWritesEnabled: false,
+    });
+  });
+
   it("parses operations, roles, and Supabase UUID scope safely", () => {
     expect(parseAdminAccessOperation("set_chapter_role")).toBe("set_chapter_role");
     expect(parseAdminAccessOperation("delete_everything")).toBeNull();
