@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import { FigmaMissingPageNotice } from "@/components/figma-missing-page-notice";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import {
   SltPrepMiniStat,
   SltPrepSectionCard,
@@ -30,6 +31,7 @@ export default async function SltPrepPage() {
 
   return (
     <AppShell actor={actor} mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="slt_prep" />
       <DataSourceNotice source={data.source} />
       <FigmaMissingPageNotice
         route="/app/slt-prep and /slt-prep"

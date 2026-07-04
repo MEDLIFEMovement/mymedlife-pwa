@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
+import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import {
   buildLoginRedirectHref,
@@ -11,6 +13,7 @@ import { getMemberLaunchLaneEventRows } from "@/services/member-launch-lane-even
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 
 export const metadata = getStaticRouteMetadata("rushMonthEvents");
 export const dynamic = "force-dynamic";
@@ -32,7 +35,12 @@ export default async function AppEventsPage() {
   const events = getMemberLaunchLaneEventRows(actor, data);
 
   return (
-    <main className="min-h-screen bg-[#f7f4ee] px-4 py-6 text-[#10223f]">
+    <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
+      {isPreviewWorkspaceAccess(actor, "student_app") ? (
+        <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+      ) : null}
+      <main className="min-h-screen bg-[#f7f4ee] px-4 py-6 text-[#10223f]">
       <div className="mx-auto max-w-[430px]">
         <Link
           href="/app"
@@ -89,6 +97,7 @@ export default async function AppEventsPage() {
           ))}
         </section>
       </div>
-    </main>
+      </main>
+    </>
   );
 }

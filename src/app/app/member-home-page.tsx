@@ -1,10 +1,13 @@
 import { redirect } from "next/navigation";
 
 import { FigmaMemberMobileHome } from "@/components/figma-member-mobile-home";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
+import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
+import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 
 type MemberHomePageProps = {
   searchParams?: Promise<{
@@ -27,5 +30,13 @@ export default async function MemberHomePage(props: MemberHomePageProps) {
     redirect(landingRoute);
   }
 
-  return <FigmaMemberMobileHome />;
+  return (
+    <>
+      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
+      {isPreviewWorkspaceAccess(actor, "student_app") ? (
+        <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+      ) : null}
+      <FigmaMemberMobileHome />
+    </>
+  );
 }

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { FigmaAdminPanel } from "@/components/figma-admin-panel";
+import { AdminAccessManagementPanel } from "@/components/admin-access-management-panel";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
@@ -11,11 +11,11 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("admin");
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function AdminAccessPage() {
   const actor = await getLocalActorContext();
 
   if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref("/admin"));
+    redirect(buildLoginRedirectHref("/admin/access"));
   }
 
   if (!canAccessAdminWorkspace(actor)) {
@@ -25,7 +25,7 @@ export default async function AdminPage() {
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
-      <FigmaAdminPanel />
+      <AdminAccessManagementPanel actor={actor} />
     </>
   );
 }

@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 
-import { FigmaAdminPanel } from "@/components/figma-admin-panel";
+import {
+  AdminChaptersManagementPanel,
+  type AdminChaptersSearchParams,
+} from "@/components/admin-chapters-management-panel";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
@@ -11,11 +14,18 @@ import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 export const metadata = getStaticRouteMetadata("admin");
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+type AdminChaptersPageProps = {
+  searchParams?: Promise<AdminChaptersSearchParams>;
+};
+
+export default async function AdminChaptersPage({
+  searchParams,
+}: AdminChaptersPageProps) {
   const actor = await getLocalActorContext();
+  const resolvedSearchParams = (await searchParams) ?? {};
 
   if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref("/admin"));
+    redirect(buildLoginRedirectHref("/admin/chapters"));
   }
 
   if (!canAccessAdminWorkspace(actor)) {
@@ -25,7 +35,10 @@ export default async function AdminPage() {
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="admin_backend" />
-      <FigmaAdminPanel />
+      <AdminChaptersManagementPanel
+        actor={actor}
+        searchParams={resolvedSearchParams}
+      />
     </>
   );
 }
