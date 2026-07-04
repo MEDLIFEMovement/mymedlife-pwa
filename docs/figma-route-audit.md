@@ -6,6 +6,10 @@ Purpose: verify that every visible myMEDLIFE menu item routes to its own intende
 Figma-backed page instead of silently reusing the Chapter page or another launch
 lane placeholder.
 
+Raw Figma code is preserved as a redacted archive at
+`docs/figma-code/raw/figma-export-source-redacted-2026-07-04.zip`. Source paths
+below refer to archive-internal paths.
+
 ## Current Findings
 
 | Menu label | Current route | Expected route | Current rendered page/component | Expected Figma screen/code source | Status | Fix needed |

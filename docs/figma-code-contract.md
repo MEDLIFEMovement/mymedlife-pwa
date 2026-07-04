@@ -3,8 +3,10 @@
 Date: 2026-07-04
 
 This document maps every local Figma export source to the route/component that
-must implement it. Raw Figma code is stored under `docs/figma-code/raw/` and
-should be treated as reference input, not edited in place.
+must implement it. Raw Figma code is stored as a redacted archive at
+`docs/figma-code/raw/figma-export-source-redacted-2026-07-04.zip` and should be
+treated as reference input, not edited in place. Paths in the source column are
+archive-internal paths.
 
 ## Raw Code Inventory
 
