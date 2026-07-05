@@ -11,33 +11,35 @@ App component targets:
 - `src/components/figma-leader-training-screen.tsx`
 - `src/components/figma-leader-stories-screen.tsx`
 
-This shell is copied from the Figma export. Its screens are owned by internal
-button state, not by `/leader?view=` query rendering. Backend wiring should now
-attach behavior behind these exact controls instead of changing the shell.
+This shell is copied from the Figma export. Its screens are owned by the copied
+Figma layout and local state, with `/leader?view=` now resolving to the matching
+screen for reviewer links and reloads. Backend wiring should attach behavior
+behind these exact controls instead of changing the shell.
 
 ## Shell Navigation
 
 - Logo / myMEDLIFE button: returns to `Chapter Home`.
+- `/leader?view=overview`: opens `Chapter Home`.
 - Chapter group:
   - `Chapter Home`
-  - `Chapter Leaderboard`
-  - `Feed Analytics`
+  - `Chapter Leaderboard` (`/leader?view=leaderboard`)
+  - `Feed Analytics` (`/leader?view=feed_analytics`)
 - Members group:
-  - `Member Leaderboard`
-  - `Member Profile`
+  - `Member Leaderboard` (`/leader?view=members`)
+  - `Member Profile` (`/leader?view=member_profile`)
 - Event Operations group:
-  - `Event Committees`
-  - `Event Performance`
-  - `Create Event`
+  - `Event Committees` (`/leader?view=committees`)
+  - `Event Performance` (`/leader?view=events`)
+  - `Create Event` (`/leader?view=create_event`)
 - Impact & Culture group:
-  - `Impact`
-  - `Bridge Videos`
-  - `MEDLIFE Stories`
+  - `Impact` (`/leader?view=impact`)
+  - `Bridge Videos` (`/leader?view=bridge_videos`)
+  - `MEDLIFE Stories` (`/leader?view=stories`)
 - Leadership group:
-  - `Current Leaders`
-  - `Succession`
-  - `Values`
-  - `Leadership Training`
+  - `Current Leaders` (`/leader?view=leaders`)
+  - `Succession` (`/leader?view=succession`)
+  - `Values` (`/leader?view=values`)
+  - `Leadership Training` (`/leader?view=training`)
 - Bell button: visible notification affordance and disabled with blocked-state copy; no backend write in this pass.
 - Footer profile button: opens the profile/menu state in the copied shell.
 
