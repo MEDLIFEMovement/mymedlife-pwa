@@ -400,6 +400,16 @@ chapters:
 pnpm production:pilot-event-proof --packet production-rollout-packet.json
 ```
 
+Before that proof, verify the chapter-to-Luma calendar registry with:
+
+```bash
+pnpm rollout:luma-mappings --packet production-rollout-packet.json --mapping-json chapter-luma-map.json
+```
+
+This command compares the packet's `lumaCalendars` rows to the runtime
+chapter-to-Luma registry. It is read-only: it does not call Luma, create events,
+write Supabase rows, send invitations, or enable integrations.
+
 This command checks only the `pilot-event-proof.csv` evidence inside the rollout
 packet. It proves that five chapters have:
 
