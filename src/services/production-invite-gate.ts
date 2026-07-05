@@ -8,6 +8,9 @@ import type {
 import type {
   ProductionRolloutHandoff,
 } from "@/services/production-rollout-handoff";
+import type {
+  ProductionLiveDataReadiness,
+} from "@/services/production-live-data-readiness";
 import {
   getProductionSignedInRouteProofReadiness,
 } from "@/services/production-signed-in-route-proof";
@@ -27,6 +30,7 @@ export type ProductionInviteGateInput = {
   rolloutPacket?: ProductionRolloutBootstrapPacket | null;
   rolloutReadiness: ProductionRolloutBootstrapReadiness | null;
   rolloutHandoff: ProductionRolloutHandoff | null;
+  liveDataReadiness?: ProductionLiveDataReadiness | null;
   minimumPilotChapterCount?: number;
 };
 
@@ -45,6 +49,7 @@ export function getProductionInviteGateReadiness(
     createLaunchLaneFocusCheck(),
     createRouteSmokeCheck(input.routeSmoke),
     createRolloutPacketCheck(input.rolloutReadiness),
+    createLiveDataCheck(input.liveDataReadiness ?? null),
     createWorkspaceAccessCheck(input.rolloutReadiness),
     createSignedInRouteProofCheck(input.rolloutPacket ?? null),
     createPilotEventLoopCheck(input.rolloutReadiness, minimumPilotChapterCount),
@@ -181,6 +186,35 @@ function createRolloutPacketCheck(
     detail: rolloutReadiness.ready
       ? `${rolloutReadiness.counts.activeChapters} chapters, ${rolloutReadiness.counts.approvedStudentMemberships} approved student/leader users, ${rolloutReadiness.counts.linkedLumaCalendars} linked Luma calendars`
       : summarizeList(rolloutReadiness.blockers),
+  };
+}
+
+function createLiveDataCheck(
+  liveDataReadiness: ProductionLiveDataReadiness | null,
+): ProductionInviteGateCheck {
+  if (!liveDataReadiness) {
+    return {
+      key: "production_live_data",
+      label: "Production live data count proof",
+      passed: false,
+      detail: "production live data count proof was not provided",
+    };
+  }
+
+  const counts = liveDataReadiness.counts;
+
+  return {
+    key: "production_live_data",
+    label: "Production live data count proof",
+    passed: liveDataReadiness.ready,
+    detail: liveDataReadiness.ready
+      ? [
+          `${counts["auth.users"]} auth user(s)`,
+          `${counts["app.profiles"]} profile row(s)`,
+          `${counts["app.chapters.active"]} active chapter(s)`,
+          `${counts["app.memberships.approved"]} approved membership row(s)`,
+        ].join("; ")
+      : summarizeList(liveDataReadiness.blockers),
   };
 }
 
@@ -334,6 +368,8 @@ function getNextStepForCheck(key: string) {
       return "Fix public production route smoke failures before inviting chapters.";
     case "rollout_packet":
       return "Fill and validate the real 30-chapter/500-student rollout packet.";
+    case "production_live_data":
+      return "Run the production live data count check after the rollout packet is applied, then attach the count proof to the invite gate.";
     case "workspace_access":
       return "Add member, leader, staff, and admin access coverage to the rollout packet.";
     case "signed_in_route_proof":

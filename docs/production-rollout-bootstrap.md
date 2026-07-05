@@ -276,8 +276,10 @@ written. It spells out the exact order:
   map
 - create memberships, staff roles, coach assignments, campaigns, and Luma
   calendar mappings with resolved UUIDs
+- run and save the production live-data count proof
 - capture signed-in route proof and five-chapter event-loop proof
-- re-run `pnpm production:invite-gate`
+- re-run `pnpm production:invite-gate` with both the packet and saved live-data
+  count proof
 
 This command is still read-only. It does not generate misleading SQL because
 production `app.profiles` and most relationship rows require Supabase Auth UUIDs
@@ -353,12 +355,15 @@ change Vercel settings, upload files, or enable integrations.
 
 ## 30-Chapter Invite Gate
 
-After the rollout packet, handoff, and public production route smoke are ready,
-run the final broad-invite gate:
+After the rollout packet, handoff, public production route smoke, and production
+live-data count proof are ready, run the final broad-invite gate:
 
 ```bash
+pnpm production:data-counts > production-live-data-counts.txt
+
 pnpm production:invite-gate \
   --packet production-rollout-packet.json \
+  --live-data-counts production-live-data-counts.txt \
   --public-url https://www.mymedlife.org
 ```
 
@@ -366,6 +371,7 @@ This command checks:
 
 - public `/login`, `/app`, `/leader`, `/staff`, and `/admin` route smoke
 - the 30-chapter/500-student rollout packet readiness
+- aggregate production Auth/profile/chapter/membership count proof
 - member, leader, staff, and admin workspace access coverage
 - signed-in member, leader, staff, and admin route proof
 - 5-chapter Luma RSVP, attendance, points, audit, and zero-send proof
@@ -392,6 +398,11 @@ The count check is not a replacement for the rollout packet validator. It proves
 that production has enough table volume for launch, while the packet validator
 still proves row-by-row ownership: which user belongs to which chapter, which
 coach owns each chapter, and which campaign each chapter starts with.
+
+Save the output as `production-live-data-counts.txt` and pass it to the final
+invite gate with `--live-data-counts`. Without that file, the invite gate must
+stay `NOT READY` because a valid packet alone does not prove production was
+actually populated.
 
 ## Signed-In Route Proof Check
 

@@ -5,9 +5,10 @@ import { resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm production:invite-gate --packet production-rollout-packet.json [--public-url https://www.mymedlife.org] [--minimum-pilot-chapters=5]",
+  "  pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt [--public-url https://www.mymedlife.org] [--minimum-pilot-chapters=5]",
   "",
   "This is read-only. It checks the public app route smoke plus the 30-chapter rollout packet, workspace coverage, pilot event proof, owners, and handoff posture.",
+  "The live-data-counts file should be the saved output from pnpm production:data-counts.",
 ].join("\n");
 
 const args = process.argv.slice(2);
@@ -22,6 +23,7 @@ try {
     getArgValue(args, "--public-url") ?? "https://www.mymedlife.org",
   );
   const packetPath = getArgValue(args, "--packet");
+  const liveDataCountsPath = getArgValue(args, "--live-data-counts");
   const minimumPilotChapterCount = getPositiveWholeNumberArg(
     args,
     "--minimum-pilot-chapters",
@@ -44,13 +46,25 @@ try {
     {
       getProductionRolloutHandoff,
     },
+    {
+      getProductionLiveDataReadiness,
+      parseProductionLiveDataCountCsv,
+    },
   ] = await Promise.all([
     import("../src/services/production-core-route-smoke.ts"),
     import("../src/services/production-invite-gate.ts"),
     import("../src/services/production-rollout-bootstrap.ts"),
     import("../src/services/production-rollout-handoff.ts"),
+    import("../src/services/production-live-data-readiness.ts"),
   ]);
   const packet = JSON.parse(await readFile(resolve(packetPath), "utf8"));
+  const liveDataReadiness = liveDataCountsPath
+    ? getProductionLiveDataReadiness(
+        parseProductionLiveDataCountCsv(
+          await readFile(resolve(liveDataCountsPath), "utf8"),
+        ),
+      )
+    : null;
   const rolloutReadiness = getProductionRolloutBootstrapReadiness(packet, {
     minimumPilotChapterCount,
   });
@@ -69,6 +83,7 @@ try {
     rolloutPacket: packet,
     rolloutReadiness,
     rolloutHandoff: getProductionRolloutHandoff(packet),
+    liveDataReadiness,
     minimumPilotChapterCount,
   });
 

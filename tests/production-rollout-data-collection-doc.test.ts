@@ -26,6 +26,8 @@ describe("production rollout data collection doc", () => {
     expect(doc).toContain("pnpm rollout:check production-rollout-packet.json");
     expect(doc).toContain("pnpm rollout:handoff production-rollout-packet.json");
     expect(doc).toContain("pnpm production:launch-check --packet");
+    expect(doc).toContain("pnpm production:data-counts > production-live-data-counts.txt");
     expect(doc).toContain("pnpm production:signed-in-route-proof --packet");
+    expect(doc).toContain("--live-data-counts production-live-data-counts.txt");
   });
 });

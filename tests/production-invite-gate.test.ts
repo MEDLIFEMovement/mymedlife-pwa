@@ -13,6 +13,9 @@ import type {
 import type {
   ProductionRolloutHandoff,
 } from "@/services/production-rollout-handoff";
+import type {
+  ProductionLiveDataReadiness,
+} from "@/services/production-live-data-readiness";
 
 describe("production invite gate", () => {
   it("passes when production route smoke, rollout packet, pilot proof, owners, and handoff are ready", () => {
@@ -22,10 +25,11 @@ describe("production invite gate", () => {
       rolloutPacket: createReadyRolloutPacket(),
       rolloutReadiness: createReadyRolloutReadiness(),
       rolloutHandoff: createReadyRolloutHandoff(),
+      liveDataReadiness: createReadyLiveDataReadiness(),
     });
 
     expect(readiness.ready).toBe(true);
-    expect(readiness.checks).toHaveLength(8);
+    expect(readiness.checks).toHaveLength(9);
     expect(readiness.checks.every((check) => check.passed)).toBe(true);
     expect(readiness.checks[0]).toEqual({
       key: "launch_lane_focus",
@@ -45,6 +49,7 @@ describe("production invite gate", () => {
       routeSmoke: createReadyRouteSmoke(),
       rolloutReadiness: null,
       rolloutHandoff: null,
+      liveDataReadiness: createReadyLiveDataReadiness(),
     });
 
     expect(readiness.ready).toBe(false);
@@ -80,6 +85,7 @@ describe("production invite gate", () => {
       rolloutPacket: createReadyRolloutPacket(),
       rolloutReadiness,
       rolloutHandoff: createReadyRolloutHandoff({ ready: false }),
+      liveDataReadiness: createReadyLiveDataReadiness(),
     });
     const workspaceCheck = readiness.checks.find(
       (check) => check.key === "workspace_access",
@@ -116,6 +122,7 @@ describe("production invite gate", () => {
       rolloutPacket: createReadyRolloutPacket(),
       rolloutReadiness,
       rolloutHandoff: createReadyRolloutHandoff({ ready: false }),
+      liveDataReadiness: createReadyLiveDataReadiness(),
     });
     const pilotCheck = readiness.checks.find(
       (check) => check.key === "pilot_event_loop",
@@ -147,6 +154,7 @@ describe("production invite gate", () => {
       rolloutPacket: createReadyRolloutPacket(),
       rolloutReadiness,
       rolloutHandoff: createReadyRolloutHandoff({ ready: false }),
+      liveDataReadiness: createReadyLiveDataReadiness(),
     });
     const ownerCheck = readiness.checks.find(
       (check) => check.key === "launch_owners",
@@ -172,6 +180,7 @@ describe("production invite gate", () => {
       rolloutPacket: packet,
       rolloutReadiness: createReadyRolloutReadiness(),
       rolloutHandoff: createReadyRolloutHandoff(),
+      liveDataReadiness: createReadyLiveDataReadiness(),
     });
     const routeProofCheck = readiness.checks.find(
       (check) => check.key === "signed_in_route_proof",
@@ -184,6 +193,31 @@ describe("production invite gate", () => {
     );
     expect(readiness.nextSteps).toContain(
       "Complete signed-in route proof for one member, leader, staff user, and admin after production data is applied.",
+    );
+  });
+
+  it("blocks broad invites until production live data count proof is attached", () => {
+    const readiness = getProductionInviteGateReadiness({
+      publicUrl: "https://www.mymedlife.org",
+      routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
+      rolloutReadiness: createReadyRolloutReadiness(),
+      rolloutHandoff: createReadyRolloutHandoff(),
+      liveDataReadiness: null,
+    });
+    const liveDataCheck = readiness.checks.find(
+      (check) => check.key === "production_live_data",
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(liveDataCheck).toEqual({
+      key: "production_live_data",
+      label: "Production live data count proof",
+      passed: false,
+      detail: "production live data count proof was not provided",
+    });
+    expect(readiness.nextSteps).toContain(
+      "Run the production live data count check after the rollout packet is applied, then attach the count proof to the invite gate.",
     );
   });
 });
@@ -257,6 +291,30 @@ function createReadyRolloutHandoff(
     summary:
       "30 chapters are ready for the first production data apply. This report is a review handoff only.",
     sections: [],
+  };
+}
+
+function createReadyLiveDataReadiness(): ProductionLiveDataReadiness {
+  return {
+    ready: true,
+    minimumChapterCount: 30,
+    counts: {
+      "auth.users": 503,
+      "app.profiles": 503,
+      "app.chapters.active": 30,
+      "app.memberships.approved": 500,
+      "app.staff_role_assignments.active": 3,
+      "app.coach_chapter_assignments.active": 30,
+      "app.campaigns.active": 30,
+      "app.assignments": 30,
+      "app.points_events": 5,
+      "app.audit_logs": 10,
+    },
+    blockers: [],
+    warnings: [],
+    nextSteps: [
+      "Run the rollout packet validator and signed-in role checks; this count check does not prove row-by-row ownership.",
+    ],
   };
 }
 
