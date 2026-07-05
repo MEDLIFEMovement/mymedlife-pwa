@@ -39,6 +39,9 @@ export function getProductionRolloutHandoff(
   const activeLaunchOwners = (packet.launchOwners ?? []).filter(
     (owner) => (owner.status ?? "active") === "active",
   );
+  const signedInRouteProof = (packet.signedInRouteProof ?? []).filter(
+    (proof) => proof.status === "passed",
+  );
   const approvedMemberships = packet.memberships.filter(
     (membership) => (membership.status ?? "approved") === "approved",
   );
@@ -116,6 +119,13 @@ export function getProductionRolloutHandoff(
         ),
       },
       {
+        title: "Signed-in route proof to review",
+        items: signedInRouteProof.map(
+          (proof) =>
+            `${proof.email} -> ${proof.workspace}; expected ${proof.expectedPath}, observed ${proof.observedPath}${proof.checkedAt ? `, checked ${proof.checkedAt}` : ""}`,
+        ),
+      },
+      {
         title: "Safety rules",
         items: [
           "Do not include passwords, API keys, tokens, or secrets in the packet.",
@@ -123,6 +133,7 @@ export function getProductionRolloutHandoff(
           "Keep HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes disabled during this apply.",
           "Keep Luma writes limited to the separately approved event, RSVP, and attendance/check-in path.",
           "Run signed-in route checks for /app, /leader, /staff, and /admin before inviting all chapters.",
+          "Do not mark the invite gate ready until signed-in route proof passes for one member, one leader, one staff user, and one admin.",
         ],
       },
     ],

@@ -31,6 +31,10 @@ describe("production rollout handoff", () => {
     expect(report).toContain(
       "- support -> admin@medlifemovement.org (Launch Admin)",
     );
+    expect(report).toContain("Signed-in route proof to review:");
+    expect(report).toContain(
+      "- member.001@medlifemovement.org -> student_app; expected /app, observed /app",
+    );
     expect(report).toContain("member workspace users: 500");
     expect(report).toContain("leader workspace users: 30");
     expect(report).toContain("staff workspace users: 2");
@@ -154,6 +158,36 @@ function createPacket(chapterCount: number): ProductionRolloutBootstrapPacket {
         email: "admin@medlifemovement.org",
         ownerType: "launch_decision",
         displayName: "Launch Admin",
+      },
+    ],
+    signedInRouteProof: [
+      {
+        email: "member.001@medlifemovement.org",
+        workspace: "student_app",
+        expectedPath: "/app",
+        observedPath: "/app",
+        status: "passed",
+      },
+      {
+        email: "leader.01@medlifemovement.org",
+        workspace: "leader_command_center",
+        expectedPath: "/leader?view=overview",
+        observedPath: "/leader?view=overview",
+        status: "passed",
+      },
+      {
+        email: "coach@medlifemovement.org",
+        workspace: "staff_command_center",
+        expectedPath: "/staff?view=chapters",
+        observedPath: "/staff?view=chapters",
+        status: "passed",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        workspace: "admin_backend",
+        expectedPath: "/admin",
+        observedPath: "/admin",
+        status: "passed",
       },
     ],
   };

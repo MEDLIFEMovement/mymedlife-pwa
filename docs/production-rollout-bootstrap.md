@@ -105,6 +105,17 @@ Prepare one reviewed packet with these sections:
       "displayName": "Owner Name",
       "status": "active"
     }
+  ],
+  "signedInRouteProof": [
+    {
+      "email": "member.name@medlifemovement.org",
+      "workspace": "student_app",
+      "expectedPath": "/app",
+      "observedPath": "/app",
+      "status": "passed",
+      "checkedAt": "2026-07-05T15:00:00Z",
+      "notes": "Real production member landed in the student app."
+    }
   ]
 }
 ```
@@ -133,6 +144,7 @@ pnpm rollout:build \
   --luma-calendars rollout-csv/luma-calendars.csv \
   --pilot-event-proof rollout-csv/pilot-event-proof.csv \
   --launch-owners rollout-csv/launch-owners.csv \
+  --signed-in-route-proof rollout-csv/signed-in-route-proof.csv \
   --out production-rollout-packet.json
 ```
 
@@ -148,6 +160,8 @@ Expected CSV headers:
 - `pilot-event-proof.csv`:
   `chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status`
 - `launch-owners.csv`: `email,ownerType,displayName,status`
+- `signed-in-route-proof.csv`:
+  `email,workspace,expectedPath,observedPath,status,checkedAt,notes`
 
 `region` and `status` are optional where listed. Do not add password, token,
 API key, secret, or extra helper columns; unsupported columns are rejected.
@@ -169,6 +183,9 @@ Allowed values:
 - Launch owner `ownerType`: `production_apply`, `support`, `rollback`,
   `launch_decision`
 - Launch owner `status`: `active`, `backup`, `inactive`
+- Signed-in route `workspace`: `student_app`, `leader_command_center`,
+  `staff_command_center`, `admin_backend`
+- Signed-in route `status`: `passed`, `failed`, `not_checked`
 
 ## Readiness Rules
 
@@ -195,6 +212,16 @@ The packet is not ready until all of these are true:
 - No password, token, API key, or secret fields are present.
 - Every membership, coach assignment, campaign, Luma calendar mapping, pilot
   proof row, and launch owner references a known user or chapter.
+
+The base rollout packet can be ready before `signed-in-route-proof.csv` is
+filled, because those rows can only be proven after production users and app
+rows exist. The final 30-chapter invite gate will still fail until it has one
+passed proof row for each required workspace:
+
+- a real `general_member` or `action_committee_member` reaches `/app`
+- a real chapter leader reaches `/leader?view=overview`
+- a real coach/staff user reaches `/staff?view=chapters`
+- a real DS Admin or Super Admin reaches `/admin`
 
 The validator lives in:
 
@@ -305,6 +332,7 @@ This command checks:
 - public `/login`, `/app`, `/leader`, `/staff`, and `/admin` route smoke
 - the 30-chapter/500-student rollout packet readiness
 - member, leader, staff, and admin workspace access coverage
+- signed-in member, leader, staff, and admin route proof
 - 5-chapter Luma RSVP, attendance, points, audit, and zero-send proof
 - active support, rollback, and production apply owners
 - the review-only production rollout handoff
@@ -329,6 +357,25 @@ The count check is not a replacement for the rollout packet validator. It proves
 that production has enough table volume for launch, while the packet validator
 still proves row-by-row ownership: which user belongs to which chapter, which
 coach owns each chapter, and which campaign each chapter starts with.
+
+## Signed-In Route Proof Check
+
+After production users and app rows are applied, fill `signed-in-route-proof.csv`,
+rebuild the packet, and run:
+
+```bash
+pnpm production:signed-in-route-proof --packet production-rollout-packet.json
+```
+
+This checks that the packet contains passed evidence for:
+
+- one real member reaching `/app`
+- one real student leader reaching `/leader?view=overview`
+- one real staff/coach user reaching `/staff?view=chapters`
+- one real DS Admin or Super Admin reaching `/admin`
+
+It is read-only. It does not sign in, create users, write rows, or display
+passwords.
 
 ## Production Route Smoke Check
 
@@ -366,7 +413,9 @@ pnpm production:smoke https://www.mymedlife.org
    `app.staff_role_assignments`, `app.coach_chapter_assignments`, and
    `app.campaigns`.
 6. Verify signed-in routing for `/app`, `/leader`, `/staff`, and `/admin`.
-7. Only then invite the first production rollout group.
+7. Record the signed-in evidence in `signed-in-route-proof.csv`, rebuild the
+   packet, and run `pnpm production:invite-gate`.
+8. Only then invite the first production rollout group.
 
 ## Still Blocked
 
@@ -377,4 +426,5 @@ Production rollout is still blocked until:
 - The five-chapter Luma event loop proves RSVP, attendance, points, audit, and
   zero external sends.
 - Signed-in route verification passes with real roles.
+- Signed-in route proof rows are added to the packet.
 - The final `pnpm production:invite-gate` report says `READY`.

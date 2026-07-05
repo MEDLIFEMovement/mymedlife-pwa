@@ -6,6 +6,7 @@ import type {
   ProductionBootstrapLumaCalendar,
   ProductionBootstrapMembership,
   ProductionBootstrapPilotEventProof,
+  ProductionBootstrapSignedInRouteProof,
   ProductionBootstrapStaffRole,
   ProductionBootstrapUser,
   ProductionRolloutBootstrapPacket,
@@ -21,6 +22,7 @@ export type ProductionRolloutCsvTables = {
   lumaCalendars: string;
   pilotEventProof: string;
   launchOwners: string;
+  signedInRouteProof: string;
 };
 
 type CsvRow = Record<string, string>;
@@ -71,6 +73,10 @@ const tableHeaders = {
     required: ["email", "ownerType"],
     optional: ["displayName", "status"],
   },
+  signedInRouteProof: {
+    required: ["email", "workspace", "expectedPath", "observedPath", "status"],
+    optional: ["checkedAt", "notes"],
+  },
 } as const;
 
 const allowedValues = {
@@ -93,6 +99,13 @@ const allowedValues = {
   pilotStatus: ["ready", "needs_review", "blocked"],
   launchOwnerType: ["production_apply", "support", "rollback", "launch_decision"],
   launchOwnerStatus: ["active", "backup", "inactive"],
+  signedInWorkspace: [
+    "student_app",
+    "leader_command_center",
+    "staff_command_center",
+    "admin_backend",
+  ],
+  signedInRouteStatus: ["passed", "failed", "not_checked"],
 } as const;
 
 export function buildProductionRolloutPacketFromCsvTables(
@@ -140,6 +153,11 @@ export function buildProductionRolloutPacketFromCsvTables(
       "launchOwners",
       tableHeaders.launchOwners,
     ).map(toLaunchOwner),
+    signedInRouteProof: parseCsvTable(
+      tables.signedInRouteProof,
+      "signedInRouteProof",
+      tableHeaders.signedInRouteProof,
+    ).map(toSignedInRouteProof),
   };
 }
 
@@ -382,6 +400,29 @@ function toLaunchOwner(row: CsvRow): ProductionBootstrapLaunchOwner {
     ownerType: row.ownerType as ProductionBootstrapLaunchOwner["ownerType"],
     displayName: row.displayName,
     status: row.status as ProductionBootstrapLaunchOwner["status"],
+  });
+}
+
+function toSignedInRouteProof(row: CsvRow): ProductionBootstrapSignedInRouteProof {
+  requireValue(
+    row.workspace,
+    allowedValues.signedInWorkspace,
+    "signed-in route workspace",
+  );
+  requireValue(
+    row.status,
+    allowedValues.signedInRouteStatus,
+    "signed-in route status",
+  );
+
+  return omitEmpty({
+    email: row.email,
+    workspace: row.workspace as ProductionBootstrapSignedInRouteProof["workspace"],
+    expectedPath: row.expectedPath,
+    observedPath: row.observedPath,
+    status: row.status as ProductionBootstrapSignedInRouteProof["status"],
+    checkedAt: row.checkedAt,
+    notes: row.notes,
   });
 }
 

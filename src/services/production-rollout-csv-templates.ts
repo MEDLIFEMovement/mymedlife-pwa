@@ -60,6 +60,19 @@ export const productionRolloutCsvTemplates: ProductionRolloutCsvTemplate[] = [
     description: "One row per named owner for production apply, support, rollback, and launch decisions.",
     headers: ["email", "ownerType", "displayName", "status"],
   },
+  {
+    filename: "signed-in-route-proof.csv",
+    description: "One row per real signed-in route check for member, leader, staff, and admin accounts.",
+    headers: [
+      "email",
+      "workspace",
+      "expectedPath",
+      "observedPath",
+      "status",
+      "checkedAt",
+      "notes",
+    ],
+  },
 ];
 
 export function getProductionRolloutCsvTemplateContent(
@@ -93,6 +106,7 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     `  --luma-calendars ${outputDirectoryName}/luma-calendars.csv \\`,
     `  --pilot-event-proof ${outputDirectoryName}/pilot-event-proof.csv \\`,
     `  --launch-owners ${outputDirectoryName}/launch-owners.csv \\`,
+    `  --signed-in-route-proof ${outputDirectoryName}/signed-in-route-proof.csv \\`,
     "  --out production-rollout-packet.json",
     "```",
     "",
@@ -109,6 +123,7 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     "- Every active chapter needs a linked Luma calendar mapping.",
     "- At least 5 pilot chapters need ready event-loop proof: RSVP, attendance, points, audit, and zero external sends.",
     "- Name active support, rollback, and production apply owners before inviting chapters.",
+    "- After production data is applied, add passed signed-in route proof for one member, one leader, one staff user, and one admin.",
     "- The first rollout requires at least 30 active chapters.",
     "",
     "Files:",
