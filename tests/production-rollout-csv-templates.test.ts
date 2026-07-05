@@ -65,6 +65,8 @@ describe("production rollout CSV templates", () => {
     expect(readme).toContain("pnpm rollout:check production-rollout-packet.json");
     expect(readme).toContain("The first rollout requires at least 500 approved student/leader users.");
     expect(readme).toContain("reviewer, timestamp, and app proof routes");
+    expect(readme).toContain("The support owner needs an active coach, admin, or super_admin staff role");
+    expect(readme).toContain("The rollback and production apply owners need an active ds_admin or super_admin staff role");
     expect(readme).toContain("add passed signed-in route proof");
     expect(readme).toContain("The first rollout requires at least 30 active chapters.");
   });

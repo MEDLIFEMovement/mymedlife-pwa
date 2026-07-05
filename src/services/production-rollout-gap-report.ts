@@ -1,6 +1,7 @@
 import type {
   ProductionBootstrapLaunchOwner,
   ProductionBootstrapSignedInRouteProof,
+  ProductionBootstrapStaffRole,
   ProductionRolloutBootstrapOptions,
   ProductionRolloutBootstrapPacket,
 } from "./production-rollout-bootstrap.ts";
@@ -69,6 +70,29 @@ const recommendedOwnerTypes: ProductionBootstrapLaunchOwner["ownerType"][] = [
   "launch_decision",
 ];
 
+const ownerRolePolicies: Partial<
+  Record<
+    ProductionBootstrapLaunchOwner["ownerType"],
+    {
+      roleKeys: ReadonlySet<ProductionBootstrapStaffRole["roleKey"]>;
+      detail: string;
+    }
+  >
+> = {
+  support: {
+    roleKeys: new Set(["coach", "admin", "super_admin"]),
+    detail: "an active coach, admin, or super_admin staff role",
+  },
+  rollback: {
+    roleKeys: new Set(["ds_admin", "super_admin"]),
+    detail: "an active ds_admin or super_admin staff role",
+  },
+  production_apply: {
+    roleKeys: new Set(["ds_admin", "super_admin"]),
+    detail: "an active ds_admin or super_admin staff role",
+  },
+};
+
 const requiredRouteProof: Array<{
   workspace: ProductionBootstrapSignedInRouteProof["workspace"];
   label: string;
@@ -111,6 +135,9 @@ export function getProductionRolloutGapReport(
   const approvedMemberships = packet.memberships.filter(
     (membership) => (membership.status ?? "approved") === "approved",
   );
+  const activeStaffRoles = packet.staffRoles.filter(
+    (role) => (role.status ?? "active") === "active",
+  );
   const activeCoachAssignments = packet.coachAssignments.filter(
     (assignment) => (assignment.status ?? "active") === "active",
   );
@@ -146,7 +173,7 @@ export function getProductionRolloutGapReport(
       readyPilotChapterIds,
     }),
   );
-  const ownerGaps = getOwnerGaps(activeOwners);
+  const ownerGaps = getOwnerGaps(activeOwners, activeStaffRoles);
   const signedInRouteProofGaps = getSignedInRouteProofGaps(passedRouteProof);
   const minimumGaps = getMinimumGaps({
     activeChapters: activeChapters.length,
@@ -321,10 +348,35 @@ function getMinimumGaps(input: {
   return gaps;
 }
 
-function getOwnerGaps(owners: ProductionBootstrapLaunchOwner[]) {
-  return requiredOwnerTypes
+function getOwnerGaps(
+  owners: ProductionBootstrapLaunchOwner[],
+  activeStaffRoles: ProductionBootstrapStaffRole[],
+) {
+  const missingOwnerGaps = requiredOwnerTypes
     .filter((ownerType) => !owners.some((owner) => owner.ownerType === ownerType))
     .map((ownerType) => `Add an active ${ownerType.replace("_", " ")} owner.`);
+  const roleGaps = owners.flatMap((owner) => {
+    const policy = ownerRolePolicies[owner.ownerType];
+
+    if (!policy) {
+      return [];
+    }
+
+    const ownerEmail = normalizeEmail(owner.email);
+    const hasRequiredRole = activeStaffRoles.some(
+      (role) =>
+        normalizeEmail(role.email) === ownerEmail &&
+        policy.roleKeys.has(role.roleKey),
+    );
+
+    return hasRequiredRole
+      ? []
+      : [
+          `Launch owner ${owner.email} (${owner.ownerType}) needs ${policy.detail}.`,
+        ];
+  });
+
+  return [...missingOwnerGaps, ...roleGaps];
 }
 
 function getRecommendedOwnerWarnings(owners: ProductionBootstrapLaunchOwner[]) {

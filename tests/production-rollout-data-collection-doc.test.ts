@@ -31,5 +31,7 @@ describe("production rollout data collection doc", () => {
     expect(doc).toContain("--live-data-counts production-live-data-counts.txt");
     expect(doc).toContain("500 approved memberships");
     expect(doc).toContain("5 production Luma event links");
+    expect(doc).toContain("The `support` owner must have an active `coach`, `admin`, or `super_admin`");
+    expect(doc).toContain("The `rollback` and `production_apply` owners must have active `ds_admin` or");
   });
 });

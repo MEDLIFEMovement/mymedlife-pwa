@@ -21,6 +21,8 @@ describe("production rollout workbook", () => {
     expect(workbook).toContain("pnpm production:invite-batches --packet production-rollout-packet.json");
     expect(workbook).toContain("roleKey: general_member, action_committee_member, action_committee_chair, e_board_member, president_vp");
     expect(workbook).toContain("ownerType: production_apply, support, rollback, launch_decision");
+    expect(workbook).toContain("Support owner needs an active coach, admin, or super_admin staff role.");
+    expect(workbook).toContain("Rollback and production_apply owners need active ds_admin or super_admin staff roles.");
     expect(workbook).toContain("workspace: student_app, leader_command_center, staff_command_center, admin_backend");
     expect(workbook).toContain("<student-email>,<chapter-id>,general_member,approved");
     expect(workbook).not.toContain("member.001@medlifemovement.org");
