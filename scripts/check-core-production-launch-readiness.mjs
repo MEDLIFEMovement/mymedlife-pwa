@@ -43,6 +43,7 @@ try {
       getRouteSnapshot(appUrl, "/app", false),
       getRouteSnapshot(appUrl, "/leader", false),
       getRouteSnapshot(appUrl, "/staff", false),
+      getRouteSnapshot(appUrl, "/admin", false),
     ]),
   );
   const publicUrlObject = new URL(publicUrl);

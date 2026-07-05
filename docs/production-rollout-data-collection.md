@@ -18,7 +18,7 @@ The current local working copy is:
 
 Do not put passwords, API keys, tokens, secrets, or private notes in these
 files. This packet is only for launch users, chapters, roles, coach coverage,
-and launch campaigns.
+launch campaigns, Luma calendar mappings, pilot proof, and launch ownership.
 
 ## Who Owns Each File
 
@@ -30,18 +30,25 @@ and launch campaigns.
 | `staff-roles.csv` | DS / HQ launch owner | Which staff/admin users can support launch |
 | `coach-assignments.csv` | Sales/coaching owner | Which coach owns each chapter |
 | `campaigns.csv` | HQ launch owner | Which launch campaign each chapter starts with |
+| `luma-calendars.csv` | DS / Luma owner | Which Luma calendar belongs to each launch chapter |
+| `pilot-event-proof.csv` | Launch owner + DS | Which 5 pilot chapters have proven RSVP, attendance, points, audit, and zero-send posture |
+| `launch-owners.csv` | Nick / HQ launch owner | Who owns production apply, support, rollback, and launch decisions |
 
 ## Minimum Ready Packet
 
 The first production rollout packet must include:
 
 - 30 active chapters.
+- At least 500 approved student/leader users across those chapters.
 - At least one approved chapter leader for every active chapter.
 - At least one approved member for every active chapter.
 - One active coach assignment for every active chapter.
 - One active launch campaign for every active chapter.
+- One linked Luma calendar mapping for every active chapter.
+- At least 5 pilot chapters with ready event-loop proof.
 - At least one active `admin` staff role for day-one support.
 - At least one active `ds_admin` or `super_admin` for launch controls.
+- Active `support`, `rollback`, and `production_apply` owners.
 - Real user emails only.
 
 The validator blocks fake/test emails, unknown user references, unknown chapter
@@ -162,6 +169,61 @@ Rules:
   approved launch campaign.
 - `slug` should be stable and lowercase, for example `rush-month-ucla`.
 
+### luma-calendars.csv
+
+Headers:
+
+```text
+chapterId,calendarId,calendarName,status
+```
+
+Rules:
+
+- Every active chapter needs one linked Luma calendar row.
+- `chapterId` must exist in `chapters.csv`.
+- `calendarId` is the Luma calendar id, not an API key.
+- `status` should be `linked` when the chapter calendar is ready for event
+  readback.
+
+### pilot-event-proof.csv
+
+Headers:
+
+```text
+chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status
+```
+
+Rules:
+
+- At least 5 chapters need `status` set to `ready`.
+- A ready row must have at least one RSVP, one attendance check-in, one points
+  award, `auditEvidence` set to `recorded`, and `outboxStatus` set to
+  `zero_sends`.
+- This proves the event loop before broad invitations. It does not enable n8n,
+  HubSpot, warehouse, Power BI, SMS, email, or AI sends.
+
+### launch-owners.csv
+
+Headers:
+
+```text
+email,ownerType,displayName,status
+```
+
+Allowed `ownerType` values:
+
+- `production_apply`
+- `support`
+- `rollback`
+- `launch_decision`
+
+Rules:
+
+- Include active `support`, `rollback`, and `production_apply` owners.
+- Owner emails must also exist in `users.csv`.
+- The `launch_decision` owner is recommended so the final go/no-go owner is
+  visible in the packet.
+
 ## Build And Validate
 
 After the CSV files are filled with real data:
@@ -180,6 +242,9 @@ pnpm rollout:build \
   --staff-roles rollout-csv/staff-roles.csv \
   --coach-assignments rollout-csv/coach-assignments.csv \
   --campaigns rollout-csv/campaigns.csv \
+  --luma-calendars rollout-csv/luma-calendars.csv \
+  --pilot-event-proof rollout-csv/pilot-event-proof.csv \
+  --launch-owners rollout-csv/launch-owners.csv \
   --out production-rollout-packet.json
 ```
 
@@ -201,8 +266,13 @@ Before any production data apply, confirm:
 - Nick approves the 30 chapters.
 - DS approves the user and role apply path.
 - The production apply owner is named.
-- External writes remain off: HubSpot, Luma writes, n8n, warehouse, Power BI,
-  SMS, email, and AI actions.
+- The support owner and rollback owner are named.
+- The 5-chapter Luma event loop has proof for RSVP, attendance, points, audit,
+  and zero external sends.
+- External writes remain off: HubSpot, n8n, warehouse, Power BI, SMS, email,
+  and AI actions.
+- Luma writes stay limited to the separately approved event, RSVP, and
+  attendance/check-in path.
 
 ## Production Apply Boundary
 

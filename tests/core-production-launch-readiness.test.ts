@@ -172,18 +172,23 @@ function createReadyRolloutReadiness(): ProductionRolloutBootstrapReadiness {
     ready: true,
     counts: {
       activeChapters: 30,
-      users: 63,
-      approvedMemberships: 60,
+      users: 503,
+      approvedMemberships: 500,
       activeStaffRoles: 3,
       activeCoachAssignments: 30,
       activeCampaigns: 30,
+      approvedStudentMemberships: 500,
+      linkedLumaCalendars: 30,
+      readyPilotEventProofChapters: 5,
+      activeLaunchOwners: 4,
     },
     blockers: [],
     warnings: [],
     nextSteps: [
       "Create Supabase Auth users through invite or approved admin flow.",
-      "Insert matching profiles, chapters, memberships, staff roles, coach assignments, and campaigns.",
-      "Run signed-in route checks for /app, /leader, and /staff before inviting all chapters.",
+      "Insert matching profiles, chapters, memberships, staff roles, coach assignments, campaigns, and Luma calendar mappings.",
+      "Run the 5-chapter Luma event, RSVP, attendance, points, and leaderboard pilot proof before inviting all chapters.",
+      "Run signed-in route checks for /app, /leader, /staff, and /admin before inviting all chapters.",
     ],
   };
 }

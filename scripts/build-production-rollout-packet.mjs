@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm rollout:build --chapters chapters.csv --users users.csv --memberships memberships.csv --staff-roles staff-roles.csv --coach-assignments coach-assignments.csv --campaigns campaigns.csv --out production-rollout-packet.json",
+  "  pnpm rollout:build --chapters chapters.csv --users users.csv --memberships memberships.csv --staff-roles staff-roles.csv --coach-assignments coach-assignments.csv --campaigns campaigns.csv --luma-calendars luma-calendars.csv --pilot-event-proof pilot-event-proof.csv --launch-owners launch-owners.csv --out production-rollout-packet.json",
   "",
   "Then run:",
   "  pnpm rollout:check production-rollout-packet.json",
@@ -22,6 +22,9 @@ try {
     staffRoles: await readText(args.staffRoles),
     coachAssignments: await readText(args.coachAssignments),
     campaigns: await readText(args.campaigns),
+    lumaCalendars: await readText(args.lumaCalendars),
+    pilotEventProof: await readText(args.pilotEventProof),
+    launchOwners: await readText(args.launchOwners),
   });
   const outPath = resolve(args.out);
 
@@ -69,6 +72,9 @@ function parseArgs(args) {
     "staffRoles",
     "coachAssignments",
     "campaigns",
+    "lumaCalendars",
+    "pilotEventProof",
+    "launchOwners",
     "out",
   ];
 

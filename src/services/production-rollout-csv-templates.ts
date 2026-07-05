@@ -35,6 +35,31 @@ export const productionRolloutCsvTemplates: ProductionRolloutCsvTemplate[] = [
     description: "One row per chapter launch campaign.",
     headers: ["chapterId", "name", "slug", "status"],
   },
+  {
+    filename: "luma-calendars.csv",
+    description: "One row per chapter-to-Luma calendar mapping.",
+    headers: ["chapterId", "calendarId", "calendarName", "status"],
+  },
+  {
+    filename: "pilot-event-proof.csv",
+    description: "One row per pilot chapter proving RSVP, attendance, points, audit, and outbox state.",
+    headers: [
+      "chapterId",
+      "eventName",
+      "lumaEventId",
+      "rsvpCount",
+      "attendanceCount",
+      "pointsAwardedCount",
+      "auditEvidence",
+      "outboxStatus",
+      "status",
+    ],
+  },
+  {
+    filename: "launch-owners.csv",
+    description: "One row per named owner for production apply, support, rollback, and launch decisions.",
+    headers: ["email", "ownerType", "displayName", "status"],
+  },
 ];
 
 export function getProductionRolloutCsvTemplateContent(
@@ -65,6 +90,9 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     `  --staff-roles ${outputDirectoryName}/staff-roles.csv \\`,
     `  --coach-assignments ${outputDirectoryName}/coach-assignments.csv \\`,
     `  --campaigns ${outputDirectoryName}/campaigns.csv \\`,
+    `  --luma-calendars ${outputDirectoryName}/luma-calendars.csv \\`,
+    `  --pilot-event-proof ${outputDirectoryName}/pilot-event-proof.csv \\`,
+    `  --launch-owners ${outputDirectoryName}/launch-owners.csv \\`,
     "  --out production-rollout-packet.json",
     "```",
     "",
@@ -76,7 +104,11 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     "- Use real user emails only.",
     "- Do not add passwords, tokens, API keys, secrets, or helper columns.",
     "- Keep headers exactly as generated.",
+    "- The first rollout requires at least 500 approved student/leader users.",
     "- Every active chapter needs at least one approved leader, one active coach assignment, and one active campaign.",
+    "- Every active chapter needs a linked Luma calendar mapping.",
+    "- At least 5 pilot chapters need ready event-loop proof: RSVP, attendance, points, audit, and zero external sends.",
+    "- Name active support, rollback, and production apply owners before inviting chapters.",
     "- The first rollout requires at least 30 active chapters.",
     "",
     "Files:",

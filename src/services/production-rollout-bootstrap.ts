@@ -43,6 +43,32 @@ export type ProductionBootstrapCampaign = {
   status?: "draft" | "active" | "complete" | "archived";
 };
 
+export type ProductionBootstrapLumaCalendar = {
+  chapterId: string;
+  calendarId: string;
+  calendarName?: string;
+  status?: "linked" | "needs_setup" | "inactive";
+};
+
+export type ProductionBootstrapPilotEventProof = {
+  chapterId: string;
+  eventName: string;
+  lumaEventId: string;
+  rsvpCount: number;
+  attendanceCount: number;
+  pointsAwardedCount: number;
+  auditEvidence: "recorded" | "missing";
+  outboxStatus: "zero_sends" | "sends_detected" | "not_checked";
+  status?: "ready" | "needs_review" | "blocked";
+};
+
+export type ProductionBootstrapLaunchOwner = {
+  email: string;
+  ownerType: "production_apply" | "support" | "rollback" | "launch_decision";
+  displayName?: string;
+  status?: "active" | "backup" | "inactive";
+};
+
 export type ProductionRolloutBootstrapPacket = {
   chapters: ProductionBootstrapChapter[];
   users: ProductionBootstrapUser[];
@@ -50,6 +76,9 @@ export type ProductionRolloutBootstrapPacket = {
   staffRoles: ProductionBootstrapStaffRole[];
   coachAssignments: ProductionBootstrapCoachAssignment[];
   campaigns: ProductionBootstrapCampaign[];
+  lumaCalendars?: ProductionBootstrapLumaCalendar[];
+  pilotEventProof?: ProductionBootstrapPilotEventProof[];
+  launchOwners?: ProductionBootstrapLaunchOwner[];
 };
 
 export type ProductionRolloutBootstrapReadiness = {
@@ -61,6 +90,10 @@ export type ProductionRolloutBootstrapReadiness = {
     activeStaffRoles: number;
     activeCoachAssignments: number;
     activeCampaigns: number;
+    approvedStudentMemberships: number;
+    linkedLumaCalendars: number;
+    readyPilotEventProofChapters: number;
+    activeLaunchOwners: number;
   };
   blockers: string[];
   warnings: string[];
@@ -69,6 +102,8 @@ export type ProductionRolloutBootstrapReadiness = {
 
 export type ProductionRolloutBootstrapOptions = {
   minimumChapterCount?: number;
+  minimumStudentMembershipCount?: number;
+  minimumPilotChapterCount?: number;
 };
 
 export function formatProductionRolloutBootstrapReadiness(
@@ -86,6 +121,10 @@ export function formatProductionRolloutBootstrapReadiness(
     `- active staff roles: ${readiness.counts.activeStaffRoles}`,
     `- active coach assignments: ${readiness.counts.activeCoachAssignments}`,
     `- active campaigns: ${readiness.counts.activeCampaigns}`,
+    `- approved student/leader users: ${readiness.counts.approvedStudentMemberships}`,
+    `- linked Luma calendars: ${readiness.counts.linkedLumaCalendars}`,
+    `- ready pilot event-loop chapters: ${readiness.counts.readyPilotEventProofChapters}`,
+    `- active launch owners: ${readiness.counts.activeLaunchOwners}`,
     "",
     "Blockers:",
     ...formatList(readiness.blockers, "None"),
@@ -121,6 +160,8 @@ export function getProductionRolloutBootstrapReadiness(
   options: ProductionRolloutBootstrapOptions = {},
 ): ProductionRolloutBootstrapReadiness {
   const minimumChapterCount = options.minimumChapterCount ?? 30;
+  const minimumStudentMembershipCount = options.minimumStudentMembershipCount ?? 500;
+  const minimumPilotChapterCount = options.minimumPilotChapterCount ?? 5;
   const blockers: string[] = [];
   const warnings: string[] = [];
   const activeChapters = packet.chapters.filter(
@@ -138,8 +179,26 @@ export function getProductionRolloutBootstrapReadiness(
   const activeCampaigns = packet.campaigns.filter(
     (campaign) => (campaign.status ?? "active") === "active",
   );
+  const linkedLumaCalendars = (packet.lumaCalendars ?? []).filter(
+    (calendar) => (calendar.status ?? "linked") === "linked",
+  );
+  const readyPilotEventProof = (packet.pilotEventProof ?? []).filter(
+    (proof) => (proof.status ?? "ready") === "ready",
+  );
+  const activeLaunchOwners = (packet.launchOwners ?? []).filter(
+    (owner) => (owner.status ?? "active") === "active",
+  );
   const userEmails = new Set(packet.users.map((user) => normalizeEmail(user.email)));
   const chapterIds = new Set(packet.chapters.map((chapter) => chapter.id));
+  const approvedStudentEmails = new Set(
+    approvedMemberships.map((membership) => normalizeEmail(membership.email)),
+  );
+  const linkedLumaChapterIds = new Set(
+    linkedLumaCalendars.map((calendar) => calendar.chapterId),
+  );
+  const readyPilotProofChapterIds = new Set(
+    readyPilotEventProof.map((proof) => proof.chapterId),
+  );
 
   if (activeChapters.length < minimumChapterCount) {
     const chapterLabel = minimumChapterCount === 1 ? "chapter" : "chapters";
@@ -155,6 +214,12 @@ export function getProductionRolloutBootstrapReadiness(
   if (approvedMemberships.length === 0) {
     blockers.push(
       "Add approved chapter memberships to memberships.csv before production rollout.",
+    );
+  }
+
+  if (approvedStudentEmails.size < minimumStudentMembershipCount) {
+    blockers.push(
+      `Add at least ${minimumStudentMembershipCount} approved student/leader users before inviting the first ${minimumChapterCount} chapters. Current approved student/leader users: ${approvedStudentEmails.size}.`,
     );
   }
 
@@ -177,6 +242,11 @@ export function getProductionRolloutBootstrapReadiness(
     blockers,
     packet.chapters.map((chapter) => chapter.id),
     "chapter id",
+  );
+  addDuplicateBlockers(
+    blockers,
+    linkedLumaCalendars.map((calendar) => calendar.chapterId),
+    "linked Luma chapter mapping",
   );
 
   for (const user of packet.users) {
@@ -227,6 +297,36 @@ export function getProductionRolloutBootstrapReadiness(
     }
   }
 
+  for (const calendar of packet.lumaCalendars ?? []) {
+    if (!chapterIds.has(calendar.chapterId)) {
+      blockers.push(
+        `Luma calendar ${calendar.calendarId} references unknown chapter ${calendar.chapterId}.`,
+      );
+    }
+
+    if ((calendar.status ?? "linked") === "linked" && !calendar.calendarId.trim()) {
+      blockers.push(`${calendar.chapterId} needs a non-empty Luma calendar id.`);
+    }
+  }
+
+  for (const proof of packet.pilotEventProof ?? []) {
+    if (!chapterIds.has(proof.chapterId)) {
+      blockers.push(
+        `Pilot event proof ${proof.lumaEventId} references unknown chapter ${proof.chapterId}.`,
+      );
+    }
+
+    if ((proof.status ?? "ready") === "ready") {
+      addReadyPilotProofBlockers(blockers, proof);
+    }
+  }
+
+  for (const owner of packet.launchOwners ?? []) {
+    if (!userEmails.has(normalizeEmail(owner.email))) {
+      blockers.push(`Launch owner references unknown user ${owner.email}.`);
+    }
+  }
+
   for (const chapter of activeChapters) {
     const chapterMemberships = approvedMemberships.filter(
       (membership) => membership.chapterId === chapter.id,
@@ -251,6 +351,10 @@ export function getProductionRolloutBootstrapReadiness(
 
     if (!hasActiveCampaign) {
       blockers.push(`${chapter.name} needs one active launch campaign.`);
+    }
+
+    if (!linkedLumaChapterIds.has(chapter.id)) {
+      blockers.push(`${chapter.name} needs a linked Luma calendar mapping.`);
     }
   }
 
@@ -280,6 +384,16 @@ export function getProductionRolloutBootstrapReadiness(
     blockers.push("Add at least one DS Admin or Super Admin for launch controls.");
   }
 
+  if (readyPilotProofChapterIds.size < minimumPilotChapterCount) {
+    blockers.push(
+      `Add ready event-loop proof for at least ${minimumPilotChapterCount} pilot chapters before inviting ${minimumChapterCount} chapters. Current ready pilot chapters: ${readyPilotProofChapterIds.size}.`,
+    );
+  }
+
+  addMissingOwnerBlocker(blockers, activeLaunchOwners, "support");
+  addMissingOwnerBlocker(blockers, activeLaunchOwners, "rollback");
+  addMissingOwnerBlocker(blockers, activeLaunchOwners, "production_apply");
+
   if (containsSecretLikeField(packet)) {
     blockers.push(
       "Remove password, token, API key, and secret fields. Production packets must not carry credentials.",
@@ -307,6 +421,10 @@ export function getProductionRolloutBootstrapReadiness(
       activeStaffRoles: activeStaffRoles.length,
       activeCoachAssignments: activeCoachAssignments.length,
       activeCampaigns: activeCampaigns.length,
+      approvedStudentMemberships: approvedStudentEmails.size,
+      linkedLumaCalendars: linkedLumaCalendars.length,
+      readyPilotEventProofChapters: readyPilotProofChapterIds.size,
+      activeLaunchOwners: activeLaunchOwners.length,
     },
     blockers,
     warnings,
@@ -314,8 +432,9 @@ export function getProductionRolloutBootstrapReadiness(
       blockers.length === 0
         ? [
             "Create Supabase Auth users through invite or approved admin flow.",
-            "Insert matching profiles, chapters, memberships, staff roles, coach assignments, and campaigns.",
-            "Run signed-in route checks for /app, /leader, and /staff before inviting all chapters.",
+            "Insert matching profiles, chapters, memberships, staff roles, coach assignments, campaigns, and Luma calendar mappings.",
+            "Run the 5-chapter Luma event, RSVP, attendance, points, and leaderboard pilot proof before inviting all chapters.",
+            "Run signed-in route checks for /app, /leader, /staff, and /admin before inviting all chapters.",
           ]
         : [
             "Fix the blockers in the rollout packet.",
@@ -323,6 +442,49 @@ export function getProductionRolloutBootstrapReadiness(
             "Keep the local fake seed file out of production.",
           ],
   };
+}
+
+function addReadyPilotProofBlockers(
+  blockers: string[],
+  proof: ProductionBootstrapPilotEventProof,
+) {
+  const proofLabel = `${proof.chapterId} pilot event ${proof.lumaEventId}`;
+
+  if (!proof.eventName.trim()) {
+    blockers.push(`${proofLabel} is missing an event name.`);
+  }
+
+  if (proof.rsvpCount < 1) {
+    blockers.push(`${proofLabel} needs at least one RSVP.`);
+  }
+
+  if (proof.attendanceCount < 1) {
+    blockers.push(`${proofLabel} needs at least one attendance check-in.`);
+  }
+
+  if (proof.pointsAwardedCount < 1) {
+    blockers.push(`${proofLabel} needs at least one points award.`);
+  }
+
+  if (proof.auditEvidence !== "recorded") {
+    blockers.push(`${proofLabel} needs recorded audit evidence.`);
+  }
+
+  if (proof.outboxStatus !== "zero_sends") {
+    blockers.push(`${proofLabel} needs zero external sends in the outbox.`);
+  }
+}
+
+function addMissingOwnerBlocker(
+  blockers: string[],
+  owners: ProductionBootstrapLaunchOwner[],
+  ownerType: ProductionBootstrapLaunchOwner["ownerType"],
+) {
+  if (owners.some((owner) => owner.ownerType === ownerType)) {
+    return;
+  }
+
+  blockers.push(`Add an active ${ownerType.replace("_", " ")} owner to launch-owners.csv.`);
 }
 
 function addDuplicateBlockers(

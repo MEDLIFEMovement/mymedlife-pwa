@@ -2,7 +2,10 @@ import type {
   ProductionBootstrapCampaign,
   ProductionBootstrapChapter,
   ProductionBootstrapCoachAssignment,
+  ProductionBootstrapLaunchOwner,
+  ProductionBootstrapLumaCalendar,
   ProductionBootstrapMembership,
+  ProductionBootstrapPilotEventProof,
   ProductionBootstrapStaffRole,
   ProductionBootstrapUser,
   ProductionRolloutBootstrapPacket,
@@ -15,6 +18,9 @@ export type ProductionRolloutCsvTables = {
   staffRoles: string;
   coachAssignments: string;
   campaigns: string;
+  lumaCalendars: string;
+  pilotEventProof: string;
+  launchOwners: string;
 };
 
 type CsvRow = Record<string, string>;
@@ -44,6 +50,27 @@ const tableHeaders = {
     required: ["chapterId", "name", "slug"],
     optional: ["status"],
   },
+  lumaCalendars: {
+    required: ["chapterId", "calendarId"],
+    optional: ["calendarName", "status"],
+  },
+  pilotEventProof: {
+    required: [
+      "chapterId",
+      "eventName",
+      "lumaEventId",
+      "rsvpCount",
+      "attendanceCount",
+      "pointsAwardedCount",
+      "auditEvidence",
+      "outboxStatus",
+    ],
+    optional: ["status"],
+  },
+  launchOwners: {
+    required: ["email", "ownerType"],
+    optional: ["displayName", "status"],
+  },
 } as const;
 
 const allowedValues = {
@@ -60,6 +87,12 @@ const allowedValues = {
   staffStatus: ["active", "inactive", "ended"],
   coachType: ["expansion", "portfolio"],
   campaignStatus: ["draft", "active", "complete", "archived"],
+  lumaCalendarStatus: ["linked", "needs_setup", "inactive"],
+  pilotAuditEvidence: ["recorded", "missing"],
+  pilotOutboxStatus: ["zero_sends", "sends_detected", "not_checked"],
+  pilotStatus: ["ready", "needs_review", "blocked"],
+  launchOwnerType: ["production_apply", "support", "rollback", "launch_decision"],
+  launchOwnerStatus: ["active", "backup", "inactive"],
 } as const;
 
 export function buildProductionRolloutPacketFromCsvTables(
@@ -92,6 +125,21 @@ export function buildProductionRolloutPacketFromCsvTables(
       "campaigns",
       tableHeaders.campaigns,
     ).map(toCampaign),
+    lumaCalendars: parseCsvTable(
+      tables.lumaCalendars,
+      "lumaCalendars",
+      tableHeaders.lumaCalendars,
+    ).map(toLumaCalendar),
+    pilotEventProof: parseCsvTable(
+      tables.pilotEventProof,
+      "pilotEventProof",
+      tableHeaders.pilotEventProof,
+    ).map(toPilotEventProof),
+    launchOwners: parseCsvTable(
+      tables.launchOwners,
+      "launchOwners",
+      tableHeaders.launchOwners,
+    ).map(toLaunchOwner),
   };
 }
 
@@ -278,6 +326,65 @@ function toCampaign(row: CsvRow): ProductionBootstrapCampaign {
   });
 }
 
+function toLumaCalendar(row: CsvRow): ProductionBootstrapLumaCalendar {
+  requireOptionalValue(
+    row.status,
+    allowedValues.lumaCalendarStatus,
+    "Luma calendar status",
+  );
+
+  return omitEmpty({
+    chapterId: row.chapterId,
+    calendarId: row.calendarId,
+    calendarName: row.calendarName,
+    status: row.status as ProductionBootstrapLumaCalendar["status"],
+  });
+}
+
+function toPilotEventProof(row: CsvRow): ProductionBootstrapPilotEventProof {
+  requireValue(
+    row.auditEvidence,
+    allowedValues.pilotAuditEvidence,
+    "pilot event auditEvidence",
+  );
+  requireValue(
+    row.outboxStatus,
+    allowedValues.pilotOutboxStatus,
+    "pilot event outboxStatus",
+  );
+  requireOptionalValue(row.status, allowedValues.pilotStatus, "pilot event status");
+
+  return omitEmpty({
+    chapterId: row.chapterId,
+    eventName: row.eventName,
+    lumaEventId: row.lumaEventId,
+    rsvpCount: parseWholeNumber(row.rsvpCount, "pilot event rsvpCount"),
+    attendanceCount: parseWholeNumber(
+      row.attendanceCount,
+      "pilot event attendanceCount",
+    ),
+    pointsAwardedCount: parseWholeNumber(
+      row.pointsAwardedCount,
+      "pilot event pointsAwardedCount",
+    ),
+    auditEvidence: row.auditEvidence as ProductionBootstrapPilotEventProof["auditEvidence"],
+    outboxStatus: row.outboxStatus as ProductionBootstrapPilotEventProof["outboxStatus"],
+    status: row.status as ProductionBootstrapPilotEventProof["status"],
+  });
+}
+
+function toLaunchOwner(row: CsvRow): ProductionBootstrapLaunchOwner {
+  requireValue(row.ownerType, allowedValues.launchOwnerType, "launch owner ownerType");
+  requireOptionalValue(row.status, allowedValues.launchOwnerStatus, "launch owner status");
+
+  return omitEmpty({
+    email: row.email,
+    ownerType: row.ownerType as ProductionBootstrapLaunchOwner["ownerType"],
+    displayName: row.displayName,
+    status: row.status as ProductionBootstrapLaunchOwner["status"],
+  });
+}
+
 function requireOptionalValue(
   value: string | undefined,
   allowed: readonly string[],
@@ -298,6 +405,16 @@ function requireValue(value: string, allowed: readonly string[], label: string) 
   throw new Error(
     `Invalid ${label} "${value}". Expected one of: ${allowed.join(", ")}.`,
   );
+}
+
+function parseWholeNumber(value: string, label: string) {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < 0) {
+    throw new Error(`${label} must be a zero-or-greater whole number.`);
+  }
+
+  return parsed;
 }
 
 function omitEmpty<T extends Record<string, unknown>>(value: T): T {

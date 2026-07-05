@@ -30,6 +30,15 @@ export function getProductionRolloutHandoff(
   const activeCampaigns = packet.campaigns.filter(
     (campaign) => (campaign.status ?? "active") === "active",
   );
+  const linkedLumaCalendars = (packet.lumaCalendars ?? []).filter(
+    (calendar) => (calendar.status ?? "linked") === "linked",
+  );
+  const readyPilotEventProof = (packet.pilotEventProof ?? []).filter(
+    (proof) => (proof.status ?? "ready") === "ready",
+  );
+  const activeLaunchOwners = (packet.launchOwners ?? []).filter(
+    (owner) => (owner.status ?? "active") === "active",
+  );
   const approvedMemberships = packet.memberships.filter(
     (membership) => (membership.status ?? "approved") === "approved",
   );
@@ -86,12 +95,34 @@ export function getProductionRolloutHandoff(
         ),
       },
       {
+        title: "Luma calendar mappings to review",
+        items: linkedLumaCalendars.map(
+          (calendar) =>
+            `${calendar.chapterId} -> ${calendar.calendarId}${calendar.calendarName ? ` (${calendar.calendarName})` : ""}`,
+        ),
+      },
+      {
+        title: "Pilot event-loop proof to review",
+        items: readyPilotEventProof.map(
+          (proof) =>
+            `${proof.chapterId} -> ${proof.eventName} (${proof.lumaEventId}); RSVPs ${proof.rsvpCount}, attendance ${proof.attendanceCount}, points ${proof.pointsAwardedCount}, audit ${proof.auditEvidence}, outbox ${proof.outboxStatus}`,
+        ),
+      },
+      {
+        title: "Launch owners to confirm",
+        items: activeLaunchOwners.map(
+          (owner) =>
+            `${owner.ownerType} -> ${owner.email}${owner.displayName ? ` (${owner.displayName})` : ""}`,
+        ),
+      },
+      {
         title: "Safety rules",
         items: [
           "Do not include passwords, API keys, tokens, or secrets in the packet.",
           "Create Auth users through the approved production Supabase path only.",
-          "Keep HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes disabled during this apply.",
-          "Run signed-in route checks for /app, /leader, and /staff before inviting all chapters.",
+          "Keep HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes disabled during this apply.",
+          "Keep Luma writes limited to the separately approved event, RSVP, and attendance/check-in path.",
+          "Run signed-in route checks for /app, /leader, /staff, and /admin before inviting all chapters.",
         ],
       },
     ],
@@ -125,6 +156,10 @@ function createReadinessSection(readiness: ProductionRolloutBootstrapReadiness) 
     `active staff roles: ${readiness.counts.activeStaffRoles}`,
     `active coach assignments: ${readiness.counts.activeCoachAssignments}`,
     `active campaigns: ${readiness.counts.activeCampaigns}`,
+    `approved student/leader users: ${readiness.counts.approvedStudentMemberships}`,
+    `linked Luma calendars: ${readiness.counts.linkedLumaCalendars}`,
+    `ready pilot event-loop chapters: ${readiness.counts.readyPilotEventProofChapters}`,
+    `active launch owners: ${readiness.counts.activeLaunchOwners}`,
   ];
 
   return {

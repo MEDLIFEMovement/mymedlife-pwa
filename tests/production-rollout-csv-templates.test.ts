@@ -6,7 +6,7 @@ import {
 } from "@/services/production-rollout-csv-templates";
 
 describe("production rollout CSV templates", () => {
-  it("provides the six files required by the rollout builder", () => {
+  it("provides the files required by the rollout builder", () => {
     expect(productionRolloutCsvTemplates.map((template) => template.filename)).toEqual([
       "chapters.csv",
       "users.csv",
@@ -14,6 +14,9 @@ describe("production rollout CSV templates", () => {
       "staff-roles.csv",
       "coach-assignments.csv",
       "campaigns.csv",
+      "luma-calendars.csv",
+      "pilot-event-proof.csv",
+      "launch-owners.csv",
     ]);
   });
 
@@ -29,6 +32,9 @@ describe("production rollout CSV templates", () => {
       "email,roleKey,status\n",
       "coachEmail,chapterId,coachType,status\n",
       "chapterId,name,slug,status\n",
+      "chapterId,calendarId,calendarName,status\n",
+      "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status\n",
+      "email,ownerType,displayName,status\n",
     ]);
   });
 
@@ -47,7 +53,11 @@ describe("production rollout CSV templates", () => {
     expect(readme).toContain("pnpm rollout:check-csv --dir rollout-csv");
     expect(readme).toContain("pnpm rollout:build");
     expect(readme).toContain("--chapters rollout-csv/chapters.csv");
+    expect(readme).toContain("--luma-calendars rollout-csv/luma-calendars.csv");
+    expect(readme).toContain("--pilot-event-proof rollout-csv/pilot-event-proof.csv");
+    expect(readme).toContain("--launch-owners rollout-csv/launch-owners.csv");
     expect(readme).toContain("pnpm rollout:check production-rollout-packet.json");
+    expect(readme).toContain("The first rollout requires at least 500 approved student/leader users.");
     expect(readme).toContain("The first rollout requires at least 30 active chapters.");
   });
 });
