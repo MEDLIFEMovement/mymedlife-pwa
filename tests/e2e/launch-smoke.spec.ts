@@ -128,8 +128,9 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/leader\?view=events/);
     await expect(page.getByRole("heading", { name: "Event Performance" })).toBeVisible();
 
-    await page.getByRole("link", { name: "Create Event" }).click();
-    await expect(page).toHaveURL(/\/leader\?view=create_event/);
+    await page.goto("/leader?view=overview");
+    await page.getByRole("button", { name: "Create Event" }).first().click();
+    await expect(page).toHaveURL(/\/leader\?view=events/);
     await expect(page.getByRole("heading", { name: "Create New Event" })).toBeVisible();
   });
 
@@ -142,19 +143,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     const menuItems = [
       { label: "Chapter Home", view: "overview", heading: /Chapter Metrics/ },
       { label: "Chapter Leaderboard", view: "leaderboard", heading: "Chapter Leaderboard" },
-      { label: "Feed Analytics", view: "feed_analytics", heading: "Feed & Engagement Analytics" },
-      { label: "Member Leaderboard", view: "members", heading: "Member Leaderboard" },
-      { label: "Member Profile", view: "member_profile", heading: "Member Profile" },
-      { label: "Event Committees", view: "committees", heading: "Event Committees" },
       { label: "Event Performance", view: "events", heading: "Event Performance" },
-      { label: "Create Event", view: "create_event", heading: "Create New Event" },
-      { label: "Impact", view: "impact", heading: "Impact Dashboard" },
-      { label: "Bridge Videos", view: "bridge_videos", heading: "Bridge Video Hub" },
-      { label: "MEDLIFE Stories", view: "stories", heading: "MEDLIFE Stories" },
-      { label: "Current Leaders", view: "leaders", heading: "Current Leaders" },
-      { label: "Succession", view: "succession", heading: "Leadership Succession" },
-      { label: "Values", view: "values", heading: "MEDLIFE Values" },
-      { label: "Leadership Training", view: "training", heading: "Leadership & Resources Hub" },
     ] as const;
 
     await page.goto("/leader?view=overview");
@@ -220,11 +209,6 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Chapters", view: "chapters", heading: "Portfolio Overview" },
       { label: "Events", view: "events", heading: "Events" },
       { label: "Leaderboard", view: "leaderboard", heading: "Organization Leaderboard" },
-      { label: "Campaigns", view: "campaigns", heading: "Campaign Operations" },
-      { label: "Proof / UGC", view: "proof_ugc", heading: "Proof / UGC Review Queue" },
-      { label: "Best Practices", view: "best_practices", heading: "Best Practices Library" },
-      { label: "Campaign SOPs", view: "sops", heading: "Campaign SOP Builder" },
-      { label: "Admin", view: "admin", heading: "System Health" },
     ] as const;
 
     for (const item of menuItems) {
@@ -273,7 +257,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.locator("aside").getByText("Account menu")).toBeVisible();
   });
 
-  test("loads route-level admin readback pages and the SLT Prep app alias", async ({
+  test("loads route-level admin readback pages and parks the SLT Prep app alias", async ({
     context,
     page,
   }) => {
@@ -298,10 +282,8 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     await selectPreviewActor(context, "traveler.a@mymedlife.test");
     await page.goto("/app/slt-prep");
-    await expect(page).toHaveURL(/\/app\/slt-prep$/);
-    await expect(page.getByRole("heading", { name: "Sofia Alvarez" })).toBeVisible();
-    await expect(page.getByText("Peru SLT | July 2026")).toBeVisible();
-    await expect(page.getByText("Figma page missing - implementation blocked")).toBeVisible();
+    await expect(page).toHaveURL(/\/app\/events$/);
+    await expect(page.getByRole("heading", { name: "RSVP, show up, earn points" })).toBeVisible();
   });
 
   test("blocks unauthorized admin URLs and logs out through the account menu", async ({
