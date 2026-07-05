@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 
 const usage = [
   "Usage:",
-  "  pnpm production:data-counts [--minimum-chapters=30]",
+  "  pnpm production:data-counts [--minimum-chapters=30] [--minimum-approved-members=500]",
   "",
   "This is read-only. It runs aggregate count queries against the linked production Supabase project.",
   "It does not display user data, create rows, apply migrations, change auth, or enable integrations.",
@@ -18,6 +18,7 @@ if (args.includes("--help") || args.includes("-h")) {
 
 try {
   const minimumChapters = getMinimumChapterCount(args);
+  const minimumApprovedMembers = getMinimumApprovedMemberCount(args);
   const {
     formatProductionLiveDataReadiness,
     getProductionLiveDataReadiness,
@@ -57,6 +58,7 @@ try {
   const counts = parseProductionLiveDataCountCsv(combinedOutput);
   const readiness = getProductionLiveDataReadiness(counts, {
     minimumChapterCount: minimumChapters,
+    minimumApprovedMembershipCount: minimumApprovedMembers,
   });
 
   console.log(formatProductionLiveDataReadiness(readiness));
@@ -71,13 +73,21 @@ try {
 }
 
 function getMinimumChapterCount(args) {
-  const explicitValue = getValue(args, "--minimum-chapters");
-  const equalsFlag = args.find((arg) => arg.startsWith("--minimum-chapters="));
-  const value = explicitValue ?? equalsFlag?.split("=")[1] ?? "30";
+  return getPositiveWholeNumberArg(args, "--minimum-chapters", "30");
+}
+
+function getMinimumApprovedMemberCount(args) {
+  return getPositiveWholeNumberArg(args, "--minimum-approved-members", "500");
+}
+
+function getPositiveWholeNumberArg(args, name, defaultValue) {
+  const explicitValue = getValue(args, name);
+  const equalsFlag = args.find((arg) => arg.startsWith(`${name}=`));
+  const value = explicitValue ?? equalsFlag?.split("=")[1] ?? defaultValue;
   const parsed = Number(value);
 
   if (!Number.isInteger(parsed) || parsed < 1) {
-    throw new Error("--minimum-chapters must be a positive whole number.");
+    throw new Error(`${name} must be a positive whole number.`);
   }
 
   return parsed;

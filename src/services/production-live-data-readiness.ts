@@ -19,6 +19,7 @@ export type ProductionLiveDataCounts = Record<ProductionLiveDataRelation, number
 export type ProductionLiveDataReadiness = {
   ready: boolean;
   minimumChapterCount: number;
+  minimumApprovedMembershipCount: number;
   counts: ProductionLiveDataCounts;
   blockers: string[];
   warnings: string[];
@@ -27,6 +28,7 @@ export type ProductionLiveDataReadiness = {
 
 export type ProductionLiveDataReadinessOptions = {
   minimumChapterCount?: number;
+  minimumApprovedMembershipCount?: number;
 };
 
 export function getProductionLiveDataReadiness(
@@ -34,6 +36,8 @@ export function getProductionLiveDataReadiness(
   options: ProductionLiveDataReadinessOptions = {},
 ): ProductionLiveDataReadiness {
   const minimumChapterCount = options.minimumChapterCount ?? 30;
+  const minimumApprovedMembershipCount =
+    options.minimumApprovedMembershipCount ?? 500;
   const blockers: string[] = [];
   const warnings: string[] = [];
   const nextSteps: string[] = [];
@@ -58,6 +62,10 @@ export function getProductionLiveDataReadiness(
 
   if (approvedMemberships === 0) {
     blockers.push("Add approved production memberships for launch users.");
+  } else if (approvedMemberships < minimumApprovedMembershipCount) {
+    blockers.push(
+      `Add at least ${minimumApprovedMembershipCount} approved production memberships before inviting students. Current approved memberships: ${approvedMemberships}.`,
+    );
   }
 
   if (counts["app.staff_role_assignments.active"] === 0) {
@@ -114,6 +122,7 @@ export function getProductionLiveDataReadiness(
   return {
     ready: blockers.length === 0,
     minimumChapterCount,
+    minimumApprovedMembershipCount,
     counts,
     blockers,
     warnings,
@@ -130,6 +139,7 @@ export function formatProductionLiveDataReadiness(
       : "Production live data count check: NOT READY",
     "",
     `Minimum active chapters: ${readiness.minimumChapterCount}`,
+    `Minimum approved memberships: ${readiness.minimumApprovedMembershipCount}`,
     "",
     "Counts:",
     ...productionLiveDataRelations.map(

@@ -298,6 +298,7 @@ function createReadyLiveDataReadiness(): ProductionLiveDataReadiness {
   return {
     ready: true,
     minimumChapterCount: 30,
+    minimumApprovedMembershipCount: 500,
     counts: {
       "auth.users": 503,
       "app.profiles": 503,

@@ -29,5 +29,6 @@ describe("production rollout data collection doc", () => {
     expect(doc).toContain("pnpm production:data-counts > production-live-data-counts.txt");
     expect(doc).toContain("pnpm production:signed-in-route-proof --packet");
     expect(doc).toContain("--live-data-counts production-live-data-counts.txt");
+    expect(doc).toContain("500 approved memberships");
   });
 });
