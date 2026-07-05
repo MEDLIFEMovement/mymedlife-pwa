@@ -84,7 +84,7 @@ export function getProductionRolloutApplyPlan(
           "4. Upsert app.profiles using auth.users.id as app.profiles.id.",
           "5. Create chapter rows and record the packet chapter handle to production chapter UUID map.",
           "6. Create memberships, staff roles, coach assignments, campaigns, and Luma calendar mappings using the resolved UUID map.",
-          "7. Run signed-in route proof for one member, one leader, one staff user, and one admin.",
+          "7. Run signed-in route proof for one member, one leader, one staff user, one admin, and member/leader access for each ready pilot chapter.",
           "8. Complete five-chapter Luma RSVP, attendance, points, audit, and zero-send proof before broad invitations.",
           "9. Run production:invite-gate before inviting the full 30-chapter cohort.",
         ],
