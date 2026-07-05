@@ -379,6 +379,16 @@ pnpm rollout:approval-summary production-rollout-packet.json --out production-ro
 pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org
 ```
 
+If local Supabase is not linked on the review machine, keep the approved
+production database URL in an environment variable and use:
+
+```bash
+pnpm production:data-counts --db-url-env SUPABASE_DB_URL > production-live-data-counts.txt
+```
+
+Do not paste database URLs, passwords, service keys, or tokens into command
+lines, docs, PR comments, or Linear.
+
 ## Review Checklist
 
 Before any production data apply, confirm:

@@ -506,9 +506,19 @@ live Supabase launch tables with:
 pnpm production:data-counts
 ```
 
-This command uses the linked Supabase production project and only returns
-aggregate counts. It does not show user names or emails, create rows, apply
-migrations, change Auth, change RLS, upload files, or enable integrations.
+This command uses the linked Supabase production project by default and only
+returns aggregate counts. If the launch reviewer does not have local Supabase
+linked, keep the approved production database URL in an environment variable and
+run:
+
+```bash
+pnpm production:data-counts --db-url-env SUPABASE_DB_URL
+```
+
+Do not paste database URLs, passwords, service keys, or tokens into command
+lines, docs, PR comments, or Linear. This proof should not show user names or
+emails, create rows, apply migrations, change Auth, change RLS, upload files, or
+enable integrations.
 
 By default it requires at least 30 active chapters, 500 approved production
 memberships, 5 production chapter events, and 5 production Luma event links:
