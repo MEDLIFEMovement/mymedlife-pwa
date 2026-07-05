@@ -18,6 +18,7 @@ describe("production rollout workbook", () => {
     expect(workbook).toContain("# myMEDLIFE 30-Chapter Production Rollout Workbook");
     expect(workbook).toContain("pnpm rollout:check-csv --dir rollout-csv");
     expect(workbook).toContain("pnpm rollout:gaps production-rollout-packet.json");
+    expect(workbook).toContain("pnpm rollout:chapter-matrix --dir rollout-csv");
     expect(workbook).toContain("pnpm production:invite-batches --packet production-rollout-packet.json");
     expect(workbook).toContain("roleKey: general_member, action_committee_member, action_committee_chair, e_board_member, president_vp");
     expect(workbook).toContain("ownerType: production_apply, support, rollback, launch_decision");
