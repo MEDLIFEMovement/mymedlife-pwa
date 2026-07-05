@@ -44,13 +44,15 @@ Verified with Playwright against the running local app:
 - Leader full menu sweep: Chapter Home, Chapter Leaderboard, Feed Analytics, Member Leaderboard, Member Profile, Event Committees, Event Performance, Create Event, Impact, Bridge Videos, MEDLIFE Stories, Current Leaders, Succession, Values, Leadership Training.
 - Staff full menu sweep: Chapters, Events, Leaderboard, Campaigns, Proof / UGC, Best Practices, Campaign SOPs, Admin.
 - Admin visual menu sweep: Overview, Users, Chapters, Modules, Luma Events, Points, Integrations, Audit Logs, System Health, API Keys, Settings.
+- Admin route-level readback: `/admin/users`, `/admin/chapters`, `/admin/integrations/luma`, `/admin/audit-log`, `/admin/integration-outbox`.
+- SLT Prep route alias: `/app/slt-prep` with traveler preview actor.
 - Access/session checks: member preview redirect away from `/admin`; account menu logout returns to `/login`.
 
 Focused browser smoke passed:
 
 ```text
 PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium
-8 passed
+9 passed
 ```
 
 Additional focused repair run:

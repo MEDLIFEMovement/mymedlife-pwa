@@ -231,6 +231,36 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.locator("aside").getByText("Account menu")).toBeVisible();
   });
 
+  test("loads route-level admin readback pages and the SLT Prep app alias", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "ds.admin@mymedlife.test");
+
+    const adminRoutes = [
+      { path: "/admin/users", heading: "User Access Management" },
+      { path: "/admin/chapters", heading: "Chapter Management" },
+      { path: "/admin/integrations/luma", heading: "Luma integration status" },
+      { path: "/admin/audit-log", heading: "DS Admin audit posture" },
+      { path: "/admin/integration-outbox", heading: "DS Admin integration safety review" },
+    ] as const;
+
+    for (const route of adminRoutes) {
+      await page.goto(route.path);
+      await expect(page).toHaveURL(new RegExp(`${route.path}$`));
+      await expect(
+        page.getByRole("heading", { level: 1, name: route.heading }),
+      ).toBeVisible();
+    }
+
+    await selectPreviewActor(context, "traveler.a@mymedlife.test");
+    await page.goto("/app/slt-prep");
+    await expect(page).toHaveURL(/\/app\/slt-prep$/);
+    await expect(page.getByRole("heading", { name: "Sofia Alvarez" })).toBeVisible();
+    await expect(page.getByText("Peru SLT | July 2026")).toBeVisible();
+    await expect(page.getByText("Figma page missing - implementation blocked")).toBeVisible();
+  });
+
   test("blocks unauthorized admin URLs and logs out through the account menu", async ({
     context,
     page,

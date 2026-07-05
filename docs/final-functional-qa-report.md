@@ -69,6 +69,8 @@ Local click-through for the launch-critical menu path is now pass for member mob
   - Staff Events and Leaderboard now render actual launch-lane panels rather than Portfolio Overview.
 - Admin backend visual shell:
   - Primary admin menu click-through was verified for Overview, Users, Chapters, Modules, Luma Events, Points, Integrations, Audit Logs, System Health, API Keys, and Settings.
+  - Route-level admin readback pages were verified for Users, Chapters, Luma, Audit Log, and Integration Outbox.
+  - `/app/slt-prep` was verified with a traveler preview actor.
   - MCP Connections was removed from the primary launch admin menu; MCP Analytics remains in the disabled module group.
   - Footer identity row no longer looks like a fake logout control; logout is handled by the top-right account menu.
   - Unauthorized member access to `/admin` redirects to `/app`.
@@ -94,7 +96,7 @@ pnpm test
 168 files passed, 1079 tests passed
 
 PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium
-8 passed
+9 passed
 
 PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium --grep "leader command center|student command center"
 2 passed
