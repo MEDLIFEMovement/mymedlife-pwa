@@ -638,6 +638,18 @@ function addReadyPilotProofBlockers(
     blockers.push(`${proofLabel} needs at least one points award.`);
   }
 
+  if (proof.attendanceCount > proof.rsvpCount) {
+    blockers.push(
+      `${proofLabel} attendanceCount cannot exceed rsvpCount until walk-in reconciliation is represented in the packet.`,
+    );
+  }
+
+  if (proof.pointsAwardedCount !== proof.attendanceCount) {
+    blockers.push(
+      `${proofLabel} pointsAwardedCount must match attendanceCount so every checked-in attendee is reflected in the leaderboard.`,
+    );
+  }
+
   if (proof.auditEvidence !== "recorded") {
     blockers.push(`${proofLabel} needs recorded audit evidence.`);
   }
