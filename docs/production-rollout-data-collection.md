@@ -225,6 +225,16 @@ Rules:
   supports it. If that table is not approved in production yet, DS/platform can
   use the approved `MYMEDLIFE_LUMA_CHAPTER_CALENDARS_JSON` registry as the
   temporary production mapping path.
+- Before hosted event proof, run:
+
+  ```bash
+  pnpm rollout:luma-mappings --packet production-rollout-packet.json --mapping-json chapter-luma-map.json
+  ```
+
+  This compares the rollout packet to the runtime chapter-to-Luma registry. It
+  does not call Luma or write data. The registry can also come from the
+  `MYMEDLIFE_LUMA_CHAPTER_CALENDARS_JSON` environment variable when the command
+  runs in the configured environment.
 
 ### pilot-event-proof.csv
 
