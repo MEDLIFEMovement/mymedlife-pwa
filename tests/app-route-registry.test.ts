@@ -51,7 +51,6 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/app/events")).toBe(true);
     expect(isKnownAppRouteHref("/app/events/chapter-event-ucla-kickoff")).toBe(true);
     expect(isKnownAppRouteHref("/app/points")).toBe(true);
-    expect(isKnownAppRouteHref("/app/slt-prep")).toBe(true);
     expect(isKnownAppRouteHref("/leader?view=attendance")).toBe(true);
     expect(isKnownAppRouteHref("/staff")).toBe(true);
     expect(isKnownAppRouteHref("/admin/launch-gate")).toBe(true);
@@ -62,6 +61,7 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/rush-month/leaderboard")).toBe(false);
     expect(isKnownAppRouteHref("/campaigns/rush-month")).toBe(false);
     expect(isKnownAppRouteHref("/chapter?view=members")).toBe(false);
+    expect(isKnownAppRouteHref("/app/slt-prep")).toBe(false);
     expect(isKnownAppRouteHref("/slt-prep")).toBe(false);
     expect(isKnownAppRouteHref("/admin/phase-2")).toBe(false);
     expect(isKnownAppRouteHref("/admin/sop-library")).toBe(false);
