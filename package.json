@@ -26,6 +26,7 @@
     "production:data-counts": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-live-data-counts.mjs",
     "production:domain": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-domain-readiness.mjs",
     "production:invite-gate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-invite-gate.mjs",
+    "production:pilot-event-proof": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-pilot-event-proof.mjs",
     "production:signed-in-route-proof": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-signed-in-route-proof.mjs",
     "production:smoke": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/production-core-route-smoke.mjs",
     "supabase:start": "pnpm dlx supabase@2.106.0 start",

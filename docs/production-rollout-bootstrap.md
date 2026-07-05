@@ -381,6 +381,32 @@ This command checks:
 It is read-only. It does not create users, write Supabase rows, send invites,
 change DNS, change Vercel settings, upload files, or enable integrations.
 
+## Five-Chapter Pilot Event Loop Proof
+
+Before inviting all 30 chapters, verify the smaller pilot loop on at least five
+chapters:
+
+```bash
+pnpm production:pilot-event-proof --packet production-rollout-packet.json
+```
+
+This command checks only the `pilot-event-proof.csv` evidence inside the rollout
+packet. It proves that five chapters have:
+
+- a linked Luma calendar mapping
+- one ready Luma event proof row
+- at least one RSVP
+- at least one attendance/check-in
+- at least one points award
+- recorded audit evidence
+- zero external sends in the outbox
+- known app routes for event, attendance, points, audit, and outbox readback
+- a reviewer email and timestamp
+
+This gate is intentionally smaller than the final 30-chapter invite gate. It can
+pass before the full 500-student data packet is ready, but broad invitations
+still stay blocked until `pnpm production:invite-gate` says `READY`.
+
 ## Production Live Data Count Check
 
 After the reviewed packet is applied by the approved production owner, verify the
