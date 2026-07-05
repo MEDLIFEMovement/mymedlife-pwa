@@ -307,6 +307,38 @@ describe("production rollout bootstrap readiness", () => {
       "chapter-01 pilot event evt-chapter-01 reviewedByEmail references unknown user missing-reviewer@medlifemovement.org.",
     );
   });
+
+  it("blocks ready pilot proof when attendance and points do not reconcile", () => {
+    const packet = createCompletePacket(30);
+    const pilotEventProof = packet.pilotEventProof ?? [];
+    pilotEventProof[0] = {
+      ...(pilotEventProof[0] ?? {
+        chapterId: "chapter-01",
+        eventName: "Rush Month Kickoff",
+        lumaEventId: "evt-chapter-01",
+        rsvpCount: 12,
+        attendanceCount: 10,
+        pointsAwardedCount: 10,
+        auditEvidence: "recorded",
+        outboxStatus: "zero_sends",
+        status: "ready",
+      }),
+      rsvpCount: 8,
+      attendanceCount: 10,
+      pointsAwardedCount: 9,
+    };
+    packet.pilotEventProof = pilotEventProof;
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 attendanceCount cannot exceed rsvpCount until walk-in reconciliation is represented in the packet.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 pointsAwardedCount must match attendanceCount so every checked-in attendee is reflected in the leaderboard.",
+    );
+  });
 });
 
 function createCompletePacket(chapterCount: number): ProductionRolloutBootstrapPacket {
