@@ -330,6 +330,61 @@ export function getProductionRolloutBootstrapReadiness(
     linkedLumaCalendars.map((calendar) => calendar.chapterId),
     "linked Luma chapter mapping",
   );
+  addDuplicateBlockers(
+    blockers,
+    linkedLumaCalendars.map((calendar) => normalizeId(calendar.calendarId)),
+    "linked Luma calendar id",
+  );
+  addDuplicateBlockers(
+    blockers,
+    packet.memberships.map((membership) =>
+      formatDuplicateKey(
+        normalizeEmail(membership.email),
+        membership.chapterId,
+        membership.roleKey,
+      ),
+    ),
+    "membership access row",
+  );
+  addDuplicateBlockers(
+    blockers,
+    packet.staffRoles.map((role) =>
+      formatDuplicateKey(normalizeEmail(role.email), role.roleKey),
+    ),
+    "staff role row",
+  );
+  addDuplicateBlockers(
+    blockers,
+    packet.coachAssignments.map((assignment) =>
+      formatDuplicateKey(
+        normalizeEmail(assignment.coachEmail),
+        assignment.chapterId,
+        assignment.coachType,
+      ),
+    ),
+    "coach assignment row",
+  );
+  addDuplicateBlockers(
+    blockers,
+    packet.campaigns.map((campaign) =>
+      formatDuplicateKey(campaign.chapterId, campaign.slug),
+    ),
+    "campaign row",
+  );
+  addDuplicateBlockers(
+    blockers,
+    (packet.pilotEventProof ?? []).map((proof) =>
+      formatDuplicateKey(proof.chapterId, proof.lumaEventId),
+    ),
+    "pilot event proof row",
+  );
+  addDuplicateBlockers(
+    blockers,
+    (packet.launchOwners ?? []).map((owner) =>
+      formatDuplicateKey(normalizeEmail(owner.email), owner.ownerType),
+    ),
+    "launch owner row",
+  );
 
   for (const user of packet.users) {
     if (!user.displayName.trim()) {
@@ -690,6 +745,14 @@ function hasFakeEmail(email: string) {
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+function normalizeId(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function formatDuplicateKey(...parts: string[]) {
+  return parts.map((part) => part.trim().toLowerCase()).join(" / ");
 }
 
 function containsSecretLikeField(value: unknown): boolean {

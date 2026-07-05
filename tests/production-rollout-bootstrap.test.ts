@@ -61,6 +61,46 @@ describe("production rollout bootstrap readiness", () => {
     );
   });
 
+  it("blocks duplicate access and mapping rows before a broad invite", () => {
+    const packet = createCompletePacket(30);
+    packet.memberships.push({ ...packet.memberships[0]! });
+    packet.staffRoles.push({ ...packet.staffRoles[0]! });
+    packet.coachAssignments.push({ ...packet.coachAssignments[0]! });
+    packet.campaigns.push({ ...packet.campaigns[0]! });
+    packet.lumaCalendars?.push({
+      chapterId: "chapter-30",
+      calendarId: packet.lumaCalendars[0]!.calendarId,
+      calendarName: "Duplicate calendar mapping",
+    });
+    packet.pilotEventProof?.push({ ...packet.pilotEventProof[0]! });
+    packet.launchOwners?.push({ ...packet.launchOwners[0]! });
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "Duplicate membership access row: leader.01@medlifemovement.org / chapter-01 / president_vp.",
+    );
+    expect(readiness.blockers).toContain(
+      "Duplicate staff role row: coach@medlifemovement.org / coach.",
+    );
+    expect(readiness.blockers).toContain(
+      "Duplicate coach assignment row: coach@medlifemovement.org / chapter-01 / portfolio.",
+    );
+    expect(readiness.blockers).toContain(
+      "Duplicate campaign row: chapter-01 / rush-month-01.",
+    );
+    expect(readiness.blockers).toContain(
+      "Duplicate linked Luma calendar id: cal-chapter-01.",
+    );
+    expect(readiness.blockers).toContain(
+      "Duplicate pilot event proof row: chapter-01 / evt-chapter-01.",
+    );
+    expect(readiness.blockers).toContain(
+      "Duplicate launch owner row: admin@medlifemovement.org / support.",
+    );
+  });
+
   it("blocks chapter packets without leaders, coaches, campaigns, and admins", () => {
     const packet = createCompletePacket(30);
     packet.memberships = packet.memberships.filter(
