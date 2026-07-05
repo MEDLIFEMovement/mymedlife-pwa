@@ -61,6 +61,31 @@ describe("production rollout bootstrap readiness", () => {
     );
   });
 
+  it("blocks direct JSON packets that bypass CSV fake-data guards", () => {
+    const packet = createCompletePacket(30);
+    packet.users[0] = {
+      email: "leader@example.org",
+      displayName: "Example Leader",
+    };
+    packet.chapters[0] = {
+      ...packet.chapters[0]!,
+      name: "<Chapter Name>",
+    };
+    packet.pilotEventProof = packet.pilotEventProof?.map((proof, index) =>
+      index === 0 ? { ...proof, notes: "TBD" } : proof,
+    );
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "User leader@example.org looks like fake or test data.",
+    );
+    expect(readiness.blockers).toContain(
+      "Remove template placeholders like TODO, TBD, PLACEHOLDER, or <...> before production rollout.",
+    );
+  });
+
   it("blocks duplicate access and mapping rows before a broad invite", () => {
     const packet = createCompletePacket(30);
     packet.memberships.push({ ...packet.memberships[0]! });
