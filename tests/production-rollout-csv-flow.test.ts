@@ -75,7 +75,25 @@ function createThirtyChapterCsvTables() {
   });
   const pilotEventProof = chapters.slice(0, 5).map((_chapter, index) => {
     const number = String(index + 1).padStart(2, "0");
-    return `chapter-${number},Rush Month Kickoff,evt-chapter-${number},12,10,10,recorded,zero_sends,ready`;
+    return [
+      `chapter-${number}`,
+      "Rush Month Kickoff",
+      `evt-chapter-${number}`,
+      "12",
+      "10",
+      "10",
+      "recorded",
+      "zero_sends",
+      "ready",
+      `/app/events/evt-chapter-${number}`,
+      `/leader?view=events&event=evt-chapter-${number}`,
+      `/leader?view=leaderboard&chapter=chapter-${number}`,
+      "/admin/audit-log",
+      "/admin/integration-outbox",
+      "2026-07-05T15:00:00Z",
+      "admin@medlifemovement.org",
+      "event loop proof verified",
+    ].join(",");
   });
 
   return {
@@ -106,7 +124,7 @@ function createThirtyChapterCsvTables() {
       lumaCalendars,
     ),
     pilotEventProof: withHeader(
-      "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status",
+      "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,notes",
       pilotEventProof,
     ),
     launchOwners: withHeader("email,ownerType,displayName,status", [

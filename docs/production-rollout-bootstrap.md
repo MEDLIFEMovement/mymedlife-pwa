@@ -95,7 +95,15 @@ Prepare one reviewed packet with these sections:
       "pointsAwardedCount": 10,
       "auditEvidence": "recorded",
       "outboxStatus": "zero_sends",
-      "status": "ready"
+      "status": "ready",
+      "eventRoute": "/app/events/evt_abc123",
+      "attendanceRoute": "/leader?view=events",
+      "pointsRoute": "/leader?view=leaderboard",
+      "auditRoute": "/admin/audit-log",
+      "outboxRoute": "/admin/integration-outbox",
+      "checkedAt": "2026-07-05T15:00:00Z",
+      "reviewedByEmail": "owner.name@medlifemovement.org",
+      "notes": "RSVP, attendance, points, audit, and zero-send readback verified."
     }
   ],
   "launchOwners": [
@@ -158,7 +166,7 @@ Expected CSV headers:
 - `campaigns.csv`: `chapterId,name,slug,status`
 - `luma-calendars.csv`: `chapterId,calendarId,calendarName,status`
 - `pilot-event-proof.csv`:
-  `chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status`
+  `chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,notes`
 - `launch-owners.csv`: `email,ownerType,displayName,status`
 - `signed-in-route-proof.csv`:
   `email,workspace,expectedPath,observedPath,status,checkedAt,notes`
@@ -200,7 +208,7 @@ The packet is not ready until all of these are true:
 - Every active chapter has one active launch campaign.
 - Every active chapter has one linked Luma calendar mapping.
 - At least 5 pilot chapters have ready event-loop proof for RSVP, attendance,
-  points, audit, and zero external sends.
+  points, audit, zero external sends, proof routes, reviewer, and timestamp.
 - Every coach assignment points to a user with an active `coach` staff role.
 - At least one active `admin` staff role exists for day-one support.
 - At least one active `ds_admin` or `super_admin` role exists for launch

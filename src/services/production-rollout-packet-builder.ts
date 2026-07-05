@@ -67,7 +67,17 @@ const tableHeaders = {
       "auditEvidence",
       "outboxStatus",
     ],
-    optional: ["status"],
+    optional: [
+      "status",
+      "eventRoute",
+      "attendanceRoute",
+      "pointsRoute",
+      "auditRoute",
+      "outboxRoute",
+      "checkedAt",
+      "reviewedByEmail",
+      "notes",
+    ],
   },
   launchOwners: {
     required: ["email", "ownerType"],
@@ -388,6 +398,14 @@ function toPilotEventProof(row: CsvRow): ProductionBootstrapPilotEventProof {
     auditEvidence: row.auditEvidence as ProductionBootstrapPilotEventProof["auditEvidence"],
     outboxStatus: row.outboxStatus as ProductionBootstrapPilotEventProof["outboxStatus"],
     status: row.status as ProductionBootstrapPilotEventProof["status"],
+    eventRoute: row.eventRoute,
+    attendanceRoute: row.attendanceRoute,
+    pointsRoute: row.pointsRoute,
+    auditRoute: row.auditRoute,
+    outboxRoute: row.outboxRoute,
+    checkedAt: row.checkedAt,
+    reviewedByEmail: row.reviewedByEmail,
+    notes: row.notes,
   });
 }
 

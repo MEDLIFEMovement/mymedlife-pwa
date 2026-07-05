@@ -60,6 +60,14 @@ export type ProductionBootstrapPilotEventProof = {
   auditEvidence: "recorded" | "missing";
   outboxStatus: "zero_sends" | "sends_detected" | "not_checked";
   status?: "ready" | "needs_review" | "blocked";
+  eventRoute?: string;
+  attendanceRoute?: string;
+  pointsRoute?: string;
+  auditRoute?: string;
+  outboxRoute?: string;
+  checkedAt?: string;
+  reviewedByEmail?: string;
+  notes?: string;
 };
 
 export type ProductionBootstrapLaunchOwner = {
@@ -389,7 +397,7 @@ export function getProductionRolloutBootstrapReadiness(
     }
 
     if ((proof.status ?? "ready") === "ready") {
-      addReadyPilotProofBlockers(blockers, proof);
+      addReadyPilotProofBlockers(blockers, proof, userEmails);
     }
   }
 
@@ -547,6 +555,7 @@ export function getProductionRolloutBootstrapReadiness(
 function addReadyPilotProofBlockers(
   blockers: string[],
   proof: ProductionBootstrapPilotEventProof,
+  userEmails: Set<string>,
 ) {
   const proofLabel = `${proof.chapterId} pilot event ${proof.lumaEventId}`;
 
@@ -572,6 +581,65 @@ function addReadyPilotProofBlockers(
 
   if (proof.outboxStatus !== "zero_sends") {
     blockers.push(`${proofLabel} needs zero external sends in the outbox.`);
+  }
+
+  addRequiredPilotEvidenceRouteBlocker(
+    blockers,
+    proofLabel,
+    proof.eventRoute,
+    "event route",
+  );
+  addRequiredPilotEvidenceRouteBlocker(
+    blockers,
+    proofLabel,
+    proof.attendanceRoute,
+    "attendance route",
+  );
+  addRequiredPilotEvidenceRouteBlocker(
+    blockers,
+    proofLabel,
+    proof.pointsRoute,
+    "points route",
+  );
+  addRequiredPilotEvidenceRouteBlocker(
+    blockers,
+    proofLabel,
+    proof.auditRoute,
+    "audit route",
+  );
+  addRequiredPilotEvidenceRouteBlocker(
+    blockers,
+    proofLabel,
+    proof.outboxRoute,
+    "outbox route",
+  );
+
+  if (!proof.checkedAt?.trim()) {
+    blockers.push(`${proofLabel} needs a checkedAt timestamp.`);
+  }
+
+  if (!proof.reviewedByEmail?.trim()) {
+    blockers.push(`${proofLabel} needs a reviewedByEmail owner.`);
+  } else if (!userEmails.has(normalizeEmail(proof.reviewedByEmail))) {
+    blockers.push(
+      `${proofLabel} reviewedByEmail references unknown user ${proof.reviewedByEmail}.`,
+    );
+  }
+}
+
+function addRequiredPilotEvidenceRouteBlocker(
+  blockers: string[],
+  proofLabel: string,
+  route: string | undefined,
+  label: string,
+) {
+  if (!route?.trim()) {
+    blockers.push(`${proofLabel} needs ${label} proof link.`);
+    return;
+  }
+
+  if (!route.startsWith("/")) {
+    blockers.push(`${proofLabel} ${label} proof link must be an app route.`);
   }
 }
 

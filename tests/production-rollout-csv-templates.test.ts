@@ -34,7 +34,7 @@ describe("production rollout CSV templates", () => {
       "coachEmail,chapterId,coachType,status\n",
       "chapterId,name,slug,status\n",
       "chapterId,calendarId,calendarName,status\n",
-      "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status\n",
+      "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,notes\n",
       "email,ownerType,displayName,status\n",
       "email,workspace,expectedPath,observedPath,status,checkedAt,notes\n",
     ]);
@@ -61,6 +61,7 @@ describe("production rollout CSV templates", () => {
     expect(readme).toContain("--signed-in-route-proof rollout-csv/signed-in-route-proof.csv");
     expect(readme).toContain("pnpm rollout:check production-rollout-packet.json");
     expect(readme).toContain("The first rollout requires at least 500 approved student/leader users.");
+    expect(readme).toContain("reviewer, timestamp, and app proof routes");
     expect(readme).toContain("add passed signed-in route proof");
     expect(readme).toContain("The first rollout requires at least 30 active chapters.");
   });

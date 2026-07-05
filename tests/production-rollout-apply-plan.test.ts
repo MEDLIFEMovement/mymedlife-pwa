@@ -36,6 +36,9 @@ describe("production rollout apply plan", () => {
       "- chapter-01 -> cal-chapter-01 (Chapter 01 MEDLIFE Calendar); target chapter_luma_calendars when production table exists, otherwise approved MYMEDLIFE_LUMA_CHAPTER_CALENDARS_JSON registry",
     );
     expect(report).toContain(
+      "routes event /app/events/evt-chapter-01, attendance /leader?view=events&event=evt-chapter-01, points /leader?view=leaderboard&chapter=chapter-01, audit /admin/audit-log, outbox /admin/integration-outbox",
+    );
+    expect(report).toContain(
       "- Do not send HubSpot, n8n, warehouse, Power BI, SMS, email, or AI writes during this production apply.",
     );
   });
@@ -151,6 +154,14 @@ function createPacket(chapterCount: number): ProductionRolloutBootstrapPacket {
         auditEvidence: "recorded",
         outboxStatus: "zero_sends",
         status: "ready",
+        eventRoute: `/app/events/evt-chapter-${String(index + 1).padStart(2, "0")}`,
+        attendanceRoute: `/leader?view=events&event=evt-chapter-${String(index + 1).padStart(2, "0")}`,
+        pointsRoute: `/leader?view=leaderboard&chapter=${chapter.id}`,
+        auditRoute: "/admin/audit-log",
+        outboxRoute: "/admin/integration-outbox",
+        checkedAt: "2026-07-05T15:00:00Z",
+        reviewedByEmail: "admin@medlifemovement.org",
+        notes: "RSVP, attendance, points, audit, and outbox proof verified.",
       })),
     launchOwners: [
       {
