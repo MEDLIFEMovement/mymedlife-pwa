@@ -220,6 +220,38 @@ describe("production invite gate", () => {
       "Run the production live data count check after the rollout packet is applied, then attach the count proof to the invite gate.",
     );
   });
+
+  it("blocks broad invites when production live data trails the rollout packet", () => {
+    const rolloutReadiness = createReadyRolloutReadiness({
+      counts: {
+        users: 525,
+        approvedMemberships: 520,
+      },
+    });
+    const readiness = getProductionInviteGateReadiness({
+      publicUrl: "https://www.mymedlife.org",
+      routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
+      rolloutReadiness,
+      rolloutHandoff: createReadyRolloutHandoff(),
+      liveDataReadiness: createReadyLiveDataReadiness(),
+    });
+    const liveDataCheck = readiness.checks.find(
+      (check) => check.key === "production_live_data",
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(liveDataCheck).toEqual({
+      key: "production_live_data",
+      label: "Production live data count proof",
+      passed: false,
+      detail:
+        "production live data auth.users has 503 row(s); expected at least 525 from the rollout packet.; 2 more blocker(s)",
+    });
+    expect(readiness.nextSteps).toContain(
+      "Run the production live data count check after the rollout packet is applied, then attach the count proof to the invite gate.",
+    );
+  });
 });
 
 function createReadyRouteSmoke(): ProductionCoreRouteSmokeResult {
