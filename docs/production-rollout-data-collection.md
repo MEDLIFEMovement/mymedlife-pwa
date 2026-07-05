@@ -335,8 +335,9 @@ Then run:
 pnpm rollout:check production-rollout-packet.json
 pnpm rollout:handoff production-rollout-packet.json --out production-rollout-handoff.md
 pnpm production:launch-check --packet production-rollout-packet.json
+pnpm production:data-counts > production-live-data-counts.txt
 pnpm production:signed-in-route-proof --packet production-rollout-packet.json
-pnpm production:invite-gate --packet production-rollout-packet.json --public-url https://www.mymedlife.org
+pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org
 ```
 
 ## Review Checklist
@@ -346,6 +347,7 @@ Before any production data apply, confirm:
 - The packet passes `pnpm rollout:check`.
 - The handoff says `READY FOR HUMAN APPLY`.
 - The combined launch check still passes the public production domain gate.
+- The saved production live-data count proof says `Production live data count check: READY`.
 - The signed-in route proof check says `Production signed-in route proof: READY`.
 - The invite gate says `30-chapter invite gate: READY`.
 - Nick approves the 30 chapters.
