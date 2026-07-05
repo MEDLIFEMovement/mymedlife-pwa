@@ -9,6 +9,7 @@ import type {
   ProductionRolloutHandoff,
 } from "@/services/production-rollout-handoff";
 import type {
+  ProductionLiveDataCounts,
   ProductionLiveDataReadiness,
 } from "@/services/production-live-data-readiness";
 import {
@@ -49,7 +50,11 @@ export function getProductionInviteGateReadiness(
     createLaunchLaneFocusCheck(),
     createRouteSmokeCheck(input.routeSmoke),
     createRolloutPacketCheck(input.rolloutReadiness),
-    createLiveDataCheck(input.liveDataReadiness ?? null),
+    createLiveDataCheck(
+      input.liveDataReadiness ?? null,
+      input.rolloutReadiness,
+      minimumPilotChapterCount,
+    ),
     createWorkspaceAccessCheck(input.rolloutReadiness),
     createSignedInRouteProofCheck(input.rolloutPacket ?? null),
     createPilotEventLoopCheck(input.rolloutReadiness, minimumPilotChapterCount),
@@ -191,6 +196,8 @@ function createRolloutPacketCheck(
 
 function createLiveDataCheck(
   liveDataReadiness: ProductionLiveDataReadiness | null,
+  rolloutReadiness: ProductionRolloutBootstrapReadiness | null,
+  minimumPilotChapterCount: number,
 ): ProductionInviteGateCheck {
   if (!liveDataReadiness) {
     return {
@@ -202,22 +209,83 @@ function createLiveDataCheck(
   }
 
   const counts = liveDataReadiness.counts;
+  const packetMismatchBlockers =
+    liveDataReadiness.ready && rolloutReadiness
+      ? getLiveDataPacketMismatchBlockers(
+          counts,
+          rolloutReadiness,
+          minimumPilotChapterCount,
+        )
+      : [];
+  const passed = liveDataReadiness.ready && packetMismatchBlockers.length === 0;
 
   return {
     key: "production_live_data",
     label: "Production live data count proof",
-    passed: liveDataReadiness.ready,
-    detail: liveDataReadiness.ready
-      ? [
-          `${counts["auth.users"]} auth user(s)`,
-          `${counts["app.profiles"]} profile row(s)`,
-          `${counts["app.chapters.active"]} active chapter(s)`,
-          `${counts["app.memberships.approved"]} approved membership row(s)`,
-          `${counts["app.chapter_events"]} chapter event row(s)`,
-          `${counts["app.luma_event_links"]} Luma event link row(s)`,
-        ].join("; ")
-      : summarizeList(liveDataReadiness.blockers),
+    passed,
+    detail: !liveDataReadiness.ready
+      ? summarizeList(liveDataReadiness.blockers)
+      : packetMismatchBlockers.length > 0
+        ? summarizeList(packetMismatchBlockers)
+        : [
+            `${counts["auth.users"]} auth user(s)`,
+            `${counts["app.profiles"]} profile row(s)`,
+            `${counts["app.chapters.active"]} active chapter(s)`,
+            `${counts["app.memberships.approved"]} approved membership row(s)`,
+            `${counts["app.chapter_events"]} chapter event row(s)`,
+            `${counts["app.luma_event_links"]} Luma event link row(s)`,
+            "packet count alignment passed",
+          ].join("; "),
   };
+}
+
+function getLiveDataPacketMismatchBlockers(
+  counts: ProductionLiveDataCounts,
+  rolloutReadiness: ProductionRolloutBootstrapReadiness,
+  minimumPilotChapterCount: number,
+) {
+  const expectedPilotProofRows = Math.max(
+    minimumPilotChapterCount,
+    rolloutReadiness.counts.readyPilotEventProofChapters,
+  );
+  const requirements: Array<{
+    relation: keyof ProductionLiveDataCounts;
+    expected: number;
+  }> = [
+    { relation: "auth.users", expected: rolloutReadiness.counts.users },
+    { relation: "app.profiles", expected: rolloutReadiness.counts.users },
+    {
+      relation: "app.chapters.active",
+      expected: rolloutReadiness.counts.activeChapters,
+    },
+    {
+      relation: "app.memberships.approved",
+      expected: rolloutReadiness.counts.approvedMemberships,
+    },
+    {
+      relation: "app.staff_role_assignments.active",
+      expected: rolloutReadiness.counts.activeStaffRoles,
+    },
+    {
+      relation: "app.coach_chapter_assignments.active",
+      expected: rolloutReadiness.counts.activeCoachAssignments,
+    },
+    {
+      relation: "app.campaigns.active",
+      expected: rolloutReadiness.counts.activeCampaigns,
+    },
+    { relation: "app.chapter_events", expected: expectedPilotProofRows },
+    { relation: "app.luma_event_links", expected: expectedPilotProofRows },
+    { relation: "app.points_events", expected: expectedPilotProofRows },
+    { relation: "app.audit_logs", expected: expectedPilotProofRows },
+  ];
+
+  return requirements
+    .filter(({ relation, expected }) => counts[relation] < expected)
+    .map(
+      ({ relation, expected }) =>
+        `production live data ${relation} has ${counts[relation]} row(s); expected at least ${expected} from the rollout packet.`,
+    );
 }
 
 function createWorkspaceAccessCheck(
