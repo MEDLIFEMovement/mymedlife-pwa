@@ -137,6 +137,16 @@ pnpm rollout:templates --out rollout-csv
 For the plain-English data request, owner map, and review checklist, use
 `docs/production-rollout-data-collection.md`.
 
+While the CSV files are being filled, use the count-based intake status first:
+
+```bash
+pnpm rollout:intake-status --dir rollout-csv
+```
+
+This command is read-only. It summarizes row counts and missing data asks
+without creating a JSON packet, writing Supabase rows, sending invitations, or
+showing private row details.
+
 Then fill those files with real MEDLIFE data and build the JSON packet:
 
 ```bash

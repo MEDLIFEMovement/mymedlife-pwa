@@ -1,7 +1,7 @@
 import {
   isEventsPointsLaunchLaneEnabled,
   isEventsPointsLaunchLaneVisibleRouteHref,
-} from "@/services/launch-lane-product-focus";
+} from "./launch-lane-product-focus.ts";
 
 export type AppRouteRegistryItem = {
   href: string;
