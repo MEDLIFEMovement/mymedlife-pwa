@@ -52,6 +52,13 @@ Purpose: give reviewers a plain map from visible app surfaces to the simple back
 | Copied Figma shell CTA safety | member, leader, staff, admin Figma shell components | visible buttons/links | `wired_staging` | static guard blocks fake links, empty handlers, JavaScript void links, and raw buttons without handler/submit/disabled state |
 | API keys / integrations | `/admin` | server-only secret/provider abstraction | `needs_decision` | keep raw-key entry out of browser routes |
 
+Detailed copied-shell control maps live in:
+
+- `docs/figma-member-mobile-app-button-map.md`
+- `docs/figma-leader-command-center-button-map.md`
+- `docs/figma-staff-command-center-button-map.md`
+- `docs/figma-admin-panel-button-map.md`
+
 ## Route Guard Contract
 
 - Workspace routes must use actual actor/session role data; hidden UI is not the security boundary.

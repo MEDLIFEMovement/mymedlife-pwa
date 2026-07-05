@@ -19,6 +19,13 @@ The exact Figma shells are present for the member app, Student Leadership Center
 
 Shared Figma button helpers in the member and leadership shells now fail closed: if a copied shell button has no action handler yet, it renders disabled/blocked instead of silently accepting a click. A static CTA safety test also scans the copied member, leader, staff, and admin Figma shells so raw `<button>` openings cannot ship without either a handler, submit intent, or disabled/blocked state.
 
+Detailed copied-shell control maps:
+
+- `docs/figma-member-mobile-app-button-map.md`
+- `docs/figma-leader-command-center-button-map.md`
+- `docs/figma-staff-command-center-button-map.md`
+- `docs/figma-admin-panel-button-map.md`
+
 ## `/login`
 
 | Label / control | Component | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
