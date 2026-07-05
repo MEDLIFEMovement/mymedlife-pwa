@@ -193,9 +193,34 @@ const directMemberRoleKeys = new Set([
   "action_committee_member",
 ]);
 
-const staffWorkspaceRoleKeys = new Set(["coach", "admin", "super_admin"]);
+const staffWorkspaceRoleKeys: ReadonlySet<ProductionBootstrapStaffRole["roleKey"]> =
+  new Set(["coach", "admin", "super_admin"]);
 
-const adminWorkspaceRoleKeys = new Set(["ds_admin", "super_admin"]);
+const adminWorkspaceRoleKeys: ReadonlySet<ProductionBootstrapStaffRole["roleKey"]> =
+  new Set(["ds_admin", "super_admin"]);
+
+const launchOwnerRolePolicies: Partial<
+  Record<
+    ProductionBootstrapLaunchOwner["ownerType"],
+    {
+      roleKeys: ReadonlySet<ProductionBootstrapStaffRole["roleKey"]>;
+      detail: string;
+    }
+  >
+> = {
+  support: {
+    roleKeys: staffWorkspaceRoleKeys,
+    detail: "an active coach, admin, or super_admin staff role",
+  },
+  rollback: {
+    roleKeys: adminWorkspaceRoleKeys,
+    detail: "an active ds_admin or super_admin staff role",
+  },
+  production_apply: {
+    roleKeys: adminWorkspaceRoleKeys,
+    detail: "an active ds_admin or super_admin staff role",
+  },
+};
 
 const secretLikeKeys = ["password", "token", "secret", "apiKey", "api_key"];
 
@@ -535,6 +560,7 @@ export function getProductionRolloutBootstrapReadiness(
   addMissingOwnerBlocker(blockers, activeLaunchOwners, "support");
   addMissingOwnerBlocker(blockers, activeLaunchOwners, "rollback");
   addMissingOwnerBlocker(blockers, activeLaunchOwners, "production_apply");
+  addLaunchOwnerRoleBlockers(blockers, activeLaunchOwners, activeStaffRoles);
 
   if (containsSecretLikeField(packet)) {
     blockers.push(
@@ -726,6 +752,33 @@ function addMissingOwnerBlocker(
   }
 
   blockers.push(`Add an active ${ownerType.replace("_", " ")} owner to launch-owners.csv.`);
+}
+
+function addLaunchOwnerRoleBlockers(
+  blockers: string[],
+  owners: ProductionBootstrapLaunchOwner[],
+  activeStaffRoles: ProductionBootstrapStaffRole[],
+) {
+  for (const owner of owners) {
+    const policy = launchOwnerRolePolicies[owner.ownerType];
+
+    if (!policy) {
+      continue;
+    }
+
+    const ownerEmail = normalizeEmail(owner.email);
+    const hasRequiredRole = activeStaffRoles.some(
+      (role) =>
+        normalizeEmail(role.email) === ownerEmail &&
+        policy.roleKeys.has(role.roleKey),
+    );
+
+    if (!hasRequiredRole) {
+      blockers.push(
+        `Launch owner ${owner.email} (${owner.ownerType}) needs ${policy.detail}.`,
+      );
+    }
+  }
 }
 
 function addDuplicateBlockers(

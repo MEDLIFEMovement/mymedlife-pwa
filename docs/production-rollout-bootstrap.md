@@ -227,6 +227,9 @@ The packet is not ready until all of these are true:
 - At least one active `coach`, `admin`, or `super_admin` can access the staff
   command center.
 - Active support, rollback, and production apply owners exist.
+- The active support owner has a `coach`, `admin`, or `super_admin` staff role.
+- The active rollback and production apply owners have `ds_admin` or
+  `super_admin` staff roles.
 - No fake/test emails are present.
 - No password, token, API key, or secret fields are present.
 - Every membership, coach assignment, campaign, Luma calendar mapping, pilot

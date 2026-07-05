@@ -144,6 +144,8 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     "- Every active chapter needs a linked Luma calendar mapping.",
     "- At least 5 pilot chapters need ready event-loop proof: RSVP, attendance, points, audit, zero external sends, reviewer, timestamp, and app proof routes.",
     "- Name active support, rollback, and production apply owners before inviting chapters.",
+    "- The support owner needs an active coach, admin, or super_admin staff role.",
+    "- The rollback and production apply owners need an active ds_admin or super_admin staff role.",
     "- After production data is applied, add passed signed-in route proof for one member, one leader, one staff user, one admin, and member/leader access for each ready pilot chapter.",
     "- The first rollout requires at least 30 active chapters.",
     "",

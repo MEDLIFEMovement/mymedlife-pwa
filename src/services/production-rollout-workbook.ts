@@ -174,6 +174,8 @@ const metadataByFilename: Record<string, WorkbookMetadata> = {
       "Required active owners: support, rollback, production_apply.",
       "Recommended active owner: launch_decision.",
       "Every owner email must also be listed in users.csv.",
+      "Support owner needs an active coach, admin, or super_admin staff role.",
+      "Rollback and production_apply owners need active ds_admin or super_admin staff roles.",
     ],
   },
   "signed-in-route-proof.csv": {

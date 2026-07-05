@@ -287,6 +287,10 @@ Rules:
 
 - Include active `support`, `rollback`, and `production_apply` owners.
 - Owner emails must also exist in `users.csv`.
+- The `support` owner must have an active `coach`, `admin`, or `super_admin`
+  staff role.
+- The `rollback` and `production_apply` owners must have active `ds_admin` or
+  `super_admin` staff roles.
 - The `launch_decision` owner is recommended so the final go/no-go owner is
   visible in the packet.
 

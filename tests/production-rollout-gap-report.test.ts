@@ -64,6 +64,41 @@ describe("production rollout gap report", () => {
     expect(formatted).toContain("Owner gaps:");
   });
 
+  it("flags launch owners who cannot access the workspace needed for their role", () => {
+    const packet = createPacket();
+    packet.launchOwners = [
+      {
+        email: "member.001@medlifemovement.org",
+        ownerType: "support",
+        displayName: "Member Owner",
+        status: "active",
+      },
+      {
+        email: "admin@medlifemovement.org",
+        ownerType: "rollback",
+        displayName: "Launch Admin",
+        status: "active",
+      },
+      {
+        email: "coach@medlifemovement.org",
+        ownerType: "production_apply",
+        displayName: "Launch Coach",
+        status: "active",
+      },
+    ];
+
+    const report = getProductionRolloutGapReport(packet);
+
+    expect(report.ready).toBe(false);
+    expect(report.ownerGaps).toEqual(
+      expect.arrayContaining([
+        "Launch owner member.001@medlifemovement.org (support) needs an active coach, admin, or super_admin staff role.",
+        "Launch owner admin@medlifemovement.org (rollback) needs an active ds_admin or super_admin staff role.",
+        "Launch owner coach@medlifemovement.org (production_apply) needs an active ds_admin or super_admin staff role.",
+      ]),
+    );
+  });
+
   it("explains missing count minimums when the packet is still blank", () => {
     const report = getProductionRolloutGapReport({
       chapters: [],

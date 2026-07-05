@@ -469,6 +469,7 @@ function isPilotEventLoopBlocker(blocker: string) {
 
 function isLaunchOwnerBlocker(blocker: string) {
   return (
+    blocker.includes("Launch owner") ||
     blocker.includes("support owner") ||
     blocker.includes("rollback owner") ||
     blocker.includes("production apply owner")

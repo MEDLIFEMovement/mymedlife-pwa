@@ -170,6 +170,36 @@ describe("production invite gate", () => {
     );
   });
 
+  it("blocks broad invites until launch owners have the role access needed to act", () => {
+    const rolloutReadiness = createReadyRolloutReadiness({
+      ready: false,
+      blockers: [
+        "Launch owner admin@medlifemovement.org (rollback) needs an active ds_admin or super_admin staff role.",
+      ],
+    });
+
+    const readiness = getProductionInviteGateReadiness({
+      publicUrl: "https://www.mymedlife.org",
+      routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
+      rolloutReadiness,
+      rolloutHandoff: createReadyRolloutHandoff({ ready: false }),
+      liveDataReadiness: createReadyLiveDataReadiness(),
+    });
+    const ownerCheck = readiness.checks.find(
+      (check) => check.key === "launch_owners",
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(ownerCheck?.passed).toBe(false);
+    expect(ownerCheck?.detail).toContain(
+      "Launch owner admin@medlifemovement.org (rollback) needs an active ds_admin or super_admin staff role.",
+    );
+    expect(readiness.nextSteps).toContain(
+      "Name active support, rollback, and production apply owners in launch-owners.csv.",
+    );
+  });
+
   it("blocks broad invites until signed-in role routing is proven", () => {
     const packet = createReadyRolloutPacket();
     packet.signedInRouteProof = [];

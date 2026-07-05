@@ -237,6 +237,40 @@ describe("production rollout bootstrap readiness", () => {
     );
   });
 
+  it("blocks launch owners that do not have the staff or admin role needed to act", () => {
+    const packet = createCompletePacket(30);
+    packet.launchOwners = [
+      {
+        email: "member.001@medlifemovement.org",
+        ownerType: "support",
+        displayName: "Member Owner",
+      },
+      {
+        email: "admin@medlifemovement.org",
+        ownerType: "rollback",
+        displayName: "Launch Admin",
+      },
+      {
+        email: "coach@medlifemovement.org",
+        ownerType: "production_apply",
+        displayName: "Launch Coach",
+      },
+    ];
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "Launch owner member.001@medlifemovement.org (support) needs an active coach, admin, or super_admin staff role.",
+    );
+    expect(readiness.blockers).toContain(
+      "Launch owner admin@medlifemovement.org (rollback) needs an active ds_admin or super_admin staff role.",
+    );
+    expect(readiness.blockers).toContain(
+      "Launch owner coach@medlifemovement.org (production_apply) needs an active ds_admin or super_admin staff role.",
+    );
+  });
+
   it("does not count ready pilot proof until the chapter has a linked Luma calendar", () => {
     const packet = createCompletePacket(30);
     packet.lumaCalendars = packet.lumaCalendars?.map((calendar) =>
