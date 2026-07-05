@@ -146,6 +146,7 @@ describe("leader page", () => {
     expect(lineCount).toBeLessThanOrEqual(3970);
     expect(source).toContain('const [screen, setScreen] = useState<Screen>("home");');
     expect(source).toContain("<Sidebar active={screen} onNav={setScreen}/>");
+    expect(source).toContain("disabled={isBlocked}");
     expect(source).toContain('screen==="events"');
     expect(source).toContain('screen==="create-event"');
     expect(source).toContain('screen==="stories"');

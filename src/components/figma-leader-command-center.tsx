@@ -359,6 +359,7 @@ function Btn({ children, variant="primary", onClick, className="" }: {
   children: React.ReactNode; variant?: "primary"|"secondary"|"ghost"|"danger";
   onClick?: () => void; className?: string;
 }) {
+  const isBlocked = !onClick;
   const base = "inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 transition-all cursor-pointer whitespace-nowrap";
   const v = {
     primary:   "bg-[#1A56E8] text-white hover:bg-blue-700 shadow-sm",
@@ -366,7 +367,7 @@ function Btn({ children, variant="primary", onClick, className="" }: {
     ghost:     "text-slate-500 hover:text-slate-800 hover:bg-slate-100",
     danger:    "bg-red-50 border border-red-200 text-red-700 hover:bg-red-100",
   }[variant];
-  return <button className={`${base} ${v} ${className}`} onClick={onClick}>{children}</button>;
+  return <button className={`${base} ${v} ${isBlocked ? "opacity-70 cursor-not-allowed" : ""} ${className}`} onClick={onClick} disabled={isBlocked}>{children}</button>;
 }
 
 /** Metric stat card with accent top border */

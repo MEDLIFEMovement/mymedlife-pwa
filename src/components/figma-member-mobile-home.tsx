@@ -165,12 +165,11 @@ function PrimaryBtn({
   yellow?: boolean;
 }) {
   return (
-    <button
-      onClick={onClick}
+    <button onClick={onClick} disabled={!onClick}
       className={cn(
         "flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-bold text-sm active:scale-[0.98] transition-all shadow-sm",
         yellow ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground hover:opacity-90",
-        full && "w-full"
+        full && "w-full", !onClick && "opacity-70 cursor-not-allowed"
       )}
     >
       {icon}
@@ -189,11 +188,10 @@ function SecondaryBtn({
   full?: boolean;
 }) {
   return (
-    <button
-      onClick={onClick}
+    <button onClick={onClick} disabled={!onClick}
       className={cn(
         "flex items-center justify-center gap-2 border border-primary text-primary px-5 py-3.5 rounded-2xl font-semibold text-sm active:scale-[0.98] transition-all hover:bg-primary/5",
-        full && "w-full"
+        full && "w-full", !onClick && "opacity-70 cursor-not-allowed"
       )}
     >
       {label}
@@ -1667,6 +1665,7 @@ function CoachDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 // ─── SCREEN 9 · Admin ─────────────────────────────────────────────────────────
 
 function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
+  const [showIntegrationNotice, setShowIntegrationNotice] = useState(false);
   const integrations = [
     { name: "Supabase / Postgres", status: "Connected", detail: "Last sync 2 min ago", ok: true },
     { name: "HubSpot CRM", status: "Connected", detail: "47 contacts synced today", ok: true },
@@ -1770,7 +1769,15 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
           </Card>
         </div>
 
-        <PrimaryBtn label="View integration events" full icon={<Activity size={15} />} onClick={() => {}} />
+        <PrimaryBtn label="View integration events" full icon={<Activity size={15} />} onClick={() => setShowIntegrationNotice(true)} />
+        {showIntegrationNotice && (
+          <Card className="border-amber-200 bg-amber-50 text-left">
+            <p className="text-sm font-bold text-amber-900">Secure admin route required</p>
+            <p className="text-xs text-amber-800 mt-1">
+              Integration event details stay in `/admin/integration-outbox` for DS/Admin review. This mobile preview does not expose provider logs or trigger writes.
+            </p>
+          </Card>
+        )}
       </div>
     </div>
   );
@@ -3139,11 +3146,11 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
               <Bookmark size={15} />
               <span className="hidden sm:inline">Save</span>
             </button>
-            <a href="#" onClick={(e) => e.preventDefault()}
-              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white hover:opacity-90 transition-opacity"
+            <button type="button" disabled title="External source links are blocked in this preview until feed-sharing approval is complete"
+              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white opacity-75 cursor-not-allowed"
               style={{ background: cfg.bg }}>
               <ExternalLink size={14} /> {cfg.label}
-            </a>
+            </button>
           </div>
         </div>
       </div>

@@ -94,7 +94,9 @@ behind these exact controls instead of changing the shell.
 - `Write coach note`
 - `Review risk reports`
 - Admin dashboard back button.
-- `View integration events`
+- `View integration events`: shows an explicit secure-admin-route notice and
+  points reviewers to `/admin/integration-outbox`; it does not expose provider
+  logs or trigger integration writes from the mobile preview.
 
 ## Points
 
@@ -133,6 +135,8 @@ behind these exact controls instead of changing the shell.
 - `Back to App`
 - `Share Story`
 - story filter chips.
+- source buttons such as Instagram/LinkedIn/YouTube are disabled in this preview
+  until feed-sharing and external-link approval is complete.
 
 ## Safety Notes
 

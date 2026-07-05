@@ -17,6 +17,8 @@ Status values:
 
 The exact Figma shells are present for the member app, Student Leadership Center, and Staff Command Center, but most Figma controls are still shell/state controls. The only safe path is to wire one action family at a time, starting with events, RSVP, attendance, points, and leaderboards.
 
+Shared Figma button helpers in the member and leadership shells now fail closed: if a copied shell button has no action handler yet, it renders disabled/blocked instead of silently accepting a click.
+
 ## `/login`
 
 | Label / control | Component | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
@@ -36,7 +38,8 @@ The exact Figma shells are present for the member app, Student Leadership Center
 | RSVP / check-in / points impact | `figma-member-mobile-home.tsx` | member | Visible local flow, no live external write | Luma staging pilot/write path later | member workspace | Luma RSVP/attendance flags | `placeholder_blocked` |
 | Points and chapter leaderboard | `figma-member-mobile-home.tsx` | member | Local/readback leaderboard screen | `src/services/launch-lane-points-readback.ts` | member workspace | none | `wired_staging` |
 | Role preview buttons | `figma-member-mobile-home.tsx` | staff/admin preview | Local preview-only screens | `src/services/workspace-access.ts` | permitted preview role | none | `placeholder_blocked` |
-| Stories cards/likes/share | `figma-member-mobile-home.tsx` | member | Local story UI only | future feed/story services | member workspace | feed publish flags | `placeholder_blocked` |
+| Stories cards/likes/share/source button | `figma-member-mobile-home.tsx` | member | Local story UI only; external source button is disabled with blocked-state copy | future feed/story services | member workspace | feed publish flags | `placeholder_blocked` |
+| Admin preview integration events | `figma-member-mobile-home.tsx` | staff/admin preview | Opens a local blocked-state notice pointing reviewers to `/admin/integration-outbox`; no provider logs or writes exposed | `/admin/integration-outbox` | DS Admin/Super Admin | none | `disabled_visible` |
 
 ## `/leader` Student Leadership Center
 

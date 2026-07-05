@@ -130,5 +130,10 @@ describe("home page", () => {
     expect(source).toContain('case "event-detail": return <EventDetailScreen navigate={navigate} />;');
     expect(source).toContain('case "points": return <PointsLeaderboard navigate={navigate} />;');
     expect(source).toContain("<BottomNav active={screen} navigate={navigate} />");
+    expect(source).toContain("disabled={!onClick}");
+    expect(source).toContain("Secure admin route required");
+    expect(source).toContain("External source links are blocked in this preview");
+    expect(source).not.toContain("onClick={() => {}}");
+    expect(source).not.toContain('href="#"');
   });
 });
