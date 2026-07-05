@@ -24,6 +24,7 @@
     "rollout:luma-registry": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-luma-runtime-registry.mjs",
     "rollout:handoff": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-handoff.mjs",
     "rollout:apply-plan": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-apply-plan.mjs",
+    "rollout:approval-summary": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-approval-summary.mjs",
     "test-production:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-test-production-seed-environment.mjs",
     "test-production:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-test-production-seed-environment.mjs",
     "test-production:seed": "MYMEDLIFE_TEST_PRODUCTION_MODE=seed node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/apply-test-production-seed-environment.mjs",

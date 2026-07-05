@@ -375,6 +375,7 @@ pnpm production:pilot-event-proof --packet production-rollout-packet.json
 pnpm production:data-counts > production-live-data-counts.txt
 pnpm production:signed-in-route-proof --packet production-rollout-packet.json
 pnpm production:invite-batches --packet production-rollout-packet.json
+pnpm rollout:approval-summary production-rollout-packet.json --out production-rollout-approval-summary.md
 pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org
 ```
 
@@ -392,6 +393,8 @@ Before any production data apply, confirm:
 - The signed-in route proof check says `Production signed-in route proof: READY`.
 - The invite-batch check says `Production invite batch readiness: READY` and
   batch 1 is the reviewed five-chapter pilot group.
+- The redacted approval summary says `30-chapter approval summary: READY FOR
+  FINAL GATE REVIEW`.
 - The invite gate says `30-chapter invite gate: READY`.
 - Nick approves the 30 chapters.
 - DS approves the user and role apply path.
