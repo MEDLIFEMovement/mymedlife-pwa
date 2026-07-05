@@ -416,7 +416,15 @@ function FillBar({ pct, color="#1A56E8" }: { pct: number; color?: string }) {
 }
 
 // ─── Screen 1: Chapter Home ───────────────────────────────────────
-function HomeScreen({ onAssignAction, onPromote, onCreateEvent }: { onAssignAction: () => void; onPromote: () => void; onCreateEvent: () => void }) {
+function HomeScreen({
+  onCreateEvent,
+  onOpenEvents,
+  onOpenLeaderboard,
+}: {
+  onCreateEvent: () => void;
+  onOpenEvents: () => void;
+  onOpenLeaderboard: () => void;
+}) {
   return (
     <div className="space-y-5">
       {/* Chapter masthead */}
@@ -467,7 +475,7 @@ function HomeScreen({ onAssignAction, onPromote, onCreateEvent }: { onAssignActi
           </div>
           <div className="flex gap-2 pt-1">
             <Btn variant="primary" onClick={onCreateEvent}><Plus size={11}/>Create Event</Btn>
-            <Btn variant="secondary" className="!bg-white/10 !border-white/20 !text-white hover:!bg-white/20" onClick={onAssignAction}><Zap size={11}/>Assign Task</Btn>
+            <Btn variant="secondary" className="!bg-white/10 !border-white/20 !text-white hover:!bg-white/20" onClick={onOpenEvents}><CheckCircle size={11}/>Review Attendance</Btn>
           </div>
         </div>
       </div>
@@ -510,14 +518,12 @@ function HomeScreen({ onAssignAction, onPromote, onCreateEvent }: { onAssignActi
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <SH>This Week's Priority</SH>
-          <p className="text-xs text-slate-600 mt-2 mb-4 leading-relaxed">Activate Member Engagement committee, collect bridge videos from all chairs, and push the SLT sign-up campaign.</p>
+          <p className="text-xs text-slate-600 mt-2 mb-4 leading-relaxed">Publish the next Luma event, drive RSVPs, confirm attendance, and keep the chapter leaderboard moving.</p>
           <SH sub="">Quick Actions</SH>
           <div className="mt-2 space-y-1.5">
-            <Btn variant="primary"    className="w-full justify-start"><Users   size={11}/>Review Members</Btn>
-            <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap  size={11}/>Assign Task</Btn>
-            <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={11}/>Promote Emerging Leader</Btn>
             <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={11}/>Create Event</Btn>
-            <Btn variant="secondary"  className="w-full justify-start"><Video   size={11}/>Share Bridge Video</Btn>
+            <Btn variant="secondary"  className="w-full justify-start" onClick={onOpenEvents}><CheckCircle size={11}/>Review RSVPs & Attendance</Btn>
+            <Btn variant="secondary"  className="w-full justify-start" onClick={onOpenLeaderboard}><Trophy size={11}/>Check Chapter Leaderboard</Btn>
           </div>
         </div>
       </div>
@@ -3394,36 +3400,12 @@ const NAV_GROUPS: NavGroup[] = [
   { label: "Chapter", items: [
     { id: "home",        label: "Chapter Home",       icon: Home },
     { id: "leaderboard", label: "Chapter Leaderboard",icon: Trophy },
-    { id: "feed",        label: "Feed Analytics",     icon: BarChart2 },
-  ]},
-  { label: "Members", items: [
-    { id: "members", label: "Member Leaderboard", icon: Users },
-    { id: "profile", label: "Member Profile",     icon: User },
   ]},
   { label: "Event Operations", items: [
-    { id: "committees",    label: "Event Committees",  icon: Layers },
     { id: "events",        label: "Event Performance", icon: Calendar },
-    { id: "create-event",  label: "Create Event",      icon: Plus },
-  ]},
-  { label: "Impact & Culture", items: [
-    { id: "impact",   label: "Impact",          icon: Globe },
-    { id: "bridge",   label: "Bridge Videos",   icon: Video },
-    { id: "stories",  label: "MEDLIFE Stories",  icon: Heart },
-  ]},
-  { label: "Leadership", items: [
-    { id: "leaders",    label: "Current Leaders",     icon: Shield   },
-    { id: "succession", label: "Succession",          icon: GitBranch },
-    { id: "values",     label: "Values",              icon: Star },
-    { id: "training",   label: "Leadership Training",icon: BookOpen },
   ]},
 ];
-const MISSING_LEADERSHIP_PAGES = [
-  { label: "Campaigns", icon: Target },
-  { label: "Fundraising", icon: Award },
-  { label: "SLT", icon: Globe },
-  { label: "Proof Review", icon: Eye },
-  { label: "Settings", icon: Settings },
-] as const;
+const MISSING_LEADERSHIP_PAGES: { label: string; icon: any }[] = [];
 
 function Sidebar({ active, onNav }: { active: Screen; onNav: (s: Screen) => void }) {
   const groups = NAV_GROUPS;
@@ -4081,7 +4063,13 @@ export function FigmaLeaderCommandCenter({
 
         {/* Content */}
         <div className="flex-1 p-6 max-w-[1400px] w-full">
-          {screen==="home"        && <HomeScreen onAssignAction={() => setShowAssignAction(true)} onPromote={() => setShowPromote(true)} onCreateEvent={handleCreateEvent}/>}
+          {screen==="home"        && (
+            <HomeScreen
+              onCreateEvent={handleCreateEvent}
+              onOpenEvents={() => navigateToScreen("events")}
+              onOpenLeaderboard={() => navigateToScreen("leaderboard")}
+            />
+          )}
           {screen==="leaderboard" && <LeaderboardScreen onNavigate={navigateToScreen}/>}
           {screen==="members"     && <MembersScreen onSelectMember={handleSelectMember}/>}
           {screen==="profile"     && <ProfileScreen memberId={selectedId} onBack={()=>navigateToScreen("members")}/>}

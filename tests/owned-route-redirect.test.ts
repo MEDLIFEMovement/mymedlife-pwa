@@ -11,6 +11,7 @@ import {
   getRushMonthActionDetailRouteRedirectHref,
   getRushMonthEventsRouteRedirectHref,
   getRushMonthLeaderboardRouteRedirectHref,
+  getSltPrepRouteRedirectHref,
 } from "@/services/owned-route-redirect";
 
 describe("owned route redirect service", () => {
@@ -297,7 +298,7 @@ describe("owned route redirect service", () => {
       getChapterMembersRouteRedirectHref(
         getMockLocalActorContext("leader.a@mymedlife.test"),
       ),
-    ).toBe("/leader?view=members");
+    ).toBe("/leader?view=events");
     expect(
       getChapterMembersRouteRedirectHref(
         getMockLocalActorContext("coach@mymedlife.test"),
@@ -342,7 +343,7 @@ describe("owned route redirect service", () => {
         quickAction: "assign_action",
       }),
     ).toBe(
-      "/leader?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+      "/leader?view=events&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=assign_action",
     );
     expect(
       getChapterRouteRedirectHref(getMockLocalActorContext("leader.a@mymedlife.test"), {
@@ -351,7 +352,22 @@ describe("owned route redirect service", () => {
         bridgeVideo: "bridge-social-strategy",
       }),
     ).toBe(
-      "/leader?view=bridge_videos&bridge=comms&bridgeVideo=bridge-social-strategy",
+      "/leader?view=leaderboard&bridge=comms&bridgeVideo=bridge-social-strategy",
     );
+  });
+
+  it("parks SLT prep routes outside the 30-chapter events and points rollout", () => {
+    expect(
+      getSltPrepRouteRedirectHref(getMockLocalActorContext("traveler.a@mymedlife.test")),
+    ).toBe("/app/events");
+    expect(
+      getSltPrepRouteRedirectHref(getMockLocalActorContext("leader.a@mymedlife.test")),
+    ).toBe("/leader?view=events");
+    expect(
+      getSltPrepRouteRedirectHref(getMockLocalActorContext("coach@mymedlife.test")),
+    ).toBe("/staff?view=events&campaign=rush-month");
+    expect(
+      getSltPrepRouteRedirectHref(getMockLocalActorContext("ds.admin@mymedlife.test")),
+    ).toBe("/admin");
   });
 });

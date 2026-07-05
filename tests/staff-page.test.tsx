@@ -107,11 +107,11 @@ describe("staff page", () => {
     expect(html).toContain(">Chapters<");
     expect(html).toContain(">Events<");
     expect(html).toContain(">Leaderboard<");
-    expect(html).toContain(">Campaigns<");
-    expect(html).toContain(">Proof / UGC<");
-    expect(html).toContain(">Best Practices<");
-    expect(html).toContain(">Campaign SOPs<");
-    expect(html).toContain(">Admin<");
+    expect(html).not.toContain(">Campaigns<");
+    expect(html).not.toContain(">Proof / UGC<");
+    expect(html).not.toContain(">Best Practices<");
+    expect(html).not.toContain(">Campaign SOPs<");
+    expect(html).not.toContain(">Admin<");
 
     expect(html).toContain("Avg Events / Month");
     expect(html).toContain("RSVPs");
@@ -146,6 +146,31 @@ describe("staff page", () => {
     expect(html).toContain(expectedEyebrow);
     expect(html).toContain(expectedTitle);
     expect(html).not.toContain("Figma page missing - implementation blocked");
+  });
+
+  it.each([
+    ["campaigns", "/staff?view=events"],
+    ["proof_ugc", "/staff?view=leaderboard"],
+    ["feed_studio", "/staff?view=leaderboard"],
+    ["feed_analytics", "/staff?view=leaderboard"],
+    ["best_practices", "/staff?view=leaderboard"],
+    ["hubspot", "/staff?view=chapters"],
+    ["admin", "/staff?view=chapters"],
+    ["support_notes", "/staff?view=chapters"],
+  ])("parks the %s staff view inside the launch lane", async (view, expectedHref) => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+
+    await expect(
+      StaffPage({
+        searchParams: Promise.resolve({ view }),
+      }),
+    ).rejects.toThrow(`NEXT_REDIRECT:${expectedHref}`);
   });
 
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {

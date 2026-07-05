@@ -78,43 +78,27 @@ describe("Figma missing route placeholders", () => {
     expect(html).not.toContain("Figma page missing - implementation blocked");
   });
 
-  it("renders SLT Prep through /slt-prep with an explicit missing-Figma notice", async () => {
+  it("parks SLT Prep through /slt-prep during the events and points launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
       getSignedInActor("member.a@mymedlife.test"),
-    );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing SLT missing-Figma placeholder."),
     );
 
     const { default: SltPrepPage } = await import("@/app/slt-prep/page");
-    const html = renderToStaticMarkup(await SltPrepPage());
 
-    expect(html).toContain("Figma page missing - implementation blocked");
-    expect(html).toContain("/app/slt-prep and /slt-prep");
-    expect(html).toContain("Existing traveler readiness workflow, not Chapter content");
-    expect(html).toContain("Sofia Alvarez");
-    expect(html).not.toContain("Chapter Dashboard · Jun 2025");
+    await expect(SltPrepPage()).rejects.toThrow("NEXT_REDIRECT:/app/events");
   });
 
-  it("renders the same SLT Prep surface through the /app/slt-prep app route", async () => {
+  it("parks the /app/slt-prep alias during the events and points launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
-    const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
       getSignedInActor("member.a@mymedlife.test"),
     );
-    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing /app/slt-prep route alias."),
-    );
 
     const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
-    const html = renderToStaticMarkup(await AppSltPrepPage());
 
-    expect(html).toContain("Figma page missing - implementation blocked");
-    expect(html).toContain("Trip Prep");
-    expect(html).toContain("Existing traveler readiness workflow, not Chapter content");
+    await expect(AppSltPrepPage()).rejects.toThrow("NEXT_REDIRECT:/app/events");
   });
 });

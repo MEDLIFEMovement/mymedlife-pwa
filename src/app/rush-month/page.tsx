@@ -1,9 +1,19 @@
 import { redirect } from "next/navigation";
+
+import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
+import { getLocalActorContext } from "@/services/local-actor-context";
+import { getRushMonthHomeRouteRedirectHref } from "@/services/owned-route-redirect";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("rushMonth");
 export const dynamic = "force-dynamic";
 
-export default function RushMonthPage() {
-  redirect("/rush-month/dashboard");
+export default async function RushMonthPage() {
+  const actor = await getLocalActorContext();
+
+  if (shouldRedirectActorToLogin(actor)) {
+    redirect(buildLoginRedirectHref("/app"));
+  }
+
+  redirect(getRushMonthHomeRouteRedirectHref(actor));
 }

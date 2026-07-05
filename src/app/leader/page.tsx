@@ -9,6 +9,7 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessLeaderWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
+import { getLeaderLaunchLaneCanonicalHref } from "@/services/leader-launch-lane";
 import { resolveLeaderCommandCenterScreen } from "@/services/leader-command-center-routing";
 
 export const metadata = getStaticRouteMetadata("leader");
@@ -31,6 +32,14 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
 
   if (!canAccessLeaderWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
+  }
+
+  const canonicalHref = getLeaderLaunchLaneCanonicalHref({
+    view: resolvedSearchParams?.view,
+  });
+
+  if (canonicalHref) {
+    redirect(canonicalHref);
   }
 
   return (
