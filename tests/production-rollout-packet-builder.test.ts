@@ -122,6 +122,51 @@ describe("production rollout packet builder", () => {
     ).toThrow("chapters CSV has unsupported column password.");
   });
 
+  it("rejects template placeholders before a production packet is written", () => {
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          chapters: "id,name,campus\nchapter-ucla,<chapter name>,UCLA",
+        }),
+      ),
+    ).toThrow(
+      "chapters CSV row 2 column name contains placeholder text; replace it with approved production rollout data.",
+    );
+
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          pilotEventProof:
+            "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,notes\nchapter-ucla,Rush Month Kickoff,evt-ucla,5,4,4,recorded,zero_sends,TBD",
+        }),
+      ),
+    ).toThrow(
+      "pilotEventProof CSV row 2 column notes contains placeholder text; replace it with approved production rollout data.",
+    );
+  });
+
+  it("rejects fake email data before launch users or owners are imported", () => {
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          users: "email,displayName\nleader@example.com,Chapter Leader",
+        }),
+      ),
+    ).toThrow(
+      "users CSV row 2 column email uses test or placeholder email data; replace it with an approved production email.",
+    );
+
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          launchOwners: "email,ownerType\nfake+owner@medlifemovement.org,support",
+        }),
+      ),
+    ).toThrow(
+      "launchOwners CSV row 2 column email uses test or placeholder email data; replace it with an approved production email.",
+    );
+  });
+
   it("rejects invalid role and status values before a packet is written", () => {
     expect(() =>
       buildProductionRolloutPacketFromCsvTables({
@@ -184,3 +229,24 @@ describe("production rollout packet builder", () => {
     ).toThrow("pilot event rsvpCount must be a zero-or-greater whole number.");
   });
 });
+
+function createMinimalCsvTables(
+  overrides: Partial<Parameters<typeof buildProductionRolloutPacketFromCsvTables>[0]> = {},
+) {
+  return {
+    chapters: "id,name,campus\nchapter-ucla,UCLA MEDLIFE,UCLA",
+    users: "email,displayName\nleader@medlifemovement.org,Chapter Leader",
+    memberships:
+      "email,chapterId,roleKey\nleader@medlifemovement.org,chapter-ucla,president_vp",
+    staffRoles: "email,roleKey\nadmin@medlifemovement.org,admin",
+    coachAssignments:
+      "coachEmail,chapterId,coachType\ncoach@medlifemovement.org,chapter-ucla,portfolio",
+    campaigns: "chapterId,name,slug\nchapter-ucla,Rush Month,rush-month-ucla",
+    lumaCalendars: "chapterId,calendarId\nchapter-ucla,cal-ucla",
+    pilotEventProof:
+      "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus\nchapter-ucla,Rush Month Kickoff,evt-ucla,5,4,4,recorded,zero_sends",
+    launchOwners: "email,ownerType\nadmin@medlifemovement.org,support",
+    signedInRouteProof: "email,workspace,expectedPath,observedPath,status",
+    ...overrides,
+  };
+}
