@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 
 const usage = [
   "Usage:",
-  "  pnpm production:data-counts [--minimum-chapters=30] [--minimum-approved-members=500]",
+  "  pnpm production:data-counts [--minimum-chapters=30] [--minimum-approved-members=500] [--minimum-pilot-events=5]",
   "",
   "This is read-only. It runs aggregate count queries against the linked production Supabase project.",
   "It does not display user data, create rows, apply migrations, change auth, or enable integrations.",
@@ -19,6 +19,7 @@ if (args.includes("--help") || args.includes("-h")) {
 try {
   const minimumChapters = getMinimumChapterCount(args);
   const minimumApprovedMembers = getMinimumApprovedMemberCount(args);
+  const minimumPilotEvents = getMinimumPilotEventCount(args);
   const {
     formatProductionLiveDataReadiness,
     getProductionLiveDataReadiness,
@@ -32,6 +33,8 @@ try {
     "union all select 'app.staff_role_assignments.active', count(*)::bigint from app.staff_role_assignments where status = 'active'",
     "union all select 'app.coach_chapter_assignments.active', count(*)::bigint from app.coach_chapter_assignments where status = 'active'",
     "union all select 'app.campaigns.active', count(*)::bigint from app.campaigns where status = 'active'",
+    "union all select 'app.chapter_events', count(*)::bigint from app.chapter_events",
+    "union all select 'app.luma_event_links', count(*)::bigint from app.luma_event_links",
     "union all select 'app.assignments', count(*)::bigint from app.assignments",
     "union all select 'app.points_events', count(*)::bigint from app.points_events",
     "union all select 'app.audit_logs', count(*)::bigint from app.audit_logs",
@@ -59,6 +62,7 @@ try {
   const readiness = getProductionLiveDataReadiness(counts, {
     minimumChapterCount: minimumChapters,
     minimumApprovedMembershipCount: minimumApprovedMembers,
+    minimumPilotEventCount: minimumPilotEvents,
   });
 
   console.log(formatProductionLiveDataReadiness(readiness));
@@ -78,6 +82,10 @@ function getMinimumChapterCount(args) {
 
 function getMinimumApprovedMemberCount(args) {
   return getPositiveWholeNumberArg(args, "--minimum-approved-members", "500");
+}
+
+function getMinimumPilotEventCount(args) {
+  return getPositiveWholeNumberArg(args, "--minimum-pilot-events", "5");
 }
 
 function getPositiveWholeNumberArg(args, name, defaultValue) {

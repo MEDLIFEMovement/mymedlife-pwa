@@ -6,6 +6,8 @@ export const productionLiveDataRelations = [
   "app.staff_role_assignments.active",
   "app.coach_chapter_assignments.active",
   "app.campaigns.active",
+  "app.chapter_events",
+  "app.luma_event_links",
   "app.assignments",
   "app.points_events",
   "app.audit_logs",
@@ -20,6 +22,7 @@ export type ProductionLiveDataReadiness = {
   ready: boolean;
   minimumChapterCount: number;
   minimumApprovedMembershipCount: number;
+  minimumPilotEventCount: number;
   counts: ProductionLiveDataCounts;
   blockers: string[];
   warnings: string[];
@@ -29,6 +32,7 @@ export type ProductionLiveDataReadiness = {
 export type ProductionLiveDataReadinessOptions = {
   minimumChapterCount?: number;
   minimumApprovedMembershipCount?: number;
+  minimumPilotEventCount?: number;
 };
 
 export function getProductionLiveDataReadiness(
@@ -38,6 +42,7 @@ export function getProductionLiveDataReadiness(
   const minimumChapterCount = options.minimumChapterCount ?? 30;
   const minimumApprovedMembershipCount =
     options.minimumApprovedMembershipCount ?? 500;
+  const minimumPilotEventCount = options.minimumPilotEventCount ?? 5;
   const blockers: string[] = [];
   const warnings: string[] = [];
   const nextSteps: string[] = [];
@@ -45,6 +50,8 @@ export function getProductionLiveDataReadiness(
   const approvedMemberships = counts["app.memberships.approved"];
   const activeCoachAssignments = counts["app.coach_chapter_assignments.active"];
   const activeCampaigns = counts["app.campaigns.active"];
+  const chapterEvents = counts["app.chapter_events"];
+  const lumaEventLinks = counts["app.luma_event_links"];
 
   if (counts["auth.users"] === 0) {
     blockers.push("Create production Supabase Auth users before inviting chapters.");
@@ -88,6 +95,18 @@ export function getProductionLiveDataReadiness(
     );
   }
 
+  if (chapterEvents < minimumPilotEventCount) {
+    blockers.push(
+      `Add at least ${minimumPilotEventCount} production chapter events before the five-chapter pilot proof. Current chapter events: ${chapterEvents}.`,
+    );
+  }
+
+  if (lumaEventLinks < minimumPilotEventCount) {
+    blockers.push(
+      `Add at least ${minimumPilotEventCount} production Luma event links before the five-chapter pilot proof. Current Luma event links: ${lumaEventLinks}.`,
+    );
+  }
+
   if (counts["app.assignments"] === 0) {
     warnings.push(
       "No production assignments exist yet; chapter/member route checks will be thin until launch work is seeded.",
@@ -123,6 +142,7 @@ export function getProductionLiveDataReadiness(
     ready: blockers.length === 0,
     minimumChapterCount,
     minimumApprovedMembershipCount,
+    minimumPilotEventCount,
     counts,
     blockers,
     warnings,
@@ -140,6 +160,7 @@ export function formatProductionLiveDataReadiness(
     "",
     `Minimum active chapters: ${readiness.minimumChapterCount}`,
     `Minimum approved memberships: ${readiness.minimumApprovedMembershipCount}`,
+    `Minimum pilot event links: ${readiness.minimumPilotEventCount}`,
     "",
     "Counts:",
     ...productionLiveDataRelations.map(

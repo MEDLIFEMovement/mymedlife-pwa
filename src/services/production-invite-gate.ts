@@ -213,6 +213,8 @@ function createLiveDataCheck(
           `${counts["app.profiles"]} profile row(s)`,
           `${counts["app.chapters.active"]} active chapter(s)`,
           `${counts["app.memberships.approved"]} approved membership row(s)`,
+          `${counts["app.chapter_events"]} chapter event row(s)`,
+          `${counts["app.luma_event_links"]} Luma event link row(s)`,
         ].join("; ")
       : summarizeList(liveDataReadiness.blockers),
   };

@@ -394,13 +394,14 @@ This command uses the linked Supabase production project and only returns
 aggregate counts. It does not show user names or emails, create rows, apply
 migrations, change Auth, change RLS, upload files, or enable integrations.
 
-By default it requires at least 30 active chapters and 500 approved production
-memberships:
+By default it requires at least 30 active chapters, 500 approved production
+memberships, 5 production chapter events, and 5 production Luma event links:
 
 ```bash
 pnpm production:data-counts \
   --minimum-chapters=30 \
-  --minimum-approved-members=500
+  --minimum-approved-members=500 \
+  --minimum-pilot-events=5
 ```
 
 The count check is not a replacement for the rollout packet validator. It proves
