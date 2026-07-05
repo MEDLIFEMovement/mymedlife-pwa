@@ -488,6 +488,26 @@ This checks that the packet contains passed evidence for:
 It is read-only. It does not sign in, create users, write rows, or display
 passwords.
 
+## Invite Batch Readiness Check
+
+After the packet includes signed-in proof and five-chapter event-loop proof, plan
+the first invite batches before any emails go out:
+
+```bash
+pnpm production:invite-batches --packet production-rollout-packet.json
+```
+
+This checks that:
+
+- batch 1 uses the five pilot-ready chapters
+- every planned batch stays under the 75-person default cap
+- every invitee has an approved member or leader role
+- duplicate cross-chapter invitees are caught before sending
+- staff/admin users do not inflate the 500-student invite count
+
+It is read-only. It does not create users, send email, write Supabase rows, call
+Luma, or change Vercel config.
+
 ## Production Route Smoke Check
 
 After each production deployment, verify the five core public routes:
@@ -525,8 +545,11 @@ pnpm production:smoke https://www.mymedlife.org
    `app.campaigns`.
 6. Verify signed-in routing for `/app`, `/leader`, `/staff`, and `/admin`.
 7. Record the signed-in evidence in `signed-in-route-proof.csv`, rebuild the
-   packet, and run `pnpm production:invite-gate`.
-8. Only then invite the first production rollout group.
+   packet.
+8. Run `pnpm production:invite-batches` and review batch 1 with the support and
+   rollback owner.
+9. Run `pnpm production:invite-gate`.
+10. Only then invite the first production rollout group.
 
 ## Still Blocked
 
@@ -538,4 +561,6 @@ Production rollout is still blocked until:
   zero external sends.
 - Signed-in route verification passes with real roles.
 - Signed-in route proof rows are added to the packet.
+- The invite-batch check passes with a reviewed five-chapter batch 1 and no
+  duplicate cross-chapter invitees.
 - The final `pnpm production:invite-gate` report says `READY`.
