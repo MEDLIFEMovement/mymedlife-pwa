@@ -10,7 +10,7 @@ describe("route smoke manifest", () => {
     expect(manifest.canReadManifest).toBe(true);
     expect(manifest.title).toBe("Admin route smoke manifest");
     expect(manifest.summary).toContain("events-and-points launch lane");
-    expect(manifest.counts.totalRoutes).toBe(16);
+    expect(manifest.counts.totalRoutes).toBe(19);
     expect(manifest.counts.criticalRoutes).toBeGreaterThan(10);
     expect(manifest.counts.mobileVisualChecks).toBe(1);
     expect(manifest.counts.browserWritesExpected).toBe(0);
@@ -35,6 +35,9 @@ describe("route smoke manifest", () => {
         "/leader",
         "/staff",
         "/admin",
+        "/admin/users",
+        "/admin/chapters",
+        "/admin/access",
         "/admin/launch-gate",
         "/admin/audit-log",
         "/admin/integration-outbox",

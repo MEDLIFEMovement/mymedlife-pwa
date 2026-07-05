@@ -26,6 +26,7 @@ try {
     getRouteSnapshot(normalizedBaseUrl, "/app", false),
     getRouteSnapshot(normalizedBaseUrl, "/leader", false),
     getRouteSnapshot(normalizedBaseUrl, "/staff", false),
+    getRouteSnapshot(normalizedBaseUrl, "/admin", false),
   ]);
   const result = getProductionCoreRouteSmokeResult(snapshots);
 
