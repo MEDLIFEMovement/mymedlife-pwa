@@ -222,8 +222,96 @@ function parseCsvTable(
         }
       }
 
+      for (const [header, value] of Object.entries(parsedRow)) {
+        validateProductionRolloutCsvValue({
+          tableName,
+          rowNumber: rowIndex + 2,
+          header,
+          value,
+        });
+      }
+
       return parsedRow;
     });
+}
+
+function validateProductionRolloutCsvValue({
+  tableName,
+  rowNumber,
+  header,
+  value,
+}: {
+  tableName: keyof ProductionRolloutCsvTables;
+  rowNumber: number;
+  header: string;
+  value: string;
+}) {
+  if (!value) {
+    return;
+  }
+
+  if (/<[^>\n]+>/.test(value) || /\b(TODO|TBD|PLACEHOLDER)\b/i.test(value)) {
+    throw new Error(
+      `${tableName} CSV row ${rowNumber} column ${header} contains placeholder text; replace it with approved production rollout data.`,
+    );
+  }
+
+  if (header.toLowerCase().includes("email")) {
+    validateProductionRolloutEmail({
+      tableName,
+      rowNumber,
+      header,
+      value,
+    });
+  }
+}
+
+function validateProductionRolloutEmail({
+  tableName,
+  rowNumber,
+  header,
+  value,
+}: {
+  tableName: keyof ProductionRolloutCsvTables;
+  rowNumber: number;
+  header: string;
+  value: string;
+}) {
+  const normalized = value.trim().toLowerCase();
+  const emailParts = normalized.split("@");
+
+  if (
+    emailParts.length !== 2 ||
+    !emailParts[0] ||
+    !emailParts[1] ||
+    !emailParts[1].includes(".")
+  ) {
+    throw new Error(
+      `${tableName} CSV row ${rowNumber} column ${header} must contain a real email address.`,
+    );
+  }
+
+  const [localPart, domain] = emailParts;
+  const blockedLocalParts = new Set(["fake", "placeholder", "todo", "tbd"]);
+  const blockedDomains = new Set([
+    "example.com",
+    "example.org",
+    "example.net",
+    "localhost",
+    "mymedlife.test",
+  ]);
+
+  if (
+    blockedLocalParts.has(localPart) ||
+    localPart.startsWith("fake+") ||
+    localPart.startsWith("placeholder+") ||
+    blockedDomains.has(domain) ||
+    domain.endsWith(".test")
+  ) {
+    throw new Error(
+      `${tableName} CSV row ${rowNumber} column ${header} uses test or placeholder email data; replace it with an approved production email.`,
+    );
+  }
 }
 
 function parseCsvRows(csv: string): string[][] {

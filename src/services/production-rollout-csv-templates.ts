@@ -136,6 +136,7 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     "",
     "Rules:",
     "- Use real user emails only.",
+    "- Do not use placeholder values such as <chapter name>, TODO, TBD, PLACEHOLDER, example.com, .test, or mymedlife.test.",
     "- Do not add passwords, tokens, API keys, secrets, or helper columns.",
     "- Keep headers exactly as generated.",
     "- The first rollout requires at least 500 approved student/leader users.",
