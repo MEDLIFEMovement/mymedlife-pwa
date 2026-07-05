@@ -325,6 +325,18 @@ that packet chapter IDs such as `chapter-ucla` are review handles, not database
 UUIDs, unless the production apply owner explicitly replaces them with real UUID
 values.
 
+For a shareable, redacted signoff view that does not print the invitee email
+list, create the approval summary:
+
+```bash
+pnpm rollout:approval-summary path/to/production-rollout-packet.json \
+  --out production-rollout-approval-summary.md
+```
+
+This summarizes chapter readiness, batch counts, owner posture, signed-in proof,
+and final-gate commands for Nick/Kiomi/DS review. It is still read-only and does
+not replace `production:invite-gate`.
+
 ## Production Domain Check
 
 Vercel already has these aliases attached to the `mymedlife-pwa` project:
