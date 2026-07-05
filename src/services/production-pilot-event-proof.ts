@@ -1,8 +1,8 @@
-import { isKnownAppRouteHref } from "@/services/app-route-registry";
+import { isKnownAppRouteHref } from "./app-route-registry.ts";
 import type {
   ProductionBootstrapPilotEventProof,
   ProductionRolloutBootstrapPacket,
-} from "@/services/production-rollout-bootstrap";
+} from "./production-rollout-bootstrap.ts";
 
 export type ProductionPilotEventProofReadiness = {
   ready: boolean;

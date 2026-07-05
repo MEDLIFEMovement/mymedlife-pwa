@@ -19,6 +19,7 @@ The current local working copy is:
 Once the CSVs are filled, the safe review order is:
 
 ```bash
+pnpm rollout:intake-status --dir rollout-csv
 pnpm rollout:check-csv --dir rollout-csv
 pnpm rollout:build ... --out production-rollout-packet.json
 pnpm rollout:check production-rollout-packet.json
