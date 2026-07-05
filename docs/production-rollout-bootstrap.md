@@ -148,6 +148,17 @@ This command is read-only. It summarizes row counts and missing data asks
 without creating a JSON packet, writing Supabase rows, sending invitations, or
 showing private row details.
 
+When the count summary starts moving, use the chapter matrix to find the exact
+chapter-level gaps:
+
+```bash
+pnpm rollout:chapter-matrix --dir rollout-csv --out production-rollout-chapter-matrix.md
+```
+
+This is read-only. It shows whether each chapter has member access, leader
+access, coach coverage, an active campaign, a linked Luma calendar, pilot proof,
+and signed-in route proof without showing invitee email lists.
+
 Then fill those files with real MEDLIFE data and build the JSON packet:
 
 ```bash

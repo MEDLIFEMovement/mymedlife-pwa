@@ -21,6 +21,7 @@ Once the CSVs are filled, the safe review order is:
 
 ```bash
 pnpm rollout:intake-status --dir rollout-csv
+pnpm rollout:chapter-matrix --dir rollout-csv --out production-rollout-chapter-matrix.md
 pnpm rollout:check-csv --dir rollout-csv
 pnpm rollout:build ... --out production-rollout-packet.json
 pnpm rollout:check production-rollout-packet.json
@@ -34,6 +35,10 @@ users and app rows need to be created, which UUIDs must be resolved after Auth
 users exist, and which safety checks stay blocked before broad invitations.
 It does not create accounts, write rows, send invitations, change Vercel, or
 turn on integrations.
+
+The chapter matrix is also read-only. It gives a row-by-row view of which
+chapter still lacks a member, student leader, coach, launch campaign, Luma
+calendar, pilot proof, or signed-in proof. It does not show invitee email lists.
 
 Do not put passwords, API keys, tokens, secrets, or private notes in these
 files. This packet is only for launch users, chapters, roles, coach coverage,

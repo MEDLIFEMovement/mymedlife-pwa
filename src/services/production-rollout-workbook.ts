@@ -241,6 +241,7 @@ export function formatProductionRolloutWorkbook(outputDirectoryName = "rollout-c
     "  --out production-rollout-packet.json",
     "pnpm rollout:check production-rollout-packet.json",
     "pnpm rollout:gaps production-rollout-packet.json --out production-rollout-gaps.md",
+    `pnpm rollout:chapter-matrix --dir ${outputDirectoryName} --out production-rollout-chapter-matrix.md`,
     "pnpm rollout:luma-mappings --packet production-rollout-packet.json",
     "pnpm production:pilot-event-proof --packet production-rollout-packet.json",
     "pnpm production:signed-in-route-proof --packet production-rollout-packet.json",

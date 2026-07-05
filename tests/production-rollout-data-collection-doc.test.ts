@@ -23,6 +23,7 @@ describe("production rollout data collection doc", () => {
 
   it("points reviewers to the build, validation, handoff, and launch checks", () => {
     expect(doc).toContain("pnpm rollout:build");
+    expect(doc).toContain("pnpm rollout:chapter-matrix --dir rollout-csv");
     expect(doc).toContain("pnpm rollout:check production-rollout-packet.json");
     expect(doc).toContain("pnpm rollout:handoff production-rollout-packet.json");
     expect(doc).toContain("pnpm production:launch-check --packet");
