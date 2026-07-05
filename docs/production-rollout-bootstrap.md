@@ -337,6 +337,28 @@ This summarizes chapter readiness, batch counts, owner posture, signed-in proof,
 and final-gate commands for Nick/Kiomi/DS review. It is still read-only and does
 not replace `production:invite-gate`.
 
+## One-Command Rollout Preflight
+
+When the CSV folder is being prepared, run the combined preflight so reviewers
+can see the intake, chapter matrix, Luma mapping, pilot proof, signed-in route
+proof, and invite-batch posture in one redacted report:
+
+```bash
+pnpm rollout:preflight \
+  --dir rollout-csv \
+  --mapping-json chapter-luma-map.json \
+  --out production-rollout-preflight.md
+```
+
+This report is read-only. It does not create users, write Supabase rows, call
+Luma, send invites, or enable external systems. It redacts email addresses so
+the report can be attached to MED-504 or a PR without exposing the full invitee
+list.
+
+The preflight is not the final launch approval. It helps the team find the next
+packet blocker before running the production live-data proof and final
+`pnpm production:invite-gate` check.
+
 ## Production Domain Check
 
 Vercel already has these aliases attached to the `mymedlife-pwa` project:
