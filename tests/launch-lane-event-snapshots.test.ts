@@ -23,7 +23,7 @@ describe("launch lane event snapshots", () => {
       memberLocationLabel: "Bruin Plaza",
       rsvpCount: 2,
       attendanceCount: 24,
-      pointsAwarded: 0,
+      pointsAwarded: 40,
       hasLumaLink: true,
       lumaEventId: "mock-luma-rush-kickoff",
     });

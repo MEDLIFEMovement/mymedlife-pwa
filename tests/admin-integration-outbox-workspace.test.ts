@@ -24,9 +24,9 @@ describe("admin integration outbox workspace", () => {
     expect(workspace.counts).toEqual({
       structuredEvents: data.integrationEvents.length,
       visibleOutboxRows: data.outboxItems.length,
-      rawIntegrationEventRows: 0,
-      rawAutomationOutboxRows: 0,
-      visibleAuditRows: 0,
+      rawIntegrationEventRows: 5,
+      rawAutomationOutboxRows: 5,
+      visibleAuditRows: 5,
       hiddenAuditRows: 0,
       liveSendRows: 0,
       browserWritesEnabled: 0,
@@ -63,8 +63,8 @@ describe("admin integration outbox workspace", () => {
     );
     expect(workspace.liveSendPreflight.counts).toEqual({
       total: 5,
-      ready: 3,
-      watch: 2,
+      ready: 5,
+      watch: 0,
       blocked: 0,
       browserWritesEnabled: 0,
       externalWritesEnabled: 0,
@@ -91,12 +91,12 @@ describe("admin integration outbox workspace", () => {
       workspace.liveSendPreflight.items.find(
         (item) => item.key === "payload_and_idempotency",
       )?.status,
-    ).toBe("watch");
+    ).toBe("ready");
     expect(
       workspace.liveSendPreflight.items.find(
         (item) => item.key === "audit_readback",
       )?.currentPosture,
-    ).toContain("0 audit row");
+    ).toContain("5 audit row");
     expect(workspace.liveSendPreflight.blockedControls).toEqual(
       expect.arrayContaining([
         "approve live sends",

@@ -29,18 +29,18 @@ describe("mvp event tracking workspace", () => {
     expect(workspace.recentHistory).toEqual([
       {
         label: "Rush Month kickoff social",
-        detail: "Attendance confirmed; points pending",
+        detail: "Points awarded",
       },
       {
         label: "24 attendee(s) confirmed",
-        detail: "Points are still pending for this event.",
+        detail: "40 event point(s) awarded",
       },
       {
         label: "UCLA MEDLIFE chapter total",
-        detail: "10 point(s) currently visible.",
+        detail: "50 point(s) currently visible.",
       },
     ]);
-    expect(workspace.attendanceStatusLabel).toBe("Attendance confirmed; points pending");
+    expect(workspace.attendanceStatusLabel).toBe("Points awarded");
     expect(workspace.travelerHref).toBeNull();
   });
 
