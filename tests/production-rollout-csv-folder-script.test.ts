@@ -42,9 +42,31 @@ describe("production rollout CSV folder script", () => {
         "chapterId,name,slug,status",
         "chapter-ucla,Rush Month,rush-month-ucla,active",
       ].join("\n"),
+      "luma-calendars.csv": [
+        "chapterId,calendarId,calendarName,status",
+        "chapter-ucla,cal-ucla,UCLA MEDLIFE,linked",
+      ].join("\n"),
+      "pilot-event-proof.csv": [
+        "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status",
+        "chapter-ucla,Rush Month Kickoff,evt-ucla,12,10,10,recorded,zero_sends,ready",
+      ].join("\n"),
+      "launch-owners.csv": [
+        "email,ownerType,displayName,status",
+        "admin@medlifemovement.org,support,Launch Admin,active",
+        "ds@medlifemovement.org,rollback,DS Admin,active",
+        "ds@medlifemovement.org,production_apply,DS Admin,active",
+      ].join("\n"),
     });
 
-    const output = runCsvFolderCheck(directory, "--minimum-chapters", "1");
+    const output = runCsvFolderCheck(
+      directory,
+      "--minimum-chapters",
+      "1",
+      "--minimum-students",
+      "2",
+      "--minimum-pilot-chapters",
+      "1",
+    );
 
     expect(output).toContain("Production rollout packet: READY");
     expect(output).toContain("Next: run pnpm rollout:build");

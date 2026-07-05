@@ -4,9 +4,9 @@ import { resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm rollout:check <packet.json> [--minimum-chapters=30]",
+  "  pnpm rollout:check <packet.json> [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
   "",
-  "The packet must contain chapters, users, memberships, staffRoles, coachAssignments, and campaigns.",
+  "The packet must contain chapters, users, memberships, staffRoles, coachAssignments, campaigns, lumaCalendars, pilotEventProof, and launchOwners.",
   "Do not include passwords, API keys, tokens, or secrets.",
 ].join("\n");
 
@@ -18,15 +18,13 @@ if (!packetPath || packetPath === "--help" || packetPath === "-h") {
 }
 
 try {
-  const minimumChapterCount = getMinimumChapterCount(process.argv.slice(3));
+  const options = getReadinessOptions(process.argv.slice(3));
   const {
     formatProductionRolloutBootstrapReadiness,
     getProductionRolloutBootstrapReadiness,
   } = await import("../src/services/production-rollout-bootstrap.ts");
   const packet = JSON.parse(await readFile(resolve(packetPath), "utf8"));
-  const readiness = getProductionRolloutBootstrapReadiness(packet, {
-    minimumChapterCount,
-  });
+  const readiness = getProductionRolloutBootstrapReadiness(packet, options);
 
   console.log(formatProductionRolloutBootstrapReadiness(readiness));
   process.exit(readiness.ready ? 0 : 1);
@@ -39,17 +37,36 @@ try {
   process.exit(1);
 }
 
-function getMinimumChapterCount(args) {
-  const flag = args.find((arg) => arg.startsWith("--minimum-chapters="));
+function getReadinessOptions(args) {
+  return {
+    minimumChapterCount: getPositiveWholeNumberArg(args, "--minimum-chapters", 30),
+    minimumStudentMembershipCount: getPositiveWholeNumberArg(
+      args,
+      "--minimum-students",
+      500,
+    ),
+    minimumPilotChapterCount: getPositiveWholeNumberArg(
+      args,
+      "--minimum-pilot-chapters",
+      5,
+    ),
+  };
+}
 
-  if (!flag) {
-    return 30;
+function getPositiveWholeNumberArg(args, name, defaultValue) {
+  const explicitIndex = args.indexOf(name);
+  const explicitValue = explicitIndex >= 0 ? args[explicitIndex + 1] : undefined;
+  const equalsFlag = args.find((arg) => arg.startsWith(`${name}=`));
+  const rawValue = explicitValue ?? equalsFlag?.split("=")[1];
+
+  if (!rawValue) {
+    return defaultValue;
   }
 
-  const value = Number(flag.split("=")[1]);
+  const value = Number(rawValue);
 
   if (!Number.isInteger(value) || value < 1) {
-    throw new Error("--minimum-chapters must be a positive whole number.");
+    throw new Error(`${name} must be a positive whole number.`);
   }
 
   return value;

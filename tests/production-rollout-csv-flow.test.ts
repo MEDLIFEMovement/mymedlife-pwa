@@ -14,11 +14,15 @@ describe("production rollout CSV flow", () => {
     expect(readiness.blockers).toEqual([]);
     expect(readiness.counts).toEqual({
       activeChapters: 30,
-      users: 63,
-      approvedMemberships: 60,
+      users: 503,
+      approvedMemberships: 500,
       activeStaffRoles: 3,
       activeCoachAssignments: 30,
       activeCampaigns: 30,
+      approvedStudentMemberships: 500,
+      linkedLumaCalendars: 30,
+      readyPilotEventProofChapters: 5,
+      activeLaunchOwners: 4,
     });
   });
 });
@@ -34,19 +38,22 @@ function createThirtyChapterCsvTables() {
       "active",
     ].join(",");
   });
-  const chapterUsers = chapters.flatMap((_chapter, index) => {
+  const leaderUsers = chapters.map((_chapter, index) => {
     const number = String(index + 1).padStart(2, "0");
-    return [
-      `leader.${number}@medlifemovement.org,Chapter ${number} Leader`,
-      `member.${number}@medlifemovement.org,Chapter ${number} Member`,
-    ];
+    return `leader.${number}@medlifemovement.org,Chapter ${number} Leader`;
   });
-  const memberships = chapters.flatMap((_chapter, index) => {
+  const memberUsers = Array.from({ length: 470 }, (_value, index) => {
+    const number = String(index + 1).padStart(3, "0");
+    return `member.${number}@medlifemovement.org,Launch Member ${number}`;
+  });
+  const leaderMemberships = chapters.map((_chapter, index) => {
     const number = String(index + 1).padStart(2, "0");
-    return [
-      `leader.${number}@medlifemovement.org,chapter-${number},president_vp,approved`,
-      `member.${number}@medlifemovement.org,chapter-${number},general_member,approved`,
-    ];
+    return `leader.${number}@medlifemovement.org,chapter-${number},president_vp,approved`;
+  });
+  const memberMemberships = memberUsers.map((_user, index) => {
+    const memberNumber = String(index + 1).padStart(3, "0");
+    const chapterNumber = String((index % 30) + 1).padStart(2, "0");
+    return `member.${memberNumber}@medlifemovement.org,chapter-${chapterNumber},general_member,approved`;
   });
   const coachAssignments = chapters.map((_chapter, index) => {
     const number = String(index + 1).padStart(2, "0");
@@ -56,6 +63,14 @@ function createThirtyChapterCsvTables() {
     const number = String(index + 1).padStart(2, "0");
     return `chapter-${number},Rush Month,rush-month-${number},active`;
   });
+  const lumaCalendars = chapters.map((_chapter, index) => {
+    const number = String(index + 1).padStart(2, "0");
+    return `chapter-${number},cal-chapter-${number},Chapter ${number} Calendar,linked`;
+  });
+  const pilotEventProof = chapters.slice(0, 5).map((_chapter, index) => {
+    const number = String(index + 1).padStart(2, "0");
+    return `chapter-${number},Rush Month Kickoff,evt-chapter-${number},12,10,10,recorded,zero_sends,ready`;
+  });
 
   return {
     chapters: withHeader("id,name,campus,region,status", chapters),
@@ -63,9 +78,13 @@ function createThirtyChapterCsvTables() {
       "coach@medlifemovement.org,Launch Coach",
       "admin@medlifemovement.org,Launch Admin",
       "ds@medlifemovement.org,DS Admin",
-      ...chapterUsers,
+      ...leaderUsers,
+      ...memberUsers,
     ]),
-    memberships: withHeader("email,chapterId,roleKey,status", memberships),
+    memberships: withHeader("email,chapterId,roleKey,status", [
+      ...leaderMemberships,
+      ...memberMemberships,
+    ]),
     staffRoles: withHeader("email,roleKey,status", [
       "coach@medlifemovement.org,coach,active",
       "admin@medlifemovement.org,admin,active",
@@ -76,6 +95,20 @@ function createThirtyChapterCsvTables() {
       coachAssignments,
     ),
     campaigns: withHeader("chapterId,name,slug,status", campaigns),
+    lumaCalendars: withHeader(
+      "chapterId,calendarId,calendarName,status",
+      lumaCalendars,
+    ),
+    pilotEventProof: withHeader(
+      "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status",
+      pilotEventProof,
+    ),
+    launchOwners: withHeader("email,ownerType,displayName,status", [
+      "admin@medlifemovement.org,support,Launch Admin,active",
+      "ds@medlifemovement.org,rollback,DS Admin,active",
+      "ds@medlifemovement.org,production_apply,DS Admin,active",
+      "admin@medlifemovement.org,launch_decision,Launch Admin,active",
+    ]),
   };
 }
 

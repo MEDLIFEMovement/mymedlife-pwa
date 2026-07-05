@@ -4,10 +4,10 @@ import { join, resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm rollout:check-csv --dir rollout-csv [--minimum-chapters=30]",
+  "  pnpm rollout:check-csv --dir rollout-csv [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
   "",
   "This validates filled rollout CSV files without writing production data or building the JSON packet.",
-  "Expected files: chapters.csv, users.csv, memberships.csv, staff-roles.csv, coach-assignments.csv, campaigns.csv.",
+  "Expected files: chapters.csv, users.csv, memberships.csv, staff-roles.csv, coach-assignments.csv, campaigns.csv, luma-calendars.csv, pilot-event-proof.csv, launch-owners.csv.",
 ].join("\n");
 
 try {
@@ -30,9 +30,14 @@ try {
     staffRoles: await readCsv(directory, "staff-roles.csv"),
     coachAssignments: await readCsv(directory, "coach-assignments.csv"),
     campaigns: await readCsv(directory, "campaigns.csv"),
+    lumaCalendars: await readCsv(directory, "luma-calendars.csv"),
+    pilotEventProof: await readCsv(directory, "pilot-event-proof.csv"),
+    launchOwners: await readCsv(directory, "launch-owners.csv"),
   });
   const readiness = getProductionRolloutBootstrapReadiness(packet, {
     minimumChapterCount: args.minimumChapters,
+    minimumStudentMembershipCount: args.minimumStudents,
+    minimumPilotChapterCount: args.minimumPilotChapters,
   });
 
   console.log(`Production rollout CSV folder: ${directory}`);
@@ -74,7 +79,13 @@ function parseArgs(args) {
   }
 
   const dir = getValue(args, "--dir");
-  const minimumChapters = getMinimumChapterCount(args);
+  const minimumChapters = getPositiveWholeNumberArg(args, "--minimum-chapters", 30);
+  const minimumStudents = getPositiveWholeNumberArg(args, "--minimum-students", 500);
+  const minimumPilotChapters = getPositiveWholeNumberArg(
+    args,
+    "--minimum-pilot-chapters",
+    5,
+  );
 
   if (!dir) {
     throw new Error("Missing required argument --dir.");
@@ -83,6 +94,8 @@ function parseArgs(args) {
   return {
     dir,
     minimumChapters,
+    minimumStudents,
+    minimumPilotChapters,
   };
 }
 
@@ -96,14 +109,14 @@ function getValue(args, name) {
   return args[index + 1] ?? null;
 }
 
-function getMinimumChapterCount(args) {
-  const explicitValue = getValue(args, "--minimum-chapters");
-  const equalsFlag = args.find((arg) => arg.startsWith("--minimum-chapters="));
-  const value = explicitValue ?? equalsFlag?.split("=")[1] ?? "30";
+function getPositiveWholeNumberArg(args, name, defaultValue) {
+  const explicitValue = getValue(args, name);
+  const equalsFlag = args.find((arg) => arg.startsWith(`${name}=`));
+  const value = explicitValue ?? equalsFlag?.split("=")[1] ?? String(defaultValue);
   const parsed = Number(value);
 
   if (!Number.isInteger(parsed) || parsed < 1) {
-    throw new Error("--minimum-chapters must be a positive whole number.");
+    throw new Error(`${name} must be a positive whole number.`);
   }
 
   return parsed;

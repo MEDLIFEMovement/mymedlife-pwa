@@ -76,6 +76,35 @@ Prepare one reviewed packet with these sections:
       "slug": "rush-month-ucla",
       "status": "active"
     }
+  ],
+  "lumaCalendars": [
+    {
+      "chapterId": "chapter-ucla",
+      "calendarId": "cal_abc123",
+      "calendarName": "UCLA MEDLIFE",
+      "status": "linked"
+    }
+  ],
+  "pilotEventProof": [
+    {
+      "chapterId": "chapter-ucla",
+      "eventName": "Rush Month Kickoff",
+      "lumaEventId": "evt_abc123",
+      "rsvpCount": 12,
+      "attendanceCount": 10,
+      "pointsAwardedCount": 10,
+      "auditEvidence": "recorded",
+      "outboxStatus": "zero_sends",
+      "status": "ready"
+    }
+  ],
+  "launchOwners": [
+    {
+      "email": "owner.name@medlifemovement.org",
+      "ownerType": "support",
+      "displayName": "Owner Name",
+      "status": "active"
+    }
   ]
 }
 ```
@@ -101,6 +130,9 @@ pnpm rollout:build \
   --staff-roles rollout-csv/staff-roles.csv \
   --coach-assignments rollout-csv/coach-assignments.csv \
   --campaigns rollout-csv/campaigns.csv \
+  --luma-calendars rollout-csv/luma-calendars.csv \
+  --pilot-event-proof rollout-csv/pilot-event-proof.csv \
+  --launch-owners rollout-csv/launch-owners.csv \
   --out production-rollout-packet.json
 ```
 
@@ -112,6 +144,10 @@ Expected CSV headers:
 - `staff-roles.csv`: `email,roleKey,status`
 - `coach-assignments.csv`: `coachEmail,chapterId,coachType,status`
 - `campaigns.csv`: `chapterId,name,slug,status`
+- `luma-calendars.csv`: `chapterId,calendarId,calendarName,status`
+- `pilot-event-proof.csv`:
+  `chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status`
+- `launch-owners.csv`: `email,ownerType,displayName,status`
 
 `region` and `status` are optional where listed. Do not add password, token,
 API key, secret, or extra helper columns; unsupported columns are rejected.
@@ -126,23 +162,35 @@ Allowed values:
 - Membership `status`: `requested`, `approved`, `rejected`, `inactive`
 - Staff and coach assignment `status`: `active`, `inactive`, `ended`
 - Campaign `status`: `draft`, `active`, `complete`, `archived`
+- Luma calendar `status`: `linked`, `needs_setup`, `inactive`
+- Pilot proof `auditEvidence`: `recorded`, `missing`
+- Pilot proof `outboxStatus`: `zero_sends`, `sends_detected`, `not_checked`
+- Pilot proof `status`: `ready`, `needs_review`, `blocked`
+- Launch owner `ownerType`: `production_apply`, `support`, `rollback`,
+  `launch_decision`
+- Launch owner `status`: `active`, `backup`, `inactive`
 
 ## Readiness Rules
 
 The packet is not ready until all of these are true:
 
 - At least 30 active chapters exist.
+- At least 500 approved student/leader users exist across those chapters.
 - Every active chapter has at least one approved chapter leader.
 - Every active chapter has one active coach assignment.
 - Every active chapter has one active launch campaign.
+- Every active chapter has one linked Luma calendar mapping.
+- At least 5 pilot chapters have ready event-loop proof for RSVP, attendance,
+  points, audit, and zero external sends.
 - Every coach assignment points to a user with an active `coach` staff role.
 - At least one active `admin` staff role exists for day-one support.
 - At least one active `ds_admin` or `super_admin` role exists for launch
   controls.
+- Active support, rollback, and production apply owners exist.
 - No fake/test emails are present.
 - No password, token, API key, or secret fields are present.
-- Every membership, coach assignment, and campaign references a known user or
-  chapter.
+- Every membership, coach assignment, campaign, Luma calendar mapping, pilot
+  proof row, and launch owner references a known user or chapter.
 
 The validator lives in:
 
@@ -167,10 +215,10 @@ pnpm rollout:handoff path/to/production-rollout-packet.json \
 ```
 
 This report lists the Supabase Auth users, chapter rows, approved memberships,
-staff roles, coach assignments, launch campaigns, and safety rules that a human
-reviewer needs before applying production data. It does not create Auth users,
-write app rows, upload files, touch DNS, change Vercel settings, or enable
-external integrations.
+staff roles, coach assignments, launch campaigns, Luma calendar mappings, pilot
+proof rows, launch owners, and safety rules that a human reviewer needs before
+applying production data. It does not create Auth users, write app rows, upload
+files, touch DNS, change Vercel settings, or enable external integrations.
 
 ## Production Domain Check
 
@@ -228,7 +276,8 @@ pnpm production:launch-check \
 
 This command checks all of the following in one report:
 
-- the deployed Vercel app routes for `/login`, `/app`, `/leader`, and `/staff`
+- the deployed Vercel app routes for `/login`, `/app`, `/leader`, `/staff`, and
+  `/admin`
 - the public production domain DNS and login page
 - the 30-chapter rollout packet readiness
 - the review-only rollout handoff posture
@@ -256,7 +305,7 @@ coach owns each chapter, and which campaign each chapter starts with.
 
 ## Production Route Smoke Check
 
-After each production deployment, verify the four core public routes:
+After each production deployment, verify the five core public routes:
 
 ```bash
 pnpm production:smoke https://mymedlife-pwa.vercel.app
@@ -271,6 +320,8 @@ This checks that:
   center return path preserved.
 - `/staff` redirects unauthenticated users to login with the staff command
   center return path preserved.
+- `/admin` redirects unauthenticated users to login with the admin backend
+  return path preserved.
 
 Once DNS is attached, run the same check against:
 
@@ -287,7 +338,7 @@ pnpm production:smoke https://www.mymedlife.org
 5. Insert matching `app.profiles`, `app.chapters`, `app.memberships`,
    `app.staff_role_assignments`, `app.coach_chapter_assignments`, and
    `app.campaigns`.
-6. Verify signed-in routing for `/app`, `/leader`, and `/staff`.
+6. Verify signed-in routing for `/app`, `/leader`, `/staff`, and `/admin`.
 7. Only then invite the first production rollout group.
 
 ## Still Blocked

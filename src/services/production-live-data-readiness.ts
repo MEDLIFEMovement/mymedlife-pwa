@@ -103,7 +103,7 @@ export function getProductionLiveDataReadiness(
       "Apply the reviewed 30-chapter rollout packet through the approved production path.",
     );
     nextSteps.push(
-      "Rerun this count check, then run signed-in route checks for /app, /leader, and /staff.",
+      "Rerun this count check, then run signed-in route checks for /app, /leader, /staff, and /admin.",
     );
   } else {
     nextSteps.push(

@@ -23,7 +23,16 @@ describe("production rollout handoff", () => {
     );
     expect(report).toContain("- chapter-01 -> Rush Month (rush-month-01)");
     expect(report).toContain(
-      "- Keep HubSpot, Luma, n8n, warehouse, Power BI, SMS, email, and AI writes disabled during this apply.",
+      "- chapter-01 -> cal-chapter-01 (Chapter 01 MEDLIFE Calendar)",
+    );
+    expect(report).toContain(
+      "- chapter-01 -> Rush Month Kickoff (evt-chapter-01); RSVPs 12, attendance 10, points 10, audit recorded, outbox zero_sends",
+    );
+    expect(report).toContain(
+      "- support -> admin@medlifemovement.org (Launch Admin)",
+    );
+    expect(report).toContain(
+      "- Keep HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes disabled during this apply.",
     );
   });
 
@@ -50,18 +59,19 @@ function createPacket(chapterCount: number): ProductionRolloutBootstrapPacket {
       region: index % 2 === 0 ? "West" : "East",
     };
   });
-  const chapterUsers = chapters.flatMap((chapter, index) => {
+  const leaderUsers = chapters.map((chapter, index) => {
     const number = String(index + 1).padStart(2, "0");
-    return [
-      {
-        email: `leader.${number}@medlifemovement.org`,
-        displayName: `${chapter.name} Leader`,
-      },
-      {
-        email: `member.${number}@medlifemovement.org`,
-        displayName: `${chapter.name} Member`,
-      },
-    ];
+    return {
+      email: `leader.${number}@medlifemovement.org`,
+      displayName: `${chapter.name} Leader`,
+    };
+  });
+  const memberUsers = Array.from({ length: Math.max(0, 500 - chapterCount) }, (_value, index) => {
+    const number = String(index + 1).padStart(3, "0");
+    return {
+      email: `member.${number}@medlifemovement.org`,
+      displayName: `Launch Member ${number}`,
+    };
   });
 
   return {
@@ -70,23 +80,24 @@ function createPacket(chapterCount: number): ProductionRolloutBootstrapPacket {
       { email: "coach@medlifemovement.org", displayName: "Launch Coach" },
       { email: "admin@medlifemovement.org", displayName: "Launch Admin" },
       { email: "ds@medlifemovement.org", displayName: "DS Admin" },
-      ...chapterUsers,
+      ...leaderUsers,
+      ...memberUsers,
     ],
-    memberships: chapters.flatMap((chapter, index) => {
-      const number = String(index + 1).padStart(2, "0");
-      return [
-        {
+    memberships: [
+      ...chapters.map((chapter, index) => {
+        const number = String(index + 1).padStart(2, "0");
+        return {
           email: `leader.${number}@medlifemovement.org`,
           chapterId: chapter.id,
           roleKey: "president_vp" as const,
-        },
-        {
-          email: `member.${number}@medlifemovement.org`,
-          chapterId: chapter.id,
-          roleKey: "general_member" as const,
-        },
-      ];
-    }),
+        };
+      }),
+      ...memberUsers.map((user, index) => ({
+        email: user.email,
+        chapterId: chapters[index % chapters.length]?.id ?? "chapter-01",
+        roleKey: "general_member" as const,
+      })),
+    ],
     staffRoles: [
       { email: "coach@medlifemovement.org", roleKey: "coach" },
       { email: "admin@medlifemovement.org", roleKey: "admin" },
@@ -102,5 +113,44 @@ function createPacket(chapterCount: number): ProductionRolloutBootstrapPacket {
       name: "Rush Month",
       slug: `rush-month-${String(index + 1).padStart(2, "0")}`,
     })),
+    lumaCalendars: chapters.map((chapter, index) => ({
+      chapterId: chapter.id,
+      calendarId: `cal-chapter-${String(index + 1).padStart(2, "0")}`,
+      calendarName: `${chapter.name} Calendar`,
+      status: "linked",
+    })),
+    pilotEventProof: chapters.slice(0, Math.min(chapterCount, 5)).map((chapter, index) => ({
+      chapterId: chapter.id,
+      eventName: "Rush Month Kickoff",
+      lumaEventId: `evt-chapter-${String(index + 1).padStart(2, "0")}`,
+      rsvpCount: 12,
+      attendanceCount: 10,
+      pointsAwardedCount: 10,
+      auditEvidence: "recorded",
+      outboxStatus: "zero_sends",
+      status: "ready",
+    })),
+    launchOwners: [
+      {
+        email: "admin@medlifemovement.org",
+        ownerType: "support",
+        displayName: "Launch Admin",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        ownerType: "rollback",
+        displayName: "DS Admin",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        ownerType: "production_apply",
+        displayName: "DS Admin",
+      },
+      {
+        email: "admin@medlifemovement.org",
+        ownerType: "launch_decision",
+        displayName: "Launch Admin",
+      },
+    ],
   };
 }

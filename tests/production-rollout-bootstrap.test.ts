@@ -16,6 +16,10 @@ describe("production rollout bootstrap readiness", () => {
     expect(readiness.counts.activeChapters).toBe(30);
     expect(readiness.counts.activeCoachAssignments).toBe(30);
     expect(readiness.counts.activeCampaigns).toBe(30);
+    expect(readiness.counts.approvedStudentMemberships).toBe(500);
+    expect(readiness.counts.linkedLumaCalendars).toBe(30);
+    expect(readiness.counts.readyPilotEventProofChapters).toBe(5);
+    expect(readiness.counts.activeLaunchOwners).toBe(4);
     expect(readiness.nextSteps.join(" ")).toContain("Create Supabase Auth users");
   });
 
@@ -78,6 +82,9 @@ describe("production rollout bootstrap readiness", () => {
       staffRoles: [],
       coachAssignments: [],
       campaigns: [],
+      lumaCalendars: [],
+      pilotEventProof: [],
+      launchOwners: [],
     });
 
     expect(readiness.ready).toBe(false);
@@ -103,7 +110,72 @@ describe("production rollout bootstrap readiness", () => {
       "- active chapters: 1",
     );
     expect(formatProductionRolloutBootstrapReadiness(readiness)).toContain(
+      "- approved student/leader users: 500",
+    );
+    expect(formatProductionRolloutBootstrapReadiness(readiness)).toContain(
       "Add at least 30 active chapters before production rollout.",
+    );
+  });
+
+  it("blocks packets without Luma mappings, pilot proof, and launch owners", () => {
+    const packet = createCompletePacket(30);
+    packet.lumaCalendars = [];
+    packet.pilotEventProof = [];
+    packet.launchOwners = [];
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "Chapter 01 MEDLIFE needs a linked Luma calendar mapping.",
+    );
+    expect(readiness.blockers).toContain(
+      "Add ready event-loop proof for at least 5 pilot chapters before inviting 30 chapters. Current ready pilot chapters: 0.",
+    );
+    expect(readiness.blockers).toContain(
+      "Add an active support owner to launch-owners.csv.",
+    );
+    expect(readiness.blockers).toContain(
+      "Add an active rollback owner to launch-owners.csv.",
+    );
+    expect(readiness.blockers).toContain(
+      "Add an active production apply owner to launch-owners.csv.",
+    );
+  });
+
+  it("blocks ready pilot proof that does not prove the whole event loop", () => {
+    const packet = createCompletePacket(30);
+    const pilotEventProof = packet.pilotEventProof ?? [];
+    pilotEventProof[0] = {
+      chapterId: "chapter-01",
+      eventName: "Rush Month Kickoff",
+      lumaEventId: "evt-chapter-01",
+      rsvpCount: 0,
+      attendanceCount: 0,
+      pointsAwardedCount: 0,
+      auditEvidence: "missing",
+      outboxStatus: "sends_detected",
+      status: "ready",
+    };
+    packet.pilotEventProof = pilotEventProof;
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 needs at least one RSVP.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 needs at least one attendance check-in.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 needs at least one points award.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 needs recorded audit evidence.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 needs zero external sends in the outbox.",
     );
   });
 });
@@ -118,18 +190,19 @@ function createCompletePacket(chapterCount: number): ProductionRolloutBootstrapP
       region: index % 2 === 0 ? "West" : "East",
     };
   });
-  const chapterUsers = chapters.flatMap((chapter, index) => {
+  const leaderUsers = chapters.map((chapter, index) => {
     const number = String(index + 1).padStart(2, "0");
-    return [
-      {
-        email: `leader.${number}@medlifemovement.org`,
-        displayName: `${chapter.name} Leader`,
-      },
-      {
-        email: `member.${number}@medlifemovement.org`,
-        displayName: `${chapter.name} Member`,
-      },
-    ];
+    return {
+      email: `leader.${number}@medlifemovement.org`,
+      displayName: `${chapter.name} Leader`,
+    };
+  });
+  const memberUsers = Array.from({ length: Math.max(0, 500 - chapterCount) }, (_, index) => {
+    const number = String(index + 1).padStart(3, "0");
+    return {
+      email: `member.${number}@medlifemovement.org`,
+      displayName: `Launch Member ${number}`,
+    };
   });
 
   return {
@@ -138,23 +211,24 @@ function createCompletePacket(chapterCount: number): ProductionRolloutBootstrapP
       { email: "coach@medlifemovement.org", displayName: "Launch Coach" },
       { email: "admin@medlifemovement.org", displayName: "Launch Admin" },
       { email: "ds@medlifemovement.org", displayName: "DS Admin" },
-      ...chapterUsers,
+      ...leaderUsers,
+      ...memberUsers,
     ],
-    memberships: chapters.flatMap((chapter, index) => {
-      const number = String(index + 1).padStart(2, "0");
-      return [
-        {
+    memberships: [
+      ...chapters.map((chapter, index) => {
+        const number = String(index + 1).padStart(2, "0");
+        return {
           email: `leader.${number}@medlifemovement.org`,
           chapterId: chapter.id,
           roleKey: "president_vp" as const,
-        },
-        {
-          email: `member.${number}@medlifemovement.org`,
-          chapterId: chapter.id,
-          roleKey: "general_member" as const,
-        },
-      ];
-    }),
+        };
+      }),
+      ...memberUsers.map((user, index) => ({
+        email: user.email,
+        chapterId: chapters[index % chapters.length]?.id ?? "chapter-01",
+        roleKey: "general_member" as const,
+      })),
+    ],
     staffRoles: [
       { email: "coach@medlifemovement.org", roleKey: "coach" },
       { email: "admin@medlifemovement.org", roleKey: "admin" },
@@ -170,5 +244,44 @@ function createCompletePacket(chapterCount: number): ProductionRolloutBootstrapP
       name: "Rush Month",
       slug: `rush-month-${String(index + 1).padStart(2, "0")}`,
     })),
+    lumaCalendars: chapters.map((chapter, index) => ({
+      chapterId: chapter.id,
+      calendarId: `cal-chapter-${String(index + 1).padStart(2, "0")}`,
+      calendarName: `${chapter.name} Calendar`,
+      status: "linked",
+    })),
+    pilotEventProof: chapters.slice(0, Math.min(chapterCount, 5)).map((chapter, index) => ({
+      chapterId: chapter.id,
+      eventName: "Rush Month Kickoff",
+      lumaEventId: `evt-chapter-${String(index + 1).padStart(2, "0")}`,
+      rsvpCount: 12,
+      attendanceCount: 10,
+      pointsAwardedCount: 10,
+      auditEvidence: "recorded",
+      outboxStatus: "zero_sends",
+      status: "ready",
+    })),
+    launchOwners: [
+      {
+        email: "admin@medlifemovement.org",
+        ownerType: "support",
+        displayName: "Launch Admin",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        ownerType: "rollback",
+        displayName: "DS Admin",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        ownerType: "production_apply",
+        displayName: "DS Admin",
+      },
+      {
+        email: "admin@medlifemovement.org",
+        ownerType: "launch_decision",
+        displayName: "Launch Admin",
+      },
+    ],
   };
 }
