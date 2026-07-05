@@ -124,11 +124,14 @@ describe("home page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3490);
-    expect(lineCount).toBeLessThanOrEqual(3510);
+    expect(lineCount).toBeLessThanOrEqual(3535);
     expect(source).toContain('const [screen, setScreen] = useState<Screen>("home");');
     expect(source).toContain('case "events": return <EventsScreen navigate={navigate} />;');
     expect(source).toContain('case "event-detail": return <EventDetailScreen navigate={navigate} />;');
     expect(source).toContain('case "points": return <PointsLeaderboard navigate={navigate} />;');
+    expect(source).toContain('"/app/events"');
+    expect(source).toContain('"/app/points"');
+    expect(source).toContain('"/profile"');
     expect(source).toContain("<BottomNav active={screen} navigate={navigate} />");
     expect(source).toContain("disabled={!onClick}");
     expect(source).toContain("Secure admin route required");

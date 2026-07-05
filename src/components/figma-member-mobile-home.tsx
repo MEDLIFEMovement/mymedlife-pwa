@@ -242,12 +242,12 @@ function AlertBanner({
 // ─── Bottom Nav ─────────────────────────────────────────────────────────────
 
 function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen) => void }) {
-  const items: { id: Screen; label: string; Icon: typeof Home }[] = [
+  const items: { id: Screen | "profile"; label: string; Icon: typeof Home }[] = [
     { id: "home",    label: "Home",    Icon: Home },
     { id: "stories", label: "Stories", Icon: Heart },
     { id: "events",  label: "Events",  Icon: CalendarDays },
     { id: "points",  label: "Points",  Icon: Trophy },
-    { id: "events",  label: "Profile", Icon: User },
+    { id: "profile", label: "Profile", Icon: User },
   ];
   const EVENT_SCREENS: Screen[] = ["events", "event-detail", "rsvp-confirm", "checkin"];
   const STORY_SCREENS: Screen[] = ["stories"];
@@ -259,14 +259,32 @@ function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen)
           : label === "Stories"
           ? STORY_SCREENS.includes(active)
           : active === id && label !== "Profile";
+        const routeHref = id === "events"
+          ? "/app/events"
+          : id === "points"
+          ? "/app/points"
+          : id === "profile"
+          ? "/profile"
+          : null;
+        const className = cn(
+          "flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-colors",
+          isActive ? "text-primary" : "text-muted-foreground"
+        );
+
+        if (routeHref) {
+          return (
+            <a key={idx} href={routeHref} className={className}>
+              <Icon size={20} />
+              <span>{label}</span>
+            </a>
+          );
+        }
+
         return (
           <button
             key={idx}
-            onClick={() => navigate(id)}
-            className={cn(
-              "flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-colors",
-              isActive ? "text-primary" : "text-muted-foreground"
-            )}
+            onClick={() => navigate(id as Screen)}
+            className={className}
           >
             <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
             {label}

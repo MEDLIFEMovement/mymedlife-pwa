@@ -7,6 +7,9 @@ import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/staff",
+  useRouter: () => ({
+    replace: vi.fn(),
+  }),
   useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
@@ -102,6 +105,8 @@ describe("staff page", () => {
     expect(html).toContain("2 chapters need intervention");
 
     expect(html).toContain(">Chapters<");
+    expect(html).toContain(">Events<");
+    expect(html).toContain(">Leaderboard<");
     expect(html).toContain(">Campaigns<");
     expect(html).toContain(">Proof / UGC<");
     expect(html).toContain(">Best Practices<");
@@ -121,7 +126,10 @@ describe("staff page", () => {
     expect(html).toContain("Export");
   });
 
-  it("keeps Figma navigation button-owned instead of route-link-owned", async () => {
+  it.each([
+    ["events", "Luma event operations", "RSVP, attendance, and point readiness by chapter"],
+    ["leaderboard", "Organization leaderboard", "Chapter ranking by attendance-backed points"],
+  ])("renders the %s staff launch view from the route query", async (view, expectedEyebrow, expectedTitle) => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
@@ -131,22 +139,21 @@ describe("staff page", () => {
     const { default: StaffPage } = await import("@/app/staff/page");
     const html = renderToStaticMarkup(
       await StaffPage({
-        searchParams: Promise.resolve({ view: "campaigns" }),
+        searchParams: Promise.resolve({ view }),
       }),
     );
 
-    expect(html).toContain("Portfolio Overview");
-    expect(html).not.toContain('href="/staff?view=campaigns"');
-    expect(html).not.toContain('href="/staff?view=proof_ugc"');
+    expect(html).toContain(expectedEyebrow);
+    expect(html).toContain(expectedTitle);
     expect(html).not.toContain("Figma page missing - implementation blocked");
   });
 
-  it("keeps the local staff shell close to the 2,095-line Figma export", () => {
+  it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
     const lineCount = source.split("\n").length;
 
-    expect(lineCount).toBeGreaterThanOrEqual(2090);
-    expect(lineCount).toBeLessThanOrEqual(2110);
+    expect(lineCount).toBeGreaterThanOrEqual(2170);
+    expect(lineCount).toBeLessThanOrEqual(2195);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
@@ -154,5 +161,7 @@ describe("staff page", () => {
     expect(source).toContain("function ProofUGCQueue");
     expect(source).toContain("function BestPracticesLibrary");
     expect(source).toContain("function AdminRoleGate");
+    expect(source).toContain("StaffLaunchEventsOperations");
+    expect(source).toContain("StaffLaunchOrganizationLeaderboard");
   });
 });

@@ -20,6 +20,7 @@ import { TrainingScreen } from "@/components/figma-leader-training-screen";
 import { MedlifeStoriesScreen } from "@/components/figma-leader-stories-screen";
 import {
   buildLeaderCommandCenterHrefForScreen,
+  getLeaderCommandCenterViewForScreen,
   resolveLeaderCommandCenterScreen,
   type LeaderCommandCenterScreen,
 } from "@/services/leader-command-center-routing";
@@ -3370,14 +3371,20 @@ function Sidebar({ active, onNav }: { active: Screen; onNav: (s: Screen) => void
           <div key={g.label}>
             <div className="px-3 mb-1 text-[9px] font-bold text-blue-300/40 uppercase tracking-widest">{g.label}</div>
             {g.items.map(({id,label,icon:Icon})=>(
-              <button key={id} onClick={()=>onNav(id)}
+              <a
+                key={id}
+                href={`/leader?view=${getLeaderCommandCenterViewForScreen(id)}`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onNav(id);
+                }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 text-left transition-all cursor-pointer
                   ${active===id
                     ? "bg-[#1A56E8] text-white shadow-md shadow-blue-900/50"
                     : "text-white/50 hover:text-white hover:bg-white/6"}`}>
                 <Icon size={14}/>
                 <span className="text-[11px] font-semibold">{label}</span>
-              </button>
+              </a>
             ))}
           </div>
         ))}

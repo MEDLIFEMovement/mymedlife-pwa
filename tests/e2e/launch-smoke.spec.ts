@@ -33,6 +33,20 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByText("Upcoming Events")).toBeVisible();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
 
+    await page.getByRole("link", { name: "Events" }).click();
+    await expect(page).toHaveURL(/\/app\/events$/);
+    await expect(page.getByRole("heading", { name: "RSVP, show up, earn points" })).toBeVisible();
+
+    await page.goto("/app");
+    await page.getByRole("link", { name: "Points" }).click();
+    await expect(page).toHaveURL(/\/app\/points$/);
+    await expect(page.getByText("Points and leaderboard")).toBeVisible();
+
+    await page.goto("/app");
+    await page.getByRole("link", { name: "Profile" }).click();
+    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page.getByRole("heading", { name: "Hi, Sofia" })).toBeVisible();
+
     await page.goto("/app/events");
     await expect(page.getByRole("heading", { name: "RSVP, show up, earn points" })).toBeVisible();
     await expect(page.getByLabel("Upcoming events")).toBeVisible();
@@ -53,6 +67,18 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/leader/);
     await expect(page.getByText("Chapter Leadership Home")).toBeVisible();
     await expect(page.getByRole("heading", { name: /Chapter Metrics/ })).toBeVisible();
+
+    await page.getByRole("link", { name: "Chapter Leaderboard" }).click();
+    await expect(page).toHaveURL(/\/leader\?view=leaderboard/);
+    await expect(page.getByRole("heading", { name: "Chapter Leaderboard" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Event Performance" }).click();
+    await expect(page).toHaveURL(/\/leader\?view=events/);
+    await expect(page.getByRole("heading", { name: "Event Performance" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Create Event" }).click();
+    await expect(page).toHaveURL(/\/leader\?view=create_event/);
+    await expect(page.getByRole("heading", { name: "Create New Event" })).toBeVisible();
   });
 
   test("loads the staff command center with the preview actor", async ({
@@ -66,5 +92,15 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/staff/);
     await expect(page.getByRole("heading", { name: "Portfolio Overview" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Chapter" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Events" }).click();
+    await expect(page).toHaveURL(/\/staff\?view=events/);
+    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+    await expect(page.getByText("RSVP, attendance, and point readiness by chapter")).toBeVisible();
+
+    await page.getByRole("link", { name: "Leaderboard" }).click();
+    await expect(page).toHaveURL(/\/staff\?view=leaderboard/);
+    await expect(page.getByRole("heading", { name: "Organization Leaderboard" })).toBeVisible();
+    await expect(page.getByText("Chapter ranking by attendance-backed points")).toBeVisible();
   });
 });
