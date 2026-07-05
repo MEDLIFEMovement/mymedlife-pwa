@@ -11,6 +11,27 @@ pnpm rollout:templates --out rollout-csv
 pnpm rollout:workbook --out production-rollout-workbook.md --csv-dir rollout-csv
 ```
 
+If HQ has one plain roster export for students and leaders, convert it into the
+two linked files that are easiest to mistype:
+
+```bash
+pnpm rollout:roster-import --roster rollout-roster.csv --out-dir rollout-csv
+```
+
+The roster import expects:
+
+```text
+email,displayName,chapterId,roleKey,status,chapterName
+```
+
+Required fields are `email`, `displayName`, `chapterId`, and `roleKey`.
+`status` defaults to `approved` when blank. `chapterName` is allowed only as a
+human check column; it is not written into the packet. The command writes local
+`users.csv` and `memberships.csv` files only. It does not create accounts, send
+invites, call Luma, write Supabase rows, change Vercel, or enable integrations.
+It refuses fake/test emails and will not overwrite existing roster rows unless
+`--force` is added intentionally.
+
 The current local working copy is:
 
 ```text
