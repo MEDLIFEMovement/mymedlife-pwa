@@ -19,6 +19,10 @@ export type ProductionSignedInRouteProofReadiness = {
   counts: {
     proofRows: number;
     passedProofRows: number;
+    pilotChaptersRequiringProof: number;
+    pilotChaptersWithMemberProof: number;
+    pilotChaptersWithLeaderProof: number;
+    pilotChaptersWithMemberAndLeaderProof: number;
   };
 };
 
@@ -104,17 +108,23 @@ export function getProductionSignedInRouteProofReadiness(
       counts: {
         proofRows: 0,
         passedProofRows: 0,
+        pilotChaptersRequiringProof: 0,
+        pilotChaptersWithMemberProof: 0,
+        pilotChaptersWithLeaderProof: 0,
+        pilotChaptersWithMemberAndLeaderProof: 0,
       },
     };
   }
 
   const proofRows = packet.signedInRouteProof ?? [];
   const rowBlockers = getRouteProofRowBlockers(packet, proofRows);
+  const pilotChapterProof = getPilotChapterRouteProof(packet, proofRows);
   const checks = requiredRouteProofs.map((required) =>
     createRequiredRouteProofCheck(packet, proofRows, required),
   );
   const blockers = [
     ...rowBlockers,
+    ...pilotChapterProof.blockers,
     ...checks
       .filter((check) => !check.passed)
       .map((check) => `${check.label}: ${check.detail}`),
@@ -127,6 +137,11 @@ export function getProductionSignedInRouteProofReadiness(
     counts: {
       proofRows: proofRows.length,
       passedProofRows: proofRows.filter((proof) => proof.status === "passed").length,
+      pilotChaptersRequiringProof: pilotChapterProof.requiredChapterIds.length,
+      pilotChaptersWithMemberProof: pilotChapterProof.memberReadyChapterIds.length,
+      pilotChaptersWithLeaderProof: pilotChapterProof.leaderReadyChapterIds.length,
+      pilotChaptersWithMemberAndLeaderProof:
+        pilotChapterProof.fullyReadyChapterIds.length,
     },
   };
 }
@@ -144,6 +159,7 @@ export function formatProductionSignedInRouteProofReadiness(
     `${passedCount}/${readiness.checks.length} required workspace proofs passed`,
     `Proof rows: ${readiness.counts.proofRows}`,
     `Passed proof rows: ${readiness.counts.passedProofRows}`,
+    `Pilot chapters with member and leader proof: ${readiness.counts.pilotChaptersWithMemberAndLeaderProof}/${readiness.counts.pilotChaptersRequiringProof}`,
     "",
     "Checks:",
     ...readiness.checks.map(
@@ -185,6 +201,95 @@ function createRequiredRouteProofCheck(
     passed: true,
     detail: `${matchingProof.email} reached ${matchingProof.observedPath}`,
   };
+}
+
+function getPilotChapterRouteProof(
+  packet: ProductionRolloutBootstrapPacket,
+  proofRows: ProductionBootstrapSignedInRouteProof[],
+) {
+  const requiredChapterIds = Array.from(
+    new Set(
+      (packet.pilotEventProof ?? [])
+        .filter((proof) => (proof.status ?? "ready") === "ready")
+        .map((proof) => proof.chapterId),
+    ),
+  );
+  const memberReadyChapterIds = requiredChapterIds.filter((chapterId) =>
+    hasPassedChapterRoleProof({
+      packet,
+      proofRows,
+      chapterId,
+      workspace: "student_app",
+      expectedPath: "/app",
+      roleKeys: directMemberRoles,
+    }),
+  );
+  const leaderReadyChapterIds = requiredChapterIds.filter((chapterId) =>
+    hasPassedChapterRoleProof({
+      packet,
+      proofRows,
+      chapterId,
+      workspace: "leader_command_center",
+      expectedPath: "/leader?view=overview",
+      roleKeys: leaderRoles,
+    }),
+  );
+  const memberReadySet = new Set(memberReadyChapterIds);
+  const leaderReadySet = new Set(leaderReadyChapterIds);
+  const fullyReadyChapterIds = requiredChapterIds.filter(
+    (chapterId) => memberReadySet.has(chapterId) && leaderReadySet.has(chapterId),
+  );
+  const blockers = requiredChapterIds.flatMap((chapterId) => {
+    const chapter = packet.chapters.find((candidate) => candidate.id === chapterId);
+    const label = chapter?.name ?? chapterId;
+    const missing: string[] = [];
+
+    if (!memberReadySet.has(chapterId)) {
+      missing.push(
+        `${label} needs a passed signed-in member route proof for /app before this pilot chapter can support broad invites.`,
+      );
+    }
+
+    if (!leaderReadySet.has(chapterId)) {
+      missing.push(
+        `${label} needs a passed signed-in leader route proof for /leader?view=overview before this pilot chapter can support broad invites.`,
+      );
+    }
+
+    return missing;
+  });
+
+  return {
+    requiredChapterIds,
+    memberReadyChapterIds,
+    leaderReadyChapterIds,
+    fullyReadyChapterIds,
+    blockers,
+  };
+}
+
+function hasPassedChapterRoleProof(input: {
+  packet: ProductionRolloutBootstrapPacket;
+  proofRows: ProductionBootstrapSignedInRouteProof[];
+  chapterId: string;
+  workspace: ProductionBootstrapSignedInRouteProof["workspace"];
+  expectedPath: string;
+  roleKeys: readonly ProductionBootstrapMembership["roleKey"][];
+}) {
+  return input.proofRows.some(
+    (proof) =>
+      proof.workspace === input.workspace &&
+      proof.status === "passed" &&
+      proof.expectedPath === input.expectedPath &&
+      proof.observedPath === input.expectedPath &&
+      isValidCheckedAt(proof.checkedAt) &&
+      hasApprovedMembershipRoleInChapter(
+        proof.email,
+        input.packet,
+        input.roleKeys,
+        input.chapterId,
+      ),
+  );
 }
 
 function getRouteProofRowBlockers(
@@ -254,13 +359,23 @@ function hasApprovedMembershipRole(
   packet: ProductionRolloutBootstrapPacket,
   roleKeys: readonly ProductionBootstrapMembership["roleKey"][],
 ) {
+  return hasApprovedMembershipRoleInChapter(email, packet, roleKeys);
+}
+
+function hasApprovedMembershipRoleInChapter(
+  email: string,
+  packet: ProductionRolloutBootstrapPacket,
+  roleKeys: readonly ProductionBootstrapMembership["roleKey"][],
+  chapterId?: string,
+) {
   const normalizedEmail = normalizeEmail(email);
 
   return packet.memberships.some(
     (membership) =>
       normalizeEmail(membership.email) === normalizedEmail &&
       (membership.status ?? "approved") === "approved" &&
-      roleKeys.includes(membership.roleKey),
+      roleKeys.includes(membership.roleKey) &&
+      (!chapterId || membership.chapterId === chapterId),
   );
 }
 

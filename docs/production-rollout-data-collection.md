@@ -385,7 +385,7 @@ Before any production data apply, confirm:
 - The production apply owner is named.
 - The support owner and rollback owner are named.
 - The signed-in route proof rows pass for one member, one leader, one staff
-  user, and one admin.
+  user, one admin, and member/leader access for each ready pilot chapter.
 - The 5-chapter Luma event loop has proof for RSVP, attendance, points, audit,
   and zero external sends.
 - External writes remain off: HubSpot, n8n, warehouse, Power BI, SMS, email,

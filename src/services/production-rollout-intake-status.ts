@@ -217,7 +217,7 @@ function getMissingDataAsks({
 
   if (!signedInRouteProofReady) {
     asks.push(
-      "After production users are applied, add passed signed-in route proof for one member, one leader, one staff user, and one admin.",
+      "After production users are applied, add passed signed-in route proof for one member, one leader, one staff user, one admin, and member/leader access for each ready pilot chapter.",
     );
   }
 

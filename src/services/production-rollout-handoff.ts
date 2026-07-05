@@ -134,7 +134,7 @@ export function getProductionRolloutHandoff(
           "Keep HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes disabled during this apply.",
           "Keep Luma writes limited to the separately approved event, RSVP, and attendance/check-in path.",
           "Run signed-in route checks for /app, /leader, /staff, and /admin before inviting all chapters.",
-          "Do not mark the invite gate ready until signed-in route proof passes for one member, one leader, one staff user, and one admin.",
+          "Do not mark the invite gate ready until signed-in route proof passes for one member, one leader, one staff user, one admin, and member/leader access for each ready pilot chapter.",
         ],
       },
     ],

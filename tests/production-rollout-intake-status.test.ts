@@ -36,7 +36,7 @@ describe("production rollout intake status", () => {
     expect(status.pilotEventProofReady).toBe(true);
     expect(status.signedInRouteProofReady).toBe(false);
     expect(status.missingDataAsks).toEqual([
-      "After production users are applied, add passed signed-in route proof for one member, one leader, one staff user, and one admin.",
+      "After production users are applied, add passed signed-in route proof for one member, one leader, one staff user, one admin, and member/leader access for each ready pilot chapter.",
     ]);
   });
 
@@ -182,22 +182,29 @@ function createReadyPacket(): ProductionRolloutBootstrapPacket {
       },
     ],
     signedInRouteProof: [
-      {
-        email: "member.001@medlifemovement.org",
-        workspace: "student_app",
-        expectedPath: "/app",
-        observedPath: "/app",
-        status: "passed",
-        checkedAt: "2026-07-05T15:00:00Z",
-      },
-      {
-        email: "leader.01@medlifemovement.org",
-        workspace: "leader_command_center",
-        expectedPath: "/leader?view=overview",
-        observedPath: "/leader?view=overview",
-        status: "passed",
-        checkedAt: "2026-07-05T15:01:00Z",
-      },
+      ...Array.from({ length: 5 }, (_value, index) => {
+        const number = String(index + 1).padStart(2, "0");
+        const memberNumber = String(index + 1).padStart(3, "0");
+
+        return [
+          {
+            email: `member.${memberNumber}@medlifemovement.org`,
+            workspace: "student_app" as const,
+            expectedPath: "/app",
+            observedPath: "/app",
+            status: "passed" as const,
+            checkedAt: `2026-07-05T15:${String(index).padStart(2, "0")}:00Z`,
+          },
+          {
+            email: `leader.${number}@medlifemovement.org`,
+            workspace: "leader_command_center" as const,
+            expectedPath: "/leader?view=overview",
+            observedPath: "/leader?view=overview",
+            status: "passed" as const,
+            checkedAt: `2026-07-05T15:${String(index + 5).padStart(2, "0")}:00Z`,
+          },
+        ];
+      }).flat(),
       {
         email: "coach@medlifemovement.org",
         workspace: "staff_command_center",

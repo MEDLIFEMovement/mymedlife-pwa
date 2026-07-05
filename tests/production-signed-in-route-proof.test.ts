@@ -14,6 +14,10 @@ describe("production signed-in route proof", () => {
     expect(readiness.counts).toEqual({
       proofRows: 4,
       passedProofRows: 4,
+      pilotChaptersRequiringProof: 0,
+      pilotChaptersWithMemberProof: 0,
+      pilotChaptersWithLeaderProof: 0,
+      pilotChaptersWithMemberAndLeaderProof: 0,
     });
     expect(formatProductionSignedInRouteProofReadiness(readiness)).toContain(
       "Production signed-in route proof: READY",
@@ -97,6 +101,45 @@ describe("production signed-in route proof", () => {
       "member@medlifemovement.org student_app needs a checkedAt timestamp when status is passed.",
     );
   });
+
+  it("requires member and leader route proof for every ready pilot chapter", () => {
+    const readiness = getProductionSignedInRouteProofReadiness(
+      createPilotChapterPacket({
+        includeSecondPilotLeaderProof: false,
+      }),
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.counts).toMatchObject({
+      pilotChaptersRequiringProof: 2,
+      pilotChaptersWithMemberProof: 2,
+      pilotChaptersWithLeaderProof: 1,
+      pilotChaptersWithMemberAndLeaderProof: 1,
+    });
+    expect(readiness.blockers).toContain(
+      "Chapter 02 MEDLIFE needs a passed signed-in leader route proof for /leader?view=overview before this pilot chapter can support broad invites.",
+    );
+    expect(formatProductionSignedInRouteProofReadiness(readiness)).toContain(
+      "Pilot chapters with member and leader proof: 1/2",
+    );
+  });
+
+  it("passes pilot chapter route proof when every ready pilot chapter has member and leader access", () => {
+    const readiness = getProductionSignedInRouteProofReadiness(
+      createPilotChapterPacket({
+        includeSecondPilotLeaderProof: true,
+      }),
+    );
+
+    expect(readiness.ready).toBe(true);
+    expect(readiness.blockers).toEqual([]);
+    expect(readiness.counts).toMatchObject({
+      pilotChaptersRequiringProof: 2,
+      pilotChaptersWithMemberProof: 2,
+      pilotChaptersWithLeaderProof: 2,
+      pilotChaptersWithMemberAndLeaderProof: 2,
+    });
+  });
 });
 
 function createPacket(): ProductionRolloutBootstrapPacket {
@@ -179,4 +222,160 @@ function createPacket(): ProductionRolloutBootstrapPacket {
       },
     ],
   };
+}
+
+function createPilotChapterPacket(input: {
+  includeSecondPilotLeaderProof: boolean;
+}): ProductionRolloutBootstrapPacket {
+  const packet: ProductionRolloutBootstrapPacket = {
+    chapters: [
+      {
+        id: "chapter-01",
+        name: "Chapter 01 MEDLIFE",
+        campus: "Campus 01",
+      },
+      {
+        id: "chapter-02",
+        name: "Chapter 02 MEDLIFE",
+        campus: "Campus 02",
+      },
+    ],
+    users: [
+      { email: "member.01@medlifemovement.org", displayName: "Member 01" },
+      { email: "leader.01@medlifemovement.org", displayName: "Leader 01" },
+      { email: "member.02@medlifemovement.org", displayName: "Member 02" },
+      { email: "leader.02@medlifemovement.org", displayName: "Leader 02" },
+      { email: "coach@medlifemovement.org", displayName: "Launch Coach" },
+      { email: "ds@medlifemovement.org", displayName: "DS Admin" },
+    ],
+    memberships: [
+      {
+        email: "member.01@medlifemovement.org",
+        chapterId: "chapter-01",
+        roleKey: "general_member",
+      },
+      {
+        email: "leader.01@medlifemovement.org",
+        chapterId: "chapter-01",
+        roleKey: "president_vp",
+      },
+      {
+        email: "member.02@medlifemovement.org",
+        chapterId: "chapter-02",
+        roleKey: "general_member",
+      },
+      {
+        email: "leader.02@medlifemovement.org",
+        chapterId: "chapter-02",
+        roleKey: "president_vp",
+      },
+    ],
+    staffRoles: [
+      { email: "coach@medlifemovement.org", roleKey: "coach" },
+      { email: "ds@medlifemovement.org", roleKey: "ds_admin" },
+    ],
+    coachAssignments: [
+      {
+        coachEmail: "coach@medlifemovement.org",
+        chapterId: "chapter-01",
+        coachType: "portfolio",
+      },
+      {
+        coachEmail: "coach@medlifemovement.org",
+        chapterId: "chapter-02",
+        coachType: "portfolio",
+      },
+    ],
+    campaigns: [
+      {
+        chapterId: "chapter-01",
+        name: "Rush Month",
+        slug: "rush-month-01",
+      },
+      {
+        chapterId: "chapter-02",
+        name: "Rush Month",
+        slug: "rush-month-02",
+      },
+    ],
+    pilotEventProof: [
+      {
+        chapterId: "chapter-01",
+        eventName: "Rush Month Kickoff",
+        lumaEventId: "evt-chapter-01",
+        rsvpCount: 12,
+        attendanceCount: 10,
+        pointsAwardedCount: 10,
+        auditEvidence: "recorded",
+        outboxStatus: "zero_sends",
+        status: "ready",
+      },
+      {
+        chapterId: "chapter-02",
+        eventName: "Rush Month Kickoff",
+        lumaEventId: "evt-chapter-02",
+        rsvpCount: 12,
+        attendanceCount: 10,
+        pointsAwardedCount: 10,
+        auditEvidence: "recorded",
+        outboxStatus: "zero_sends",
+        status: "ready",
+      },
+    ],
+    signedInRouteProof: [
+      {
+        email: "member.01@medlifemovement.org",
+        workspace: "student_app",
+        expectedPath: "/app",
+        observedPath: "/app",
+        status: "passed",
+        checkedAt: "2026-07-05T15:00:00Z",
+      },
+      {
+        email: "leader.01@medlifemovement.org",
+        workspace: "leader_command_center",
+        expectedPath: "/leader?view=overview",
+        observedPath: "/leader?view=overview",
+        status: "passed",
+        checkedAt: "2026-07-05T15:01:00Z",
+      },
+      {
+        email: "member.02@medlifemovement.org",
+        workspace: "student_app",
+        expectedPath: "/app",
+        observedPath: "/app",
+        status: "passed",
+        checkedAt: "2026-07-05T15:02:00Z",
+      },
+      {
+        email: "coach@medlifemovement.org",
+        workspace: "staff_command_center",
+        expectedPath: "/staff?view=chapters",
+        observedPath: "/staff?view=chapters",
+        status: "passed",
+        checkedAt: "2026-07-05T15:03:00Z",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        workspace: "admin_backend",
+        expectedPath: "/admin",
+        observedPath: "/admin",
+        status: "passed",
+        checkedAt: "2026-07-05T15:04:00Z",
+      },
+    ],
+  };
+
+  if (input.includeSecondPilotLeaderProof) {
+    packet.signedInRouteProof?.push({
+      email: "leader.02@medlifemovement.org",
+      workspace: "leader_command_center",
+      expectedPath: "/leader?view=overview",
+      observedPath: "/leader?view=overview",
+      status: "passed",
+      checkedAt: "2026-07-05T15:05:00Z",
+    });
+  }
+
+  return packet;
 }
