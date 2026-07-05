@@ -65,4 +65,20 @@ describe("production rollout CSV templates", () => {
     expect(readme).toContain("add passed signed-in route proof");
     expect(readme).toContain("The first rollout requires at least 30 active chapters.");
   });
+
+  it("keeps nested output paths intact in generated reviewer commands", () => {
+    const readme = getProductionRolloutCsvTemplateReadme(
+      ".codex-artifacts/production-rollout-csv",
+    );
+
+    expect(readme).toContain(
+      "pnpm rollout:check-csv --dir .codex-artifacts/production-rollout-csv",
+    );
+    expect(readme).toContain(
+      "--chapters .codex-artifacts/production-rollout-csv/chapters.csv",
+    );
+    expect(readme).toContain(
+      "--signed-in-route-proof .codex-artifacts/production-rollout-csv/signed-in-route-proof.csv",
+    );
+  });
 });

@@ -1,6 +1,6 @@
 /* global console, process */
 import { mkdir, writeFile } from "node:fs/promises";
-import { basename, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 
 const usage = [
   "Usage:",
@@ -29,7 +29,7 @@ try {
 
   await writeFile(
     join(outDir, "README.md"),
-    getProductionRolloutCsvTemplateReadme(basename(outDir)),
+    getProductionRolloutCsvTemplateReadme(args.out),
   );
 
   console.log(`Production rollout CSV templates written to ${outDir}`);
