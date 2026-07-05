@@ -41,13 +41,16 @@ The first production rollout packet must include:
 - 30 active chapters.
 - At least 500 approved student/leader users across those chapters.
 - At least one approved chapter leader for every active chapter.
-- At least one approved member for every active chapter.
+- At least one approved `general_member` or `action_committee_member` for every
+  active chapter so the student app can be tested with a true member account.
 - One active coach assignment for every active chapter.
 - One active launch campaign for every active chapter.
 - One linked Luma calendar mapping for every active chapter.
 - At least 5 pilot chapters with ready event-loop proof.
 - At least one active `admin` staff role for day-one support.
 - At least one active `ds_admin` or `super_admin` for launch controls.
+- At least one active `coach`, `admin`, or `super_admin` for staff command
+  center access.
 - Active `support`, `rollback`, and `production_apply` owners.
 - Real user emails only.
 
@@ -109,8 +112,9 @@ Rules:
 
 - Every active chapter needs at least one approved leader:
   `action_committee_chair`, `e_board_member`, or `president_vp`.
-- Every active chapter should include at least one approved member so the
-  student feed and chapter leaderboard are not empty on day one.
+- Every active chapter needs at least one approved `general_member` or
+  `action_committee_member` so the member app can be verified with a real
+  student-style account.
 - `status` should usually be `approved` for launch users.
 
 ### staff-roles.csv

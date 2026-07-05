@@ -160,6 +160,12 @@ function createReadinessSection(readiness: ProductionRolloutBootstrapReadiness) 
     `linked Luma calendars: ${readiness.counts.linkedLumaCalendars}`,
     `ready pilot event-loop chapters: ${readiness.counts.readyPilotEventProofChapters}`,
     `active launch owners: ${readiness.counts.activeLaunchOwners}`,
+    `member workspace users: ${readiness.counts.memberWorkspaceUsers}`,
+    `leader workspace users: ${readiness.counts.leaderWorkspaceUsers}`,
+    `staff workspace users: ${readiness.counts.staffWorkspaceUsers}`,
+    `admin workspace users: ${readiness.counts.adminWorkspaceUsers}`,
+    `chapters with member workspace access: ${readiness.counts.chaptersWithMemberWorkspaceAccess}`,
+    `chapters with leader workspace access: ${readiness.counts.chaptersWithLeaderWorkspaceAccess}`,
   ];
 
   return {

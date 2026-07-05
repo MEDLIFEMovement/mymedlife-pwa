@@ -20,6 +20,12 @@ describe("production rollout bootstrap readiness", () => {
     expect(readiness.counts.linkedLumaCalendars).toBe(30);
     expect(readiness.counts.readyPilotEventProofChapters).toBe(5);
     expect(readiness.counts.activeLaunchOwners).toBe(4);
+    expect(readiness.counts.memberWorkspaceUsers).toBe(500);
+    expect(readiness.counts.leaderWorkspaceUsers).toBe(30);
+    expect(readiness.counts.staffWorkspaceUsers).toBe(2);
+    expect(readiness.counts.adminWorkspaceUsers).toBe(1);
+    expect(readiness.counts.chaptersWithMemberWorkspaceAccess).toBe(30);
+    expect(readiness.counts.chaptersWithLeaderWorkspaceAccess).toBe(30);
     expect(readiness.nextSteps.join(" ")).toContain("Create Supabase Auth users");
   });
 
@@ -70,6 +76,8 @@ describe("production rollout bootstrap readiness", () => {
     expect(readiness.blockers).toContain("Chapter 01 MEDLIFE needs at least one approved chapter leader.");
     expect(readiness.blockers).toContain("Chapter 01 MEDLIFE needs one active coach assignment.");
     expect(readiness.blockers).toContain("Chapter 01 MEDLIFE needs one active launch campaign.");
+    expect(readiness.blockers).toContain("Add at least one active coach, admin, or super admin for staff command center access.");
+    expect(readiness.blockers).toContain("Add at least one active DS Admin or Super Admin for admin backend access.");
     expect(readiness.blockers).toContain("Add at least one active admin staff role for day-one support.");
     expect(readiness.blockers).toContain("Add at least one DS Admin or Super Admin for launch controls.");
   });
@@ -113,8 +121,29 @@ describe("production rollout bootstrap readiness", () => {
       "- approved student/leader users: 500",
     );
     expect(formatProductionRolloutBootstrapReadiness(readiness)).toContain(
+      "- member workspace users: 500",
+    );
+    expect(formatProductionRolloutBootstrapReadiness(readiness)).toContain(
       "Add at least 30 active chapters before production rollout.",
     );
+  });
+
+  it("blocks chapters that cannot exercise the student member app with a real member", () => {
+    const packet = createCompletePacket(30);
+    packet.memberships = packet.memberships.map((membership) => ({
+      ...membership,
+      roleKey: "president_vp",
+    }));
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "Chapter 01 MEDLIFE needs at least one approved member for the student app.",
+    );
+    expect(readiness.counts.leaderWorkspaceUsers).toBe(500);
+    expect(readiness.counts.memberWorkspaceUsers).toBe(500);
+    expect(readiness.counts.chaptersWithLeaderWorkspaceAccess).toBe(30);
   });
 
   it("blocks packets without Luma mappings, pilot proof, and launch owners", () => {
