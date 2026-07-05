@@ -16,6 +16,22 @@ The current local working copy is:
 .codex-artifacts/production-rollout-csv/
 ```
 
+Once the CSVs are filled, the safe review order is:
+
+```bash
+pnpm rollout:check-csv --dir rollout-csv
+pnpm rollout:build ... --out production-rollout-packet.json
+pnpm rollout:check production-rollout-packet.json
+pnpm rollout:handoff production-rollout-packet.json --out production-rollout-handoff.md
+pnpm rollout:apply-plan production-rollout-packet.json --out production-rollout-apply-plan.md
+```
+
+The apply plan is still read-only. It tells DS/platform which production Auth
+users and app rows need to be created, which UUIDs must be resolved after Auth
+users exist, and which safety checks stay blocked before broad invitations.
+It does not create accounts, write rows, send invitations, change Vercel, or
+turn on integrations.
+
 Do not put passwords, API keys, tokens, secrets, or private notes in these
 files. This packet is only for launch users, chapters, roles, coach coverage,
 launch campaigns, Luma calendar mappings, pilot proof, and launch ownership.
@@ -77,6 +93,10 @@ id,name,campus,region,status
 Rules:
 
 - `id` should be stable and simple, for example `chapter-ucla`.
+- This is a review handle. Production `app.chapters.id` is a UUID, so the
+  production apply owner must either resolve this handle to a created chapter
+  UUID or explicitly replace it with a real UUID before database rows are
+  written.
 - `name` is the display name, for example `UCLA MEDLIFE`.
 - `campus` is the school or chapter campus name.
 - `region` is optional but useful for staff filtering.
@@ -163,6 +183,9 @@ Rules:
 - Every active chapter needs one active coach assignment.
 - `coachEmail` must exist in `users.csv`.
 - `coachEmail` must also have an active `coach` role in `staff-roles.csv`.
+- Production `app.coach_chapter_assignments` also needs a `starts_at` date.
+  The apply plan uses the approved apply date unless DS/platform chooses a
+  different explicit start date before writing rows.
 
 ### campaigns.csv
 
@@ -178,6 +201,9 @@ Rules:
 - For the first rollout, use `Rush Month` unless Nick/HQ chooses a different
   approved launch campaign.
 - `slug` should be stable and lowercase, for example `rush-month-ucla`.
+- Production `app.campaigns` also needs an objective. The apply plan defaults
+  this to the launch event/RSVP/attendance/points/leaderboard loop unless the
+  launch owner changes it before apply.
 
 ### luma-calendars.csv
 
@@ -194,6 +220,10 @@ Rules:
 - `calendarId` is the Luma calendar id, not an API key.
 - `status` should be `linked` when the chapter calendar is ready for event
   readback.
+- These rows target the saved `chapter_luma_calendars` path when production
+  supports it. If that table is not approved in production yet, DS/platform can
+  use the approved `MYMEDLIFE_LUMA_CHAPTER_CALENDARS_JSON` registry as the
+  temporary production mapping path.
 
 ### pilot-event-proof.csv
 
