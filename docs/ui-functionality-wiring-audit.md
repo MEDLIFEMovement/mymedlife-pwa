@@ -54,7 +54,7 @@ Shared Figma button helpers in the member and leadership shells now fail closed:
 | Create Event | `src/components/figma-leader-create-event-screen.tsx` | leader | Stages event locally and shows no-send state | Luma create/update path later | leader workspace | Luma event-write flags | `placeholder_blocked` |
 | Assign Task modal | `figma-leader-command-center.tsx` | leader | Local modal/confirmation only | `src/services/assignment-create-write.ts` | chapter-scoped leader | assignment write flags | `placeholder_blocked` |
 | Promote Emerging Leader modal | `figma-leader-command-center.tsx` | leader | Local modal/confirmation only | future role/pipeline service | chapter-scoped leader | role-change flags | `placeholder_blocked` |
-| Impact / Bridge Videos / MEDLIFE Stories | Figma leader components | leader | Local content views | future proof/feed/story services | leader workspace | feed/proof flags | `placeholder_blocked` |
+| Impact / Bridge Videos / MEDLIFE Stories | Figma leader components | leader | Local content views; external story source button is disabled with blocked-state copy | future proof/feed/story services | leader workspace | feed/proof flags | `placeholder_blocked` |
 | Succession / Current Leaders / Values / Training | Figma leader components | leader | Local shell surfaces | future leadership pipeline services | leader workspace | none | `wired_staging` |
 | Profile view switcher | `figma-leader-command-center.tsx` | multi-role user | Local visual switcher only | workspace account menu/preview links | assigned roles | none | `needs_decision` |
 

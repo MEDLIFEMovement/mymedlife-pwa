@@ -128,6 +128,8 @@ attach behavior behind these exact controls instead of changing the shell.
   - play button
   - modal close buttons
   - share/bookmark controls
+  - external story source buttons are disabled/blocked until feed-sharing and
+    external-link approval is complete.
 
 ## Succession
 
