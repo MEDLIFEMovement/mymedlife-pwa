@@ -197,14 +197,6 @@ const staffWorkspaceRoleKeys = new Set(["coach", "admin", "super_admin"]);
 
 const adminWorkspaceRoleKeys = new Set(["ds_admin", "super_admin"]);
 
-const fakeEmailFragments = [
-  "@mymedlife.test",
-  "@example.com",
-  "@test.com",
-  "fake",
-  "mock",
-];
-
 const secretLikeKeys = ["password", "token", "secret", "apiKey", "api_key"];
 
 export function getProductionRolloutBootstrapReadiness(
@@ -550,6 +542,12 @@ export function getProductionRolloutBootstrapReadiness(
     );
   }
 
+  if (containsPlaceholderLikeValue(packet)) {
+    blockers.push(
+      "Remove template placeholders like TODO, TBD, PLACEHOLDER, or <...> before production rollout.",
+    );
+  }
+
   for (const chapter of activeChapters) {
     const memberCount = approvedMemberships.filter(
       (membership) => membership.chapterId === chapter.id,
@@ -752,7 +750,29 @@ function addDuplicateBlockers(
 
 function hasFakeEmail(email: string) {
   const normalized = normalizeEmail(email);
-  return fakeEmailFragments.some((fragment) => normalized.includes(fragment));
+  const emailParts = normalized.split("@");
+
+  if (emailParts.length !== 2) {
+    return true;
+  }
+
+  const [localPart, domain] = emailParts;
+  const blockedLocalParts = new Set(["fake", "placeholder", "todo", "tbd"]);
+  const blockedDomains = new Set([
+    "example.com",
+    "example.org",
+    "example.net",
+    "localhost",
+    "mymedlife.test",
+  ]);
+
+  return (
+    blockedLocalParts.has(localPart) ||
+    localPart.startsWith("fake+") ||
+    localPart.startsWith("placeholder+") ||
+    blockedDomains.has(domain) ||
+    domain.endsWith(".test")
+  );
 }
 
 function normalizeEmail(email: string) {
@@ -790,6 +810,22 @@ function containsSecretLikeField(value: unknown): boolean {
   }
 
   return false;
+}
+
+function containsPlaceholderLikeValue(value: unknown): boolean {
+  if (typeof value === "string") {
+    return /<[^>\n]+>/.test(value) || /\b(TODO|TBD|PLACEHOLDER)\b/i.test(value);
+  }
+
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  if (Array.isArray(value)) {
+    return value.some((item) => containsPlaceholderLikeValue(item));
+  }
+
+  return Object.values(value).some((child) => containsPlaceholderLikeValue(child));
 }
 
 function formatList(items: string[], emptyText: string) {
