@@ -235,6 +235,15 @@ Rules:
   does not call Luma or write data. The registry can also come from the
   `MYMEDLIFE_LUMA_CHAPTER_CALENDARS_JSON` environment variable when the command
   runs in the configured environment.
+- To produce the runtime registry JSON from an approved packet, run:
+
+  ```bash
+  pnpm rollout:luma-registry --packet production-rollout-packet.json --out chapter-luma-map.json
+  ```
+
+  This writes a local JSON file only after the packet mappings pass readiness.
+  It does not apply the value to Vercel. Treat the output as launch
+  configuration and apply it only through the approved environment-change path.
 
 ### pilot-event-proof.csv
 

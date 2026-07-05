@@ -44,6 +44,22 @@ export type ProductionLumaMappingReadiness = {
   nextSteps: string[];
 };
 
+export type ProductionLumaRuntimeRegistryEntry = {
+  chapterId: string;
+  chapterName: string;
+  calendarId: string;
+  calendarLabel: string;
+  status: "ready";
+  note: string;
+};
+
+export type ProductionLumaRuntimeRegistryExport = {
+  ready: boolean;
+  registry: Record<string, ProductionLumaRuntimeRegistryEntry>;
+  registryJson: string;
+  readiness: ProductionLumaMappingReadiness;
+};
+
 export function getProductionLumaMappingReadiness(
   packet: ProductionRolloutBootstrapPacket,
   options: ProductionLumaMappingReadinessOptions = {},
@@ -212,6 +228,25 @@ export function getProductionLumaMappingReadiness(
   };
 }
 
+export function createProductionLumaRuntimeRegistryExport(
+  packet: ProductionRolloutBootstrapPacket,
+  options: ProductionRolloutBootstrapOptions = {},
+): ProductionLumaRuntimeRegistryExport {
+  const registry = createRuntimeRegistryFromPacket(packet);
+  const registryJson = `${JSON.stringify(registry, null, 2)}\n`;
+  const readiness = getProductionLumaMappingReadiness(packet, {
+    ...options,
+    runtimeMappingJson: registryJson,
+  });
+
+  return {
+    ready: readiness.ready,
+    registry,
+    registryJson,
+    readiness,
+  };
+}
+
 export function formatProductionLumaMappingReadiness(
   readiness: ProductionLumaMappingReadiness,
 ): string {
@@ -242,6 +277,57 @@ export function formatProductionLumaMappingReadiness(
     "Next steps:",
     ...formatList(readiness.nextSteps, "None"),
   ].join("\n");
+}
+
+export function formatProductionLumaRuntimeRegistryExport(
+  output: ProductionLumaRuntimeRegistryExport,
+  outPath: string,
+): string {
+  return [
+    output.ready
+      ? "Production Luma runtime registry export: READY"
+      : "Production Luma runtime registry export: NOT READY",
+    "",
+    output.ready
+      ? `Output file: ${outPath}`
+      : "Output file: not written",
+    "",
+    formatProductionLumaMappingReadiness(output.readiness),
+  ].join("\n");
+}
+
+function createRuntimeRegistryFromPacket(
+  packet: ProductionRolloutBootstrapPacket,
+): Record<string, ProductionLumaRuntimeRegistryEntry> {
+  const chaptersById = new Map(packet.chapters.map((chapter) => [
+    chapter.id,
+    chapter,
+  ]));
+  const linkedCalendars = (packet.lumaCalendars ?? []).filter(
+    (calendar) => (calendar.status ?? "linked") === "linked",
+  );
+
+  return Object.fromEntries(
+    linkedCalendars
+      .filter((calendar) => chaptersById.has(calendar.chapterId))
+      .map((calendar) => {
+        const chapter = chaptersById.get(calendar.chapterId)!;
+
+        return [
+          calendar.chapterId,
+          {
+            chapterId: calendar.chapterId,
+            chapterName: chapter.name,
+            calendarId: calendar.calendarId,
+            calendarLabel:
+              calendar.calendarName?.trim() || `${chapter.name} Luma calendar`,
+            status: "ready" as const,
+            note:
+              "Generated from the approved myMEDLIFE production rollout packet. Apply through the approved Vercel environment process; do not paste API keys here.",
+          },
+        ];
+      }),
+  );
 }
 
 function indexPacketMappings(
