@@ -4,6 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/admin/integrations/luma",
+  useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
   }),
@@ -110,6 +112,9 @@ describe("admin management pages", () => {
 
     expect(html).toContain("Chapter Management");
     expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("Chapter type");
+    expect(html).toContain("College / University Chapter");
+    expect(html).toContain("Needs Review");
     expect(html).toContain("Edit chapter ownership and modules");
     expect(html).toContain("Archive chapter");
     expect(html).toContain("Soft delete chapter");
@@ -142,5 +147,40 @@ describe("admin management pages", () => {
     expect(html).toContain("Sensitive preview access");
     expect(html).toContain("access.denied");
     expect(html).toContain("access.preview_viewed");
+  });
+
+  it("renders DS Admin Luma provider setup without exposing keys", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("ds.admin@mymedlife.test"),
+    );
+
+    const { default: AdminLumaIntegrationPage } = await import(
+      "@/app/admin/integrations/luma/page"
+    );
+    const html = renderToStaticMarkup(await AdminLumaIntegrationPage());
+
+    expect(html).toContain("Luma integration status");
+    expect(html).toContain("Safe test connection");
+    expect(html).toContain("Outbox safety");
+    expect(html).toContain("Secrets exposure");
+    expect(html).toContain("Open outbox");
+    expect(html).toContain("External writes");
+    expect(html).not.toContain("LUMA_API_KEY");
+  });
+
+  it("blocks general staff from Luma provider setup", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: AdminLumaIntegrationPage } = await import(
+      "@/app/admin/integrations/luma/page"
+    );
+    const html = renderToStaticMarkup(await AdminLumaIntegrationPage());
+
+    expect(html).toContain("Luma integration hidden for this role");
+    expect(html).toContain("Only DS Admin and Super Admin");
   });
 });

@@ -25,6 +25,7 @@ export type AdminChapterResultCode =
   | "invalid_user"
   | "invalid_role"
   | "invalid_status"
+  | "invalid_chapter_type"
   | "invalid_profile"
   | "server_error";
 

@@ -83,6 +83,7 @@ describe("admin management Supabase directory data", () => {
             id: "10000000-0000-4000-8000-000000000202",
             name: "Archived Chapter",
             campus: "Archived Campus",
+            chapter_type: "needs_review",
             status: "inactive",
             region: "West",
           }),
@@ -271,6 +272,7 @@ describe("admin management Supabase directory data", () => {
         expect.objectContaining({
           id: "10000000-0000-4000-8000-000000000201",
           region: "Unassigned",
+          chapterType: "college_university",
           coachOwnerId: "00000000-0000-4000-8000-000000000103",
           studentLeaderIds: [
             "00000000-0000-4000-8000-000000000102",
@@ -284,6 +286,7 @@ describe("admin management Supabase directory data", () => {
         }),
         expect.objectContaining({
           id: "10000000-0000-4000-8000-000000000202",
+          chapterType: "needs_review",
           status: "disabled",
           region: "West",
         }),
@@ -327,6 +330,7 @@ describe("admin management Supabase directory data", () => {
             id: "10000000-0000-4000-8000-000000000301",
             name: "Boston College MEDLIFE",
             campus: "Boston College",
+            chapter_type: "college_university",
           }),
         ],
         chapterEventRows: [],
@@ -348,6 +352,7 @@ describe("admin management Supabase directory data", () => {
     });
     expect(directory.chapters[0]).toMatchObject({
       name: "Boston College MEDLIFE",
+      chapterType: "college_university",
     });
   });
 
@@ -491,6 +496,7 @@ function chapterRow(input: {
   id: string;
   name: string;
   campus: string;
+  chapter_type?: ChapterRow["chapter_type"];
   region?: string | null;
   status?: ChapterRow["status"];
 }): ChapterRow {
@@ -499,6 +505,7 @@ function chapterRow(input: {
     name: input.name,
     campus: input.campus,
     region: input.region === undefined ? "Northeast" : input.region,
+    chapter_type: input.chapter_type,
     status: input.status ?? "active",
     created_by: null,
     created_at: now,

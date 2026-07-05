@@ -5,6 +5,7 @@ import {
   type WorkspaceAccessUser,
   type WorkspaceKey,
 } from "@/services/workspace-access";
+import type { ChapterType } from "@/shared/types/persistence";
 
 export type ManagedUserStatus =
   | "active"
@@ -36,6 +37,7 @@ export type ManagedChapter = {
   name: string;
   school: string;
   region: string;
+  chapterType: ChapterType;
   status: ManagedChapterStatus;
   coachOwnerId: string | null;
   staffOwnerIds: string[];
@@ -108,6 +110,7 @@ export type ChapterSearchFilters = {
   query?: string;
   region?: string;
   coachOwnerId?: string;
+  chapterType?: ChapterType | "all";
   status?: ManagedChapterStatus | "all";
 };
 
@@ -144,6 +147,7 @@ export function searchManagedChapters(
 ): ManagedChapter[] {
   const query = normalize(filters.query ?? "");
   const region = normalize(filters.region ?? "all");
+  const chapterType = filters.chapterType ?? "all";
 
   return chapters.filter((chapter) => {
     const matchesQuery =
@@ -151,12 +155,14 @@ export function searchManagedChapters(
       normalize(chapter.name).includes(query) ||
       normalize(chapter.school).includes(query);
     const matchesRegion = region === "all" || normalize(chapter.region).includes(region);
+    const matchesChapterType =
+      chapterType === "all" || chapter.chapterType === chapterType;
     const matchesCoach =
       !filters.coachOwnerId || chapter.coachOwnerId === filters.coachOwnerId;
     const matchesStatus =
       !filters.status || filters.status === "all" || chapter.status === filters.status;
 
-    return matchesQuery && matchesRegion && matchesCoach && matchesStatus;
+    return matchesQuery && matchesRegion && matchesChapterType && matchesCoach && matchesStatus;
   });
 }
 
@@ -447,6 +453,7 @@ export function updateManagedChapter({
       ManagedChapter,
       | "activeModules"
       | "coachOwnerId"
+      | "chapterType"
       | "name"
       | "region"
       | "school"
@@ -679,6 +686,7 @@ function summarizeChapter(chapter: ManagedChapter): string {
     name: chapter.name,
     school: chapter.school,
     region: chapter.region,
+    chapterType: chapter.chapterType,
     status: chapter.status,
     coachOwnerId: chapter.coachOwnerId,
     staffOwnerIds: chapter.staffOwnerIds,

@@ -63,6 +63,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/admin/launch-gate", label: "Admin launch gate", routeType: "exact" },
   { href: "/admin/audit-log", label: "Admin audit log", routeType: "exact" },
   { href: "/admin/integrations", label: "Admin integrations", routeType: "exact" },
+  { href: "/admin/integrations/luma", label: "Admin Luma integration", routeType: "exact" },
   { href: "/admin/feature-flags", label: "Admin feature flags", routeType: "exact" },
   { href: "/admin/theme", label: "Admin theme settings", routeType: "exact" },
   { href: "/admin/integration-outbox", label: "Admin integration outbox", routeType: "exact" },

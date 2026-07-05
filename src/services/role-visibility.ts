@@ -90,6 +90,7 @@ const focusedAdminBackendNavigation: NavigationItem[] = [
   { href: "/admin/chapters", label: "Chapters" },
   { href: "/admin/access", label: "Access" },
   { href: "/admin/integration-outbox", label: "Outbox" },
+  { href: "/admin/integrations/luma", label: "Luma" },
   { href: "/admin/audit-log", label: "Audit Log" },
   { href: "/admin/launch-gate", label: "Launch Gate" },
   { href: "/admin/pilot-scope", label: "Pilot Scope" },

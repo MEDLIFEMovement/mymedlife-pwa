@@ -1,0 +1,108 @@
+# UI Functionality Wiring Audit
+
+Date: 2026-07-04
+
+Scope: `/login`, `/app`, `/leader`, `/staff`, `/admin`, `/app/slt-prep`, Rush Month/event/points/feed/story/campaign/admin routes.
+
+Status values:
+
+- `wired_live` - connected to production-safe app behavior.
+- `wired_staging` - connected to local/staging/mock-safe behavior only.
+- `disabled_hidden` - intentionally not shown.
+- `disabled_visible` - visible but explicitly unavailable.
+- `placeholder_blocked` - visual placeholder or staged local behavior that must not imply a live write.
+- `needs_decision` - product/security decision required before wiring.
+
+## Current Top-Level Finding
+
+The exact Figma shells are present for the member app, Student Leadership Center, and Staff Command Center, but most Figma controls are still shell/state controls. The only safe path is to wire one action family at a time, starting with events, RSVP, attendance, points, and leaderboards.
+
+Shared Figma button helpers in the member and leadership shells now fail closed: if a copied shell button has no action handler yet, it renders disabled/blocked instead of silently accepting a click. A static CTA safety test also scans the copied member, leader, staff, and admin Figma shells so raw `<button>` openings cannot ship without either a handler, submit intent, or disabled/blocked state.
+
+Detailed copied-shell control maps:
+
+- `docs/figma-member-mobile-app-button-map.md`
+- `docs/figma-leader-command-center-button-map.md`
+- `docs/figma-staff-command-center-button-map.md`
+- `docs/figma-admin-panel-button-map.md`
+
+## `/login`
+
+| Label / control | Component | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
+|---|---|---:|---|---|---|---|---|
+| Email/password sign-in | `src/components/login-form.tsx` | all | Auth/session entry and local review auth posture | `src/app/login/actions.ts`, `src/services/landing-route.ts` | session role | staging auth flags | `wired_staging` |
+| Workspace option cards | `src/app/login/page.tsx` | all | Entry guidance only; clicked card is not authority | role-derived redirect | actual assigned role | none | `wired_staging` |
+| Root redirect | `src/app/page.tsx` | all | Redirects signed-in actors to owned workspace | `getLandingRouteForActor` | actual assigned role | none | `wired_staging` |
+
+## `/app` Member Mobile Shell
+
+| Label / control | Component | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
+|---|---|---:|---|---|---|---|---|
+| Bottom nav: Home, Campaign, Events, Points, Profile | `src/components/figma-member-mobile-home.tsx` | member/traveler | Internal Figma shell navigation | future route-backed mobile tabs | member workspace | none | `wired_staging` |
+| Start next action / action cards | `figma-member-mobile-home.tsx` | member | Opens local Action Detail screen | `src/services/action-start-write.ts` later | assigned member | action-start write flags | `placeholder_blocked` |
+| Submit evidence | `figma-member-mobile-home.tsx` | member | Opens local evidence/confirmation screens | `src/services/proof-submission-write.ts` later | assigned member | proof metadata/upload flags | `placeholder_blocked` |
+| Events list and event detail | `figma-member-mobile-home.tsx` | member | Opens local event/detail screens | `src/services/rush-month-event-detail.ts`, `src/services/rush-month-event-rsvp.ts` | member workspace | Luma read/write flags | `wired_staging` |
+| RSVP / check-in / points impact | `figma-member-mobile-home.tsx` | member | Visible local flow, no live external write | Luma staging pilot/write path later | member workspace | Luma RSVP/attendance flags | `placeholder_blocked` |
+| Points and chapter leaderboard | `figma-member-mobile-home.tsx` | member | Local/readback leaderboard screen | `src/services/launch-lane-points-readback.ts` | member workspace | none | `wired_staging` |
+| Role preview buttons | `figma-member-mobile-home.tsx` | staff/admin preview | Local preview-only screens | `src/services/workspace-access.ts` | permitted preview role | none | `placeholder_blocked` |
+| Upload/share/story source buttons | `figma-member-mobile-home.tsx` | member | Upload, calendar export, share, story-save, story-create, and external source buttons are visibly disabled/blocked | future proof/feed/story/Luma sharing services | member workspace | upload/feed/share flags | `disabled_visible` |
+| Admin preview integration events | `figma-member-mobile-home.tsx` | staff/admin preview | Opens a local blocked-state notice pointing reviewers to `/admin/integration-outbox`; no provider logs or writes exposed | `/admin/integration-outbox` | DS Admin/Super Admin | none | `disabled_visible` |
+
+## `/leader` Student Leadership Center
+
+| Label / control | Component | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
+|---|---|---:|---|---|---|---|---|
+| Sidebar navigation groups | `src/components/figma-leader-command-center.tsx`, `src/services/leader-command-center-routing.ts` | leader/e-board | Distinct Figma-owned screen state with `/leader?view=` deep links for each available menu item | future route-backed data writes | leader workspace | none | `wired_staging` |
+| Chapter Home | `figma-leader-command-center.tsx` | leader | Renders leadership dashboard | `src/services/chapter-leader-command-center.ts` | leader workspace | none | `wired_staging` |
+| Chapter Leaderboard | `figma-leader-command-center.tsx` | leader | Renders chapter ranking view | points/readback services | leader workspace | none | `wired_staging` |
+| Member Leaderboard / Profile | `figma-leader-command-center.tsx` | leader | Opens member list/profile locally | `src/services/member-leaderboard-workspace.ts` | chapter-scoped leader | none | `wired_staging` |
+| Event Committees | `figma-leader-command-center.tsx` | leader | Local committee surface | future committee service | chapter-scoped leader | none | `wired_staging` |
+| Event Performance | `figma-leader-command-center.tsx` | leader | Local event analytics/NPS | event/attendance services | leader workspace | Luma read flags | `wired_staging` |
+| Create Event | `src/components/figma-leader-create-event-screen.tsx` | leader | Stages event locally and shows no-send state | Luma create/update path later | leader workspace | Luma event-write flags | `placeholder_blocked` |
+| Assign Task modal | `figma-leader-command-center.tsx` | leader | Local modal/confirmation only | `src/services/assignment-create-write.ts` | chapter-scoped leader | assignment write flags | `placeholder_blocked` |
+| Promote Emerging Leader modal | `figma-leader-command-center.tsx` | leader | Local modal/confirmation only | future role/pipeline service | chapter-scoped leader | role-change flags | `placeholder_blocked` |
+| Impact / Bridge Videos / MEDLIFE Stories | Figma leader components | leader | Local content views; share/save/message/source buttons without approved behavior are visibly disabled/blocked | future proof/feed/story services | leader workspace | feed/proof flags | `disabled_visible` |
+| Succession / Current Leaders / Values / Training | Figma leader components | leader | Local shell surfaces | future leadership pipeline services | leader workspace | none | `wired_staging` |
+| Missing standalone pages: Campaigns, Fundraising, SLT, Proof Review, Settings | `figma-leader-command-center.tsx` | leader | Shown in the sidebar as disabled "Leadership page not yet available" controls instead of reusing the wrong page | future dedicated leader pages, if approved | leader workspace | needs product decision | `disabled_visible` |
+| Profile view switcher | `figma-leader-command-center.tsx` | multi-role user | Local visual switcher only | workspace account menu/preview links | assigned roles | none | `needs_decision` |
+
+## `/staff` Staff Command Center
+
+| Label / control | Component | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
+|---|---|---:|---|---|---|---|---|
+| Top nav: Chapters, Campaigns, Proof/UGC, Best Practices, Campaign SOPs, Admin | `src/components/figma-staff-command-center.tsx` | staff/coach/admin | Figma-owned screen state | future route-backed staff views | staff workspace | none | `wired_staging` |
+| Portfolio search/filter/sort/table | `figma-staff-command-center.tsx` | staff/coach | Local Figma table filtering/drawer, including approved chapter type filter labels | `src/services/staff-command-center.ts`, `src/services/staff-chapter-type.ts` | staff workspace | none | `wired_staging` |
+| Chapter detail drawer / NPS modal | `figma-staff-command-center.tsx` | staff/coach | Local drawer/modal; NPS preview opens locally, content/external sends stay disabled | future NPS/event service | staff workspace | external-send flags | `placeholder_blocked` |
+| Campaign operations tabs | `figma-staff-command-center.tsx` | staff | Local campaign tables | workflow/SOP runtime later | staff workspace | campaign flags | `wired_staging` |
+| Proof/UGC review queue | `figma-staff-command-center.tsx` | staff/admin | Local review UI only | proof sharing/review services | staff/admin | proof publish flags | `placeholder_blocked` |
+| Best Practices library actions | `figma-staff-command-center.tsx` | staff | Share/send/bookmark controls are visibly disabled until feed/outbox writes are approved | feed/outbox later | staff workspace | external-send flags | `disabled_visible` |
+| Campaign SOP Builder | `figma-staff-command-center.tsx`, `figma-sop-builder.tsx` | staff/admin | Local builder shell | `/admin/sop-library`, `/admin/sop-builder/*` | staff/admin by policy | workflow flags | `wired_staging` |
+| Admin entry | `figma-staff-command-center.tsx` | DS/admin | Opens redacted Figma admin overlay only after role choice | `/admin` route family | DS Admin/Super Admin | none | `wired_staging` |
+
+## `/admin`
+
+| Label / control | Component / route | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
+|---|---|---:|---|---|---|---|---|
+| Admin home / vertical admin lanes | `src/app/admin/page.tsx` | DS/Super Admin | Secure admin overview | admin review services | DS Admin/Super Admin | none | `wired_staging` |
+| Users / Chapters admin | `/admin/users`, `/admin/chapters` | DS/Super Admin | Audited local/staging write panels where approved | admin management write services | DS/Super Admin | admin write flags | `wired_staging` |
+| Audit log | `/admin/audit-log` | DS/Super Admin | Readback/review surface | `src/services/admin-audit-log-review.ts` | DS/Super Admin | none | `wired_staging` |
+| Integration outbox | `/admin/integration-outbox` | DS/Super Admin | Outbox safety/readback | `src/services/admin-integration-outbox-workspace.ts` | DS/Super Admin | external-send flags | `wired_staging` |
+| Luma integration status | `/admin/integrations/luma` | DS/Super Admin | Secret-free provider mode, safe test posture, last sync, error log, and outbox status | `src/services/admin-luma-integration-status.ts` | DS Admin/Super Admin | Luma env flags | `wired_staging` |
+| API keys / provider setup | Admin shell | DS/Super Admin | Secret/provider controls without an audited backend path are visibly disabled/blocked; existing gated API-key actions still require step-up | future server-only secret abstraction | DS/Super Admin + step-up | provider flags | `disabled_visible` |
+
+## `/app/slt-prep`
+
+| Label / control | Component / route | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
+|---|---|---:|---|---|---|---|---|
+| SLT Prep entry | `/app/slt-prep`, `/slt-prep/*` | eligible traveler | Routed shell/module exists | SLT readiness services | traveler eligibility | launch lane traveler flag | `wired_staging` |
+| Checklist/forms/payment/flights/meetings | SLT routes | traveler/staff | Mock/readiness views | future traveler writes/storage | traveler/staff | SLT write flags | `placeholder_blocked` |
+
+## Safety Notes For This PR
+
+- The Figma Create Event form now says `Event Staged`, not `Event Published`, and explicitly says no email, WhatsApp/SMS, Luma write, external send, or production publish occurred.
+- Chapter type now uses the approved values `high_school`, `college_university`, and `needs_review`; admin list/detail/forms, admin/staff chapter filters, staff chapter list/detail, and leader chapter header show the approved labels.
+- Luma disabled-mode fallback has service-level proof: local event prep, member RSVP, attendance, points, disabled outbox, and audit records still work when no Luma link or QR is available.
+- The copied staff/admin Figma shells no longer present Luma, HubSpot, warehouse, Power BI, or n8n as live production systems; visible provider copy is staging/mock-safe or disabled, and module/provider toggles are visibly blocked unless an audited path exists.
+- Copied Figma shells now pass the CTA safety guard: no fake `href="#"`, empty click handlers, `javascript:void`, or raw buttons lacking handler/submit/disabled state.
+- PR #125 contains older Luma pilot work but is too stale to merge safely; it currently conflicts with 86 files against `main`.
+- HubSpot is not part of this run.

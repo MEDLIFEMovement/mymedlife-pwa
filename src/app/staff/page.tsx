@@ -15,8 +15,9 @@ type StaffPageProps = {
   searchParams?: Promise<Record<string, string | undefined>>;
 };
 
-export default async function StaffPage({}: StaffPageProps) {
+export default async function StaffPage({ searchParams }: StaffPageProps) {
   const actor = await getLocalActorContext();
+  const resolvedSearchParams = await searchParams;
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref("/staff?view=chapters"));
@@ -29,7 +30,7 @@ export default async function StaffPage({}: StaffPageProps) {
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="staff_command_center" />
-      <FigmaStaffCommandCenter />
+      <FigmaStaffCommandCenter initialView={resolvedSearchParams?.view} />
     </>
   );
 }

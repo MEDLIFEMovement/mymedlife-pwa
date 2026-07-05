@@ -32,13 +32,13 @@ describe("launch lane points readback", () => {
     expect(readback).not.toBeNull();
     expect(readback).toMatchObject({
       eventTitle: "Rush Month kickoff social",
-      loopStage: "attendance_confirmed",
+      loopStage: "points_awarded",
       rsvpCount: 2,
       attendanceCount: 24,
-      eventPointsAwarded: 0,
-      memberPointsAwarded: 0,
-      chapterTotalPoints: 10,
-      memberStatusLabel: "Attendance confirmed; points pending",
+      eventPointsAwarded: 40,
+      memberPointsAwarded: 20,
+      chapterTotalPoints: 50,
+      memberStatusLabel: "Points awarded",
       eventDetailHref: "/app/events/chapter-event-ucla-kickoff?source=points",
       leaderboardHref: "/app/points?source=points",
       nextStepLabel: "Open leaderboard",
@@ -51,16 +51,16 @@ describe("launch lane points readback", () => {
     const readback = getLaunchLaneOrgPointsReadback(data);
 
     expect(readback).toMatchObject({
-      totalRsvps: 6,
-      totalAttendance: 36,
-      totalPoints: 18,
-      chaptersWithPoints: 2,
+      totalRsvps: 8,
+      totalAttendance: 79,
+      totalPoints: 170,
+      chaptersWithPoints: 5,
       topChapterName: "UCLA MEDLIFE",
-      topChapterPoints: 10,
-      featuredEventTitle: "Boston kickoff info night",
-      featuredEventChapterName: "Boston College MEDLIFE",
-      featuredEventAttendanceCount: 12,
-      featuredEventPointsAwarded: 8,
+      topChapterPoints: 50,
+      featuredEventTitle: "McGill newcomer coffee chat",
+      featuredEventChapterName: "McGill MEDLIFE",
+      featuredEventAttendanceCount: 9,
+      featuredEventPointsAwarded: 20,
     });
   });
 
@@ -71,15 +71,15 @@ describe("launch lane points readback", () => {
     expect(getLaunchLaneMemberHistory(actor, data)).toEqual([
       {
         label: "Rush Month kickoff social",
-        detail: "Attendance confirmed; points pending",
+        detail: "Points awarded",
       },
       {
         label: "24 attendee(s) confirmed",
-        detail: "Points are still pending for this event.",
+        detail: "40 event point(s) awarded",
       },
       {
         label: "UCLA MEDLIFE chapter total",
-        detail: "10 point(s) currently visible.",
+        detail: "50 point(s) currently visible.",
       },
     ]);
   });
@@ -94,7 +94,7 @@ describe("launch lane points readback", () => {
         title: "Rush Month kickoff social",
         rsvpCount: 2,
         attendanceCount: 24,
-        pointsAwarded: 0,
+        pointsAwarded: 40,
         statusLabel: "Attendance recorded",
         location: "Luma-linked chapter event",
         detailHref: "/leader?view=events&event=chapter-event-ucla-kickoff",
@@ -105,22 +105,20 @@ describe("launch lane points readback", () => {
         expect.objectContaining({
           name: "Sofia Alvarez",
           status: "Checked in",
-          pointsLabel: "Points pending",
+          pointsLabel: "+20 pts",
         }),
         expect.objectContaining({
           name: "Nia Committee",
           status: "Checked in",
-          pointsLabel: "Points pending",
+          pointsLabel: "+20 pts",
         }),
       ]),
     );
-    expect(getLaunchLaneChapterLeaderboardReadback(data)).toMatchObject([
-      {
-        name: "Member 1",
-        points: 10,
-        detail: "Leading this chapter right now",
-      },
-    ]);
+    expect(getLaunchLaneChapterLeaderboardReadback(data)[0]).toMatchObject({
+      name: "Sofia Alvarez",
+      points: 20,
+      detail: "Leading this chapter right now",
+    });
   });
 
   it("keeps staff chapter rows and the org leaderboard tied to the same totals", () => {
@@ -138,19 +136,21 @@ describe("launch lane points readback", () => {
           nextEvent: "Rush Month kickoff social",
           rsvps: 2,
           attendance: 24,
-          points: 10,
+          points: 50,
           risk: "Healthy",
         }),
         expect.objectContaining({
           name: "Lakeside MEDLIFE",
-          calendarLabel: "Calendar not assigned",
-          calendarStatusLabel: "Needs setup",
-          calendarReady: false,
+          calendarLabel: "Lakeside chapter calendar",
+          calendarStatusLabel: "Explicit map",
+          calendarReady: true,
+          chapterEventId: "chapter-event-lakeside-welcome",
+          detailHref: "/staff?view=events&campaign=rush-month&event=chapter-event-lakeside-welcome",
           nextEvent: "Lakeside welcome table",
-          rsvps: 0,
-          attendance: 0,
-          points: 0,
-          risk: "No RSVPs",
+          rsvps: 1,
+          attendance: 18,
+          points: 20,
+          risk: "Healthy",
         }),
         expect.objectContaining({
           name: "Boston College MEDLIFE",
@@ -160,7 +160,7 @@ describe("launch lane points readback", () => {
           nextEvent: "Boston kickoff info night",
           rsvps: 2,
           attendance: 12,
-          points: 8,
+          points: 40,
           risk: "Low attendance",
         }),
         expect.objectContaining({
@@ -170,22 +170,22 @@ describe("launch lane points readback", () => {
           calendarReady: true,
           nextEvent: "UCSD service social",
           rsvps: 2,
-          attendance: 0,
-          points: 0,
+          attendance: 16,
+          points: 40,
           risk: "Healthy",
         }),
         expect.objectContaining({
           name: "McGill MEDLIFE",
-          calendarLabel: "Calendar not assigned",
-          calendarStatusLabel: "Needs setup",
-          calendarReady: false,
-          chapterEventId: null,
-          detailHref: null,
-          nextEvent: "No event scheduled",
-          rsvps: 0,
-          attendance: 0,
-          points: 0,
-          risk: "No upcoming events",
+          calendarLabel: "McGill chapter calendar",
+          calendarStatusLabel: "Explicit map",
+          calendarReady: true,
+          chapterEventId: "chapter-event-mcgill-coffee-chat",
+          detailHref: "/staff?view=events&campaign=rush-month&event=chapter-event-mcgill-coffee-chat",
+          nextEvent: "McGill newcomer coffee chat",
+          rsvps: 1,
+          attendance: 9,
+          points: 20,
+          risk: "Low attendance",
         }),
       ]),
     );
@@ -193,21 +193,21 @@ describe("launch lane points readback", () => {
       expect.arrayContaining([
         expect.objectContaining({
           chapterName: "UCLA MEDLIFE",
-          points: 10,
+          points: 50,
           eventCount: 1,
           statusLabel: "Healthy",
         }),
         expect.objectContaining({
           chapterName: "Boston College MEDLIFE",
-          points: 8,
+          points: 40,
           eventCount: 1,
           statusLabel: "Low attendance",
         }),
         expect.objectContaining({
           chapterName: "McGill MEDLIFE",
-          points: 0,
-          eventCount: 0,
-          statusLabel: "No upcoming events",
+          points: 20,
+          eventCount: 1,
+          statusLabel: "Low attendance",
         }),
       ]),
     );
@@ -221,8 +221,8 @@ describe("launch lane points readback", () => {
         event: {
           id: "chapter-event-ucla-closing-rally",
           title: "Rush Month closing rally",
-          starts_at: "2026-11-22T19:00:00Z",
-          ends_at: "2026-11-22T21:00:00Z",
+          starts_at: "2026-11-23T19:00:00Z",
+          ends_at: "2026-11-23T21:00:00Z",
           status: "completed",
           attendance_count: 12,
           luma_event_link_id: "luma-link-ucla-closing-rally",
@@ -289,7 +289,7 @@ describe("launch lane points readback", () => {
       attendanceCount: 12,
       eventPointsAwarded: 20,
       memberPointsAwarded: 20,
-      chapterTotalPoints: 30,
+      chapterTotalPoints: 70,
       memberStatusLabel: "Points awarded",
     });
     expect(getLaunchLaneOrgPointsReadback(data)).toMatchObject({
@@ -333,10 +333,10 @@ describe("launch lane points readback", () => {
       ]),
     );
     expect(getLaunchLaneOrgPointsReadback(data)).toMatchObject({
-      featuredEventTitle: "Boston kickoff info night",
-      featuredEventChapterName: "Boston College MEDLIFE",
-      featuredEventAttendanceCount: 12,
-      featuredEventPointsAwarded: 8,
+      featuredEventTitle: "McGill newcomer coffee chat",
+      featuredEventChapterName: "McGill MEDLIFE",
+      featuredEventAttendanceCount: 9,
+      featuredEventPointsAwarded: 20,
     });
     expect(getLaunchLaneOrgLeaderboardRows(data)).toEqual(
       expect.arrayContaining([

@@ -23,7 +23,9 @@ describe("copied Figma leader support screens", () => {
     expect(html).toContain("Chapter App Feed");
     expect(html).toContain("Your Event Name");
     expect(html).toContain("RSVP for This Event");
-    expect(html).toContain("Ready to publish?");
+    expect(html).toContain("Stage Event");
+    expect(html).toContain("Ready to stage?");
+    expect(html).not.toContain("Publish Event");
   });
 
   it("renders the copied leadership training hub with filters and resource cards", () => {

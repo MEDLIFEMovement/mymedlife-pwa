@@ -274,7 +274,7 @@ function ProfileHeroCard({
       label={label}
       value={title}
       tone="highlight"
-      note={<p>{detail}</p>}
+      note={detail}
       className="rounded-[1.35rem] border-white/12 bg-white/10 backdrop-blur-sm px-3.5 py-3 text-white"
     />
   );

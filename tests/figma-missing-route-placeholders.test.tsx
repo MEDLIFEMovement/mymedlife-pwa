@@ -70,8 +70,9 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Audit Logs");
     expect(html).toContain("System Health");
     expect(html).toContain("API Keys");
-    expect(html).toContain("MCP Connections");
     expect(html).toContain("Settings");
+    expect(html).toContain("MCP Analytics");
+    expect(html).not.toContain("MCP Connections");
     expect(html).toContain("Launch Mode Active");
     expect(html).not.toContain("Chapter Dashboard · Jun 2025");
     expect(html).not.toContain("Figma page missing - implementation blocked");

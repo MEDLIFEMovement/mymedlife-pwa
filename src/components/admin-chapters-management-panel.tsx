@@ -14,14 +14,22 @@ import {
   managedChapterFixtures,
   managedUserFixtures,
 } from "@/services/admin-management-fixtures";
+import {
+  chapterTypeFilterOptions,
+  chapterTypeOptions,
+  getChapterTypeLabel,
+  type ChapterTypeFilter,
+} from "@/services/chapter-type";
 import type { AdminAccessWriteConfig } from "@/services/admin-management-write";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import type { ChapterType } from "@/shared/types/persistence";
 import type { ReactNode } from "react";
 
 export type AdminChaptersSearchParams = {
   q?: string | string[];
   region?: string | string[];
   coachOwnerId?: string | string[];
+  chapterType?: string | string[];
   status?: string | string[];
   chapterId?: string | string[];
   adminChapterResult?: string | string[];
@@ -74,6 +82,10 @@ export function AdminChaptersManagementPanel({
   const query = getSingleParam(searchParams.q);
   const region = getSingleParam(searchParams.region) || "all";
   const coachOwnerId = getSingleParam(searchParams.coachOwnerId);
+  const rawChapterType = getSingleParam(searchParams.chapterType) || "all";
+  const chapterType = chapterTypeFilterOptions.some((option) => option.value === rawChapterType)
+    ? (rawChapterType as ChapterTypeFilter)
+    : "all";
   const rawStatus = getSingleParam(searchParams.status) || "all";
   const status = statusOptions.includes(rawStatus as ManagedChapterStatus | "all")
     ? (rawStatus as ManagedChapterStatus | "all")
@@ -82,6 +94,7 @@ export function AdminChaptersManagementPanel({
     query,
     region,
     coachOwnerId,
+    chapterType,
     status,
   });
   const selectedChapter =
@@ -156,7 +169,7 @@ export function AdminChaptersManagementPanel({
         </section>
 
         <form className="rounded-lg border border-white/10 bg-[#161b22] p-4">
-          <div className="grid gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr_auto]">
+          <div className="grid gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr_1fr_auto]">
             <label className="space-y-1 text-xs text-slate-400">
               Search chapter or school
               <input
@@ -193,6 +206,20 @@ export function AdminChaptersManagementPanel({
                 {coaches.map((coach) => (
                   <option key={coach.id} value={coach.id}>
                     {coach.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-1 text-xs text-slate-400">
+              Chapter type
+              <select
+                className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
+                name="chapterType"
+                defaultValue={chapterType}
+              >
+                {chapterTypeFilterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
@@ -244,6 +271,9 @@ export function AdminChaptersManagementPanel({
                         <div className="mt-1 text-xs text-slate-500">
                           {chapter.school} - {chapter.region}
                         </div>
+                        <div className="mt-1">
+                          <TypePill type={chapter.chapterType} />
+                        </div>
                         <StatusPill value={chapter.status} />
                       </td>
                       <td className="px-5 py-4 text-xs leading-5 text-slate-400">
@@ -292,8 +322,15 @@ export function AdminChaptersManagementPanel({
               <p className="mt-1 text-sm text-slate-500">
                 {selectedChapter.school} - {selectedChapter.region}
               </p>
+              <div className="mt-2">
+                <TypePill type={selectedChapter.chapterType} />
+              </div>
             </div>
             <dl className="mt-4 grid gap-3 text-sm">
+              <DetailRow
+                label="Chapter type"
+                value={getChapterTypeLabel(selectedChapter.chapterType)}
+              />
               <DetailRow label="Coach owner" value={getUserName(users, selectedChapter.coachOwnerId)} />
               <DetailRow
                 label="Staff owners"
@@ -329,7 +366,9 @@ export function AdminChaptersManagementPanel({
                 <p className="mt-2 text-xs leading-5 text-slate-500">
                   These forms submit to the audited `admin_manage_chapter` RPC.
                   They stay locked unless local Supabase writes and admin access
-                  writes are explicitly enabled.
+                  writes are explicitly enabled. Chapter type classification is
+                  shown here for review; hosted persistence needs the later
+                  chapter-type migration/RPC update.
                 </p>
               </div>
               <StatusPill value={formsEnabled ? "writes-local-only" : "write_disabled"} />
@@ -411,6 +450,13 @@ function ChapterCreateForm({
       <FormInput disabled={disabled} label="Chapter name" name="name" placeholder="Test Pilot MEDLIFE" />
       <FormInput disabled={disabled} label="School" name="campus" placeholder="Test Pilot University" />
       <FormInput disabled={disabled} label="Region / portfolio" name="region" placeholder="West Coast" />
+      <SelectField
+        disabled={disabled}
+        label="Chapter type"
+        name="chapterType"
+        options={chapterTypeOptions}
+        value="college_university"
+      />
       <input name="status" type="hidden" value="active" />
     </AdminChapterForm>
   );
@@ -440,6 +486,13 @@ function ChapterEditForm({
       <FormInput disabled={disabled} label="Chapter name" name="name" value={chapter.name} />
       <FormInput disabled={disabled} label="School" name="campus" value={chapter.school} />
       <FormInput disabled={disabled} label="Region / portfolio" name="region" value={chapter.region} />
+      <SelectField
+        disabled={disabled}
+        label="Chapter type"
+        name="chapterType"
+        options={chapterTypeOptions}
+        value={chapter.chapterType}
+      />
       <label className="space-y-1 text-xs text-slate-400">
         Status
         <select
@@ -724,6 +777,7 @@ function buildChapterActionPreviews(
       id: "chapter-new-pilot",
       name: "New Pilot Chapter",
       school: "New Pilot University",
+      chapterType: "college_university",
       status: "active",
       activeMemberCount: 0,
       activeEventCount: 0,
@@ -741,6 +795,7 @@ function buildChapterActionPreviews(
         new Set([...chapter.studentLeaderIds, "user-casey"]),
       ),
       activeModules: ["Events", "RSVP", "Attendance", "Points"],
+      chapterType: chapter.chapterType,
     },
   });
   const archive = archiveManagedChapter({
@@ -866,6 +921,14 @@ function DetailRow({ label, value }: { label: string; value: string }) {
       </dt>
       <dd className="mt-1 text-slate-200">{value}</dd>
     </div>
+  );
+}
+
+function TypePill({ type }: { type: ChapterType }) {
+  return (
+    <span className="inline-flex rounded border border-blue-400/20 bg-blue-400/10 px-2 py-1 text-[11px] font-semibold text-blue-100">
+      {getChapterTypeLabel(type)}
+    </span>
   );
 }
 

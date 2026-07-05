@@ -26,10 +26,10 @@ describe("member launch lane events", () => {
       memberRsvpLabel: "RSVP'd",
       memberRsvpState: "registered",
       memberLumaLabel: "Luma",
-      rsvpStatusLabel: "Attendance confirmed; points pending",
+      rsvpStatusLabel: "Points awarded",
       rsvpCount: 2,
       attendanceCount: 24,
-      pointsAwarded: 0,
+      pointsAwarded: 40,
     });
   });
 
@@ -79,6 +79,6 @@ describe("member launch lane events", () => {
 
     expect(row?.rsvpStatusLabel).toBe("Points awarded");
     expect(row?.rsvpDetail).toContain("points are visible for this event");
-    expect(row?.pointsAwarded).toBe(20);
+    expect(row?.pointsAwarded).toBe(60);
   });
 });

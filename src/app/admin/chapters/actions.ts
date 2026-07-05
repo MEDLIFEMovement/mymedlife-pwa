@@ -23,6 +23,7 @@ import {
   type AdminChapterRpcRow,
   type AdminChapterServerResult,
 } from "@/services/admin-chapter-management-write";
+import { isChapterType } from "@/services/chapter-type";
 
 type AdminChapterRpcParams = {
   operation_input: AdminChapterOperation;
@@ -104,6 +105,7 @@ export async function submitAdminChapterForLocalSupabase(
   const name = getOptionalString(formData.get("name"));
   const campus = getOptionalString(formData.get("campus"));
   const region = getOptionalString(formData.get("region"));
+  const rawChapterType = getOptionalString(formData.get("chapterType"));
   const status = parseAdminChapterStatus(formData.get("status"));
   const roleKey = parseAdminStudentLeaderRole(formData.get("roleKey"));
   const auditReason = String(formData.get("auditReason") ?? "").trim();
@@ -151,13 +153,28 @@ export async function submitAdminChapterForLocalSupabase(
 
   if (
     operation === "create_chapter" &&
-    (!name || !campus)
+    (!name || !campus || !rawChapterType)
   ) {
     return {
       success: false,
       code: "invalid_profile",
       chapterId: null,
-      plainEnglishMessage: "Add the chapter name and school before creating it.",
+      plainEnglishMessage:
+        "Add the chapter name, school, and chapter type before creating it.",
+    };
+  }
+
+  if (
+    (operation === "create_chapter" || operation === "update_chapter") &&
+    rawChapterType &&
+    !isChapterType(rawChapterType)
+  ) {
+    return {
+      success: false,
+      code: "invalid_chapter_type",
+      chapterId: null,
+      plainEnglishMessage:
+        "Choose High School, College / University, or Needs Review before saving the chapter.",
     };
   }
 

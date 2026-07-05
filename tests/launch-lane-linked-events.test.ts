@@ -11,7 +11,7 @@ describe("launch lane linked events", () => {
 
     const options = getLinkedLaunchLaneEventOptions(data);
 
-    expect(options).toHaveLength(3);
+    expect(options).toHaveLength(5);
     expect(options[0]).toMatchObject({
       chapterName: "Boston College MEDLIFE",
       eventTitle: "Boston kickoff info night",

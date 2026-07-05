@@ -782,6 +782,16 @@ const launchLaneRouteSmokeItems: RouteSmokeItem[] = [
       "Outbox review must not trigger sends, retries, or payload edits.",
   },
   {
+    path: "/admin/integrations/luma",
+    label: "Luma provider status",
+    priority: "critical",
+    audiences: ["ds_admin", "super_admin"],
+    expectedResult:
+      "DS and Super Admin can confirm Luma mode, safe test posture, linked-event readback, outbox safety, and blocked production controls.",
+    safetyAssertion:
+      "Luma provider review must not expose keys, call Luma, create or update events, import attendance, approve live sends, or enable webhooks.",
+  },
+  {
     path: "/admin/pilot-scope",
     label: "Pilot scope",
     priority: "critical",

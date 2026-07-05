@@ -220,14 +220,14 @@ function MStoryModal({ story, liked, onToggle, onClose }: { story:MStory; liked:
             {liked&&<span className="text-xs text-slate-400 animate-pulse">Thanks for engaging ✦</span>}
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
+            <button disabled title="Story saving is blocked in this preview" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
               <Bookmark size={13}/>Save
             </button>
-            <a href="#" onClick={e=>e.preventDefault()}
-              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg text-white transition-colors cursor-pointer hover:opacity-90"
+            <button type="button" disabled title="External story sources are blocked in this preview until feed-sharing approval is complete"
+              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg text-white opacity-75 cursor-not-allowed"
               style={{background:cfg.bg}}>
               <ExternalLink size={13}/>Open on {cfg.label}
-            </a>
+            </button>
           </div>
         </div>
       </div>

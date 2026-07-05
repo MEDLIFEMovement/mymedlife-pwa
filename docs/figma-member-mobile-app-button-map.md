@@ -21,7 +21,7 @@ behind these exact controls instead of changing the shell.
   - `Points`
   - `Profile`
 - Back buttons inside detail screens return to the prior Figma screen.
-- Notification bell is visible on the home/header states; no backend write in this pass.
+- Notification bell is visible on the home/header states and disabled with blocked-state copy; no backend write in this pass.
 
 ## Home
 
@@ -30,10 +30,10 @@ behind these exact controls instead of changing the shell.
 - MEDLIFE Stories card: opens Stories.
 - Event cards:
   - event card click opens Events.
-  - RSVP pill/button is visible; live RSVP write is not enabled by this pass.
+  - RSVP pill/button opens Event Detail; live RSVP write is not enabled by this pass.
 - Campaign card: opens Campaign.
 - Action cards: open Action Detail.
-- `See all`: visible event/action affordance.
+- `See all`: opens the local Action Detail state until a route-backed action list exists.
 - `Full board`: opens Points.
 - Role preview controls:
   - General Member
@@ -61,7 +61,7 @@ behind these exact controls instead of changing the shell.
   - photo
   - link
   - file
-- Upload drop zone button.
+- Upload drop zone button: visibly disabled until storage/upload approval is complete.
 - Consent/accuracy checkbox.
 - `Submit evidence`: opens Confirmation when allowed.
 - Confirmation:
@@ -83,7 +83,7 @@ behind these exact controls instead of changing the shell.
   - `Assign`
   - `Edit assignment`
 - Review Evidence:
-  - `View full`
+- `View full`: visibly disabled until full evidence preview is wired.
   - approve button
   - request changes button
 
@@ -94,11 +94,13 @@ behind these exact controls instead of changing the shell.
 - `Write coach note`
 - `Review risk reports`
 - Admin dashboard back button.
-- `View integration events`
+- `View integration events`: shows an explicit secure-admin-route notice and
+  points reviewers to `/admin/integration-outbox`; it does not expose provider
+  logs or trigger integration writes from the mobile preview.
 
 ## Points
 
-- `See how to earn more points`
+- `See how to earn more points`: opens the Campaign screen.
 - leaderboard/chapter ranking cards.
 - points category rows.
 
@@ -111,7 +113,7 @@ behind these exact controls instead of changing the shell.
 - RSVP/action buttons on event cards.
 - Event Detail:
   - back to Events.
-  - share/download/map-style buttons.
+  - share/download/map-style buttons are visibly disabled until Luma sharing/export approval is complete.
   - `RSVP`
   - `Add to Calendar`
   - `Share`
@@ -128,11 +130,16 @@ behind these exact controls instead of changing the shell.
 - Story cards.
 - story like buttons.
 - story modal close buttons.
-- mobile story card menu.
+- mobile story card menu is visibly disabled until story options are wired.
 - `Read story`
 - `Back to App`
-- `Share Story`
+- `Share Story`: visibly disabled until publishing approval is complete.
 - story filter chips.
+- source buttons such as Instagram/LinkedIn/YouTube are disabled in this preview
+  until feed-sharing and external-link approval is complete.
+- The copied shell is covered by `tests/figma-shell-cta-safety.test.ts`, which
+  blocks fake links, empty handlers, JavaScript void links, and raw buttons
+  without a handler or disabled state.
 
 ## Safety Notes
 
