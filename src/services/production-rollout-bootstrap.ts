@@ -269,7 +269,9 @@ export function getProductionRolloutBootstrapReadiness(
     linkedLumaCalendars.map((calendar) => calendar.chapterId),
   );
   const readyPilotProofChapterIds = new Set(
-    readyPilotEventProof.map((proof) => proof.chapterId),
+    readyPilotEventProof
+      .filter((proof) => linkedLumaChapterIds.has(proof.chapterId))
+      .map((proof) => proof.chapterId),
   );
 
   if (activeChapters.length < minimumChapterCount) {
@@ -397,6 +399,12 @@ export function getProductionRolloutBootstrapReadiness(
     }
 
     if ((proof.status ?? "ready") === "ready") {
+      if (!linkedLumaChapterIds.has(proof.chapterId)) {
+        blockers.push(
+          `${proof.chapterId} pilot event ${proof.lumaEventId} needs a linked Luma calendar mapping before proof can count as ready.`,
+        );
+      }
+
       addReadyPilotProofBlockers(blockers, proof, userEmails);
     }
   }
