@@ -221,6 +221,12 @@ function getRouteProofRowBlockers(
       );
     }
 
+    if (proof.status === "passed" && !isValidCheckedAt(proof.checkedAt)) {
+      blockers.push(
+        `${proofLabel} needs a checkedAt timestamp when status is passed.`,
+      );
+    }
+
     if (proof.status === "passed" && !required.hasRequiredRole(proof.email, packet)) {
       blockers.push(`${proofLabel} needs ${required.roleDetail}.`);
     }
@@ -289,6 +295,10 @@ function hasActiveStaffRole(
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+function isValidCheckedAt(value: string | undefined) {
+  return Boolean(value?.trim()) && Number.isFinite(Date.parse(value ?? ""));
 }
 
 function formatList(items: string[], emptyLabel: string) {

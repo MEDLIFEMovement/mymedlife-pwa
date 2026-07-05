@@ -76,6 +76,27 @@ describe("production signed-in route proof", () => {
       "member@medlifemovement.org student_app observedPath must be /app when status is passed.",
     );
   });
+
+  it("requires timestamps for passed route proof rows", () => {
+    const packet = createPacket();
+    packet.signedInRouteProof = [
+      {
+        email: "member@medlifemovement.org",
+        workspace: "student_app",
+        expectedPath: "/app",
+        observedPath: "/app",
+        status: "passed",
+      },
+      ...(packet.signedInRouteProof ?? []).slice(1),
+    ];
+
+    const readiness = getProductionSignedInRouteProofReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "member@medlifemovement.org student_app needs a checkedAt timestamp when status is passed.",
+    );
+  });
 });
 
 function createPacket(): ProductionRolloutBootstrapPacket {
@@ -130,6 +151,7 @@ function createPacket(): ProductionRolloutBootstrapPacket {
         expectedPath: "/app",
         observedPath: "/app",
         status: "passed",
+        checkedAt: "2026-07-05T15:00:00Z",
       },
       {
         email: "leader@medlifemovement.org",
@@ -137,6 +159,7 @@ function createPacket(): ProductionRolloutBootstrapPacket {
         expectedPath: "/leader?view=overview",
         observedPath: "/leader?view=overview",
         status: "passed",
+        checkedAt: "2026-07-05T15:01:00Z",
       },
       {
         email: "coach@medlifemovement.org",
@@ -144,6 +167,7 @@ function createPacket(): ProductionRolloutBootstrapPacket {
         expectedPath: "/staff?view=chapters",
         observedPath: "/staff?view=chapters",
         status: "passed",
+        checkedAt: "2026-07-05T15:02:00Z",
       },
       {
         email: "ds@medlifemovement.org",
@@ -151,6 +175,7 @@ function createPacket(): ProductionRolloutBootstrapPacket {
         expectedPath: "/admin",
         observedPath: "/admin",
         status: "passed",
+        checkedAt: "2026-07-05T15:03:00Z",
       },
     ],
   };

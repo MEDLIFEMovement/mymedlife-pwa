@@ -312,6 +312,7 @@ function createReadyRolloutPacket(): ProductionRolloutBootstrapPacket {
         expectedPath: "/app",
         observedPath: "/app",
         status: "passed",
+        checkedAt: "2026-07-05T15:00:00Z",
       },
       {
         email: "leader@medlifemovement.org",
@@ -319,6 +320,7 @@ function createReadyRolloutPacket(): ProductionRolloutBootstrapPacket {
         expectedPath: "/leader?view=overview",
         observedPath: "/leader?view=overview",
         status: "passed",
+        checkedAt: "2026-07-05T15:01:00Z",
       },
       {
         email: "coach@medlifemovement.org",
@@ -326,6 +328,7 @@ function createReadyRolloutPacket(): ProductionRolloutBootstrapPacket {
         expectedPath: "/staff?view=chapters",
         observedPath: "/staff?view=chapters",
         status: "passed",
+        checkedAt: "2026-07-05T15:02:00Z",
       },
       {
         email: "ds@medlifemovement.org",
@@ -333,6 +336,7 @@ function createReadyRolloutPacket(): ProductionRolloutBootstrapPacket {
         expectedPath: "/admin",
         observedPath: "/admin",
         status: "passed",
+        checkedAt: "2026-07-05T15:03:00Z",
       },
     ],
   };
