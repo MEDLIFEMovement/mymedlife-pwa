@@ -33,5 +33,7 @@ describe("production rollout data collection doc", () => {
     expect(doc).toContain("5 production Luma event links");
     expect(doc).toContain("The `support` owner must have an active `coach`, `admin`, or `super_admin`");
     expect(doc).toContain("The `rollback` and `production_apply` owners must have active `ds_admin` or");
+    expect(doc).toContain("the `support` owner must have passed route");
+    expect(doc).toContain("the `rollback` and `production_apply`");
   });
 });

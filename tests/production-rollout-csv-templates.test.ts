@@ -68,6 +68,7 @@ describe("production rollout CSV templates", () => {
     expect(readme).toContain("The support owner needs an active coach, admin, or super_admin staff role");
     expect(readme).toContain("The rollback and production apply owners need an active ds_admin or super_admin staff role");
     expect(readme).toContain("add passed signed-in route proof");
+    expect(readme).toContain("The named support owner also needs passed signed-in proof for /staff?view=chapters");
     expect(readme).toContain("The first rollout requires at least 30 active chapters.");
   });
 

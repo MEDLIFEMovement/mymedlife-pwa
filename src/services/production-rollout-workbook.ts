@@ -176,6 +176,8 @@ const metadataByFilename: Record<string, WorkbookMetadata> = {
       "Every owner email must also be listed in users.csv.",
       "Support owner needs an active coach, admin, or super_admin staff role.",
       "Rollback and production_apply owners need active ds_admin or super_admin staff roles.",
+      "After production data is applied, support owner needs passed route proof for /staff?view=chapters.",
+      "After production data is applied, rollback and production_apply owners need passed route proof for /admin.",
     ],
   },
   "signed-in-route-proof.csv": {
@@ -193,6 +195,8 @@ const metadataByFilename: Record<string, WorkbookMetadata> = {
     ],
     checklist: [
       "Record one passed member, leader, staff, and admin route check.",
+      "Use the named support owner for /staff?view=chapters proof where possible.",
+      "Use the named rollback and production_apply owners for /admin proof.",
       "Use real production accounts after production data is applied.",
       "If a route fails, fix role data before inviting students.",
     ],

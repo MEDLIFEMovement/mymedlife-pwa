@@ -243,6 +243,8 @@ passed proof row for each required workspace:
 - a real `general_member` or `action_committee_member` reaches `/app`
 - a real chapter leader reaches `/leader?view=overview`
 - a real coach/staff user reaches `/staff?view=chapters`
+- the named support owner reaches `/staff?view=chapters`
+- the named rollback and production apply owners reach `/admin`
 - a real DS Admin or Super Admin reaches `/admin`
 
 The validator lives in:
@@ -498,6 +500,8 @@ This checks that the packet contains passed evidence for:
 - one real student leader reaching `/leader?view=overview`
 - one real staff/coach user reaching `/staff?view=chapters`
 - one real DS Admin or Super Admin reaching `/admin`
+- the named support owner reaching `/staff?view=chapters`
+- the named rollback and production apply owners reaching `/admin`
 
 It is read-only. It does not sign in, create users, write rows, or display
 passwords.

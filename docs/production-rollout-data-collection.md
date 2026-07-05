@@ -291,6 +291,10 @@ Rules:
   staff role.
 - The `rollback` and `production_apply` owners must have active `ds_admin` or
   `super_admin` staff roles.
+- After production data is applied, the `support` owner must have passed route
+  proof for `/staff?view=chapters`.
+- After production data is applied, the `rollback` and `production_apply`
+  owners must have passed route proof for `/admin`.
 - The `launch_decision` owner is recommended so the final go/no-go owner is
   visible in the packet.
 
@@ -389,7 +393,8 @@ Before any production data apply, confirm:
 - The production apply owner is named.
 - The support owner and rollback owner are named.
 - The signed-in route proof rows pass for one member, one leader, one staff
-  user, one admin, and member/leader access for each ready pilot chapter.
+  user, one admin, the named support owner, the named rollback and production
+  apply owners, and member/leader access for each ready pilot chapter.
 - The 5-chapter Luma event loop has proof for RSVP, attendance, points, audit,
   and zero external sends.
 - External writes remain off: HubSpot, n8n, warehouse, Power BI, SMS, email,
