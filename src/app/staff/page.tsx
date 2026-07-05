@@ -6,6 +6,7 @@ import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
 import { canAccessStaffWorkspace } from "@/services/role-visibility";
+import { getStaffLaunchLaneCanonicalHref } from "@/services/staff-launch-lane";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
 export const metadata = getStaticRouteMetadata("staff");
@@ -25,6 +26,19 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
 
   if (!canReadStaffWorkspace(actor)) {
     redirect(getLandingRouteForActor(actor));
+  }
+
+  const canonicalHref = getStaffLaunchLaneCanonicalHref({
+    view: resolvedSearchParams?.view,
+    chapter: resolvedSearchParams?.chapter,
+    risk: resolvedSearchParams?.risk,
+    source: resolvedSearchParams?.source,
+    campaign: resolvedSearchParams?.campaign,
+    event: resolvedSearchParams?.event,
+  });
+
+  if (canonicalHref) {
+    redirect(canonicalHref);
   }
 
   return (

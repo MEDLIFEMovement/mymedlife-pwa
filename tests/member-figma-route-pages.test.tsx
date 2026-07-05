@@ -1,7 +1,12 @@
-import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
+
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn((href: string) => {
+    throw new Error(`NEXT_REDIRECT:${href}`);
+  }),
+}));
 
 vi.mock("@/services/local-actor-context", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/services/local-actor-context")>();
@@ -23,36 +28,27 @@ function getSignedInMember() {
 }
 
 describe("member Figma route pages", () => {
-  it("renders campaigns as the student mobile campaign page", async () => {
+  it("parks the old campaigns route inside the member events launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(getSignedInMember());
 
     const { default: CampaignsPage } = await import("@/app/campaigns/page");
-    const html = renderToStaticMarkup(await CampaignsPage());
 
-    expect(html).toContain("Rush Month");
-    expect(html).toContain("Current Phase");
-    expect(html).toContain("Campaign KPIs");
-    expect(html).toContain("Assigned Actions by Role");
-    expect(html).toContain("Open event · RSVP · attendance · points");
-    expect(html).not.toContain("Campaign operating system");
-    expect(html).not.toContain("Campaigns turn SOPs into student action");
+    await expect(CampaignsPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/app/events?source=campaigns",
+    );
   });
 
-  it("renders proof library as the student MEDLIFE Stories feed", async () => {
+  it("parks the old proof library route inside the member points launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(getSignedInMember());
 
     const { default: ProofLibraryPage } = await import("@/app/proof-library/page");
-    const html = renderToStaticMarkup(await ProofLibraryPage());
 
-    expect(html).toContain("Stories");
-    expect(html).toContain("MEDLIFE Story");
-    expect(html).toContain("Consent and publishing");
-    expect(html).toContain("Preview proof upload requirements");
-    expect(html).not.toContain("Proof exists to break self-limiting beliefs");
-    expect(html).not.toContain("bg-[#071d1a]");
+    await expect(ProofLibraryPage()).rejects.toThrow(
+      "NEXT_REDIRECT:/app/points?source=points",
+    );
   });
 });

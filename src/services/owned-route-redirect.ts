@@ -9,6 +9,7 @@ import {
   getLaunchLaneProofRedirectHref,
   getLaunchLaneStaffEventsHref,
 } from "@/services/events-points-launch-lane";
+import { getLeaderLaunchLaneCanonicalHref } from "@/services/leader-launch-lane";
 import { buildMemberLaunchLaneEventDetailHref } from "@/services/member-launch-lane-events";
 import { getActorSurfaceFamily } from "@/services/role-visibility";
 
@@ -156,10 +157,15 @@ export function getChapterRouteRedirectHref(
     return getLaunchLaneFocusHref(getActorSurfaceFamily(actor), "home");
   }
 
-  return withQuery("/leader", {
+  const leaderSearchParams = {
     ...searchParams,
     view: searchParams.view ?? "overview",
-  });
+  };
+
+  return (
+    getLeaderLaunchLaneCanonicalHref(leaderSearchParams) ??
+    withQuery("/leader", leaderSearchParams)
+  );
 }
 
 export function getChapterMembersRouteRedirectHref(
@@ -169,7 +175,7 @@ export function getChapterMembersRouteRedirectHref(
     case "member":
       return "/app";
     case "leader":
-      return "/leader?view=members";
+      return "/leader?view=events";
     case "coach":
     case "staff":
       return "/staff?view=chapters";
@@ -177,6 +183,10 @@ export function getChapterMembersRouteRedirectHref(
     case "super_admin":
       return "/admin";
   }
+}
+
+export function getSltPrepRouteRedirectHref(actor: LocalActorContext): string {
+  return getLaunchLaneFocusHref(getActorSurfaceFamily(actor), "events");
 }
 
 function withQuery(baseHref: string, query: Record<string, string | undefined>) {

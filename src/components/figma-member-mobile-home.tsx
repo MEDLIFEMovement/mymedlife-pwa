@@ -244,7 +244,6 @@ function AlertBanner({
 function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen) => void }) {
   const items: { id: Screen | "profile"; label: string; Icon: typeof Home }[] = [
     { id: "home",    label: "Home",    Icon: Home },
-    { id: "stories", label: "Stories", Icon: Heart },
     { id: "events",  label: "Events",  Icon: CalendarDays },
     { id: "points",  label: "Points",  Icon: Trophy },
     { id: "profile", label: "Profile", Icon: User },

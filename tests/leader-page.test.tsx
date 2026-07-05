@@ -99,15 +99,18 @@ describe("leader page", () => {
     expect(html).toContain("Boston College MEDLIFE");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Create Event");
-    expect(html).toContain("Assign Task");
-    expect(html).toContain("Promote Emerging Leader");
-    expect(html).toContain("Not Yet Available");
-    expect(html).toContain("Leadership page not yet available: Campaigns");
-    expect(html).toContain("Leadership page not yet available: Proof Review");
     expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Risk Alerts");
     expect(html).toContain("This Week&#x27;s Priority");
     expect(html).toContain("Weekly Points Trend");
+    expect(html).not.toContain("Assign Task");
+    expect(html).not.toContain("Promote Emerging Leader");
+    expect(html).not.toContain("Leadership page not yet available");
+    expect(html).not.toContain("MEDLIFE Stories");
+    expect(html).not.toContain("Bridge Videos");
+    expect(html).not.toContain("Leadership Training");
+    expect(html).not.toContain("Proof Review");
+    expect(html).not.toContain("Campaigns");
     expect(html).not.toContain("Leader navigation");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Leader event tracking");
@@ -174,20 +177,8 @@ describe("leader page", () => {
   it.each([
     ["overview", "This Week&#x27;s Priority"],
     ["leaderboard", "Ranked Chapter Leaderboard"],
-    ["members", "See how members rank within the chapter"],
-    ["member_profile", "Member Profile"],
-    ["committees", "Events This Year"],
     ["events", "All Events — June 2025"],
-    ["impact", "Local Community Impact"],
-    ["bridge_videos", "Bridge Culture Reminder"],
-    ["succession", "Leadership Gaps"],
-    ["feed_analytics", "Most Engaged Members"],
-    ["training", "Videos, presentations, and external resources"],
-    ["values", "Three values guide every MEDLIFE leader"],
-    ["leaders", "Every E-Board position and Event Committee chair"],
-    ["create_event", "Create New Event"],
-    ["stories", "Live from the field"],
-  ])("renders the %s menu view as its own screen", async (view, expectedCopy) => {
+  ])("renders the %s core launch view as its own screen", async (view, expectedCopy) => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -208,6 +199,41 @@ describe("leader page", () => {
     );
 
     expect(html).toContain(expectedCopy);
+  });
+
+  it.each([
+    ["members", "/leader?view=events"],
+    ["member_profile", "/leader?view=events"],
+    ["committees", "/leader?view=events"],
+    ["succession", "/leader?view=events"],
+    ["impact", "/leader?view=leaderboard"],
+    ["bridge_videos", "/leader?view=leaderboard"],
+    ["feed_analytics", "/leader?view=leaderboard"],
+    ["training", "/leader?view=overview"],
+    ["values", "/leader?view=overview"],
+    ["leaders", "/leader?view=overview"],
+    ["create_event", "/leader?view=overview"],
+    ["stories", "/leader?view=overview"],
+  ])("parks the %s leader view inside the launch lane", async (view, expectedHref) => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData(`Testing parked leader ${view} view.`),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view,
+        }),
+      }),
+    ).rejects.toThrow(`NEXT_REDIRECT:${expectedHref}`);
   });
 
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
