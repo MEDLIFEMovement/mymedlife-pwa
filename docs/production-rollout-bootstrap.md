@@ -410,6 +410,15 @@ This command compares the packet's `lumaCalendars` rows to the runtime
 chapter-to-Luma registry. It is read-only: it does not call Luma, create events,
 write Supabase rows, send invitations, or enable integrations.
 
+To create the runtime registry JSON from the approved packet, run:
+
+```bash
+pnpm rollout:luma-registry --packet production-rollout-packet.json --out chapter-luma-map.json
+```
+
+This writes a local JSON file for the approved environment-change path. It does
+not set Vercel variables or touch live systems.
+
 This command checks only the `pilot-event-proof.csv` evidence inside the rollout
 packet. It proves that five chapters have:
 
