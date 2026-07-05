@@ -132,6 +132,7 @@ Teams can start from blank CSV templates:
 
 ```bash
 pnpm rollout:templates --out rollout-csv
+pnpm rollout:workbook --out production-rollout-workbook.md --csv-dir rollout-csv
 ```
 
 For the plain-English data request, owner map, and review checklist, use
