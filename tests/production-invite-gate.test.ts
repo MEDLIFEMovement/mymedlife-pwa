@@ -7,6 +7,7 @@ import type {
   ProductionCoreRouteSmokeResult,
 } from "@/services/production-core-route-smoke";
 import type {
+  ProductionRolloutBootstrapPacket,
   ProductionRolloutBootstrapReadiness,
 } from "@/services/production-rollout-bootstrap";
 import type {
@@ -18,12 +19,13 @@ describe("production invite gate", () => {
     const readiness = getProductionInviteGateReadiness({
       publicUrl: "https://www.mymedlife.org",
       routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
       rolloutReadiness: createReadyRolloutReadiness(),
       rolloutHandoff: createReadyRolloutHandoff(),
     });
 
     expect(readiness.ready).toBe(true);
-    expect(readiness.checks).toHaveLength(6);
+    expect(readiness.checks).toHaveLength(7);
     expect(readiness.checks.every((check) => check.passed)).toBe(true);
     expect(readiness.nextSteps).toEqual([]);
     expect(formatProductionInviteGateReadiness(readiness)).toContain(
@@ -69,6 +71,7 @@ describe("production invite gate", () => {
     const readiness = getProductionInviteGateReadiness({
       publicUrl: "https://www.mymedlife.org",
       routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
       rolloutReadiness,
       rolloutHandoff: createReadyRolloutHandoff({ ready: false }),
     });
@@ -104,6 +107,7 @@ describe("production invite gate", () => {
     const readiness = getProductionInviteGateReadiness({
       publicUrl: "https://www.mymedlife.org",
       routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
       rolloutReadiness,
       rolloutHandoff: createReadyRolloutHandoff({ ready: false }),
     });
@@ -134,6 +138,7 @@ describe("production invite gate", () => {
     const readiness = getProductionInviteGateReadiness({
       publicUrl: "https://www.mymedlife.org",
       routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
       rolloutReadiness,
       rolloutHandoff: createReadyRolloutHandoff({ ready: false }),
     });
@@ -148,6 +153,31 @@ describe("production invite gate", () => {
     );
     expect(readiness.nextSteps).toContain(
       "Name active support, rollback, and production apply owners in launch-owners.csv.",
+    );
+  });
+
+  it("blocks broad invites until signed-in role routing is proven", () => {
+    const packet = createReadyRolloutPacket();
+    packet.signedInRouteProof = [];
+
+    const readiness = getProductionInviteGateReadiness({
+      publicUrl: "https://www.mymedlife.org",
+      routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: packet,
+      rolloutReadiness: createReadyRolloutReadiness(),
+      rolloutHandoff: createReadyRolloutHandoff(),
+    });
+    const routeProofCheck = readiness.checks.find(
+      (check) => check.key === "signed_in_route_proof",
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(routeProofCheck?.passed).toBe(false);
+    expect(routeProofCheck?.detail).toContain(
+      "General member lands in the student app",
+    );
+    expect(readiness.nextSteps).toContain(
+      "Complete signed-in route proof for one member, leader, staff user, and admin after production data is applied.",
     );
   });
 });
@@ -221,5 +251,83 @@ function createReadyRolloutHandoff(
     summary:
       "30 chapters are ready for the first production data apply. This report is a review handoff only.",
     sections: [],
+  };
+}
+
+function createReadyRolloutPacket(): ProductionRolloutBootstrapPacket {
+  return {
+    chapters: [
+      {
+        id: "chapter-ucla",
+        name: "UCLA MEDLIFE",
+        campus: "UCLA",
+      },
+    ],
+    users: [
+      { email: "member@medlifemovement.org", displayName: "Launch Member" },
+      { email: "leader@medlifemovement.org", displayName: "Launch Leader" },
+      { email: "coach@medlifemovement.org", displayName: "Launch Coach" },
+      { email: "ds@medlifemovement.org", displayName: "DS Admin" },
+    ],
+    memberships: [
+      {
+        email: "member@medlifemovement.org",
+        chapterId: "chapter-ucla",
+        roleKey: "general_member",
+      },
+      {
+        email: "leader@medlifemovement.org",
+        chapterId: "chapter-ucla",
+        roleKey: "president_vp",
+      },
+    ],
+    staffRoles: [
+      { email: "coach@medlifemovement.org", roleKey: "coach" },
+      { email: "ds@medlifemovement.org", roleKey: "ds_admin" },
+    ],
+    coachAssignments: [
+      {
+        coachEmail: "coach@medlifemovement.org",
+        chapterId: "chapter-ucla",
+        coachType: "portfolio",
+      },
+    ],
+    campaigns: [
+      {
+        chapterId: "chapter-ucla",
+        name: "Rush Month",
+        slug: "rush-month-ucla",
+      },
+    ],
+    signedInRouteProof: [
+      {
+        email: "member@medlifemovement.org",
+        workspace: "student_app",
+        expectedPath: "/app",
+        observedPath: "/app",
+        status: "passed",
+      },
+      {
+        email: "leader@medlifemovement.org",
+        workspace: "leader_command_center",
+        expectedPath: "/leader?view=overview",
+        observedPath: "/leader?view=overview",
+        status: "passed",
+      },
+      {
+        email: "coach@medlifemovement.org",
+        workspace: "staff_command_center",
+        expectedPath: "/staff?view=chapters",
+        observedPath: "/staff?view=chapters",
+        status: "passed",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        workspace: "admin_backend",
+        expectedPath: "/admin",
+        observedPath: "/admin",
+        status: "passed",
+      },
+    ],
   };
 }

@@ -66,6 +66,7 @@ try {
   const inviteGate = getProductionInviteGateReadiness({
     publicUrl,
     routeSmoke,
+    rolloutPacket: packet,
     rolloutReadiness,
     rolloutHandoff: getProductionRolloutHandoff(packet),
     minimumPilotChapterCount,

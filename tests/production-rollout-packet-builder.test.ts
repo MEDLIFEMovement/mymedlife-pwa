@@ -43,6 +43,10 @@ describe("production rollout packet builder", () => {
         "email,ownerType,displayName,status",
         "admin@medlifemovement.org,support,Launch Admin,active",
       ].join("\n"),
+      signedInRouteProof: [
+        "email,workspace,expectedPath,observedPath,status,checkedAt,notes",
+        "leader@medlifemovement.org,leader_command_center,/leader?view=overview,/leader?view=overview,passed,2026-07-05T15:00:00Z,leader proof",
+      ].join("\n"),
     });
 
     expect(packet.chapters).toEqual([
@@ -60,6 +64,9 @@ describe("production rollout packet builder", () => {
     expect(packet.lumaCalendars?.[0]?.calendarId).toBe("cal-ucla");
     expect(packet.pilotEventProof?.[0]?.rsvpCount).toBe(12);
     expect(packet.launchOwners?.[0]?.ownerType).toBe("support");
+    expect(packet.signedInRouteProof?.[0]?.workspace).toBe(
+      "leader_command_center",
+    );
   });
 
   it("supports quoted commas from spreadsheet exports", () => {
@@ -79,6 +86,8 @@ describe("production rollout packet builder", () => {
       pilotEventProof:
         "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus\nchapter-bc,Rush Month Kickoff,evt-bc,5,4,4,recorded,zero_sends",
       launchOwners: "email,ownerType\nadmin@medlifemovement.org,support",
+      signedInRouteProof:
+        "email,workspace,expectedPath,observedPath,status\nleader@medlifemovement.org,leader_command_center,/leader?view=overview,/leader?view=overview,passed",
     });
 
     expect(packet.chapters[0]?.name).toBe("Boston College, MEDLIFE");
@@ -104,6 +113,7 @@ describe("production rollout packet builder", () => {
         pilotEventProof:
           "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus\nchapter-ucla,Rush Month Kickoff,evt-ucla,5,4,4,recorded,zero_sends",
         launchOwners: "email,ownerType\nadmin@medlifemovement.org,support",
+        signedInRouteProof: "email,workspace,expectedPath,observedPath,status",
       }),
     ).toThrow("chapters CSV has unsupported column password.");
   });
@@ -123,6 +133,7 @@ describe("production rollout packet builder", () => {
         pilotEventProof:
           "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus\nchapter-ucla,Rush Month Kickoff,evt-ucla,5,4,4,recorded,zero_sends",
         launchOwners: "email,ownerType\nadmin@medlifemovement.org,support",
+        signedInRouteProof: "email,workspace,expectedPath,observedPath,status",
       }),
     ).toThrow(
       'Invalid membership roleKey "owner". Expected one of: general_member, action_committee_member, action_committee_chair, e_board_member, president_vp.',
@@ -144,6 +155,7 @@ describe("production rollout packet builder", () => {
         pilotEventProof:
           "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus\nchapter-ucla,Rush Month Kickoff,evt-ucla,5,4,4,recorded,zero_sends",
         launchOwners: "email,ownerType\nadmin@medlifemovement.org,support",
+        signedInRouteProof: "email,workspace,expectedPath,observedPath,status",
       }),
     ).toThrow("chapters CSV row 2 is missing required value id.");
   });
@@ -163,6 +175,7 @@ describe("production rollout packet builder", () => {
         pilotEventProof:
           "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus\nchapter-ucla,Rush Month Kickoff,evt-ucla,twelve,4,4,recorded,zero_sends",
         launchOwners: "email,ownerType\nadmin@medlifemovement.org,support",
+        signedInRouteProof: "email,workspace,expectedPath,observedPath,status",
       }),
     ).toThrow("pilot event rsvpCount must be a zero-or-greater whole number.");
   });

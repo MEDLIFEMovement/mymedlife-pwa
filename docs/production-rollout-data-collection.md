@@ -33,6 +33,7 @@ launch campaigns, Luma calendar mappings, pilot proof, and launch ownership.
 | `luma-calendars.csv` | DS / Luma owner | Which Luma calendar belongs to each launch chapter |
 | `pilot-event-proof.csv` | Launch owner + DS | Which 5 pilot chapters have proven RSVP, attendance, points, audit, and zero-send posture |
 | `launch-owners.csv` | Nick / HQ launch owner | Who owns production apply, support, rollback, and launch decisions |
+| `signed-in-route-proof.csv` | Launch owner + DS | Which real production accounts proved member, leader, staff, and admin routing |
 
 ## Minimum Ready Packet
 
@@ -53,6 +54,11 @@ The first production rollout packet must include:
   center access.
 - Active `support`, `rollback`, and `production_apply` owners.
 - Real user emails only.
+
+The signed-in route proof file can stay header-only before production users and
+app rows are applied. Before broad invitations, it must include passed evidence
+for one real member, one real leader, one real staff/coach user, and one real
+DS Admin or Super Admin.
 
 The validator blocks fake/test emails, unknown user references, unknown chapter
 references, duplicate user emails, duplicate chapter IDs, and credential-like
@@ -228,6 +234,42 @@ Rules:
 - The `launch_decision` owner is recommended so the final go/no-go owner is
   visible in the packet.
 
+### signed-in-route-proof.csv
+
+Headers:
+
+```text
+email,workspace,expectedPath,observedPath,status,checkedAt,notes
+```
+
+Allowed `workspace` values:
+
+- `student_app`
+- `leader_command_center`
+- `staff_command_center`
+- `admin_backend`
+
+Allowed `status` values:
+
+- `passed`
+- `failed`
+- `not_checked`
+
+Rules:
+
+- Add these rows after production users and app rows are applied.
+- `student_app` must use a real approved `general_member` or
+  `action_committee_member` and should prove `/app`.
+- `leader_command_center` must use a real approved chapter leader and should
+  prove `/leader?view=overview`.
+- `staff_command_center` must use a real coach/staff account and should prove
+  `/staff?view=chapters`.
+- `admin_backend` must use a real DS Admin or Super Admin and should prove
+  `/admin`.
+- Do not put passwords, tokens, screenshots, or private notes in this file.
+- Use `notes` only for short operational context, for example
+  `verified by Nick on phone`.
+
 ## Build And Validate
 
 After the CSV files are filled with real data:
@@ -249,6 +291,7 @@ pnpm rollout:build \
   --luma-calendars rollout-csv/luma-calendars.csv \
   --pilot-event-proof rollout-csv/pilot-event-proof.csv \
   --launch-owners rollout-csv/launch-owners.csv \
+  --signed-in-route-proof rollout-csv/signed-in-route-proof.csv \
   --out production-rollout-packet.json
 ```
 
@@ -258,6 +301,7 @@ Then run:
 pnpm rollout:check production-rollout-packet.json
 pnpm rollout:handoff production-rollout-packet.json --out production-rollout-handoff.md
 pnpm production:launch-check --packet production-rollout-packet.json
+pnpm production:signed-in-route-proof --packet production-rollout-packet.json
 pnpm production:invite-gate --packet production-rollout-packet.json --public-url https://www.mymedlife.org
 ```
 
@@ -268,11 +312,14 @@ Before any production data apply, confirm:
 - The packet passes `pnpm rollout:check`.
 - The handoff says `READY FOR HUMAN APPLY`.
 - The combined launch check still passes the public production domain gate.
+- The signed-in route proof check says `Production signed-in route proof: READY`.
 - The invite gate says `30-chapter invite gate: READY`.
 - Nick approves the 30 chapters.
 - DS approves the user and role apply path.
 - The production apply owner is named.
 - The support owner and rollback owner are named.
+- The signed-in route proof rows pass for one member, one leader, one staff
+  user, and one admin.
 - The 5-chapter Luma event loop has proof for RSVP, attendance, points, audit,
   and zero external sends.
 - External writes remain off: HubSpot, n8n, warehouse, Power BI, SMS, email,

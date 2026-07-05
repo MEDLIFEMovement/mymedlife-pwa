@@ -69,6 +69,20 @@ export type ProductionBootstrapLaunchOwner = {
   status?: "active" | "backup" | "inactive";
 };
 
+export type ProductionBootstrapSignedInRouteProof = {
+  email: string;
+  workspace:
+    | "student_app"
+    | "leader_command_center"
+    | "staff_command_center"
+    | "admin_backend";
+  expectedPath: string;
+  observedPath: string;
+  status?: "passed" | "failed" | "not_checked";
+  checkedAt?: string;
+  notes?: string;
+};
+
 export type ProductionRolloutBootstrapPacket = {
   chapters: ProductionBootstrapChapter[];
   users: ProductionBootstrapUser[];
@@ -79,6 +93,7 @@ export type ProductionRolloutBootstrapPacket = {
   lumaCalendars?: ProductionBootstrapLumaCalendar[];
   pilotEventProof?: ProductionBootstrapPilotEventProof[];
   launchOwners?: ProductionBootstrapLaunchOwner[];
+  signedInRouteProof?: ProductionBootstrapSignedInRouteProof[];
 };
 
 export type ProductionRolloutBootstrapReadiness = {

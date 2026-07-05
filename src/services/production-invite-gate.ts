@@ -2,11 +2,15 @@ import type {
   ProductionCoreRouteSmokeResult,
 } from "@/services/production-core-route-smoke";
 import type {
+  ProductionRolloutBootstrapPacket,
   ProductionRolloutBootstrapReadiness,
 } from "@/services/production-rollout-bootstrap";
 import type {
   ProductionRolloutHandoff,
 } from "@/services/production-rollout-handoff";
+import {
+  getProductionSignedInRouteProofReadiness,
+} from "@/services/production-signed-in-route-proof";
 
 export type ProductionInviteGateCheck = {
   key: string;
@@ -18,6 +22,7 @@ export type ProductionInviteGateCheck = {
 export type ProductionInviteGateInput = {
   publicUrl: string;
   routeSmoke: ProductionCoreRouteSmokeResult;
+  rolloutPacket?: ProductionRolloutBootstrapPacket | null;
   rolloutReadiness: ProductionRolloutBootstrapReadiness | null;
   rolloutHandoff: ProductionRolloutHandoff | null;
   minimumPilotChapterCount?: number;
@@ -38,6 +43,7 @@ export function getProductionInviteGateReadiness(
     createRouteSmokeCheck(input.routeSmoke),
     createRolloutPacketCheck(input.rolloutReadiness),
     createWorkspaceAccessCheck(input.rolloutReadiness),
+    createSignedInRouteProofCheck(input.rolloutPacket ?? null),
     createPilotEventLoopCheck(input.rolloutReadiness, minimumPilotChapterCount),
     createLaunchOwnerCheck(input.rolloutReadiness),
     createHandoffCheck(input.rolloutHandoff),
@@ -171,6 +177,21 @@ function createPilotEventLoopCheck(
   };
 }
 
+function createSignedInRouteProofCheck(
+  rolloutPacket: ProductionRolloutBootstrapPacket | null,
+): ProductionInviteGateCheck {
+  const readiness = getProductionSignedInRouteProofReadiness(rolloutPacket);
+
+  return {
+    key: "signed_in_route_proof",
+    label: "Signed-in member leader staff and admin route proof",
+    passed: readiness.ready,
+    detail: readiness.ready
+      ? `${readiness.counts.passedProofRows} signed-in route proof row(s) passed`
+      : summarizeList(readiness.blockers),
+  };
+}
+
 function createLaunchOwnerCheck(
   rolloutReadiness: ProductionRolloutBootstrapReadiness | null,
 ): ProductionInviteGateCheck {
@@ -245,6 +266,8 @@ function getNextStepForCheck(key: string) {
       return "Fill and validate the real 30-chapter/500-student rollout packet.";
     case "workspace_access":
       return "Add member, leader, staff, and admin access coverage to the rollout packet.";
+    case "signed_in_route_proof":
+      return "Complete signed-in route proof for one member, leader, staff user, and admin after production data is applied.";
     case "pilot_event_loop":
       return "Complete the five-chapter Luma RSVP, attendance, points, audit, and outbox proof.";
     case "launch_owners":

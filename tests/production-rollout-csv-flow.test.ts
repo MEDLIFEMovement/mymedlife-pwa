@@ -115,6 +115,15 @@ function createThirtyChapterCsvTables() {
       "ds@medlifemovement.org,production_apply,DS Admin,active",
       "admin@medlifemovement.org,launch_decision,Launch Admin,active",
     ]),
+    signedInRouteProof: withHeader(
+      "email,workspace,expectedPath,observedPath,status,checkedAt,notes",
+      [
+        "member.001@medlifemovement.org,student_app,/app,/app,passed,2026-07-05T15:00:00Z,member proof",
+        "leader.01@medlifemovement.org,leader_command_center,/leader?view=overview,/leader?view=overview,passed,2026-07-05T15:01:00Z,leader proof",
+        "coach@medlifemovement.org,staff_command_center,/staff?view=chapters,/staff?view=chapters,passed,2026-07-05T15:02:00Z,staff proof",
+        "ds@medlifemovement.org,admin_backend,/admin,/admin,passed,2026-07-05T15:03:00Z,admin proof",
+      ],
+    ),
   };
 }
 

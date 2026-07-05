@@ -56,6 +56,13 @@ describe("production rollout CSV folder script", () => {
         "ds@medlifemovement.org,rollback,DS Admin,active",
         "ds@medlifemovement.org,production_apply,DS Admin,active",
       ].join("\n"),
+      "signed-in-route-proof.csv": [
+        "email,workspace,expectedPath,observedPath,status,checkedAt,notes",
+        "member@medlifemovement.org,student_app,/app,/app,passed,2026-07-05T15:00:00Z,member proof",
+        "leader@medlifemovement.org,leader_command_center,/leader?view=overview,/leader?view=overview,passed,2026-07-05T15:01:00Z,leader proof",
+        "coach@medlifemovement.org,staff_command_center,/staff?view=chapters,/staff?view=chapters,passed,2026-07-05T15:02:00Z,staff proof",
+        "ds@medlifemovement.org,admin_backend,/admin,/admin,passed,2026-07-05T15:03:00Z,admin proof",
+      ].join("\n"),
     });
 
     const output = runCsvFolderCheck(

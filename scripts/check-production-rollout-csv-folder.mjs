@@ -7,7 +7,7 @@ const usage = [
   "  pnpm rollout:check-csv --dir rollout-csv [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
   "",
   "This validates filled rollout CSV files without writing production data or building the JSON packet.",
-  "Expected files: chapters.csv, users.csv, memberships.csv, staff-roles.csv, coach-assignments.csv, campaigns.csv, luma-calendars.csv, pilot-event-proof.csv, launch-owners.csv.",
+  "Expected files: chapters.csv, users.csv, memberships.csv, staff-roles.csv, coach-assignments.csv, campaigns.csv, luma-calendars.csv, pilot-event-proof.csv, launch-owners.csv, signed-in-route-proof.csv.",
 ].join("\n");
 
 try {
@@ -33,6 +33,7 @@ try {
     lumaCalendars: await readCsv(directory, "luma-calendars.csv"),
     pilotEventProof: await readCsv(directory, "pilot-event-proof.csv"),
     launchOwners: await readCsv(directory, "launch-owners.csv"),
+    signedInRouteProof: await readCsv(directory, "signed-in-route-proof.csv"),
   });
   const readiness = getProductionRolloutBootstrapReadiness(packet, {
     minimumChapterCount: args.minimumChapters,

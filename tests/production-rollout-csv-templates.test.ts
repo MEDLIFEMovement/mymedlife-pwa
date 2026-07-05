@@ -17,6 +17,7 @@ describe("production rollout CSV templates", () => {
       "luma-calendars.csv",
       "pilot-event-proof.csv",
       "launch-owners.csv",
+      "signed-in-route-proof.csv",
     ]);
   });
 
@@ -35,6 +36,7 @@ describe("production rollout CSV templates", () => {
       "chapterId,calendarId,calendarName,status\n",
       "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status\n",
       "email,ownerType,displayName,status\n",
+      "email,workspace,expectedPath,observedPath,status,checkedAt,notes\n",
     ]);
   });
 
@@ -56,8 +58,10 @@ describe("production rollout CSV templates", () => {
     expect(readme).toContain("--luma-calendars rollout-csv/luma-calendars.csv");
     expect(readme).toContain("--pilot-event-proof rollout-csv/pilot-event-proof.csv");
     expect(readme).toContain("--launch-owners rollout-csv/launch-owners.csv");
+    expect(readme).toContain("--signed-in-route-proof rollout-csv/signed-in-route-proof.csv");
     expect(readme).toContain("pnpm rollout:check production-rollout-packet.json");
     expect(readme).toContain("The first rollout requires at least 500 approved student/leader users.");
+    expect(readme).toContain("add passed signed-in route proof");
     expect(readme).toContain("The first rollout requires at least 30 active chapters.");
   });
 });
