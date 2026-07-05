@@ -251,6 +251,33 @@ proof rows, launch owners, and safety rules that a human reviewer needs before
 applying production data. It does not create Auth users, write app rows, upload
 files, touch DNS, change Vercel settings, or enable external integrations.
 
+Then create the review-only apply plan:
+
+```bash
+pnpm rollout:apply-plan path/to/production-rollout-packet.json \
+  --out production-rollout-apply-plan.md
+```
+
+The apply plan is the final human-review packet before production data is
+written. It spells out the exact order:
+
+- create Supabase Auth users through the approved production path
+- read back Auth user IDs by email
+- upsert `app.profiles` with `auth.users.id`
+- create chapter rows and record the packet chapter handle to production UUID
+  map
+- create memberships, staff roles, coach assignments, campaigns, and Luma
+  calendar mappings with resolved UUIDs
+- capture signed-in route proof and five-chapter event-loop proof
+- re-run `pnpm production:invite-gate`
+
+This command is still read-only. It does not generate misleading SQL because
+production `app.profiles` and most relationship rows require Supabase Auth UUIDs
+that only exist after the approved Auth invite/admin step. It also calls out
+that packet chapter IDs such as `chapter-ucla` are review handles, not database
+UUIDs, unless the production apply owner explicitly replaces them with real UUID
+values.
+
 ## Production Domain Check
 
 Vercel already has these aliases attached to the `mymedlife-pwa` project:

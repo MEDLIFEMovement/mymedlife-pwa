@@ -17,6 +17,7 @@
     "rollout:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-production-rollout-packet.mjs",
     "rollout:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-packet.mjs",
     "rollout:handoff": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-handoff.mjs",
+    "rollout:apply-plan": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-apply-plan.mjs",
     "test-production:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-test-production-seed-environment.mjs",
     "test-production:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-test-production-seed-environment.mjs",
     "test-production:seed": "MYMEDLIFE_TEST_PRODUCTION_MODE=seed node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/apply-test-production-seed-environment.mjs",
