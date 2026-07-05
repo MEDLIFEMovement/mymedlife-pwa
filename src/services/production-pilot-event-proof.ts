@@ -16,6 +16,7 @@ export type ProductionPilotEventProofReadiness = {
     rsvpReadyRows: number;
     attendanceReadyRows: number;
     pointsReadyRows: number;
+    reconciledReadyRows: number;
     auditReadyRows: number;
     zeroSendReadyRows: number;
     appRouteReadyRows: number;
@@ -144,6 +145,7 @@ export function getProductionPilotEventProofReadiness(
       rsvpReadyRows: readyProofRows.filter((proof) => proof.rsvpCount >= 1).length,
       attendanceReadyRows: readyProofRows.filter((proof) => proof.attendanceCount >= 1).length,
       pointsReadyRows: readyProofRows.filter((proof) => proof.pointsAwardedCount >= 1).length,
+      reconciledReadyRows: readyProofRows.filter(hasReconciledAttendanceAndPoints).length,
       auditReadyRows: readyProofRows.filter((proof) => proof.auditEvidence === "recorded").length,
       zeroSendReadyRows: readyProofRows.filter((proof) => proof.outboxStatus === "zero_sends").length,
       appRouteReadyRows: readyProofRows.filter(hasAllKnownAppRoutes).length,
@@ -184,6 +186,7 @@ export function formatProductionPilotEventProofReadiness(
     `- rows with RSVP proof: ${readiness.counts.rsvpReadyRows}`,
     `- rows with attendance proof: ${readiness.counts.attendanceReadyRows}`,
     `- rows with points proof: ${readiness.counts.pointsReadyRows}`,
+    `- rows with reconciled attendance and points: ${readiness.counts.reconciledReadyRows}`,
     `- rows with audit proof: ${readiness.counts.auditReadyRows}`,
     `- rows with zero-send proof: ${readiness.counts.zeroSendReadyRows}`,
     `- rows with known app route proof: ${readiness.counts.appRouteReadyRows}`,
@@ -241,6 +244,18 @@ function getReadyPilotProofBlockers({
     blockers.push(`${proofLabel} needs at least one points award.`);
   }
 
+  if (proof.attendanceCount > proof.rsvpCount) {
+    blockers.push(
+      `${proofLabel} attendanceCount cannot exceed rsvpCount until walk-in reconciliation is represented in the packet.`,
+    );
+  }
+
+  if (proof.pointsAwardedCount !== proof.attendanceCount) {
+    blockers.push(
+      `${proofLabel} pointsAwardedCount must match attendanceCount so every checked-in attendee is reflected in the leaderboard.`,
+    );
+  }
+
   if (proof.auditEvidence !== "recorded") {
     blockers.push(`${proofLabel} needs recorded audit evidence.`);
   }
@@ -295,6 +310,15 @@ function hasAllKnownAppRoutes(proof: ProductionBootstrapPilotEventProof) {
 
     return Boolean(route?.startsWith("/") && isKnownAppRouteHref(route));
   });
+}
+
+function hasReconciledAttendanceAndPoints(
+  proof: ProductionBootstrapPilotEventProof,
+) {
+  return (
+    proof.attendanceCount <= proof.rsvpCount &&
+    proof.pointsAwardedCount === proof.attendanceCount
+  );
 }
 
 function formatProofLabel(proof: ProductionBootstrapPilotEventProof) {

@@ -21,6 +21,7 @@ describe("production pilot event proof readiness", () => {
     expect(readiness.counts.rsvpReadyRows).toBe(5);
     expect(readiness.counts.attendanceReadyRows).toBe(5);
     expect(readiness.counts.pointsReadyRows).toBe(5);
+    expect(readiness.counts.reconciledReadyRows).toBe(5);
     expect(readiness.counts.auditReadyRows).toBe(5);
     expect(readiness.counts.zeroSendReadyRows).toBe(5);
     expect(readiness.counts.appRouteReadyRows).toBe(5);
@@ -81,6 +82,28 @@ describe("production pilot event proof readiness", () => {
     );
   });
 
+  it("blocks ready rows when attendance and points do not reconcile", () => {
+    const packet = createPilotPacket(5);
+    packet.pilotEventProof![0] = {
+      ...packet.pilotEventProof![0]!,
+      rsvpCount: 8,
+      attendanceCount: 10,
+      pointsAwardedCount: 9,
+    };
+
+    const readiness = getProductionPilotEventProofReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.counts.reconciledReadyRows).toBe(4);
+    expect(readiness.counts.provenPilotChapters).toBe(4);
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 attendanceCount cannot exceed rsvpCount until walk-in reconciliation is represented in the packet.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 pointsAwardedCount must match attendanceCount so every checked-in attendee is reflected in the leaderboard.",
+    );
+  });
+
   it("blocks external route links and unknown reviewers", () => {
     const packet = createPilotPacket(5);
     packet.pilotEventProof![0] = {
@@ -129,6 +152,7 @@ describe("production pilot event proof readiness", () => {
 
     expect(report).toContain("5-chapter pilot event loop proof: READY");
     expect(report).toContain("- proven pilot chapters: 5");
+    expect(report).toContain("- rows with reconciled attendance and points: 5");
     expect(report).toContain("- rows with zero-send proof: 5");
   });
 });
