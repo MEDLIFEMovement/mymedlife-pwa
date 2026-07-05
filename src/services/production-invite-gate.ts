@@ -11,6 +11,8 @@ import type {
 import {
   getProductionSignedInRouteProofReadiness,
 } from "@/services/production-signed-in-route-proof";
+import { isKnownAppRouteHref } from "@/services/app-route-registry";
+import { isEventsPointsLaunchLaneEnabled } from "@/services/launch-lane-product-focus";
 
 export type ProductionInviteGateCheck = {
   key: string;
@@ -40,6 +42,7 @@ export function getProductionInviteGateReadiness(
 ): ProductionInviteGateReadiness {
   const minimumPilotChapterCount = input.minimumPilotChapterCount ?? 5;
   const checks = [
+    createLaunchLaneFocusCheck(),
     createRouteSmokeCheck(input.routeSmoke),
     createRolloutPacketCheck(input.rolloutReadiness),
     createWorkspaceAccessCheck(input.rolloutReadiness),
@@ -81,6 +84,71 @@ export function formatProductionInviteGateReadiness(
   ];
 
   return lines.join("\n");
+}
+
+const requiredLaunchLaneRoutes = [
+  "/login",
+  "/app",
+  "/app/events",
+  "/app/events/chapter-event-ucla-kickoff",
+  "/app/points",
+  "/leader?view=overview",
+  "/staff?view=chapters",
+  "/admin",
+  "/admin/users",
+  "/admin/chapters",
+  "/admin/access",
+  "/admin/integrations/luma",
+  "/admin/audit-log",
+  "/admin/integration-outbox",
+  "/admin/pilot-scope",
+];
+
+const parkedNonLaunchRoutes = [
+  "/campaigns/rush-month",
+  "/chapter",
+  "/coach",
+  "/rush-month",
+  "/rush-month/leaderboard",
+  "/proof-library",
+  "/proof-library/upload",
+  "/app/slt-prep",
+  "/slt-prep",
+  "/admin/phase-2",
+  "/admin/design-qa",
+  "/admin/sop-library",
+];
+
+function createLaunchLaneFocusCheck(): ProductionInviteGateCheck {
+  const missingLaunchRoutes = requiredLaunchLaneRoutes.filter(
+    (href) => !isKnownAppRouteHref(href),
+  );
+  const visibleParkedRoutes = parkedNonLaunchRoutes.filter(isKnownAppRouteHref);
+  const passed =
+    isEventsPointsLaunchLaneEnabled() &&
+    missingLaunchRoutes.length === 0 &&
+    visibleParkedRoutes.length === 0;
+
+  return {
+    key: "launch_lane_focus",
+    label: "Events RSVP attendance points launch focus",
+    passed,
+    detail: passed
+      ? `${requiredLaunchLaneRoutes.length} launch routes visible; ${parkedNonLaunchRoutes.length} non-launch route families parked`
+      : [
+          isEventsPointsLaunchLaneEnabled()
+            ? null
+            : "events-and-points launch lane is disabled",
+          missingLaunchRoutes.length > 0
+            ? `missing launch routes: ${missingLaunchRoutes.join(", ")}`
+            : null,
+          visibleParkedRoutes.length > 0
+            ? `non-launch routes still visible: ${visibleParkedRoutes.join(", ")}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join("; "),
+  };
 }
 
 function createRouteSmokeCheck(
@@ -260,6 +328,8 @@ function getInviteGateNextSteps(input: {
 
 function getNextStepForCheck(key: string) {
   switch (key) {
+    case "launch_lane_focus":
+      return "Keep the visible app contract focused on login, member app, leader command center, staff command center, Luma events, RSVP, attendance, points, leaderboards, audit, and outbox.";
     case "public_route_smoke":
       return "Fix public production route smoke failures before inviting chapters.";
     case "rollout_packet":

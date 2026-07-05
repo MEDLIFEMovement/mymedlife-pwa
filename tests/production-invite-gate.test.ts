@@ -25,8 +25,14 @@ describe("production invite gate", () => {
     });
 
     expect(readiness.ready).toBe(true);
-    expect(readiness.checks).toHaveLength(7);
+    expect(readiness.checks).toHaveLength(8);
     expect(readiness.checks.every((check) => check.passed)).toBe(true);
+    expect(readiness.checks[0]).toEqual({
+      key: "launch_lane_focus",
+      label: "Events RSVP attendance points launch focus",
+      passed: true,
+      detail: "15 launch routes visible; 12 non-launch route families parked",
+    });
     expect(readiness.nextSteps).toEqual([]);
     expect(formatProductionInviteGateReadiness(readiness)).toContain(
       "30-chapter invite gate: READY",
