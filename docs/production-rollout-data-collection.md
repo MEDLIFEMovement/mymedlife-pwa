@@ -258,6 +258,7 @@ Then run:
 pnpm rollout:check production-rollout-packet.json
 pnpm rollout:handoff production-rollout-packet.json --out production-rollout-handoff.md
 pnpm production:launch-check --packet production-rollout-packet.json
+pnpm production:invite-gate --packet production-rollout-packet.json --public-url https://www.mymedlife.org
 ```
 
 ## Review Checklist
@@ -267,6 +268,7 @@ Before any production data apply, confirm:
 - The packet passes `pnpm rollout:check`.
 - The handoff says `READY FOR HUMAN APPLY`.
 - The combined launch check still passes the public production domain gate.
+- The invite gate says `30-chapter invite gate: READY`.
 - Nick approves the 30 chapters.
 - DS approves the user and role apply path.
 - The production apply owner is named.

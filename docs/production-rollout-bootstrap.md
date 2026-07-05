@@ -289,6 +289,29 @@ This command checks all of the following in one report:
 It is read-only. It does not create users, write Supabase rows, change DNS,
 change Vercel settings, upload files, or enable integrations.
 
+## 30-Chapter Invite Gate
+
+After the rollout packet, handoff, and public production route smoke are ready,
+run the final broad-invite gate:
+
+```bash
+pnpm production:invite-gate \
+  --packet production-rollout-packet.json \
+  --public-url https://www.mymedlife.org
+```
+
+This command checks:
+
+- public `/login`, `/app`, `/leader`, `/staff`, and `/admin` route smoke
+- the 30-chapter/500-student rollout packet readiness
+- member, leader, staff, and admin workspace access coverage
+- 5-chapter Luma RSVP, attendance, points, audit, and zero-send proof
+- active support, rollback, and production apply owners
+- the review-only production rollout handoff
+
+It is read-only. It does not create users, write Supabase rows, send invites,
+change DNS, change Vercel settings, upload files, or enable integrations.
+
 ## Production Live Data Count Check
 
 After the reviewed packet is applied by the approved production owner, verify the
@@ -349,7 +372,9 @@ pnpm production:smoke https://www.mymedlife.org
 
 Production rollout is still blocked until:
 
-- GoDaddy DNS points `mymedlife.org` and `www.mymedlife.org` to Vercel.
 - The production packet is filled with real data.
 - Production users are invited or created through the approved auth path.
+- The five-chapter Luma event loop proves RSVP, attendance, points, audit, and
+  zero external sends.
 - Signed-in route verification passes with real roles.
+- The final `pnpm production:invite-gate` report says `READY`.
