@@ -31,6 +31,10 @@ describe("production rollout handoff", () => {
     expect(report).toContain(
       "- support -> admin@medlifemovement.org (Launch Admin)",
     );
+    expect(report).toContain("member workspace users: 500");
+    expect(report).toContain("leader workspace users: 30");
+    expect(report).toContain("staff workspace users: 2");
+    expect(report).toContain("admin workspace users: 1");
     expect(report).toContain(
       "- Keep HubSpot, n8n, warehouse, Power BI, SMS, email, and AI writes disabled during this apply.",
     );

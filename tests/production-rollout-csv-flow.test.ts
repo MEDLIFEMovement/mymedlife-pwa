@@ -23,6 +23,12 @@ describe("production rollout CSV flow", () => {
       linkedLumaCalendars: 30,
       readyPilotEventProofChapters: 5,
       activeLaunchOwners: 4,
+      memberWorkspaceUsers: 500,
+      leaderWorkspaceUsers: 30,
+      staffWorkspaceUsers: 2,
+      adminWorkspaceUsers: 1,
+      chaptersWithMemberWorkspaceAccess: 30,
+      chaptersWithLeaderWorkspaceAccess: 30,
     });
   });
 });

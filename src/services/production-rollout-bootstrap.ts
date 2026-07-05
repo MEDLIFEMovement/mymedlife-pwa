@@ -94,6 +94,12 @@ export type ProductionRolloutBootstrapReadiness = {
     linkedLumaCalendars: number;
     readyPilotEventProofChapters: number;
     activeLaunchOwners: number;
+    memberWorkspaceUsers: number;
+    leaderWorkspaceUsers: number;
+    staffWorkspaceUsers: number;
+    adminWorkspaceUsers: number;
+    chaptersWithMemberWorkspaceAccess: number;
+    chaptersWithLeaderWorkspaceAccess: number;
   };
   blockers: string[];
   warnings: string[];
@@ -125,6 +131,12 @@ export function formatProductionRolloutBootstrapReadiness(
     `- linked Luma calendars: ${readiness.counts.linkedLumaCalendars}`,
     `- ready pilot event-loop chapters: ${readiness.counts.readyPilotEventProofChapters}`,
     `- active launch owners: ${readiness.counts.activeLaunchOwners}`,
+    `- member workspace users: ${readiness.counts.memberWorkspaceUsers}`,
+    `- leader workspace users: ${readiness.counts.leaderWorkspaceUsers}`,
+    `- staff workspace users: ${readiness.counts.staffWorkspaceUsers}`,
+    `- admin workspace users: ${readiness.counts.adminWorkspaceUsers}`,
+    `- chapters with member workspace access: ${readiness.counts.chaptersWithMemberWorkspaceAccess}`,
+    `- chapters with leader workspace access: ${readiness.counts.chaptersWithLeaderWorkspaceAccess}`,
     "",
     "Blockers:",
     ...formatList(readiness.blockers, "None"),
@@ -144,6 +156,23 @@ const leaderRoleKeys = new Set([
   "e_board_member",
   "president_vp",
 ]);
+
+const memberWorkspaceRoleKeys = new Set([
+  "general_member",
+  "action_committee_member",
+  "action_committee_chair",
+  "e_board_member",
+  "president_vp",
+]);
+
+const directMemberRoleKeys = new Set([
+  "general_member",
+  "action_committee_member",
+]);
+
+const staffWorkspaceRoleKeys = new Set(["coach", "admin", "super_admin"]);
+
+const adminWorkspaceRoleKeys = new Set(["ds_admin", "super_admin"]);
 
 const fakeEmailFragments = [
   "@mymedlife.test",
@@ -193,6 +222,26 @@ export function getProductionRolloutBootstrapReadiness(
   const approvedStudentEmails = new Set(
     approvedMemberships.map((membership) => normalizeEmail(membership.email)),
   );
+  const memberWorkspaceEmails = new Set(
+    approvedMemberships
+      .filter((membership) => memberWorkspaceRoleKeys.has(membership.roleKey))
+      .map((membership) => normalizeEmail(membership.email)),
+  );
+  const leaderWorkspaceEmails = new Set(
+    approvedMemberships
+      .filter((membership) => leaderRoleKeys.has(membership.roleKey))
+      .map((membership) => normalizeEmail(membership.email)),
+  );
+  const staffWorkspaceEmails = new Set(
+    activeStaffRoles
+      .filter((role) => staffWorkspaceRoleKeys.has(role.roleKey))
+      .map((role) => normalizeEmail(role.email)),
+  );
+  const adminWorkspaceEmails = new Set(
+    activeStaffRoles
+      .filter((role) => adminWorkspaceRoleKeys.has(role.roleKey))
+      .map((role) => normalizeEmail(role.email)),
+  );
   const linkedLumaChapterIds = new Set(
     linkedLumaCalendars.map((calendar) => calendar.chapterId),
   );
@@ -231,6 +280,14 @@ export function getProductionRolloutBootstrapReadiness(
 
   if (activeCampaigns.length === 0) {
     blockers.push("Add active launch campaigns to campaigns.csv before production rollout.");
+  }
+
+  if (staffWorkspaceEmails.size === 0) {
+    blockers.push("Add at least one active coach, admin, or super admin for staff command center access.");
+  }
+
+  if (adminWorkspaceEmails.size === 0) {
+    blockers.push("Add at least one active DS Admin or Super Admin for admin backend access.");
   }
 
   addDuplicateBlockers(
@@ -331,6 +388,9 @@ export function getProductionRolloutBootstrapReadiness(
     const chapterMemberships = approvedMemberships.filter(
       (membership) => membership.chapterId === chapter.id,
     );
+    const hasDirectMember = chapterMemberships.some((membership) =>
+      directMemberRoleKeys.has(membership.roleKey),
+    );
     const hasLeader = chapterMemberships.some((membership) =>
       leaderRoleKeys.has(membership.roleKey),
     );
@@ -343,6 +403,10 @@ export function getProductionRolloutBootstrapReadiness(
 
     if (!hasLeader) {
       blockers.push(`${chapter.name} needs at least one approved chapter leader.`);
+    }
+
+    if (!hasDirectMember) {
+      blockers.push(`${chapter.name} needs at least one approved member for the student app.`);
     }
 
     if (!hasCoach) {
@@ -412,6 +476,21 @@ export function getProductionRolloutBootstrapReadiness(
     }
   }
 
+  const chaptersWithMemberWorkspaceAccess = activeChapters.filter((chapter) =>
+    approvedMemberships.some(
+      (membership) =>
+        membership.chapterId === chapter.id &&
+        memberWorkspaceRoleKeys.has(membership.roleKey),
+    ),
+  ).length;
+  const chaptersWithLeaderWorkspaceAccess = activeChapters.filter((chapter) =>
+    approvedMemberships.some(
+      (membership) =>
+        membership.chapterId === chapter.id &&
+        leaderRoleKeys.has(membership.roleKey),
+    ),
+  ).length;
+
   return {
     ready: blockers.length === 0,
     counts: {
@@ -425,6 +504,12 @@ export function getProductionRolloutBootstrapReadiness(
       linkedLumaCalendars: linkedLumaCalendars.length,
       readyPilotEventProofChapters: readyPilotProofChapterIds.size,
       activeLaunchOwners: activeLaunchOwners.length,
+      memberWorkspaceUsers: memberWorkspaceEmails.size,
+      leaderWorkspaceUsers: leaderWorkspaceEmails.size,
+      staffWorkspaceUsers: staffWorkspaceEmails.size,
+      adminWorkspaceUsers: adminWorkspaceEmails.size,
+      chaptersWithMemberWorkspaceAccess,
+      chaptersWithLeaderWorkspaceAccess,
     },
     blockers,
     warnings,

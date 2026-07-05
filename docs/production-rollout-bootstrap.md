@@ -177,6 +177,8 @@ The packet is not ready until all of these are true:
 - At least 30 active chapters exist.
 - At least 500 approved student/leader users exist across those chapters.
 - Every active chapter has at least one approved chapter leader.
+- Every active chapter has at least one approved `general_member` or
+  `action_committee_member` for student-app access.
 - Every active chapter has one active coach assignment.
 - Every active chapter has one active launch campaign.
 - Every active chapter has one linked Luma calendar mapping.
@@ -186,6 +188,8 @@ The packet is not ready until all of these are true:
 - At least one active `admin` staff role exists for day-one support.
 - At least one active `ds_admin` or `super_admin` role exists for launch
   controls.
+- At least one active `coach`, `admin`, or `super_admin` can access the staff
+  command center.
 - Active support, rollback, and production apply owners exist.
 - No fake/test emails are present.
 - No password, token, API key, or secret fields are present.
