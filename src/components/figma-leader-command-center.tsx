@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any, react/no-unescaped-entities, react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 import React, { useState, useMemo, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Home, Trophy, Users, User, Layers, Calendar, Globe, Video,
   GitBranch, BarChart2, Bell, ChevronDown, ChevronUp,
@@ -17,13 +18,15 @@ import {
 import { CreateEventForm } from "@/components/figma-leader-create-event-screen";
 import { TrainingScreen } from "@/components/figma-leader-training-screen";
 import { MedlifeStoriesScreen } from "@/components/figma-leader-stories-screen";
+import {
+  buildLeaderCommandCenterHrefForScreen,
+  getLeaderCommandCenterViewForScreen,
+  resolveLeaderCommandCenterScreen,
+  type LeaderCommandCenterScreen,
+} from "@/services/leader-command-center-routing";
 
 // ─── Types ───────────────────────────────────────────────────────
-type Screen =
-  | "home" | "leaderboard" | "members" | "profile"
-  | "committees" | "events" | "impact" | "bridge"
-  | "succession" | "feed" | "training" | "values" | "leaders"
-  | "create-event" | "stories";
+type Screen = LeaderCommandCenterScreen;
 
 // ─── Palette constants ────────────────────────────────────────────
 const BLUE = "#1A56E8";
@@ -574,6 +577,16 @@ function NpsChip({ score }: { score: number }) {
   );
 }
 
+function getChapterLeaderboardPoints(chapter: (typeof CHAPTERS)[number]) {
+  return (
+    chapter.events * 75 +
+    chapter.attendance * 15 +
+    chapter.evidence * 30 +
+    chapter.bridge * 50 +
+    chapter.slt * 25
+  );
+}
+
 function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const [sortKey,    setSortKey]    = useState<"events"|"slt"|"funds">("events");
   const [filterRegion, setFilterRegion] = useState("All Regions");
@@ -703,6 +716,76 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
         {sortKey==="funds"  && <span><strong>Ideas to try:</strong> UCLA's Moving Mountains campaign runs a live donation tracker on their chapter Instagram story. McGill uses a chapter-vs-chapter challenge to motivate donors in the final week.</span>}
       </div>
 
+      {/* Ranked leaderboard table */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+          <SH>Ranked Chapter Leaderboard</SH>
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active.color }}>
+            Sorted by {active.label}
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table aria-label="Ranked chapter leaderboard" className="w-full text-xs">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                {[
+                  "Rank",
+                  "Chapter",
+                  "Region",
+                  active.label,
+                  "Attendance",
+                  "Points Score",
+                  "Health",
+                  "Best Practice",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className="px-3 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((chapter, index) => {
+                const isUs = chapter.name === "Boston College MEDLIFE";
+                const value = (chapter as any)[sortKey] as number;
+
+                return (
+                  <tr
+                    key={chapter.name}
+                    className={`border-b border-slate-100 last:border-0 ${isUs ? "bg-blue-50/60" : index % 2 ? "bg-slate-50/40" : "bg-white"}`}
+                  >
+                    <td className="px-3 py-3 font-black tabular-nums text-slate-700" style={{ fontFamily:"'JetBrains Mono',monospace" }}>
+                      #{index + 1}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900">{chapter.name}</span>
+                        {isUs && <Pill label="Your Chapter" color="blue"/>}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <Pill label={chapter.region} color="slate"/>
+                    </td>
+                    <td className="px-3 py-3 font-black tabular-nums" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
+                      {fmtVal(value)}
+                    </td>
+                    <td className="px-3 py-3 font-mono text-slate-700">{chapter.attendance}%</td>
+                    <td className="px-3 py-3 font-black tabular-nums text-slate-800" style={{ fontFamily:"'JetBrains Mono',monospace" }}>
+                      {getChapterLeaderboardPoints(chapter).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-3">{healthPill(chapter.health >= 85 ? "Strong" : chapter.health >= 75 ? "Needs Attention" : "Inactive")}</td>
+                    <td className="px-3 py-3 text-slate-500 max-w-72">{chapter.insight}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Chapter rows */}
       <div className="space-y-2.5">
         {sorted.map((ch, idx) => {
@@ -807,6 +890,13 @@ function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void 
       <button onClick={onBack} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
         <ChevronRight size={13} className="rotate-180"/>Back to Member Pipeline
       </button>
+
+      <div>
+        <h1 className="text-2xl font-black text-slate-900">Member Profile</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Review this member's points, events, actions, notes, and next leadership move.
+        </p>
+      </div>
 
       <div className="grid grid-cols-3 gap-4">
         {/* Left column: profile + actions */}
@@ -3368,14 +3458,19 @@ function Sidebar({ active, onNav }: { active: Screen; onNav: (s: Screen) => void
           <div key={g.label}>
             <div className="px-3 mb-1 text-[9px] font-bold text-blue-300/40 uppercase tracking-widest">{g.label}</div>
             {g.items.map(({id,label,icon:Icon})=>(
-              <button key={id} onClick={()=>onNav(id)}
+              <a
+                key={id}
+                href={`/leader?view=${getLeaderCommandCenterViewForScreen(id)}`}
+                onClick={() => {
+                  onNav(id);
+                }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 text-left transition-all cursor-pointer
                   ${active===id
                     ? "bg-[#1A56E8] text-white shadow-md shadow-blue-900/50"
                     : "text-white/50 hover:text-white hover:bg-white/6"}`}>
                 <Icon size={14}/>
                 <span className="text-[11px] font-semibold">{label}</span>
-              </button>
+              </a>
             ))}
           </div>
         ))}
@@ -3922,21 +4017,46 @@ const LABELS: Record<Screen,string> = {
 };
 
 // ─── App ──────────────────────────────────────────────────────────
-export function FigmaLeaderCommandCenter() {
-  const [screen, setScreen] = useState<Screen>("home");
+type FigmaLeaderCommandCenterProps = {
+  initialScreen?: Screen;
+};
+
+export function FigmaLeaderCommandCenter({
+  initialScreen = "home",
+}: FigmaLeaderCommandCenterProps = {}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const queryScreen = resolveLeaderCommandCenterScreen(searchParams.get("view"));
+  const [screen, setScreen] = useState<Screen>(initialScreen);
   const [selectedId, setSelectedId] = useState<number>(1);
   const [showAssignAction, setShowAssignAction] = useState(false);
   const [showPromote, setShowPromote] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
 
+  useEffect(() => {
+    setScreen(queryScreen);
+  }, [queryScreen]);
+
+  const navigateToScreen = (nextScreen: Screen) => {
+    setScreen(nextScreen);
+    router.replace(
+      buildLeaderCommandCenterHrefForScreen(nextScreen, {
+        pathname,
+        search: searchParams.toString(),
+      }),
+      { scroll: false },
+    );
+  };
+
   const handleCreateEvent = () => {
-    setScreen("events");
+    navigateToScreen("events");
     setShowCreateEvent(true);
   };
 
   const handleSelectMember = (id: number) => {
     setSelectedId(id);
-    setScreen("profile");
+    navigateToScreen("profile");
   };
 
   return (
@@ -3944,7 +4064,7 @@ export function FigmaLeaderCommandCenter() {
       style={{ fontFamily:"'Inter', system-ui, sans-serif" }}>
       {showAssignAction && <AssignActionModal onClose={() => setShowAssignAction(false)}/>}
       {showPromote && <PromoteLeaderModal onClose={() => setShowPromote(false)} onViewProfile={handleSelectMember}/>}
-      <Sidebar active={screen} onNav={setScreen}/>
+      <Sidebar active={screen} onNav={navigateToScreen}/>
       <main className="flex-1 overflow-y-auto min-w-0 flex flex-col">
         {/* Top bar */}
         <div className="sticky top-0 z-20 bg-slate-100/95 backdrop-blur-sm border-b border-slate-200 px-6 py-2.5 flex items-center justify-between shrink-0">
@@ -3962,19 +4082,19 @@ export function FigmaLeaderCommandCenter() {
         {/* Content */}
         <div className="flex-1 p-6 max-w-[1400px] w-full">
           {screen==="home"        && <HomeScreen onAssignAction={() => setShowAssignAction(true)} onPromote={() => setShowPromote(true)} onCreateEvent={handleCreateEvent}/>}
-          {screen==="leaderboard" && <LeaderboardScreen onNavigate={setScreen}/>}
+          {screen==="leaderboard" && <LeaderboardScreen onNavigate={navigateToScreen}/>}
           {screen==="members"     && <MembersScreen onSelectMember={handleSelectMember}/>}
-          {screen==="profile"     && <ProfileScreen memberId={selectedId} onBack={()=>setScreen("members")}/>}
+          {screen==="profile"     && <ProfileScreen memberId={selectedId} onBack={()=>navigateToScreen("members")}/>}
           {screen==="committees"  && <CommitteesScreen onAssignAction={() => setShowAssignAction(true)} onPromote={() => setShowPromote(true)}/>}
           {screen==="events"      && <EventsScreen externalCreate={showCreateEvent} onExternalCreateHandled={() => setShowCreateEvent(false)}/>}
           {screen==="impact"      && <ImpactScreen/>}
           {screen==="bridge"      && <BridgeScreen/>}
-          {screen==="succession"  && <SuccessionScreen onNavigate={setScreen} onSelectMember={handleSelectMember}/>}
+          {screen==="succession"  && <SuccessionScreen onNavigate={navigateToScreen} onSelectMember={handleSelectMember}/>}
           {screen==="feed"        && <FeedScreen/>}
           {screen==="training"    && <TrainingScreen/>}
           {screen==="values"      && <ValuesScreen/>}
           {screen==="leaders"     && <LeadersScreen onSelectMember={handleSelectMember}/>}
-          {screen==="create-event"&& <div className="p-0"><CreateEventForm onBack={() => setScreen("events")}/></div>}
+          {screen==="create-event"&& <div className="p-0"><CreateEventForm onBack={() => navigateToScreen("events")}/></div>}
           {screen==="stories"     && <MedlifeStoriesScreen/>}
         </div>
       </main>

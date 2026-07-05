@@ -1,7 +1,8 @@
 "use client";
 /* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars */
 
-import { useState, useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard, Megaphone, Calendar, Rss, Film,
   Database, BarChart3, Settings, Search, ChevronDown,
@@ -23,6 +24,10 @@ import {
   LibraryScreen as SOPLibraryScreen,
   BuilderScreen as SOPBuilderScreen,
 } from "@/components/figma-sop-builder";
+import {
+  StaffLaunchEventsOperations,
+  StaffLaunchOrganizationLeaderboard,
+} from "@/components/staff-launch-events-panels";
 import { getStaffChapterTypeFilterLabel, getStaffChapterTypeLabel, getStaffChapterTypeValue, staffChapterTypeFilterOptions, type StaffLaunchChapterTypeFilter } from "@/services/staff-chapter-type";
 import type { SOPCampaign } from "@/components/figma-sop-builder";
 import { FigmaAdminPanel as AdminPanel } from "@/components/figma-admin-panel";
@@ -1947,6 +1952,8 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
 
 const NAV_ITEMS: { key: Screen; label: string; icon: ReactNode }[] = [
   { key:"chapters", label:"Chapters", icon:<LayoutDashboard className="w-3.5 h-3.5" /> },
+  { key:"events", label:"Events", icon:<Calendar className="w-3.5 h-3.5" /> },
+  { key:"reports", label:"Leaderboard", icon:<BarChart3 className="w-3.5 h-3.5" /> },
   { key:"campaigns", label:"Campaigns", icon:<Megaphone className="w-3.5 h-3.5" /> },
   { key:"ugc", label:"Proof / UGC", icon:<Film className="w-3.5 h-3.5" /> },
   { key:"best-practices", label:"Best Practices", icon:<BookOpen className="w-3.5 h-3.5" /> },
@@ -1959,7 +1966,7 @@ const SCREEN_TITLES: Record<Screen, string> = {
   campaigns: "Campaign Operations",
   events: "Events",
   ugc: "Proof / UGC Review Queue",
-  reports: "Reports",
+  reports: "Organization Leaderboard",
   admin: "System Health",
   "best-practices": "Best Practices Library",
   sops: "Campaign SOP Builder",
@@ -1969,8 +1976,17 @@ const SCREEN_TITLES: Record<Screen, string> = {
 /*  APP ROOT                                                    */
 /* ─────────────────────────────────────────────────────────── */
 
-export function FigmaStaffCommandCenter() {
-  const [activeScreen, setActiveScreen] = useState<Screen>("chapters");
+type FigmaStaffCommandCenterProps = {
+  initialView?: string;
+};
+
+export function FigmaStaffCommandCenter({
+  initialView,
+}: FigmaStaffCommandCenterProps = {}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeScreen = resolveStaffShellScreen(searchParams.get("view") ?? initialView ?? null);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
 
   // SOP Builder sub-navigation
@@ -1985,10 +2001,10 @@ export function FigmaStaffCommandCenter() {
   };
 
   const handleNavChange = (key: Screen) => {
-    setActiveScreen(key);
     if (key !== "chapters") setSelectedChapter(null);
     if (key !== "sops") { setSopView("library"); setSopCampaign(null); }
     if (key !== "admin") setAdminRole(null);
+    router.replace(buildStaffShellHref(key, pathname, searchParams.toString()), { scroll: false });
   };
 
   return (
@@ -1997,8 +2013,12 @@ export function FigmaStaffCommandCenter() {
       <header className="bg-sidebar border-b border-sidebar-border flex-shrink-0 z-30 relative">
         <div className="flex items-center h-12 px-5 gap-6">
           {/* Logo */}
-          <button
-            onClick={() => handleNavChange("chapters")}
+          <a
+            href={buildStaffShellHref("chapters", pathname, searchParams.toString())}
+            onClick={(event) => {
+              event.preventDefault();
+              handleNavChange("chapters");
+            }}
             className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity"
           >
             <div className="w-7 h-7 rounded bg-accent flex items-center justify-center text-xs font-black text-sidebar">M</div>
@@ -2006,14 +2026,18 @@ export function FigmaStaffCommandCenter() {
               <div className="text-white text-sm font-bold leading-tight">myMEDLIFE</div>
               <div className="text-sidebar-foreground/50 text-[9px] font-medium uppercase tracking-widest leading-tight">Staff Command Center</div>
             </div>
-          </button>
+          </a>
 
           {/* Nav */}
           <nav className="flex items-center gap-0.5 flex-1">
             {NAV_ITEMS.map((item) => (
-              <button
+              <a
                 key={item.key}
-                onClick={() => handleNavChange(item.key)}
+                href={buildStaffShellHref(item.key, pathname, searchParams.toString())}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleNavChange(item.key);
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   activeScreen === item.key
                     ? "bg-sidebar-accent text-white"
@@ -2022,7 +2046,7 @@ export function FigmaStaffCommandCenter() {
               >
                 {item.icon}
                 {item.label}
-              </button>
+              </a>
             ))}
           </nav>
 
@@ -2078,6 +2102,8 @@ export function FigmaStaffCommandCenter() {
         {activeScreen !== "sops" && activeScreen !== "admin" && (
           <div className="px-6 py-5 max-w-[1600px] mx-auto w-full">
             {activeScreen === "chapters" && <PortfolioOverview onSelectChapter={handleSelectChapter} />}
+            {activeScreen === "events" && <StaffLaunchEventsOperations chapters={CHAPTERS} />}
+            {activeScreen === "reports" && <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />}
             {activeScreen === "campaigns" && <CampaignOps />}
             {activeScreen === "ugc" && <ProofUGCQueue />}
             {activeScreen === "best-practices" && <BestPracticesLibrary />}
@@ -2106,4 +2132,49 @@ export function FigmaStaffCommandCenter() {
       )}
     </div>
   );
+}
+
+function resolveStaffShellScreen(view: string | null): Screen {
+  switch (view) {
+    case "campaigns":
+      return "campaigns";
+    case "events":
+      return "events";
+    case "leaderboard":
+    case "reports":
+      return "reports";
+    case "proof_ugc":
+    case "ugc":
+      return "ugc";
+    case "best_practices":
+    case "best-practices":
+      return "best-practices";
+    case "sops":
+      return "sops";
+    case "admin":
+      return "admin";
+    case "chapters":
+    default:
+      return "chapters";
+  }
+}
+
+function getStaffShellViewParam(screen: Screen): string {
+  switch (screen) {
+    case "ugc":
+      return "proof_ugc";
+    case "best-practices":
+      return "best_practices";
+    case "reports":
+      return "leaderboard";
+    default:
+      return screen;
+  }
+}
+
+function buildStaffShellHref(screen: Screen, pathname: string, search: string): string {
+  const params = new URLSearchParams(search);
+  params.set("view", getStaffShellViewParam(screen));
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }

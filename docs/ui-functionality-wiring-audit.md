@@ -52,7 +52,7 @@ Detailed copied-shell control maps:
 
 | Label / control | Component | Intended role | Current behavior | Target route/service | Permission | Feature flag | Status |
 |---|---|---:|---|---|---|---|---|
-| Sidebar navigation groups | `src/components/figma-leader-command-center.tsx` | leader/e-board | Distinct Figma-owned screen state | eventual route-backed deep links | leader workspace | none | `wired_staging` |
+| Sidebar navigation groups | `src/components/figma-leader-command-center.tsx`, `src/services/leader-command-center-routing.ts` | leader/e-board | Distinct Figma-owned screen state with `/leader?view=` deep links for each available menu item | future route-backed data writes | leader workspace | none | `wired_staging` |
 | Chapter Home | `figma-leader-command-center.tsx` | leader | Renders leadership dashboard | `src/services/chapter-leader-command-center.ts` | leader workspace | none | `wired_staging` |
 | Chapter Leaderboard | `figma-leader-command-center.tsx` | leader | Renders chapter ranking view | points/readback services | leader workspace | none | `wired_staging` |
 | Member Leaderboard / Profile | `figma-leader-command-center.tsx` | leader | Opens member list/profile locally | `src/services/member-leaderboard-workspace.ts` | chapter-scoped leader | none | `wired_staging` |

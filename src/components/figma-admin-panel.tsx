@@ -6,7 +6,7 @@ import {
   Award, Link2, FileText, Activity, Settings, X, Search,
   RefreshCw, CheckCircle2, AlertTriangle, Clock,
   Shield, Zap, Globe, ChevronRight,
-  Bell, LogOut, AlertCircle, Cpu, KeyRound, Eye, EyeOff,
+  Bell, AlertCircle, Cpu, KeyRound, Eye, EyeOff,
   RotateCcw, Trash2, Copy, Check, Plus,
 } from "lucide-react";
 
@@ -189,7 +189,6 @@ const NAV_PRIMARY = [
   { id: "audit", label: "Audit Logs", icon: FileText },
   { id: "health", label: "System Health", icon: Activity },
   { id: "apikeys", label: "API Keys", icon: KeyRound },
-  { id: "mcp", label: "MCP Connections", icon: Cpu },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -259,7 +258,10 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
       </nav>
 
       <div className="px-3 py-3 border-t border-white/[0.05]">
-        <div className="flex items-center gap-2.5 px-2 py-2 rounded hover:bg-white/[0.03] cursor-pointer transition-colors group">
+        <div
+          className="flex items-center gap-2.5 px-2 py-2 rounded"
+          title="Use the top-right account menu to switch workspaces or log out."
+        >
           <div className="size-6 rounded-full bg-sky-500/20 border border-sky-500/20 flex items-center justify-center flex-shrink-0">
             <span className="text-[9px] text-sky-400 font-bold">CW</span>
           </div>
@@ -267,7 +269,9 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
             <div className="text-[12px] text-slate-300 font-semibold leading-tight">Chen Wei</div>
             <div className="text-[10px] text-slate-600 font-mono">Super Admin</div>
           </div>
-          <LogOut size={12} className="text-slate-700 group-hover:text-slate-400 transition-colors" />
+          <span className="rounded border border-white/[0.06] px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-slate-600">
+            Account menu
+          </span>
         </div>
       </div>
     </aside>

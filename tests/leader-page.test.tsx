@@ -8,6 +8,9 @@ import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/leader",
+  useRouter: () => ({
+    replace: vi.fn(),
+  }),
   useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
@@ -110,7 +113,7 @@ describe("leader page", () => {
     expect(html).not.toContain("Leader event tracking");
   });
 
-  it("keeps query params from replacing the Figma-owned internal screen state", async () => {
+  it("opens the requested Figma-owned screen from the leader view query", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -130,12 +133,81 @@ describe("leader page", () => {
       }),
     );
 
-    expect(html).toContain("Chapter Leadership Home");
-    expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Event Performance");
     expect(html).toContain("Create Event");
+    expect(html).toContain("All Events — June 2025");
+    expect(html).not.toContain("Chapter Metrics — June 2025");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Luma readback");
+  });
+
+  it("renders the chapter leaderboard when reviewers open /leader?view=leaderboard", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader leaderboard view."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "leaderboard",
+        }),
+      }),
+    );
+
+    expect(html).toContain("Chapter Leaderboard");
+    expect(html).toContain("Ranked Chapter Leaderboard");
+    expect(html).toContain("Points Score");
+    expect(html).toContain("Organizational Average");
+    expect(html).toContain("Boston College vs. National");
+    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("Your Chapter");
+    expect(html).not.toContain("Chapter Metrics — June 2025");
+  });
+
+  it.each([
+    ["overview", "This Week&#x27;s Priority"],
+    ["leaderboard", "Ranked Chapter Leaderboard"],
+    ["members", "See how members rank within the chapter"],
+    ["member_profile", "Member Profile"],
+    ["committees", "Events This Year"],
+    ["events", "All Events — June 2025"],
+    ["impact", "Local Community Impact"],
+    ["bridge_videos", "Bridge Culture Reminder"],
+    ["succession", "Leadership Gaps"],
+    ["feed_analytics", "Most Engaged Members"],
+    ["training", "Videos, presentations, and external resources"],
+    ["values", "Three values guide every MEDLIFE leader"],
+    ["leaders", "Every E-Board position and Event Committee chair"],
+    ["create_event", "Create New Event"],
+    ["stories", "Live from the field"],
+  ])("renders the %s menu view as its own screen", async (view, expectedCopy) => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData(`Testing leader ${view} view.`),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view,
+        }),
+      }),
+    );
+
+    expect(html).toContain(expectedCopy);
   });
 
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
@@ -146,9 +218,13 @@ describe("leader page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3950);
-    expect(lineCount).toBeLessThanOrEqual(3990);
-    expect(source).toContain('const [screen, setScreen] = useState<Screen>("home");');
-    expect(source).toContain("<Sidebar active={screen} onNav={setScreen}/>");
+    expect(lineCount).toBeLessThanOrEqual(4150);
+    expect(source).toContain('initialScreen = "home"');
+    expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
+    expect(source).toContain("<Sidebar active={screen} onNav={navigateToScreen}/>");
+    expect(source).toContain("buildLeaderCommandCenterHrefForScreen");
+    expect(source).toContain("Ranked Chapter Leaderboard");
+    expect(source).toContain('aria-label="Ranked chapter leaderboard"');
     expect(source).toContain("disabled={isBlocked}");
     expect(source).toContain('screen==="events"');
     expect(source).toContain('screen==="create-event"');

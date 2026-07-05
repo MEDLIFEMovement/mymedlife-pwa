@@ -695,7 +695,7 @@ describe("staff command center", () => {
       status: "degraded",
       note: "Refresh token expiring soon",
     });
-    expect(commandCenter.adminWorkspace.failedCount).toBe(2);
+    expect(commandCenter.adminWorkspace.failedCount).toBe(0);
     expect(commandCenter.adminWorkspace.retryFailedHref).toBe("/admin/integration-outbox");
     expect(commandCenter.adminWorkspace.backendLanes.map((lane) => lane.title)).toEqual([
       "Permission Registry",
@@ -706,16 +706,16 @@ describe("staff command center", () => {
       "Pilot Scope",
     ]);
     expect(commandCenter.adminWorkspace.outboxRows[2]).toMatchObject({
-      eventLabel: "evidence.approved",
-      status: "failed",
-      retries: 3,
-      errorLabel: "503 Service Unavailable",
+      eventLabel: "luma_event_write_blocked",
+      status: "pending",
+      retries: 0,
+      errorLabel: "\u2014",
     });
-    expect(commandCenter.adminWorkspace.auditRows[2]).toMatchObject({
-      actorLabel: "admin@medlife.org",
+    expect(commandCenter.adminWorkspace.auditRows[0]).toMatchObject({
+      actorLabel: "system@n8n",
       roleLabel: "Admin",
-      actionLabel: "Shared post to 28 chapters",
-      chapterLabel: "Global",
+      actionLabel: "Event Points Awarded",
+      chapterLabel: "UCLA MEDLIFE",
     });
   });
 
@@ -800,7 +800,7 @@ describe("staff command center", () => {
     expect(defaultHtml).not.toContain('aria-label="Campaign filter"');
     expect(defaultHtml).not.toContain('aria-label="Coach filter"');
     expect(defaultHtml).toContain("Healthy");
-    expect(defaultHtml).toContain("No RSVPs");
+    expect(defaultHtml).toContain("Lakeside welcome table");
     expect(defaultHtml).toContain("Low attendance");
     expect(defaultHtml).toContain(">Open Events<");
     expect(defaultHtml).toContain(">Open Leaderboard<");
@@ -1447,7 +1447,7 @@ describe("staff command center", () => {
     expect(html).toContain("System health: 5 of 6 integrations active");
     expect(html).toContain("Integration Status");
     expect(html).toContain("Automation Outbox");
-    expect(html).toContain("2 failed");
+    expect(html).toContain("0 failed");
     expect(html).toContain("Retry Failed");
     expect(html).toContain("Permission Registry");
     expect(html).toContain("Workflow Registry");
