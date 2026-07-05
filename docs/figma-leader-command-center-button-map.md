@@ -13,8 +13,10 @@ App component targets:
 
 This shell is copied from the Figma export. Its screens are owned by the copied
 Figma layout and local state, with `/leader?view=` now resolving to the matching
-screen for reviewer links and reloads. Backend wiring should attach behavior
-behind these exact controls instead of changing the shell.
+screen for reviewer links and reloads. Sidebar entries are real browser links
+with hydrated state updates, so they continue to work as normal links if a
+reviewer reloads or lands directly on a copied URL. Backend wiring should attach
+behavior behind these exact controls instead of changing the shell.
 
 ## Shell Navigation
 
@@ -54,12 +56,17 @@ behind these exact controls instead of changing the shell.
 ## Leaderboard
 
 - Metric filter buttons: switch leaderboard metric inside local state.
+- The screen now includes an explicit ranked chapter leaderboard table with
+  rank, chapter, region, active metric, attendance, points score, health, and
+  best-practice columns.
 - `Top Bridge Videos`: jumps to Bridge Videos.
 - Member/chapter rows: display ranking details; future wiring may open profiles or chapter comparisons.
 
 ## Member/Profile
 
 - Member rows: open the member profile screen.
+- `Member Profile` now has a visible top-level heading so the sidebar landing
+  state is unmistakable.
 - Back button on profile: returns to Member Pipeline.
 - Profile quick actions:
   - `Promote to Officer`

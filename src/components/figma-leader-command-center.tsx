@@ -577,6 +577,16 @@ function NpsChip({ score }: { score: number }) {
   );
 }
 
+function getChapterLeaderboardPoints(chapter: (typeof CHAPTERS)[number]) {
+  return (
+    chapter.events * 75 +
+    chapter.attendance * 15 +
+    chapter.evidence * 30 +
+    chapter.bridge * 50 +
+    chapter.slt * 25
+  );
+}
+
 function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) {
   const [sortKey,    setSortKey]    = useState<"events"|"slt"|"funds">("events");
   const [filterRegion, setFilterRegion] = useState("All Regions");
@@ -706,6 +716,76 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
         {sortKey==="funds"  && <span><strong>Ideas to try:</strong> UCLA's Moving Mountains campaign runs a live donation tracker on their chapter Instagram story. McGill uses a chapter-vs-chapter challenge to motivate donors in the final week.</span>}
       </div>
 
+      {/* Ranked leaderboard table */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+          <SH>Ranked Chapter Leaderboard</SH>
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: active.color }}>
+            Sorted by {active.label}
+          </span>
+        </div>
+        <div className="overflow-x-auto">
+          <table aria-label="Ranked chapter leaderboard" className="w-full text-xs">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                {[
+                  "Rank",
+                  "Chapter",
+                  "Region",
+                  active.label,
+                  "Attendance",
+                  "Points Score",
+                  "Health",
+                  "Best Practice",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    className="px-3 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((chapter, index) => {
+                const isUs = chapter.name === "Boston College MEDLIFE";
+                const value = (chapter as any)[sortKey] as number;
+
+                return (
+                  <tr
+                    key={chapter.name}
+                    className={`border-b border-slate-100 last:border-0 ${isUs ? "bg-blue-50/60" : index % 2 ? "bg-slate-50/40" : "bg-white"}`}
+                  >
+                    <td className="px-3 py-3 font-black tabular-nums text-slate-700" style={{ fontFamily:"'JetBrains Mono',monospace" }}>
+                      #{index + 1}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900">{chapter.name}</span>
+                        {isUs && <Pill label="Your Chapter" color="blue"/>}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <Pill label={chapter.region} color="slate"/>
+                    </td>
+                    <td className="px-3 py-3 font-black tabular-nums" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
+                      {fmtVal(value)}
+                    </td>
+                    <td className="px-3 py-3 font-mono text-slate-700">{chapter.attendance}%</td>
+                    <td className="px-3 py-3 font-black tabular-nums text-slate-800" style={{ fontFamily:"'JetBrains Mono',monospace" }}>
+                      {getChapterLeaderboardPoints(chapter).toLocaleString()}
+                    </td>
+                    <td className="px-3 py-3">{healthPill(chapter.health >= 85 ? "Strong" : chapter.health >= 75 ? "Needs Attention" : "Inactive")}</td>
+                    <td className="px-3 py-3 text-slate-500 max-w-72">{chapter.insight}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Chapter rows */}
       <div className="space-y-2.5">
         {sorted.map((ch, idx) => {
@@ -810,6 +890,13 @@ function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void 
       <button onClick={onBack} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
         <ChevronRight size={13} className="rotate-180"/>Back to Member Pipeline
       </button>
+
+      <div>
+        <h1 className="text-2xl font-black text-slate-900">Member Profile</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Review this member's points, events, actions, notes, and next leadership move.
+        </p>
+      </div>
 
       <div className="grid grid-cols-3 gap-4">
         {/* Left column: profile + actions */}
@@ -3374,8 +3461,7 @@ function Sidebar({ active, onNav }: { active: Screen; onNav: (s: Screen) => void
               <a
                 key={id}
                 href={`/leader?view=${getLeaderCommandCenterViewForScreen(id)}`}
-                onClick={(event) => {
-                  event.preventDefault();
+                onClick={() => {
                   onNav(id);
                 }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 text-left transition-all cursor-pointer

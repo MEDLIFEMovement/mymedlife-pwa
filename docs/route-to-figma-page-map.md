@@ -19,7 +19,7 @@ This map records the launch-critical routes and the Figma-derived shell/page tha
 | Menu label | Route | Figma page/screen | Current component | Status |
 |---|---|---|---|---|
 | Chapter Home | `/leader?view=overview` | Student Leadership Command Center home | `FigmaLeaderCommandCenter` | Active |
-| Chapter Leaderboard | `/leader?view=leaderboard` | Chapter Leaderboard | `LeaderboardScreen` | Active |
+| Chapter Leaderboard | `/leader?view=leaderboard` | Chapter Leaderboard | `LeaderboardScreen` with ranked chapter table | Active |
 | Feed Analytics | `/leader?view=feed_analytics` | Feed Analytics | `FeedScreen` | Active |
 | Member Leaderboard | `/leader?view=members` | Member Leaderboard | `MembersScreen` | Active |
 | Member Profile | `/leader?view=member_profile` | Member Profile | `ProfileScreen` | Active |

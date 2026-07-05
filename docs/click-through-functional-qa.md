@@ -15,10 +15,12 @@ Rule used: every visible navigation item must route, open a visible state, be cl
 | `/app` mobile nav | Points | Open leaderboard | Prototype state could feel inert before hydration | Converted launch tab to real link `/app/points` | Pass |
 | `/app` mobile nav | Profile | Open member profile | Profile incorrectly reused Events state | Converted Profile to real link `/profile` | Pass |
 | `/leader?view=overview` | Chapter Leaderboard | Show chapter leaderboard | Button could appear inert before hydration | Converted sidebar item to real link `/leader?view=leaderboard` with hydrated app navigation | Pass |
+| `/leader?view=leaderboard` | Ranked chapter table | Show an unmistakable leaderboard | Screen had chapter benchmark cards but did not read clearly as a leaderboard table | Added ranked chapter leaderboard table with rank, chapter, region, active metric, attendance, points score, health, and best-practice columns | Pass |
 | `/leader?view=overview` | Member Leaderboard | Show member leaderboard | Button could appear inert before hydration | Converted sidebar item to real link `/leader?view=members` | Pass |
+| `/leader?view=member_profile` | Member Profile | Show member profile landing state | Profile content opened, but the page did not have a clear top-level profile heading | Added Member Profile heading and context copy above the profile metrics | Pass |
 | `/leader?view=overview` | Event Performance | Show event performance | Button could appear inert before hydration | Converted sidebar item to real link `/leader?view=events` | Pass |
 | `/leader?view=overview` | Create Event | Show create event form | Button could appear inert before hydration | Converted sidebar item to real link `/leader?view=create_event` | Pass |
-| `/leader?view=overview` | Feed Analytics, Succession, etc. | Show matching leader screen | Button could appear inert before hydration | Converted sidebar items to real links with canonical `view=` values | Pass |
+| `/leader?view=overview` | Feed Analytics, Succession, etc. | Show matching leader screen | Button could appear inert before hydration | Converted sidebar items to normal browser links with canonical `view=` values plus hydrated state updates | Pass |
 | `/leader?view=overview` | Campaigns, Fundraising, SLT, Proof Review, Settings | Do not silently fail | Disabled but visibly labeled as not available | Left disabled with explanatory title | Pass |
 | `/staff?view=events` | Staff Events route | Show event/RSVP/attendance/points view | Fell back to Portfolio Overview | Added URL-backed staff shell state and event operations panel | Pass |
 | `/staff?view=leaderboard` | Staff Leaderboard route | Show org leaderboard | Fell back to Portfolio Overview | Added URL-backed staff shell state and organization leaderboard panel | Pass |
@@ -30,6 +32,7 @@ Verified with Playwright against the running local app:
 
 - Member: `/app` -> Events, Points, Profile.
 - Leader: `/leader?view=overview` -> Chapter Leaderboard, Member Leaderboard, Event Performance, Create Event, Feed Analytics, Succession.
+- Leader full menu sweep: Chapter Home, Chapter Leaderboard, Feed Analytics, Member Leaderboard, Member Profile, Event Committees, Event Performance, Create Event, Impact, Bridge Videos, MEDLIFE Stories, Current Leaders, Succession, Values, Leadership Training.
 - Staff: `/staff?view=chapters` -> Events, Leaderboard, Campaigns, Proof / UGC, Best Practices, Campaign SOPs, Admin.
 
 Focused browser smoke passed:
@@ -37,6 +40,13 @@ Focused browser smoke passed:
 ```text
 PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium
 4 passed
+```
+
+Additional focused repair run:
+
+```text
+PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium --grep "leader command center|student command center"
+2 passed
 ```
 
 ## Remaining Notes

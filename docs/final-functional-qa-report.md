@@ -17,10 +17,18 @@ Local click-through for the launch-critical menu path is now pass for member mob
 - `/leader?view=overview`
 - `/leader?view=leaderboard`
 - `/leader?view=members`
+- `/leader?view=member_profile`
+- `/leader?view=committees`
 - `/leader?view=events`
 - `/leader?view=create_event`
+- `/leader?view=impact`
+- `/leader?view=bridge_videos`
+- `/leader?view=stories`
+- `/leader?view=leaders`
 - `/leader?view=feed_analytics`
 - `/leader?view=succession`
+- `/leader?view=values`
+- `/leader?view=training`
 - `/staff?view=chapters`
 - `/staff?view=events`
 - `/staff?view=leaderboard`
@@ -43,10 +51,13 @@ Local click-through for the launch-critical menu path is now pass for member mob
   - Points now links to `/app/points`.
   - Profile now links to `/profile` instead of reusing Events.
 - Student leader sidebar:
-  - Primary menu items are now real links with canonical `view=` URLs.
+  - Primary menu items are now normal browser links with canonical `view=` URLs, plus hydrated app state updates.
   - Chapter Leaderboard opens `/leader?view=leaderboard`.
+  - Chapter Leaderboard now includes a ranked chapter table with points score, attendance, health, and rank columns.
+  - Member Profile now opens to a clearly titled profile screen.
   - Event Performance opens `/leader?view=events`.
   - Create Event opens `/leader?view=create_event`.
+  - Full menu sweep verified: Chapter Home, Chapter Leaderboard, Feed Analytics, Member Leaderboard, Member Profile, Event Committees, Event Performance, Create Event, Impact, Bridge Videos, MEDLIFE Stories, Current Leaders, Succession, Values, Leadership Training.
 - Staff command center:
   - Top nav items are now real links with canonical `view=` URLs.
   - Events opens `/staff?view=events`.
@@ -74,6 +85,9 @@ pnpm test
 
 PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium
 4 passed
+
+PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium --grep "leader command center|student command center"
+2 passed
 
 pnpm build
 passed

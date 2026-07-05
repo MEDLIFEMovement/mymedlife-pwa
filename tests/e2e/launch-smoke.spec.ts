@@ -70,7 +70,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     await page.getByRole("link", { name: "Chapter Leaderboard" }).click();
     await expect(page).toHaveURL(/\/leader\?view=leaderboard/);
-    await expect(page.getByRole("heading", { name: "Chapter Leaderboard" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Chapter Leaderboard", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByLabel("Ranked chapter leaderboard")).toBeVisible();
 
     await page.getByRole("link", { name: "Event Performance" }).click();
     await expect(page).toHaveURL(/\/leader\?view=events/);
@@ -79,6 +82,43 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.getByRole("link", { name: "Create Event" }).click();
     await expect(page).toHaveURL(/\/leader\?view=create_event/);
     await expect(page.getByRole("heading", { name: "Create New Event" })).toBeVisible();
+  });
+
+  test("clicks every student command center menu item into its matching screen", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "leader.a@mymedlife.test");
+
+    const menuItems = [
+      { label: "Chapter Home", view: "overview", heading: /Chapter Metrics/ },
+      { label: "Chapter Leaderboard", view: "leaderboard", heading: "Chapter Leaderboard" },
+      { label: "Feed Analytics", view: "feed_analytics", heading: "Feed & Engagement Analytics" },
+      { label: "Member Leaderboard", view: "members", heading: "Member Leaderboard" },
+      { label: "Member Profile", view: "member_profile", heading: "Member Profile" },
+      { label: "Event Committees", view: "committees", heading: "Event Committees" },
+      { label: "Event Performance", view: "events", heading: "Event Performance" },
+      { label: "Create Event", view: "create_event", heading: "Create New Event" },
+      { label: "Impact", view: "impact", heading: "Impact Dashboard" },
+      { label: "Bridge Videos", view: "bridge_videos", heading: "Bridge Video Hub" },
+      { label: "MEDLIFE Stories", view: "stories", heading: "MEDLIFE Stories" },
+      { label: "Current Leaders", view: "leaders", heading: "Current Leaders" },
+      { label: "Succession", view: "succession", heading: "Leadership Succession" },
+      { label: "Values", view: "values", heading: "MEDLIFE Values" },
+      { label: "Leadership Training", view: "training", heading: "Leadership & Resources Hub" },
+    ] as const;
+
+    await page.goto("/leader?view=overview");
+
+    for (const item of menuItems) {
+      await page.getByRole("link", { name: item.label, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp(`/leader\\?view=${item.view}`));
+      await expect(page.getByRole("heading", { name: item.heading, exact: true })).toBeVisible();
+    }
+
+    await page.getByRole("link", { name: "Chapter Leaderboard", exact: true }).click();
+    await expect(page.getByLabel("Ranked chapter leaderboard")).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Points Score" })).toBeVisible();
   });
 
   test("loads the staff command center with the preview actor", async ({

@@ -162,6 +162,8 @@ describe("leader page", () => {
     );
 
     expect(html).toContain("Chapter Leaderboard");
+    expect(html).toContain("Ranked Chapter Leaderboard");
+    expect(html).toContain("Points Score");
     expect(html).toContain("Organizational Average");
     expect(html).toContain("Boston College vs. National");
     expect(html).toContain("UCLA MEDLIFE");
@@ -171,9 +173,9 @@ describe("leader page", () => {
 
   it.each([
     ["overview", "This Week&#x27;s Priority"],
-    ["leaderboard", "Boston College vs. National"],
+    ["leaderboard", "Ranked Chapter Leaderboard"],
     ["members", "See how members rank within the chapter"],
-    ["member_profile", "Leadership Actions"],
+    ["member_profile", "Member Profile"],
     ["committees", "Events This Year"],
     ["events", "All Events — June 2025"],
     ["impact", "Local Community Impact"],
@@ -216,11 +218,13 @@ describe("leader page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3950);
-    expect(lineCount).toBeLessThanOrEqual(4050);
+    expect(lineCount).toBeLessThanOrEqual(4150);
     expect(source).toContain('initialScreen = "home"');
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain("<Sidebar active={screen} onNav={navigateToScreen}/>");
     expect(source).toContain("buildLeaderCommandCenterHrefForScreen");
+    expect(source).toContain("Ranked Chapter Leaderboard");
+    expect(source).toContain('aria-label="Ranked chapter leaderboard"');
     expect(source).toContain("disabled={isBlocked}");
     expect(source).toContain('screen==="events"');
     expect(source).toContain('screen==="create-event"');
