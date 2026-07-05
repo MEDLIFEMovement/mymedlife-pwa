@@ -223,7 +223,7 @@ const UGC_CARDS: ContentCard[] = [
 ];
 
 const BEST_PRACTICES: BestPractice[] = [
-  { id:"bp1", title:"QR Code Lead Capture at Multi-Event Weekend", chapter:"Stanford University", campaign:"Rush Month", why:"Chapter deployed QR codes at 5 events simultaneously with real-time HubSpot sync, capturing 91 qualified leads in 48 hours.", kpiResult:"+91 leads, 74% RSVP rate", type:"Event Strategy", country:"USA", engagementScore:97, recommended:["Yale University","Johns Hopkins","PUCP Lima"] },
+  { id:"bp1", title:"QR Code Lead Capture at Multi-Event Weekend", chapter:"Stanford University", campaign:"Rush Month", why:"Chapter deployed QR codes at 5 events simultaneously with a mock-safe CRM import checklist, capturing 91 qualified leads in 48 hours.", kpiResult:"+91 leads, 74% RSVP rate", type:"Event Strategy", country:"USA", engagementScore:97, recommended:["Yale University","Johns Hopkins","PUCP Lima"] },
   { id:"bp2", title:"Morning Motivation Text Sequence for Members", chapter:"UC Berkeley", campaign:"Chapter Engagement", why:"Coach co-created a 5-day WhatsApp check-in series that boosted assignment completion from 62% to 89% in 2 weeks.", kpiResult:"+27% assignment completion", type:"Coach Communication", country:"USA", engagementScore:92, recommended:["UFMG Belo Horizonte","UNAN Managua","University of Ghana"] },
   { id:"bp3", title:"'Why I Travel' Bridge Video Campaign", chapter:"UNAM Mexico City", campaign:"Moving Mountains", why:"Leaders filmed 3-minute personal story videos and shared them on chapter social media before Rush, driving 40% more RSVPs than previous year.", kpiResult:"+40% RSVPs vs. baseline", type:"Content Strategy", country:"Mexico", engagementScore:88, recommended:["UNMSM Lima","Universidad de Chile","UNAH Tegucigalda"] },
   { id:"bp4", title:"Faculty Partnership for Tabling Prime Spots", chapter:"University of Florida", campaign:"Rush Month", why:"Chapter partnered with Health Sciences dean office to secure 3 high-traffic tabling locations, resulting in 104 leads captured.", kpiResult:"104 leads, best in region", type:"Outreach Strategy", country:"USA", engagementScore:85, recommended:["McGill University","University of Toronto"] },
@@ -1744,30 +1744,30 @@ function BestPracticesLibrary() {
 
 function AdminHealth() {
   const integrations: { name: string; status: "live" | "mock" | "error" | "degraded"; lastSync: string; note?: string }[] = [
-    { name:"HubSpot CRM", status:"live", lastSync:"2 min ago" },
-    { name:"Luma Events", status:"live", lastSync:"8 min ago" },
-    { name:"Data Hub / Warehouse", status:"live", lastSync:"15 min ago" },
-    { name:"Power BI Reports", status:"degraded", lastSync:"4h ago", note:"Refresh token expiring soon" },
-    { name:"n8n Automation", status:"live", lastSync:"1 min ago" },
+    { name:"HubSpot CRM", status:"mock", lastSync:"off", note:"Writes disabled for this run" },
+    { name:"Luma Events", status:"mock", lastSync:"staging readback only", note:"No live Luma writes from this shell" },
+    { name:"Data Hub / Warehouse", status:"mock", lastSync:"off", note:"Exports disabled" },
+    { name:"Power BI Reports", status:"mock", lastSync:"off", note:"Reporting connector disabled" },
+    { name:"n8n Automation", status:"mock", lastSync:"off", note:"Workflow execution disabled" },
     { name:"AI Summary Engine", status:"mock", lastSync:"n/a", note:"Using mock data in staging" },
   ];
 
   const outbox = [
-    { id:1, event:"contact.created", source:"myMEDLIFE", dest:"HubSpot", status:"success", retries:0, error:"—", created:"Jun 17 14:21", processed:"Jun 17 14:21" },
-    { id:2, event:"rsvp.confirmed", source:"Luma", dest:"myMEDLIFE", status:"success", retries:0, error:"—", created:"Jun 17 14:18", processed:"Jun 17 14:19" },
-    { id:3, event:"evidence.approved", source:"myMEDLIFE", dest:"Data Hub", status:"failed", retries:3, error:"503 Service Unavailable", created:"Jun 17 13:44", processed:"—" },
-    { id:4, event:"hubspot.task.created", source:"n8n", dest:"HubSpot", status:"pending", retries:0, error:"—", created:"Jun 17 13:30", processed:"—" },
-    { id:5, event:"member.joined", source:"myMEDLIFE", dest:"HubSpot", status:"success", retries:0, error:"—", created:"Jun 17 12:55", processed:"Jun 17 12:55" },
-    { id:6, event:"ai.summary.drafted", source:"AI Engine", dest:"myMEDLIFE", status:"success", retries:0, error:"—", created:"Jun 17 12:00", processed:"Jun 17 12:01" },
-    { id:7, event:"chapter.data.sync", source:"n8n", dest:"Power BI", status:"failed", retries:2, error:"Token expired", created:"Jun 17 10:00", processed:"—" },
+    { id:1, event:"contact.created", source:"myMEDLIFE", dest:"HubSpot", status:"blocked", retries:0, error:"External write disabled", created:"Jun 17 14:21", processed:"—" },
+    { id:2, event:"rsvp.confirmed", source:"Luma", dest:"myMEDLIFE", status:"blocked", retries:0, error:"Read/import approval required", created:"Jun 17 14:18", processed:"—" },
+    { id:3, event:"evidence.approved", source:"myMEDLIFE", dest:"Data Hub", status:"blocked", retries:0, error:"Warehouse export disabled", created:"Jun 17 13:44", processed:"—" },
+    { id:4, event:"hubspot.task.created", source:"n8n", dest:"HubSpot", status:"blocked", retries:0, error:"n8n execution disabled", created:"Jun 17 13:30", processed:"—" },
+    { id:5, event:"member.joined", source:"myMEDLIFE", dest:"HubSpot", status:"blocked", retries:0, error:"CRM write disabled", created:"Jun 17 12:55", processed:"—" },
+    { id:6, event:"ai.summary.drafted", source:"AI Engine", dest:"myMEDLIFE", status:"blocked", retries:0, error:"AI actions disabled", created:"Jun 17 12:00", processed:"—" },
+    { id:7, event:"chapter.data.sync", source:"n8n", dest:"Power BI", status:"blocked", retries:0, error:"Reporting export disabled", created:"Jun 17 10:00", processed:"—" },
   ];
 
   const auditLog = [
     { actor:"maria.santos@medlife.org", action:"Approved evidence", object:"PUCP Lima — Tabling Video", ts:"Jun 17 14:30", role:"Coach", chapter:"PUCP Lima" },
     { actor:"james.okafor@medlife.org", action:"Set decision: Intervene", object:"Yale University", ts:"Jun 17 13:55", role:"Coach", chapter:"Yale University" },
-    { actor:"admin@medlife.org", action:"Shared post to 28 chapters", object:"Stanford QR Best Practice", ts:"Jun 17 13:20", role:"Admin", chapter:"Global" },
+    { actor:"admin@medlife.org", action:"Queued post for review", object:"Stanford QR Best Practice", ts:"Jun 17 13:20", role:"Admin", chapter:"Global" },
     { actor:"aisha.kamara@medlife.org", action:"Wrote coach note", object:"McGill University", ts:"Jun 17 12:44", role:"Coach", chapter:"McGill University" },
-    { actor:"system@n8n", action:"Triggered automation", object:"Rush Month — follow-up sequence", ts:"Jun 17 12:00", role:"System", chapter:"All" },
+    { actor:"system@n8n", action:"Blocked automation execution", object:"Rush Month — follow-up sequence", ts:"Jun 17 12:00", role:"System", chapter:"All" },
   ];
 
   return (

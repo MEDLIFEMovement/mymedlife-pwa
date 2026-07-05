@@ -8,7 +8,7 @@ import {
   ArrowRight, Plus, Search, Eye, Edit, TrendingUp, TrendingDown,
   Heart, Zap, BookOpen, Share2, Play, ThumbsUp, MessageSquare,
   Upload, Download, X, Activity, Target, Flag, Shield,
-  Award, Flame, Sparkles, ExternalLink, MapPin, ArrowLeft, Bookmark, Building2
+  Award, Flame, Sparkles, ExternalLink, MapPin, ArrowLeft, Bookmark, Building2, Settings
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar,
@@ -3327,6 +3327,13 @@ const NAV_GROUPS: NavGroup[] = [
     { id: "training",   label: "Leadership Training",icon: BookOpen },
   ]},
 ];
+const MISSING_LEADERSHIP_PAGES = [
+  { label: "Campaigns", icon: Target },
+  { label: "Fundraising", icon: Award },
+  { label: "SLT", icon: Globe },
+  { label: "Proof Review", icon: Eye },
+  { label: "Settings", icon: Settings },
+] as const;
 
 function Sidebar({ active, onNav }: { active: Screen; onNav: (s: Screen) => void }) {
   const groups = NAV_GROUPS;
@@ -3372,6 +3379,15 @@ function Sidebar({ active, onNav }: { active: Screen; onNav: (s: Screen) => void
             ))}
           </div>
         ))}
+        <div>
+          <div className="px-3 mb-1 text-[9px] font-bold text-blue-300/40 uppercase tracking-widest">Not Yet Available</div>
+          {MISSING_LEADERSHIP_PAGES.map(({label, icon:Icon})=>(
+            <button key={label} disabled title={`Leadership page not yet available: ${label}`}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5 text-left transition-all cursor-not-allowed text-white/35">
+              <Icon size={14}/><span className="text-[11px] font-semibold">{label}</span>
+            </button>
+          ))}
+        </div>
       </nav>
 
       {/* User profile + view switcher */}

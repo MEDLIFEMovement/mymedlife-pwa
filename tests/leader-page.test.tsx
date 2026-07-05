@@ -98,6 +98,9 @@ describe("leader page", () => {
     expect(html).toContain("Create Event");
     expect(html).toContain("Assign Task");
     expect(html).toContain("Promote Emerging Leader");
+    expect(html).toContain("Not Yet Available");
+    expect(html).toContain("Leadership page not yet available: Campaigns");
+    expect(html).toContain("Leadership page not yet available: Proof Review");
     expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Risk Alerts");
     expect(html).toContain("This Week&#x27;s Priority");
@@ -143,7 +146,7 @@ describe("leader page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3950);
-    expect(lineCount).toBeLessThanOrEqual(3970);
+    expect(lineCount).toBeLessThanOrEqual(3990);
     expect(source).toContain('const [screen, setScreen] = useState<Screen>("home");');
     expect(source).toContain("<Sidebar active={screen} onNav={setScreen}/>");
     expect(source).toContain("disabled={isBlocked}");
@@ -152,5 +155,7 @@ describe("leader page", () => {
     expect(source).toContain('screen==="stories"');
     expect(source).toContain("CreateEventForm");
     expect(source).toContain("MedlifeStoriesScreen");
+    expect(source).toContain("MISSING_LEADERSHIP_PAGES");
+    expect(source).toContain("Leadership page not yet available");
   });
 });

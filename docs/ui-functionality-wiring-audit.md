@@ -56,6 +56,7 @@ Shared Figma button helpers in the member and leadership shells now fail closed:
 | Promote Emerging Leader modal | `figma-leader-command-center.tsx` | leader | Local modal/confirmation only | future role/pipeline service | chapter-scoped leader | role-change flags | `placeholder_blocked` |
 | Impact / Bridge Videos / MEDLIFE Stories | Figma leader components | leader | Local content views; share/save/message/source buttons without approved behavior are visibly disabled/blocked | future proof/feed/story services | leader workspace | feed/proof flags | `disabled_visible` |
 | Succession / Current Leaders / Values / Training | Figma leader components | leader | Local shell surfaces | future leadership pipeline services | leader workspace | none | `wired_staging` |
+| Missing standalone pages: Campaigns, Fundraising, SLT, Proof Review, Settings | `figma-leader-command-center.tsx` | leader | Shown in the sidebar as disabled "Leadership page not yet available" controls instead of reusing the wrong page | future dedicated leader pages, if approved | leader workspace | needs product decision | `disabled_visible` |
 | Profile view switcher | `figma-leader-command-center.tsx` | multi-role user | Local visual switcher only | workspace account menu/preview links | assigned roles | none | `needs_decision` |
 
 ## `/staff` Staff Command Center
@@ -94,6 +95,7 @@ Shared Figma button helpers in the member and leadership shells now fail closed:
 - The Figma Create Event form now says `Event Staged`, not `Event Published`, and explicitly says no email, WhatsApp/SMS, Luma write, external send, or production publish occurred.
 - Chapter type now uses the approved values `high_school`, `college_university`, and `needs_review`; admin list/detail/forms, admin/staff chapter filters, staff chapter list/detail, and leader chapter header show the approved labels.
 - Luma disabled-mode fallback has service-level proof: local event prep, member RSVP, attendance, points, disabled outbox, and audit records still work when no Luma link or QR is available.
+- The copied staff/admin Figma shells no longer present Luma, HubSpot, warehouse, Power BI, or n8n as live production systems; visible provider copy is staging/mock-safe or disabled, and module/provider toggles are visibly blocked unless an audited path exists.
 - Copied Figma shells now pass the CTA safety guard: no fake `href="#"`, empty click handlers, `javascript:void`, or raw buttons lacking handler/submit/disabled state.
 - PR #125 contains older Luma pilot work but is too stale to merge safely; it currently conflicts with 86 files against `main`.
 - HubSpot is not part of this run.

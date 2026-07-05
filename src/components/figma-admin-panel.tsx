@@ -37,24 +37,24 @@ const CHAPTERS_DATA = [
 ];
 
 const MODULES_DATA = [
-  { id: "luma-events", name: "Luma Events / RSVP / Attendance / Points", description: "Core launch module. Event creation via Luma, RSVP, attendance tracking, and point awarding.", status: "enabled" as ModuleStatus, environment: "production", health: "healthy" as HealthStatus, dependencies: ["Luma API", "Points Service", "Outbox"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-06-15 10:30", reason: "Launch activation — approved by DS lead" },
+  { id: "luma-events", name: "Luma Events / RSVP / Attendance / Points", description: "Core launch module. Event creation via Luma, RSVP, attendance tracking, and point awarding.", status: "staging-only" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Luma staging readback", "Points Service", "Blocked Outbox"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-06-15 10:30", reason: "Staging/mock-safe only — production Luma writes remain disabled" },
   { id: "sop-builder", name: "SOP Builder / Next Actions", description: "Standard operating procedure builder for chapter leaders. In development.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Task Service"], lastChangedBy: "Soledad Vega", lastChangedAt: "2026-05-20 14:00", reason: "Not ready for production — pending UX review" },
   { id: "task-assignment", name: "Task Assignment", description: "Assign and track tasks across chapter members and staff.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Task Service", "Notifications"], lastChangedBy: "Soledad Vega", lastChangedAt: "2026-05-20 14:00", reason: "Deferred to Phase 2" },
   { id: "ugc-feed", name: "UGC / Feed / Proof", description: "User-generated content feed and proof-of-work submissions.", status: "disabled" as ModuleStatus, environment: "internal", health: "unknown" as HealthStatus, dependencies: ["Storage", "Moderation"], lastChangedBy: "Soledad Vega", lastChangedAt: "2026-05-01 09:00", reason: "Deferred to Phase 3" },
   { id: "staff-analytics", name: "Staff Analytics", description: "Chapter performance metrics and coach dashboards.", status: "staging-only" as ModuleStatus, environment: "staging", health: "degraded" as HealthStatus, dependencies: ["BigQuery", "Analytics Service"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-06-01 11:45", reason: "Data model under revision" },
-  { id: "integrations-outbox", name: "Integrations / Outbox", description: "Outbound event pipeline to HubSpot, BigQuery, and n8n workflows.", status: "enabled" as ModuleStatus, environment: "production", health: "healthy" as HealthStatus, dependencies: ["HubSpot", "BigQuery", "n8n"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-06-20 16:00", reason: "Core data pipeline — always on" },
+  { id: "integrations-outbox", name: "Integrations / Outbox", description: "Outbound event pipeline to HubSpot, BigQuery, and n8n workflows.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["HubSpot disabled", "BigQuery disabled", "n8n disabled"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-06-20 16:00", reason: "Live sends and external writes are blocked in this run" },
   { id: "mcp-analytics", name: "MCP Read-only Analytics", description: "AI-assisted read-only analytics queries via MCP.", status: "internal-only" as ModuleStatus, environment: "internal", health: "unknown" as HealthStatus, dependencies: ["OpenAI", "BigQuery"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-04-10 10:00", reason: "Internal testing only — not user-facing" },
   { id: "theme-tokens", name: "Theme / Design Tokens", description: "Dynamic visual theming and design token overrides per workspace.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: [], lastChangedBy: "Soledad Vega", lastChangedAt: "2026-05-15 13:30", reason: "Design system stabilization in progress" },
 ];
 
 const INTEGRATIONS_DATA = [
-  { id: "luma", name: "Luma", description: "Event creation and RSVP management", enabled: true, environment: "production", health: "healthy" as HealthStatus, lastTest: "2026-07-01 08:45", lastSync: "2026-07-01 08:00", errors: 0 },
-  { id: "hubspot", name: "HubSpot", description: "CRM sync for members and events", enabled: true, environment: "production", health: "healthy" as HealthStatus, lastTest: "2026-06-30 18:00", lastSync: "2026-06-30 17:30", errors: 2 },
-  { id: "bigquery", name: "BigQuery", description: "Analytics data warehouse", enabled: true, environment: "production", health: "degraded" as HealthStatus, lastTest: "2026-06-30 12:00", lastSync: "2026-06-29 23:00", errors: 8 },
+  { id: "luma", name: "Luma", description: "Event creation and RSVP management", enabled: false, environment: "staging", health: "unknown" as HealthStatus, lastTest: "Staging readback only", lastSync: "No live sync", errors: 0 },
+  { id: "hubspot", name: "HubSpot", description: "CRM sync for members and events", enabled: false, environment: "disabled", health: "unknown" as HealthStatus, lastTest: "Never", lastSync: "Never", errors: 0 },
+  { id: "bigquery", name: "BigQuery", description: "Analytics data warehouse", enabled: false, environment: "disabled", health: "unknown" as HealthStatus, lastTest: "Never", lastSync: "Never", errors: 0 },
   { id: "powerbi", name: "Power BI", description: "Reporting dashboards for leadership", enabled: false, environment: "staging", health: "unknown" as HealthStatus, lastTest: "2026-05-10 10:00", lastSync: "Never", errors: 0 },
   { id: "shopify", name: "Shopify", description: "Merchandise and fundraising store", enabled: false, environment: "disabled", health: "unknown" as HealthStatus, lastTest: "2026-03-01 09:00", lastSync: "Never", errors: 0 },
   { id: "givelively", name: "GiveLively", description: "Donation and fundraising platform", enabled: false, environment: "staging", health: "unknown" as HealthStatus, lastTest: "2026-04-15 14:00", lastSync: "Never", errors: 0 },
-  { id: "n8n", name: "n8n", description: "Workflow automation and outbox processing", enabled: true, environment: "production", health: "healthy" as HealthStatus, lastTest: "2026-07-01 07:00", lastSync: "2026-07-01 07:00", errors: 1 },
+  { id: "n8n", name: "n8n", description: "Workflow automation and outbox processing", enabled: false, environment: "disabled", health: "unknown" as HealthStatus, lastTest: "Never", lastSync: "Never", errors: 0 },
   { id: "openai", name: "OpenAI / Agents", description: "AI-assisted analytics and MCP agents", enabled: false, environment: "internal", health: "unknown" as HealthStatus, lastTest: "2026-06-01 10:00", lastSync: "Never", errors: 0 },
   { id: "smileio",   name: "Smile.io",  description: "Loyalty and rewards platform — sync member points, manage tiers, and issue rewards across chapters.", enabled: false, environment: "staging",  health: "unknown" as HealthStatus, lastTest: "Never",              lastSync: "Never",              errors: 0 },
   { id: "meta",      name: "Meta",      description: "Facebook Pages and Instagram Business — post content, sync UGC, and pull engagement analytics for chapter social accounts.", enabled: false, environment: "staging", health: "unknown" as HealthStatus, lastTest: "Never",              lastSync: "Never",              errors: 0 },
@@ -62,21 +62,21 @@ const INTEGRATIONS_DATA = [
 ];
 
 const AUDIT_LOGS = [
-  { id: 1, timestamp: "2026-07-01 09:14:22", actor: "Chen Wei", role: "Super Admin", action: "module.toggle", target: "Luma Events", oldValue: "disabled", newValue: "enabled", reason: "Launch activation — approved by DS lead", status: "success" },
+  { id: 1, timestamp: "2026-07-01 09:14:22", actor: "Chen Wei", role: "Super Admin", action: "module.review", target: "Luma Events", oldValue: "disabled", newValue: "staging-only", reason: "Staging/mock-safe review — no production write", status: "warning" },
   { id: 2, timestamp: "2026-07-01 08:55:10", actor: "Soledad Vega", role: "DS Admin", action: "user.role_change", target: "Marcus Rivera", oldValue: "Student", newValue: "Staff", reason: "Promotion approved by Dr. Patel", status: "success" },
-  { id: 3, timestamp: "2026-06-30 17:30:04", actor: "system", role: "System", action: "luma.sync_failed", target: "Luma API", oldValue: "—", newValue: "—", reason: "Rate limit exceeded (429)", status: "error" },
+  { id: 3, timestamp: "2026-06-30 17:30:04", actor: "system", role: "System", action: "luma.sync_blocked", target: "Luma API", oldValue: "—", newValue: "—", reason: "Live Luma sync disabled in staging/mock-safe mode", status: "warning" },
   { id: 4, timestamp: "2026-06-30 16:45:18", actor: "Soledad Vega", role: "DS Admin", action: "chapter.module_change", target: "Michigan State", oldValue: "Events, RSVP, Points", newValue: "Events only", reason: "Low engagement — reducing scope", status: "success" },
   { id: 5, timestamp: "2026-06-30 14:22:33", actor: "system", role: "System", action: "points.duplicate_blocked", target: "Devon Carter", oldValue: "0", newValue: "0", reason: "Duplicate attendance detected", status: "warning" },
-  { id: 6, timestamp: "2026-06-30 11:10:55", actor: "Chen Wei", role: "Super Admin", action: "integration.test", target: "BigQuery", oldValue: "—", newValue: "—", reason: "Routine health check", status: "warning" },
+  { id: 6, timestamp: "2026-06-30 11:10:55", actor: "Chen Wei", role: "Super Admin", action: "integration.test_blocked", target: "BigQuery", oldValue: "—", newValue: "—", reason: "Warehouse connector disabled until DS approval", status: "warning" },
   { id: 7, timestamp: "2026-06-29 09:38:14", actor: "system", role: "System", action: "access.denied", target: "Priya Nair", oldValue: "—", newValue: "—", reason: "Attempted SOP Builder (disabled module)", status: "error" },
-  { id: 8, timestamp: "2026-06-28 15:00:00", actor: "Soledad Vega", role: "DS Admin", action: "points.awarded", target: "Morehouse College", oldValue: "0", newValue: "+50", reason: "Event attendance: Community Health Fair", status: "success" },
+  { id: 8, timestamp: "2026-06-28 15:00:00", actor: "Soledad Vega", role: "DS Admin", action: "points.previewed", target: "Morehouse College", oldValue: "0", newValue: "+50", reason: "Event attendance preview: Community Health Fair", status: "warning" },
 ];
 
 const API_KEYS_DATA = [
-  { id: "luma", provider: "Luma", label: "Luma API Key", key: "secret-ref:luma:production:v1", environment: "production", status: "active", lastRotated: "2026-05-10", expiresAt: "2027-05-10", createdBy: "Chen Wei", scopes: ["events:read", "events:write", "rsvp:read"] },
-  { id: "hubspot", provider: "HubSpot", label: "HubSpot Private App Token", key: "secret-ref:hubspot:production:v1", environment: "production", status: "active", lastRotated: "2026-04-01", expiresAt: "Never", createdBy: "Soledad Vega", scopes: ["contacts:write", "contacts:read", "deals:read"] },
-  { id: "bigquery", provider: "BigQuery", label: "BigQuery Service Account Key", key: "secret-ref:bigquery:production:v1", environment: "production", status: "active", lastRotated: "2026-03-15", expiresAt: "Never", createdBy: "Chen Wei", scopes: ["bigquery.tables.create", "bigquery.jobs.create"] },
-  { id: "n8n", provider: "n8n", label: "n8n Webhook Secret", key: "secret-ref:n8n:production:v1", environment: "production", status: "active", lastRotated: "2026-06-01", expiresAt: "Never", createdBy: "Chen Wei", scopes: ["webhook:receive"] },
+  { id: "luma", provider: "Luma", label: "Luma API Key", key: "secret-ref:luma:staging:v1", environment: "staging", status: "inactive", lastRotated: "2026-05-10", expiresAt: "2027-05-10", createdBy: "Chen Wei", scopes: ["events:read", "events:write", "rsvp:read"] },
+  { id: "hubspot", provider: "HubSpot", label: "HubSpot Private App Token", key: "secret-ref:hubspot:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-04-01", expiresAt: "Never", createdBy: "Soledad Vega", scopes: ["contacts:write", "contacts:read", "deals:read"] },
+  { id: "bigquery", provider: "BigQuery", label: "BigQuery Service Account Key", key: "secret-ref:bigquery:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-03-15", expiresAt: "Never", createdBy: "Chen Wei", scopes: ["bigquery.tables.create", "bigquery.jobs.create"] },
+  { id: "n8n", provider: "n8n", label: "n8n Webhook Secret", key: "secret-ref:n8n:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-06-01", expiresAt: "Never", createdBy: "Chen Wei", scopes: ["webhook:receive"] },
   { id: "openai", provider: "OpenAI", label: "OpenAI API Key", key: "secret-ref:openai:internal:v1", environment: "internal", status: "inactive", lastRotated: "2026-02-20", expiresAt: "Never", createdBy: "Chen Wei", scopes: ["completions", "chat"] },
   { id: "powerbi", provider: "Power BI", label: "Power BI Client Secret", key: "secret-ref:powerbi:staging:v1", environment: "staging", status: "inactive", lastRotated: "2025-12-01", expiresAt: "2026-12-01", createdBy: "Soledad Vega", scopes: ["dataset:read", "report:read"] },
 ];
@@ -300,17 +300,17 @@ function OverviewPage() {
   const cards = [
     { label: "Total Users", value: "1,284", sub: "↑ 12 this week", color: "text-white" },
     { label: "Active Chapters", value: "47", sub: "3 flagged high-risk", color: "text-white" },
-    { label: "Events Module", value: "Active", sub: "Production", color: "text-emerald-400" },
-    { label: "Luma Integration", value: "Connected", sub: "Last sync 8 min ago", color: "text-emerald-400" },
-    { label: "Points System", value: "Active", sub: "18,340 pts awarded", color: "text-emerald-400" },
+    { label: "Events Module", value: "Staging", sub: "Mock-safe", color: "text-blue-400" },
+    { label: "Luma Integration", value: "Readback only", sub: "No live writes", color: "text-blue-400" },
+    { label: "Points System", value: "Preview", sub: "18,340 mock pts", color: "text-blue-400" },
     { label: "Disabled Modules", value: "5", sub: "SOP · Tasks · UGC +2", color: "text-slate-400" },
-    { label: "Sync Errors", value: "3", sub: "1 critical in last 24h", color: "text-amber-400" },
+    { label: "Blocked Sends", value: "0", sub: "No external sends", color: "text-slate-300" },
     { label: "Admin Changes", value: "8", sub: "Last 24 hours", color: "text-slate-300" },
   ];
 
   const moduleStatus = [
-    { name: "Luma Events / RSVP / Attendance / Points", status: "enabled", note: "Core launch stack" },
-    { name: "Integrations / Outbox", status: "enabled", note: "Data pipeline" },
+    { name: "Luma Events / RSVP / Attendance / Points", status: "staging-only", note: "Core launch stack" },
+    { name: "Integrations / Outbox", status: "disabled", note: "Live sends blocked" },
     { name: "SOP Builder / Next Actions", status: "disabled", note: "Phase 2" },
     { name: "Task Assignment", status: "disabled", note: "Phase 2" },
     { name: "UGC / Feed / Proof", status: "disabled", note: "Phase 3" },
@@ -326,7 +326,7 @@ function OverviewPage() {
         <Zap size={14} className="text-sky-400 flex-shrink-0" />
         <span className="text-[11px] font-bold text-sky-400 uppercase tracking-[0.12em]">Launch Mode Active</span>
         <span className="text-[12px] text-sky-300/60">Events + RSVP + Attendance + Points</span>
-        <span className="ml-auto text-[10px] text-sky-600 font-mono uppercase tracking-wider">Production</span>
+        <span className="ml-auto text-[10px] text-sky-600 font-mono uppercase tracking-wider">Staging</span>
       </div>
 
       {/* Summary Cards */}
@@ -664,7 +664,7 @@ function ModulesPage() {
     setTarget(null);
   };
 
-  const isProd = target?.environment === "production";
+  const isProductionLike = target?.environment === "production";
 
   return (
     <>
@@ -718,11 +718,13 @@ function ModulesPage() {
               <div className="flex items-center justify-between pt-1 border-t border-white/[0.04]">
                 <span className="text-[10px] text-slate-700 font-mono">{mod.lastChangedAt}</span>
                 <button
+                  disabled
                   onClick={() => openToggle(mod)}
-                  className={`px-3 py-1 rounded text-[11px] font-semibold border transition-colors ${
+                  title="Module changes are blocked in this static admin shell; use the audited admin workflow after approval"
+                  className={`px-3 py-1 rounded text-[11px] font-semibold border transition-colors cursor-not-allowed ${
                     mod.status === "enabled"
-                      ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15"
-                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
+                      ? "bg-red-500/8 text-red-400 border-red-500/15"
+                      : "bg-slate-500/8 text-slate-400 border-slate-500/15"
                   }`}
                 >
                   {mod.status === "enabled" ? "Disable" : "Enable"}
@@ -749,7 +751,7 @@ function ModulesPage() {
               </div>
             </div>
 
-            {isProd && (
+            {isProductionLike && (
               <div className="flex items-start gap-2.5 bg-red-500/8 border border-red-500/15 rounded p-3">
                 <AlertTriangle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
@@ -805,45 +807,42 @@ function ModulesPage() {
 
 // ─── Luma Events ──────────────────────────────────────────────────────────────────
 function LumaPage() {
-  const [lumaEnabled, setLumaEnabled] = useState(true);
-
   return (
     <div className="p-6 space-y-5">
       {/* Provider Banner */}
-      <div className={`flex items-center justify-between border rounded-lg px-4 py-3 ${lumaEnabled ? "bg-emerald-500/8 border-emerald-500/15" : "bg-amber-500/8 border-amber-500/15"}`}>
+      <div className="flex items-center justify-between border rounded-lg px-4 py-3 bg-amber-500/8 border-amber-500/15">
         <div className="flex items-center gap-3">
-          <HealthDot status={lumaEnabled ? "healthy" : "unknown"} />
+          <HealthDot status="unknown" />
           <div>
-            <div className={`text-[13px] font-semibold ${lumaEnabled ? "text-emerald-400" : "text-amber-400"}`}>
-              {lumaEnabled ? "Luma Provider: Connected" : "Luma Provider: Disabled"}
+            <div className="text-[13px] font-semibold text-amber-400">
+              Luma Provider: Staging-ready, live writes disabled
             </div>
-            <div className={`text-[11px] mt-0.5 ${lumaEnabled ? "text-emerald-300/60" : "text-amber-300/60"}`}>
-              {lumaEnabled ? "Production · API v2.1 · Last sync 8 min ago" : "Local events, RSVP, attendance, and points remain active."}
+            <div className="text-[11px] mt-0.5 text-amber-300/60">
+              Staging/mock-safe · local events, RSVP, attendance, and points remain active.
             </div>
           </div>
         </div>
         <button
-          onClick={() => setLumaEnabled(!lumaEnabled)}
-          className={`px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors ${lumaEnabled ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15" : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"}`}
+          disabled
+          title="Enable Luma only through the audited /admin/integrations/luma setup"
+          className="px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors bg-white/[0.04] text-slate-400 border-white/[0.08]"
         >
-          {lumaEnabled ? "Disable Luma" : "Enable Luma"}
+          Live Writes Off
         </button>
       </div>
 
-      {!lumaEnabled && (
-        <div className="flex items-center gap-2.5 bg-sky-500/8 border border-sky-500/15 rounded-lg px-4 py-3">
-          <Clock size={14} className="text-sky-400 flex-shrink-0" />
-          <span className="text-[13px] text-sky-300">Luma provider disabled. Local events, RSVP, attendance, and points remain active.</span>
-        </div>
-      )}
+      <div className="flex items-center gap-2.5 bg-sky-500/8 border border-sky-500/15 rounded-lg px-4 py-3">
+        <Clock size={14} className="text-sky-400 flex-shrink-0" />
+        <span className="text-[13px] text-sky-300">Local event creation, RSVP, attendance, and points remain active while live Luma writes are blocked.</span>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: "Events Created", value: "47" },
-          { label: "RSVPs Imported", value: "1,284" },
-          { label: "Attendance Imported", value: "1,042" },
-          { label: "Points Awarded", value: "18,340" },
+          { label: "Events Staged", value: "47" },
+          { label: "RSVPs Previewed", value: "1,284" },
+          { label: "Attendance Previewed", value: "1,042" },
+          { label: "Points Previewed", value: "18,340" },
         ].map((s) => (
           <div key={s.label} className="bg-[#161b22] border border-white/[0.06] rounded-lg p-4">
             <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider mb-2">{s.label}</div>
@@ -856,19 +855,19 @@ function LumaPage() {
         {
           title: "Provider Status",
           rows: [
-            { label: "API Connection", value: lumaEnabled ? "Connected" : "Disabled", status: lumaEnabled ? "active" : "inactive" },
-            { label: "Environment", value: "Production", status: "active" },
-            { label: "API Version", value: "v2.1", status: "active" },
-            { label: "Auth Method", value: "Bearer Token", status: "active" },
+            { label: "API Connection", value: "Blocked", status: "inactive" },
+            { label: "Environment", value: "Staging/mock-safe", status: "inactive" },
+            { label: "API Version", value: "Not called", status: "inactive" },
+            { label: "Auth Method", value: "Server-only secret refs", status: "inactive" },
           ],
         },
         {
           title: "Sync Status",
           rows: [
-            { label: "Event Sync", value: "Last run: 08:00 UTC", status: "active" },
-            { label: "RSVP Sync", value: "Last run: 08:05 UTC", status: "active" },
-            { label: "Attendance Sync", value: "Last run: 08:10 UTC", status: "active" },
-            { label: "Points Awarding", value: "Last run: 08:12 UTC", status: "active" },
+            { label: "Event Sync", value: "Blocked until approval", status: "inactive" },
+            { label: "RSVP Sync", value: "Blocked until approval", status: "inactive" },
+            { label: "Attendance Sync", value: "Blocked until approval", status: "inactive" },
+            { label: "Points Awarding", value: "Local preview only", status: "inactive" },
           ],
         },
       ].map((section) => (
@@ -893,9 +892,9 @@ function LumaPage() {
         <SectionHeader title="Recent Errors" />
         <div className="divide-y divide-white/[0.04]">
           {[
-            { time: "2026-06-30 17:30", msg: "Rate limit exceeded — Luma API returned 429", sev: "error" },
-            { time: "2026-06-29 14:12", msg: "Duplicate RSVP detected for event #luma-487 — blocked", sev: "warning" },
-            { time: "2026-06-28 08:02", msg: "Attendance sync timeout — retried successfully after 30s", sev: "warning" },
+            { time: "2026-06-30 17:30", msg: "Live Luma sync blocked by staging/mock-safe integration posture", sev: "warning" },
+            { time: "2026-06-29 14:12", msg: "Duplicate RSVP preview detected for event #luma-487 — blocked", sev: "warning" },
+            { time: "2026-06-28 08:02", msg: "Attendance import preview pending approved staging readback", sev: "warning" },
           ].map((err) => (
             <div key={err.time} className="flex items-center gap-3 px-5 py-3">
               <Badge status={err.sev} />
@@ -2609,9 +2608,9 @@ function SystemHealthPage() {
     { name: "Feature Flag Service", status: "healthy" as HealthStatus, uptime: "100%", latency: "3ms", note: "All flags resolving" },
     { name: "Event Service", status: "healthy" as HealthStatus, uptime: "99.95%", latency: "18ms", note: "Event processing active" },
     { name: "Points Service", status: "healthy" as HealthStatus, uptime: "99.97%", latency: "12ms", note: "Awarding pipeline nominal" },
-    { name: "Luma Integration", status: "degraded" as HealthStatus, uptime: "98.2%", latency: "340ms", note: "Elevated latency — monitoring" },
-    { name: "Outbox / n8n", status: "healthy" as HealthStatus, uptime: "99.91%", latency: "22ms", note: "Message queue processing" },
-    { name: "BigQuery Connector", status: "degraded" as HealthStatus, uptime: "97.4%", latency: "1,200ms", note: "8 write failures in last 24h" },
+    { name: "Luma Integration", status: "unknown" as HealthStatus, uptime: "n/a", latency: "n/a", note: "Readback only; no live API call from this shell" },
+    { name: "Outbox / n8n", status: "unknown" as HealthStatus, uptime: "n/a", latency: "n/a", note: "Execution disabled; no outbound sends" },
+    { name: "BigQuery Connector", status: "unknown" as HealthStatus, uptime: "n/a", latency: "n/a", note: "Warehouse exports disabled" },
   ];
 
   const overall: HealthStatus = services.some((s) => s.status === "down") ? "down" : services.some((s) => s.status === "degraded") ? "degraded" : "healthy";
@@ -2668,9 +2667,9 @@ function SystemHealthPage() {
         <SectionHeader title="Recent System Errors" />
         <div className="divide-y divide-white/[0.04]">
           {[
-            { time: "2026-07-01 08:42", service: "BigQuery Connector", msg: "Write timeout after 30s — 3 records queued for retry", sev: "error" },
-            { time: "2026-07-01 08:15", service: "Luma Integration", msg: "Response latency spike to 1.2s — within threshold, monitoring", sev: "warning" },
-            { time: "2026-06-30 17:30", service: "Luma Integration", msg: "Rate limit 429 — backoff applied, resumed after 60s", sev: "error" },
+            { time: "2026-07-01 08:42", service: "BigQuery Connector", msg: "Warehouse write skipped — connector disabled in staging/mock-safe mode", sev: "warning" },
+            { time: "2026-07-01 08:15", service: "Luma Integration", msg: "Live Luma API call skipped — use audited staging setup for readback", sev: "warning" },
+            { time: "2026-06-30 17:30", service: "Outbox / n8n", msg: "Outbound automation execution blocked", sev: "warning" },
           ].map((err, i) => (
             <div key={i} className="flex items-start gap-3 px-5 py-3">
               <Badge status={err.sev} />
@@ -2698,7 +2697,7 @@ function SettingsPage() {
           { label: "MFA for production toggles", value: "Required" },
           { label: "Audit log retention", value: "90 days" },
           { label: "Admin email alerts", value: "Enabled" },
-          { label: "Environment", value: "Production" },
+          { label: "Environment", value: "Staging / mock-safe" },
         ].map((s) => (
           <div key={s.label} className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.04] last:border-0">
             <span className="text-[13px] text-slate-300">{s.label}</span>
@@ -3150,7 +3149,7 @@ const MCP_PROVIDERS_INIT = [
     model: "claude-sonnet-4-6",
     description: "Anthropic Claude via MCP for read-only data queries, audit summarization, and analytics assistance.",
     status: "connected" as "connected" | "disconnected" | "error",
-    environment: "production",
+    environment: "internal",
     endpoint: "https://api.anthropic.com/v1/mcp",
     readAccess: true,
     writeAccess: false,

@@ -66,4 +66,23 @@ describe("copied Figma shell CTA safety", () => {
       "disabled={isBlocked}",
     );
   });
+
+  it("keeps copied admin and staff integration copy mock-safe", () => {
+    const adminSource = readProjectFile("src/components/figma-admin-panel.tsx");
+    const staffSource = readProjectFile("src/components/figma-staff-command-center.tsx");
+
+    expect(adminSource).not.toMatch(/environment:\s*"production"/);
+    expect(adminSource).not.toMatch(/secret-ref:[^"]*:production:/);
+    expect(adminSource).not.toContain("Production · API v2.1");
+    expect(adminSource).not.toContain("Luma Provider: Connected");
+    expect(adminSource).not.toContain("Core data pipeline — always on");
+    expect(adminSource).toContain("Staging/mock-safe");
+    expect(adminSource).toContain("Live Writes Off");
+
+    expect(staffSource).not.toContain("real-time HubSpot sync");
+    expect(staffSource).not.toContain("Triggered automation");
+    expect(staffSource).not.toContain("Shared post to 28 chapters");
+    expect(staffSource).toContain("No live Luma writes from this shell");
+    expect(staffSource).toContain("Workflow execution disabled");
+  });
 });
