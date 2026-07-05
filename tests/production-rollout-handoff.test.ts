@@ -58,6 +58,31 @@ describe("production rollout handoff", () => {
     );
     expect(report).toContain("next step: Fix the blockers in the rollout packet.");
   });
+
+  it("keeps warnings and empty sections visible in formatted handoffs", () => {
+    const packet = createPacket(30);
+    packet.memberships = packet.memberships.filter(
+      (membership) => membership.chapterId !== "chapter-01",
+    );
+    packet.memberships.push({
+      email: "leader.01@medlifemovement.org",
+      chapterId: "chapter-01",
+      roleKey: "president_vp",
+    });
+    const report = formatProductionRolloutHandoff(getProductionRolloutHandoff(packet));
+
+    expect(report).toContain(
+      "warning: Chapter 01 MEDLIFE has fewer than two approved members. It can launch, but the leaderboard will look sparse.",
+    );
+    expect(
+      formatProductionRolloutHandoff({
+        ready: false,
+        title: "Production rollout handoff: NOT READY",
+        summary: "No data yet.",
+        sections: [{ title: "Empty review section", items: [] }],
+      }),
+    ).toContain("Empty review section:\n- None");
+  });
 });
 
 function createPacket(chapterCount: number): ProductionRolloutBootstrapPacket {

@@ -213,6 +213,37 @@ describe("production rollout bootstrap readiness", () => {
       "chapter-01 pilot event evt-chapter-01 needs a reviewedByEmail owner.",
     );
   });
+
+  it("blocks ready pilot proof with external proof links or unknown reviewers", () => {
+    const packet = createCompletePacket(30);
+    const pilotEventProof = packet.pilotEventProof ?? [];
+    pilotEventProof[0] = {
+      ...(pilotEventProof[0] ?? {
+        chapterId: "chapter-01",
+        eventName: "Rush Month Kickoff",
+        lumaEventId: "evt-chapter-01",
+        rsvpCount: 12,
+        attendanceCount: 10,
+        pointsAwardedCount: 10,
+        auditEvidence: "recorded",
+        outboxStatus: "zero_sends",
+        status: "ready",
+      }),
+      eventRoute: "https://luma.com/evt-chapter-01",
+      reviewedByEmail: "missing-reviewer@medlifemovement.org",
+    };
+    packet.pilotEventProof = pilotEventProof;
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 event route proof link must be an app route.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 reviewedByEmail references unknown user missing-reviewer@medlifemovement.org.",
+    );
+  });
 });
 
 function createCompletePacket(chapterCount: number): ProductionRolloutBootstrapPacket {

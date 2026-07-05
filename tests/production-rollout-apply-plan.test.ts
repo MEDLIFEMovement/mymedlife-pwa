@@ -55,6 +55,31 @@ describe("production rollout apply plan", () => {
     expect(report).toContain("Supabase Auth users to invite (blocked):");
   });
 
+  it("keeps warnings and empty sections visible in formatted apply plans", () => {
+    const packet = createPacket(30);
+    packet.memberships = packet.memberships.filter(
+      (membership) => membership.chapterId !== "chapter-01",
+    );
+    packet.memberships.push({
+      email: "leader.01@medlifemovement.org",
+      chapterId: "chapter-01",
+      roleKey: "president_vp",
+    });
+    const report = formatProductionRolloutApplyPlan(getProductionRolloutApplyPlan(packet));
+
+    expect(report).toContain(
+      "warning: Chapter 01 MEDLIFE has fewer than two approved members. It can launch, but the leaderboard will look sparse.",
+    );
+    expect(
+      formatProductionRolloutApplyPlan({
+        ready: false,
+        title: "Production apply plan: NOT READY",
+        summary: "No data yet.",
+        sections: [{ title: "Empty review section", status: "review", items: [] }],
+      }),
+    ).toContain("Empty review section (review):\n- None");
+  });
+
   it("keeps credential handling explicitly out of the apply artifact", () => {
     const report = formatProductionRolloutApplyPlan(
       getProductionRolloutApplyPlan(createPacket(30)),
