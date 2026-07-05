@@ -1688,7 +1688,7 @@ function ImpactScreen() {
             <div className="text-4xl font-black mb-0.5">{s.n}</div>
             <div className="text-sm font-semibold opacity-80 mb-3">{s.label}</div>
             <p className="text-xs leading-relaxed opacity-75 mb-4">{s.story}</p>
-            <button className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Share →</button>
+            <button disabled title="Impact sharing is blocked in this preview until feed-sharing approval is complete" className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Share →</button>
           </div>
         ))}
       </div>
@@ -2972,7 +2972,7 @@ function FeedScreen() {
                   <div className="h-full bg-red-400 rounded-full" style={{width:`${m.engage}%`}}/>
                 </div>
                 <span className="text-[11px] font-mono text-slate-500 w-8 text-right">{m.engage}%</span>
-                <button className="p-1 rounded-md hover:bg-slate-100 cursor-pointer text-slate-400 hover:text-slate-700 transition-colors"><MessageSquare size={11}/></button>
+                <button disabled title="Direct member messages are blocked in this preview" className="p-1 rounded-md hover:bg-slate-100 cursor-pointer text-slate-400 hover:text-slate-700 transition-colors"><MessageSquare size={11}/></button>
               </div>
             </div>
           ))}
@@ -3936,7 +3936,7 @@ export function FigmaLeaderCommandCenter() {
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{LABELS[screen]}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button className="relative w-8 h-8 rounded-full hover:bg-white flex items-center justify-center cursor-pointer transition-colors border border-transparent hover:border-slate-200">
+            <button disabled title="Notifications are blocked in this preview" className="relative w-8 h-8 rounded-full hover:bg-white flex items-center justify-center cursor-pointer transition-colors border border-transparent hover:border-slate-200">
               <Bell size={14} className="text-slate-500"/>
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"/>
             </button>

@@ -286,7 +286,7 @@ function Header({ title, subtitle }: { title: string; subtitle?: string }) {
           <HealthDot status="healthy" />
           <span className="text-[10px] text-emerald-400 font-mono tracking-wider">SYSTEMS OK</span>
         </div>
-        <button className="relative p-1.5 text-slate-600 hover:text-slate-300 transition-colors">
+        <button disabled title="Admin notifications are blocked in this preview" className="relative p-1.5 text-slate-600 hover:text-slate-300 transition-colors">
           <Bell size={15} />
           <span className="absolute top-1 right-1 size-1.5 bg-red-400 rounded-full" />
         </button>
@@ -519,10 +519,10 @@ function UsersPage() {
             </div>
 
             <div className="flex flex-wrap gap-2 pt-1">
-              <button className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Change Role</button>
-              <button className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Edit Modules</button>
-              <button className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Resend Invite</button>
-              <button className="px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[12px] hover:bg-red-500/15 transition-colors">Disable User</button>
+              <button disabled title="Role changes require the secure user-management workflow" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Change Role</button>
+              <button disabled title="Module edits require the secure module-management workflow" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Edit Modules</button>
+              <button disabled title="Invite emails are blocked until external-send approval is complete" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Resend Invite</button>
+              <button disabled title="User disabling requires the secure user-management workflow" className="px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[12px] hover:bg-red-500/15 transition-colors">Disable User</button>
             </div>
           </div>
         )}
@@ -628,9 +628,9 @@ function ChaptersPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <button className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">View Events</button>
-              <button className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Edit Modules</button>
-              <button className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit History</button>
+              <button disabled title="Chapter event drill-in is handled by the staff events view" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">View Events</button>
+              <button disabled title="Module edits require the secure module-management workflow" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Edit Modules</button>
+              <button disabled title="Audit drill-in is available from the audit log surface" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Audit History</button>
             </div>
           </div>
         )}
@@ -907,9 +907,9 @@ function LumaPage() {
       </div>
 
       <div className="flex gap-2">
-        <button className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Test Connection</button>
-        <button className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Sync Mock Event</button>
-        <button className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">View Outbox</button>
+        <button disabled title="Use /admin/integrations/luma for the audited Luma test connection" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Test Connection</button>
+        <button disabled title="Mock event sync is blocked in this static admin shell" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Sync Mock Event</button>
+        <button disabled title="Use /admin/integration-outbox for outbox readback" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">View Outbox</button>
       </div>
     </div>
   );
@@ -1214,7 +1214,7 @@ function PointsPage() {
                   </tbody>
                 </table>
                 <div className="px-5 py-3 border-t border-white/[0.04] flex justify-end">
-                  <button className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] font-semibold hover:bg-sky-500/20 transition-colors">
+                  <button disabled title="Global point defaults require the workflow-admin save path" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] font-semibold hover:bg-sky-500/20 transition-colors">
                     Save Global Defaults
                   </button>
                 </div>
@@ -1701,7 +1701,7 @@ function SmileioCard() {
                 <p className="text-[13px] text-slate-300 font-medium">Points Sync Rules</p>
                 <p className="text-[12px] text-slate-500 mt-0.5">myMEDLIFE actions that trigger Smile.io point awards. Points are identical on both platforms.</p>
               </div>
-              <button className="px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors flex items-center gap-1.5">
+              <button disabled title="Smile.io rule sync is blocked until integration approval is complete" className="px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors flex items-center gap-1.5">
                 <RefreshCw size={11} />
                 Sync All Rules
               </button>
@@ -1732,7 +1732,7 @@ function SmileioCard() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <button className="text-[11px] text-sky-500 hover:text-sky-300 transition-colors">Edit</button>
+                        <button disabled title="Point-rule editing requires the workflow-admin save path" className="text-[11px] text-sky-500 hover:text-sky-300 transition-colors">Edit</button>
                       </td>
                     </tr>
                   ))}
@@ -1765,7 +1765,7 @@ function SmileioCard() {
                       <span className={`text-[15px] font-black ${tier.color}`}>{tier.name}</span>
                       <span className="text-[10px] text-slate-600 font-mono">{tier.range}</span>
                     </div>
-                    <button className="text-[11px] text-sky-500 hover:text-sky-300 transition-colors">Edit</button>
+                    <button disabled title="Tier editing requires the workflow-admin save path" className="text-[11px] text-sky-500 hover:text-sky-300 transition-colors">Edit</button>
                   </div>
                   <div className="space-y-1.5">
                     <div>
@@ -1821,8 +1821,8 @@ function SmileioCard() {
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] text-slate-600">Last fired: {wh.lastFired}</span>
                     <div className="flex gap-2">
-                      <button className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] hover:bg-sky-500/18 transition-colors">Test</button>
-                      <button className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">Edit URL</button>
+                      <button disabled title="Webhook tests are blocked until integration approval is complete" className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] hover:bg-sky-500/18 transition-colors">Test</button>
+                      <button disabled title="Webhook URL edits require the secure integration workflow" className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">Edit URL</button>
                     </div>
                   </div>
                 </div>
@@ -2013,7 +2013,7 @@ function MetaCard() {
                   chapter&apos;s page admins.
                 </p>
               </div>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+              <button disabled title="Facebook page connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
                 <Plus size={12} /> Connect Page
               </button>
             </div>
@@ -2072,7 +2072,7 @@ function MetaCard() {
                 <p className="text-[13px] text-slate-300 font-medium">Instagram Business Accounts</p>
                 <p className="text-[12px] text-slate-500 mt-0.5">Must be linked to a Facebook Page. Enables post publishing and UGC sync (tagged posts, stories).</p>
               </div>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+              <button disabled title="Instagram account connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
                 <Plus size={12} /> Connect Account
               </button>
             </div>
@@ -2249,7 +2249,7 @@ function HootsuiteCard() {
                 <div className="text-[10px] text-slate-700 font-mono uppercase tracking-wider mb-1">OAuth Status</div>
                 <div className="flex items-center gap-2">
                   <Badge status="inactive" label="not authorized" />
-                  <button className="text-[11px] text-sky-400 hover:text-sky-300 transition-colors font-medium">Authorize via OAuth →</button>
+                  <button disabled title="OAuth authorization is blocked until hosted secret ownership is approved" className="text-[11px] text-sky-400 hover:text-sky-300 transition-colors font-medium">Authorize via OAuth →</button>
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-1">
@@ -2295,7 +2295,7 @@ function HootsuiteCard() {
                   Staff can compose, approve, and schedule across all at once.
                 </p>
               </div>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+              <button disabled title="Hootsuite stream creation is blocked until integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
                 <Plus size={12} /> Add Stream
               </button>
             </div>
@@ -2508,11 +2508,11 @@ function IntegrationsPage() {
                 </div>
               )}
               <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
-                <button className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">Test</button>
+                <button disabled title="Integration tests are blocked until provider credentials are approved" className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">Test</button>
                 {int.enabled ? (
-                  <button className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">View Logs</button>
+                  <button disabled title="Provider logs are available only from the audited integration log surface" className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">View Logs</button>
                 ) : (
-                  <button className="px-2.5 py-1 bg-emerald-500/8 text-emerald-400 border border-emerald-500/15 rounded text-[11px] font-medium hover:bg-emerald-500/15 transition-colors">Enable</button>
+                  <button disabled title="Provider enabling is blocked until DS approval is complete" className="px-2.5 py-1 bg-emerald-500/8 text-emerald-400 border border-emerald-500/15 rounded text-[11px] font-medium hover:bg-emerald-500/15 transition-colors">Enable</button>
                 )}
               </div>
             </div>
@@ -2629,7 +2629,7 @@ function SystemHealthPage() {
             {services.filter((s) => s.status === "healthy").length} of {services.length} services healthy
           </div>
         </div>
-        <button className="ml-auto flex items-center gap-1.5 text-[12px] opacity-60 hover:opacity-100 transition-opacity">
+        <button disabled title="System-health refresh is blocked in this static shell" className="ml-auto flex items-center gap-1.5 text-[12px] opacity-60 hover:opacity-100 transition-opacity">
           <RefreshCw size={12} />
           Refresh
         </button>
@@ -3355,15 +3355,15 @@ function McpPage() {
                   <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
                     {isConnected ? (
                       <>
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+                        <button disabled title="MCP connection tests require audited provider credentials" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
                           <RefreshCw size={11} />
                           Test Connection
                         </button>
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">
+                        <button disabled title="MCP logs are available only from the audited integration log surface" className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">
                           <FileText size={11} />
                           View Logs
                         </button>
-                        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium hover:bg-red-500/15 transition-colors ml-auto">
+                        <button disabled title="MCP disconnect is blocked until DS approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium hover:bg-red-500/15 transition-colors ml-auto">
                           Disconnect
                         </button>
                       </>

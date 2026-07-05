@@ -531,7 +531,7 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
                     {chapter.eventsThisYear > 0 ? `${Math.min(94, 58 + chapter.eventsThisYear)}%` : "—"}
                   </div>
                 </div>
-                <button className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors">
+                <button onClick={() => setShowSurvey(true)} className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors">
                   <Send className="w-3 h-3" /> Send NPS Survey
                 </button>
               </div>
@@ -617,13 +617,13 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
 
         {/* Footer */}
         <div className="border-t border-border p-4 flex gap-2 flex-shrink-0">
-          <button className="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5">
+          <button disabled title="Content sending is blocked until external-send approval is complete" className="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5">
             <Send className="w-3.5 h-3.5" /> Send Content
           </button>
           <button onClick={() => setShowSurvey(true)} className="flex-1 bg-secondary border border-primary/20 text-primary py-2 rounded-lg text-sm font-semibold hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5">
             <Star className="w-3.5 h-3.5" /> Send NPS Survey
           </button>
-          <button className="px-3 py-2 bg-muted text-foreground rounded-lg text-sm hover:bg-muted/70 transition-colors">
+          <button disabled title="External chapter links are blocked in this preview" className="px-3 py-2 bg-muted text-foreground rounded-lg text-sm hover:bg-muted/70 transition-colors">
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -719,7 +719,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           </select>
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
-        <button className="ml-auto flex items-center gap-1.5 px-3 py-2 bg-muted text-foreground rounded-lg text-xs font-semibold hover:bg-muted/70 transition-colors">
+        <button disabled title="Export is blocked until reporting approval is complete" className="ml-auto flex items-center gap-1.5 px-3 py-2 bg-muted text-foreground rounded-lg text-xs font-semibold hover:bg-muted/70 transition-colors">
           <Download className="w-3.5 h-3.5" /> Export
         </button>
       </div>
@@ -1576,14 +1576,14 @@ function ProofUGCQueue() {
 
               {/* Actions */}
               <div className="space-y-1.5">
-                <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center justify-center gap-1.5">
+                <button disabled title="Best-practice publishing is blocked until feed approval is complete" className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center justify-center gap-1.5">
                   <Star className="w-3.5 h-3.5" /> Mark as Best Practice
                 </button>
                 <div className="flex gap-1.5">
-                  <button className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
+                  <button disabled title="Change requests are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
                     Request Changes
                   </button>
-                  <button className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
+                  <button disabled title="Reject decisions are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
                     Reject
                   </button>
                 </div>
@@ -1721,13 +1721,13 @@ function BestPracticesLibrary() {
               </div>
             </div>
             <div className="px-4 pb-4 flex gap-2">
-              <button className="flex-1 py-1.5 bg-primary text-white rounded text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1">
+              <button disabled title="Feed sharing is blocked until external publishing approval is complete" className="flex-1 py-1.5 bg-primary text-white rounded text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1">
                 <Send className="w-3 h-3" /> Share to Feed
               </button>
-              <button className="flex-1 py-1.5 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors flex items-center justify-center gap-1">
+              <button disabled title="Coach emails are blocked until external-send approval is complete" className="flex-1 py-1.5 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors flex items-center justify-center gap-1">
                 <Mail className="w-3 h-3" /> Send to Coaches
               </button>
-              <button className="py-1.5 px-2 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors">
+              <button disabled title="Bookmarking best practices is blocked in this preview" className="py-1.5 px-2 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors">
                 <Bookmark className="w-3 h-3" />
               </button>
             </div>
@@ -1797,7 +1797,7 @@ function AdminHealth() {
             </div>
             <div className="flex gap-2">
               <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-semibold">{outbox.filter(o=>o.status==="failed").length} failed</span>
-              <button className="flex items-center gap-1 text-xs text-primary hover:underline"><RotateCcw className="w-3 h-3" /> Retry Failed</button>
+              <button disabled title="Outbox retries are blocked until automation approval is complete" className="flex items-center gap-1 text-xs text-primary hover:underline"><RotateCcw className="w-3 h-3" /> Retry Failed</button>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -1874,7 +1874,7 @@ function AdminHealth() {
 
 type AdminRole = "ds-admin" | "super-admin";
 
-function AdminRoleGate({ onGrant }: { onGrant: (role: AdminRole) => void }) {
+function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void; onBack: () => void }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
 
   return (
@@ -1934,7 +1934,7 @@ function AdminRoleGate({ onGrant }: { onGrant: (role: AdminRole) => void }) {
 
         <p className="text-[11px] text-slate-700">
           Not DS Admin or Super Admin?{" "}
-          <button className="text-slate-500 underline underline-offset-2">Return to dashboard</button>
+          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">Return to dashboard</button>
         </p>
       </div>
     </div>
@@ -2071,7 +2071,7 @@ export function FigmaStaffCommandCenter() {
 
         {/* Admin — role gate (shown before access granted) */}
         {activeScreen === "admin" && !adminRole && (
-          <AdminRoleGate onGrant={(role) => setAdminRole(role)} />
+          <AdminRoleGate onGrant={(role) => setAdminRole(role)} onBack={() => handleNavChange("chapters")} />
         )}
 
         {/* All other non-admin, non-SOP screens */}

@@ -326,7 +326,7 @@ function StudentHome({
             <h1 className="text-white text-2xl font-extrabold mt-1">Hi, Sofia 👋</h1>
             <p className="text-blue-200 text-sm mt-1">You are making a difference.</p>
           </div>
-          <button className="relative p-2.5 rounded-xl bg-white/10 mt-1">
+          <button disabled title="Notifications are blocked in this preview" className="relative p-2.5 rounded-xl bg-white/10 mt-1">
             <Bell size={20} className="text-white" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full" />
           </button>
@@ -412,7 +412,7 @@ function StudentHome({
                   {e.rsvp ? (
                     <Pill label="RSVP'd" variant="green" />
                   ) : (
-                    <button className="text-xs font-bold text-primary border border-primary/50 px-3 py-1.5 rounded-xl hover:bg-primary/5 flex-shrink-0">
+                    <button onClick={(event) => { event.stopPropagation(); navigate("event-detail"); }} className="text-xs font-bold text-primary border border-primary/50 px-3 py-1.5 rounded-xl hover:bg-primary/5 flex-shrink-0">
                       RSVP
                     </button>
                   )}
@@ -457,7 +457,7 @@ function StudentHome({
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Take Action: My Tasks</SLabel>
-            <button className="text-primary text-xs font-semibold">See all</button>
+            <button onClick={() => navigate("action")} className="text-primary text-xs font-semibold">See all</button>
           </div>
           <div className="space-y-2">
             {[
@@ -897,7 +897,7 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
           </div>
 
           {tab === "screenshot" && (
-            <button className="w-full border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-3 py-10 hover:border-primary/40 hover:bg-muted/50 transition-colors">
+            <button disabled title="File uploads are blocked in this preview until storage approval is complete" className="w-full border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-3 py-10 hover:border-primary/40 hover:bg-muted/50 transition-colors">
               <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
                 <Camera size={22} className="text-primary" />
               </div>
@@ -1070,7 +1070,7 @@ function LeadershipDashboard({ navigate }: { navigate: (s: Screen) => void }) {
             <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">UCLA MEDLIFE</p>
             <h1 className="text-white text-2xl font-extrabold mt-1">Leader Hub</h1>
           </div>
-          <button className="relative p-2.5 bg-white/10 rounded-xl">
+          <button disabled title="Notifications are blocked in this preview" className="relative p-2.5 bg-white/10 rounded-xl">
             <Bell size={20} className="text-white" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full" />
           </button>
@@ -1127,7 +1127,7 @@ function LeadershipDashboard({ navigate }: { navigate: (s: Screen) => void }) {
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Member Status</SLabel>
-            <button className="text-primary text-xs font-semibold">All members</button>
+            <button disabled title="Full member list is available in the leader workspace" className="text-primary text-xs font-semibold">All members</button>
           </div>
           <Card padding={false}>
             {members.map((m, i) => (
@@ -1341,6 +1341,8 @@ function AssignAction({ navigate }: { navigate: (s: Screen) => void }) {
                 {["Screenshot", "Link", "Short text update", "Screenshot + text"].map((e) => (
                   <button
                     key={e}
+                    disabled
+                    title="Evidence requirement editing is blocked in this preview"
                     className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground hover:bg-muted"
                   >
                     {e}
@@ -1463,7 +1465,7 @@ function ReviewEvidence({ navigate }: { navigate: (s: Screen) => void }) {
                   <div className="text-center">
                     <Camera size={20} className="text-muted-foreground mx-auto" />
                     <p className="text-xs text-muted-foreground mt-1">Screenshot attached</p>
-                    <button className="text-xs text-primary font-semibold mt-1">View full</button>
+                    <button disabled title="Full evidence preview is blocked in this review shell" className="text-xs text-primary font-semibold mt-1">View full</button>
                   </div>
                 </div>
               ) : item.type === "Link" ? (
@@ -1927,7 +1929,7 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
                 Points are earned by completing and submitting evidence for assigned chapter actions.
                 They reflect real engagement — not just showing up, but contributing meaningfully to the mission.
               </p>
-              <button className="text-primary text-xs font-bold mt-2">See how to earn more points →</button>
+              <button onClick={() => navigate("campaign")} className="text-primary text-xs font-bold mt-2">See how to earn more points →</button>
             </div>
           </div>
         </Card>
@@ -2274,7 +2276,7 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
             <ChevronLeft size={18} />
           </button>
           <p className="text-white text-sm font-bold uppercase tracking-widest">Event RSVP</p>
-          <button className="bg-white/15 backdrop-blur-sm text-white rounded-full p-2.5 hover:bg-white/25 transition-colors">
+          <button disabled title="Event sharing is blocked in this preview until Luma sharing is approved" className="bg-white/15 backdrop-blur-sm text-white rounded-full p-2.5 hover:bg-white/25 transition-colors">
             <Share2 size={16} />
           </button>
         </div>
@@ -2354,10 +2356,10 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
             </div>
           </div>
           <div className="flex gap-2 pt-3 border-t border-border">
-            <button className="flex-1 bg-muted text-foreground text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-secondary transition-colors">
+            <button disabled title="Calendar export is blocked in this preview" className="flex-1 bg-muted text-foreground text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-secondary transition-colors">
               <CalendarDays size={15} className="text-primary" /> Add to Calendar
             </button>
-            <button className="flex-1 bg-muted text-foreground text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-secondary transition-colors">
+            <button disabled title="Event sharing is blocked in this preview until Luma sharing is approved" className="flex-1 bg-muted text-foreground text-sm font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 hover:bg-secondary transition-colors">
               <Share2 size={15} className="text-primary" /> Share
             </button>
           </div>
@@ -3142,7 +3144,7 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground px-3 py-2.5 rounded-xl hover:bg-muted transition-colors">
+            <button disabled title="Story saving is blocked in this preview" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground px-3 py-2.5 rounded-xl hover:bg-muted transition-colors">
               <Bookmark size={15} />
               <span className="hidden sm:inline">Save</span>
             </button>
@@ -3241,7 +3243,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                       </div>
                     </div>
                     {/* Options dots */}
-                    <button className="text-black px-1 py-1 text-lg font-bold leading-none tracking-tighter">···</button>
+                    <button disabled title="Story options are blocked in this preview" className="text-black px-1 py-1 text-lg font-bold leading-none tracking-tighter">···</button>
                   </div>
 
                   {/* Full-width image — NO border radius, NO text on it */}
@@ -3336,7 +3338,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
               <ChevronRight size={14} className="text-muted-foreground" />
               <span className="text-sm font-semibold text-foreground">MEDLIFE Stories</span>
             </div>
-            <button className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+            <button disabled title="Story creation is blocked until publishing approval is complete" className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
               <Sparkles size={12} /> Add Story
             </button>
           </div>

@@ -49,6 +49,7 @@ Purpose: give reviewers a plain map from visible app surfaces to the simple back
 | Feed/story sharing | `/app`, `/leader`, `/staff` | feed/outbox/proof sharing services | `placeholder_blocked` | consent and moderation gate first |
 | NPS send / content send | `/staff` | external-send outbox | `placeholder_blocked` | keep disabled until send policy approved |
 | Luma provider setup | `/admin/integrations/luma` | secret-free provider status and outbox safety service | `wired_staging` | keep create/update/import controls blocked until separately approved |
+| Copied Figma shell CTA safety | member, leader, staff, admin Figma shell components | visible buttons/links | `wired_staging` | static guard blocks fake links, empty handlers, JavaScript void links, and raw buttons without handler/submit/disabled state |
 | API keys / integrations | `/admin` | server-only secret/provider abstraction | `needs_decision` | keep raw-key entry out of browser routes |
 
 ## Route Guard Contract

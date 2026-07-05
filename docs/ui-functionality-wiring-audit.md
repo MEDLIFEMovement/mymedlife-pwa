@@ -17,7 +17,7 @@ Status values:
 
 The exact Figma shells are present for the member app, Student Leadership Center, and Staff Command Center, but most Figma controls are still shell/state controls. The only safe path is to wire one action family at a time, starting with events, RSVP, attendance, points, and leaderboards.
 
-Shared Figma button helpers in the member and leadership shells now fail closed: if a copied shell button has no action handler yet, it renders disabled/blocked instead of silently accepting a click.
+Shared Figma button helpers in the member and leadership shells now fail closed: if a copied shell button has no action handler yet, it renders disabled/blocked instead of silently accepting a click. A static CTA safety test also scans the copied member, leader, staff, and admin Figma shells so raw `<button>` openings cannot ship without either a handler, submit intent, or disabled/blocked state.
 
 ## `/login`
 
@@ -38,7 +38,7 @@ Shared Figma button helpers in the member and leadership shells now fail closed:
 | RSVP / check-in / points impact | `figma-member-mobile-home.tsx` | member | Visible local flow, no live external write | Luma staging pilot/write path later | member workspace | Luma RSVP/attendance flags | `placeholder_blocked` |
 | Points and chapter leaderboard | `figma-member-mobile-home.tsx` | member | Local/readback leaderboard screen | `src/services/launch-lane-points-readback.ts` | member workspace | none | `wired_staging` |
 | Role preview buttons | `figma-member-mobile-home.tsx` | staff/admin preview | Local preview-only screens | `src/services/workspace-access.ts` | permitted preview role | none | `placeholder_blocked` |
-| Stories cards/likes/share/source button | `figma-member-mobile-home.tsx` | member | Local story UI only; external source button is disabled with blocked-state copy | future feed/story services | member workspace | feed publish flags | `placeholder_blocked` |
+| Upload/share/story source buttons | `figma-member-mobile-home.tsx` | member | Upload, calendar export, share, story-save, story-create, and external source buttons are visibly disabled/blocked | future proof/feed/story/Luma sharing services | member workspace | upload/feed/share flags | `disabled_visible` |
 | Admin preview integration events | `figma-member-mobile-home.tsx` | staff/admin preview | Opens a local blocked-state notice pointing reviewers to `/admin/integration-outbox`; no provider logs or writes exposed | `/admin/integration-outbox` | DS Admin/Super Admin | none | `disabled_visible` |
 
 ## `/leader` Student Leadership Center
@@ -54,7 +54,7 @@ Shared Figma button helpers in the member and leadership shells now fail closed:
 | Create Event | `src/components/figma-leader-create-event-screen.tsx` | leader | Stages event locally and shows no-send state | Luma create/update path later | leader workspace | Luma event-write flags | `placeholder_blocked` |
 | Assign Task modal | `figma-leader-command-center.tsx` | leader | Local modal/confirmation only | `src/services/assignment-create-write.ts` | chapter-scoped leader | assignment write flags | `placeholder_blocked` |
 | Promote Emerging Leader modal | `figma-leader-command-center.tsx` | leader | Local modal/confirmation only | future role/pipeline service | chapter-scoped leader | role-change flags | `placeholder_blocked` |
-| Impact / Bridge Videos / MEDLIFE Stories | Figma leader components | leader | Local content views; external story source button is disabled with blocked-state copy | future proof/feed/story services | leader workspace | feed/proof flags | `placeholder_blocked` |
+| Impact / Bridge Videos / MEDLIFE Stories | Figma leader components | leader | Local content views; share/save/message/source buttons without approved behavior are visibly disabled/blocked | future proof/feed/story services | leader workspace | feed/proof flags | `disabled_visible` |
 | Succession / Current Leaders / Values / Training | Figma leader components | leader | Local shell surfaces | future leadership pipeline services | leader workspace | none | `wired_staging` |
 | Profile view switcher | `figma-leader-command-center.tsx` | multi-role user | Local visual switcher only | workspace account menu/preview links | assigned roles | none | `needs_decision` |
 
@@ -64,10 +64,10 @@ Shared Figma button helpers in the member and leadership shells now fail closed:
 |---|---|---:|---|---|---|---|---|
 | Top nav: Chapters, Campaigns, Proof/UGC, Best Practices, Campaign SOPs, Admin | `src/components/figma-staff-command-center.tsx` | staff/coach/admin | Figma-owned screen state | future route-backed staff views | staff workspace | none | `wired_staging` |
 | Portfolio search/filter/sort/table | `figma-staff-command-center.tsx` | staff/coach | Local Figma table filtering/drawer, including approved chapter type filter labels | `src/services/staff-command-center.ts`, `src/services/staff-chapter-type.ts` | staff workspace | none | `wired_staging` |
-| Chapter detail drawer / NPS modal | `figma-staff-command-center.tsx` | staff/coach | Local drawer/modal; no send | future NPS/event service | staff workspace | external-send flags | `placeholder_blocked` |
+| Chapter detail drawer / NPS modal | `figma-staff-command-center.tsx` | staff/coach | Local drawer/modal; NPS preview opens locally, content/external sends stay disabled | future NPS/event service | staff workspace | external-send flags | `placeholder_blocked` |
 | Campaign operations tabs | `figma-staff-command-center.tsx` | staff | Local campaign tables | workflow/SOP runtime later | staff workspace | campaign flags | `wired_staging` |
 | Proof/UGC review queue | `figma-staff-command-center.tsx` | staff/admin | Local review UI only | proof sharing/review services | staff/admin | proof publish flags | `placeholder_blocked` |
-| Best Practices library actions | `figma-staff-command-center.tsx` | staff | Local share/send/bookmark only | feed/outbox later | staff workspace | external-send flags | `placeholder_blocked` |
+| Best Practices library actions | `figma-staff-command-center.tsx` | staff | Share/send/bookmark controls are visibly disabled until feed/outbox writes are approved | feed/outbox later | staff workspace | external-send flags | `disabled_visible` |
 | Campaign SOP Builder | `figma-staff-command-center.tsx`, `figma-sop-builder.tsx` | staff/admin | Local builder shell | `/admin/sop-library`, `/admin/sop-builder/*` | staff/admin by policy | workflow flags | `wired_staging` |
 | Admin entry | `figma-staff-command-center.tsx` | DS/admin | Opens redacted Figma admin overlay only after role choice | `/admin` route family | DS Admin/Super Admin | none | `wired_staging` |
 
@@ -80,7 +80,7 @@ Shared Figma button helpers in the member and leadership shells now fail closed:
 | Audit log | `/admin/audit-log` | DS/Super Admin | Readback/review surface | `src/services/admin-audit-log-review.ts` | DS/Super Admin | none | `wired_staging` |
 | Integration outbox | `/admin/integration-outbox` | DS/Super Admin | Outbox safety/readback | `src/services/admin-integration-outbox-workspace.ts` | DS/Super Admin | external-send flags | `wired_staging` |
 | Luma integration status | `/admin/integrations/luma` | DS/Super Admin | Secret-free provider mode, safe test posture, last sync, error log, and outbox status | `src/services/admin-luma-integration-status.ts` | DS Admin/Super Admin | Luma env flags | `wired_staging` |
-| API keys / provider setup | Admin shell | DS/Super Admin | Must remain secret-free | future server-only secret abstraction | DS/Super Admin + step-up | provider flags | `needs_decision` |
+| API keys / provider setup | Admin shell | DS/Super Admin | Secret/provider controls without an audited backend path are visibly disabled/blocked; existing gated API-key actions still require step-up | future server-only secret abstraction | DS/Super Admin + step-up | provider flags | `disabled_visible` |
 
 ## `/app/slt-prep`
 
@@ -94,5 +94,6 @@ Shared Figma button helpers in the member and leadership shells now fail closed:
 - The Figma Create Event form now says `Event Staged`, not `Event Published`, and explicitly says no email, WhatsApp/SMS, Luma write, external send, or production publish occurred.
 - Chapter type now uses the approved values `high_school`, `college_university`, and `needs_review`; admin list/detail/forms, admin/staff chapter filters, staff chapter list/detail, and leader chapter header show the approved labels.
 - Luma disabled-mode fallback has service-level proof: local event prep, member RSVP, attendance, points, disabled outbox, and audit records still work when no Luma link or QR is available.
+- Copied Figma shells now pass the CTA safety guard: no fake `href="#"`, empty click handlers, `javascript:void`, or raw buttons lacking handler/submit/disabled state.
 - PR #125 contains older Luma pilot work but is too stale to merge safely; it currently conflicts with 86 files against `main`.
 - HubSpot is not part of this run.

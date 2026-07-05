@@ -330,13 +330,13 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                                 <div className="text-2xl mb-1">📸</div>
                                 <div className="text-xs font-bold text-slate-700">Feed Post</div>
                                 <div className="text-[10px] text-slate-400">1080 × 1080 template</div>
-                                <button className="mt-2 text-[10px] font-semibold px-2 py-1 bg-pink-500 text-white rounded-lg cursor-pointer">Copy Caption</button>
+                                <button disabled title="Caption copying is blocked in this preview" className="mt-2 text-[10px] font-semibold px-2 py-1 bg-pink-500 text-white rounded-lg cursor-pointer">Copy Caption</button>
                               </div>
                               <div className="p-3 rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 text-center">
                                 <div className="text-2xl mb-1">✨</div>
                                 <div className="text-xs font-bold text-slate-700">Story</div>
                                 <div className="text-[10px] text-slate-400">1080 × 1920 template</div>
-                                <button className="mt-2 text-[10px] font-semibold px-2 py-1 bg-purple-500 text-white rounded-lg cursor-pointer">Copy Caption</button>
+                                <button disabled title="Caption copying is blocked in this preview" className="mt-2 text-[10px] font-semibold px-2 py-1 bg-purple-500 text-white rounded-lg cursor-pointer">Copy Caption</button>
                               </div>
                             </div>
                             <div className="p-2.5 bg-white rounded-lg border border-slate-200 text-xs text-slate-600 font-mono leading-relaxed">
@@ -366,7 +366,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                                   {timeRange && <span>⏰ {timeRange}</span>}
                                 </div>
                                 {(address || virtualLink) && <div className="text-[11px] text-slate-500">📍 {address || virtualLink}</div>}
-                                <button className="mt-2 px-3 py-1.5 bg-[#1A56E8] text-white text-[10px] font-bold rounded-lg">RSVP Now →</button>
+                                <button disabled title="Email RSVP links are preview-only until Luma sharing is approved" className="mt-2 px-3 py-1.5 bg-[#1A56E8] text-white text-[10px] font-bold rounded-lg">RSVP Now →</button>
                               </div>
                             </div>
                           </div>
@@ -387,8 +387,8 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                               <div className="text-right mt-1 text-[9px] text-slate-400">Sent via myMEDLIFE</div>
                             </div>
                             <div className="flex gap-2">
-                              <button className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-[11px] font-semibold text-slate-600 cursor-pointer hover:bg-slate-50 text-center">📋 Copy for WhatsApp</button>
-                              <button className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-[11px] font-semibold text-slate-600 cursor-pointer hover:bg-slate-50 text-center">💬 Copy for SMS</button>
+                              <button disabled title="WhatsApp copy is blocked in this preview" className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-[11px] font-semibold text-slate-600 cursor-pointer hover:bg-slate-50 text-center">📋 Copy for WhatsApp</button>
+                              <button disabled title="SMS copy is blocked in this preview" className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-[11px] font-semibold text-slate-600 cursor-pointer hover:bg-slate-50 text-center">💬 Copy for SMS</button>
                             </div>
                           </div>
                         )}
@@ -448,7 +448,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                 {/* Description */}
                 {description && <p className="text-[11px] text-slate-500 leading-relaxed border-t border-slate-100 pt-3">{description}</p>}
                 {/* RSVP button */}
-                <button className="w-full py-2.5 rounded-xl font-bold text-xs text-white mt-1 cursor-default" style={{ background: chosenType?.color || BLUE }}>
+                <button disabled title="Preview RSVP is blocked until the event is created" className="w-full py-2.5 rounded-xl font-bold text-xs text-white mt-1 cursor-default" style={{ background: chosenType?.color || BLUE }}>
                   RSVP for This Event
                 </button>
                 {/* Sharing summary */}

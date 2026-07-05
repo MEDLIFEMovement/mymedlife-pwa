@@ -16,6 +16,29 @@ function readProjectFile(path: string) {
   return readFileSync(join(process.cwd(), path), "utf8");
 }
 
+function findUnsafeButtonOpenings(source: string) {
+  const lines = source.split("\n");
+  const unsafe: string[] = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    if (!lines[index]?.includes("<button")) continue;
+
+    let chunk = lines[index] ?? "";
+    let cursor = index;
+
+    while (!chunk.includes(">") && cursor + 1 < lines.length && cursor < index + 8) {
+      cursor += 1;
+      chunk += `\n${lines[cursor] ?? ""}`;
+    }
+
+    if (!/onClick=|disabled|type="submit"|aria-disabled/.test(chunk)) {
+      unsafe.push(`${index + 1}: ${chunk.trim().replace(/\s+/g, " ").slice(0, 180)}`);
+    }
+  }
+
+  return unsafe;
+}
+
 describe("copied Figma shell CTA safety", () => {
   it("does not keep fake href placeholders or empty click handlers", () => {
     for (const file of figmaShellFiles) {
@@ -26,6 +49,12 @@ describe("copied Figma shell CTA safety", () => {
       expect(source, file).not.toContain("onClick={e=>e.preventDefault()}");
       expect(source, file).not.toContain("onClick={(e) => e.preventDefault()}");
       expect(source, file).not.toMatch(/javascript:void/i);
+    }
+  });
+
+  it("does not leave raw button openings without a handler or disabled state", () => {
+    for (const file of figmaShellFiles) {
+      expect(findUnsafeButtonOpenings(readProjectFile(file)), file).toEqual([]);
     }
   });
 

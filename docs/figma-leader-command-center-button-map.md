@@ -38,7 +38,7 @@ attach behavior behind these exact controls instead of changing the shell.
   - `Succession`
   - `Values`
   - `Leadership Training`
-- Bell button: visible notification affordance; no backend write in this pass.
+- Bell button: visible notification affordance and disabled with blocked-state copy; no backend write in this pass.
 - Footer profile button: opens the profile/menu state in the copied shell.
 
 ## Chapter Home
@@ -102,6 +102,8 @@ attach behavior behind these exact controls instead of changing the shell.
 - Social/WhatsApp/SMS copy buttons.
 - Preview RSVP button.
 - Footer publish button.
+- Copy/share/preview RSVP controls are visibly disabled where they would imply
+  live sharing, messaging, or Luma write behavior before approval.
 
 ## Impact / Bridge / Stories
 
@@ -127,7 +129,7 @@ attach behavior behind these exact controls instead of changing the shell.
   - story cards
   - play button
   - modal close buttons
-  - share/bookmark controls
+  - share/bookmark controls without approved behavior are visibly disabled
   - external story source buttons are disabled/blocked until feed-sharing and
     external-link approval is complete.
 
@@ -182,5 +184,8 @@ attach behavior behind these exact controls instead of changing the shell.
 - All controls are local-state only in this pass.
 - No Luma writes, attendance writes, uploads, emails, SMS, HubSpot, n8n,
   warehouse, Power BI, or production sends are enabled.
+- The copied shell is covered by `tests/figma-shell-cta-safety.test.ts`, which
+  blocks fake links, empty handlers, JavaScript void links, and raw buttons
+  without a handler or disabled state.
 - The next pass should wire one button family at a time and add behavior tests
   for that family.
