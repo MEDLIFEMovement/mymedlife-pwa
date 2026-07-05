@@ -358,6 +358,7 @@ pnpm production:launch-check --packet production-rollout-packet.json
 pnpm production:pilot-event-proof --packet production-rollout-packet.json
 pnpm production:data-counts > production-live-data-counts.txt
 pnpm production:signed-in-route-proof --packet production-rollout-packet.json
+pnpm production:invite-batches --packet production-rollout-packet.json
 pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org
 ```
 
@@ -372,6 +373,8 @@ Before any production data apply, confirm:
   READY`.
 - The saved production live-data count proof says `Production live data count check: READY` with at least 30 active chapters, 500 approved memberships, 5 production chapter events, and 5 production Luma event links.
 - The signed-in route proof check says `Production signed-in route proof: READY`.
+- The invite-batch check says `Production invite batch readiness: READY` and
+  batch 1 is the reviewed five-chapter pilot group.
 - The invite gate says `30-chapter invite gate: READY`.
 - Nick approves the 30 chapters.
 - DS approves the user and role apply path.
