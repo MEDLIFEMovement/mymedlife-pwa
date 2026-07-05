@@ -26,8 +26,8 @@ describe("admin system health review", () => {
     expect(review.secretsShown).toBe(0);
     expect(review.counts).toEqual({
       total: 9,
-      localReady: 3,
-      mockSafe: 2,
+      localReady: 4,
+      mockSafe: 1,
       needsReview: 0,
       blockedBeforeLive: 4,
     });

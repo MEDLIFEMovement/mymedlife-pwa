@@ -73,7 +73,10 @@ describe("admin audit log review", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const review = getAdminAuditLogReview(
       actor,
-      getMockReadOnlyAppData("Testing mock audit posture."),
+      {
+        ...getMockReadOnlyAppData("Testing mock audit posture."),
+        auditLogs: [],
+      },
     );
 
     expect(review.canReadRows).toBe(true);

@@ -1,8 +1,8 @@
 "use client";
-
 /* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars */
 
-import { useState, useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard, Megaphone, Calendar, Rss, Film,
   Database, BarChart3, Settings, Search, ChevronDown,
@@ -24,6 +24,11 @@ import {
   LibraryScreen as SOPLibraryScreen,
   BuilderScreen as SOPBuilderScreen,
 } from "@/components/figma-sop-builder";
+import {
+  StaffLaunchEventsOperations,
+  StaffLaunchOrganizationLeaderboard,
+} from "@/components/staff-launch-events-panels";
+import { getStaffChapterTypeFilterLabel, getStaffChapterTypeLabel, getStaffChapterTypeValue, staffChapterTypeFilterOptions, type StaffLaunchChapterTypeFilter } from "@/services/staff-chapter-type";
 import type { SOPCampaign } from "@/components/figma-sop-builder";
 import { FigmaAdminPanel as AdminPanel } from "@/components/figma-admin-panel";
 
@@ -223,7 +228,7 @@ const UGC_CARDS: ContentCard[] = [
 ];
 
 const BEST_PRACTICES: BestPractice[] = [
-  { id:"bp1", title:"QR Code Lead Capture at Multi-Event Weekend", chapter:"Stanford University", campaign:"Rush Month", why:"Chapter deployed QR codes at 5 events simultaneously with real-time HubSpot sync, capturing 91 qualified leads in 48 hours.", kpiResult:"+91 leads, 74% RSVP rate", type:"Event Strategy", country:"USA", engagementScore:97, recommended:["Yale University","Johns Hopkins","PUCP Lima"] },
+  { id:"bp1", title:"QR Code Lead Capture at Multi-Event Weekend", chapter:"Stanford University", campaign:"Rush Month", why:"Chapter deployed QR codes at 5 events simultaneously with a mock-safe CRM import checklist, capturing 91 qualified leads in 48 hours.", kpiResult:"+91 leads, 74% RSVP rate", type:"Event Strategy", country:"USA", engagementScore:97, recommended:["Yale University","Johns Hopkins","PUCP Lima"] },
   { id:"bp2", title:"Morning Motivation Text Sequence for Members", chapter:"UC Berkeley", campaign:"Chapter Engagement", why:"Coach co-created a 5-day WhatsApp check-in series that boosted assignment completion from 62% to 89% in 2 weeks.", kpiResult:"+27% assignment completion", type:"Coach Communication", country:"USA", engagementScore:92, recommended:["UFMG Belo Horizonte","UNAN Managua","University of Ghana"] },
   { id:"bp3", title:"'Why I Travel' Bridge Video Campaign", chapter:"UNAM Mexico City", campaign:"Moving Mountains", why:"Leaders filmed 3-minute personal story videos and shared them on chapter social media before Rush, driving 40% more RSVPs than previous year.", kpiResult:"+40% RSVPs vs. baseline", type:"Content Strategy", country:"Mexico", engagementScore:88, recommended:["UNMSM Lima","Universidad de Chile","UNAH Tegucigalda"] },
   { id:"bp4", title:"Faculty Partnership for Tabling Prime Spots", chapter:"University of Florida", campaign:"Rush Month", why:"Chapter partnered with Health Sciences dean office to secure 3 high-traffic tabling locations, resulting in 104 leads captured.", kpiResult:"104 leads, best in region", type:"Outreach Strategy", country:"USA", engagementScore:85, recommended:["McGill University","University of Toronto"] },
@@ -458,6 +463,7 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{chapter.country}</span>
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{chapter.activeMembers} members</span>
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{chapter.eventsThisYear} events this year</span>
+              <span className="rounded-full bg-primary/8 px-2 py-0.5 font-semibold text-primary">{getStaffChapterTypeLabel(chapter)}</span>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
@@ -530,7 +536,7 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
                     {chapter.eventsThisYear > 0 ? `${Math.min(94, 58 + chapter.eventsThisYear)}%` : "—"}
                   </div>
                 </div>
-                <button className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors">
+                <button onClick={() => setShowSurvey(true)} className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors">
                   <Send className="w-3 h-3" /> Send NPS Survey
                 </button>
               </div>
@@ -616,13 +622,13 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
 
         {/* Footer */}
         <div className="border-t border-border p-4 flex gap-2 flex-shrink-0">
-          <button className="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5">
+          <button disabled title="Content sending is blocked until external-send approval is complete" className="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5">
             <Send className="w-3.5 h-3.5" /> Send Content
           </button>
           <button onClick={() => setShowSurvey(true)} className="flex-1 bg-secondary border border-primary/20 text-primary py-2 rounded-lg text-sm font-semibold hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5">
             <Star className="w-3.5 h-3.5" /> Send NPS Survey
           </button>
-          <button className="px-3 py-2 bg-muted text-foreground rounded-lg text-sm hover:bg-muted/70 transition-colors">
+          <button disabled title="External chapter links are blocked in this preview" className="px-3 py-2 bg-muted text-foreground rounded-lg text-sm hover:bg-muted/70 transition-colors">
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -641,6 +647,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
   const [search, setSearch] = useState("");
   const [regionFilter, setRegionFilter] = useState("all");
   const [coachFilter, setCoachFilter] = useState("all");
+  const [chapterTypeFilter, setChapterTypeFilter] = useState<StaffLaunchChapterTypeFilter>("all");
   const [sortBy, setSortBy] = useState<"name"|"nps"|"events"|"leads"|"leadPct"|"points">("name");
   const [showSurvey, setShowSurvey] = useState(false);
 
@@ -652,6 +659,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
       if (search && !c.name.toLowerCase().includes(search.toLowerCase()) && !c.school.toLowerCase().includes(search.toLowerCase())) return false;
       if (regionFilter !== "all" && c.medlifeRegion !== regionFilter) return false;
       if (coachFilter !== "all" && c.coach !== coachFilter) return false;
+      if (chapterTypeFilter !== "all" && getStaffChapterTypeValue(c) !== chapterTypeFilter) return false;
       return true;
     });
     if (sortBy === "nps")     list = [...list].sort((a,b) => (b.avgNpsScore ?? -999) - (a.avgNpsScore ?? -999));
@@ -660,7 +668,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
     if (sortBy === "leadPct") list = [...list].sort((a,b) => b.leadAttendancePct - a.leadAttendancePct);
     if (sortBy === "points")  list = [...list].sort((a,b) => b.totalPointsYear - a.totalPointsYear);
     return list;
-  }, [search, regionFilter, coachFilter, sortBy]);
+  }, [search, regionFilter, coachFilter, chapterTypeFilter, sortBy]);
 
   const avgEventsPerMonth = (CHAPTERS.reduce((a,c) => a + c.eventsThisMonth, 0) / CHAPTERS.length).toFixed(1);
 
@@ -698,6 +706,13 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
         <div className="relative">
+          <select value={chapterTypeFilter} onChange={e => setChapterTypeFilter(e.target.value as StaffLaunchChapterTypeFilter)}
+            className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 font-medium text-foreground">
+            {staffChapterTypeFilterOptions.map(type => <option key={type} value={type}>{getStaffChapterTypeFilterLabel(type)}</option>)}
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        </div>
+        <div className="relative">
           <select value={sortBy} onChange={e => setSortBy(e.target.value as typeof sortBy)}
             className="bg-muted/60 text-sm px-3 py-2 rounded-lg pr-7 appearance-none cursor-pointer focus:outline-none font-medium text-foreground">
             <option value="name">Sort: Name</option>
@@ -709,7 +724,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           </select>
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
-        <button className="ml-auto flex items-center gap-1.5 px-3 py-2 bg-muted text-foreground rounded-lg text-xs font-semibold hover:bg-muted/70 transition-colors">
+        <button disabled title="Export is blocked until reporting approval is complete" className="ml-auto flex items-center gap-1.5 px-3 py-2 bg-muted text-foreground rounded-lg text-xs font-semibold hover:bg-muted/70 transition-colors">
           <Download className="w-3.5 h-3.5" /> Export
         </button>
       </div>
@@ -728,7 +743,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
             <thead>
               <tr className="bg-muted/40 border-b border-border">
                 {[
-                  "#", "Chapter", "Coach", "Region", "Events/Yr", "Events/Mo",
+                  "#", "Chapter", "Type", "Coach", "Region", "Events/Yr", "Events/Mo",
                   "Leads", "RSVPs", "Attended", "Lead→Event %", "Avg NPS", "Points/Yr"
                 ].map(h => (
                   <th key={h} className="px-3 py-2.5 text-left text-muted-foreground font-semibold uppercase tracking-wider whitespace-nowrap text-[10px]">{h}</th>
@@ -746,6 +761,7 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
                       <div className="font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">{ch.name}</div>
                       <div className="text-muted-foreground text-[10px]">{ch.country}</div>
                     </td>
+                    <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{getStaffChapterTypeLabel(ch)}</td>
                     <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{ch.coach.split(" ")[0]}</td>
                     <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap text-[11px]">{ch.medlifeRegion}</td>
                     <td className="px-3 py-2.5 font-mono font-bold text-foreground text-center">{ch.eventsThisYear}</td>
@@ -1565,14 +1581,14 @@ function ProofUGCQueue() {
 
               {/* Actions */}
               <div className="space-y-1.5">
-                <button className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center justify-center gap-1.5">
+                <button disabled title="Best-practice publishing is blocked until feed approval is complete" className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center justify-center gap-1.5">
                   <Star className="w-3.5 h-3.5" /> Mark as Best Practice
                 </button>
                 <div className="flex gap-1.5">
-                  <button className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
+                  <button disabled title="Change requests are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
                     Request Changes
                   </button>
-                  <button className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
+                  <button disabled title="Reject decisions are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
                     Reject
                   </button>
                 </div>
@@ -1710,13 +1726,13 @@ function BestPracticesLibrary() {
               </div>
             </div>
             <div className="px-4 pb-4 flex gap-2">
-              <button className="flex-1 py-1.5 bg-primary text-white rounded text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1">
+              <button disabled title="Feed sharing is blocked until external publishing approval is complete" className="flex-1 py-1.5 bg-primary text-white rounded text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1">
                 <Send className="w-3 h-3" /> Share to Feed
               </button>
-              <button className="flex-1 py-1.5 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors flex items-center justify-center gap-1">
+              <button disabled title="Coach emails are blocked until external-send approval is complete" className="flex-1 py-1.5 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors flex items-center justify-center gap-1">
                 <Mail className="w-3 h-3" /> Send to Coaches
               </button>
-              <button className="py-1.5 px-2 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors">
+              <button disabled title="Bookmarking best practices is blocked in this preview" className="py-1.5 px-2 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors">
                 <Bookmark className="w-3 h-3" />
               </button>
             </div>
@@ -1733,30 +1749,30 @@ function BestPracticesLibrary() {
 
 function AdminHealth() {
   const integrations: { name: string; status: "live" | "mock" | "error" | "degraded"; lastSync: string; note?: string }[] = [
-    { name:"HubSpot CRM", status:"live", lastSync:"2 min ago" },
-    { name:"Luma Events", status:"live", lastSync:"8 min ago" },
-    { name:"Data Hub / Warehouse", status:"live", lastSync:"15 min ago" },
-    { name:"Power BI Reports", status:"degraded", lastSync:"4h ago", note:"Refresh token expiring soon" },
-    { name:"n8n Automation", status:"live", lastSync:"1 min ago" },
+    { name:"HubSpot CRM", status:"mock", lastSync:"off", note:"Writes disabled for this run" },
+    { name:"Luma Events", status:"mock", lastSync:"staging readback only", note:"No live Luma writes from this shell" },
+    { name:"Data Hub / Warehouse", status:"mock", lastSync:"off", note:"Exports disabled" },
+    { name:"Power BI Reports", status:"mock", lastSync:"off", note:"Reporting connector disabled" },
+    { name:"n8n Automation", status:"mock", lastSync:"off", note:"Workflow execution disabled" },
     { name:"AI Summary Engine", status:"mock", lastSync:"n/a", note:"Using mock data in staging" },
   ];
 
   const outbox = [
-    { id:1, event:"contact.created", source:"myMEDLIFE", dest:"HubSpot", status:"success", retries:0, error:"—", created:"Jun 17 14:21", processed:"Jun 17 14:21" },
-    { id:2, event:"rsvp.confirmed", source:"Luma", dest:"myMEDLIFE", status:"success", retries:0, error:"—", created:"Jun 17 14:18", processed:"Jun 17 14:19" },
-    { id:3, event:"evidence.approved", source:"myMEDLIFE", dest:"Data Hub", status:"failed", retries:3, error:"503 Service Unavailable", created:"Jun 17 13:44", processed:"—" },
-    { id:4, event:"hubspot.task.created", source:"n8n", dest:"HubSpot", status:"pending", retries:0, error:"—", created:"Jun 17 13:30", processed:"—" },
-    { id:5, event:"member.joined", source:"myMEDLIFE", dest:"HubSpot", status:"success", retries:0, error:"—", created:"Jun 17 12:55", processed:"Jun 17 12:55" },
-    { id:6, event:"ai.summary.drafted", source:"AI Engine", dest:"myMEDLIFE", status:"success", retries:0, error:"—", created:"Jun 17 12:00", processed:"Jun 17 12:01" },
-    { id:7, event:"chapter.data.sync", source:"n8n", dest:"Power BI", status:"failed", retries:2, error:"Token expired", created:"Jun 17 10:00", processed:"—" },
+    { id:1, event:"contact.created", source:"myMEDLIFE", dest:"HubSpot", status:"blocked", retries:0, error:"External write disabled", created:"Jun 17 14:21", processed:"—" },
+    { id:2, event:"rsvp.confirmed", source:"Luma", dest:"myMEDLIFE", status:"blocked", retries:0, error:"Read/import approval required", created:"Jun 17 14:18", processed:"—" },
+    { id:3, event:"evidence.approved", source:"myMEDLIFE", dest:"Data Hub", status:"blocked", retries:0, error:"Warehouse export disabled", created:"Jun 17 13:44", processed:"—" },
+    { id:4, event:"hubspot.task.created", source:"n8n", dest:"HubSpot", status:"blocked", retries:0, error:"n8n execution disabled", created:"Jun 17 13:30", processed:"—" },
+    { id:5, event:"member.joined", source:"myMEDLIFE", dest:"HubSpot", status:"blocked", retries:0, error:"CRM write disabled", created:"Jun 17 12:55", processed:"—" },
+    { id:6, event:"ai.summary.drafted", source:"AI Engine", dest:"myMEDLIFE", status:"blocked", retries:0, error:"AI actions disabled", created:"Jun 17 12:00", processed:"—" },
+    { id:7, event:"chapter.data.sync", source:"n8n", dest:"Power BI", status:"blocked", retries:0, error:"Reporting export disabled", created:"Jun 17 10:00", processed:"—" },
   ];
 
   const auditLog = [
     { actor:"maria.santos@medlife.org", action:"Approved evidence", object:"PUCP Lima — Tabling Video", ts:"Jun 17 14:30", role:"Coach", chapter:"PUCP Lima" },
     { actor:"james.okafor@medlife.org", action:"Set decision: Intervene", object:"Yale University", ts:"Jun 17 13:55", role:"Coach", chapter:"Yale University" },
-    { actor:"admin@medlife.org", action:"Shared post to 28 chapters", object:"Stanford QR Best Practice", ts:"Jun 17 13:20", role:"Admin", chapter:"Global" },
+    { actor:"admin@medlife.org", action:"Queued post for review", object:"Stanford QR Best Practice", ts:"Jun 17 13:20", role:"Admin", chapter:"Global" },
     { actor:"aisha.kamara@medlife.org", action:"Wrote coach note", object:"McGill University", ts:"Jun 17 12:44", role:"Coach", chapter:"McGill University" },
-    { actor:"system@n8n", action:"Triggered automation", object:"Rush Month — follow-up sequence", ts:"Jun 17 12:00", role:"System", chapter:"All" },
+    { actor:"system@n8n", action:"Blocked automation execution", object:"Rush Month — follow-up sequence", ts:"Jun 17 12:00", role:"System", chapter:"All" },
   ];
 
   return (
@@ -1786,7 +1802,7 @@ function AdminHealth() {
             </div>
             <div className="flex gap-2">
               <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-semibold">{outbox.filter(o=>o.status==="failed").length} failed</span>
-              <button className="flex items-center gap-1 text-xs text-primary hover:underline"><RotateCcw className="w-3 h-3" /> Retry Failed</button>
+              <button disabled title="Outbox retries are blocked until automation approval is complete" className="flex items-center gap-1 text-xs text-primary hover:underline"><RotateCcw className="w-3 h-3" /> Retry Failed</button>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -1863,7 +1879,7 @@ function AdminHealth() {
 
 type AdminRole = "ds-admin" | "super-admin";
 
-function AdminRoleGate({ onGrant }: { onGrant: (role: AdminRole) => void }) {
+function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void; onBack: () => void }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
 
   return (
@@ -1923,7 +1939,7 @@ function AdminRoleGate({ onGrant }: { onGrant: (role: AdminRole) => void }) {
 
         <p className="text-[11px] text-slate-700">
           Not DS Admin or Super Admin?{" "}
-          <button className="text-slate-500 underline underline-offset-2">Return to dashboard</button>
+          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">Return to dashboard</button>
         </p>
       </div>
     </div>
@@ -1936,6 +1952,8 @@ function AdminRoleGate({ onGrant }: { onGrant: (role: AdminRole) => void }) {
 
 const NAV_ITEMS: { key: Screen; label: string; icon: ReactNode }[] = [
   { key:"chapters", label:"Chapters", icon:<LayoutDashboard className="w-3.5 h-3.5" /> },
+  { key:"events", label:"Events", icon:<Calendar className="w-3.5 h-3.5" /> },
+  { key:"reports", label:"Leaderboard", icon:<BarChart3 className="w-3.5 h-3.5" /> },
   { key:"campaigns", label:"Campaigns", icon:<Megaphone className="w-3.5 h-3.5" /> },
   { key:"ugc", label:"Proof / UGC", icon:<Film className="w-3.5 h-3.5" /> },
   { key:"best-practices", label:"Best Practices", icon:<BookOpen className="w-3.5 h-3.5" /> },
@@ -1948,7 +1966,7 @@ const SCREEN_TITLES: Record<Screen, string> = {
   campaigns: "Campaign Operations",
   events: "Events",
   ugc: "Proof / UGC Review Queue",
-  reports: "Reports",
+  reports: "Organization Leaderboard",
   admin: "System Health",
   "best-practices": "Best Practices Library",
   sops: "Campaign SOP Builder",
@@ -1958,8 +1976,17 @@ const SCREEN_TITLES: Record<Screen, string> = {
 /*  APP ROOT                                                    */
 /* ─────────────────────────────────────────────────────────── */
 
-export function FigmaStaffCommandCenter() {
-  const [activeScreen, setActiveScreen] = useState<Screen>("chapters");
+type FigmaStaffCommandCenterProps = {
+  initialView?: string;
+};
+
+export function FigmaStaffCommandCenter({
+  initialView,
+}: FigmaStaffCommandCenterProps = {}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeScreen = resolveStaffShellScreen(searchParams.get("view") ?? initialView ?? null);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
 
   // SOP Builder sub-navigation
@@ -1974,10 +2001,10 @@ export function FigmaStaffCommandCenter() {
   };
 
   const handleNavChange = (key: Screen) => {
-    setActiveScreen(key);
     if (key !== "chapters") setSelectedChapter(null);
     if (key !== "sops") { setSopView("library"); setSopCampaign(null); }
     if (key !== "admin") setAdminRole(null);
+    router.replace(buildStaffShellHref(key, pathname, searchParams.toString()), { scroll: false });
   };
 
   return (
@@ -1986,8 +2013,12 @@ export function FigmaStaffCommandCenter() {
       <header className="bg-sidebar border-b border-sidebar-border flex-shrink-0 z-30 relative">
         <div className="flex items-center h-12 px-5 gap-6">
           {/* Logo */}
-          <button
-            onClick={() => handleNavChange("chapters")}
+          <a
+            href={buildStaffShellHref("chapters", pathname, searchParams.toString())}
+            onClick={(event) => {
+              event.preventDefault();
+              handleNavChange("chapters");
+            }}
             className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity"
           >
             <div className="w-7 h-7 rounded bg-accent flex items-center justify-center text-xs font-black text-sidebar">M</div>
@@ -1995,14 +2026,18 @@ export function FigmaStaffCommandCenter() {
               <div className="text-white text-sm font-bold leading-tight">myMEDLIFE</div>
               <div className="text-sidebar-foreground/50 text-[9px] font-medium uppercase tracking-widest leading-tight">Staff Command Center</div>
             </div>
-          </button>
+          </a>
 
           {/* Nav */}
           <nav className="flex items-center gap-0.5 flex-1">
             {NAV_ITEMS.map((item) => (
-              <button
+              <a
                 key={item.key}
-                onClick={() => handleNavChange(item.key)}
+                href={buildStaffShellHref(item.key, pathname, searchParams.toString())}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleNavChange(item.key);
+                }}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   activeScreen === item.key
                     ? "bg-sidebar-accent text-white"
@@ -2011,7 +2046,7 @@ export function FigmaStaffCommandCenter() {
               >
                 {item.icon}
                 {item.label}
-              </button>
+              </a>
             ))}
           </nav>
 
@@ -2060,13 +2095,15 @@ export function FigmaStaffCommandCenter() {
 
         {/* Admin — role gate (shown before access granted) */}
         {activeScreen === "admin" && !adminRole && (
-          <AdminRoleGate onGrant={(role) => setAdminRole(role)} />
+          <AdminRoleGate onGrant={(role) => setAdminRole(role)} onBack={() => handleNavChange("chapters")} />
         )}
 
         {/* All other non-admin, non-SOP screens */}
         {activeScreen !== "sops" && activeScreen !== "admin" && (
           <div className="px-6 py-5 max-w-[1600px] mx-auto w-full">
             {activeScreen === "chapters" && <PortfolioOverview onSelectChapter={handleSelectChapter} />}
+            {activeScreen === "events" && <StaffLaunchEventsOperations chapters={CHAPTERS} />}
+            {activeScreen === "reports" && <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />}
             {activeScreen === "campaigns" && <CampaignOps />}
             {activeScreen === "ugc" && <ProofUGCQueue />}
             {activeScreen === "best-practices" && <BestPracticesLibrary />}
@@ -2095,4 +2132,49 @@ export function FigmaStaffCommandCenter() {
       )}
     </div>
   );
+}
+
+function resolveStaffShellScreen(view: string | null): Screen {
+  switch (view) {
+    case "campaigns":
+      return "campaigns";
+    case "events":
+      return "events";
+    case "leaderboard":
+    case "reports":
+      return "reports";
+    case "proof_ugc":
+    case "ugc":
+      return "ugc";
+    case "best_practices":
+    case "best-practices":
+      return "best-practices";
+    case "sops":
+      return "sops";
+    case "admin":
+      return "admin";
+    case "chapters":
+    default:
+      return "chapters";
+  }
+}
+
+function getStaffShellViewParam(screen: Screen): string {
+  switch (screen) {
+    case "ugc":
+      return "proof_ugc";
+    case "best-practices":
+      return "best_practices";
+    case "reports":
+      return "leaderboard";
+    default:
+      return screen;
+  }
+}
+
+function buildStaffShellHref(screen: Screen, pathname: string, search: string): string {
+  const params = new URLSearchParams(search);
+  params.set("view", getStaffShellViewParam(screen));
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }

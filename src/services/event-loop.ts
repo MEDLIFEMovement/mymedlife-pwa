@@ -29,6 +29,13 @@ import {
   type StagingLumaEventLoopSummary,
   type StagingLumaMode,
 } from "@/services/staging-luma-event-loop";
+export {
+  getEventLoopPilotFoundation,
+  getEventLoopPilotSafety,
+  type EventLoopPilotChapterProof,
+  type EventLoopPilotFoundation,
+  type EventLoopPilotSafety,
+} from "@/services/event-loop-pilot-foundation";
 
 /**
  * Canonical event-loop entrypoint for the production path.

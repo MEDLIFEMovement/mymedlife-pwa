@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { StudentRouteQuickNav } from "@/components/student-route-quick-nav";
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getLandingRouteForActor } from "@/services/landing-route";
@@ -53,7 +54,7 @@ export default async function AppEventDetailPage({
       {isPreviewWorkspaceAccess(actor, "student_app") ? (
         <WorkspacePreviewBanner workspaceLabel="the General Student App" />
       ) : null}
-      <main className="min-h-screen bg-[#f7f4ee] px-4 py-6 text-[#10223f]">
+      <main className="min-h-screen bg-[#f7f4ee] px-4 pb-32 pt-6 text-[#10223f]">
       <div className="mx-auto max-w-[430px]">
         <Link href="/app/events" className="text-sm font-bold text-[#1B4B8E]">
           Back to events
@@ -104,6 +105,7 @@ export default async function AppEventDetailPage({
         </article>
       </div>
       </main>
+      <StudentRouteQuickNav active="events" />
     </>
   );
 }

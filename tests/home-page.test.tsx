@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -39,7 +41,7 @@ function getSignedInActor(email: string) {
 }
 
 describe("home page", () => {
-  it("keeps the member home focused on the simple event loop", async () => {
+  it("renders the exact Figma general member mobile shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -54,30 +56,24 @@ describe("home page", () => {
     const html = renderToStaticMarkup(await HomePage({}));
 
     expect(html).toContain("Hi, Sofia");
-    expect(html).toContain("This Week&#x27;s Priority");
-    expect(html).toContain("Invite 3 friends to the Intro GBM");
+    expect(html).toContain("UCLA MEDLIFE");
     expect(html).toContain("Start next action");
     expect(html).toContain("My Points · Rush Month");
-    expect(html).toContain("Leaderboard →");
     expect(html).toContain("MEDLIFE Stories");
     expect(html).toContain("Upcoming Events");
+    expect(html).toContain("Intro GBM");
     expect(html).toContain("Tabling at Bruin Walk");
     expect(html).toContain("Active Campaign");
     expect(html).toContain("Rush Month");
-    expect(html).toContain("Take Action: My Tasks");
-    expect(html).toContain("Add 5 leads to the spreadsheet");
     expect(html).toContain("Chapter Leaderboard");
-    expect(html).toContain("Coach David Kim");
-    expect(html).toContain('href="/app"');
-    expect(html).toContain('href="/app/events"');
-    expect(html).toContain('href="/app/points"');
-    expect(html).toContain('href="/profile"');
-    expect(html).toContain("RSVP&#x27;d");
+    expect(html).toContain("Profile");
+    expect(html).toContain("Events");
+    expect(html).toContain("Points");
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain('href="/slt-prep"');
   });
 
-  it("keeps traveler users inside the same core home even when SLT Prep stays hidden from the launch lane", async () => {
+  it("keeps traveler users inside the same Figma mobile shell when SLT Prep stays hidden from the launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -91,9 +87,10 @@ describe("home page", () => {
     const { default: HomePage } = await import("@/app/app/page");
     const html = renderToStaticMarkup(await HomePage({}));
 
-    expect(html).toContain("Hi, Taylor");
+    expect(html).toContain("Hi, Sofia");
+    expect(html).toContain("UCLA MEDLIFE");
     expect(html).toContain("Upcoming Events");
-    expect(html).toContain("Take Action: My Tasks");
+    expect(html).toContain("Start next action");
     expect(html).not.toContain("Open SLT Prep");
     expect(html).not.toContain('href="/app/slt-prep?source=home"');
   });
@@ -117,5 +114,29 @@ describe("home page", () => {
     expect(html).toContain("Upcoming Events");
     expect(html).toContain("Chapter Leaderboard");
     expect(vi.mocked(navigationModule.redirect)).not.toHaveBeenCalled();
+  });
+
+  it("keeps the copied Figma member shell close to the exported code size and state map", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-member-mobile-home.tsx"),
+      "utf8",
+    );
+    const lineCount = source.split("\n").length;
+
+    expect(lineCount).toBeGreaterThanOrEqual(3490);
+    expect(lineCount).toBeLessThanOrEqual(3535);
+    expect(source).toContain('const [screen, setScreen] = useState<Screen>("home");');
+    expect(source).toContain('case "events": return <EventsScreen navigate={navigate} />;');
+    expect(source).toContain('case "event-detail": return <EventDetailScreen navigate={navigate} />;');
+    expect(source).toContain('case "points": return <PointsLeaderboard navigate={navigate} />;');
+    expect(source).toContain('"/app/events"');
+    expect(source).toContain('"/app/points"');
+    expect(source).toContain('"/profile"');
+    expect(source).toContain("<BottomNav active={screen} navigate={navigate} />");
+    expect(source).toContain("disabled={!onClick}");
+    expect(source).toContain("Secure admin route required");
+    expect(source).toContain("External source links are blocked in this preview");
+    expect(source).not.toContain("onClick={() => {}}");
+    expect(source).not.toContain('href="#"');
   });
 });

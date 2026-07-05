@@ -77,7 +77,7 @@ jobs:
             Prefer blocking over guessing. When unsure, BLOCK and escalate.
           claude_args: |
             --model claude-sonnet-4-6
-            --max-turns 15
+            --max-turns 25
             --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr review:*),Bash(gh pr merge:*),Bash(gh pr edit:*),Bash(gh label:*)"
           # For deeper review on a safety-critical change, switch the model
           # line above to:  --model claude-opus-4-8

@@ -1,11 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/leader",
+  useRouter: () => ({
+    replace: vi.fn(),
+  }),
   useSearchParams: () => new URLSearchParams(),
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
@@ -92,9 +97,13 @@ describe("leader page", () => {
     expect(html).toContain("Leadership Center");
     expect(html).toContain("Chapter Dashboard · Jun 2025");
     expect(html).toContain("Boston College MEDLIFE");
+    expect(html).toContain("College / University Chapter");
     expect(html).toContain("Create Event");
-    expect(html).toContain("Assign Action");
+    expect(html).toContain("Assign Task");
     expect(html).toContain("Promote Emerging Leader");
+    expect(html).toContain("Not Yet Available");
+    expect(html).toContain("Leadership page not yet available: Campaigns");
+    expect(html).toContain("Leadership page not yet available: Proof Review");
     expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Risk Alerts");
     expect(html).toContain("This Week&#x27;s Priority");
@@ -104,7 +113,7 @@ describe("leader page", () => {
     expect(html).not.toContain("Leader event tracking");
   });
 
-  it("renders the events view inside the command center instead of the old parked launch lane", async () => {
+  it("opens the requested Figma-owned screen from the leader view query", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -124,16 +133,15 @@ describe("leader page", () => {
       }),
     );
 
-    expect(html).toContain(">Events<");
     expect(html).toContain("Event Performance");
-    expect(html).toContain("Luma event creation, RSVP, attendance, and points");
-    expect(html).toContain("Luma readback");
-    expect(html).toContain("Moving Mountains Kickoff");
+    expect(html).toContain("Create Event");
+    expect(html).toContain("All Events — June 2025");
+    expect(html).not.toContain("Chapter Metrics — June 2025");
     expect(html).not.toContain("Live event controls");
-    expect(html).not.toContain("Simple attendance list");
+    expect(html).not.toContain("Luma readback");
   });
 
-  it("renders route-specific leader screens instead of parking sidebar items", async () => {
+  it("renders the chapter leaderboard when reviewers open /leader?view=leaderboard", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -141,64 +149,89 @@ describe("leader page", () => {
       getSignedInActor("leader.a@mymedlife.test"),
     );
     vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
-      getMockReadOnlyAppData("Testing route-specific leader screens."),
+      getMockReadOnlyAppData("Testing leader leaderboard view."),
     );
 
     const { default: LeaderPage } = await import("@/app/leader/page");
-    const bridgeHtml = renderToStaticMarkup(
+    const html = renderToStaticMarkup(
       await LeaderPage({
         searchParams: Promise.resolve({
-          view: "bridge_videos",
-        }),
-      }),
-    );
-    const membersHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "members",
-        }),
-      }),
-    );
-    const committeesHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "committees",
-        }),
-      }),
-    );
-    const successionHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "succession",
-        }),
-      }),
-    );
-    const feedHtml = renderToStaticMarkup(
-      await LeaderPage({
-        searchParams: Promise.resolve({
-          view: "feed_analytics",
+          view: "leaderboard",
         }),
       }),
     );
 
-    expect(bridgeHtml).toContain("Bridge Video Hub");
-    expect(bridgeHtml).toContain("Chapters Using");
-    expect(bridgeHtml).not.toContain("Chapter Leaderboard");
+    expect(html).toContain("Chapter Leaderboard");
+    expect(html).toContain("Ranked Chapter Leaderboard");
+    expect(html).toContain("Points Score");
+    expect(html).toContain("Organizational Average");
+    expect(html).toContain("Boston College vs. National");
+    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("Your Chapter");
+    expect(html).not.toContain("Chapter Metrics — June 2025");
+  });
 
-    expect(membersHtml).toContain("Member Pipeline");
-    expect(membersHtml).toContain("leadership growth and points");
-    expect(membersHtml).not.toContain("Chapter Metrics — June 2025");
+  it.each([
+    ["overview", "This Week&#x27;s Priority"],
+    ["leaderboard", "Ranked Chapter Leaderboard"],
+    ["members", "See how members rank within the chapter"],
+    ["member_profile", "Member Profile"],
+    ["committees", "Events This Year"],
+    ["events", "All Events — June 2025"],
+    ["impact", "Local Community Impact"],
+    ["bridge_videos", "Bridge Culture Reminder"],
+    ["succession", "Leadership Gaps"],
+    ["feed_analytics", "Most Engaged Members"],
+    ["training", "Videos, presentations, and external resources"],
+    ["values", "Three values guide every MEDLIFE leader"],
+    ["leaders", "Every E-Board position and Event Committee chair"],
+    ["create_event", "Create New Event"],
+    ["stories", "Live from the field"],
+  ])("renders the %s menu view as its own screen", async (view, expectedCopy) => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
 
-    expect(committeesHtml).toContain("Event Committees");
-    expect(committeesHtml).toContain("open actions");
-    expect(committeesHtml).not.toContain("Chapter Metrics — June 2025");
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData(`Testing leader ${view} view.`),
+    );
 
-    expect(successionHtml).toContain("Succession Planning");
-    expect(successionHtml).toContain("transition");
-    expect(successionHtml).not.toContain("Chapter Metrics — June 2025");
+    const { default: LeaderPage } = await import("@/app/leader/page");
+    const html = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view,
+        }),
+      }),
+    );
 
-    expect(feedHtml).toContain("Feed Analytics");
-    expect(feedHtml).toContain("Chapter feed engagement");
-    expect(feedHtml).not.toContain("Chapter Metrics — June 2025");
+    expect(html).toContain(expectedCopy);
+  });
+
+  it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
+      "utf8",
+    );
+    const lineCount = source.split("\n").length;
+
+    expect(lineCount).toBeGreaterThanOrEqual(3950);
+    expect(lineCount).toBeLessThanOrEqual(4150);
+    expect(source).toContain('initialScreen = "home"');
+    expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
+    expect(source).toContain("<Sidebar active={screen} onNav={navigateToScreen}/>");
+    expect(source).toContain("buildLeaderCommandCenterHrefForScreen");
+    expect(source).toContain("Ranked Chapter Leaderboard");
+    expect(source).toContain('aria-label="Ranked chapter leaderboard"');
+    expect(source).toContain("disabled={isBlocked}");
+    expect(source).toContain('screen==="events"');
+    expect(source).toContain('screen==="create-event"');
+    expect(source).toContain('screen==="stories"');
+    expect(source).toContain("CreateEventForm");
+    expect(source).toContain("MedlifeStoriesScreen");
+    expect(source).toContain("MISSING_LEADERSHIP_PAGES");
+    expect(source).toContain("Leadership page not yet available");
   });
 });

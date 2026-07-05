@@ -39,7 +39,7 @@ describe("admin control center", () => {
     expect(summary.disabledOutboxCount).toBe(
       data.outboxItems.filter((item) => item.status === "disabled").length,
     );
-    expect(summary.auditLogCount).toBe(0);
+    expect(summary.auditLogCount).toBe(5);
   });
 
   it("exposes read-only master data inventory for admin review", () => {
@@ -181,9 +181,9 @@ describe("admin control center", () => {
     );
     expect(summary.areas.find((area) => area.key === "audit_logs")).toEqual(
       expect.objectContaining({
-        status: "mock_only",
-        primaryMetric: "0 visible rows",
-        nextAction: expect.stringContaining("write/readback drills"),
+        status: "ready_readonly",
+        primaryMetric: "5 visible rows",
+        nextAction: expect.stringContaining("approved write path"),
       }),
     );
     expect(summary.healthItems.find((item) => item.key === "external_writes")).toEqual(

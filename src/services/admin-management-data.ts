@@ -1,5 +1,9 @@
 import { createSupabaseReadonlyAccess } from "@/lib/supabase-readonly";
 import {
+  inferChapterTypeFromCampus,
+  normalizeChapterType,
+} from "@/services/chapter-type";
+import {
   managedChapterFixtures,
   managedUserFixtures,
 } from "@/services/admin-management-fixtures";
@@ -164,6 +168,9 @@ function mapChapterToManagedChapter(
     name: chapter.name,
     school: chapter.campus,
     region: chapter.region ?? "Unassigned",
+    chapterType: chapter.chapter_type
+      ? normalizeChapterType(chapter.chapter_type)
+      : inferChapterTypeFromCampus(chapter.campus),
     status: chapter.status === "inactive" ? "disabled" : chapter.status,
     coachOwnerId: coachAssignment?.coach_user_id ?? null,
     staffOwnerIds: [],

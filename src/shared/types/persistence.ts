@@ -19,6 +19,7 @@ export type DatabaseRoleKey =
 
 export type ProfileStatus = "active" | "inactive";
 export type ChapterStatus = "active" | "inactive" | "archived";
+export type ChapterType = "high_school" | "college_university" | "needs_review";
 export type MembershipStatus = "requested" | "approved" | "rejected" | "inactive";
 export type StaffRoleStatus = "active" | "inactive" | "ended";
 export type CoachAssignmentType = "expansion" | "portfolio";
@@ -137,6 +138,7 @@ export type ChapterRow = {
   name: string;
   campus: string;
   region: string | null;
+  chapter_type?: ChapterType | null;
   status: ChapterStatus;
   created_by: Uuid | null;
   created_at: Timestamp;
