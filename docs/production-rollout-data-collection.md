@@ -230,7 +230,7 @@ Rules:
 Headers:
 
 ```text
-chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status
+chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,notes
 ```
 
 Rules:
@@ -239,6 +239,10 @@ Rules:
 - A ready row must have at least one RSVP, one attendance check-in, one points
   award, `auditEvidence` set to `recorded`, and `outboxStatus` set to
   `zero_sends`.
+- A ready row must include app proof routes for the event, attendance, points,
+  audit log, and integration outbox readback.
+- `checkedAt` should be the review timestamp.
+- `reviewedByEmail` must be a real launch user from `users.csv`.
 - This proves the event loop before broad invitations. It does not enable n8n,
   HubSpot, warehouse, Power BI, SMS, email, or AI sends.
 

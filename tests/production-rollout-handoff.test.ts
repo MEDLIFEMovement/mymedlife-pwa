@@ -29,6 +29,9 @@ describe("production rollout handoff", () => {
       "- chapter-01 -> Rush Month Kickoff (evt-chapter-01); RSVPs 12, attendance 10, points 10, audit recorded, outbox zero_sends",
     );
     expect(report).toContain(
+      "routes event /app/events/evt-chapter-01, attendance /leader?view=events&event=evt-chapter-01, points /leader?view=leaderboard&chapter=chapter-01, audit /admin/audit-log, outbox /admin/integration-outbox",
+    );
+    expect(report).toContain(
       "- support -> admin@medlifemovement.org (Launch Admin)",
     );
     expect(report).toContain("Signed-in route proof to review:");
@@ -137,6 +140,14 @@ function createPacket(chapterCount: number): ProductionRolloutBootstrapPacket {
       auditEvidence: "recorded",
       outboxStatus: "zero_sends",
       status: "ready",
+      eventRoute: `/app/events/evt-chapter-${String(index + 1).padStart(2, "0")}`,
+      attendanceRoute: `/leader?view=events&event=evt-chapter-${String(index + 1).padStart(2, "0")}`,
+      pointsRoute: `/leader?view=leaderboard&chapter=${chapter.id}`,
+      auditRoute: "/admin/audit-log",
+      outboxRoute: "/admin/integration-outbox",
+      checkedAt: "2026-07-05T15:00:00Z",
+      reviewedByEmail: "admin@medlifemovement.org",
+      notes: "RSVP, attendance, points, audit, and outbox proof verified.",
     })),
     launchOwners: [
       {

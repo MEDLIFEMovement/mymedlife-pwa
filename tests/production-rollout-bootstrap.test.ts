@@ -206,6 +206,12 @@ describe("production rollout bootstrap readiness", () => {
     expect(readiness.blockers).toContain(
       "chapter-01 pilot event evt-chapter-01 needs zero external sends in the outbox.",
     );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 needs event route proof link.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 needs a reviewedByEmail owner.",
+    );
   });
 });
 
@@ -289,6 +295,14 @@ function createCompletePacket(chapterCount: number): ProductionRolloutBootstrapP
       auditEvidence: "recorded",
       outboxStatus: "zero_sends",
       status: "ready",
+      eventRoute: `/app/events/evt-chapter-${String(index + 1).padStart(2, "0")}`,
+      attendanceRoute: `/leader?view=events&event=evt-chapter-${String(index + 1).padStart(2, "0")}`,
+      pointsRoute: `/leader?view=leaderboard&chapter=${chapter.id}`,
+      auditRoute: "/admin/audit-log",
+      outboxRoute: "/admin/integration-outbox",
+      checkedAt: "2026-07-05T15:00:00Z",
+      reviewedByEmail: "admin@medlifemovement.org",
+      notes: "RSVP, attendance, points, audit, and outbox proof verified.",
     })),
     launchOwners: [
       {

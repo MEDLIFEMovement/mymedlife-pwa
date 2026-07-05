@@ -36,8 +36,8 @@ describe("production rollout packet builder", () => {
         "chapter-ucla,cal-ucla,UCLA MEDLIFE,linked",
       ].join("\n"),
       pilotEventProof: [
-        "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status",
-        "chapter-ucla,Rush Month Kickoff,evt-ucla,12,10,10,recorded,zero_sends,ready",
+        "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,notes",
+        "chapter-ucla,Rush Month Kickoff,evt-ucla,12,10,10,recorded,zero_sends,ready,/app/events/evt-ucla,/leader?view=events&event=evt-ucla,/leader?view=leaderboard&chapter=chapter-ucla,/admin/audit-log,/admin/integration-outbox,2026-07-05T15:00:00Z,admin@medlifemovement.org,event loop proof verified",
       ].join("\n"),
       launchOwners: [
         "email,ownerType,displayName,status",
@@ -63,6 +63,10 @@ describe("production rollout packet builder", () => {
     expect(packet.campaigns[0]?.slug).toBe("rush-month-ucla");
     expect(packet.lumaCalendars?.[0]?.calendarId).toBe("cal-ucla");
     expect(packet.pilotEventProof?.[0]?.rsvpCount).toBe(12);
+    expect(packet.pilotEventProof?.[0]?.eventRoute).toBe("/app/events/evt-ucla");
+    expect(packet.pilotEventProof?.[0]?.reviewedByEmail).toBe(
+      "admin@medlifemovement.org",
+    );
     expect(packet.launchOwners?.[0]?.ownerType).toBe("support");
     expect(packet.signedInRouteProof?.[0]?.workspace).toBe(
       "leader_command_center",

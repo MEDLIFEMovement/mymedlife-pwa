@@ -47,8 +47,8 @@ describe("production rollout CSV folder script", () => {
         "chapter-ucla,cal-ucla,UCLA MEDLIFE,linked",
       ].join("\n"),
       "pilot-event-proof.csv": [
-        "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status",
-        "chapter-ucla,Rush Month Kickoff,evt-ucla,12,10,10,recorded,zero_sends,ready",
+        "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,status,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,notes",
+        "chapter-ucla,Rush Month Kickoff,evt-ucla,12,10,10,recorded,zero_sends,ready,/app/events/evt-ucla,/leader?view=events&event=evt-ucla,/leader?view=leaderboard&chapter=chapter-ucla,/admin/audit-log,/admin/integration-outbox,2026-07-05T15:00:00Z,admin@medlifemovement.org,event loop proof verified",
       ].join("\n"),
       "launch-owners.csv": [
         "email,ownerType,displayName,status",

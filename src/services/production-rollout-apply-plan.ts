@@ -1,5 +1,6 @@
 import {
   getProductionRolloutBootstrapReadiness,
+  type ProductionBootstrapPilotEventProof,
   type ProductionRolloutBootstrapPacket,
 } from "@/services/production-rollout-bootstrap";
 
@@ -157,7 +158,7 @@ export function getProductionRolloutApplyPlan(
         status: readyPilotProof.length > 0 ? "review" : "blocked",
         items: readyPilotProof.map(
           (proof) =>
-            `${proof.chapterId} -> ${proof.eventName} (${proof.lumaEventId}); RSVPs ${proof.rsvpCount}, attendance ${proof.attendanceCount}, points ${proof.pointsAwardedCount}, audit ${proof.auditEvidence}, outbox ${proof.outboxStatus}`,
+            `${proof.chapterId} -> ${proof.eventName} (${proof.lumaEventId}); RSVPs ${proof.rsvpCount}, attendance ${proof.attendanceCount}, points ${proof.pointsAwardedCount}, audit ${proof.auditEvidence}, outbox ${proof.outboxStatus}; routes ${formatPilotProofRoutes(proof)}; reviewed by ${proof.reviewedByEmail ?? "pending"}${proof.checkedAt ? ` at ${proof.checkedAt}` : ""}`,
         ),
       },
       {
@@ -231,4 +232,14 @@ export function formatProductionRolloutApplyPlan(
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+function formatPilotProofRoutes(proof: ProductionBootstrapPilotEventProof) {
+  return [
+    `event ${proof.eventRoute ?? "pending"}`,
+    `attendance ${proof.attendanceRoute ?? "pending"}`,
+    `points ${proof.pointsRoute ?? "pending"}`,
+    `audit ${proof.auditRoute ?? "pending"}`,
+    `outbox ${proof.outboxRoute ?? "pending"}`,
+  ].join(", ");
 }
