@@ -8,6 +8,7 @@ The CSV templates can be generated with:
 
 ```bash
 pnpm rollout:templates --out rollout-csv
+pnpm rollout:workbook --out production-rollout-workbook.md --csv-dir rollout-csv
 ```
 
 The current local working copy is:
@@ -23,6 +24,7 @@ pnpm rollout:intake-status --dir rollout-csv
 pnpm rollout:check-csv --dir rollout-csv
 pnpm rollout:build ... --out production-rollout-packet.json
 pnpm rollout:check production-rollout-packet.json
+pnpm rollout:gaps production-rollout-packet.json --out production-rollout-gaps.md
 pnpm rollout:handoff production-rollout-packet.json --out production-rollout-handoff.md
 pnpm rollout:apply-plan production-rollout-packet.json --out production-rollout-apply-plan.md
 ```
