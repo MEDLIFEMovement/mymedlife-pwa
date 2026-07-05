@@ -259,6 +259,16 @@ in a review checklist or CI job.
 After the packet passes, create a review-only handoff for the human apply step:
 
 ```bash
+pnpm rollout:gaps path/to/production-rollout-packet.json \
+  --out production-rollout-gaps.md
+```
+
+The gap report groups missing launch data by chapter, launch owner, and
+signed-in route proof. Use it when the packet is still incomplete and the team
+needs a concrete checklist. It does not write data, call Luma, send invites, or
+print invitee email lists.
+
+```bash
 pnpm rollout:handoff path/to/production-rollout-packet.json \
   --out production-rollout-handoff.md
 ```

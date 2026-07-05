@@ -353,6 +353,7 @@ Then run:
 
 ```bash
 pnpm rollout:check production-rollout-packet.json
+pnpm rollout:gaps production-rollout-packet.json --out production-rollout-gaps.md
 pnpm rollout:handoff production-rollout-packet.json --out production-rollout-handoff.md
 pnpm production:launch-check --packet production-rollout-packet.json
 pnpm production:pilot-event-proof --packet production-rollout-packet.json
@@ -367,6 +368,7 @@ pnpm production:invite-gate --packet production-rollout-packet.json --live-data-
 Before any production data apply, confirm:
 
 - The packet passes `pnpm rollout:check`.
+- The packet gap report says `Production rollout packet gaps: READY`.
 - The handoff says `READY FOR HUMAN APPLY`.
 - The combined launch check still passes the public production domain gate.
 - The five-chapter pilot event proof says `5-chapter pilot event loop proof:

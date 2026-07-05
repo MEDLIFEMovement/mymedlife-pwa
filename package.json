@@ -17,6 +17,7 @@
     "rollout:check-csv": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-csv-folder.mjs",
     "rollout:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-production-rollout-packet.mjs",
     "rollout:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-packet.mjs",
+    "rollout:gaps": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-gap-report.mjs",
     "rollout:luma-mappings": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-luma-mapping-readiness.mjs",
     "rollout:luma-registry": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-luma-runtime-registry.mjs",
     "rollout:handoff": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-handoff.mjs",
