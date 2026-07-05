@@ -32,6 +32,11 @@ const expectedWorkspaceRedirects = [
     location: "/login?redirectTo=%2Fstaff%3Fview%3Dchapters",
     label: "Staff command center redirects unauthenticated users to login",
   },
+  {
+    path: "/admin",
+    location: "/login?redirectTo=%2Fadmin",
+    label: "Admin backend redirects unauthenticated users to login",
+  },
 ];
 
 export function getProductionCoreRouteSmokeResult(

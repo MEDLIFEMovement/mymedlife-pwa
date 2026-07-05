@@ -77,5 +77,10 @@ function createReadySnapshots(): ProductionCoreRouteSnapshot[] {
       status: 307,
       location: "/login?redirectTo=%2Fstaff%3Fview%3Dchapters",
     },
+    {
+      path: "/admin",
+      status: 307,
+      location: "/login?redirectTo=%2Fadmin",
+    },
   ];
 }

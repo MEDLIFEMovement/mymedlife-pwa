@@ -752,6 +752,36 @@ const launchLaneRouteSmokeItems: RouteSmokeItem[] = [
       "Admin review must not enable broad writes, production auth, or external systems.",
   },
   {
+    path: "/admin/users",
+    label: "Admin users",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Reviewers can inspect launch-lane user roles, workspace access, and disabled user-management write posture.",
+    safetyAssertion:
+      "User review must not create users, reset passwords, change roles, approve membership, or expose private auth secrets.",
+  },
+  {
+    path: "/admin/chapters",
+    label: "Admin chapters",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Reviewers can inspect chapter records, chapter type labels, Luma calendar posture, and event/points readiness.",
+    safetyAssertion:
+      "Chapter review must not create chapters, change calendars, apply migrations, or trigger external syncs.",
+  },
+  {
+    path: "/admin/access",
+    label: "Admin access matrix",
+    priority: "critical",
+    audiences: ["admin", "ds_admin", "super_admin"],
+    expectedResult:
+      "Reviewers can confirm role-to-workspace access and launch-lane visibility before live-user invitations.",
+    safetyAssertion:
+      "Access review must not grant roles, impersonate users, change permissions, or bypass server-side guards.",
+  },
+  {
     path: "/admin/launch-gate",
     label: "Launch gate",
     priority: "critical",

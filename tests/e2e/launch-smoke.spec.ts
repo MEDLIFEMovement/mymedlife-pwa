@@ -80,6 +80,31 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("heading", { name: "Hi, Sofia" })).toBeVisible();
   });
 
+  test("clicks the member event RSVP, check-in, and points path inside the mobile shell", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "member.a@mymedlife.test");
+
+    await page.goto("/app");
+    await page.getByRole("button", { name: "RSVP" }).first().click();
+    await expect(page.getByRole("heading", { name: "Intro GBM" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "RSVP to Event" })).toBeVisible();
+
+    await page.getByRole("button", { name: "RSVP to Event" }).click();
+    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
+    await expect(page.getByText("Attend and check in to earn")).toBeVisible();
+
+    await page.getByRole("button", { name: "Go to Check-In" }).click();
+    await expect(page.getByRole("heading", { name: "Check In" })).toBeVisible();
+    await page.getByRole("button", { name: "Confirm Check-In" }).click();
+    await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
+    await expect(page.getByText("+20 points")).toBeVisible();
+
+    await page.getByRole("button", { name: "View All My Points" }).click();
+    await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
+  });
+
   test("loads the leader command center with the preview actor", async ({
     context,
     page,
@@ -168,6 +193,23 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByText("Chapter ranking by attendance-backed points")).toBeVisible();
   });
 
+  test("filters the staff chapter table by chapter type without losing event and points columns", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "general.staff@mymedlife.test");
+
+    await page.goto("/staff?view=chapters");
+    await page.locator("select").nth(2).selectOption("needs_review");
+
+    await expect(page.getByText("filtered")).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Type" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "RSVPs" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Attended" })).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: "Points/Yr" })).toBeVisible();
+    await expect(page.getByRole("cell", { name: "Needs review" }).first()).toBeVisible();
+  });
+
   test("clicks every staff command center menu item into its matching screen", async ({
     context,
     page,
@@ -240,6 +282,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     const adminRoutes = [
       { path: "/admin/users", heading: "User Access Management" },
       { path: "/admin/chapters", heading: "Chapter Management" },
+      { path: "/admin/access", heading: "Access Matrix" },
       { path: "/admin/integrations/luma", heading: "Luma integration status" },
       { path: "/admin/audit-log", heading: "DS Admin audit posture" },
       { path: "/admin/integration-outbox", heading: "DS Admin integration safety review" },
