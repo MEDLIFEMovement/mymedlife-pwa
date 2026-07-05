@@ -26,6 +26,12 @@ describe("production live data readiness", () => {
     expect(readiness.blockers).toContain(
       "Add active production launch campaigns for rollout chapters.",
     );
+    expect(readiness.blockers).toContain(
+      "Add at least 5 production chapter events before the five-chapter pilot proof. Current chapter events: 0.",
+    );
+    expect(readiness.blockers).toContain(
+      "Add at least 5 production Luma event links before the five-chapter pilot proof. Current Luma event links: 0.",
+    );
     expect(formatProductionLiveDataReadiness(readiness)).toContain(
       "Production live data count check: NOT READY",
     );
@@ -41,6 +47,8 @@ describe("production live data readiness", () => {
         "app.staff_role_assignments.active": 4,
         "app.coach_chapter_assignments.active": 30,
         "app.campaigns.active": 30,
+        "app.chapter_events": 5,
+        "app.luma_event_links": 5,
       }),
     );
 
@@ -60,6 +68,8 @@ describe("production live data readiness", () => {
         "app.staff_role_assignments.active": 4,
         "app.coach_chapter_assignments.active": 30,
         "app.campaigns.active": 30,
+        "app.chapter_events": 5,
+        "app.luma_event_links": 5,
       }),
     );
 
@@ -73,6 +83,58 @@ describe("production live data readiness", () => {
     );
   });
 
+  it("blocks production rollout until five pilot events and Luma links exist", () => {
+    const readiness = getProductionLiveDataReadiness(
+      createCounts({
+        "auth.users": 503,
+        "app.profiles": 503,
+        "app.chapters.active": 30,
+        "app.memberships.approved": 500,
+        "app.staff_role_assignments.active": 4,
+        "app.coach_chapter_assignments.active": 30,
+        "app.campaigns.active": 30,
+        "app.chapter_events": 4,
+        "app.luma_event_links": 3,
+      }),
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.minimumPilotEventCount).toBe(5);
+    expect(readiness.blockers).toContain(
+      "Add at least 5 production chapter events before the five-chapter pilot proof. Current chapter events: 4.",
+    );
+    expect(readiness.blockers).toContain(
+      "Add at least 5 production Luma event links before the five-chapter pilot proof. Current Luma event links: 3.",
+    );
+    expect(formatProductionLiveDataReadiness(readiness)).toContain(
+      "Minimum pilot event links: 5",
+    );
+  });
+
+  it("supports smaller explicit event floors for rehearsals", () => {
+    const readiness = getProductionLiveDataReadiness(
+      createCounts({
+        "auth.users": 20,
+        "app.profiles": 20,
+        "app.chapters.active": 3,
+        "app.memberships.approved": 20,
+        "app.staff_role_assignments.active": 2,
+        "app.coach_chapter_assignments.active": 3,
+        "app.campaigns.active": 3,
+        "app.chapter_events": 1,
+        "app.luma_event_links": 1,
+      }),
+      {
+        minimumChapterCount: 3,
+        minimumApprovedMembershipCount: 20,
+        minimumPilotEventCount: 1,
+      },
+    );
+
+    expect(readiness.ready).toBe(true);
+    expect(readiness.minimumPilotEventCount).toBe(1);
+  });
+
   it("parses Supabase CSV output while ignoring CLI status lines", () => {
     const counts = parseProductionLiveDataCountCsv(`
 Initialising login role...
@@ -82,7 +144,9 @@ app.audit_logs,0
 app.campaigns.active,30
 app.chapters.active,30
 app.coach_chapter_assignments.active,30
+app.chapter_events,5
 app.memberships.approved,75
+app.luma_event_links,5
 app.points_events,4
 app.profiles,90
 app.staff_role_assignments.active,4
@@ -107,6 +171,8 @@ function createCounts(
     "app.staff_role_assignments.active": 0,
     "app.coach_chapter_assignments.active": 0,
     "app.campaigns.active": 0,
+    "app.chapter_events": 0,
+    "app.luma_event_links": 0,
     "app.assignments": 0,
     "app.points_events": 0,
     "app.audit_logs": 0,

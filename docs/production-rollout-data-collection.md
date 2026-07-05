@@ -347,7 +347,7 @@ Before any production data apply, confirm:
 - The packet passes `pnpm rollout:check`.
 - The handoff says `READY FOR HUMAN APPLY`.
 - The combined launch check still passes the public production domain gate.
-- The saved production live-data count proof says `Production live data count check: READY` with at least 30 active chapters and 500 approved memberships.
+- The saved production live-data count proof says `Production live data count check: READY` with at least 30 active chapters, 500 approved memberships, 5 production chapter events, and 5 production Luma event links.
 - The signed-in route proof check says `Production signed-in route proof: READY`.
 - The invite gate says `30-chapter invite gate: READY`.
 - Nick approves the 30 chapters.

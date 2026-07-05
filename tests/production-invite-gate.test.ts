@@ -299,6 +299,7 @@ function createReadyLiveDataReadiness(): ProductionLiveDataReadiness {
     ready: true,
     minimumChapterCount: 30,
     minimumApprovedMembershipCount: 500,
+    minimumPilotEventCount: 5,
     counts: {
       "auth.users": 503,
       "app.profiles": 503,
@@ -307,6 +308,8 @@ function createReadyLiveDataReadiness(): ProductionLiveDataReadiness {
       "app.staff_role_assignments.active": 3,
       "app.coach_chapter_assignments.active": 30,
       "app.campaigns.active": 30,
+      "app.chapter_events": 5,
+      "app.luma_event_links": 5,
       "app.assignments": 30,
       "app.points_events": 5,
       "app.audit_logs": 10,
