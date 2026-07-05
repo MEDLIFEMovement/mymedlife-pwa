@@ -36,7 +36,7 @@ describe("production rollout intake status", () => {
     expect(status.pilotEventProofReady).toBe(true);
     expect(status.signedInRouteProofReady).toBe(false);
     expect(status.missingDataAsks).toEqual([
-      "After production users are applied, add passed signed-in route proof for one member, one leader, one staff user, one admin, and member/leader access for each ready pilot chapter.",
+      "After production users are applied, add passed signed-in route proof for one member, one leader, one staff user, one admin, the named support owner, the named rollback and production apply owners, and member/leader access for each ready pilot chapter.",
     ]);
   });
 
@@ -206,7 +206,7 @@ function createReadyPacket(): ProductionRolloutBootstrapPacket {
         ];
       }).flat(),
       {
-        email: "coach@medlifemovement.org",
+        email: "admin@medlifemovement.org",
         workspace: "staff_command_center",
         expectedPath: "/staff?view=chapters",
         observedPath: "/staff?view=chapters",

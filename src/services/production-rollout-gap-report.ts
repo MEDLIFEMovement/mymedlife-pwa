@@ -93,6 +93,29 @@ const ownerRolePolicies: Partial<
   },
 };
 
+const ownerRouteProofPolicies: Partial<
+  Record<
+    ProductionBootstrapLaunchOwner["ownerType"],
+    {
+      workspace: ProductionBootstrapSignedInRouteProof["workspace"];
+      expectedPath: string;
+    }
+  >
+> = {
+  support: {
+    workspace: "staff_command_center",
+    expectedPath: "/staff?view=chapters",
+  },
+  rollback: {
+    workspace: "admin_backend",
+    expectedPath: "/admin",
+  },
+  production_apply: {
+    workspace: "admin_backend",
+    expectedPath: "/admin",
+  },
+};
+
 const requiredRouteProof: Array<{
   workspace: ProductionBootstrapSignedInRouteProof["workspace"];
   label: string;
@@ -173,7 +196,7 @@ export function getProductionRolloutGapReport(
       readyPilotChapterIds,
     }),
   );
-  const ownerGaps = getOwnerGaps(activeOwners, activeStaffRoles);
+  const ownerGaps = getOwnerGaps(activeOwners, activeStaffRoles, passedRouteProof);
   const signedInRouteProofGaps = getSignedInRouteProofGaps(passedRouteProof);
   const minimumGaps = getMinimumGaps({
     activeChapters: activeChapters.length,
@@ -351,6 +374,7 @@ function getMinimumGaps(input: {
 function getOwnerGaps(
   owners: ProductionBootstrapLaunchOwner[],
   activeStaffRoles: ProductionBootstrapStaffRole[],
+  passedRouteProof: ProductionBootstrapSignedInRouteProof[],
 ) {
   const missingOwnerGaps = requiredOwnerTypes
     .filter((ownerType) => !owners.some((owner) => owner.ownerType === ownerType))
@@ -376,7 +400,30 @@ function getOwnerGaps(
         ];
   });
 
-  return [...missingOwnerGaps, ...roleGaps];
+  const routeProofGaps = owners.flatMap((owner) => {
+    const policy = ownerRouteProofPolicies[owner.ownerType];
+
+    if (!policy) {
+      return [];
+    }
+
+    const ownerEmail = normalizeEmail(owner.email);
+    const hasPassedProof = passedRouteProof.some(
+      (proof) =>
+        normalizeEmail(proof.email) === ownerEmail &&
+        proof.workspace === policy.workspace &&
+        proof.expectedPath.trim() === policy.expectedPath &&
+        proof.observedPath.trim() === policy.expectedPath,
+    );
+
+    return hasPassedProof
+      ? []
+      : [
+          `Launch owner ${owner.email} (${owner.ownerType}) needs passed signed-in proof for ${policy.expectedPath}.`,
+        ];
+  });
+
+  return [...missingOwnerGaps, ...roleGaps, ...routeProofGaps];
 }
 
 function getRecommendedOwnerWarnings(owners: ProductionBootstrapLaunchOwner[]) {

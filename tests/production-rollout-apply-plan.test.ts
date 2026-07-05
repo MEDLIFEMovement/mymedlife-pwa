@@ -226,7 +226,7 @@ function createPacket(chapterCount: number): ProductionRolloutBootstrapPacket {
         status: "passed",
       },
       {
-        email: "coach@medlifemovement.org",
+        email: "admin@medlifemovement.org",
         workspace: "staff_command_center",
         expectedPath: "/staff?view=chapters",
         observedPath: "/staff?view=chapters",

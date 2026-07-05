@@ -99,6 +99,26 @@ describe("production rollout gap report", () => {
     );
   });
 
+  it("flags launch owners without passed route proof for their operating workspace", () => {
+    const packet = createPacket();
+    packet.signedInRouteProof = packet.signedInRouteProof?.filter(
+      (proof) =>
+        proof.email !== "admin@medlifemovement.org" &&
+        proof.email !== "ds@medlifemovement.org",
+    );
+
+    const report = getProductionRolloutGapReport(packet);
+
+    expect(report.ready).toBe(false);
+    expect(report.ownerGaps).toEqual(
+      expect.arrayContaining([
+        "Launch owner admin@medlifemovement.org (support) needs passed signed-in proof for /staff?view=chapters.",
+        "Launch owner ds@medlifemovement.org (rollback) needs passed signed-in proof for /admin.",
+        "Launch owner ds@medlifemovement.org (production_apply) needs passed signed-in proof for /admin.",
+      ]),
+    );
+  });
+
   it("explains missing count minimums when the packet is still blank", () => {
     const report = getProductionRolloutGapReport({
       chapters: [],
@@ -283,6 +303,13 @@ function createPacket(): ProductionRolloutBootstrapPacket {
       },
       {
         email: "coach@medlifemovement.org",
+        workspace: "staff_command_center",
+        expectedPath: "/staff?view=chapters",
+        observedPath: "/staff?view=chapters",
+        status: "passed",
+      },
+      {
+        email: "admin@medlifemovement.org",
         workspace: "staff_command_center",
         expectedPath: "/staff?view=chapters",
         observedPath: "/staff?view=chapters",

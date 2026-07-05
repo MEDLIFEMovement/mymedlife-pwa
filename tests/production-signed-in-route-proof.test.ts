@@ -24,6 +24,26 @@ describe("production signed-in route proof", () => {
     );
   });
 
+  it("requires named launch owners to prove their own operating routes", () => {
+    const packet = createPacket();
+    packet.signedInRouteProof = packet.signedInRouteProof?.filter(
+      (proof) =>
+        proof.email !== "coach@medlifemovement.org" &&
+        proof.email !== "ds@medlifemovement.org",
+    );
+
+    const readiness = getProductionSignedInRouteProofReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toEqual(
+      expect.arrayContaining([
+        "Launch owner coach@medlifemovement.org (support) needs passed signed-in proof for /staff?view=chapters.",
+        "Launch owner ds@medlifemovement.org (rollback) needs passed signed-in proof for /admin.",
+        "Launch owner ds@medlifemovement.org (production_apply) needs passed signed-in proof for /admin.",
+      ]),
+    );
+  });
+
   it("blocks broad invites when signed-in route proof is missing", () => {
     const packet = createPacket();
     packet.signedInRouteProof = [];
@@ -185,6 +205,23 @@ function createPacket(): ProductionRolloutBootstrapPacket {
         chapterId: "chapter-ucla",
         name: "Rush Month",
         slug: "rush-month-ucla",
+      },
+    ],
+    launchOwners: [
+      {
+        email: "coach@medlifemovement.org",
+        ownerType: "support",
+        displayName: "Launch Coach",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        ownerType: "rollback",
+        displayName: "DS Admin",
+      },
+      {
+        email: "ds@medlifemovement.org",
+        ownerType: "production_apply",
+        displayName: "DS Admin",
       },
     ],
     signedInRouteProof: [

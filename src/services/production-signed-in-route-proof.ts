@@ -1,4 +1,5 @@
 import type {
+  ProductionBootstrapLaunchOwner,
   ProductionBootstrapMembership,
   ProductionBootstrapSignedInRouteProof,
   ProductionBootstrapStaffRole,
@@ -90,6 +91,28 @@ const adminRoles: readonly ProductionBootstrapStaffRole["roleKey"][] = [
   "super_admin",
 ];
 
+const launchOwnerRouteProofRequirements: Array<{
+  ownerType: ProductionBootstrapLaunchOwner["ownerType"];
+  workspace: ProductionBootstrapSignedInRouteProof["workspace"];
+  expectedPath: string;
+}> = [
+  {
+    ownerType: "support",
+    workspace: "staff_command_center",
+    expectedPath: "/staff?view=chapters",
+  },
+  {
+    ownerType: "rollback",
+    workspace: "admin_backend",
+    expectedPath: "/admin",
+  },
+  {
+    ownerType: "production_apply",
+    workspace: "admin_backend",
+    expectedPath: "/admin",
+  },
+];
+
 export function getProductionSignedInRouteProofReadiness(
   packet: ProductionRolloutBootstrapPacket | null,
 ): ProductionSignedInRouteProofReadiness {
@@ -119,12 +142,17 @@ export function getProductionSignedInRouteProofReadiness(
   const proofRows = packet.signedInRouteProof ?? [];
   const rowBlockers = getRouteProofRowBlockers(packet, proofRows);
   const pilotChapterProof = getPilotChapterRouteProof(packet, proofRows);
+  const launchOwnerProofBlockers = getLaunchOwnerRouteProofBlockers(
+    packet,
+    proofRows,
+  );
   const checks = requiredRouteProofs.map((required) =>
     createRequiredRouteProofCheck(packet, proofRows, required),
   );
   const blockers = [
     ...rowBlockers,
     ...pilotChapterProof.blockers,
+    ...launchOwnerProofBlockers,
     ...checks
       .filter((check) => !check.passed)
       .map((check) => `${check.label}: ${check.detail}`),
@@ -266,6 +294,52 @@ function getPilotChapterRouteProof(
     fullyReadyChapterIds,
     blockers,
   };
+}
+
+function getLaunchOwnerRouteProofBlockers(
+  packet: ProductionRolloutBootstrapPacket,
+  proofRows: ProductionBootstrapSignedInRouteProof[],
+) {
+  const activeOwners = (packet.launchOwners ?? []).filter(
+    (owner) => (owner.status ?? "active") === "active",
+  );
+
+  return launchOwnerRouteProofRequirements.flatMap((required) =>
+    activeOwners
+      .filter((owner) => owner.ownerType === required.ownerType)
+      .filter(
+        (owner) =>
+          !hasPassedLaunchOwnerRouteProof({
+            owner,
+            proofRows,
+            workspace: required.workspace,
+            expectedPath: required.expectedPath,
+          }),
+      )
+      .map(
+        (owner) =>
+          `Launch owner ${owner.email} (${owner.ownerType}) needs passed signed-in proof for ${required.expectedPath}.`,
+      ),
+  );
+}
+
+function hasPassedLaunchOwnerRouteProof(input: {
+  owner: ProductionBootstrapLaunchOwner;
+  proofRows: ProductionBootstrapSignedInRouteProof[];
+  workspace: ProductionBootstrapSignedInRouteProof["workspace"];
+  expectedPath: string;
+}) {
+  const ownerEmail = normalizeEmail(input.owner.email);
+
+  return input.proofRows.some(
+    (proof) =>
+      normalizeEmail(proof.email) === ownerEmail &&
+      proof.workspace === input.workspace &&
+      proof.status === "passed" &&
+      proof.expectedPath === input.expectedPath &&
+      proof.observedPath === input.expectedPath &&
+      isValidCheckedAt(proof.checkedAt),
+  );
 }
 
 function hasPassedChapterRoleProof(input: {

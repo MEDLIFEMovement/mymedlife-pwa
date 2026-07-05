@@ -147,6 +147,7 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     "- The support owner needs an active coach, admin, or super_admin staff role.",
     "- The rollback and production apply owners need an active ds_admin or super_admin staff role.",
     "- After production data is applied, add passed signed-in route proof for one member, one leader, one staff user, one admin, and member/leader access for each ready pilot chapter.",
+    "- The named support owner also needs passed signed-in proof for /staff?view=chapters; rollback and production apply owners need passed signed-in proof for /admin.",
     "- The first rollout requires at least 30 active chapters.",
     "",
     "Files:",
