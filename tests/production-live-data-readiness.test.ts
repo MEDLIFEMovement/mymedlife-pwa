@@ -18,6 +18,9 @@ describe("production live data readiness", () => {
       "Add at least 30 active production chapters. Current active chapters: 0.",
     );
     expect(readiness.blockers).toContain(
+      "Add approved production memberships for launch users.",
+    );
+    expect(readiness.blockers).toContain(
       "Add active production coach assignments for launch chapters.",
     );
     expect(readiness.blockers).toContain(
@@ -31,10 +34,10 @@ describe("production live data readiness", () => {
   it("passes the count floor but keeps row-by-row verification explicit", () => {
     const readiness = getProductionLiveDataReadiness(
       createCounts({
-        "auth.users": 90,
-        "app.profiles": 90,
+        "auth.users": 503,
+        "app.profiles": 503,
         "app.chapters.active": 30,
-        "app.memberships.approved": 75,
+        "app.memberships.approved": 500,
         "app.staff_role_assignments.active": 4,
         "app.coach_chapter_assignments.active": 30,
         "app.campaigns.active": 30,
@@ -44,6 +47,29 @@ describe("production live data readiness", () => {
     expect(readiness.ready).toBe(true);
     expect(readiness.nextSteps).toContain(
       "Run the rollout packet validator and signed-in role checks; this count check does not prove row-by-row ownership.",
+    );
+  });
+
+  it("blocks production rollout until the live approved membership count reaches the 500-student invite floor", () => {
+    const readiness = getProductionLiveDataReadiness(
+      createCounts({
+        "auth.users": 503,
+        "app.profiles": 503,
+        "app.chapters.active": 30,
+        "app.memberships.approved": 75,
+        "app.staff_role_assignments.active": 4,
+        "app.coach_chapter_assignments.active": 30,
+        "app.campaigns.active": 30,
+      }),
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.minimumApprovedMembershipCount).toBe(500);
+    expect(readiness.blockers).toContain(
+      "Add at least 500 approved production memberships before inviting students. Current approved memberships: 75.",
+    );
+    expect(formatProductionLiveDataReadiness(readiness)).toContain(
+      "Minimum approved memberships: 500",
     );
   });
 
