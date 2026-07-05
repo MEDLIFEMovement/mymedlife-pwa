@@ -172,6 +172,29 @@ describe("production rollout bootstrap readiness", () => {
     );
   });
 
+  it("does not count ready pilot proof until the chapter has a linked Luma calendar", () => {
+    const packet = createCompletePacket(30);
+    packet.lumaCalendars = packet.lumaCalendars?.map((calendar) =>
+      calendar.chapterId === "chapter-01"
+        ? { ...calendar, status: "needs_setup" }
+        : calendar,
+    );
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.counts.readyPilotEventProofChapters).toBe(4);
+    expect(readiness.blockers).toContain(
+      "Chapter 01 MEDLIFE needs a linked Luma calendar mapping.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 needs a linked Luma calendar mapping before proof can count as ready.",
+    );
+    expect(readiness.blockers).toContain(
+      "Add ready event-loop proof for at least 5 pilot chapters before inviting 30 chapters. Current ready pilot chapters: 4.",
+    );
+  });
+
   it("blocks ready pilot proof that does not prove the whole event loop", () => {
     const packet = createCompletePacket(30);
     const pilotEventProof = packet.pilotEventProof ?? [];
