@@ -11,6 +11,7 @@ Local click-through for the launch-critical menu path is now pass for member mob
 - `/login`
 - `/app`
 - `/app/events`
+- `/app/events/[eventId]`
 - `/app/points`
 - `/profile`
 - `/app/slt-prep`
@@ -50,6 +51,9 @@ Local click-through for the launch-critical menu path is now pass for member mob
   - Events now links to `/app/events`.
   - Points now links to `/app/points`.
   - Profile now links to `/profile` instead of reusing Events.
+- Student standalone route pages:
+  - `/app/events`, `/app/events/[eventId]`, and `/app/points` now keep a persistent Home / Events / Points / Profile quick nav.
+  - Event detail keeps the “View leaderboard impact” CTA pointed at `/app/points`.
 - Student leader sidebar:
   - Primary menu items are now normal browser links with canonical `view=` URLs, plus hydrated app state updates.
   - Chapter Leaderboard opens `/leader?view=leaderboard`.
@@ -63,6 +67,12 @@ Local click-through for the launch-critical menu path is now pass for member mob
   - Events opens `/staff?view=events`.
   - Leaderboard opens `/staff?view=leaderboard`.
   - Staff Events and Leaderboard now render actual launch-lane panels rather than Portfolio Overview.
+- Admin backend visual shell:
+  - Primary admin menu click-through was verified for Overview, Users, Chapters, Modules, Luma Events, Points, Integrations, Audit Logs, System Health, API Keys, and Settings.
+  - MCP Connections was removed from the primary launch admin menu; MCP Analytics remains in the disabled module group.
+  - Footer identity row no longer looks like a fake logout control; logout is handled by the top-right account menu.
+  - Unauthorized member access to `/admin` redirects to `/app`.
+  - Top-right account menu logout returns to `/login`.
 
 ## Items Intentionally Disabled
 
@@ -84,7 +94,7 @@ pnpm test
 168 files passed, 1079 tests passed
 
 PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium
-4 passed
+8 passed
 
 PLAYWRIGHT_BASE_URL=http://localhost:3010 pnpm exec playwright test tests/e2e/launch-smoke.spec.ts --project=chromium --grep "leader command center|student command center"
 2 passed
@@ -95,6 +105,6 @@ passed
 
 ## Remaining Risk
 
-- Admin shell internal state was not converted in this pass; admin route-level pages were verified separately.
+- Admin shell primary menu uses local visual-console state by design, while audited admin subroutes remain separate protected pages.
 - This pass did not enable or validate live external writes.
 - Production readiness still depends on hosted staging and production rollout gates, not only local menu wiring.

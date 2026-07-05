@@ -10,6 +10,7 @@ This map records the launch-critical routes and the Figma-derived shell/page tha
 |---|---|---|---|---|
 | Home | `/app` | myMEDLIFE App Prototype | `FigmaMemberMobileHome` | Active |
 | Events | `/app/events` | myMEDLIFE App Prototype event flow | App event list route | Active |
+| Event Detail | `/app/events/[eventId]` | myMEDLIFE App Prototype event detail flow | App event detail route with student quick nav | Active |
 | Points | `/app/points` | myMEDLIFE App Prototype points flow | App points route | Active |
 | Profile | `/profile` | myMEDLIFE App Prototype profile area | `MemberProfilePanel` | Active |
 | SLT Prep | `/app/slt-prep` | SLT Prep mockup | `SltPrepPage` via app route alias | Active |
@@ -58,6 +59,8 @@ This map records the launch-critical routes and the Figma-derived shell/page tha
 | Luma Events | `/admin/integrations/luma` | Luma integration status | Luma integration route | Active |
 | Audit Logs | `/admin/audit-log` | Audit posture | Audit route | Active |
 | Integration Outbox | `/admin/integration-outbox` | Integration safety | Outbox route | Active |
+| Visual console menu | `/admin` local screen state | Admin backend shell | `FigmaAdminPanel` primary menu | Active |
+| MCP Connections | none in primary menu | Disabled launch module | Disabled Modules group only | Disabled in launch mode |
 
 ## Launch Mode Boundary
 

@@ -50,10 +50,34 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.goto("/app/events");
     await expect(page.getByRole("heading", { name: "RSVP, show up, earn points" })).toBeVisible();
     await expect(page.getByLabel("Upcoming events")).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Student quick navigation" })).toBeVisible();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Student quick navigation" })
+        .getByRole("link", { name: /Points/ }),
+    ).toHaveAttribute("href", "/app/points");
+
+    await page
+      .getByLabel("Upcoming events")
+      .getByRole("link")
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/app\/events\//);
+    await expect(page.getByText("Student status")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "View leaderboard impact" }),
+    ).toHaveAttribute("href", "/app/points");
+    await expect(page.getByRole("navigation", { name: "Student quick navigation" })).toBeVisible();
 
     await page.goto("/app/points");
     await expect(page.getByText("Points and leaderboard")).toBeVisible();
     await expect(page.getByLabel("Chapter leaderboard")).toBeVisible();
+    await page
+      .getByRole("navigation", { name: "Student quick navigation" })
+      .getByRole("link", { name: /Profile/ })
+      .click();
+    await expect(page).toHaveURL(/\/profile$/);
+    await expect(page.getByRole("heading", { name: "Hi, Sofia" })).toBeVisible();
   });
 
   test("loads the leader command center with the preview actor", async ({
@@ -142,5 +166,84 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/staff\?view=leaderboard/);
     await expect(page.getByRole("heading", { name: "Organization Leaderboard" })).toBeVisible();
     await expect(page.getByText("Chapter ranking by attendance-backed points")).toBeVisible();
+  });
+
+  test("clicks every staff command center menu item into its matching screen", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "general.staff@mymedlife.test");
+
+    const menuItems = [
+      { label: "Chapters", view: "chapters", heading: "Portfolio Overview" },
+      { label: "Events", view: "events", heading: "Events" },
+      { label: "Leaderboard", view: "leaderboard", heading: "Organization Leaderboard" },
+      { label: "Campaigns", view: "campaigns", heading: "Campaign Operations" },
+      { label: "Proof / UGC", view: "proof_ugc", heading: "Proof / UGC Review Queue" },
+      { label: "Best Practices", view: "best_practices", heading: "Best Practices Library" },
+      { label: "Campaign SOPs", view: "sops", heading: "Campaign SOP Builder" },
+      { label: "Admin", view: "admin", heading: "System Health" },
+    ] as const;
+
+    for (const item of menuItems) {
+      await page.goto("/staff?view=chapters");
+      await page.getByRole("link", { name: item.label, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp(`/staff\\?view=${item.view}`));
+      await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
+    }
+  });
+
+  test("keeps admin visual menu items functional and launch-disabled areas explicit", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "ds.admin@mymedlife.test");
+
+    const adminItems = [
+      { label: "Overview", heading: "Overview" },
+      { label: "Users", heading: "Users" },
+      { label: "Chapters", heading: "Chapters" },
+      { label: "Modules", heading: "Modules & Feature Flags" },
+      { label: "Luma Events", heading: "Luma Events" },
+      { label: "Points", heading: "Points" },
+      { label: "Integrations", heading: "Integrations" },
+      { label: "Audit Logs", heading: "Audit Logs" },
+      { label: "System Health", heading: "System Health" },
+      { label: "API Keys", heading: "API Keys" },
+      { label: "Settings", heading: "Settings" },
+    ] as const;
+
+    await page.goto("/admin");
+    await expect(page).toHaveURL(/\/admin$/);
+
+    for (const item of adminItems) {
+      await page
+        .locator("aside")
+        .getByRole("button", { name: item.label, exact: true })
+        .click();
+      await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
+    }
+
+    await expect(
+      page.locator("aside").getByRole("button", { name: "MCP Connections" }),
+    ).toHaveCount(0);
+    await expect(page.locator("aside").getByText("MCP Analytics")).toBeVisible();
+    await expect(page.locator("aside").getByText("Account menu")).toBeVisible();
+  });
+
+  test("blocks unauthorized admin URLs and logs out through the account menu", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "member.a@mymedlife.test");
+
+    await page.goto("/admin");
+    await expect(page).toHaveURL(/\/app$/);
+
+    await page.locator("details summary").click();
+    await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+    await page.getByRole("button", { name: "Log out" }).click();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByRole("heading", { name: "myMEDLIFE" })).toBeVisible();
   });
 });
