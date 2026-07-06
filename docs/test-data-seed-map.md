@@ -39,6 +39,8 @@ Local sandbox reviewers can now generate:
 - `.codex-artifacts/figma-seed/figma-signed-in-role-proof.md`
 - `.codex-artifacts/figma-seed/figma-sandbox-role-exercise.json`
 - `.codex-artifacts/figma-seed/figma-sandbox-role-exercise.md`
+- `.codex-artifacts/figma-seed/figma-sandbox-role-shell-regression.json`
+- `.codex-artifacts/figma-seed/figma-sandbox-role-shell-regression.md`
 
 Use `pnpm figma-seed:build` for the seed manifest/login map and
 `pnpm figma-seed:proof` for the route-logic proof report. Use
@@ -48,6 +50,10 @@ local/sandbox-only, confirm member/leader/staff/admin landing routes, keep
 `/app/slt-prep` as a sandbox review alias instead of signed-in production
 evidence, and explicitly say they cannot satisfy production signed-in proof or
 invite-gate proof.
+Use `pnpm figma-seed:regression` for the smallest repeatable four-shell
+regression summary built from those same sandbox proof/exercise services. It is
+deterministic route-validation output only and must not be described as
+production proof.
 Run `pnpm figma-seed:exercise:check` after route/auth-readiness changes. It
 fails if the sandbox exercise checklist drifts away from launch-lane route
 metadata or starts using language that sounds like production proof.
@@ -79,16 +85,23 @@ Recommended local-only sandbox flow:
    pnpm figma-seed:exercise:check
    ```
 
-5. If a real local browser session is needed, apply the local seed only:
+5. Build the repeatable four-shell regression summary:
+
+   ```bash
+   pnpm figma-seed:regression
+   ```
+
+6. If a real local browser session is needed, apply the local seed only:
 
    ```bash
    MYMEDLIFE_TEST_PRODUCTION_CONFIRM=CREATE_TEST_DATA pnpm test-production:seed -- --local
    ```
 
-6. Use only the generated `figma-sandbox-role-exercise.md` and
-   `figma-signed-in-role-proof.md` artifacts for sandbox QA. Do not copy those
-   rows, screenshots, or notes into `signed-in-route-proof.csv`, the rollout
-   packet, or the invite gate.
+7. Use only the generated `figma-sandbox-role-exercise.md`,
+   `figma-signed-in-role-proof.md`, and
+   `figma-sandbox-role-shell-regression.md` artifacts for sandbox QA. Do not
+   copy those rows, screenshots, or notes into `signed-in-route-proof.csv`, the
+   rollout packet, or the invite gate.
 
 ## Proposed Model Locations
 
