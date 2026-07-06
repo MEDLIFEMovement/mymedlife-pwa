@@ -232,6 +232,7 @@ export function formatProductionRolloutWorkbook(outputDirectoryName = "rollout-c
     "pnpm rollout:owner-requests --owner-dir rollout-owner-packets --out production-rollout-owner-requests",
     "pnpm rollout:owner-email-drafts --owner-dir rollout-owner-packets --out production-rollout-owner-email-drafts",
     "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
+    "pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md",
     `pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out ${outputDirectoryName}`,
     `pnpm rollout:data-request --dir ${outputDirectoryName} --out production-rollout-data-request.md`,
     `pnpm rollout:check-csv --dir ${outputDirectoryName}`,
