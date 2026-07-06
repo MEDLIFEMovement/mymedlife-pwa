@@ -53,6 +53,7 @@
     "figma-seed:exercise": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-figma-sandbox-role-exercise.mjs",
     "figma-seed:regression": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-figma-sandbox-role-shell-regression.mjs",
     "figma-seed:qa-bundle": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-figma-sandbox-role-qa-bundle.mjs",
+    "figma-seed:proof-separation": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-local-vs-production-role-proof-separation.mjs",
     "figma-seed:exercise:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-figma-sandbox-role-exercise-drift.mjs",
     "test-production:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-test-production-seed-environment.mjs",
     "test-production:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-test-production-seed-environment.mjs",
