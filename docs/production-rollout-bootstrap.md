@@ -58,10 +58,18 @@ seven real recipient emails in its Copy/Paste Answer Block. Save that block as
 `owner-recipient-answers.txt`, then run `pnpm rollout:owner-recipient-answers`
 to generate
 `production-rollout-owner-send-tracker/owner-recipient-assignments.csv`. After
-that, regenerate the tracker with `--recipient-assignments` if you want the
-recipient and CC columns prefilled.
-Send each owner only their matching folder, request doc, and email draft. After
-owner CSVs come back, rerun:
+that, regenerate the tracker with `--recipient-assignments` so the recipient
+and CC columns are prefilled. Send each owner only their matching folder,
+request doc, and email draft.
+
+After packets have been sent, keep the tracker current and run
+`rollout:current-status` with `--owner-send-tracker`. The report should say the
+handoff is waiting for returned CSVs, not that the packet still needs to be
+sent. When owner CSVs come back, save each returned folder under
+`returned-owner-packets/<owner-slug>/`, run the return-intake dry run, then run
+it again with `--apply` only after the guard report looks correct.
+
+Owner-packet loop:
 
 ```bash
 pnpm rollout:owner-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-packet-status.md
@@ -73,7 +81,9 @@ pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --own
 pnpm rollout:owner-recipients --owner-dir production-rollout-owner-handoff/rollout-owner-packets --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md
 pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv
 pnpm rollout:owner-followup --owner-dir production-rollout-owner-handoff/rollout-owner-packets --tracker production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md
-pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-current-status.md
+pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv --owner-send-tracker production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-current-status.md
+pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-return-intake.md
+pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-return-intake.md --apply
 ```
 
 ## Required Packet
@@ -492,12 +502,18 @@ At any point in the rollout, run the current-status command to see the first
 missing artifact and the next safe command:
 
 ```bash
-pnpm rollout:current-status --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-current-status.md
+pnpm rollout:current-status \
+  --owner-dir production-rollout-owner-handoff/rollout-owner-packets \
+  --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv \
+  --owner-send-tracker production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv \
+  --out production-rollout-current-status.md
 ```
 
 This command is intentionally read-only and can return `NOT READY` without
 failing the launch process. Use it as the plain status report while owner data,
 CSV assembly, packet validation, and live-data proof are still in progress.
+After handoff emails have been sent, the expected `NOT READY` blocker is the
+count of returned and validated owner CSVs.
 
 ## Target-Scale Rehearsal
 
