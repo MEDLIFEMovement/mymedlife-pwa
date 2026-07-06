@@ -25,6 +25,33 @@ the live data tables are empty:
 This means the app is deployed, but signed-in role verification cannot be
 completed until production users and app records exist.
 
+## Owner Handoff Workflow
+
+Start with the owner handoff kit before anyone edits the shared rollout packet:
+
+```bash
+pnpm rollout:owner-handoff --out production-rollout-owner-handoff
+```
+
+The generated folder contains:
+
+- blank owner-specific CSV folders
+- owner request docs with the current blockers
+- copy/paste owner email drafts
+- a status report showing how many owners are ready
+
+The email drafts are manual text only. They do not send email, create users,
+write Supabase rows, call Luma, send invitations, trigger n8n, or change
+production config. Send each owner only their matching folder, request doc, and
+email draft. After owner CSVs come back, rerun:
+
+```bash
+pnpm rollout:owner-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-packet-status.md
+pnpm rollout:owner-requests --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-requests
+pnpm rollout:owner-email-drafts --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-email-drafts
+pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-current-status.md
+```
+
 ## Required Packet
 
 Prepare one reviewed packet with these sections:

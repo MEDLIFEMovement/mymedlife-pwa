@@ -35,6 +35,13 @@ describe("production rollout owner handoff script", () => {
     expect(existsSync(join(outDir, "rollout-owner-packets", "README.md"))).toBe(true);
     expect(existsSync(join(outDir, "rollout-owner-packets", "ds-launch-owner", "users.csv"))).toBe(true);
     expect(existsSync(join(outDir, "production-rollout-owner-requests", "ds-launch-owner.md"))).toBe(true);
+    expect(existsSync(join(outDir, "production-rollout-owner-email-drafts", "ds-launch-owner.md"))).toBe(true);
+    expect(
+      readFileSync(
+        join(outDir, "production-rollout-owner-email-drafts", "ds-launch-owner.md"),
+        "utf8",
+      ),
+    ).toContain("Subject: myMEDLIFE rollout data request - DS / launch owner");
     expect(
       readFileSync(join(outDir, "production-rollout-owner-packet-status.md"), "utf8"),
     ).toContain("Owner progress: 0/7 owners ready");

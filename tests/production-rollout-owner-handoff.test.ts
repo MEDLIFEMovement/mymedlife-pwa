@@ -23,6 +23,10 @@ describe("production rollout owner handoff", () => {
       handoff.files,
       "production-rollout-owner-requests/nick-hq-launch-owner.md",
     );
+    const nickEmailDraft = getFile(
+      handoff.files,
+      "production-rollout-owner-email-drafts/nick-hq-launch-owner.md",
+    );
 
     expect(handoff.ready).toBe(false);
     expect(handoff.status.readyOwnerCount).toBe(0);
@@ -31,15 +35,25 @@ describe("production rollout owner handoff", () => {
     expect(filePaths).toContain(
       "production-rollout-owner-requests/ds-launch-owner.md",
     );
+    expect(filePaths).toContain(
+      "production-rollout-owner-email-drafts/ds-launch-owner.md",
+    );
     expect(index).toContain("myMEDLIFE 30-Chapter Owner Handoff Kit: NOT READY");
     expect(index).toContain("owner progress: 0/7 owners ready");
     expect(index).toContain(
+      "production-rollout-owner-email-drafts/: copy/paste email drafts",
+    );
+    expect(index).toContain(
       "pnpm rollout:owner-handoff --out production-rollout-owner-handoff",
     );
+    expect(index).toContain("pnpm rollout:owner-email-drafts");
     expect(index).toContain("It does not create users, write Supabase rows");
     expect(status).toContain("myMEDLIFE owner packet status: NOT READY");
     expect(status).toContain("Owner progress: 0/7 owners ready");
     expect(nickRequest).toContain("| chapters.csv | 0 | 2 | ready | NOT READY |");
+    expect(nickEmailDraft).toContain(
+      "Subject: myMEDLIFE rollout data request - Nick / HQ launch owner",
+    );
     expect(getFile(handoff.files, "rollout-owner-packets/luma-ds-owner/luma-calendars.csv")).toBe(
       "chapterId,calendarId,calendarName,status\n",
     );
