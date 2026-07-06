@@ -23,6 +23,7 @@
     "rollout:owner-recipient-decisions": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-recipient-decisions.mjs",
     "rollout:owner-recipient-answers": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-recipient-assignments-from-answer-block.mjs",
     "rollout:owner-followup": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-followup-report.mjs",
+    "rollout:owner-return-intake": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-return-intake.mjs",
     "rollout:owner-handoff": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-handoff.mjs",
     "rollout:current-status": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-current-status.mjs",
     "rollout:assemble-owner-packets": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/assemble-production-rollout-owner-packets.mjs",
