@@ -15,6 +15,7 @@
     "rollout:templates": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-csv-templates.mjs",
     "rollout:workbook": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-workbook.mjs",
     "rollout:roster-import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-roster-import.mjs",
+    "rollout:chapter-import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-chapter-import.mjs",
     "rollout:intake-status": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-intake-status.mjs",
     "rollout:chapter-matrix": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-chapter-matrix.mjs",
     "rollout:check-csv": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-csv-folder.mjs",

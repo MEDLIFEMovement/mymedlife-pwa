@@ -32,6 +32,32 @@ invites, call Luma, write Supabase rows, change Vercel, or enable integrations.
 It refuses fake/test emails and will not overwrite existing roster rows unless
 `--force` is added intentionally.
 
+If HQ/DS has one launch chapter setup export, convert it into the four
+chapter-level files that need to stay aligned:
+
+```bash
+pnpm rollout:chapter-import --chapters launch-chapters.csv --out-dir rollout-csv
+```
+
+The chapter import expects:
+
+```text
+chapterId,chapterName,campus,region,coachEmail,coachType,calendarId,calendarName,campaignName,campaignSlug
+```
+
+Required fields are `chapterId`, `chapterName`, `campus`, `coachEmail`, and
+`calendarId`. Optional fields include `region`, `chapterStatus`, `coachType`,
+`coachAssignmentStatus`, `campaignName`, `campaignSlug`, `campaignStatus`,
+`calendarName`, and `calendarStatus`. When blank, defaults are launch-safe:
+active chapter, portfolio coach assignment, Rush Month campaign, active
+campaign, linked Luma calendar. The command writes local `chapters.csv`,
+`coach-assignments.csv`, `campaigns.csv`, and `luma-calendars.csv` files only.
+It does not create chapters, assign coaches, call Luma, write Supabase rows,
+change Vercel, send invites, or enable integrations. It refuses fake/test coach
+emails, duplicate chapter IDs, placeholder text, and calendar values that look
+like keys or tokens. It will not overwrite existing rollout rows unless
+`--force` is added intentionally.
+
 The current local working copy is:
 
 ```text
