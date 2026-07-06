@@ -32,7 +32,10 @@ export type ChapterEventUpdateActorClass =
 export type ChapterEventUpdatePathContract = {
   key: "authoritative_fields" | "narrative_fields";
   label: string;
-  status: "proposed_only" | "blocked_pending_product_decision";
+  status:
+    | "implemented_local_first"
+    | "proposed_only"
+    | "blocked_pending_product_decision";
   localFunction: string;
   serverActionName: string;
   browserControlEnabled: false;
@@ -56,6 +59,8 @@ export type ChapterEventUpdateSafetyContract = {
   summary: readonly string[];
   currentPolicyCaveat: string;
   authoritativeFields: readonly ChapterEventUpdateField[];
+  implementedLocalAuthoritativeFields: readonly ChapterEventUpdateField[];
+  deferredAuthoritativeFields: readonly ChapterEventUpdateField[];
   narrativeCandidateFields: readonly ChapterEventUpdateField[];
   systemManagedFields: readonly string[];
   approvalRequirements: readonly string[];
@@ -96,13 +101,31 @@ const narrativeCandidateFields = [
   "feedback_summary",
 ] as const satisfies readonly ChapterEventUpdateField[];
 
+const implementedLocalAuthoritativeFields = [
+  "status",
+  "starts_at",
+  "ends_at",
+  "attendance_count",
+  "eligible_member_count",
+  "attendance_rate",
+  "nps_score",
+] as const satisfies readonly ChapterEventUpdateField[];
+
+const implementedLocalAuthoritativeFieldSet = new Set<ChapterEventUpdateField>(
+  implementedLocalAuthoritativeFields,
+);
+
+const deferredAuthoritativeFields = authoritativeFields.filter(
+  (field) => !implementedLocalAuthoritativeFieldSet.has(field),
+) as readonly ChapterEventUpdateField[];
+
 const systemManagedFields = ["created_at", "updated_at"] as const;
 
 const paths = [
   {
     key: "authoritative_fields",
     label: "Authoritative chapter-event update path",
-    status: "proposed_only",
+    status: "implemented_local_first",
     localFunction: "app.update_chapter_event_authoritative_fields",
     serverActionName: "updateChapterEventAuthoritativeFields",
     browserControlEnabled: false,
@@ -138,7 +161,7 @@ const paths = [
         clientMayProvideActor: false,
       },
     ],
-    allowedFields: authoritativeFields,
+    allowedFields: implementedLocalAuthoritativeFields,
     requiredSideEffects: [
       "Exactly one internal events row records chapter_event_updated with changed field names.",
       "Exactly one audit_logs row records who changed the event and why.",
@@ -213,17 +236,21 @@ export function getChapterEventUpdateSafetyContract(): ChapterEventUpdateSafetyC
     summary: [
       "This contract defines the next safe implementation boundary after the owner-update audit. It does not ship a browser write or production proof.",
       "Current direct owner/planner table updates on app.chapter_events must not be reused as the production event-update authority model.",
+      "A first local audited path now exists for the launch-lane authoritative subset: status, timing, attendance counts, attendance rate, and NPS score.",
+      "Remaining authoritative chapter-event fields still stay blocked until a later approved expansion decides how chapter mapping, ownership, titles, and provider-linked fields should move safely.",
       "Any future chapter-event update flow should keep external writes, invites, RSVP writes, attendance imports, points materialization, and rollout evidence separate.",
     ],
     currentPolicyCaveat:
-      "Current RLS still lets owner_user_id or planned_by_user_id update a full chapter_events row directly, including authoritative operating fields such as status, starts_at, ends_at, attendance_count, attendance_rate, nps_score, warehouse_status, and luma_event_link_id.",
+      "Current base RLS still grants broad row access to some actors, so the production-safe local boundary now relies on an audited update function plus trigger enforcement instead of direct chapter_events table updates.",
     authoritativeFields,
+    implementedLocalAuthoritativeFields,
+    deferredAuthoritativeFields,
     narrativeCandidateFields,
     systemManagedFields,
     approvalRequirements: [
       "Product explicitly approves whether any owner/planner narrative edit is needed at all.",
       "The server derives actor identity from Supabase Auth/session context, never from client-provided role, audience, email, or user ID.",
-      "Focused Supabase RLS tests prove direct table updates no longer carry production authority for owner/planner edits.",
+      "Focused Supabase RLS tests prove direct table updates no longer carry production authority for owner/planner or leader/admin edits in the first local path.",
       "The audited helper records exactly one internal event row and one audit row per accepted update.",
       "No points, outbox, provider, or rollout-evidence side effects are attached to chapter-event updates in this lane.",
     ],
@@ -257,6 +284,9 @@ export function getChapterEventUpdateSafetyValidation(
   }
 
   const authoritativeFieldSet = new Set(contract.authoritativeFields);
+  const implementedAuthoritativeFieldSet = new Set(
+    contract.implementedLocalAuthoritativeFields,
+  );
   const narrativeFieldSet = new Set(contract.narrativeCandidateFields);
 
   const checks = [
@@ -271,6 +301,7 @@ export function getChapterEventUpdateSafetyValidation(
     {
       key: "authoritative-path-blocks-owner-planner",
       passed:
+        authoritativePath.status === "implemented_local_first" &&
         authoritativePath.allowedActors.includes("chapter_leader") &&
         authoritativePath.allowedActors.includes("staff_admin") &&
         authoritativePath.allowedActors.includes("ds_admin") &&
@@ -278,6 +309,22 @@ export function getChapterEventUpdateSafetyValidation(
         authoritativePath.blockedActors.includes("general_member"),
       message:
         "The authoritative path stays limited to leader/staff/admin audiences and does not rely on owner/planner direct authority.",
+    },
+    {
+      key: "implemented-authoritative-subset",
+      passed:
+        authoritativePath.allowedFields.every((field) =>
+          implementedAuthoritativeFieldSet.has(field),
+        ) &&
+        contract.deferredAuthoritativeFields.every((field) =>
+          authoritativeFieldSet.has(field) &&
+          !implementedAuthoritativeFieldSet.has(field),
+        ) &&
+        !authoritativePath.allowedFields.includes("title") &&
+        !authoritativePath.allowedFields.includes("owner_user_id") &&
+        !authoritativePath.allowedFields.includes("luma_event_link_id"),
+      message:
+        "The first implemented audited path stays limited to the launch-lane authoritative subset while broader ownership, mapping, and provider-linked fields remain deferred.",
     },
     {
       key: "narrative-path-limited-fields",
@@ -334,6 +381,12 @@ export function formatChapterEventUpdateSafetyContract(
     "",
     "Authoritative fields:",
     ...formatList(contract.authoritativeFields),
+    "",
+    "Implemented local authoritative subset:",
+    ...formatList(contract.implementedLocalAuthoritativeFields),
+    "",
+    "Deferred authoritative fields:",
+    ...formatList(contract.deferredAuthoritativeFields),
     "",
     "Narrative candidate fields:",
     ...formatList(contract.narrativeCandidateFields),
