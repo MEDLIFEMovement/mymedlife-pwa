@@ -1,4 +1,5 @@
 import { isKnownAppRouteHref } from "./app-route-registry.ts";
+import { getBlockedProductionPilotProofSourceMarker } from "./production-pilot-event-proof-import.ts";
 import type {
   ProductionBootstrapPilotEventProof,
   ProductionRolloutBootstrapPacket,
@@ -282,7 +283,28 @@ function getReadyPilotProofBlockers({
     );
   }
 
+  addBlockedSourceMarkerBlockers(blockers, proofLabel, proof);
+
   return blockers;
+}
+
+function addBlockedSourceMarkerBlockers(
+  blockers: string[],
+  proofLabel: string,
+  proof: ProductionBootstrapPilotEventProof,
+) {
+  for (const [field, value] of [
+    ["lumaEventId", proof.lumaEventId],
+    ["notes", proof.notes],
+  ] as const) {
+    const matchedMarker = getBlockedProductionPilotProofSourceMarker(value);
+
+    if (matchedMarker) {
+      blockers.push(
+        `${proofLabel} ${field} references ${matchedMarker}, which is local, preview, staging, sample, or setup-only evidence and cannot count as approved production pilot proof.`,
+      );
+    }
+  }
 }
 
 function addRouteBlockers(
