@@ -102,6 +102,8 @@ describe("campaign route pages", () => {
     expect(html).toContain("Open event loop");
     expect(html).toContain('href="/rush-month/events"');
     expect(html).toContain('href="/rush-month/leaderboard"');
+    expect(html).toContain('href="/proof-library"');
+    expect(html).toContain('href="/proof-library/upload"');
   });
 
   it("keeps non-member starter details out of the member shell", async () => {

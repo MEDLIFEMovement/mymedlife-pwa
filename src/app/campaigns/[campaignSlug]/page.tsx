@@ -92,6 +92,16 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
             label: "Open points readback",
             detail: "Leaderboard movement stays read-only until production proof exists.",
           },
+          {
+            href: "/proof-library",
+            label: "Open proof posture",
+            detail: "Stories, consent, and HQ review posture stay visible without public publishing.",
+          },
+          {
+            href: "/proof-library/upload",
+            label: "Preview proof upload rules",
+            detail: "Inspect storage and consent requirements while uploads remain disabled.",
+          },
         ]}
       >
         <CampaignCloseoutReadinessPanel closeout={closeout} />

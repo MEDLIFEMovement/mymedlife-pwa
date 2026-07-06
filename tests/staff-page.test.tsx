@@ -212,6 +212,7 @@ describe("staff page", () => {
     expect(source).toContain("External source links are blocked in this preview");
     expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
     expect(source).toContain("publishing and distribution actions remain blocked in this launch pass");
+    expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
   });
 
   it("keeps campaign SOP creation and publish controls visibly blocked inside the SOP surface", async () => {

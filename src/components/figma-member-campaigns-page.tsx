@@ -145,6 +145,29 @@ export function FigmaMemberCampaignsPage({
             <Trophy size={20} className="text-[#F5A623]" />
           </Link>
 
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Link
+              href="/app/stories"
+              className="rounded-2xl border border-[#e5ded3] bg-white p-4"
+            >
+              <p className="text-sm font-bold text-[#1a0a0a]">Open MEDLIFE Stories</p>
+              <p className="mt-1 text-xs leading-5 text-[#7a5a5a]">
+                Review the field-story feed in a preview-safe route, not a public publishing lane.
+              </p>
+            </Link>
+            <Link
+              href="/proof-library/upload"
+              className="rounded-2xl border border-[#e5ded3] bg-white p-4"
+            >
+              <p className="text-sm font-bold text-[#1a0a0a]">
+                Preview proof upload requirements
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[#7a5a5a]">
+                See consent, storage, and blocked upload rules before any proof write path exists.
+              </p>
+            </Link>
+          </div>
+
           {readiness.canReadReadiness ? (
             <div className="rounded-2xl border border-[#e5ded3] bg-white p-4">
               <StudentSectionLabel>{readiness.title}</StudentSectionLabel>
