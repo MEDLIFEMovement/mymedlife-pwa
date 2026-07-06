@@ -70,6 +70,8 @@ describe("home page", () => {
     expect(html).toContain("Stories");
     expect(html).toContain("Events");
     expect(html).toContain("Points");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
+    expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=home"');
     expect(html).toContain('href="/app/stories"');
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain('href="/slt-prep"');
@@ -126,7 +128,7 @@ describe("home page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3500);
-    expect(lineCount).toBeLessThanOrEqual(3610);
+    expect(lineCount).toBeLessThanOrEqual(3615);
     expect(source).toContain("initialScreen = \"home\"");
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain('case "events": return <EventsScreen navigate={navigate} />;');

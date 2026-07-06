@@ -284,7 +284,7 @@ function EventDetailView({
             <PointsCard
               label="Luma"
               value={event.memberLumaLabel ? "Linked" : "Off"}
-              detail={event.memberLumaLabel ? "invite ready" : "future sync disabled"}
+              detail={event.memberLumaLabel ? "preview link only" : "future sync disabled"}
             />
           </div>
         </div>
