@@ -234,11 +234,12 @@ describe("role visibility service", () => {
     expect(canAccessWorkspace(superAdmin, "leader_command_center", { intent: "approve" })).toBe(false);
   });
 
-  it("gives members a mobile quick path to home, campaigns, events, points, and profile", () => {
+  it("gives members a mobile quick path to home, stories, events, points, and profile", () => {
     const actor = getMockLocalActorContext("member.a@mymedlife.test");
 
     expect(getMobileQuickNavigationForActor(actor)).toEqual([
       { href: "/app", label: "Home", helper: "Today" },
+      { href: "/app/stories", label: "Stories", helper: "Field" },
       { href: "/app/events", label: "Events", helper: "Meet" },
       { href: "/app/points", label: "Points", helper: "Rank" },
       { href: "/profile", label: "Profile", helper: "Me" },
@@ -256,6 +257,7 @@ describe("role visibility service", () => {
     ]);
     expect(getMobileQuickNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Home",
+      "Stories",
       "Events",
       "Points",
       "Profile",

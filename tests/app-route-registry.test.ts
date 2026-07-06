@@ -48,6 +48,7 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/login")).toBe(true);
     expect(isKnownAppRouteHref("/offline")).toBe(true);
     expect(isKnownAppRouteHref("/profile")).toBe(true);
+    expect(isKnownAppRouteHref("/app/stories")).toBe(true);
     expect(isKnownAppRouteHref("/app/events")).toBe(true);
     expect(isKnownAppRouteHref("/app/events/chapter-event-ucla-kickoff")).toBe(true);
     expect(isKnownAppRouteHref("/app/points")).toBe(true);

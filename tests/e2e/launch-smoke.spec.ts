@@ -22,7 +22,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByText("Sign in to your workspace")).toBeVisible();
   });
 
-  test("loads the member home, events, and points loop with the preview actor", async ({
+  test("loads the member home, stories, events, and points loop with the preview actor", async ({
     context,
     page,
   }) => {
@@ -33,49 +33,46 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByText("Upcoming Events")).toBeVisible();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
 
-    await page.getByRole("link", { name: "Events" }).click();
+    await page.getByRole("link", { name: "Stories", exact: true }).click();
+    await expect(page).toHaveURL(/\/app\/stories$/);
+    await expect(
+      page.getByRole("heading", { name: "MEDLIFE Stories", exact: true }),
+    ).toBeVisible();
+
+    await page.goto("/app");
+    await page.getByRole("link", { name: "Events", exact: true }).click();
     await expect(page).toHaveURL(/\/app\/events$/);
-    await expect(page.getByRole("heading", { name: "RSVP, show up, earn points" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+    await expect(page.getByText("Show up. Check in. Earn points.")).toBeVisible();
 
     await page.goto("/app");
-    await page.getByRole("link", { name: "Points" }).click();
+    await page.getByRole("link", { name: "Points", exact: true }).click();
     await expect(page).toHaveURL(/\/app\/points$/);
-    await expect(page.getByText("Points and leaderboard")).toBeVisible();
+    await expect(page.getByText("Points & Recognition")).toBeVisible();
 
     await page.goto("/app");
-    await page.getByRole("link", { name: "Profile" }).click();
+    await page.getByRole("link", { name: "Profile", exact: true }).click();
     await expect(page).toHaveURL(/\/profile$/);
     await expect(page.getByRole("heading", { name: "Hi, Sofia" })).toBeVisible();
 
     await page.goto("/app/events");
-    await expect(page.getByRole("heading", { name: "RSVP, show up, earn points" })).toBeVisible();
-    await expect(page.getByLabel("Upcoming events")).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "Student quick navigation" })).toBeVisible();
-    await expect(
-      page
-        .getByRole("navigation", { name: "Student quick navigation" })
-        .getByRole("link", { name: /Points/ }),
-    ).toHaveAttribute("href", "/app/points");
-
-    await page
-      .getByLabel("Upcoming events")
-      .getByRole("link")
-      .first()
-      .click();
-    await expect(page).toHaveURL(/\/app\/events\//);
-    await expect(page.getByText("Student status")).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "View leaderboard impact" }),
-    ).toHaveAttribute("href", "/app/points");
-    await expect(page.getByRole("navigation", { name: "Student quick navigation" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Stories" })).toHaveAttribute(
+      "href",
+      "/app/stories",
+    );
+    await expect(page.getByRole("link", { name: "Points" })).toHaveAttribute(
+      "href",
+      "/app/points",
+    );
+    await page.getByRole("button", { name: "RSVP" }).first().click();
+    await expect(page.getByRole("heading", { name: "Intro GBM" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "RSVP to Event" })).toBeVisible();
 
     await page.goto("/app/points");
-    await expect(page.getByText("Points and leaderboard")).toBeVisible();
-    await expect(page.getByLabel("Chapter leaderboard")).toBeVisible();
-    await page
-      .getByRole("navigation", { name: "Student quick navigation" })
-      .getByRole("link", { name: /Profile/ })
-      .click();
+    await expect(page.getByText("Points & Recognition")).toBeVisible();
+    await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
+    await page.getByRole("link", { name: "Profile", exact: true }).click();
     await expect(page).toHaveURL(/\/profile$/);
     await expect(page.getByRole("heading", { name: "Hi, Sofia" })).toBeVisible();
   });
@@ -86,7 +83,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
   }) => {
     await selectPreviewActor(context, "member.a@mymedlife.test");
 
-    await page.goto("/app");
+    await page.goto("/app/events");
     await page.getByRole("button", { name: "RSVP" }).first().click();
     await expect(page.getByRole("heading", { name: "Intro GBM" })).toBeVisible();
     await expect(page.getByRole("button", { name: "RSVP to Event" })).toBeVisible();
@@ -307,7 +304,8 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "traveler.a@mymedlife.test");
     await page.goto("/app/slt-prep");
     await expect(page).toHaveURL(/\/app\/events$/);
-    await expect(page.getByRole("heading", { name: "RSVP, show up, earn points" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+    await expect(page.getByText("Show up. Check in. Earn points.")).toBeVisible();
   });
 
   test("blocks unauthorized admin URLs and logs out through the account menu", async ({
