@@ -1,11 +1,11 @@
 /* global console, process, fetch */
 
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt [--public-url https://www.mymedlife.org] [--minimum-pilot-chapters=5] [--max-recipients=75]",
+  "  pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt [--public-url https://www.mymedlife.org] [--minimum-pilot-chapters=5] [--max-recipients=75] [--out production-invite-gate.md]",
   "",
   "This is read-only. It checks the public app route smoke plus the 30-chapter rollout packet, workspace coverage, pilot event proof, safe invite batches, owners, and handoff posture.",
   "The live-data-counts file should be the saved output from pnpm production:data-counts.",
@@ -92,8 +92,16 @@ try {
     minimumPilotChapterCount,
     maxRecipientsPerBatch,
   });
+  const report = formatProductionInviteGateReadiness(inviteGate);
+  const outPath = getArgValue(args, "--out");
 
-  console.log(formatProductionInviteGateReadiness(inviteGate));
+  if (outPath) {
+    await writeFile(resolve(outPath), `${report}\n`);
+    console.log(`30-chapter invite gate written to ${resolve(outPath)}`);
+  } else {
+    console.log(report);
+  }
+
   process.exit(inviteGate.ready ? 0 : 1);
 } catch (error) {
   console.error("30-chapter invite gate: NOT READY");
