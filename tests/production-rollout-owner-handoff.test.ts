@@ -57,7 +57,10 @@ describe("production rollout owner handoff", () => {
       "production-rollout-owner-send-tracker/: manual send/return tracker",
     );
     expect(index).toContain(
-      "Fill `production-rollout-owner-send-tracker/owner-recipient-assignments.csv`",
+      "collect the Copy/Paste Answer Block in `owner-recipient-answers.txt`",
+    );
+    expect(index).toContain(
+      "pnpm rollout:owner-recipient-answers",
     );
     expect(index).toContain(
       "pnpm rollout:owner-handoff --out production-rollout-owner-handoff",
