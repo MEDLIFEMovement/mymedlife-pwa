@@ -1,9 +1,9 @@
 # Social Lead Source Readiness Template (Hootsuite / Instagram)
 
-Use this only after returned owner packet intake confirms exact recruitment-funnel
-or chapter-interest gaps and after the first 30-chapter packet direction is clear.
-This is a preparation template, not an access request and not an implementation
-plan.
+Use this only after the 30-chapter slate is approved and the owner-return gap
+report or HubSpot/static review shows exact recruitment-source fields are still
+missing. This is a preparation template, not an access request and not an
+implementation plan.
 
 ## Why We Are Asking
 
@@ -22,14 +22,16 @@ We still keep:
 
 ## Option A: Static Export First (Preferred)
 
-Preferred ask: share a static export (CSV/Sheet) from the team’s existing social
-lead source process.
+Preferred ask: share a static export (CSV/Sheet) from the team’s existing
+social lead source process.
+This keeps the request read-only and easy to review.
 
 Minimum fields to request:
 
 - source platform/account/page handle
 - chapter/page mapping
 - campaign/post/source label (if available)
+- referral label or post label if that is the field used
 - lead/contact email or form field (only if already collected and approved)
 - consent, opt-in, or recruitment-source flag (only if already approved)
 - source record id or export row id
@@ -43,6 +45,7 @@ read-only access as a follow-up after Coordinator approval:
 
 - campaign/page export read access
 - lead/contact export read access
+- read-only list/report access if that is the narrowest supported path
 
 Keep scope strict:
 
@@ -50,6 +53,7 @@ Keep scope strict:
 - no write/publish/reply/comment permissions
 - no profile writes
 - no direct messages or notification permissions
+- no posting, publishing, or DM permissions
 
 ## Explicitly Exclude
 
@@ -57,6 +61,7 @@ The social lead ask should not include:
 
 - direct messages/private comments
 - passwords, tokens, API secrets, private handles in shared artifacts
+- any API keys in docs, sheets, CSVs, or browser fields
 - publishing/reply rights
 - follower/message automation or triggers
 - any production create/update rights
@@ -64,6 +69,7 @@ The social lead ask should not include:
 - point/attendance updates
 - any action that can change app membership, invites, points, attendance,
   audit/outbox, or rollout proof
+- claims that social data alone proves production rollout readiness
 
 ## Plain-English Request Body
 
@@ -83,9 +89,10 @@ The social lead ask should not include:
 
 Only request this after:
 
-- owner packet return intake identifies a real chapter lead-recruitment data
-  gap, and
-- the exact missing fields are known and approved for this rollout step.
+- owner packet return intake and current HubSpot/static review identify a real
+  recruitment-source gap, and
+- the exact missing fields are known and approved for this rollout step, or
+- HQ approves a recruitment-source pilot.
 
 Do not ask early just because social leads may be helpful later.
 
@@ -108,5 +115,7 @@ Do not ask early just because social leads may be helpful later.
 - No invites.
 - No production users.
 - No production Supabase writes.
+- No direct app user creation, membership creation, or points writes.
+- No claims that social data is rollout evidence by itself.
 - No social automation, DMs, or invite creation before final invite gate.
 - Keep social artifacts separate from Test/Figma/sandbox evidence.
