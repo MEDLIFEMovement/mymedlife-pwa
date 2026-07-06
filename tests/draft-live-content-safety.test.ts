@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   getDraftLiveContentFieldEvidenceReason,
   getDraftLiveContentObjectEvidenceReason,
+  getDraftLiveContentStringEvidenceReason,
   isLiveDraftContentStatus,
   normalizeDraftLiveContentStatus,
 } from "@/services/draft-live-content-safety";
@@ -41,6 +42,15 @@ describe("draft live content safety", () => {
         value: "SOP sample content only",
       }),
     ).toBe("pilotEventProof.notes contains sop sample");
+  });
+
+  it("reuses the string-level sample marker guard for manifest-style checks", () => {
+    expect(
+      getDraftLiveContentStringEvidenceReason(
+        "SOP sample content only",
+        "manifest.name",
+      ),
+    ).toBe("manifest.name contains sop sample");
   });
 
   it("flags draft/template/sample evidence in packet-like objects", () => {

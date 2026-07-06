@@ -45,6 +45,7 @@
     "rollout:apply-plan": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-apply-plan.mjs",
     "rollout:approval-summary": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-approval-summary.mjs",
     "rollout:sop-approval-readiness": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-sop-template-approval-readiness.mjs",
+    "rollout:sop-promotion-boundary": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-sop-template-promotion-boundary.mjs",
     "rollout:preflight": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-preflight.mjs",
     "rollout:rehearsal": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-rehearsal.mjs",
     "figma-seed:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-figma-test-seed-artifacts.mjs",
