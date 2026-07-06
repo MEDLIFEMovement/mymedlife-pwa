@@ -69,6 +69,9 @@ describe("production rollout current status", () => {
       "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
     );
     expect(status.nextCommands).toContain(
+      "pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+    );
+    expect(status.nextCommands).toContain(
       "pnpm rollout:owner-recipients --owner-dir rollout-owner-packets --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md",
     );
     expect(status.nextCommands).toContain(
@@ -109,7 +112,10 @@ describe("production rollout current status", () => {
       "owner recipient assignments: NOT READY (0/7 recipients assigned, 7 missing)",
     );
     expect(status.nextCommands).toContain(
-      `Fill ${recipientAssignmentsPath} with one valid recipient email for each owner packet.`,
+      "Save the worksheet Copy/Paste Answer Block as owner-recipient-answers.txt.",
+    );
+    expect(status.nextCommands).toContain(
+      `pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --owner-dir rollout-owner-packets --out ${recipientAssignmentsPath}`,
     );
     expect(status.nextCommands).toContain(
       `pnpm rollout:current-status --owner-dir rollout-owner-packets --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-current-status.md`,

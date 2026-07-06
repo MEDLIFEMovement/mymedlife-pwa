@@ -78,7 +78,10 @@ describe("production rollout current status script", () => {
       expect(report).toContain("Owner packet recipients are incomplete");
       expect(report).toContain("0/7 owner recipients assigned");
       expect(report).toContain(
-        "Fill .codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+        "Save the worksheet Copy/Paste Answer Block as owner-recipient-answers.txt.",
+      );
+      expect(report).toContain(
+        "pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --owner-dir .codex-artifacts/production-rollout-owner-handoff/rollout-owner-packets --out .codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
       );
       return;
     }
