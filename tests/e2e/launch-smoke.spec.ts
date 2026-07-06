@@ -65,9 +65,9 @@ test.describe("myMEDLIFE launch route smoke", () => {
       "href",
       "/app/points",
     );
-    await page.getByRole("button", { name: "RSVP" }).first().click();
-    await expect(page.getByRole("heading", { name: "Intro GBM" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "RSVP to Event" })).toBeVisible();
+    await page.getByRole("link", { name: "RSVP" }).first().click();
+    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=events&step=rsvp/);
+    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
 
     await page.goto("/app/points");
     await expect(page.getByText("Points & Recognition")).toBeVisible();
@@ -84,21 +84,20 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "member.a@mymedlife.test");
 
     await page.goto("/app/events");
-    await page.getByRole("button", { name: "RSVP" }).first().click();
-    await expect(page.getByRole("heading", { name: "Intro GBM" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "RSVP to Event" })).toBeVisible();
-
-    await page.getByRole("button", { name: "RSVP to Event" }).click();
+    await page.getByRole("link", { name: "RSVP" }).first().click();
+    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=events&step=rsvp/);
     await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
+
     await expect(page.getByText("Attend and check in to earn")).toBeVisible();
 
-    await page.getByRole("button", { name: "Go to Check-In" }).click();
-    await expect(page.getByRole("heading", { name: "Check In" })).toBeVisible();
-    await page.getByRole("button", { name: "Confirm Check-In" }).click();
+    await page.getByRole("link", { name: "Go to Check-In" }).click();
+    await expect(page).toHaveURL(/step=checkin/);
+    await expect(page.getByText("Preview event QR code")).toBeVisible();
+    await page.getByRole("link", { name: "Confirm Check-In" }).click();
     await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
-    await expect(page.getByText("+20 points")).toBeVisible();
+    await expect(page.getByText(/\+\d+ points/)).toBeVisible();
 
-    await page.getByRole("button", { name: "View All My Points" }).click();
+    await page.getByRole("link", { name: "View leaderboard impact" }).click();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
   });
 

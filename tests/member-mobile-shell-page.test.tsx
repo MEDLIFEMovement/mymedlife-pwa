@@ -27,6 +27,23 @@ function getSignedInActor(email: string) {
 }
 
 describe("member mobile shell routes", () => {
+  it("renders the Home route with route-backed event and points links", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: HomePage } = await import("@/app/app/member-home-page");
+    const html = renderToStaticMarkup(await HomePage({}));
+
+    expect(html).toContain('href="/app/events"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
+    expect(html).toContain('href="/app/points"');
+    expect(html).toContain('href="/app/stories"');
+    expect(html).toContain('href="/profile"');
+  });
+
   it("renders the Stories route through the shared Figma member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -55,6 +72,9 @@ describe("member mobile shell routes", () => {
     expect(html).toContain(">Events<");
     expect(html).toContain("Show up. Check in. Earn points.");
     expect(html).toContain("Intro GBM");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events"');
+    expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=events"');
   });
 
   it("renders the Points route through the shared Figma member shell", async () => {
