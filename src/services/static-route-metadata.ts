@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export type StaticRouteMetadataKey =
   | "home"
   | "app"
+  | "appStories"
   | "profile"
   | "onboarding"
   | "login"
@@ -87,6 +88,11 @@ const routeMetadata: Record<StaticRouteMetadataKey, Metadata> = {
     title: "Member App",
     description:
       "General member myMEDLIFE app with Rush Month actions, events, proof, points, leaderboard, and profile routing.",
+  },
+  appStories: {
+    title: "MEDLIFE Stories",
+    description:
+      "Read-only member stories feed with staff-curated moments, blocked publishing controls, and route-backed member navigation.",
   },
   profile: {
     title: "Profile",

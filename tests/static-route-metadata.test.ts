@@ -8,7 +8,7 @@ describe("static route metadata", () => {
   it("defines plain-English titles and descriptions for every core route", () => {
     const entries = getStaticRouteMetadataEntries();
 
-    expect(entries).toHaveLength(75);
+    expect(entries).toHaveLength(76);
     expect(entries.every((entry) => typeof entry.metadata.title === "string")).toBe(
       true,
     );
@@ -116,6 +116,10 @@ describe("static route metadata", () => {
     });
     expect(getStaticRouteMetadata("app")).toMatchObject({
       title: "Member App",
+    });
+    expect(getStaticRouteMetadata("appStories")).toMatchObject({
+      title: "MEDLIFE Stories",
+      description: expect.stringContaining("Read-only member stories feed"),
     });
     expect(getStaticRouteMetadata("leader")).toMatchObject({
       title: "Leader Command Center",

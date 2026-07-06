@@ -239,6 +239,7 @@ export function getNavigationForActor(actor?: LocalActorContext): NavigationItem
     case "member":
       return [
         { href: "/app", label: "Home" },
+        { href: "/app/stories", label: "Stories" },
         { href: "/app/events", label: "Events" },
         { href: "/app/points", label: "Points" },
         ...(hasTravelerAccess(actor) && shouldShowTravelerPrepEntry()

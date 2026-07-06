@@ -40,7 +40,7 @@ describe("role visibility service", () => {
     expect(actor.chapterRoles).toEqual(["Action Committee Member"]);
     expect(visibleAssignments).toHaveLength(3);
     expect(visibleAssignments.every((assignment) => assignment.lane === "Member")).toBe(true);
-    expect(navLabels).toEqual(["Home", "Events", "Points", "Profile"]);
+    expect(navLabels).toEqual(["Home", "Stories", "Events", "Points", "Profile"]);
   });
 
   it("lets chapter leaders read member and leader work but not coach-only work", () => {
@@ -120,6 +120,7 @@ describe("role visibility service", () => {
 
     expect(getNavigationForActor(member).map((item) => item.label)).toEqual([
       "Home",
+      "Stories",
       "Events",
       "Points",
       "Profile",
@@ -251,6 +252,7 @@ describe("role visibility service", () => {
 
     expect(getNavigationForActor(actor).map((item) => item.label)).toEqual([
       "Home",
+      "Stories",
       "Events",
       "Points",
       "Profile",

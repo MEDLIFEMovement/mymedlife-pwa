@@ -33,14 +33,15 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByText("Upcoming Events")).toBeVisible();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
 
-    await page.getByRole("link", { name: "Stories", exact: true }).click();
-    await expect(page).toHaveURL(/\/app\/stories$/);
-    await expect(
-      page.getByRole("heading", { name: "MEDLIFE Stories", exact: true }),
-    ).toBeVisible();
-
     await page.goto("/app");
-    await page.getByRole("link", { name: "Events", exact: true }).click();
+    await page
+      .getByRole("navigation", { name: "Member bottom navigation" })
+      .getByRole("link", { name: "Stories", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/app\/stories$/);
+    await expect(page.getByRole("heading", { name: "MEDLIFE Stories", exact: true })).toBeVisible();
+
+    await page.getByRole("link", { name: "Events" }).click();
     await expect(page).toHaveURL(/\/app\/events$/);
     await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
     await expect(page.getByText("Show up. Check in. Earn points.")).toBeVisible();
