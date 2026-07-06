@@ -41,6 +41,8 @@ Local sandbox reviewers can now generate:
 - `.codex-artifacts/figma-seed/figma-sandbox-role-exercise.md`
 - `.codex-artifacts/figma-seed/figma-sandbox-role-shell-regression.json`
 - `.codex-artifacts/figma-seed/figma-sandbox-role-shell-regression.md`
+- `.codex-artifacts/figma-seed/figma-sandbox-role-qa-bundle.json`
+- `.codex-artifacts/figma-seed/figma-sandbox-role-qa-bundle.md`
 
 Use `pnpm figma-seed:build` for the seed manifest/login map and
 `pnpm figma-seed:proof` for the route-logic proof report. Use
@@ -54,6 +56,10 @@ Use `pnpm figma-seed:regression` for the smallest repeatable four-shell
 regression summary built from those same sandbox proof/exercise services. It is
 deterministic route-validation output only and must not be described as
 production proof.
+Use `pnpm figma-seed:qa-bundle` for the operator-facing local QA packet that
+summarizes the sandbox proof, exercise, drift check, and four-shell regression
+in one place. It must still be treated as local/sandbox/Test-only and excluded
+from production signed-in proof, rollout evidence, and invite-gate proof.
 Run `pnpm figma-seed:exercise:check` after route/auth-readiness changes. It
 fails if the sandbox exercise checklist drifts away from launch-lane route
 metadata or starts using language that sounds like production proof.
@@ -91,17 +97,24 @@ Recommended local-only sandbox flow:
    pnpm figma-seed:regression
    ```
 
-6. If a real local browser session is needed, apply the local seed only:
+6. Build the operator-facing QA bundle:
+
+   ```bash
+   pnpm figma-seed:qa-bundle
+   ```
+
+7. If a real local browser session is needed, apply the local seed only:
 
    ```bash
    MYMEDLIFE_TEST_PRODUCTION_CONFIRM=CREATE_TEST_DATA pnpm test-production:seed -- --local
    ```
 
-7. Use only the generated `figma-sandbox-role-exercise.md`,
+8. Use only the generated `figma-sandbox-role-exercise.md`,
    `figma-signed-in-role-proof.md`, and
-   `figma-sandbox-role-shell-regression.md` artifacts for sandbox QA. Do not
-   copy those rows, screenshots, or notes into `signed-in-route-proof.csv`, the
-   rollout packet, or the invite gate.
+   `figma-sandbox-role-shell-regression.md`, plus the local-only
+   `figma-sandbox-role-qa-bundle.md`, for sandbox QA. Do not copy those rows,
+   screenshots, or notes into `signed-in-route-proof.csv`, the rollout packet,
+   or the invite gate.
 
 ## Proposed Model Locations
 
