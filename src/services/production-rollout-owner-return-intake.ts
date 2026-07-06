@@ -29,6 +29,8 @@ export type ProductionRolloutOwnerReturnIntake = {
   applied: boolean;
   sourceDirectoryName: string;
   ownerDirectoryName: string;
+  recipientAssignmentsPath?: string;
+  ownerSendTrackerPath?: string;
   files: ProductionRolloutOwnerReturnIntakeFile[];
   issues: ProductionRolloutOwnerReturnIntakeIssue[];
   nextCommands: string[];
@@ -46,11 +48,15 @@ export function getProductionRolloutOwnerReturnIntake({
   returnedFiles,
   sourceDirectoryName = "returned-owner-packets",
   ownerDirectoryName = "rollout-owner-packets",
+  recipientAssignmentsPath,
+  ownerSendTrackerPath,
   applied = false,
 }: {
   returnedFiles: ProductionRolloutOwnerReturnedFile[];
   sourceDirectoryName?: string;
   ownerDirectoryName?: string;
+  recipientAssignmentsPath?: string;
+  ownerSendTrackerPath?: string;
   applied?: boolean;
 }): ProductionRolloutOwnerReturnIntake {
   const expectedFiles = getExpectedReturnedFiles();
@@ -93,13 +99,15 @@ export function getProductionRolloutOwnerReturnIntake({
     applied,
     sourceDirectoryName,
     ownerDirectoryName,
+    recipientAssignmentsPath,
+    ownerSendTrackerPath,
     files,
     issues,
-    nextCommands: [
-      `pnpm rollout:owner-status --owner-dir ${ownerDirectoryName} --out production-rollout-owner-packet-status.md`,
-      `pnpm rollout:owner-followup --owner-dir ${ownerDirectoryName} --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
-      `pnpm rollout:current-status --owner-dir ${ownerDirectoryName} --out production-rollout-current-status.md`,
-    ],
+    nextCommands: getNextCommands({
+      ownerDirectoryName,
+      recipientAssignmentsPath,
+      ownerSendTrackerPath,
+    }),
     safetyRules: [
       "This intake step reads returned owner CSV files and can copy them into local owner packet folders only when --apply is used.",
       "It does not create users, write Supabase rows, call Luma, send invites, send email/SMS, trigger n8n, or change production config.",
@@ -117,6 +125,12 @@ export function formatProductionRolloutOwnerReturnIntake(
     "",
     `Source folder: ${intake.sourceDirectoryName}`,
     `Owner packet folder: ${intake.ownerDirectoryName}`,
+    ...(intake.recipientAssignmentsPath
+      ? [`Owner recipient assignments: ${intake.recipientAssignmentsPath}`]
+      : []),
+    ...(intake.ownerSendTrackerPath
+      ? [`Owner send tracker: ${intake.ownerSendTrackerPath}`]
+      : []),
     `Mode: ${intake.applied ? "APPLIED" : "DRY RUN"}`,
     "",
     intake.readyToApply
@@ -146,6 +160,31 @@ export function formatProductionRolloutOwnerReturnIntake(
   ];
 
   return lines.join("\n");
+}
+
+function getNextCommands({
+  ownerDirectoryName,
+  recipientAssignmentsPath,
+  ownerSendTrackerPath,
+}: {
+  ownerDirectoryName: string;
+  recipientAssignmentsPath?: string;
+  ownerSendTrackerPath?: string;
+}) {
+  const trackerPath =
+    ownerSendTrackerPath ?? "production-rollout-owner-send-tracker/owner-send-tracker.csv";
+  const commands = [
+    `pnpm rollout:owner-status --owner-dir ${ownerDirectoryName} --out production-rollout-owner-packet-status.md`,
+    `pnpm rollout:owner-followup --owner-dir ${ownerDirectoryName} --tracker ${trackerPath} --out production-rollout-owner-followup-report.md`,
+  ];
+  const currentStatusCommand = [
+    `pnpm rollout:current-status --owner-dir ${ownerDirectoryName}`,
+    ...(recipientAssignmentsPath ? [`--recipient-assignments ${recipientAssignmentsPath}`] : []),
+    `--owner-send-tracker ${trackerPath}`,
+    "--out production-rollout-current-status.md",
+  ].join(" ");
+
+  return [...commands, currentStatusCommand];
 }
 
 function getStatusLabel(intake: ProductionRolloutOwnerReturnIntake) {
