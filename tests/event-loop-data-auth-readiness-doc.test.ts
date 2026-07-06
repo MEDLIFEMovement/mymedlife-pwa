@@ -21,6 +21,7 @@ describe("event loop data auth readiness doc", () => {
     expect(doc).toContain("`app.points_events`");
     expect(doc).toContain("`app.audit_logs`");
     expect(doc).toContain("`app.automation_outbox`");
+    expect(doc).toContain("`supabase/tests/database/rls_goal_333.test.sql`");
     expect(doc).toContain("No proved production member RSVP browser write path in this lane");
     expect(doc).toContain("No proved production attendance import or check-in replay path in this lane");
   });
