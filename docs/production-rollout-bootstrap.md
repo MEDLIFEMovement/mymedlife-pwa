@@ -21,6 +21,8 @@ the live data tables are empty:
 - `app.assignments`: 0
 - `app.points_events`: 0
 - `app.audit_logs`: 0
+- `app.automation_outbox`: 0
+- `app.automation_outbox` rows in unsafe live-send statuses: 0
 
 This means the app is deployed, but signed-in role verification cannot be
 completed until production users and app records exist.
@@ -535,6 +537,7 @@ This command checks:
 - public `/login`, `/app`, `/leader`, `/staff`, and `/admin` route smoke
 - the 30-chapter/500-student rollout packet readiness
 - aggregate production Auth/profile/chapter/membership count proof
+- production outbox proof with zero unsafe live-send rows
 - member, leader, staff, and admin workspace access coverage
 - signed-in member, leader, staff, and admin route proof
 - 5-chapter Luma RSVP, attendance, points, audit, and zero-send proof
@@ -644,9 +647,10 @@ pnpm production:data-counts \
 ```
 
 The count check is not a replacement for the rollout packet validator. It proves
-that production has enough table volume for launch, while the packet validator
-still proves row-by-row ownership: which user belongs to which chapter, which
-coach owns each chapter, and which campaign each chapter starts with.
+that production has enough table volume for launch and that the automation
+outbox has zero unsafe live-send rows, while the packet validator still proves
+row-by-row ownership: which user belongs to which chapter, which coach owns each
+chapter, and which campaign each chapter starts with.
 
 Save the output as `production-live-data-counts.txt` and pass it to the final
 invite gate with `--live-data-counts`. Without that file, the invite gate must

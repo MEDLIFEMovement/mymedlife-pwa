@@ -20,6 +20,8 @@ export const productionLiveDataCountQuery = [
   "union all select 'app.assignments', count(*)::bigint from app.assignments",
   "union all select 'app.points_events', count(*)::bigint from app.points_events",
   "union all select 'app.audit_logs', count(*)::bigint from app.audit_logs",
+  "union all select 'app.automation_outbox.total', count(*)::bigint from app.automation_outbox",
+  "union all select 'app.automation_outbox.unsafe', count(*)::bigint from app.automation_outbox where status in ('approved_for_live_send', 'sent', 'failed', 'dead_lettered')",
   "order by relation;",
 ].join(" ");
 
