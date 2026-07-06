@@ -145,6 +145,29 @@ describe("production rollout packet builder", () => {
     );
   });
 
+  it("rejects Test and Figma seed markers before production CSVs become rollout evidence", () => {
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          chapters: "id,name,campus\nchapter-ucla,Test UCLA MEDLIFE,UCLA",
+        }),
+      ),
+    ).toThrow(
+      "chapters CSV row 2 column name contains Test/Figma sandbox data (packet starts with Test); replace it with approved production rollout data.",
+    );
+
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          pilotEventProof:
+            "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,notes\nchapter-ucla,Rush Month Kickoff,evt-ucla,5,4,4,recorded,zero_sends,source=figma_seed",
+        }),
+      ),
+    ).toThrow(
+      "pilotEventProof CSV row 2 column notes contains Test/Figma sandbox data (packet contains figma_seed); replace it with approved production rollout data.",
+    );
+  });
+
   it("rejects fake email data before launch users or owners are imported", () => {
     expect(() =>
       buildProductionRolloutPacketFromCsvTables(

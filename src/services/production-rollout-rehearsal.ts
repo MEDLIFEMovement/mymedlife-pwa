@@ -40,9 +40,13 @@ export function getProductionRolloutRehearsal(
     createProductionLumaRuntimeRegistryExport(packet, options).registryJson;
   const preflight = getProductionRolloutPreflight(packet, {
     ...options,
+    allowSandboxTestData: true,
     runtimeMappingJson,
   });
-  const inviteBatches = getProductionInviteBatchReadiness(packet, options);
+  const inviteBatches = getProductionInviteBatchReadiness(packet, {
+    ...options,
+    allowSandboxTestData: true,
+  });
 
   return {
     ready: preflight.ready,

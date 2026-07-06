@@ -11,6 +11,7 @@ import type {
   ProductionBootstrapUser,
   ProductionRolloutBootstrapPacket,
 } from "@/services/production-rollout-bootstrap";
+import { getFigmaOrTestSeedEvidenceReason } from "../data/figma-test-seed-map.ts";
 
 export type ProductionRolloutCsvTables = {
   chapters: string;
@@ -253,6 +254,13 @@ function validateProductionRolloutCsvValue({
   if (/<[^>\n]+>/.test(value) || /\b(TODO|TBD|PLACEHOLDER)\b/i.test(value)) {
     throw new Error(
       `${tableName} CSV row ${rowNumber} column ${header} contains placeholder text; replace it with approved production rollout data.`,
+    );
+  }
+
+  const testSeedReason = getFigmaOrTestSeedEvidenceReason(value);
+  if (testSeedReason) {
+    throw new Error(
+      `${tableName} CSV row ${rowNumber} column ${header} contains Test/Figma sandbox data (${testSeedReason}); replace it with approved production rollout data.`,
     );
   }
 
