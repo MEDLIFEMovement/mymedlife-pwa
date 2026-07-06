@@ -616,6 +616,11 @@ packet. It proves that five chapters have:
 - known app routes for event, attendance, points, audit, and outbox readback
 - a reviewer email and timestamp
 
+For the operator checklist that explains audit/readback and zero-send review in
+plain English, use:
+
+`docs/audit-outbox-zero-send-evidence-checklist.md`
+
 This gate is intentionally smaller than the final 30-chapter invite gate. It can
 pass before the full 500-student data packet is ready, but broad invitations
 still stay blocked until `pnpm production:invite-gate` says `READY`.
