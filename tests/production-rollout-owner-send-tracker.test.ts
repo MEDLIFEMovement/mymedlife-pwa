@@ -112,11 +112,23 @@ describe("production rollout owner send tracker", () => {
       }),
       "owner-send-tracker.csv",
     );
+    const nextAssignmentCsv = getFile(
+      getProductionRolloutOwnerSendTrackerFiles(status, {
+        recipientAssignments,
+      }),
+      "owner-recipient-assignments.csv",
+    );
 
     expect(csv).toContain(
       "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md,rollout-owner-packets/ds-launch-owner,ds@example.org,nick@example.org; kiomi@example.org,drafted,,,,",
     );
     expect(csv).toContain("Confirmed owner");
+    expect(nextAssignmentCsv).toContain(
+      "ds-launch-owner,DS / launch owner,ds@example.org,nick@example.org; kiomi@example.org,Confirmed owner",
+    );
+    expect(nextAssignmentCsv).toContain(
+      "nick-hq-launch-owner,Nick / HQ launch owner,,,",
+    );
   });
 
   it("hydrates pasted answer assignments into the full owner assignment CSV", () => {

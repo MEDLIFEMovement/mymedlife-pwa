@@ -65,6 +65,12 @@ export function getProductionRolloutOwnerSendTrackerFiles(
     throw new Error(assignmentIssues.join(" "));
   }
 
+  const hydratedRecipientAssignments =
+    hydrateProductionRolloutOwnerRecipientAssignments(
+      status,
+      recipientAssignments,
+    );
+
   return [
     {
       path: "README.md",
@@ -80,12 +86,14 @@ export function getProductionRolloutOwnerSendTrackerFiles(
         status,
         requestDirectoryName,
         emailDraftDirectoryName,
-        recipientAssignments,
+        recipientAssignments: hydratedRecipientAssignments,
       }),
     },
     {
       path: "owner-recipient-assignments.csv",
-      content: formatProductionRolloutOwnerRecipientAssignmentsCsv(status),
+      content: formatProductionRolloutOwnerRecipientAssignmentsCsvFromAssignments(
+        hydratedRecipientAssignments,
+      ),
     },
   ];
 }

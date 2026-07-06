@@ -108,12 +108,22 @@ describe("production rollout owner send tracker script", () => {
     );
 
     const csv = readFileSync(join(outDir, "owner-send-tracker.csv"), "utf8");
+    const nextAssignmentCsv = readFileSync(
+      join(outDir, "owner-recipient-assignments.csv"),
+      "utf8",
+    );
 
     expect(csv).toContain(
       "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md",
     );
     expect(csv).toContain("ds@example.org,kiomi@example.org,drafted");
     expect(csv).toContain("Confirmed owner");
+    expect(nextAssignmentCsv).toContain(
+      "ds-launch-owner,DS / launch owner,ds@example.org,kiomi@example.org,Confirmed owner",
+    );
+    expect(nextAssignmentCsv).toContain(
+      "nick-hq-launch-owner,Nick / HQ launch owner,,,",
+    );
   });
 
   it("fails when the output directory argument is missing", () => {
