@@ -32,6 +32,9 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/app$/);
     await expect(page.getByText("Upcoming Events")).toBeVisible();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
+    await page.getByRole("link", { name: "RSVP" }).first().click();
+    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=home&step=rsvp/);
+    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
 
     await page.goto("/app");
     await page
@@ -131,7 +134,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
     await expect(page.getByRole("link", { name: "View leaderboard impact" })).toHaveAttribute(
       "href",
-      "/app/points",
+      "/app/points?source=events",
     );
   });
 
