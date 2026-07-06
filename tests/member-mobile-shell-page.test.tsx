@@ -38,7 +38,7 @@ describe("member mobile shell routes", () => {
     const html = renderToStaticMarkup(await HomePage({}));
 
     expect(html).toContain('href="/app/events"');
-    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=rsvp"');
     expect(html).toContain('href="/app/points"');
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/profile"');

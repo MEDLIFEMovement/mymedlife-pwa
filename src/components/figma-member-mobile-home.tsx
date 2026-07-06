@@ -67,6 +67,10 @@ function getMemberEventRsvpHref(eventId: number) {
   return detailHref.includes("?") ? `${detailHref}&step=rsvp` : `${detailHref}?step=rsvp`;
 }
 
+function getMemberEventHomeRsvpHref(eventId: number) {
+  return getMemberEventRsvpHref(eventId).replace("source=events", "source=home");
+}
+
 // ─── Primitives ────────────────────────────────────────────────────────────
 
 function cn(...c: (string | undefined | false | null)[]) {
@@ -466,7 +470,7 @@ function StudentHome({
                     <Pill label="RSVP'd" variant="green" />
                   ) : (
                     <Link
-                      href="/app/events/chapter-event-ucla-kickoff?source=home"
+                      href={getMemberEventHomeRsvpHref(1)}
                       onClick={(event) => event.stopPropagation()}
                       className="flex-shrink-0 rounded-xl border border-primary/50 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/5"
                     >

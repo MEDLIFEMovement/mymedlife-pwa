@@ -32,6 +32,9 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/app$/);
     await expect(page.getByText("Upcoming Events")).toBeVisible();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
+    await page.getByRole("link", { name: "RSVP" }).first().click();
+    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=home&step=rsvp/);
+    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
 
     await page.goto("/app");
     await page
@@ -131,7 +134,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
     await expect(page.getByRole("link", { name: "View leaderboard impact" })).toHaveAttribute(
       "href",
-      "/app/points",
+      "/app/points?source=events",
     );
   });
 
@@ -223,10 +226,16 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/staff\?view=proof_ugc/);
     await expect(page.getByRole("heading", { name: "Proof / UGC Review Queue" })).toBeVisible();
     await expect(page.getByText("items pending review")).toBeVisible();
+    await expect(page.getByText("provider fetch and queue writes are blocked in this preview")).toBeVisible();
 
     await staffHeader.getByRole("link", { name: "Best Practices", exact: true }).click();
     await expect(page).toHaveURL(/\/staff\?view=best_practices/);
     await expect(page.getByRole("heading", { name: "Best Practices Library" })).toBeVisible();
+
+    await staffHeader.getByRole("link", { name: "Campaign SOPs", exact: true }).click();
+    await expect(page).toHaveURL(/\/staff\?view=sops/);
+    await expect(page.getByRole("heading", { name: "Campaign SOP Builder" })).toBeVisible();
+    await expect(page.getByText("New Campaign SOP")).toBeVisible();
 
     await staffHeader.getByRole("link", { name: "Admin", exact: true }).click();
     await expect(page).toHaveURL(/\/staff\?view=admin/);
@@ -308,6 +317,19 @@ test.describe("myMEDLIFE launch route smoke", () => {
         .click();
       await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
     }
+
+    await page.locator("aside").getByRole("button", { name: "Integrations", exact: true }).click();
+    await expect(
+      page.getByText("Smile.io sync stays visible for DS review, but point awards, tier sync, and reward writes remain blocked in this preview"),
+    ).toBeVisible();
+
+    await page.locator("aside").getByRole("button", { name: "API Keys", exact: true }).click();
+    await expect(page.getByText("API keys stay masked in this preview")).toBeVisible();
+
+    await page.locator("aside").getByRole("button", { name: "MCP Connections", exact: true }).click();
+    await expect(
+      page.getByTitle("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview"),
+    ).toBeVisible();
 
     await expect(page.locator("aside").getByText("MCP Analytics")).toBeVisible();
     await expect(page.locator("aside").getByText("Account menu")).toBeVisible();

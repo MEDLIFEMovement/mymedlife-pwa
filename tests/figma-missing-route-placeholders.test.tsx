@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -76,6 +78,73 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Launch Mode Active");
     expect(html).not.toContain("Chapter Dashboard · Jun 2025");
     expect(html).not.toContain("Figma page missing - implementation blocked");
+  });
+
+  it("keeps admin integrations, API-key, and MCP controls visibly blocked instead of simulating live mutations", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const modulesHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="modules" />);
+    expect(modulesHtml).toContain("This module surface is preview-only.");
+    expect(source).toContain("Module changes are blocked in this static admin shell; use the audited admin workflow after approval");
+
+    const integrationsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="integrations" />);
+    expect(integrationsHtml).toContain("this integrations surface is preview-only");
+    expect(integrationsHtml).toContain("Smile.io provider enablement is blocked until DS approval is complete");
+    expect(integrationsHtml).toContain("Meta App Review and OAuth scope setup stay visible for DS review");
+    expect(source).toContain("Publishing remains blocked in this preview");
+
+    const apiKeysHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="apikeys" />);
+    expect(apiKeysHtml).toContain("API keys stay masked in this preview");
+    expect(apiKeysHtml).toContain("Key material stays masked in this preview until the audited secrets workflow is approved.");
+    expect(source).toContain("Key rotation is blocked in this preview");
+    expect(source).toContain("Key revocation is blocked in this preview");
+
+    const mcpHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="mcp" />);
+    expect(mcpHtml).toContain("MCP Access Policy");
+    expect(source).toContain("MCP write access is blocked in this preview");
+    expect(source).toContain("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview");
+  });
+
+  it("keeps admin points policy controls visibly blocked instead of acting like a live editor", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const pointsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="points" />);
+
+    expect(pointsHtml).toContain("Points policy editing is blocked in this preview.");
+    expect(pointsHtml).toContain("Points System");
+    expect(source).toContain("Points policy edits are blocked in this preview until the audited workflow is approved");
+    expect(source).toContain("Global point defaults require the workflow-admin save path");
+  });
+
+  it("keeps system health and settings visible without presenting them as live production ops controls", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const healthHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="health" />);
+    expect(healthHtml).toContain("This system-health panel is preview-only.");
+    expect(healthHtml).toContain("System-health refresh is blocked in this static shell");
+
+    const settingsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="settings" />);
+    expect(settingsHtml).toContain("Preview Configuration Only");
+    expect(settingsHtml).toContain("Configured (preview only)");
+    expect(source).toContain("Use the audited admin workflow after approval for real environment or alert changes.");
+  });
+
+  it("keeps admin users and chapters detail surfaces visible without implying live mutation paths", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const usersHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="users" />);
+    expect(usersHtml).toContain("This user directory is preview-only.");
+    expect(source).toContain("Directory details, module access, and activity history shown here are preview/readback data.");
+    expect(source).toContain("Invite emails are blocked until external-send approval is complete");
+
+    const chaptersHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="chapters" />);
+    expect(chaptersHtml).toContain("This chapter directory is preview-only.");
+    expect(source).toContain("Chapter metrics, module access, and risk posture shown here are preview/readback data.");
+    expect(source).toContain("Chapter event drill-in is handled by the staff events view");
   });
 
   it("parks SLT Prep through /slt-prep during the events and points launch lane", async () => {

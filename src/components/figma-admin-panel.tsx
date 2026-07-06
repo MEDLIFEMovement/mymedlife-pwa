@@ -403,6 +403,13 @@ function UsersPage() {
   return (
     <>
       <div className="p-6 space-y-4">
+        <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+          <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[12px] text-amber-300/80 leading-relaxed">
+            This user directory is preview-only. Review seeded access, role posture, and blocked actions here, then use the audited admin workflow for any real user, role, or invite changes.
+          </p>
+        </div>
+
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
@@ -473,6 +480,13 @@ function UsersPage() {
       <Drawer open={!!selected} onClose={() => setSelected(null)} title="User Detail">
         {selected && (
           <div className="space-y-4">
+            <div className="flex items-start gap-2 bg-sky-500/8 border border-sky-500/15 rounded p-3">
+              <AlertCircle size={13} className="text-sky-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-sky-300/80 leading-relaxed">
+                Directory details, module access, and activity history shown here are preview/readback data. They do not confirm live production mutations from this shell.
+              </p>
+            </div>
+
             <div className="flex items-center gap-3">
               <div className="size-11 rounded-full bg-sky-500/15 border border-sky-500/15 flex items-center justify-center flex-shrink-0">
                 <span className="text-sky-400 font-bold text-[13px]">
@@ -553,6 +567,13 @@ function ChaptersPage() {
   return (
     <>
       <div className="p-6 space-y-4">
+        <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+          <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[12px] text-amber-300/80 leading-relaxed">
+            This chapter directory is preview-only. Review seeded chapter posture, readback metrics, and blocked admin actions here, then use the audited workflow for any real chapter or owner changes.
+          </p>
+        </div>
+
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
@@ -601,6 +622,13 @@ function ChaptersPage() {
       <Drawer open={!!selected} onClose={() => setSelected(null)} title="Chapter Detail">
         {selected && (
           <div className="space-y-4">
+            <div className="flex items-start gap-2 bg-sky-500/8 border border-sky-500/15 rounded p-3">
+              <AlertCircle size={13} className="text-sky-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-sky-300/80 leading-relaxed">
+                Chapter metrics, module access, and risk posture shown here are preview/readback data. They do not represent an approved live admin change path from this shell.
+              </p>
+            </div>
+
             <div>
               <h2 className="text-white font-bold text-[17px]">{selected.name}</h2>
               <p className="text-slate-500 text-[12px] mt-0.5">{selected.school} · {selected.region}</p>
@@ -677,7 +705,14 @@ function ModulesPage() {
 
   return (
     <>
-      <div className="p-6">
+      <div className="p-6 space-y-4">
+        <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+          <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[12px] text-amber-300/80 leading-relaxed">
+            This module surface is preview-only. Review staged module posture and blocked toggle paths here, then use the audited admin workflow after approval for any real module activation or shutdown.
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           {mods.map((mod) => (
             <div
@@ -987,11 +1022,30 @@ const LEDGER_ROWS = [
 
 // ─── Toggle helper ─────────────────────────────────────────────────────────────
 
-function AdminToggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function AdminToggle({
+  checked,
+  onChange,
+  disabled = false,
+  title,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+  title?: string;
+}) {
   return (
     <button
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-4.5 w-8 items-center rounded-full transition-colors flex-shrink-0 ${checked ? "bg-emerald-500" : "bg-slate-700"}`}
+      type="button"
+      disabled={disabled}
+      title={title}
+      onClick={() => {
+        if (!disabled) {
+          onChange(!checked);
+        }
+      }}
+      className={`relative inline-flex h-4.5 w-8 items-center rounded-full transition-colors flex-shrink-0 ${
+        checked ? "bg-emerald-500" : "bg-slate-700"
+      } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
       style={{ width: 32, height: 18 }}
     >
       <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform shadow-sm ${checked ? "translate-x-4" : "translate-x-1"}`} />
@@ -1032,6 +1086,7 @@ function PointsPage() {
   ] as const;
 
   const filteredLedger = LEDGER_ROWS.filter(r => ledgerFilter === "all" || r.status === ledgerFilter);
+  const blockedPointsControlTitle = "Points policy edits are blocked in this preview until the audited workflow is approved";
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -1050,7 +1105,7 @@ function PointsPage() {
         ))}
         <div className="ml-auto flex items-center gap-2 py-2.5">
           <span className="text-[11px] text-slate-600">Points System</span>
-          <AdminToggle checked={globalEnabled} onChange={setGlobalEnabled} />
+          <AdminToggle checked={globalEnabled} onChange={setGlobalEnabled} disabled title={blockedPointsControlTitle} />
           <Badge status={globalEnabled ? "enabled" : "disabled"} />
         </div>
       </div>
@@ -1060,6 +1115,12 @@ function PointsPage() {
         {/* ── Overview ─────────────────────────────────────────────────────── */}
         {tab === "overview" && (
           <div className="p-6 space-y-5">
+            <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+              <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-amber-300/80 leading-relaxed">
+                Points policy editing is blocked in this preview. Review the defaults and ledger here, then use the audited workflow after approval for any real points-rule changes.
+              </p>
+            </div>
             {/* Summary cards */}
             <div className="grid grid-cols-4 gap-3">
               {[
@@ -1157,7 +1218,7 @@ function PointsPage() {
                   <span className="text-[12px] font-semibold text-slate-300">Default Points by Role</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-slate-600">Points Enabled Globally</span>
-                    <AdminToggle checked={globalEnabled} onChange={setGlobalEnabled} />
+                    <AdminToggle checked={globalEnabled} onChange={setGlobalEnabled} disabled title={blockedPointsControlTitle} />
                   </div>
                 </div>
                 <table className="w-full text-[13px]">
@@ -1181,6 +1242,8 @@ function PointsPage() {
                             <AdminToggle
                               checked={r.enabled && globalEnabled}
                               onChange={v => updateRole(idx, "enabled", v)}
+                              disabled
+                              title={blockedPointsControlTitle}
                             />
                           </div>
                         </td>
@@ -1190,8 +1253,9 @@ function PointsPage() {
                               type="number"
                               value={r.points}
                               onChange={e => updateRole(idx, "points", Number(e.target.value))}
-                              disabled={!globalEnabled}
+                              disabled
                               className="w-20 text-right bg-[#0d1117] border border-white/[0.08] rounded px-2 py-1 text-[12px] text-slate-200 font-mono focus:outline-none focus:border-sky-500/40 disabled:opacity-30"
+                              title={blockedPointsControlTitle}
                             />
                           ) : (
                             <span className="text-[12px] text-slate-700 font-mono">—</span>
@@ -1203,7 +1267,9 @@ function PointsPage() {
                               type="number"
                               value={r.capPerStep}
                               onChange={e => updateRole(idx, "capPerStep", Number(e.target.value))}
+                              disabled
                               className="w-16 text-center bg-[#0d1117] border border-white/[0.08] rounded px-2 py-1 text-[12px] text-slate-200 font-mono focus:outline-none focus:border-sky-500/40"
+                              title={blockedPointsControlTitle}
                             />
                           ) : (
                             <span className="text-[12px] text-slate-700 font-mono">—</span>
@@ -1214,6 +1280,8 @@ function PointsPage() {
                             <AdminToggle
                               checked={r.smileSync && smileSync}
                               onChange={v => updateRole(idx, "smileSync", v)}
+                              disabled
+                              title={blockedPointsControlTitle}
                             />
                           </div>
                         </td>
@@ -1243,7 +1311,7 @@ function PointsPage() {
                   ].map(({ label, state, set }) => (
                     <div key={label} className="flex items-center justify-between">
                       <span className="text-[12px] text-slate-400">{label}</span>
-                      <AdminToggle checked={state} onChange={set} />
+                      <AdminToggle checked={state} onChange={set} disabled title={blockedPointsControlTitle} />
                     </div>
                   ))}
                 </div>
@@ -1257,6 +1325,8 @@ function PointsPage() {
                     <input
                       type="number"
                       defaultValue={25}
+                      disabled
+                      title={blockedPointsControlTitle}
                       className="w-full bg-[#0d1117] border border-white/[0.08] rounded px-3 py-2 text-[13px] text-slate-200 font-mono focus:outline-none focus:border-sky-500/40"
                     />
                   </div>
@@ -1374,6 +1444,8 @@ function PointsPage() {
                       type="number"
                       defaultValue={defaultVal || undefined}
                       placeholder={placeholder ?? String(defaultVal)}
+                      disabled
+                      title={blockedPointsControlTitle}
                       className="w-full bg-[#0d1117] border border-white/[0.08] rounded px-3 py-2 text-[13px] text-slate-200 font-mono focus:outline-none focus:border-sky-500/40 placeholder-slate-700"
                     />
                   </div>
@@ -1399,7 +1471,7 @@ function PointsPage() {
                       <div className="text-[13px] text-slate-300 font-medium">{label}</div>
                       <div className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{desc}</div>
                     </div>
-                    <AdminToggle checked={state} onChange={set} />
+                    <AdminToggle checked={state} onChange={set} disabled title={blockedPointsControlTitle} />
                   </div>
                 ))}
               </div>
@@ -1566,7 +1638,7 @@ function SmileioCard() {
               <span className="text-[14px] font-bold text-slate-200">Smile.io</span>
               <span className="text-[10px] bg-[#FF6B35]/15 text-[#FF6B35] border border-[#FF6B35]/20 px-2 py-0.5 rounded font-mono">Loyalty Platform</span>
             </div>
-            <p className="text-[12px] text-slate-500 mt-0.5">Points, tiers, and rewards synced across all myMEDLIFE chapters</p>
+            <p className="text-[12px] text-slate-500 mt-0.5">Planned points, tier, and reward mapping for the myMEDLIFE loyalty loop</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -1574,6 +1646,8 @@ function SmileioCard() {
           <Badge status={enabled ? "enabled" : "disabled"} />
           <button
             onClick={() => { setEnabled(!enabled); setTestResult(null); }}
+            disabled
+            title="Smile.io provider enablement is blocked until DS approval is complete"
             className={`px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors ${
               enabled
                 ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15"
@@ -1619,14 +1693,17 @@ function SmileioCard() {
                   </div>
                   <button
                     onClick={() => setKeyRevealed(!keyRevealed)}
+                    disabled
                     className="p-2 text-slate-500 hover:text-slate-200 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40"
-                    title={keyRevealed ? "Hide" : "Reveal key"}
+                    title="Smile.io secret reveal is blocked in this preview"
                   >
                     {keyRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                   <button
                     onClick={handleCopy}
+                    disabled
                     className="p-2 text-slate-500 hover:text-slate-200 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40"
+                    title="Smile.io secret copy is blocked in this preview"
                   >
                     {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                   </button>
@@ -1652,7 +1729,8 @@ function SmileioCard() {
               <div className="flex items-center gap-3 pt-1">
                 <button
                   onClick={handleTest}
-                  disabled={testing}
+                  disabled
+                  title="Smile.io connection tests are blocked until DS approval is complete"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50"
                 >
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
@@ -1693,7 +1771,7 @@ function SmileioCard() {
                 <div className="flex items-start gap-2.5 bg-amber-500/8 border border-amber-500/15 rounded p-3">
                   <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
                   <p className="text-[12px] text-amber-300/80 leading-relaxed">
-                    Smile.io is in staging mode. Enable the integration to begin syncing points and tiers to the loyalty platform.
+                    Smile.io sync stays visible for DS review, but point awards, tier sync, and reward writes remain blocked in this preview.
                   </p>
                 </div>
               )}
@@ -1707,7 +1785,7 @@ function SmileioCard() {
             <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-[13px] text-slate-300 font-medium">Points Sync Rules</p>
-                <p className="text-[12px] text-slate-500 mt-0.5">myMEDLIFE actions that trigger Smile.io point awards. Points are identical on both platforms.</p>
+                <p className="text-[12px] text-slate-500 mt-0.5">Review-only mapping of myMEDLIFE actions to a future Smile.io rewards policy.</p>
               </div>
               <button disabled title="Smile.io rule sync is blocked until integration approval is complete" className="px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors flex items-center gap-1.5">
                 <RefreshCw size={11} />
@@ -1913,7 +1991,7 @@ function MetaCard() {
         <div className="flex items-center gap-3">
           <HealthDot status={enabled ? "healthy" : "unknown"} />
           <Badge status={enabled ? "enabled" : "disabled"} />
-          <button onClick={() => { setEnabled(!enabled); setTestResult(null); }}
+          <button onClick={() => { setEnabled(!enabled); setTestResult(null); }} disabled title="Meta provider enablement is blocked until DS approval is complete"
             className={`px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors ${
               enabled ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15"
                       : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
@@ -1956,7 +2034,7 @@ function MetaCard() {
                   <div className="flex-1 bg-[#0d1117]/70 border border-white/[0.06] rounded px-3 py-2 font-mono text-[11px] text-slate-300 overflow-hidden">
                     {tokenRevealed ? "EAABwzLixnjYBO3ZBXk9pXm..." : `EAABwzLix${"•".repeat(20)}k4f2`}
                   </div>
-                  <button onClick={() => setTokenRevealed(!tokenRevealed)}
+                  <button onClick={() => setTokenRevealed(!tokenRevealed)} disabled title="Meta system token reveal is blocked in this preview"
                     className="p-2 text-slate-500 hover:text-slate-200 border border-white/[0.06] rounded bg-[#0d1117]/40">
                     {tokenRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
@@ -1967,7 +2045,7 @@ function MetaCard() {
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-1">
-                <button onClick={handleTest} disabled={testing}
+                <button onClick={handleTest} disabled title="Meta connection tests are blocked until DS approval is complete"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50">
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
                   {testing ? "Testing…" : "Test Connection"}
@@ -2003,7 +2081,7 @@ function MetaCard() {
               <div className="flex items-start gap-2 bg-sky-500/8 border border-sky-500/15 rounded p-3 mt-2">
                 <AlertCircle size={12} className="text-sky-400 flex-shrink-0 mt-0.5" />
                 <p className="text-[11px] text-sky-300/80 leading-relaxed">
-                  Permissions are granted via Meta App Review. Enable the integration to begin the OAuth flow and request scope approvals.
+                  Meta App Review and OAuth scope setup stay visible for DS review, but scope requests and provider activation remain blocked in this preview.
                 </p>
               </div>
             </div>
@@ -2116,7 +2194,7 @@ function MetaCard() {
             <div className="bg-[#0d1117]/40 border border-white/[0.05] rounded-lg p-4">
               <div className="text-[10px] text-slate-600 font-mono uppercase tracking-wider mb-3">UGC Sync — Tagged Posts</div>
               <p className="text-[12px] text-slate-400 leading-relaxed">
-                When Meta integration is enabled, posts tagged with <span className="font-mono text-slate-300">#MEDLIFE</span> or <span className="font-mono text-slate-300">@medlife_global</span> will be automatically pulled into the <span className="text-sky-400">Proof / UGC Review Queue</span> for staff review and consent checking before sharing.
+                If Meta activation is approved later, tagged posts such as <span className="font-mono text-slate-300">#MEDLIFE</span> or <span className="font-mono text-slate-300">@medlife_global</span> would flow into the <span className="text-sky-400">Proof / UGC Review Queue</span> for staff review and consent checks before any sharing step.
               </p>
             </div>
           </div>
@@ -2208,7 +2286,7 @@ function HootsuiteCard() {
         <div className="flex items-center gap-3">
           <HealthDot status={enabled ? "healthy" : "unknown"} />
           <Badge status={enabled ? "enabled" : "disabled"} />
-          <button onClick={() => { setEnabled(!enabled); setTestResult(null); }}
+          <button onClick={() => { setEnabled(!enabled); setTestResult(null); }} disabled title="Hootsuite provider enablement is blocked until DS approval is complete"
             className={`px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors ${
               enabled ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15"
                       : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
@@ -2247,7 +2325,7 @@ function HootsuiteCard() {
                   <div className="flex-1 bg-[#0d1117]/70 border border-white/[0.06] rounded px-3 py-2 font-mono text-[11px] text-slate-300 overflow-hidden">
                     {secretRevealed ? "hs_sec_4Tz8Kp1mQx9Nv3Wr..." : `hs_sec_4Tz${"•".repeat(20)}r9x`}
                   </div>
-                  <button onClick={() => setSecretRevealed(!secretRevealed)}
+                  <button onClick={() => setSecretRevealed(!secretRevealed)} disabled title="Hootsuite client-secret reveal is blocked in this preview"
                     className="p-2 text-slate-500 hover:text-slate-200 border border-white/[0.06] rounded bg-[#0d1117]/40">
                     {secretRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
@@ -2261,7 +2339,7 @@ function HootsuiteCard() {
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-1">
-                <button onClick={handleTest} disabled={testing}
+                <button onClick={handleTest} disabled title="Hootsuite connection tests are blocked until DS approval is complete"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50">
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
                   {testing ? "Testing…" : "Test Connection"}
@@ -2342,7 +2420,7 @@ function HootsuiteCard() {
             <div className="flex items-start gap-2 bg-sky-500/8 border border-sky-500/15 rounded p-3">
               <AlertCircle size={12} className="text-sky-400 flex-shrink-0 mt-0.5" />
               <p className="text-[12px] text-sky-300/80 leading-relaxed">
-                When a staff member publishes from the <span className="font-semibold">Feed Studio</span>, the post is queued in Hootsuite for the targeted chapter streams. All content goes through the existing consent and approval workflow before reaching social.
+                If Hootsuite activation is approved later, Feed Studio posts would queue here for the targeted chapter streams after consent and approval checks. Publishing remains blocked in this preview.
               </p>
             </div>
           </div>
@@ -2387,9 +2465,9 @@ function HootsuiteCard() {
               {[
                 { step:"1", label:"Staff composes post in Feed Studio",     source:"myMEDLIFE" },
                 { step:"2", label:"Audience selected (chapters / coach / saved list)", source:"myMEDLIFE" },
-                { step:"3", label:"Post queued in Hootsuite for approval",  source:"Hootsuite" },
+                { step:"3", label:"Post would queue in Hootsuite for approval",  source:"Hootsuite" },
                 { step:"4", label:"DS Admin or Super Admin approves",       source:"myMEDLIFE" },
-                { step:"5", label:"Hootsuite publishes to selected chapter streams", source:"Hootsuite" },
+                { step:"5", label:"Hootsuite would publish to selected chapter streams", source:"Hootsuite" },
               ].map(({ step, label, source }) => (
                 <div key={step} className="flex items-center gap-3">
                   <div className="size-5 rounded-full bg-slate-800 text-slate-500 flex items-center justify-center text-[10px] font-bold flex-shrink-0">{step}</div>
@@ -2451,6 +2529,12 @@ function IntegrationsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+        <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+        <p className="text-[12px] text-amber-300/80 leading-relaxed">
+          These provider controls stay visible for DS review, but this integrations surface is preview-only. Connection tests, enablement, syncs, exports, and external writes remain blocked until the audited workflow is approved.
+        </p>
+      </div>
 
       {/* Smile.io featured */}
       <div>
@@ -2627,6 +2711,13 @@ function SystemHealthPage() {
 
   return (
     <div className="p-6 space-y-5">
+      <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+        <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+        <p className="text-[12px] text-amber-300/80 leading-relaxed">
+          This system-health panel is preview-only. Use it to review seeded posture and blocked integrations, not as a live production monitoring surface.
+        </p>
+      </div>
+
       <div className={`flex items-center gap-3 border rounded-lg px-4 py-3 ${overallColors[overall]}`}>
         <HealthDot status={overall} />
         <div>
@@ -2699,13 +2790,23 @@ function SystemHealthPage() {
 function SettingsPage() {
   return (
     <div className="p-6 space-y-5 max-w-xl">
+      <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg p-4">
+        <AlertTriangle size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+        <div>
+          <div className="text-[13px] font-bold text-amber-400 mb-1">Preview Configuration Only</div>
+          <p className="text-[12px] text-amber-300/70 leading-relaxed">
+            These settings stay visible for DS review, but this surface does not change live production configuration. Use the audited admin workflow after approval for real environment or alert changes.
+          </p>
+        </div>
+      </div>
+
       <div className="bg-[#161b22] border border-white/[0.06] rounded-lg">
         <SectionHeader title="Admin Access Controls" />
         {[
-          { label: "Session timeout", value: "4 hours" },
-          { label: "MFA for production toggles", value: "Required" },
+          { label: "Session timeout", value: "4 hours (policy target)" },
+          { label: "MFA for production toggles", value: "Required in audited workflow" },
           { label: "Audit log retention", value: "90 days" },
-          { label: "Admin email alerts", value: "Enabled" },
+          { label: "Admin email alerts", value: "Configured (preview only)" },
           { label: "Environment", value: "Staging / mock-safe" },
         ].map((s) => (
           <div key={s.label} className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.04] last:border-0">
@@ -2946,22 +3047,24 @@ function ApiKeysPage() {
                     gate({ type: "reveal", id: k.id });
                   }
                 }}
+                disabled
                 className="p-2 text-slate-500 hover:text-slate-200 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40"
-                title={isRevealed ? "Hide key" : "Reveal key — requires password"}
+                title="Key reveal is blocked in this preview"
               >
                 {isRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
               </button>
               <button
                 onClick={() => gate({ type: "copy", id: k.id, key: k.key })}
+                disabled
                 className="p-2 text-slate-500 hover:text-slate-200 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40"
-                title="Copy key — requires password"
+                title="Key copy is blocked in this preview"
               >
                 {isCopied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
               </button>
             </div>
             <div className="flex items-center gap-1 mt-1.5">
               <Shield size={10} className="text-slate-700" />
-              <span className="text-[10px] text-slate-700">Reveal and copy require password verification</span>
+              <span className="text-[10px] text-slate-700">Key material stays masked in this preview until the audited secrets workflow is approved.</span>
             </div>
           </div>
 
@@ -2995,6 +3098,8 @@ function ApiKeysPage() {
               <>
                 <button
                   onClick={() => gate({ type: "rotate", target: k })}
+                  disabled
+                  title="Key rotation is blocked in this preview"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors"
                 >
                   <RotateCcw size={11} />
@@ -3002,6 +3107,8 @@ function ApiKeysPage() {
                 </button>
                 <button
                   onClick={() => gate({ type: "revoke", target: k })}
+                  disabled
+                  title="Key revocation is blocked in this preview"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium hover:bg-red-500/15 transition-colors"
                 >
                   <Trash2 size={11} />
@@ -3025,7 +3132,7 @@ function ApiKeysPage() {
         <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
           <Shield size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
           <p className="text-[12px] text-amber-300/80">
-            API keys are sensitive credentials. All reveal, copy, rotate, and revoke actions are logged in the audit trail. Never share keys outside this panel.
+            API keys stay masked in this preview. Reveal, copy, rotate, and revoke controls remain visible for workflow review, but the audited secrets workflow is still blocked here.
           </p>
         </div>
 
@@ -3343,7 +3450,9 @@ function McpPage() {
                         ) : (
                           <button
                             onClick={() => setPending({ id: pr.id, field: "writeAccess" })}
-                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${pr.writeAccess ? "bg-amber-500" : "bg-slate-700"}`}
+                            disabled
+                            title="MCP write access is blocked in this preview"
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-not-allowed ${pr.writeAccess ? "bg-amber-500" : "bg-slate-700"}`}
                           >
                             <span className={`inline-block size-3.5 transform rounded-full bg-white transition-transform ${pr.writeAccess ? "translate-x-4" : "translate-x-0.5"}`} />
                           </button>
@@ -3378,6 +3487,8 @@ function McpPage() {
                     ) : (
                       <button
                         onClick={() => setPending({ id: pr.id, field: "connect" })}
+                        disabled
+                        title="MCP provider connections stay visible for policy review, but connection changes are blocked in this preview"
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-medium hover:bg-emerald-500/18 transition-colors"
                       >
                         Connect
