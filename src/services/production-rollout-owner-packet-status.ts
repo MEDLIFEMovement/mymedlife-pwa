@@ -293,6 +293,8 @@ function getNextCommands({
       `pnpm rollout:owner-requests --owner-dir ${sourceDirectoryName} --out production-rollout-owner-requests`,
       `pnpm rollout:owner-email-drafts --owner-dir ${sourceDirectoryName} --out production-rollout-owner-email-drafts`,
       `pnpm rollout:owner-send-tracker --owner-dir ${sourceDirectoryName} --out production-rollout-owner-send-tracker`,
+      `pnpm rollout:owner-recipients --owner-dir ${sourceDirectoryName} --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md`,
+      `pnpm rollout:owner-send-tracker --owner-dir ${sourceDirectoryName} --out production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv`,
       `pnpm rollout:owner-followup --owner-dir ${sourceDirectoryName} --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
       "Ask each owner to fix the blockers in their folder.",
       "Rerun this status check before assembling the shared CSV folder.",

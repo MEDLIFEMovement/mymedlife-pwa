@@ -72,6 +72,12 @@ describe("production rollout CSV templates", () => {
       "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
     );
     expect(readme).toContain(
+      "pnpm rollout:owner-recipients --owner-dir rollout-owner-packets --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md",
+    );
+    expect(readme).toContain(
+      "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+    );
+    expect(readme).toContain(
       "pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md",
     );
     expect(readme).toContain(
@@ -123,6 +129,12 @@ describe("production rollout CSV templates", () => {
     );
     expect(readme).toContain(
       "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
+    );
+    expect(readme).toContain(
+      "pnpm rollout:owner-recipients --owner-dir rollout-owner-packets --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md",
+    );
+    expect(readme).toContain(
+      "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
     );
     expect(readme).toContain(
       "pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md",

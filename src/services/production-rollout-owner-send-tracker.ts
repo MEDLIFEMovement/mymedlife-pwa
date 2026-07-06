@@ -124,6 +124,7 @@ export function formatProductionRolloutOwnerSendTrackerReadme({
     "4. Keep owner CSV headers unchanged when returned files are copied back.",
     "5. Rerun owner status and current status after every returned owner folder.",
     "6. Optional: fill `owner-recipient-assignments.csv`, then rerun the tracker command with `--recipient-assignments owner-recipient-assignments.csv` to prefill recipients.",
+    "7. Before sending owner packets, run `pnpm rollout:owner-recipients --owner-dir <owner-dir> --recipient-assignments owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md`.",
     "",
     "## Status Values",
     "",

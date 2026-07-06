@@ -55,6 +55,7 @@ pnpm rollout:owner-status --owner-dir production-rollout-owner-handoff/rollout-o
 pnpm rollout:owner-requests --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-requests
 pnpm rollout:owner-email-drafts --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-email-drafts
 pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker
+pnpm rollout:owner-recipients --owner-dir production-rollout-owner-handoff/rollout-owner-packets --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md
 pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv
 pnpm rollout:owner-followup --owner-dir production-rollout-owner-handoff/rollout-owner-packets --tracker production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md
 pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-current-status.md
