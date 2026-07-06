@@ -299,7 +299,7 @@ describe("leader page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3950);
-    expect(lineCount).toBeLessThanOrEqual(4170);
+    expect(lineCount).toBeLessThanOrEqual(4205);
     expect(source).toContain('initialScreen = "home"');
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain("<Sidebar active={screen} onNav={navigateToScreen}/>");
@@ -318,5 +318,22 @@ describe("leader page", () => {
     expect(source).toContain("Workspace switching is handled by the account menu above this shell.");
     expect(source).toContain("Committee chair assignment is blocked in this preview.");
     expect(source).toContain("Committee detail drill-in is not wired yet.");
+  });
+
+  it("keeps leader assignment, promotion, and succession outcomes preview-only instead of sounding live", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("Assignment Preview Ready");
+    expect(source).toContain("No live task was created, no reminders were sent, and no member feed changed in this preview.");
+    expect(source).toContain("Promotion Preview Ready");
+    expect(source).toContain("No live role, pipeline, or chapter visibility changed in this preview.");
+    expect(source).toContain("Transition Plan Preview Ready");
+    expect(source).toContain("No live plan was activated, no nominees were notified, and no transition tasks were published from this preview.");
+    expect(source).toContain("This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.");
+    expect(source).toContain("Preview Plan");
+    expect(source).toContain("Preview Promotion");
   });
 });
