@@ -63,6 +63,9 @@ describe("production rollout owner packets", () => {
 
     expect(index).toContain("myMEDLIFE 30-Chapter Rollout Owner Packets");
     expect(index).toContain("Nick / HQ launch owner confirms chapters and launch owners.");
+    expect(index).toContain(
+      "pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out rollout-csv",
+    );
     expect(index).toContain("pnpm rollout:data-request --dir rollout-csv --out production-rollout-data-request.md");
     expect(index).toContain("pnpm rollout:check production-rollout-packet.json");
     expect(index).toContain("Do not invite students until the final invite gate passes.");
