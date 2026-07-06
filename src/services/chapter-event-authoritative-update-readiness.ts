@@ -60,6 +60,7 @@ export type ChapterEventAuthoritativeUpdateConfig =
     };
 
 export type ChapterEventAuthoritativeUpdateResultCode =
+  | "chapter_event_updated"
   | "write_disabled"
   | "missing_auth"
   | "chapter_event_not_found"
@@ -73,7 +74,7 @@ export type ChapterEventAuthoritativeUpdateReadiness = {
   operation: "chapter_event_authoritative_update";
   futureFunction: "app.update_chapter_event_authoritative_fields";
   futureServerAction: "updateChapterEventAuthoritativeFields";
-  canSubmit: false;
+  canSubmit: boolean;
   resultCodeIfSubmitted: ChapterEventAuthoritativeUpdateResultCode;
   reason: string;
   config: ChapterEventAuthoritativeUpdateConfig;
@@ -175,7 +176,7 @@ export function getChapterEventAuthoritativeUpdateWriteConfig(
     externalWritesEnabled: false,
     browserControlsEnabled: false,
     reason:
-      "Local chapter-event authoritative updates are approved only for a future server-only localhost boundary. Browser controls, provider calls, points materialization, RSVP writes, attendance imports, outbox sends, and hosted writes remain disabled.",
+      "Local chapter-event authoritative updates are enabled only for the reviewed server-only localhost boundary. Browser controls, provider calls, points materialization, RSVP writes, attendance imports, outbox sends, and hosted writes remain disabled.",
   };
 }
 
@@ -243,7 +244,7 @@ export function getChapterEventAuthoritativeUpdateReadiness(
     {
       key: "server_boundary_implemented",
       label: "Reviewed server-only wrapper is implemented",
-      passed: false,
+      passed: true,
     },
     {
       key: "browser_controls_disabled",
@@ -258,24 +259,25 @@ export function getChapterEventAuthoritativeUpdateReadiness(
   ];
 
   const failedCheck = checks.find((check) => !check.passed);
-  const resultCodeIfSubmitted = !config.enabled
-    ? "write_disabled"
-    : getBlockedResultCode(failedCheck?.key);
+  const canSubmit = config.enabled && !failedCheck;
+  const resultCodeIfSubmitted = canSubmit
+    ? "chapter_event_updated"
+    : !config.enabled
+      ? "write_disabled"
+      : getBlockedResultCode(failedCheck?.key);
 
   return {
     title: "Chapter-event authoritative update server boundary readiness",
     operation: "chapter_event_authoritative_update",
     futureFunction,
     futureServerAction,
-    canSubmit: false,
+    canSubmit,
     resultCodeIfSubmitted,
     reason: !config.enabled
       ? config.reason
-      : failedCheck?.key === "server_boundary_implemented"
-        ? `Reviewed server-only wrapper is not ready. ${config.reason}`
       : failedCheck
         ? `${failedCheck.label} is not ready. ${config.reason}`
-        : config.reason,
+      : config.reason,
     config,
     checks,
     requiredEnvFlags: localRequiredEnvFlags,
