@@ -57,16 +57,38 @@ export function isLiveDraftContentStatus(
   return normalizeDraftLiveContentStatus(value) === "live";
 }
 
+export function getDraftLiveContentStringEvidenceReason(
+  value: string | null | undefined,
+  path: string,
+): string | null {
+  const normalized = value?.trim().toLowerCase();
+
+  if (!normalized) {
+    return null;
+  }
+
+  for (const marker of sampleContentMarkers) {
+    if (normalized.includes(marker)) {
+      return `${path} contains ${marker}`;
+    }
+  }
+
+  return null;
+}
+
 export function getDraftLiveContentFieldEvidenceReason(
   input: DraftLiveFieldContext,
 ): string | null {
   const normalizedHeader = input.header.trim().toLowerCase();
   const normalizedValue = input.value.trim().toLowerCase();
 
-  for (const marker of sampleContentMarkers) {
-    if (normalizedValue.includes(marker)) {
-      return `${input.tableName}.${input.header} contains ${marker}`;
-    }
+  const stringReason = getDraftLiveContentStringEvidenceReason(
+    input.value,
+    `${input.tableName}.${input.header}`,
+  );
+
+  if (stringReason) {
+    return stringReason;
   }
 
   if (
@@ -101,13 +123,7 @@ export function getDraftLiveContentObjectEvidenceReason(
   path = "packet",
 ): string | null {
   if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-    for (const marker of sampleContentMarkers) {
-      if (normalized.includes(marker)) {
-        return `${path} contains ${marker}`;
-      }
-    }
-    return null;
+    return getDraftLiveContentStringEvidenceReason(value, path);
   }
 
   if (typeof value === "boolean" || !value || typeof value !== "object") {

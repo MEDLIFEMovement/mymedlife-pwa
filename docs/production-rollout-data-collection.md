@@ -251,6 +251,19 @@ archived should mean; who must approve promotion toward live use; and which
 guards keep SOP/template/sample material out of launch evidence and launch-lane
 runtime behavior.
 
+If the team later has a candidate SOP/template manifest and wants to confirm it
+has not crossed the promotion boundary prematurely, use:
+
+```bash
+pnpm rollout:sop-promotion-boundary --manifest sop-template-manifest.json --out sop-template-promotion-boundary.md
+```
+
+This is also read-only. It classifies the manifest as blocked, draft_only,
+needs_review, needs_ds_approval, or ready_for_manual_review. It requires review
+evidence, DS/admin approval evidence, and explicit guards that confirm rollout
+evidence, signed-in proof, invite-gate proof, and launch-lane runtime behavior
+all remain unchanged.
+
 If the team needs a plain-English gap readout before the final invite gate, use:
 
 ```bash
