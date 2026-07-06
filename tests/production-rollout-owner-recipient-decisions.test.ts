@@ -40,6 +40,10 @@ describe("production rollout owner recipient decision worksheet", () => {
     expect(markdown).toContain("owner recipient decision worksheet: NOT READY");
     expect(markdown).toContain("Nick or named HQ launch operator");
     expect(markdown).toContain("DS / platform owner");
+    expect(markdown).toContain("## Copy/Paste Answer Block");
+    expect(markdown).toContain(
+      "nick-hq-launch-owner | suggestedSeat=Nick or named HQ launch operator | recipientEmail= | ccEmails= | notes=",
+    );
     expect(markdown).toContain("pending recipient decision");
     expect(markdown).toContain("Do not send broad student invitations");
     expect(markdown).not.toContain("password,");
@@ -74,6 +78,9 @@ describe("production rollout owner recipient decision worksheet", () => {
     expect(worksheet.summary.assignedOwnerCount).toBe(7);
     expect(markdown).toContain(
       "owner recipient decision worksheet: READY TO SEND OWNER PACKETS",
+    );
+    expect(markdown).toContain(
+      "nick-hq-launch-owner | suggestedSeat=Nick or named HQ launch operator | recipientEmail=nick@example.org | ccEmails=kiomi@example.org | notes=",
     );
     expect(markdown).toContain("confirm recipient before send");
   });
