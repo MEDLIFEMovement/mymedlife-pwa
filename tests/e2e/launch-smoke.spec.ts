@@ -164,6 +164,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     page,
   }) => {
     await selectPreviewActor(context, "general.staff@mymedlife.test");
+    const staffHeader = page.locator("header").first();
 
     await page.goto("/staff");
 
@@ -171,15 +172,19 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("heading", { name: "Portfolio Overview" })).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "Chapter" })).toBeVisible();
 
-    await page.getByRole("link", { name: "Events" }).click();
+    await staffHeader.getByRole("link", { name: "Campaigns", exact: true }).click();
     await expect(page).toHaveURL(/\/staff\?view=events/);
     await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
     await expect(page.getByText("RSVP, attendance, and point readiness by chapter")).toBeVisible();
 
-    await page.getByRole("link", { name: "Leaderboard" }).click();
+    await staffHeader.getByRole("link", { name: "Proof / UGC", exact: true }).click();
     await expect(page).toHaveURL(/\/staff\?view=leaderboard/);
     await expect(page.getByRole("heading", { name: "Organization Leaderboard" })).toBeVisible();
     await expect(page.getByText("Chapter ranking by attendance-backed points")).toBeVisible();
+
+    await staffHeader.getByRole("link", { name: "Admin", exact: true }).click();
+    await expect(page).toHaveURL(/\/staff\?view=chapters/);
+    await expect(page.getByRole("heading", { name: "Portfolio Overview" })).toBeVisible();
   });
 
   test("filters the staff chapter table by chapter type without losing event and points columns", async ({
@@ -205,15 +210,22 @@ test.describe("myMEDLIFE launch route smoke", () => {
   }) => {
     await selectPreviewActor(context, "general.staff@mymedlife.test");
 
+    const openStaffMenuItem = async (label: string) => {
+      await page.locator("header").first().getByRole("link", { name: label, exact: true }).click();
+    };
+
     const menuItems = [
       { label: "Chapters", view: "chapters", heading: "Portfolio Overview" },
-      { label: "Events", view: "events", heading: "Events" },
-      { label: "Leaderboard", view: "leaderboard", heading: "Organization Leaderboard" },
+      { label: "Campaigns", view: "events", heading: "Events" },
+      { label: "Proof / UGC", view: "leaderboard", heading: "Organization Leaderboard" },
+      { label: "Best Practices", view: "leaderboard", heading: "Organization Leaderboard" },
+      { label: "Campaign SOPs", view: "chapters", heading: "Portfolio Overview" },
+      { label: "Admin", view: "chapters", heading: "Portfolio Overview" },
     ] as const;
 
     for (const item of menuItems) {
       await page.goto("/staff?view=chapters");
-      await page.getByRole("link", { name: item.label, exact: true }).click();
+      await openStaffMenuItem(item.label);
       await expect(page).toHaveURL(new RegExp(`/staff\\?view=${item.view}`));
       await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
     }
