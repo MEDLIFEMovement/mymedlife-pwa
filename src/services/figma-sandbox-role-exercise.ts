@@ -52,11 +52,24 @@ export type FigmaSandboxRoleExerciseReport = {
   productionProofStatus: "blocked_by_design";
   rows: FigmaSandboxRoleExerciseRow[];
   validation: FigmaSandboxSignedInRoleProofValidation;
+  driftValidation: FigmaSandboxRoleExerciseDriftValidation;
   commands: {
     buildSeedArtifacts: string;
     buildSandboxProof: string;
     applyLocalSeed: string;
+    checkExerciseDrift: string;
   };
+};
+
+export type FigmaSandboxRoleExerciseDriftCheck = {
+  key: string;
+  passed: boolean;
+  message: string;
+};
+
+export type FigmaSandboxRoleExerciseDriftValidation = {
+  ready: boolean;
+  checks: FigmaSandboxRoleExerciseDriftCheck[];
 };
 
 const routeWorkspaceByShell: Record<FigmaTestSeedShellKey, SandboxExerciseWorkspace> = {
@@ -70,6 +83,7 @@ const routeWorkspaceByShell: Record<FigmaTestSeedShellKey, SandboxExerciseWorksp
 const commandCatalog = {
   buildSeedArtifacts: "pnpm figma-seed:build",
   buildSandboxProof: "pnpm figma-seed:proof",
+  checkExerciseDrift: "pnpm figma-seed:exercise:check",
   applyLocalSeed:
     "MYMEDLIFE_TEST_PRODUCTION_CONFIRM=CREATE_TEST_DATA pnpm test-production:seed -- --local",
 } as const;
@@ -79,19 +93,24 @@ export function buildFigmaSandboxRoleExerciseReport(
   proofReport = buildFigmaSandboxSignedInRoleProofReport(manifest),
 ): FigmaSandboxRoleExerciseReport {
   const validation = getFigmaSandboxSignedInRoleProofValidation(proofReport);
-
-  return {
+  const rows = manifest.shells.flatMap((shell) =>
+    buildShellExerciseRows(shell, proofReport.rows, getActiveLaunchLaneAuthReadiness()),
+  );
+  const reportWithoutDrift = {
     generatedAt: manifest.generatedAt,
     seedFamily: manifest.seedFamily,
     source: manifest.source,
     environment: manifest.environment,
     notProductionEvidence: true,
     productionProofStatus: "blocked_by_design",
-    rows: manifest.shells.flatMap((shell) =>
-      buildShellExerciseRows(shell, proofReport.rows, getActiveLaunchLaneAuthReadiness()),
-    ),
+    rows,
     validation,
     commands: commandCatalog,
+  } satisfies Omit<FigmaSandboxRoleExerciseReport, "driftValidation">;
+
+  return {
+    ...reportWithoutDrift,
+    driftValidation: getFigmaSandboxRoleExerciseDriftValidation(reportWithoutDrift),
   };
 }
 
@@ -110,10 +129,16 @@ export function formatFigmaSandboxRoleExerciseMarkdown(
     "Local-only commands:",
     `- Build seed artifacts: \`${report.commands.buildSeedArtifacts}\``,
     `- Build sandbox route proof: \`${report.commands.buildSandboxProof}\``,
+    `- Check route drift: \`${report.commands.checkExerciseDrift}\``,
     `- Apply local seed: \`${report.commands.applyLocalSeed}\``,
     "",
     "Validation:",
     ...report.validation.checks.map(
+      (check) => `- ${check.passed ? "PASS" : "FAIL"} ${check.message}`,
+    ),
+    "",
+    "Route drift validation:",
+    ...report.driftValidation.checks.map(
       (check) => `- ${check.passed ? "PASS" : "FAIL"} ${check.message}`,
     ),
     "",
@@ -144,6 +169,91 @@ export function formatFigmaSandboxRoleExerciseMarkdown(
   }
 
   return lines.join("\n");
+}
+
+export function getFigmaSandboxRoleExerciseDriftValidation(
+  report: Omit<FigmaSandboxRoleExerciseReport, "driftValidation">,
+  readinessRoutes = getActiveLaunchLaneAuthReadiness(),
+): FigmaSandboxRoleExerciseDriftValidation {
+  const readinessByHref = new Map(
+    readinessRoutes.map((route) => [route.canonicalHref, route]),
+  );
+  const checks: FigmaSandboxRoleExerciseDriftCheck[] = [
+    {
+      key: "local-only-report",
+      passed:
+        report.notProductionEvidence === true &&
+        report.productionProofStatus === "blocked_by_design" &&
+        report.seedFamily === "figma_seed_v1" &&
+        report.source === "figma_seed" &&
+        report.environment === "sandbox",
+      message:
+        "Sandbox exercise report is marked as figma_seed_v1 sandbox output that is blocked from production proof by design.",
+    },
+  ];
+
+  for (const row of report.rows) {
+    const workspace = routeWorkspaceByShell[row.shell];
+    const defaultRouteMatches =
+      row.defaultRoutePassed &&
+      row.derivedDefaultRoute === row.expectedDefaultRoute &&
+      Boolean(readinessByHref.get(row.expectedDefaultRoute));
+    const defaultRouteUsesAllowedReviewAlias =
+      row.shell === "slt_prep" &&
+      row.reviewMode === "sandbox_review_alias" &&
+      row.derivedDefaultRoute === "/app" &&
+      row.expectedDefaultRoute === "/app/slt-prep" &&
+      row.exerciseRoutes.some((route) => route.canonicalHref === "/app/slt-prep");
+
+    checks.push({
+      key: `${row.shell}:default-route`,
+      passed: defaultRouteMatches || defaultRouteUsesAllowedReviewAlias,
+      message: `${row.label} default route stays aligned to ${row.expectedDefaultRoute}.`,
+    });
+
+    checks.push({
+      key: `${row.shell}:proof-boundary`,
+      passed:
+        row.excludedFromProductionEvidence === true &&
+        row.notProductionProofReason.includes("Real production signed-in proof") &&
+        !containsUnsafeProductionProofClaim(
+          [
+            row.exclusionReason,
+            row.notProductionProofReason,
+            ...row.exerciseRoutes.map((route) => route.notes),
+          ].join(" "),
+        ),
+      message: `${row.label} remains explicitly excluded from production proof and contains no unsafe production-proof claims.`,
+    });
+
+    for (const route of row.exerciseRoutes) {
+      const readinessRoute = readinessByHref.get(route.canonicalHref);
+      const isAllowedSltAlias =
+        row.shell === "slt_prep" &&
+        route.canonicalHref === "/app/slt-prep" &&
+        route.notes.includes("sandbox review alias");
+
+      checks.push({
+        key: `${row.shell}:${route.canonicalHref}`,
+        passed:
+          isAllowedSltAlias ||
+          (Boolean(readinessRoute) &&
+            readinessRoute?.workspace === workspace &&
+            readinessRoute.authRequirement === "signed_in" &&
+            readinessRoute.readOnly === true &&
+            readinessRoute.sandboxReview === "supported" &&
+            readinessRoute.productionProof === "required" &&
+            readinessRoute.rolloutEvidence === "exclude_test_and_preview" &&
+            route.workspace === workspace),
+        message: `${row.label} review route ${route.canonicalHref} stays aligned to launch-lane route metadata.`,
+      });
+    }
+  }
+
+  return {
+    ready: checks.every((check) => check.passed),
+    checks,
+  };
 }
 
 function buildShellExerciseRows(
@@ -181,6 +291,20 @@ function buildShellExerciseRows(
         "Sandbox/Test/Figma exercise output is explicitly excluded. Real production signed-in proof still requires approved production packet rows, live data counts, and real production accounts.",
     };
   });
+}
+
+function containsUnsafeProductionProofClaim(text: string): boolean {
+  const normalized = text.toLowerCase();
+  return [
+    "production proof passed",
+    "production signed-in proof passed",
+    "invite gate passed",
+    "invite-gate passed",
+    "rollout evidence passed",
+    "counts as production proof",
+    "counts as rollout evidence",
+    "approved production proof",
+  ].some((marker) => normalized.includes(marker));
 }
 
 function getExerciseRoutes(

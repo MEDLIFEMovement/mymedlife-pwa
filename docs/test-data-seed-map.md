@@ -48,6 +48,9 @@ local/sandbox-only, confirm member/leader/staff/admin landing routes, keep
 `/app/slt-prep` as a sandbox review alias instead of signed-in production
 evidence, and explicitly say they cannot satisfy production signed-in proof or
 invite-gate proof.
+Run `pnpm figma-seed:exercise:check` after route/auth-readiness changes. It
+fails if the sandbox exercise checklist drifts away from launch-lane route
+metadata or starts using language that sounds like production proof.
 
 Recommended local-only sandbox flow:
 
@@ -69,13 +72,20 @@ Recommended local-only sandbox flow:
    pnpm figma-seed:exercise
    ```
 
-4. If a real local browser session is needed, apply the local seed only:
+4. Check that the role exercise checklist still matches launch-lane route
+   metadata:
+
+   ```bash
+   pnpm figma-seed:exercise:check
+   ```
+
+5. If a real local browser session is needed, apply the local seed only:
 
    ```bash
    MYMEDLIFE_TEST_PRODUCTION_CONFIRM=CREATE_TEST_DATA pnpm test-production:seed -- --local
    ```
 
-5. Use only the generated `figma-sandbox-role-exercise.md` and
+6. Use only the generated `figma-sandbox-role-exercise.md` and
    `figma-signed-in-role-proof.md` artifacts for sandbox QA. Do not copy those
    rows, screenshots, or notes into `signed-in-route-proof.csv`, the rollout
    packet, or the invite gate.
