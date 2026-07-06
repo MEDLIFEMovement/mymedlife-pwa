@@ -173,6 +173,26 @@ describe("production rollout current status", () => {
     );
   });
 
+  it("keeps the invite gate blocked when live-data readiness is unavailable", () => {
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        ownerDirectoryExists: true,
+        csvDirectoryExists: true,
+        rolloutPacketExists: true,
+        liveDataCountsExists: true,
+        ownerPacketStatus: createOwnerStatus(true),
+        rolloutReadiness: createRolloutReadiness(),
+      }),
+    );
+
+    expect(status.currentBlocker).toContain(
+      "Production live-data count readiness was not available.",
+    );
+    expect(status.nextCommands).toContain(
+      "pnpm production:data-counts > production-live-data-counts.txt",
+    );
+  });
+
   it("keeps the invite gate blocked when live-data counts are incomplete", () => {
     const status = getProductionRolloutCurrentStatus(
       createBaseInput({
