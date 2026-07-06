@@ -79,13 +79,14 @@ describe("member event detail route", () => {
     const html = renderToStaticMarkup(
       await EventDetailPage({
         params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
-        searchParams: Promise.resolve({ step: "rsvp" }),
+        searchParams: Promise.resolve({ source: "home", step: "rsvp" }),
       }),
     );
 
     expect(html).toContain("You&#x27;re RSVP&#x27;d!");
     expect(html).toContain("Go to Check-In");
     expect(html).toContain("Route-backed preview only");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
   });
 
   it("renders the points-impact step with chapter leaderboard context", async () => {
@@ -103,7 +104,7 @@ describe("member event detail route", () => {
     const html = renderToStaticMarkup(
       await EventDetailPage({
         params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
-        searchParams: Promise.resolve({ step: "points" }),
+        searchParams: Promise.resolve({ source: "events", step: "points" }),
       }),
     );
 
@@ -111,5 +112,6 @@ describe("member event detail route", () => {
     expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("View leaderboard impact");
     expect(html).toContain("Local preview of the post-check-in state");
+    expect(html).toContain('href="/app/points?source=events"');
   });
 });

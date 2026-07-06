@@ -16,6 +16,7 @@ import {
 
 import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
 import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
+import { getLaunchLaneMemberPointsHref } from "@/services/events-points-launch-lane";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import {
   buildLoginRedirectHref,
@@ -99,11 +100,26 @@ export default async function AppEventDetailPage({
               source={resolvedSearchParams.source}
             />
           ) : step === "rsvp" ? (
-            <EventRsvpConfirmView event={event} snapshot={snapshot} backHref={backHref} />
+            <EventRsvpConfirmView
+              event={event}
+              snapshot={snapshot}
+              backHref={backHref}
+              source={resolvedSearchParams.source}
+            />
           ) : step === "checkin" ? (
-            <EventCheckInView event={event} snapshot={snapshot} backHref={backHref} />
+            <EventCheckInView
+              event={event}
+              snapshot={snapshot}
+              backHref={backHref}
+              source={resolvedSearchParams.source}
+            />
           ) : (
-            <EventPointsImpactView event={event} snapshot={snapshot} backHref={backHref} />
+            <EventPointsImpactView
+              event={event}
+              snapshot={snapshot}
+              backHref={backHref}
+              source={resolvedSearchParams.source}
+            />
           )}
         </div>
       </main>
@@ -300,10 +316,12 @@ function EventRsvpConfirmView({
   event,
   snapshot,
   backHref,
+  source,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
+  source?: string;
 }) {
   return (
     <StepShell backHref={backHref} title="">
@@ -348,7 +366,11 @@ function EventRsvpConfirmView({
         </div>
 
         <div className="w-full space-y-2.5">
-          <PrimaryLink href={buildEventStepHref(event.id, "checkin")} label="Go to Check-In" icon={<QrCode size={16} />} />
+          <PrimaryLink
+            href={buildEventStepHref(event.id, "checkin", source)}
+            label="Go to Check-In"
+            icon={<QrCode size={16} />}
+          />
           <SecondaryLink href="/app/events" label="Back to Events" />
         </div>
       </div>
@@ -360,10 +382,12 @@ function EventCheckInView({
   event,
   snapshot,
   backHref,
+  source,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
+  source?: string;
 }) {
   return (
     <StepShell backHref={backHref} title="Check In">
@@ -400,7 +424,7 @@ function EventCheckInView({
         </div>
 
         <PrimaryLink
-          href={buildEventStepHref(event.id, "points")}
+          href={buildEventStepHref(event.id, "points", source)}
           label="Confirm Check-In"
           icon={<UserCheck size={20} />}
         />
@@ -413,10 +437,12 @@ function EventPointsImpactView({
   event,
   snapshot,
   backHref,
+  source,
 }: {
   event: NonNullable<ReturnType<typeof getMemberLaunchLaneEventRowById>>;
   snapshot: NonNullable<ReturnType<typeof getLaunchLaneEventSnapshotById>>;
   backHref: string;
+  source?: string;
 }) {
   const chapterRows = [
     { rank: "🥇", name: "Aisha N.", points: 220 },
@@ -468,7 +494,11 @@ function EventPointsImpactView({
         </div>
 
         <div className="mt-6 w-full space-y-2.5">
-          <PrimaryLink href="/app/points" label="View leaderboard impact" icon={<Star size={15} />} />
+          <PrimaryLink
+            href={getLaunchLaneMemberPointsHref(source === "profile" ? "profile" : "events")}
+            label="View leaderboard impact"
+            icon={<Star size={15} />}
+          />
           <SecondaryLink href="/app/events" label="Back to Events" />
         </div>
       </div>
