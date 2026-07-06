@@ -33,6 +33,7 @@ describe("production rollout owner send tracker", () => {
     expect(readme).toContain("myMEDLIFE owner send tracker: NOT READY");
     expect(readme).toContain("Owner progress: 0/7 owners ready");
     expect(readme).toContain("--recipient-assignments owner-recipient-assignments.csv");
+    expect(readme).toContain("pnpm rollout:owner-recipients");
     expect(readme).toContain("drafted");
     expect(csv).toContain(
       "ownerSlug,owner,ready,blockerCount,emailDraftPath,requestDocPath,ownerFolderPath,recipientEmail,ccEmails,sendStatus,sentAt,returnedAt,validatedAt,nextAction,notes",

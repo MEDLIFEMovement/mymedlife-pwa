@@ -65,6 +65,7 @@ describe("production rollout owner handoff", () => {
     expect(index).toContain("pnpm rollout:owner-email-drafts");
     expect(index).toContain("pnpm rollout:owner-send-tracker");
     expect(index).toContain("--recipient-assignments");
+    expect(index).toContain("pnpm rollout:owner-recipients");
     expect(index).toContain("pnpm rollout:owner-followup");
     expect(index).toContain("It does not create users, write Supabase rows");
     expect(status).toContain("myMEDLIFE owner packet status: NOT READY");
