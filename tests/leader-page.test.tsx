@@ -106,9 +106,11 @@ describe("leader page", () => {
     expect(html).not.toContain("Assign Task");
     expect(html).not.toContain("Promote Emerging Leader");
     expect(html).not.toContain("Leadership page not yet available");
-    expect(html).not.toContain("MEDLIFE Stories");
-    expect(html).not.toContain("Bridge Videos");
-    expect(html).not.toContain("Leadership Training");
+    expect(html).toContain("Feed Analytics");
+    expect(html).toContain("Member Leaderboard");
+    expect(html).toContain("MEDLIFE Stories");
+    expect(html).toContain("Bridge Videos");
+    expect(html).toContain("Leadership Training");
     expect(html).not.toContain("Proof Review");
     expect(html).not.toContain("Campaigns");
     expect(html).not.toContain("Leader navigation");
@@ -202,19 +204,19 @@ describe("leader page", () => {
   });
 
   it.each([
-    ["members", "/leader?view=events"],
-    ["member_profile", "/leader?view=events"],
-    ["committees", "/leader?view=events"],
-    ["succession", "/leader?view=events"],
-    ["impact", "/leader?view=leaderboard"],
-    ["bridge_videos", "/leader?view=leaderboard"],
-    ["feed_analytics", "/leader?view=leaderboard"],
-    ["training", "/leader?view=overview"],
-    ["values", "/leader?view=overview"],
-    ["leaders", "/leader?view=overview"],
-    ["create_event", "/leader?view=overview"],
-    ["stories", "/leader?view=overview"],
-  ])("parks the %s leader view inside the launch lane", async (view, expectedHref) => {
+    ["members", "Member Leaderboard"],
+    ["member_profile", "Member Profile"],
+    ["committees", "Event Committees"],
+    ["succession", "Leadership Succession"],
+    ["impact", "Impact Dashboard"],
+    ["bridge_videos", "Bridge Video Hub"],
+    ["feed_analytics", "Feed &amp; Engagement Analytics"],
+    ["training", "Leadership Training"],
+    ["values", "MEDLIFE Values"],
+    ["leaders", "Current Leaders"],
+    ["create_event", "Create New Event"],
+    ["stories", "MEDLIFE Stories"],
+  ])("keeps the %s leader view route-backed inside the restored Figma shell", async (view, expectedCopy) => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -226,14 +228,15 @@ describe("leader page", () => {
     );
 
     const { default: LeaderPage } = await import("@/app/leader/page");
-
-    await expect(
-      LeaderPage({
+    const html = renderToStaticMarkup(
+      await LeaderPage({
         searchParams: Promise.resolve({
           view,
         }),
       }),
-    ).rejects.toThrow(`NEXT_REDIRECT:${expectedHref}`);
+    );
+
+    expect(html).toContain(expectedCopy);
   });
 
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {

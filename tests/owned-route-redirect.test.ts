@@ -321,7 +321,7 @@ describe("owned route redirect service", () => {
     ).toBe("/admin");
   });
 
-  it("parks the old chapter shell back into each role's owned surface while preserving useful leader context", () => {
+  it("rewrites the old chapter shell into each role's owned surface while preserving restored leader views", () => {
     expect(
       getChapterRouteRedirectHref(getMockLocalActorContext("member.a@mymedlife.test")),
     ).toBe("/app");
@@ -343,7 +343,7 @@ describe("owned route redirect service", () => {
         quickAction: "assign_action",
       }),
     ).toBe(
-      "/leader?view=events&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+      "/leader?view=member_profile&member=member-ivy&pipeline=follow_up&q=Ivy&quickAction=assign_action",
     );
     expect(
       getChapterRouteRedirectHref(getMockLocalActorContext("leader.a@mymedlife.test"), {
@@ -352,7 +352,7 @@ describe("owned route redirect service", () => {
         bridgeVideo: "bridge-social-strategy",
       }),
     ).toBe(
-      "/leader?view=leaderboard&bridge=comms&bridgeVideo=bridge-social-strategy",
+      "/leader?view=bridge_videos&bridge=comms&bridgeVideo=bridge-social-strategy",
     );
   });
 

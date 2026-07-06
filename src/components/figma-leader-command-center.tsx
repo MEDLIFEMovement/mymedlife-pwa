@@ -3400,9 +3400,27 @@ const NAV_GROUPS: NavGroup[] = [
   { label: "Chapter", items: [
     { id: "home",        label: "Chapter Home",       icon: Home },
     { id: "leaderboard", label: "Chapter Leaderboard",icon: Trophy },
+    { id: "feed",        label: "Feed Analytics",     icon: BarChart2 },
+  ]},
+  { label: "Members", items: [
+    { id: "members",     label: "Member Leaderboard", icon: Users },
+    { id: "profile",     label: "Member Profile",     icon: User },
   ]},
   { label: "Event Operations", items: [
+    { id: "committees",    label: "Event Committees",  icon: Layers },
     { id: "events",        label: "Event Performance", icon: Calendar },
+    { id: "create-event",  label: "Create Event",      icon: Plus },
+  ]},
+  { label: "Impact & Culture", items: [
+    { id: "impact",      label: "Impact",             icon: Globe },
+    { id: "bridge",      label: "Bridge Videos",      icon: Video },
+    { id: "stories",     label: "MEDLIFE Stories",    icon: Heart },
+  ]},
+  { label: "Leadership", items: [
+    { id: "leaders",      label: "Current Leaders",      icon: Shield },
+    { id: "succession",   label: "Succession",           icon: GitBranch },
+    { id: "values",       label: "Values",               icon: Star },
+    { id: "training",     label: "Leadership Training",  icon: BookOpen },
   ]},
 ];
 const MISSING_LEADERSHIP_PAGES: { label: string; icon: any }[] = [];
