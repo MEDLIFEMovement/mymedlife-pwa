@@ -120,6 +120,10 @@ send invites, change Vercel, or enable integrations. It refuses placeholder
 text, fake/test reviewer emails, non-app routes, credential-looking values, and
 will not overwrite existing proof rows unless `--force` is added intentionally.
 
+For the plain-English operator workflow and source-owner mapping, use:
+
+`docs/five-chapter-pilot-proof-operator-runbook.md`
+
 The current local working copy is:
 
 ```text
