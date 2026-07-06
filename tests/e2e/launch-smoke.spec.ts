@@ -315,6 +315,19 @@ test.describe("myMEDLIFE launch route smoke", () => {
       await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
     }
 
+    await page.locator("aside").getByRole("button", { name: "Integrations", exact: true }).click();
+    await expect(
+      page.getByText("Smile.io sync stays visible for DS review, but point awards, tier sync, and reward writes remain blocked in this preview"),
+    ).toBeVisible();
+
+    await page.locator("aside").getByRole("button", { name: "API Keys", exact: true }).click();
+    await expect(page.getByText("API keys stay masked in this preview")).toBeVisible();
+
+    await page.locator("aside").getByRole("button", { name: "MCP Connections", exact: true }).click();
+    await expect(
+      page.getByTitle("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview"),
+    ).toBeVisible();
+
     await expect(page.locator("aside").getByText("MCP Analytics")).toBeVisible();
     await expect(page.locator("aside").getByText("Account menu")).toBeVisible();
   });
