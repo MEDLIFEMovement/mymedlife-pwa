@@ -66,7 +66,7 @@ describe("production rollout current status", () => {
       "pnpm rollout:owner-email-drafts --owner-dir rollout-owner-packets --out production-rollout-owner-email-drafts",
     );
     expect(status.nextCommands).toContain(
-      "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
+      "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
     );
     expect(status.nextCommands).toContain(
       "pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
@@ -79,6 +79,45 @@ describe("production rollout current status", () => {
     );
     expect(status.nextCommands).toContain(
       "pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md",
+    );
+  });
+
+  it("keeps owner packet next commands aligned to a custom recipient assignment path", () => {
+    const recipientAssignmentsPath =
+      ".codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv";
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        paths: {
+          ...paths,
+          recipientAssignmentsPath,
+        },
+        ownerDirectoryExists: true,
+        csvDirectoryExists: false,
+        rolloutPacketExists: false,
+        liveDataCountsExists: false,
+        ownerPacketStatus: createOwnerStatus(false),
+        ownerRecipientStatus: createRecipientStatus(true),
+      }),
+    );
+
+    expect(status.currentBlocker).toContain("Owner packets are incomplete");
+    expect(status.artifactStatuses).toContain(
+      "owner recipient assignments: READY (7/7 recipients assigned)",
+    );
+    expect(status.nextCommands).toContain(
+      `pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out .codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker --recipient-assignments ${recipientAssignmentsPath}`,
+    );
+    expect(status.nextCommands).toContain(
+      `pnpm rollout:owner-recipients --owner-dir rollout-owner-packets --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-owner-recipient-status.md`,
+    );
+    expect(status.nextCommands).toContain(
+      "pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker .codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md",
+    );
+    expect(status.nextCommands).toContain(
+      `pnpm rollout:current-status --owner-dir rollout-owner-packets --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-current-status.md`,
+    );
+    expect(status.nextCommands).not.toContain(
+      "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
     );
   });
 

@@ -392,6 +392,10 @@ function getNextCommands(
     const recipientAssignmentsPath =
       input.paths.recipientAssignmentsPath ??
       "production-rollout-owner-send-tracker/owner-recipient-assignments.csv";
+    const ownerSendTrackerOut = getParentDirectory(
+      recipientAssignmentsPath,
+      "production-rollout-owner-send-tracker",
+    );
 
     if (
       input.ownerRecipientStatus &&
@@ -411,15 +415,15 @@ function getNextCommands(
       `pnpm rollout:owner-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-packet-status.md`,
       `pnpm rollout:owner-requests --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-requests`,
       `pnpm rollout:owner-email-drafts --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-email-drafts`,
-      `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker`,
-      `pnpm rollout:owner-recipient-decisions --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-decisions.md`,
+      `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out ${ownerSendTrackerOut} --recipient-assignments ${recipientAssignmentsPath}`,
+      `pnpm rollout:owner-recipient-decisions --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-owner-recipient-decisions.md`,
       "Save the worksheet Copy/Paste Answer Block as owner-recipient-answers.txt.",
-      `pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker/owner-recipient-assignments.csv`,
-      `pnpm rollout:owner-recipients --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md`,
-      `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv`,
-      `pnpm rollout:owner-followup --owner-dir ${input.paths.ownerDirectoryName} --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
+      `pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --owner-dir ${input.paths.ownerDirectoryName} --out ${recipientAssignmentsPath}`,
+      `pnpm rollout:owner-recipients --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-owner-recipient-status.md`,
+      `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out ${ownerSendTrackerOut} --recipient-assignments ${recipientAssignmentsPath}`,
+      `pnpm rollout:owner-followup --owner-dir ${input.paths.ownerDirectoryName} --tracker ${ownerSendTrackerOut}/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
       "Ask each owner to fix the blockers in their folder.",
-      `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-current-status.md`,
+      `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-current-status.md`,
     ];
   }
 
@@ -498,4 +502,13 @@ function getFinalInviteGateCommands(input: ProductionRolloutCurrentStatusInput) 
       "  --out production-invite-gate.md",
     ].join(" \\\n"),
   ];
+}
+
+function getParentDirectory(path: string, fallback: string) {
+  const normalized = path.replaceAll("\\", "/");
+  const lastSlashIndex = normalized.lastIndexOf("/");
+
+  return lastSlashIndex === -1
+    ? fallback
+    : normalized.slice(0, lastSlashIndex) || fallback;
 }
