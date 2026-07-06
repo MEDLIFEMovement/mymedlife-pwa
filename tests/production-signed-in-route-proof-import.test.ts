@@ -125,4 +125,25 @@ describe("production signed-in route proof import", () => {
       ),
     ).toThrow(/credential/);
   });
+
+  it("rejects preview local sandbox staging figma and setup-only proof notes", () => {
+    for (const note of [
+      "Verified with preview-cookie role switch",
+      "Local sandbox proof only",
+      "Used localhost browser session",
+      "Checked in staging.mymedlife.org",
+      "Figma seed rehearsal row",
+      "SOP sample evidence",
+      "auth_profile_missing state confirmed",
+    ]) {
+      expect(() =>
+        buildProductionSignedInRouteProofImport(
+          [
+            "email,workspace,observedPath,status,checkedAt,notes",
+            `member@medlifemovement.org,member,/app,passed,2026-07-05T15:00:00Z,${note}`,
+          ].join("\n"),
+        ),
+      ).toThrow(/cannot count as approved production signed-in proof/);
+    }
+  });
 });
