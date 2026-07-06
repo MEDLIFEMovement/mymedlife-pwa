@@ -29,6 +29,11 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "member.a@mymedlife.test");
 
     await page.goto("/app");
+    await page.getByRole("link", { name: "Start next action" }).click();
+    await expect(page).toHaveURL(/\/app\/events\/chapter-event-ucla-kickoff\?source=home$/);
+    await expect(page.getByText("Event RSVP")).toBeVisible();
+
+    await page.goto("/app");
     await expect(page).toHaveURL(/\/app$/);
     await expect(page.getByText("Upcoming Events")).toBeVisible();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
