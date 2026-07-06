@@ -270,6 +270,8 @@ function getReadyPilotProofBlockers({
 
   if (!proof.checkedAt?.trim()) {
     blockers.push(`${proofLabel} needs a checkedAt timestamp.`);
+  } else if (!isValidCheckedAt(proof.checkedAt)) {
+    blockers.push(`${proofLabel} checkedAt must be a valid timestamp.`);
   }
 
   if (!proof.reviewedByEmail?.trim()) {
@@ -319,6 +321,10 @@ function hasReconciledAttendanceAndPoints(
     proof.attendanceCount <= proof.rsvpCount &&
     proof.pointsAwardedCount === proof.attendanceCount
   );
+}
+
+function isValidCheckedAt(value: string | undefined) {
+  return Boolean(value?.trim()) && Number.isFinite(Date.parse(value ?? ""));
 }
 
 function formatProofLabel(proof: ProductionBootstrapPilotEventProof) {

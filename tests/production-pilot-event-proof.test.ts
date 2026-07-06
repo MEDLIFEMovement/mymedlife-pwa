@@ -82,6 +82,21 @@ describe("production pilot event proof readiness", () => {
     );
   });
 
+  it("blocks ready rows with an invalid review timestamp", () => {
+    const packet = createPilotPacket(5);
+    packet.pilotEventProof![0] = {
+      ...packet.pilotEventProof![0]!,
+      checkedAt: "soon",
+    };
+
+    const readiness = getProductionPilotEventProofReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 checkedAt must be a valid timestamp.",
+    );
+  });
+
   it("blocks ready rows when attendance and points do not reconcile", () => {
     const packet = createPilotPacket(5);
     packet.pilotEventProof![0] = {
