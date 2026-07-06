@@ -24,6 +24,7 @@ export type ProductionRolloutCurrentStatusInput = {
   paths: ProductionRolloutCurrentStatusPaths;
   ownerDirectoryExists: boolean;
   csvDirectoryExists: boolean;
+  csvDirectorySummary?: ProductionRolloutCsvDirectorySummary | null;
   rolloutPacketExists: boolean;
   liveDataCountsExists: boolean;
   ownerPacketStatus?: ProductionRolloutOwnerPacketStatus | null;
@@ -32,6 +33,11 @@ export type ProductionRolloutCurrentStatusInput = {
   liveDataReadiness?: ProductionLiveDataReadiness | null;
   rolloutPacketError?: string | null;
   liveDataCountsError?: string | null;
+};
+
+export type ProductionRolloutCsvDirectorySummary = {
+  fileCount: number;
+  dataRowCount: number;
 };
 
 export type ProductionRolloutCurrentStatus = {
@@ -133,6 +139,10 @@ function getCurrentBlocker(input: ProductionRolloutCurrentStatusInput) {
     return `Shared rollout CSV folder ${input.paths.csvDirectoryName} is missing. Assemble owner packets after all owners are ready.`;
   }
 
+  if (isHeaderOnlyCsvDirectory(input.csvDirectorySummary)) {
+    return `Shared rollout CSV folder ${input.paths.csvDirectoryName} is header-only. Add approved 30-chapter launch data before building the packet.`;
+  }
+
   if (!input.rolloutPacketExists) {
     return `Production rollout packet ${input.paths.packetPath} is missing. Build it from the validated shared CSV folder.`;
   }
@@ -175,7 +185,7 @@ function getArtifactStatuses(input: ProductionRolloutCurrentStatusInput) {
       : "owner packet folder: MISSING",
     ...getOwnerRecipientStatusLines(input.ownerRecipientStatus),
     input.csvDirectoryExists
-      ? "shared rollout CSV folder: FOUND"
+      ? getCsvDirectoryStatusLine(input.csvDirectorySummary)
       : "shared rollout CSV folder: MISSING",
     input.rolloutPacketExists
       ? getRolloutPacketStatusLine(input)
@@ -210,6 +220,34 @@ function getOwnerRecipientStatusLines(
       ? `owner recipient assignments: READY (${status.summary.assignedOwnerCount}/${status.summary.ownerCount} recipients assigned)`
       : `owner recipient assignments: NOT READY (${status.summary.assignedOwnerCount}/${status.summary.ownerCount} recipients assigned, ${status.summary.missingRecipientCount} missing)`,
   ];
+}
+
+function getCsvDirectoryStatusLine(
+  summary: ProductionRolloutCsvDirectorySummary | null | undefined,
+) {
+  if (!summary) {
+    return "shared rollout CSV folder: FOUND";
+  }
+
+  if (summary.fileCount === 0) {
+    return "shared rollout CSV folder: FOUND, no CSV files";
+  }
+
+  if (summary.dataRowCount === 0) {
+    return `shared rollout CSV folder: FOUND, header-only (${formatCount(summary.fileCount, "CSV file")}, 0 launch rows)`;
+  }
+
+  return `shared rollout CSV folder: FOUND (${formatCount(summary.fileCount, "CSV file")}, ${formatCount(summary.dataRowCount, "launch row")})`;
+}
+
+function isHeaderOnlyCsvDirectory(
+  summary: ProductionRolloutCsvDirectorySummary | null | undefined,
+) {
+  return Boolean(summary && summary.fileCount > 0 && summary.dataRowCount === 0);
+}
+
+function formatCount(count: number, singularLabel: string) {
+  return `${count} ${count === 1 ? singularLabel : `${singularLabel}s`}`;
 }
 
 function getRolloutPacketStatusLine(input: ProductionRolloutCurrentStatusInput) {
@@ -304,6 +342,15 @@ function getNextCommands(
       `pnpm rollout:assemble-owner-packets --owner-dir ${input.paths.ownerDirectoryName} --out ${input.paths.csvDirectoryName}`,
       `pnpm rollout:check-csv --dir ${input.paths.csvDirectoryName}`,
       `pnpm rollout:preflight --dir ${input.paths.csvDirectoryName} --out production-rollout-preflight.md`,
+    ];
+  }
+
+  if (isHeaderOnlyCsvDirectory(input.csvDirectorySummary)) {
+    return [
+      `Populate ${input.paths.csvDirectoryName} with approved owner-returned CSV rows.`,
+      `pnpm rollout:check-csv --dir ${input.paths.csvDirectoryName}`,
+      `pnpm rollout:preflight --dir ${input.paths.csvDirectoryName} --out production-rollout-preflight.md`,
+      `pnpm rollout:current-status --csv-dir ${input.paths.csvDirectoryName} --out production-rollout-current-status.md`,
     ];
   }
 

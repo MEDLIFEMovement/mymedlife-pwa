@@ -157,6 +157,54 @@ describe("production rollout current status", () => {
     );
   });
 
+  it("blocks packet build when the shared CSV folder is only headers", () => {
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        ownerDirectoryExists: true,
+        csvDirectoryExists: true,
+        csvDirectorySummary: {
+          fileCount: 10,
+          dataRowCount: 0,
+        },
+        rolloutPacketExists: false,
+        ownerPacketStatus: createOwnerStatus(true),
+      }),
+    );
+
+    expect(status.currentBlocker).toContain(
+      "Shared rollout CSV folder rollout-csv is header-only",
+    );
+    expect(status.artifactStatuses).toContain(
+      "shared rollout CSV folder: FOUND, header-only (10 CSV files, 0 launch rows)",
+    );
+    expect(status.nextCommands).toContain(
+      "Populate rollout-csv with approved owner-returned CSV rows.",
+    );
+    expect(status.nextCommands).not.toContain(
+      "pnpm rollout:check production-rollout-packet.json",
+    );
+  });
+
+  it("shows rollout CSV row counts when launch rows exist", () => {
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        ownerDirectoryExists: true,
+        csvDirectoryExists: true,
+        csvDirectorySummary: {
+          fileCount: 10,
+          dataRowCount: 565,
+        },
+        rolloutPacketExists: false,
+        ownerPacketStatus: createOwnerStatus(true),
+      }),
+    );
+
+    expect(status.artifactStatuses).toContain(
+      "shared rollout CSV folder: FOUND (10 CSV files, 565 launch rows)",
+    );
+    expect(status.currentBlocker).toContain("Production rollout packet");
+  });
+
   it("reports unreadable rollout packets before live-data proof", () => {
     const status = getProductionRolloutCurrentStatus(
       createBaseInput({

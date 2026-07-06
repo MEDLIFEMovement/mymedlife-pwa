@@ -55,6 +55,9 @@ try {
   const csvDirectoryExists = await fileExists(args.csvDir);
   const rolloutPacketExists = await fileExists(args.packet);
   const liveDataCountsExists = await fileExists(args.liveDataCounts);
+  const csvDirectorySummary = csvDirectoryExists
+    ? await getCsvDirectorySummary(args.csvDir)
+    : null;
   const ownerPacketStatus = ownerDirectoryExists
     ? getProductionRolloutOwnerPacketStatus({
         foundFiles: await readOwnerPacketCsvFiles({
@@ -101,6 +104,7 @@ try {
     paths,
     ownerDirectoryExists,
     csvDirectoryExists,
+    csvDirectorySummary,
     rolloutPacketExists,
     liveDataCountsExists,
     ownerPacketStatus,
@@ -218,6 +222,26 @@ async function getCsvFilenames(directory) {
   } catch {
     return [];
   }
+}
+
+async function getCsvDirectorySummary(csvDir) {
+  const filenames = await getCsvFilenames(csvDir);
+  let dataRowCount = 0;
+
+  for (const filename of filenames) {
+    const content = await readFile(join(csvDir, filename), "utf8");
+    const lines = content
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    dataRowCount += Math.max(lines.length - 1, 0);
+  }
+
+  return {
+    fileCount: filenames.length,
+    dataRowCount,
+  };
 }
 
 async function fileExists(path) {
