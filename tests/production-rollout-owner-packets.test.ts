@@ -67,6 +67,9 @@ describe("production rollout owner packets", () => {
       "pnpm rollout:owner-status --owner-dir rollout-owner-packets --out production-rollout-owner-packet-status.md",
     );
     expect(index).toContain(
+      "pnpm rollout:owner-requests --owner-dir rollout-owner-packets --out production-rollout-owner-requests",
+    );
+    expect(index).toContain(
       "pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out rollout-csv",
     );
     expect(index).toContain("pnpm rollout:data-request --dir rollout-csv --out production-rollout-data-request.md");

@@ -154,6 +154,7 @@ export function formatProductionRolloutOwnerPacketIndex(
     "",
     "```bash",
     `pnpm rollout:owner-status --owner-dir ${outputDirectoryName} --out production-rollout-owner-packet-status.md`,
+    `pnpm rollout:owner-requests --owner-dir ${outputDirectoryName} --out production-rollout-owner-requests`,
     `pnpm rollout:assemble-owner-packets --owner-dir ${outputDirectoryName} --out rollout-csv`,
     "pnpm rollout:data-request --dir rollout-csv --out production-rollout-data-request.md",
     "pnpm rollout:check-csv --dir rollout-csv",
