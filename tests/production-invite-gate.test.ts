@@ -29,7 +29,7 @@ describe("production invite gate", () => {
     });
 
     expect(readiness.ready).toBe(true);
-    expect(readiness.checks).toHaveLength(9);
+    expect(readiness.checks).toHaveLength(10);
     expect(readiness.checks.every((check) => check.passed)).toBe(true);
     expect(readiness.checks[0]).toEqual({
       key: "launch_lane_focus",
@@ -97,7 +97,7 @@ describe("production invite gate", () => {
       label: "Workspace access coverage",
       passed: false,
       detail:
-        "29/30 chapters have member workspace access; 30/30 chapters have leader workspace access; 0 staff workspace user(s); 1 admin workspace user(s)",
+        "29/30 chapters have member workspace access; 30/30 chapters have leader workspace access; 0 staff workspace user(s); 2 admin workspace user(s)",
     });
     expect(readiness.nextSteps).toContain(
       "Add member, leader, staff, and admin access coverage to the rollout packet.",
@@ -219,7 +219,7 @@ describe("production invite gate", () => {
     expect(readiness.ready).toBe(false);
     expect(routeProofCheck?.passed).toBe(false);
     expect(routeProofCheck?.detail).toContain(
-      "General member lands in the student app",
+      "Launch Chapter 1 needs a passed signed-in member route proof",
     );
     expect(readiness.nextSteps).toContain(
       "Complete signed-in route proof for one member, leader, staff user, and admin after production data is applied.",
@@ -276,10 +276,60 @@ describe("production invite gate", () => {
       label: "Production live data count proof",
       passed: false,
       detail:
-        "production live data auth.users has 503 row(s); expected at least 525 from the rollout packet.; 2 more blocker(s)",
+        "production live data auth.users has 504 row(s); expected at least 525 from the rollout packet.; 2 more blocker(s)",
     });
     expect(readiness.nextSteps).toContain(
       "Run the production live data count check after the rollout packet is applied, then attach the count proof to the invite gate.",
+    );
+  });
+
+  it("blocks broad invites until the invite batch plan is safe", () => {
+    const packet = createReadyRolloutPacket();
+
+    for (const index of [1, 2, 3, 4, 5, 6]) {
+      packet.memberships.push({
+        email: `extra-launch-${index}@medlifemovement.org`,
+        chapterId: "chapter-01",
+        roleKey: "general_member",
+      });
+      packet.users.push({
+        email: `extra-launch-${index}@medlifemovement.org`,
+        displayName: `Extra Launch ${index}`,
+      });
+    }
+
+    const readiness = getProductionInviteGateReadiness({
+      publicUrl: "https://www.mymedlife.org",
+      routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: packet,
+      rolloutReadiness: createReadyRolloutReadiness({
+        counts: {
+          users: 510,
+          approvedMemberships: 506,
+          approvedStudentMemberships: 506,
+        },
+      }),
+      rolloutHandoff: createReadyRolloutHandoff(),
+      liveDataReadiness: createReadyLiveDataReadiness({
+        counts: {
+          "auth.users": 510,
+          "app.profiles": 510,
+          "app.memberships.approved": 506,
+        },
+      }),
+      maxRecipientsPerBatch: 20,
+    });
+    const inviteBatchCheck = readiness.checks.find(
+      (check) => check.key === "invite_batches",
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(inviteBatchCheck?.passed).toBe(false);
+    expect(inviteBatchCheck?.detail).toContain(
+      "Launch Chapter 1 has 21 invitees, which exceeds the batch cap of 20",
+    );
+    expect(readiness.nextSteps).toContain(
+      "Prepare safe invite batches with the five pilot-ready chapters first and no batch above the recipient cap.",
     );
   });
 });
@@ -313,9 +363,9 @@ function createReadyRolloutReadiness(
     ready: overrides.ready ?? true,
     counts: {
       activeChapters: 30,
-      users: 503,
+      users: 504,
       approvedMemberships: 500,
-      activeStaffRoles: 3,
+      activeStaffRoles: 4,
       activeCoachAssignments: 30,
       activeCampaigns: 30,
       approvedStudentMemberships: 500,
@@ -324,8 +374,8 @@ function createReadyRolloutReadiness(
       activeLaunchOwners: 4,
       memberWorkspaceUsers: 500,
       leaderWorkspaceUsers: 30,
-      staffWorkspaceUsers: 2,
-      adminWorkspaceUsers: 1,
+      staffWorkspaceUsers: 3,
+      adminWorkspaceUsers: 2,
       chaptersWithMemberWorkspaceAccess: 30,
       chaptersWithLeaderWorkspaceAccess: 30,
       ...overrides.counts,
@@ -356,18 +406,20 @@ function createReadyRolloutHandoff(
   };
 }
 
-function createReadyLiveDataReadiness(): ProductionLiveDataReadiness {
+function createReadyLiveDataReadiness(
+  overrides: { counts?: Partial<ProductionLiveDataReadiness["counts"]> } = {},
+): ProductionLiveDataReadiness {
   return {
     ready: true,
     minimumChapterCount: 30,
     minimumApprovedMembershipCount: 500,
     minimumPilotEventCount: 5,
     counts: {
-      "auth.users": 503,
-      "app.profiles": 503,
+      "auth.users": 504,
+      "app.profiles": 504,
       "app.chapters.active": 30,
       "app.memberships.approved": 500,
-      "app.staff_role_assignments.active": 3,
+      "app.staff_role_assignments.active": 4,
       "app.coach_chapter_assignments.active": 30,
       "app.campaigns.active": 30,
       "app.chapter_events": 5,
@@ -375,6 +427,7 @@ function createReadyLiveDataReadiness(): ProductionLiveDataReadiness {
       "app.assignments": 30,
       "app.points_events": 5,
       "app.audit_logs": 10,
+      ...overrides.counts,
     },
     blockers: [],
     warnings: [],
@@ -385,69 +438,161 @@ function createReadyLiveDataReadiness(): ProductionLiveDataReadiness {
 }
 
 function createReadyRolloutPacket(): ProductionRolloutBootstrapPacket {
+  const chapters = Array.from({ length: 30 }, (_, index) => {
+    const chapterNumber = index + 1;
+
+    return {
+      id: `chapter-${String(chapterNumber).padStart(2, "0")}`,
+      name: `Launch Chapter ${chapterNumber}`,
+      campus: `Launch Campus ${chapterNumber}`,
+    };
+  });
+  const users: ProductionRolloutBootstrapPacket["users"] = [];
+  const memberships: ProductionRolloutBootstrapPacket["memberships"] = [];
+
+  let studentNumber = 1;
+
+  for (const [chapterIndex, chapter] of chapters.entries()) {
+    const chapterStudentCount = chapterIndex < 5 ? 15 : 17;
+
+    for (let memberIndex = 0; memberIndex < chapterStudentCount; memberIndex += 1) {
+      const email = `launch-student-${String(studentNumber).padStart(3, "0")}@medlifemovement.org`;
+      const isLeader = memberIndex === 0;
+
+      users.push({
+        email,
+        displayName: isLeader
+          ? `Launch Leader ${chapterIndex + 1}`
+          : `Launch Member ${studentNumber}`,
+      });
+      memberships.push({
+        email,
+        chapterId: chapter.id,
+        roleKey: isLeader ? "president_vp" : "general_member",
+      });
+      studentNumber += 1;
+    }
+  }
+
+  users.push(
+    {
+      email: "launch-coach@medlifemovement.org",
+      displayName: "Launch Coach",
+    },
+    {
+      email: "launch-support@medlifemovement.org",
+      displayName: "Launch Support",
+    },
+    {
+      email: "launch-ds@medlifemovement.org",
+      displayName: "Launch DS Admin",
+    },
+    {
+      email: "launch-super@medlifemovement.org",
+      displayName: "Launch Super Admin",
+    },
+  );
+  const pilotChapterRouteProof = chapters.slice(0, 5).flatMap((chapter, index) => {
+    const member = memberships.find(
+      (membership) =>
+        membership.chapterId === chapter.id &&
+        membership.roleKey === "general_member",
+    );
+    const leader = memberships.find(
+      (membership) =>
+        membership.chapterId === chapter.id &&
+        membership.roleKey === "president_vp",
+    );
+
+    if (!member || !leader) {
+      throw new Error(`${chapter.id} missing member or leader route proof fixture.`);
+    }
+
+    return [
+      {
+        email: member.email,
+        workspace: "student_app" as const,
+        expectedPath: "/app",
+        observedPath: "/app",
+        status: "passed" as const,
+        checkedAt: `2026-07-05T15:${String(index).padStart(2, "0")}:00Z`,
+      },
+      {
+        email: leader.email,
+        workspace: "leader_command_center" as const,
+        expectedPath: "/leader?view=overview",
+        observedPath: "/leader?view=overview",
+        status: "passed" as const,
+        checkedAt: `2026-07-05T15:${String(index + 10).padStart(2, "0")}:00Z`,
+      },
+    ];
+  });
+
   return {
-    chapters: [
-      {
-        id: "chapter-ucla",
-        name: "UCLA MEDLIFE",
-        campus: "UCLA",
-      },
-    ],
-    users: [
-      { email: "member@medlifemovement.org", displayName: "Launch Member" },
-      { email: "leader@medlifemovement.org", displayName: "Launch Leader" },
-      { email: "coach@medlifemovement.org", displayName: "Launch Coach" },
-      { email: "ds@medlifemovement.org", displayName: "DS Admin" },
-    ],
-    memberships: [
-      {
-        email: "member@medlifemovement.org",
-        chapterId: "chapter-ucla",
-        roleKey: "general_member",
-      },
-      {
-        email: "leader@medlifemovement.org",
-        chapterId: "chapter-ucla",
-        roleKey: "president_vp",
-      },
-    ],
+    chapters,
+    users,
+    memberships,
     staffRoles: [
-      { email: "coach@medlifemovement.org", roleKey: "coach" },
-      { email: "ds@medlifemovement.org", roleKey: "ds_admin" },
+      { email: "launch-coach@medlifemovement.org", roleKey: "coach" },
+      { email: "launch-support@medlifemovement.org", roleKey: "admin" },
+      { email: "launch-ds@medlifemovement.org", roleKey: "ds_admin" },
+      { email: "launch-super@medlifemovement.org", roleKey: "super_admin" },
     ],
-    coachAssignments: [
+    coachAssignments: chapters.map((chapter) => ({
+      coachEmail: "launch-coach@medlifemovement.org",
+      chapterId: chapter.id,
+      coachType: "portfolio",
+    })),
+    campaigns: chapters.map((chapter) => ({
+      chapterId: chapter.id,
+      name: "Rush Month",
+      slug: `rush-month-${chapter.id}`,
+    })),
+    lumaCalendars: chapters.map((chapter) => ({
+      chapterId: chapter.id,
+      calendarId: `cal-${chapter.id}`,
+      calendarName: `${chapter.name} Luma`,
+    })),
+    pilotEventProof: chapters.slice(0, 5).map((chapter, index) => ({
+      chapterId: chapter.id,
+      eventName: `${chapter.name} Kickoff`,
+      lumaEventId: `evt-${chapter.id}`,
+      rsvpCount: 10 + index,
+      attendanceCount: 8 + index,
+      pointsAwardedCount: 8 + index,
+      auditEvidence: "recorded",
+      outboxStatus: "zero_sends",
+      status: "ready",
+      eventRoute: `/app/events/evt-${chapter.id}`,
+      attendanceRoute: `/leader?view=events&event=evt-${chapter.id}`,
+      pointsRoute: "/app/points",
+      auditRoute: "/admin/audit-log",
+      outboxRoute: "/admin/integration-outbox",
+      checkedAt: "2026-07-05T15:00:00Z",
+      reviewedByEmail: "launch-coach@medlifemovement.org",
+    })),
+    launchOwners: [
       {
-        coachEmail: "coach@medlifemovement.org",
-        chapterId: "chapter-ucla",
-        coachType: "portfolio",
+        email: "launch-support@medlifemovement.org",
+        ownerType: "support",
       },
-    ],
-    campaigns: [
       {
-        chapterId: "chapter-ucla",
-        name: "Rush Month",
-        slug: "rush-month-ucla",
+        email: "launch-ds@medlifemovement.org",
+        ownerType: "rollback",
+      },
+      {
+        email: "launch-super@medlifemovement.org",
+        ownerType: "production_apply",
+      },
+      {
+        email: "launch-support@medlifemovement.org",
+        ownerType: "launch_decision",
       },
     ],
     signedInRouteProof: [
+      ...pilotChapterRouteProof,
       {
-        email: "member@medlifemovement.org",
-        workspace: "student_app",
-        expectedPath: "/app",
-        observedPath: "/app",
-        status: "passed",
-        checkedAt: "2026-07-05T15:00:00Z",
-      },
-      {
-        email: "leader@medlifemovement.org",
-        workspace: "leader_command_center",
-        expectedPath: "/leader?view=overview",
-        observedPath: "/leader?view=overview",
-        status: "passed",
-        checkedAt: "2026-07-05T15:01:00Z",
-      },
-      {
-        email: "coach@medlifemovement.org",
+        email: "launch-coach@medlifemovement.org",
         workspace: "staff_command_center",
         expectedPath: "/staff?view=chapters",
         observedPath: "/staff?view=chapters",
@@ -455,12 +600,28 @@ function createReadyRolloutPacket(): ProductionRolloutBootstrapPacket {
         checkedAt: "2026-07-05T15:02:00Z",
       },
       {
-        email: "ds@medlifemovement.org",
+        email: "launch-support@medlifemovement.org",
+        workspace: "staff_command_center",
+        expectedPath: "/staff?view=chapters",
+        observedPath: "/staff?view=chapters",
+        status: "passed",
+        checkedAt: "2026-07-05T15:03:00Z",
+      },
+      {
+        email: "launch-ds@medlifemovement.org",
         workspace: "admin_backend",
         expectedPath: "/admin",
         observedPath: "/admin",
         status: "passed",
-        checkedAt: "2026-07-05T15:03:00Z",
+        checkedAt: "2026-07-05T15:04:00Z",
+      },
+      {
+        email: "launch-super@medlifemovement.org",
+        workspace: "admin_backend",
+        expectedPath: "/admin",
+        observedPath: "/admin",
+        status: "passed",
+        checkedAt: "2026-07-05T15:05:00Z",
       },
     ],
   };

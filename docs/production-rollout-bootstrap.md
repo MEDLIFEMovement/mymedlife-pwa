@@ -446,6 +446,8 @@ This command checks:
 - member, leader, staff, and admin workspace access coverage
 - signed-in member, leader, staff, and admin route proof
 - 5-chapter Luma RSVP, attendance, points, audit, and zero-send proof
+- safe invite batches with the five pilot-ready chapters first and no batch
+  above the recipient cap
 - active support, rollback, and production apply owners
 - the review-only production rollout handoff
 
@@ -601,6 +603,9 @@ This checks that:
 
 It is read-only. It does not create users, send email, write Supabase rows, call
 Luma, or change Vercel config.
+
+The final `pnpm production:invite-gate` command also checks this batch posture,
+so a packet cannot be marked ready for 500 students without a safe batch plan.
 
 ## Production Route Smoke Check
 
