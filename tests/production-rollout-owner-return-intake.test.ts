@@ -139,7 +139,52 @@ describe("production rollout owner return intake", () => {
     });
 
     expect(intake.readyToApply).toBe(false);
-    expect(intake.issues[0]?.message).toContain("appears to contain a bearer token");
+    expect(
+      intake.issues.some((issue) => issue.message.includes("appears to contain a bearer token")),
+    ).toBe(true);
+  });
+
+  it("blocks placeholder and Test/Figma sandbox values in returned CSV files", () => {
+    const intake = getProductionRolloutOwnerReturnIntake({
+      returnedFiles: [
+        file(
+          "nick-hq-launch-owner",
+          "chapters.csv",
+          "id,name,campus,region,status\nchapter-ucla,Test UCLA MEDLIFE,UCLA,West,active\n",
+        ),
+        file(
+          "chapter-launch-owners",
+          "memberships.csv",
+          "email,chapterId,roleKey,status\ntodo@example.org,<chapter-id>,member,active\n",
+        ),
+      ],
+    });
+    const report = formatProductionRolloutOwnerReturnIntake(intake);
+
+    expect(intake.readyToApply).toBe(false);
+    expect(report).toContain("contains Test/Figma sandbox evidence");
+    expect(report).toContain("contains template placeholder text");
+    expect(report).toContain("uses test or placeholder email data");
+  });
+
+  it("blocks malformed returned CSV rows before apply", () => {
+    const intake = getProductionRolloutOwnerReturnIntake({
+      returnedFiles: [
+        file(
+          "sales-coaching-lead",
+          "coach-assignments.csv",
+          "coachEmail,chapterId,coachType,status\ncoach@medlifemovement.org,chapter-ucla,portfolio\n",
+        ),
+      ],
+    });
+
+    expect(intake.readyToApply).toBe(false);
+    expect(intake.issues).toContainEqual({
+      ownerSlug: "sales-coaching-lead",
+      filename: "coach-assignments.csv",
+      message:
+        "sales-coaching-lead/coach-assignments.csv row 2 has 3 cell(s); expected 4. Keep every returned row aligned to the generated header.",
+    });
   });
 
   it("blocks duplicate returned owner files", () => {
