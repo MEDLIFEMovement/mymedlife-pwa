@@ -266,6 +266,17 @@ Allowed values:
   `staff_command_center`, `admin_backend`
 - Signed-in route `status`: `passed`, `failed`, `not_checked`
 
+If launch owners are collected in a simple approval sheet, convert them into
+the packet-ready owner CSV first:
+
+```bash
+pnpm rollout:launch-owner-import --owners launch-owners-source.csv --out-dir rollout-csv
+```
+
+This writes local `launch-owners.csv` only. It does not create users, write
+Supabase rows, send invitations, call Luma, change production config, or enable
+integrations.
+
 ## Readiness Rules
 
 The packet is not ready until all of these are true:
