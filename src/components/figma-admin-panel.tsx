@@ -705,7 +705,14 @@ function ModulesPage() {
 
   return (
     <>
-      <div className="p-6">
+      <div className="p-6 space-y-4">
+        <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+          <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[12px] text-amber-300/80 leading-relaxed">
+            This module surface is preview-only. Review staged module posture and blocked toggle paths here, then use the audited admin workflow after approval for any real module activation or shutdown.
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           {mods.map((mod) => (
             <div
@@ -2522,6 +2529,12 @@ function IntegrationsPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+        <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+        <p className="text-[12px] text-amber-300/80 leading-relaxed">
+          These provider controls stay visible for DS review, but this integrations surface is preview-only. Connection tests, enablement, syncs, exports, and external writes remain blocked until the audited workflow is approved.
+        </p>
+      </div>
 
       {/* Smile.io featured */}
       <div>
