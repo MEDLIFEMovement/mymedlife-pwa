@@ -14,9 +14,12 @@ describe("chapter-event update safety contract", () => {
     ]);
     expect(contract.paths.every((path) => path.browserControlEnabled === false)).toBe(true);
     expect(contract.paths.every((path) => path.externalWritesEnabled === false)).toBe(true);
+    expect(contract.paths.find((path) => path.key === "authoritative_fields")?.status).toBe(
+      "implemented_local_first",
+    );
   });
 
-  it("keeps authoritative and narrative fields separated", () => {
+  it("keeps the first local authoritative subset separate from deferred and narrative fields", () => {
     const contract = getChapterEventUpdateSafetyContract();
     const authoritativePath = contract.paths.find(
       (path) => path.key === "authoritative_fields",
@@ -25,7 +28,7 @@ describe("chapter-event update safety contract", () => {
       (path) => path.key === "narrative_fields",
     );
 
-    expect(contract.authoritativeFields).toEqual(
+    expect(contract.implementedLocalAuthoritativeFields).toEqual(
       expect.arrayContaining([
         "status",
         "starts_at",
@@ -33,9 +36,10 @@ describe("chapter-event update safety contract", () => {
         "attendance_count",
         "attendance_rate",
         "nps_score",
-        "warehouse_status",
-        "luma_event_link_id",
       ]),
+    );
+    expect(contract.deferredAuthoritativeFields).toEqual(
+      expect.arrayContaining(["title", "owner_user_id", "warehouse_status", "luma_event_link_id"]),
     );
     expect(contract.narrativeCandidateFields).toEqual([
       "promotion_summary",
@@ -43,6 +47,9 @@ describe("chapter-event update safety contract", () => {
     ]);
     expect(authoritativePath?.blockedActors).toEqual(
       expect.arrayContaining(["chapter_event_owner_or_planner", "general_member"]),
+    );
+    expect(authoritativePath?.allowedFields).toEqual(
+      contract.implementedLocalAuthoritativeFields,
     );
     expect(narrativePath?.allowedFields).toEqual([
       "promotion_summary",
@@ -72,7 +79,9 @@ describe("chapter-event update safety contract", () => {
     expect(formatted).toContain(
       "Chapter-event update safety contract: READ-ONLY implementation spec",
     );
-    expect(formatted).toContain("Current direct owner/planner table updates");
+    expect(formatted).toContain("first local audited path now exists");
+    expect(formatted).toContain("Implemented local authoritative subset");
+    expect(formatted).toContain("Deferred authoritative fields");
     expect(formatted).toContain("Authoritative chapter-event update path");
     expect(formatted).toContain("Narrative chapter-event owner/planner helper");
     expect(formatted).toContain("app.update_chapter_event_authoritative_fields");

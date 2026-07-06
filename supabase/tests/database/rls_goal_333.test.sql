@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(23);
+select plan(25);
 
 set local role authenticated;
 set local "request.jwt.claim.role" = 'authenticated';
@@ -35,9 +35,16 @@ select is(
   'General member cannot read Luma event links directly'
 );
 
-update app.chapter_events
-set attendance_count = 999
-where id = '51000000-0000-4000-8000-000000000001';
+select throws_ok(
+  $$
+    update app.chapter_events
+    set attendance_count = 999
+    where id = '51000000-0000-4000-8000-000000000001'
+  $$,
+  'P0001',
+  'chapter event updates must use app.update_chapter_event_authoritative_fields',
+  'General member cannot bypass the audited chapter-event update path'
+);
 
 select is(
   (
@@ -45,8 +52,8 @@ select is(
     from app.chapter_events
     where id = '51000000-0000-4000-8000-000000000001'
   ),
-  999,
-  'General member event owner can still update their own chapter-event row under the current policy'
+  24,
+  'General member direct chapter-event update is blocked'
 );
 
 select throws_ok(
@@ -215,9 +222,16 @@ select is(
   'Chapter leader can read Luma links for their own chapter'
 );
 
-update app.chapter_events
-set attendance_count = 26
-where id = '51000000-0000-4000-8000-000000000001';
+select throws_ok(
+  $$
+    update app.chapter_events
+    set attendance_count = 26
+    where id = '51000000-0000-4000-8000-000000000001'
+  $$,
+  'P0001',
+  'chapter event updates must use app.update_chapter_event_authoritative_fields',
+  'Chapter leader cannot bypass the audited chapter-event update path with a direct table update'
+);
 
 select is(
   (
@@ -225,8 +239,8 @@ select is(
     from app.chapter_events
     where id = '51000000-0000-4000-8000-000000000001'
   ),
-  26,
-  'Chapter leader can update chapter event data inside their chapter scope'
+  24,
+  'Chapter leader direct chapter-event update is blocked until the audited helper is used'
 );
 
 select lives_ok(
