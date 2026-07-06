@@ -311,6 +311,9 @@ describe("browser write activation gate", () => {
         existingAssignments: [],
       },
       {
+        MYMEDLIFE_AUTH_MODE: "local_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "local-anon-key",
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
       },
@@ -319,6 +322,48 @@ describe("browser write activation gate", () => {
     expect(gate.status).toBe("ready_for_local_write");
     expect(gate.canRenderEnabledControl).toBe(true);
     expect(getBlockingActivationChecks(gate)).toEqual([]);
+  });
+
+  it("keeps assignment creation blocked for hosted staging even when local write flags are flipped", () => {
+    const actor = getMockLocalActorContext(
+      "leader.a@mymedlife.test",
+      "Signed in locally.",
+      "mock_fallback",
+      "local_auth_session",
+      "signed_in",
+    );
+    const gate = getAssignmentCreateBrowserWriteGate(
+      actor,
+      {
+        title: "Assign tabling event owner",
+        instructions: "Ask one student to own and promote the next Rush Month event.",
+        ownerRole: "Action Committee Member",
+        dueLabel: "Friday",
+        evidenceRequired: "Owner name and proof plan.",
+        points: 10,
+        kpi: "Owner assigned",
+      },
+      {
+        chapterId: "00000000-0000-4000-8000-000000000101",
+        campaignId: "00000000-0000-4000-8000-000000000102",
+        existingAssignments: [],
+      },
+      {
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
+      },
+    );
+
+    expect(gate.status).toBe("blocked_until_approval");
+    expect(gate.canRenderEnabledControl).toBe(false);
+    expect(
+      getBlockingActivationChecks(gate).find((check) => check.key === "browser_write_approved")
+        ?.detail,
+    ).toContain("Hosted staging Supabase Auth stays disabled");
   });
 
   it("can mark proof submission ready only for local auth and explicit approval flags", () => {
