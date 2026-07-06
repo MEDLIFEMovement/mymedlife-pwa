@@ -358,9 +358,9 @@ function healthPill(h: string) {
 }
 
 /** Primary / secondary / ghost button */
-function Btn({ children, variant="primary", onClick, className="" }: {
+function Btn({ children, variant="primary", onClick, className="", blockedTitle }: {
   children: React.ReactNode; variant?: "primary"|"secondary"|"ghost"|"danger";
-  onClick?: () => void; className?: string;
+  onClick?: () => void; className?: string; blockedTitle?: string;
 }) {
   const isBlocked = !onClick;
   const base = "inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 transition-all cursor-pointer whitespace-nowrap";
@@ -370,7 +370,20 @@ function Btn({ children, variant="primary", onClick, className="" }: {
     ghost:     "text-slate-500 hover:text-slate-800 hover:bg-slate-100",
     danger:    "bg-red-50 border border-red-200 text-red-700 hover:bg-red-100",
   }[variant];
-  return <button className={`${base} ${v} ${isBlocked ? "opacity-70 cursor-not-allowed" : ""} ${className}`} onClick={onClick} disabled={isBlocked}>{children}</button>;
+  return (
+    <button
+      className={`${base} ${v} ${isBlocked ? "opacity-70 cursor-not-allowed" : ""} ${className}`}
+      onClick={onClick}
+      disabled={isBlocked}
+      title={
+        isBlocked
+          ? blockedTitle ?? "This control stays visible for shell fidelity, but it is blocked in this preview."
+          : undefined
+      }
+    >
+      {children}
+    </button>
+  );
 }
 
 /** Metric stat card with accent top border */
@@ -1015,7 +1028,15 @@ function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void 
 }
 
 // ─── Screen 5: Committees ─────────────────────────────────────────
-function CommitteesScreen({ onAssignAction, onPromote }: { onAssignAction: () => void; onPromote: () => void }) {
+function CommitteesScreen({
+  onAssignAction,
+  onPromote,
+  onCreateEvent,
+}: {
+  onAssignAction: () => void;
+  onPromote: () => void;
+  onCreateEvent: () => void;
+}) {
   const [expanded, setExpanded] = useState<number|null>(null);
 
   // Chapter-wide event totals for summary cards
@@ -1030,7 +1051,7 @@ function CommitteesScreen({ onAssignAction, onPromote }: { onAssignAction: () =>
           <h1 className="text-2xl font-black text-slate-900">Event Committees</h1>
           <p className="text-sm text-slate-500 mt-1">Monitor whether each committee is moving the chapter forward — not just existing.</p>
         </div>
-        <Btn variant="primary"><Plus size={11}/>Add Committee</Btn>
+        <Btn variant="primary" blockedTitle="Committee creation is blocked in this preview."><Plus size={11}/>Add Committee</Btn>
       </div>
 
       {/* Summary cards — chapter-wide */}
@@ -1218,11 +1239,23 @@ function CommitteesScreen({ onAssignAction, onPromote }: { onAssignAction: () =>
                     <div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Actions</div>
                       <div className="space-y-1.5">
-                        <Btn variant="primary"    className="w-full justify-start"><Plus size={10}/>Add Chair</Btn>
+                        <Btn
+                          variant="primary"
+                          className="w-full justify-start"
+                          blockedTitle="Committee chair assignment is blocked in this preview."
+                        >
+                          <Plus size={10}/>Add Chair
+                        </Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={10}/>Promote Member</Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Assign Task</Btn>
-                        <Btn variant="secondary"  className="w-full justify-start"><Calendar size={10}/>Create Event</Btn>
-                        <Btn variant="ghost"      className="w-full justify-start"><Eye size={10}/>Review Committee</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Create Event</Btn>
+                        <Btn
+                          variant="ghost"
+                          className="w-full justify-start"
+                          blockedTitle="Committee detail drill-in is not wired yet. Use this expanded committee card for the current preview context."
+                        >
+                          <Eye size={10}/>Review Committee
+                        </Btn>
                       </div>
                     </div>
                   </div>
@@ -1767,8 +1800,8 @@ function ImpactScreen() {
           <p className="text-sm text-slate-500 mt-1">This is why we do this. Real people. Real change.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary"><Share2 size={11}/>Share Impact Story</Btn>
-          <Btn variant="primary"><Video size={11}/>Create Bridge Video</Btn>
+          <Btn variant="secondary" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Share Impact Story</Btn>
+          <Btn variant="primary" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video size={11}/>Create Bridge Video</Btn>
         </div>
       </div>
 
@@ -1870,7 +1903,7 @@ function ImpactScreen() {
                 </button>
               )}
             </div>
-            <Btn variant="primary"><Plus size={11}/>Submit Field Update</Btn>
+            <Btn variant="primary" blockedTitle="Field-update submission is blocked in this preview until write approval is complete."><Plus size={11}/>Submit Field Update</Btn>
           </div>
         </div>
 
@@ -2024,9 +2057,9 @@ function ImpactScreen() {
 
               {/* Share actions */}
               <div className="flex gap-2 pt-1">
-                <Btn variant="primary"   className="flex-1 justify-center"><Share2 size={11}/>Share to Chapter Feed</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center"><Video  size={11}/>Create Bridge Video</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center"><Upload size={11}/>Add to Presentation</Btn>
+                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Share to Chapter Feed</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video  size={11}/>Create Bridge Video</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Presentation export is blocked in this preview."><Upload size={11}/>Add to Presentation</Btn>
               </div>
             </div>
           </div>
@@ -2130,9 +2163,9 @@ function BridgeScreen() {
 
               {/* Actions */}
               <div className="flex gap-2 pt-1">
-                <Btn variant="primary"   className="flex-1 justify-center"><Play    size={11}/>Watch Video</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center"><Share2  size={11}/>Share to Feed</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center"><Star    size={11}/>Feature</Btn>
+                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Bridge video playback is blocked in this preview."><Play    size={11}/>Watch Video</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge video sharing is blocked in this preview until staff approval is complete."><Share2  size={11}/>Share to Feed</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Featuring a bridge video is blocked in this preview until staff approval is complete."><Star    size={11}/>Feature</Btn>
               </div>
               <div className="flex items-start gap-2.5 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
                 <Shield size={13} className="text-amber-500 mt-0.5 shrink-0"/>
@@ -2149,7 +2182,7 @@ function BridgeScreen() {
           <h1 className="text-2xl font-black text-slate-900">Bridge Video Hub</h1>
           <p className="text-sm text-slate-500 mt-1 italic">"MEDLIFE leaders build a bridge for the next generation."</p>
         </div>
-        <Btn variant="primary"><Upload size={11}/>Submit for Approval</Btn>
+        <Btn variant="primary" blockedTitle="Bridge-video submission is blocked in this preview until write approval is complete."><Upload size={11}/>Submit for Approval</Btn>
       </div>
 
       {/* Approval notice */}
@@ -2967,8 +3000,8 @@ function FeedScreen() {
           <p className="text-sm text-slate-500 mt-1">Understand what content drives real action — not just views.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary"><Share2 size={11}/>Share to Feed</Btn>
-          <Btn variant="primary"><MessageSquare size={11}/>Ask Members to Respond</Btn>
+          <Btn variant="secondary" blockedTitle="Feed sharing is blocked in this preview until staff approval is complete."><Share2 size={11}/>Share to Feed</Btn>
+          <Btn variant="primary" blockedTitle="Direct member outreach is blocked in this preview until messaging approval is complete."><MessageSquare size={11}/>Ask Members to Respond</Btn>
         </div>
       </div>
 
@@ -3498,9 +3531,12 @@ const VIEW_OPTIONS = [
   { id:"admin",           label:"Admin",                    desc:"Full org-wide admin access",       icon:Flag     },
 ];
 
+const WORKSPACE_SWITCHER_BLOCKED_COPY =
+  "Workspace switching is handled by the account menu above this shell. This copied Figma switcher stays read-only in preview.";
+
 function UserProfileSwitcher() {
   const [open, setOpen] = useState(false);
-  const [activeView, setActiveView] = useState("command-center");
+  const activeView = "command-center";
   const active = VIEW_OPTIONS.find(v => v.id === activeView)!;
 
   return (
@@ -3527,9 +3563,10 @@ function UserProfileSwitcher() {
             return (
               <button
                 key={v.id}
-                onClick={() => { setActiveView(v.id); setOpen(false); }}
+                disabled
+                title={isActive ? "You are already in the Student Command Center." : WORKSPACE_SWITCHER_BLOCKED_COPY}
                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left cursor-pointer transition-colors
-                  ${isActive ? "bg-[#1A56E8]/30" : "hover:bg-white/5"}`}>
+                  ${isActive ? "bg-[#1A56E8]/30" : "hover:bg-white/5 opacity-75 cursor-not-allowed"}`}>
                 <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${isActive ? "bg-[#1A56E8]" : "bg-white/10"}`}>
                   <Icon size={12} className="text-white"/>
                 </div>
@@ -3541,6 +3578,9 @@ function UserProfileSwitcher() {
               </button>
             );
           })}
+          <p className="px-3 py-2.5 text-[10px] leading-4 text-white/40 border-t border-white/10">
+            {WORKSPACE_SWITCHER_BLOCKED_COPY}
+          </p>
         </div>
       )}
     </div>
@@ -4072,7 +4112,7 @@ export function FigmaLeaderCommandCenter({
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{LABELS[screen]}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button disabled title="Notifications are blocked in this preview" className="relative w-8 h-8 rounded-full hover:bg-white flex items-center justify-center cursor-pointer transition-colors border border-transparent hover:border-slate-200">
+            <button disabled title="Notifications are blocked in this preview" className="relative w-8 h-8 rounded-full hover:bg-white flex items-center justify-center cursor-not-allowed transition-colors border border-transparent hover:border-slate-200">
               <Bell size={14} className="text-slate-500"/>
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"/>
             </button>
@@ -4091,7 +4131,13 @@ export function FigmaLeaderCommandCenter({
           {screen==="leaderboard" && <LeaderboardScreen onNavigate={navigateToScreen}/>}
           {screen==="members"     && <MembersScreen onSelectMember={handleSelectMember}/>}
           {screen==="profile"     && <ProfileScreen memberId={selectedId} onBack={()=>navigateToScreen("members")}/>}
-          {screen==="committees"  && <CommitteesScreen onAssignAction={() => setShowAssignAction(true)} onPromote={() => setShowPromote(true)}/>}
+          {screen==="committees"  && (
+            <CommitteesScreen
+              onAssignAction={() => setShowAssignAction(true)}
+              onPromote={() => setShowPromote(true)}
+              onCreateEvent={handleCreateEvent}
+            />
+          )}
           {screen==="events"      && <EventsScreen externalCreate={showCreateEvent} onExternalCreateHandled={() => setShowCreateEvent(false)}/>}
           {screen==="impact"      && <ImpactScreen/>}
           {screen==="bridge"      && <BridgeScreen/>}
