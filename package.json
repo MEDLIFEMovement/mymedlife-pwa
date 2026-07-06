@@ -17,6 +17,7 @@
     "rollout:owner-packets": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-packets.mjs",
     "rollout:owner-status": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-owner-packets.mjs",
     "rollout:owner-requests": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-requests.mjs",
+    "rollout:owner-handoff": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-handoff.mjs",
     "rollout:assemble-owner-packets": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/assemble-production-rollout-owner-packets.mjs",
     "rollout:data-request": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-data-request.mjs",
     "rollout:roster-import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-roster-import.mjs",

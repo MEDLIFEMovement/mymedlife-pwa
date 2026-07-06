@@ -226,6 +226,7 @@ export function formatProductionRolloutWorkbook(outputDirectoryName = "rollout-c
     "## Validation Sequence",
     "",
     "```bash",
+    "pnpm rollout:owner-handoff --out production-rollout-owner-handoff",
     "pnpm rollout:owner-packets --out rollout-owner-packets",
     "pnpm rollout:owner-status --owner-dir rollout-owner-packets --out production-rollout-owner-packet-status.md",
     "pnpm rollout:owner-requests --owner-dir rollout-owner-packets --out production-rollout-owner-requests",
