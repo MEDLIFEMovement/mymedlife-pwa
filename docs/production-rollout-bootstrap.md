@@ -58,7 +58,7 @@ pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rol
 pnpm rollout:owner-recipients --owner-dir production-rollout-owner-handoff/rollout-owner-packets --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md
 pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv
 pnpm rollout:owner-followup --owner-dir production-rollout-owner-handoff/rollout-owner-packets --tracker production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md
-pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-current-status.md
+pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-current-status.md
 ```
 
 ## Required Packet
@@ -466,7 +466,7 @@ At any point in the rollout, run the current-status command to see the first
 missing artifact and the next safe command:
 
 ```bash
-pnpm rollout:current-status --out production-rollout-current-status.md
+pnpm rollout:current-status --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-current-status.md
 ```
 
 This command is intentionally read-only and can return `NOT READY` without

@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm rollout:current-status [--owner-dir rollout-owner-packets] [--csv-dir rollout-csv] [--packet production-rollout-packet.json] [--live-data-counts production-live-data-counts.txt] [--public-url https://www.mymedlife.org] [--out production-rollout-current-status.md]",
+  "  pnpm rollout:current-status [--owner-dir rollout-owner-packets] [--recipient-assignments owner-recipient-assignments.csv] [--csv-dir rollout-csv] [--packet production-rollout-packet.json] [--live-data-counts production-live-data-counts.txt] [--public-url https://www.mymedlife.org] [--out production-rollout-current-status.md]",
   "    [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
   "",
   "This is read-only. It reports the next missing artifact for the 30-chapter / 500-student invite gate.",
@@ -15,6 +15,7 @@ try {
   const args = parseArgs(process.argv.slice(2));
   const paths = {
     ownerDirectoryName: args.ownerDir,
+    recipientAssignmentsPath: args.recipientAssignments,
     csvDirectoryName: args.csvDir,
     packetPath: args.packet,
     liveDataCountsPath: args.liveDataCounts,
@@ -29,6 +30,12 @@ try {
       getProductionRolloutOwnerPacketStatus,
     },
     { getProductionRolloutOwnerPackets },
+    {
+      getProductionRolloutOwnerRecipientStatus,
+    },
+    {
+      parseProductionRolloutOwnerRecipientAssignmentsCsv,
+    },
     { getProductionRolloutBootstrapReadiness },
     {
       getProductionLiveDataReadiness,
@@ -38,6 +45,8 @@ try {
     import("../src/services/production-rollout-current-status.ts"),
     import("../src/services/production-rollout-owner-packet-status.ts"),
     import("../src/services/production-rollout-owner-packets.ts"),
+    import("../src/services/production-rollout-owner-recipient-status.ts"),
+    import("../src/services/production-rollout-owner-send-tracker.ts"),
     import("../src/services/production-rollout-bootstrap.ts"),
     import("../src/services/production-live-data-readiness.ts"),
   ]);
@@ -62,6 +71,16 @@ try {
         },
       })
     : null;
+  const ownerRecipientStatus =
+    ownerPacketStatus && args.recipientAssignments
+      ? getProductionRolloutOwnerRecipientStatus({
+          status: ownerPacketStatus,
+          recipientAssignments:
+            parseProductionRolloutOwnerRecipientAssignmentsCsv(
+              await readFile(resolve(args.recipientAssignments), "utf8"),
+            ),
+        })
+      : null;
   const { rolloutReadiness, rolloutPacketError } = rolloutPacketExists
     ? await readRolloutReadiness({
         packetPath: args.packet,
@@ -84,6 +103,7 @@ try {
     rolloutPacketExists,
     liveDataCountsExists,
     ownerPacketStatus,
+    ownerRecipientStatus,
     rolloutReadiness,
     liveDataReadiness,
     rolloutPacketError,
@@ -216,6 +236,7 @@ function parseArgs(args) {
 
   return {
     ownerDir: getValue(args, "--owner-dir") ?? "rollout-owner-packets",
+    recipientAssignments: getValue(args, "--recipient-assignments"),
     csvDir: getValue(args, "--csv-dir") ?? "rollout-csv",
     packet: getValue(args, "--packet") ?? "production-rollout-packet.json",
     liveDataCounts:

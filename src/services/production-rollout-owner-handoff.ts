@@ -176,7 +176,7 @@ function formatProductionRolloutOwnerHandoffIndex({
     `pnpm rollout:owner-recipients --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --recipient-assignments ${outputDirectoryName}/${sendTrackerDirectoryName}/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md`,
     `pnpm rollout:owner-send-tracker --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${sendTrackerDirectoryName} --request-dir ${requestDirectoryName} --email-draft-dir ${emailDraftDirectoryName} --recipient-assignments ${outputDirectoryName}/${sendTrackerDirectoryName}/owner-recipient-assignments.csv`,
     `pnpm rollout:owner-followup --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --tracker ${outputDirectoryName}/${sendTrackerDirectoryName}/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
-    `pnpm rollout:current-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out production-rollout-current-status.md`,
+    `pnpm rollout:current-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --recipient-assignments ${outputDirectoryName}/${sendTrackerDirectoryName}/owner-recipient-assignments.csv --out production-rollout-current-status.md`,
     `pnpm rollout:assemble-owner-packets --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out rollout-csv`,
     "pnpm rollout:check-csv --dir rollout-csv",
     "pnpm rollout:build \\",

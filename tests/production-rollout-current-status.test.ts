@@ -14,6 +14,9 @@ import type {
 import type {
   ProductionRolloutOwnerPacketStatus,
 } from "@/services/production-rollout-owner-packet-status";
+import type {
+  ProductionRolloutOwnerRecipientStatus,
+} from "@/services/production-rollout-owner-recipient-status";
 
 const paths: ProductionRolloutCurrentStatusPaths = {
   ownerDirectoryName: "rollout-owner-packets",
@@ -73,6 +76,46 @@ describe("production rollout current status", () => {
     );
     expect(status.nextCommands).toContain(
       "pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md",
+    );
+  });
+
+  it("prioritizes owner recipient assignments when that report is available and incomplete", () => {
+    const recipientAssignmentsPath =
+      "production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv";
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        paths: {
+          ...paths,
+          recipientAssignmentsPath,
+        },
+        ownerDirectoryExists: true,
+        csvDirectoryExists: false,
+        rolloutPacketExists: false,
+        liveDataCountsExists: false,
+        ownerPacketStatus: createOwnerStatus(false),
+        ownerRecipientStatus: createRecipientStatus(false),
+      }),
+    );
+    const report = formatProductionRolloutCurrentStatus(status, {
+      ...paths,
+      recipientAssignmentsPath,
+    });
+
+    expect(status.currentBlocker).toContain(
+      "Owner packet recipients are incomplete",
+    );
+    expect(status.currentBlocker).toContain("0/7 owner recipients assigned");
+    expect(status.artifactStatuses).toContain(
+      "owner recipient assignments: NOT READY (0/7 recipients assigned, 7 missing)",
+    );
+    expect(status.nextCommands).toContain(
+      `Fill ${recipientAssignmentsPath} with one valid recipient email for each owner packet.`,
+    );
+    expect(status.nextCommands).toContain(
+      `pnpm rollout:current-status --owner-dir rollout-owner-packets --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-current-status.md`,
+    );
+    expect(report).toContain(
+      `- owner recipient assignments: ${recipientAssignmentsPath}`,
     );
   });
 
@@ -287,6 +330,22 @@ function createOwnerStatus(
     },
     nextCommands: [],
     safetyRules: [],
+  };
+}
+
+function createRecipientStatus(
+  readyForOwnerPacketSend: boolean,
+): ProductionRolloutOwnerRecipientStatus {
+  return {
+    readyForOwnerPacketSend,
+    summary: {
+      ownerCount: 7,
+      assignedOwnerCount: readyForOwnerPacketSend ? 7 : 0,
+      missingRecipientCount: readyForOwnerPacketSend ? 0 : 7,
+      issueCount: readyForOwnerPacketSend ? 0 : 7,
+    },
+    rows: [],
+    assignmentIssues: [],
   };
 }
 
