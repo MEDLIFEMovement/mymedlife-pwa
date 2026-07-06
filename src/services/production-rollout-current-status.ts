@@ -8,12 +8,16 @@ import type {
   ProductionRolloutOwnerPacketStatus,
 } from "./production-rollout-owner-packet-status.ts";
 import type {
+  ProductionRolloutOwnerFollowupReport,
+} from "./production-rollout-owner-followup-report.ts";
+import type {
   ProductionRolloutOwnerRecipientStatus,
 } from "./production-rollout-owner-recipient-status.ts";
 
 export type ProductionRolloutCurrentStatusPaths = {
   ownerDirectoryName: string;
   recipientAssignmentsPath?: string;
+  ownerSendTrackerPath?: string;
   csvDirectoryName: string;
   packetPath: string;
   liveDataCountsPath: string;
@@ -31,6 +35,7 @@ export type ProductionRolloutCurrentStatusInput = {
   liveDataCountsExists: boolean;
   ownerPacketStatus?: ProductionRolloutOwnerPacketStatus | null;
   ownerRecipientStatus?: ProductionRolloutOwnerRecipientStatus | null;
+  ownerFollowupReport?: ProductionRolloutOwnerFollowupReport | null;
   rolloutReadiness?: ProductionRolloutBootstrapReadiness | null;
   liveDataReadiness?: ProductionLiveDataReadiness | null;
   rolloutPacketError?: string | null;
@@ -94,6 +99,9 @@ export function formatProductionRolloutCurrentStatus(
     ...(paths.recipientAssignmentsPath
       ? [`- owner recipient assignments: ${paths.recipientAssignmentsPath}`]
       : []),
+    ...(paths.ownerSendTrackerPath
+      ? [`- owner send tracker: ${paths.ownerSendTrackerPath}`]
+      : []),
     `- shared CSV folder: ${paths.csvDirectoryName}`,
     `- rollout packet: ${paths.packetPath}`,
     `- live-data count proof: ${paths.liveDataCountsPath}`,
@@ -138,6 +146,20 @@ function getCurrentBlocker(input: ProductionRolloutCurrentStatusInput) {
         `${input.ownerRecipientStatus.summary.assignedOwnerCount}/${input.ownerRecipientStatus.summary.ownerCount} owner recipients assigned,`,
         `${input.ownerRecipientStatus.summary.missingRecipientCount} missing recipient email(s).`,
       ].join(" ");
+    }
+
+    if (input.ownerFollowupReport) {
+      if (input.ownerFollowupReport.summary.issueCount > 0) {
+        return `Owner handoff tracker has ${input.ownerFollowupReport.summary.issueCount} issue(s).`;
+      }
+
+      if (input.ownerFollowupReport.summary.sentCount > 0) {
+        return [
+          "Owner packet handoff is sent; waiting for returned CSVs:",
+          `${input.ownerFollowupReport.summary.returnedCount}/${input.ownerFollowupReport.summary.ownerCount} returned,`,
+          `${input.ownerFollowupReport.summary.validatedCount}/${input.ownerFollowupReport.summary.ownerCount} validated.`,
+        ].join(" ");
+      }
     }
 
     return `Owner packets are incomplete: ${input.ownerPacketStatus.readyOwnerCount}/${input.ownerPacketStatus.ownerCount} owners ready.`;
@@ -220,6 +242,24 @@ function getOpenBlockers(input: ProductionRolloutCurrentStatusInput) {
     }
 
     if (!input.ownerPacketStatus.readyForPacketBuild) {
+      if (input.ownerFollowupReport) {
+        if (input.ownerFollowupReport.summary.issueCount > 0) {
+          blockers.push(
+            `Owner handoff tracker has ${input.ownerFollowupReport.summary.issueCount} issue(s).`,
+          );
+        }
+
+        if (input.ownerFollowupReport.summary.sentCount > 0) {
+          blockers.push(
+            [
+              "Owner packet handoff is sent; waiting for returned CSVs:",
+              `${input.ownerFollowupReport.summary.returnedCount}/${input.ownerFollowupReport.summary.ownerCount} returned,`,
+              `${input.ownerFollowupReport.summary.validatedCount}/${input.ownerFollowupReport.summary.ownerCount} validated.`,
+            ].join(" "),
+          );
+        }
+      }
+
       blockers.push(
         `Owner packets are incomplete: ${input.ownerPacketStatus.readyOwnerCount}/${input.ownerPacketStatus.ownerCount} owners ready.`,
       );
@@ -285,6 +325,7 @@ function getArtifactStatuses(input: ProductionRolloutCurrentStatusInput) {
       ? getOwnerPacketStatusLine(input.ownerPacketStatus)
       : "owner packet folder: MISSING",
     ...getOwnerRecipientStatusLines(input.ownerRecipientStatus),
+    ...getOwnerFollowupStatusLines(input.ownerFollowupReport),
     input.csvDirectoryExists
       ? getCsvDirectoryStatusLine(input)
       : "shared rollout CSV folder: MISSING",
@@ -320,6 +361,25 @@ function getOwnerRecipientStatusLines(
     status.readyForOwnerPacketSend
       ? `owner recipient assignments: READY (${status.summary.assignedOwnerCount}/${status.summary.ownerCount} recipients assigned)`
       : `owner recipient assignments: NOT READY (${status.summary.assignedOwnerCount}/${status.summary.ownerCount} recipients assigned, ${status.summary.missingRecipientCount} missing)`,
+  ];
+}
+
+function getOwnerFollowupStatusLines(
+  report: ProductionRolloutOwnerFollowupReport | null | undefined,
+) {
+  if (!report) {
+    return [];
+  }
+
+  return [
+    [
+      "owner handoff tracker:",
+      report.ready ? "READY" : "NOT READY",
+      `(${report.summary.sentCount}/${report.summary.ownerCount} sent,`,
+      `${report.summary.returnedCount}/${report.summary.ownerCount} returned,`,
+      `${report.summary.validatedCount}/${report.summary.ownerCount} validated,`,
+      `${report.summary.issueCount} issue(s))`,
+    ].join(" "),
   ];
 }
 
@@ -436,6 +496,33 @@ function getNextCommands(
         `pnpm rollout:owner-recipients --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-owner-recipient-status.md`,
         `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker --recipient-assignments ${recipientAssignmentsPath}`,
         `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-current-status.md`,
+      ];
+    }
+
+    if (input.ownerFollowupReport?.summary.issueCount) {
+      const ownerSendTrackerPath =
+        input.paths.ownerSendTrackerPath ??
+        `${ownerSendTrackerOut}/owner-send-tracker.csv`;
+
+      return [
+        `pnpm rollout:owner-followup --owner-dir ${input.paths.ownerDirectoryName} --tracker ${ownerSendTrackerPath} --out production-rollout-owner-followup-report.md`,
+        "Fix the owner send tracker issues above before processing returned owner CSVs.",
+        `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --owner-send-tracker ${ownerSendTrackerPath} --out production-rollout-current-status.md`,
+      ];
+    }
+
+    if (input.ownerFollowupReport?.summary.sentCount) {
+      const ownerSendTrackerPath =
+        input.paths.ownerSendTrackerPath ??
+        `${ownerSendTrackerOut}/owner-send-tracker.csv`;
+
+      return [
+        "Save returned owner CSV folders under returned-owner-packets/<owner-slug>/.",
+        `pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-return-intake.md`,
+        `pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-return-intake.md --apply`,
+        `pnpm rollout:owner-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-packet-status.md`,
+        `pnpm rollout:owner-followup --owner-dir ${input.paths.ownerDirectoryName} --tracker ${ownerSendTrackerPath} --out production-rollout-owner-followup-report.md`,
+        `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --owner-send-tracker ${ownerSendTrackerPath} --out production-rollout-current-status.md`,
       ];
     }
 

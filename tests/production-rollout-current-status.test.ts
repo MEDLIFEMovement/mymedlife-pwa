@@ -15,6 +15,9 @@ import type {
   ProductionRolloutOwnerPacketStatus,
 } from "@/services/production-rollout-owner-packet-status";
 import type {
+  ProductionRolloutOwnerFollowupReport,
+} from "@/services/production-rollout-owner-followup-report";
+import type {
   ProductionRolloutOwnerRecipientStatus,
 } from "@/services/production-rollout-owner-recipient-status";
 
@@ -118,6 +121,88 @@ describe("production rollout current status", () => {
     );
     expect(status.nextCommands).not.toContain(
       "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
+    );
+  });
+
+  it("shows sent owner handoff state before returned CSV rows arrive", () => {
+    const recipientAssignmentsPath =
+      ".codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv";
+    const ownerSendTrackerPath =
+      ".codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv";
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        paths: {
+          ...paths,
+          recipientAssignmentsPath,
+          ownerSendTrackerPath,
+        },
+        ownerDirectoryExists: true,
+        csvDirectoryExists: false,
+        rolloutPacketExists: false,
+        liveDataCountsExists: false,
+        ownerPacketStatus: createOwnerStatus(false),
+        ownerRecipientStatus: createRecipientStatus(true),
+        ownerFollowupReport: createFollowupReport({
+          sentCount: 7,
+          returnedCount: 0,
+          validatedCount: 0,
+        }),
+      }),
+    );
+    const report = formatProductionRolloutCurrentStatus(status, {
+      ...paths,
+      recipientAssignmentsPath,
+      ownerSendTrackerPath,
+    });
+
+    expect(status.currentBlocker).toBe(
+      "Owner packet handoff is sent; waiting for returned CSVs: 0/7 returned, 0/7 validated.",
+    );
+    expect(status.artifactStatuses).toContain(
+      "owner handoff tracker: NOT READY (7/7 sent, 0/7 returned, 0/7 validated, 0 issue(s))",
+    );
+    expect(status.openBlockers).toContain(
+      "Owner packet handoff is sent; waiting for returned CSVs: 0/7 returned, 0/7 validated.",
+    );
+    expect(status.nextCommands).toContain(
+      "Save returned owner CSV folders under returned-owner-packets/<owner-slug>/.",
+    );
+    expect(status.nextCommands).toContain(
+      "pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir rollout-owner-packets --out production-rollout-owner-return-intake.md",
+    );
+    expect(status.nextCommands).toContain(
+      `pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker ${ownerSendTrackerPath} --out production-rollout-owner-followup-report.md`,
+    );
+    expect(report).toContain(`- owner send tracker: ${ownerSendTrackerPath}`);
+    expect(report).not.toContain("pnpm rollout:owner-email-drafts");
+  });
+
+  it("prioritizes owner handoff tracker issues before returned CSV intake", () => {
+    const ownerSendTrackerPath = "production-rollout-owner-send-tracker/owner-send-tracker.csv";
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        paths: {
+          ...paths,
+          ownerSendTrackerPath,
+        },
+        ownerDirectoryExists: true,
+        ownerPacketStatus: createOwnerStatus(false),
+        ownerFollowupReport: createFollowupReport({
+          sentCount: 7,
+          issueCount: 2,
+        }),
+      }),
+    );
+
+    expect(status.currentBlocker).toBe("Owner handoff tracker has 2 issue(s).");
+    expect(status.artifactStatuses).toContain(
+      "owner handoff tracker: NOT READY (7/7 sent, 0/7 returned, 0/7 validated, 2 issue(s))",
+    );
+    expect(status.nextCommands).toContain(
+      `pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker ${ownerSendTrackerPath} --out production-rollout-owner-followup-report.md`,
+    );
+    expect(status.nextCommands).toContain(
+      "Fix the owner send tracker issues above before processing returned owner CSVs.",
     );
   });
 
@@ -527,6 +612,30 @@ function createRecipientStatus(
     },
     rows: [],
     assignmentIssues: [],
+  };
+}
+
+function createFollowupReport(
+  overrides: Partial<ProductionRolloutOwnerFollowupReport["summary"]> = {},
+): ProductionRolloutOwnerFollowupReport {
+  return {
+    ready: false,
+    summary: {
+      ownerCount: 7,
+      readyOwnerCount: 0,
+      draftedCount: 0,
+      sentCount: 0,
+      returnedCount: 0,
+      validatedCount: 0,
+      blockedCount: 0,
+      draftEvidenceCount: 0,
+      missingRecipientCount: 0,
+      issueCount: 0,
+      ...overrides,
+    },
+    rows: [],
+    missingTrackerRows: [],
+    extraTrackerRows: [],
   };
 }
 

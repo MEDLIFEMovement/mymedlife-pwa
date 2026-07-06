@@ -91,6 +91,64 @@ describe("production rollout current status script", () => {
     throw new Error("Expected current status script to exit not ready.");
   });
 
+  it("auto-discovers the owner send tracker after owner packets are sent", () => {
+    const directory = mkdtempSync(join(tmpdir(), "mymedlife-current-status-sent-"));
+    const handoffDir = join(
+      directory,
+      ".codex-artifacts",
+      "production-rollout-owner-handoff",
+    );
+    const ownerDir = join(handoffDir, "rollout-owner-packets");
+    const trackerDir = join(handoffDir, "production-rollout-owner-send-tracker");
+    const outPath = join(directory, "production-rollout-current-status.md");
+    writeOwnerPacketFolders(ownerDir);
+    mkdirSync(trackerDir, { recursive: true });
+    writeFileSync(
+      join(trackerDir, "owner-recipient-assignments.csv"),
+      getReadyRecipientAssignmentsCsv(),
+    );
+    writeFileSync(join(trackerDir, "owner-send-tracker.csv"), getSentOwnerTrackerCsv());
+
+    try {
+      execFileSync(
+        process.execPath,
+        [
+          "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+          join(process.cwd(), "scripts/check-production-rollout-current-status.mjs"),
+          "--out",
+          outPath,
+        ],
+        {
+          cwd: directory,
+          encoding: "utf8",
+          stdio: "pipe",
+        },
+      );
+    } catch (error) {
+      expect(getProcessOutput(error, "stdout")).toContain(
+        "Production rollout current status written to",
+      );
+      const report = readFileSync(outPath, "utf8");
+
+      expect(report).toContain(
+        "- owner send tracker: .codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv",
+      );
+      expect(report).toContain(
+        "owner handoff tracker: NOT READY (7/7 sent, 0/7 returned, 0/7 validated, 0 issue(s))",
+      );
+      expect(report).toContain(
+        "Owner packet handoff is sent; waiting for returned CSVs: 0/7 returned, 0/7 validated.",
+      );
+      expect(report).toContain(
+        "pnpm rollout:owner-return-intake --returns-dir returned-owner-packets",
+      );
+      expect(report).not.toContain("pnpm rollout:owner-email-drafts");
+      return;
+    }
+
+    throw new Error("Expected current status script to exit not ready.");
+  });
+
   it("writes a NOT READY report when owner artifacts are missing", () => {
     const directory = mkdtempSync(join(tmpdir(), "mymedlife-current-status-"));
     const outPath = join(directory, "production-rollout-current-status.md");
@@ -210,6 +268,26 @@ function writeOwnerPacketFolders(ownerDir: string) {
       writeFileSync(join(packetDir, file.path), file.content);
     }
   }
+}
+
+function getReadyRecipientAssignmentsCsv() {
+  return [
+    "ownerSlug,owner,recipientEmail,ccEmails,notes",
+    ...getProductionRolloutOwnerPackets().map(
+      (packet) =>
+        `${packet.slug},${packet.owner},nellis@medlifemovement.org,"kmatsukawa@medlifemovement.org, regoavil@medlifemovement.org",sent`,
+    ),
+  ].join("\n");
+}
+
+function getSentOwnerTrackerCsv() {
+  return [
+    "ownerSlug,owner,ready,blockerCount,emailDraftPath,requestDocPath,ownerFolderPath,recipientEmail,ccEmails,draftId,draftedAt,sendStatus,sentAt,returnedAt,validatedAt,nextAction,notes",
+    ...getProductionRolloutOwnerPackets().map(
+      (packet) =>
+        `${packet.slug},${packet.owner},no,1,draft.md,request.md,folder,nellis@medlifemovement.org,"kmatsukawa@medlifemovement.org, regoavil@medlifemovement.org",gmail:message,2026-07-06T09:08:33Z,sent,2026-07-06T09:08:33Z,,,Follow up,Sent`,
+    ),
+  ].join("\n");
 }
 
 function getProcessOutput(error: unknown, key: "stdout" | "stderr") {
