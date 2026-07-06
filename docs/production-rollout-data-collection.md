@@ -223,6 +223,18 @@ preview-cookie, localhost, local sandbox, staging, Figma, SOP/sample, or
 missing-profile/setup-only evidence. Keep local rehearsal and production
 signed-in proof completely separate.
 
+If reviewers need a read-only checklist before any real production proof rows
+exist, use:
+
+```bash
+pnpm production:signed-in-route-proof-readiness --out production-signed-in-route-proof-readiness.md
+```
+
+This summarizes the four required production account classes, their expected
+routes, what cannot count as proof, the import/check sequence to use later, and
+which blockers still remain when the rollout packet or live-data counts are not
+available yet.
+
 The validator blocks fake/test emails, unknown user references, unknown chapter
 references, duplicate user emails, duplicate chapter IDs, and credential-like
 fields.
