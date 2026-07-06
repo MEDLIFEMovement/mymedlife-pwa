@@ -139,4 +139,37 @@ describe("login page", () => {
 
     expect(html).toContain('value="/app/slt-prep"');
   });
+
+  it("preserves the enabled signed-out login path without forcing disabled state", async () => {
+    vi.mocked(createLocalSupabaseServerClient).mockResolvedValueOnce({
+      client: {} as Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"],
+      config: {
+        enabled: true,
+        mode: "local_supabase",
+        isLocalOnly: true,
+        isHostedStaging: false,
+        environment: "local",
+        url: "http://127.0.0.1:54321",
+        anonKey: "test-anon-key",
+        reason: "Local Supabase Auth is active.",
+      },
+    });
+
+    vi.mocked(getAuthSessionState).mockResolvedValueOnce({
+      status: "signed_out",
+      isLocalOnly: true,
+      isHostedStaging: false,
+      environment: "local",
+      message: "No local Supabase Auth session is active.",
+      user: null,
+    });
+
+    const { default: LoginPage } = await import("@/app/login/page");
+    const html = renderToStaticMarkup(await LoginPage({}));
+
+    expect(html).toContain("Sign in to your workspace");
+    expect(html).toContain("Sign in");
+    expect(html).not.toContain("Seeded sign-in is not configured for this test run.");
+    expect(html).not.toContain("Current session");
+  });
 });
