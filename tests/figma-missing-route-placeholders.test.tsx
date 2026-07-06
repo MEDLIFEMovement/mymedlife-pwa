@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -76,6 +78,27 @@ describe("Figma missing route placeholders", () => {
     expect(html).toContain("Launch Mode Active");
     expect(html).not.toContain("Chapter Dashboard · Jun 2025");
     expect(html).not.toContain("Figma page missing - implementation blocked");
+  });
+
+  it("keeps admin integrations, API-key, and MCP controls visibly blocked instead of simulating live mutations", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const integrationsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="integrations" />);
+    expect(integrationsHtml).toContain("Smile.io provider enablement is blocked until DS approval is complete");
+    expect(integrationsHtml).toContain("Meta App Review and OAuth scope setup stay visible for DS review");
+    expect(source).toContain("Publishing remains blocked in this preview");
+
+    const apiKeysHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="apikeys" />);
+    expect(apiKeysHtml).toContain("API keys stay masked in this preview");
+    expect(apiKeysHtml).toContain("Key material stays masked in this preview until the audited secrets workflow is approved.");
+    expect(source).toContain("Key rotation is blocked in this preview");
+    expect(source).toContain("Key revocation is blocked in this preview");
+
+    const mcpHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="mcp" />);
+    expect(mcpHtml).toContain("MCP Access Policy");
+    expect(source).toContain("MCP write access is blocked in this preview");
+    expect(source).toContain("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview");
   });
 
   it("parks SLT Prep through /slt-prep during the events and points launch lane", async () => {
