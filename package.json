@@ -71,6 +71,7 @@
     "production:signed-in-route-proof:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-signed-in-route-proof-drift.mjs",
     "production:signed-in-route-proof-gaps": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-signed-in-route-proof-gaps.mjs",
     "production:smoke": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/production-core-route-smoke.mjs",
+    "auth:role-access-invariants": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-role-access-invariants.mjs",
     "supabase:start": "pnpm dlx supabase@2.106.0 start",
     "supabase:reset": "pnpm dlx supabase@2.106.0 db reset",
     "supabase:test": "pnpm dlx supabase@2.106.0 test db"
