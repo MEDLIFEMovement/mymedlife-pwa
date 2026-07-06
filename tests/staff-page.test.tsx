@@ -105,13 +105,13 @@ describe("staff page", () => {
     expect(html).toContain("2 chapters need intervention");
 
     expect(html).toContain(">Chapters<");
-    expect(html).toContain(">Events<");
-    expect(html).toContain(">Leaderboard<");
-    expect(html).not.toContain(">Campaigns<");
-    expect(html).not.toContain(">Proof / UGC<");
-    expect(html).not.toContain(">Best Practices<");
-    expect(html).not.toContain(">Campaign SOPs<");
-    expect(html).not.toContain(">Admin<");
+    expect(html).toContain(">Campaigns<");
+    expect(html).toContain(">Proof / UGC<");
+    expect(html).toContain(">Best Practices<");
+    expect(html).toContain(">Campaign SOPs<");
+    expect(html).toContain(">Admin<");
+    expect(html).not.toContain(">Events<");
+    expect(html).not.toContain(">Leaderboard<");
 
     expect(html).toContain("Avg Events / Month");
     expect(html).toContain("RSVPs");

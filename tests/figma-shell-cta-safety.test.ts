@@ -86,6 +86,18 @@ describe("copied Figma shell CTA safety", () => {
     expect(staffSource).toContain("Workflow execution disabled");
   });
 
+  it("keeps the member Stories tab and admin Command Center back control in the copied source", () => {
+    const memberSource = readProjectFile("src/components/figma-member-mobile-home.tsx");
+    const adminSource = readProjectFile("src/components/figma-admin-panel.tsx");
+    const staffSource = readProjectFile("src/components/figma-staff-command-center.tsx");
+
+    expect(memberSource).toContain('{ id: "stories", label: "Stories"');
+    expect(memberSource).toContain('label: "Stories"');
+    expect(adminSource).toContain("Command Center");
+    expect(adminSource).toContain("onBack?: () => void");
+    expect(staffSource).toContain("AdminPanel onBack={() => { setAdminRole(null); handleNavChange(\"chapters\"); }}");
+  });
+
   it("keeps the copied admin account row visibly delegated to the top-right session menu", () => {
     const adminSource = readProjectFile("src/components/figma-admin-panel.tsx");
 
