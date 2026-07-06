@@ -189,6 +189,7 @@ const NAV_PRIMARY = [
   { id: "audit", label: "Audit Logs", icon: FileText },
   { id: "health", label: "System Health", icon: Activity },
   { id: "apikeys", label: "API Keys", icon: KeyRound },
+  { id: "mcp", label: "MCP Connections", icon: Cpu },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 

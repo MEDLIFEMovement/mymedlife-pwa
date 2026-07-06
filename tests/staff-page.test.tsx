@@ -173,6 +173,26 @@ describe("staff page", () => {
     ).rejects.toThrow(`NEXT_REDIRECT:${expectedHref}`);
   });
 
+  it("allows super admin to open the embedded staff admin path without parking it away", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("super.admin@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "admin" }),
+      }),
+    );
+
+    expect(html).toContain("Restricted Access");
+    expect(html).toContain("Enter Admin Panel");
+    expect(html).toContain("DS Admin");
+    expect(html).toContain("Super Admin");
+  });
+
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
     const lineCount = source.split("\n").length;

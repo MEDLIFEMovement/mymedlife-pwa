@@ -285,6 +285,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Audit Logs", heading: "Audit Logs" },
       { label: "System Health", heading: "System Health" },
       { label: "API Keys", heading: "API Keys" },
+      { label: "MCP Connections", heading: "MCP Connections" },
       { label: "Settings", heading: "Settings" },
     ] as const;
 
@@ -299,11 +300,35 @@ test.describe("myMEDLIFE launch route smoke", () => {
       await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
     }
 
-    await expect(
-      page.locator("aside").getByRole("button", { name: "MCP Connections" }),
-    ).toHaveCount(0);
     await expect(page.locator("aside").getByText("MCP Analytics")).toBeVisible();
     await expect(page.locator("aside").getByText("Account menu")).toBeVisible();
+  });
+
+  test("opens the embedded staff admin surface with the DS Admin menu family intact", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "super.admin@mymedlife.test");
+
+    await page.goto("/staff?view=admin");
+    await expect(page).toHaveURL(/\/staff\?view=admin$/);
+    await expect(page.getByRole("heading", { name: "Restricted Access" })).toBeVisible();
+
+    await page.getByRole("radio", { name: "Super Admin" }).check();
+    await page.getByRole("button", { name: "Enter Admin Panel" }).click();
+
+    const adminSidebar = page.locator("aside").first();
+    await expect(adminSidebar.getByRole("button", { name: "Command Center" })).toBeVisible();
+    await expect(adminSidebar.getByRole("button", { name: "MCP Connections", exact: true })).toBeVisible();
+    await expect(adminSidebar.getByText("MCP Analytics")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
+
+    await adminSidebar.getByRole("button", { name: "MCP Connections", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "MCP Connections" })).toBeVisible();
+
+    await adminSidebar.getByRole("button", { name: "Command Center" }).click();
+    await expect(page).toHaveURL(/\/staff\?view=chapters$/);
+    await expect(page.getByRole("heading", { name: "Portfolio Overview" })).toBeVisible();
   });
 
   test("loads route-level admin readback pages and parks the SLT Prep app alias", async ({
