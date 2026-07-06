@@ -102,6 +102,34 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
   });
 
+  test("walks the direct member event-detail route through its preview-only steps", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "member.a@mymedlife.test");
+
+    await page.goto("/app/events/chapter-event-ucla-kickoff");
+    await expect(page.getByText("Event RSVP")).toBeVisible();
+    await expect(page.getByText("RSVP'd", { exact: true })).toBeVisible();
+    await expect(page.getByText("Route-backed preview")).toBeVisible();
+
+    await page.getByRole("link", { name: "RSVP", exact: true }).click();
+    await expect(page).toHaveURL(/step=rsvp/);
+    await expect(page.getByRole("heading", { name: "You're RSVP'd!" })).toBeVisible();
+
+    await page.getByRole("link", { name: "Go to Check-In" }).click();
+    await expect(page).toHaveURL(/step=checkin/);
+    await expect(page.getByText("Preview event QR code")).toBeVisible();
+
+    await page.getByRole("link", { name: "Confirm Check-In" }).click();
+    await expect(page).toHaveURL(/step=points/);
+    await expect(page.getByRole("heading", { name: "Checked in!" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "View leaderboard impact" })).toHaveAttribute(
+      "href",
+      "/app/points",
+    );
+  });
+
   test("loads the leader command center with the preview actor", async ({
     context,
     page,
