@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm rollout:current-status [--owner-dir rollout-owner-packets] [--recipient-assignments owner-recipient-assignments.csv] [--csv-dir rollout-csv] [--packet production-rollout-packet.json] [--live-data-counts production-live-data-counts.txt] [--public-url https://www.mymedlife.org] [--out production-rollout-current-status.md]",
+  "  pnpm rollout:current-status [--owner-dir rollout-owner-packets] [--recipient-assignments owner-recipient-assignments.csv] [--owner-send-tracker owner-send-tracker.csv] [--csv-dir rollout-csv] [--packet production-rollout-packet.json] [--live-data-counts production-live-data-counts.txt] [--public-url https://www.mymedlife.org] [--out production-rollout-current-status.md]",
   "    [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
   "",
   "This is read-only. It reports the next missing artifact for the 30-chapter / 500-student invite gate.",
@@ -17,6 +17,7 @@ try {
   const paths = {
     ownerDirectoryName: args.ownerDir,
     recipientAssignmentsPath: args.recipientAssignments,
+    ownerSendTrackerPath: args.ownerSendTracker,
     csvDirectoryName: args.csvDir,
     packetPath: args.packet,
     liveDataCountsPath: args.liveDataCounts,
@@ -35,6 +36,9 @@ try {
       getProductionRolloutOwnerRecipientStatus,
     },
     {
+      getProductionRolloutOwnerFollowupReport,
+    },
+    {
       parseProductionRolloutOwnerRecipientAssignmentsCsv,
     },
     { buildProductionRolloutPacketFromCsvTables },
@@ -48,6 +52,7 @@ try {
     import("../src/services/production-rollout-owner-packet-status.ts"),
     import("../src/services/production-rollout-owner-packets.ts"),
     import("../src/services/production-rollout-owner-recipient-status.ts"),
+    import("../src/services/production-rollout-owner-followup-report.ts"),
     import("../src/services/production-rollout-owner-send-tracker.ts"),
     import("../src/services/production-rollout-packet-builder.ts"),
     import("../src/services/production-rollout-bootstrap.ts"),
@@ -96,6 +101,13 @@ try {
             ),
         })
       : null;
+  const ownerFollowupReport =
+    ownerPacketStatus && args.ownerSendTracker && (await fileExists(args.ownerSendTracker))
+      ? getProductionRolloutOwnerFollowupReport({
+          status: ownerPacketStatus,
+          trackerCsv: await readFile(resolve(args.ownerSendTracker), "utf8"),
+        })
+      : null;
   const { rolloutReadiness, rolloutPacketError } = rolloutPacketExists
     ? await readRolloutReadiness({
         packetPath: args.packet,
@@ -122,6 +134,7 @@ try {
     liveDataCountsExists,
     ownerPacketStatus,
     ownerRecipientStatus,
+    ownerFollowupReport,
     rolloutReadiness,
     liveDataReadiness,
     rolloutPacketError,
@@ -327,6 +340,11 @@ async function resolveGeneratedArtifactDefaults(args, rawArgs) {
         "production-rollout-owner-send-tracker",
         "owner-recipient-assignments.csv",
       );
+      const ownerSendTracker = join(
+        handoffDir,
+        "production-rollout-owner-send-tracker",
+        "owner-send-tracker.csv",
+      );
 
       resolved.ownerDir = ownerDir;
 
@@ -336,6 +354,14 @@ async function resolveGeneratedArtifactDefaults(args, rawArgs) {
         (await fileExists(recipientAssignments))
       ) {
         resolved.recipientAssignments = recipientAssignments;
+      }
+
+      if (
+        !resolved.ownerSendTracker &&
+        !hasArg(rawArgs, "--owner-send-tracker") &&
+        (await fileExists(ownerSendTracker))
+      ) {
+        resolved.ownerSendTracker = ownerSendTracker;
       }
     }
   }
@@ -394,6 +420,7 @@ function parseArgs(args) {
   return {
     ownerDir: getValue(args, "--owner-dir") ?? "rollout-owner-packets",
     recipientAssignments: getValue(args, "--recipient-assignments"),
+    ownerSendTracker: getValue(args, "--owner-send-tracker"),
     csvDir: getValue(args, "--csv-dir") ?? "rollout-csv",
     packet: getValue(args, "--packet") ?? "production-rollout-packet.json",
     liveDataCounts:
