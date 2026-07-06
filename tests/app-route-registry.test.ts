@@ -58,20 +58,20 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/admin/integrations/luma")).toBe(true);
     expect(isKnownAppRouteHref("/admin/integration-outbox")).toBe(true);
     expect(isKnownAppRouteHref("/admin/pilot-scope")).toBe(true);
-    expect(isKnownAppRouteHref("/rush-month/leaderboard")).toBe(false);
-    expect(isKnownAppRouteHref("/campaigns/rush-month")).toBe(false);
-    expect(isKnownAppRouteHref("/chapter?view=members")).toBe(false);
-    expect(isKnownAppRouteHref("/app/slt-prep")).toBe(false);
-    expect(isKnownAppRouteHref("/slt-prep")).toBe(false);
-    expect(isKnownAppRouteHref("/admin/phase-2")).toBe(false);
-    expect(isKnownAppRouteHref("/admin/sop-library")).toBe(false);
+    expect(isKnownAppRouteHref("/rush-month/leaderboard")).toBe(true);
+    expect(isKnownAppRouteHref("/campaigns/rush-month")).toBe(true);
+    expect(isKnownAppRouteHref("/chapter?view=members")).toBe(true);
+    expect(isKnownAppRouteHref("/app/slt-prep")).toBe(true);
+    expect(isKnownAppRouteHref("/slt-prep")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/phase-2")).toBe(true);
+    expect(isKnownAppRouteHref("/admin/sop-library")).toBe(true);
     expect(isKnownAppRouteHref("/unknown")).toBe(false);
   });
 
-  it("keeps non-launch module families out of the visible events-and-points route set", () => {
+  it("keeps non-gate module families known but outside the invite smoke target", () => {
     const routes = getAppRouteRegistry();
     const routeHrefs = routes.map((route) => route.href);
-    const blockedPrefixes = [
+    const nonGatePrefixes = [
       "/action-committees",
       "/campaigns",
       "/proof-library",
@@ -85,9 +85,13 @@ describe("app route registry", () => {
       "/admin/theme",
       "/admin/workflows",
     ];
+    const smokePaths = getRouteSmokeManifest(
+      getMockLocalActorContext("admin@mymedlife.test"),
+    ).routes.map((route) => route.path);
 
-    for (const blockedPrefix of blockedPrefixes) {
-      expect(routeHrefs.some((href) => href.startsWith(blockedPrefix))).toBe(false);
+    for (const nonGatePrefix of nonGatePrefixes) {
+      expect(routeHrefs.some((href) => href.startsWith(nonGatePrefix))).toBe(true);
+      expect(smokePaths.some((href) => href.startsWith(nonGatePrefix))).toBe(false);
     }
   });
 });

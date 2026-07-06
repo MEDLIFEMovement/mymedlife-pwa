@@ -35,7 +35,8 @@ describe("production invite gate", () => {
       key: "launch_lane_focus",
       label: "Events RSVP attendance points launch focus",
       passed: true,
-      detail: "15 launch routes visible; 12 non-launch route families parked",
+      detail:
+        "15 invite-gate routes visible; 12 visible non-gate route family/families marked outside invite scoring",
     });
     expect(readiness.nextSteps).toEqual([]);
     expect(formatProductionInviteGateReadiness(readiness)).toContain(

@@ -4,7 +4,7 @@ import type {
   ProductionBootstrapSignedInRouteProof,
   ProductionBootstrapStaffRole,
   ProductionRolloutBootstrapPacket,
-} from "@/services/production-rollout-bootstrap";
+} from "./production-rollout-bootstrap.ts";
 
 export type ProductionSignedInRouteProofCheck = {
   key: string;

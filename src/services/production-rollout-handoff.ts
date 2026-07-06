@@ -3,7 +3,7 @@ import {
   type ProductionBootstrapPilotEventProof,
   type ProductionRolloutBootstrapPacket,
   type ProductionRolloutBootstrapReadiness,
-} from "@/services/production-rollout-bootstrap";
+} from "./production-rollout-bootstrap.ts";
 
 export type ProductionRolloutHandoff = {
   ready: boolean;

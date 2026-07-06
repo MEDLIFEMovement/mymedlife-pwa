@@ -1,8 +1,3 @@
-import {
-  isEventsPointsLaunchLaneEnabled,
-  isEventsPointsLaunchLaneVisibleRouteHref,
-} from "./launch-lane-product-focus.ts";
-
 export type AppRouteRegistryItem = {
   href: string;
   label: string;
@@ -75,7 +70,6 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/admin/sop-builder/", label: "Admin SOP builder", routeType: "prefix" },
   { href: "/admin/database-security", label: "Admin database security", routeType: "exact" },
   { href: "/admin/system-health", label: "Admin system health", routeType: "exact" },
-  { href: "/admin/phase-2", label: "Admin phase 2 review", routeType: "exact" },
   { href: "/admin/environment-setup", label: "Admin environment setup", routeType: "exact" },
   { href: "/admin/auth-onboarding", label: "Admin auth onboarding", routeType: "exact" },
   { href: "/admin/security-gate", label: "Admin security gate", routeType: "exact" },
@@ -94,13 +88,7 @@ const appRouteRegistry: AppRouteRegistryItem[] = [
 ];
 
 export function getAppRouteRegistry(): AppRouteRegistryItem[] {
-  if (!isEventsPointsLaunchLaneEnabled()) {
-    return appRouteRegistry;
-  }
-
-  return appRouteRegistry.filter((route) =>
-    isEventsPointsLaunchLaneVisibleRouteHref(route.href),
-  );
+  return appRouteRegistry;
 }
 
 export function isKnownAppRouteHref(href: string): boolean {

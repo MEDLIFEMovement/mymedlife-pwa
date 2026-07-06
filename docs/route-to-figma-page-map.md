@@ -60,8 +60,8 @@ This map records the launch-critical routes and the Figma-derived shell/page tha
 | Audit Logs | `/admin/audit-log` | Audit posture | Audit route | Active |
 | Integration Outbox | `/admin/integration-outbox` | Integration safety | Outbox route | Active |
 | Visual console menu | `/admin` local screen state | Admin backend shell | `FigmaAdminPanel` primary menu | Active |
-| MCP Connections | none in primary menu | Disabled launch module | Disabled Modules group only | Disabled in launch mode |
+| MCP Connections | none in primary menu | Non-gate module | Disabled/read-only modules group only | May remain visible if clearly parked or blocked |
 
 ## Launch Mode Boundary
 
-The active launch lane remains Events, RSVP, attendance, points, leaderboards, simple staff summaries, users/chapters/admin visibility, and Luma status. Unfinished broader modules should stay disabled, gated, or visibly marked until explicitly reopened.
+The active invite gate remains Events, RSVP, attendance, points, leaderboards, simple staff summaries, users/chapters/admin visibility, and Luma status. Unfinished broader modules may remain visible, but they must be disabled, gated, read-only, explicitly blocked, or visibly marked as outside invite-gate scoring until their own launch slice is approved.

@@ -22,7 +22,7 @@ The app is intentionally narrowed to:
 - Luma status and outbox safety review
 - events, RSVP, attendance/check-in, points, and leaderboards
 
-Non-launch modules remain hidden, disabled, or clearly marked as blocked.
+Non-launch modules may remain visible, but they must be clearly marked as parked, disabled, read-only, explicitly blocked, or outside the invite gate. Mere visibility does not make a module part of the 30-chapter launch decision.
 
 ## Wiring Summary
 
@@ -33,7 +33,7 @@ Non-launch modules remain hidden, disabled, or clearly marked as blocked.
 | Student leader | `/leader?view=*` renders the copied Figma command center with route-backed menu items. Leaderboard and event views render real matching screens. | Event create is staged/blocked until write approval. |
 | Staff | `/staff?view=*` renders the copied Figma staff shell with real menu links, chapter table filters, event operations, and organization leaderboard. | Filters/readbacks are local/mock-safe. |
 | Admin | `/admin` renders the copied admin backend shell. Route-level Users, Chapters, Access, Luma, Audit Log, Integration Outbox, Launch Gate, and Pilot Scope are registered for smoke review. | Admin routes stay role-guarded. Secret and integration writes remain blocked. |
-| SLT Prep | `/app/slt-prep` can remain as a direct staged traveler route, but it is removed from the visible 30-chapter launch route registry and smoke contract. | Parked until a later traveler-readiness rollout. |
+| SLT Prep | `/app/slt-prep` can remain visible as a direct staged traveler route, but it is outside the 30-chapter invite-gate smoke contract. | Parked until a later traveler-readiness rollout; visibility alone is not an invite blocker. |
 
 ## Visible Admin Smoke Gap Fixed
 
