@@ -61,6 +61,8 @@ const blockedProductionProofSourceMarkers = [
   "local preview",
   "local sandbox",
   "sandbox review",
+  "sandbox role exercise",
+  "figma-sandbox-role-exercise",
   "figma",
   "figma_seed",
   "test data",
