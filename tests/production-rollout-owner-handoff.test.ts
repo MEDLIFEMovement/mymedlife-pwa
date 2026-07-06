@@ -45,6 +45,9 @@ describe("production rollout owner handoff", () => {
     expect(filePaths).toContain(
       "production-rollout-owner-send-tracker/owner-send-tracker.csv",
     );
+    expect(filePaths).toContain(
+      "production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+    );
     expect(index).toContain("myMEDLIFE 30-Chapter Owner Handoff Kit: NOT READY");
     expect(index).toContain("owner progress: 0/7 owners ready");
     expect(index).toContain(
@@ -54,10 +57,14 @@ describe("production rollout owner handoff", () => {
       "production-rollout-owner-send-tracker/: manual send/return tracker",
     );
     expect(index).toContain(
+      "Fill `production-rollout-owner-send-tracker/owner-recipient-assignments.csv`",
+    );
+    expect(index).toContain(
       "pnpm rollout:owner-handoff --out production-rollout-owner-handoff",
     );
     expect(index).toContain("pnpm rollout:owner-email-drafts");
     expect(index).toContain("pnpm rollout:owner-send-tracker");
+    expect(index).toContain("--recipient-assignments");
     expect(index).toContain("pnpm rollout:owner-followup");
     expect(index).toContain("It does not create users, write Supabase rows");
     expect(status).toContain("myMEDLIFE owner packet status: NOT READY");

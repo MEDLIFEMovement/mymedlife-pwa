@@ -5,6 +5,7 @@ import {
 } from "@/services/production-rollout-owner-packet-status";
 import {
   getProductionRolloutOwnerSendTrackerFiles,
+  parseProductionRolloutOwnerRecipientAssignmentsCsv,
 } from "@/services/production-rollout-owner-send-tracker";
 
 describe("production rollout owner send tracker", () => {
@@ -22,13 +23,16 @@ describe("production rollout owner send tracker", () => {
     const files = getProductionRolloutOwnerSendTrackerFiles(status);
     const readme = getFile(files, "README.md");
     const csv = getFile(files, "owner-send-tracker.csv");
+    const recipientAssignments = getFile(files, "owner-recipient-assignments.csv");
 
     expect(files.map((file) => file.path)).toEqual([
       "README.md",
       "owner-send-tracker.csv",
+      "owner-recipient-assignments.csv",
     ]);
     expect(readme).toContain("myMEDLIFE owner send tracker: NOT READY");
     expect(readme).toContain("Owner progress: 0/7 owners ready");
+    expect(readme).toContain("--recipient-assignments owner-recipient-assignments.csv");
     expect(readme).toContain("drafted");
     expect(csv).toContain(
       "ownerSlug,owner,ready,blockerCount,emailDraftPath,requestDocPath,ownerFolderPath,recipientEmail,ccEmails,sendStatus,sentAt,returnedAt,validatedAt,nextAction,notes",
@@ -39,6 +43,10 @@ describe("production rollout owner send tracker", () => {
     expect(csv).toContain(
       "\"Send the owner request, collect completed CSVs, then rerun owner status.\"",
     );
+    expect(recipientAssignments).toContain(
+      "ownerSlug,owner,recipientEmail,ccEmails,notes",
+    );
+    expect(recipientAssignments).toContain("ds-launch-owner,DS / launch owner,,,");
     expect(csv).not.toContain("member.001@medlifemovement.org");
     expect(csv).not.toContain("API_KEY=");
   });
@@ -76,6 +84,61 @@ describe("production rollout owner send tracker", () => {
     expect(csv).toContain(
       "Confirm this owner folder stays validated before packet assembly.",
     );
+  });
+
+  it("prefills recipient columns from assignment CSV without changing send status", () => {
+    const status = getProductionRolloutOwnerPacketStatus({
+      foundFiles: createOwnerFilesWithRows({}),
+      sourceDirectoryName: "rollout-owner-packets",
+      outputDirectoryName: "rollout-csv",
+      options: {
+        minimumChapterCount: 2,
+        minimumStudentMembershipCount: 3,
+        minimumPilotChapterCount: 1,
+      },
+    });
+    const recipientAssignments = parseProductionRolloutOwnerRecipientAssignmentsCsv(
+      [
+        "ownerSlug,owner,recipientEmail,ccEmails,notes",
+        "ds-launch-owner,DS / launch owner,ds@example.org,\"nick@example.org; kiomi@example.org\",Confirmed owner",
+      ].join("\n"),
+    );
+    const csv = getFile(
+      getProductionRolloutOwnerSendTrackerFiles(status, {
+        recipientAssignments,
+      }),
+      "owner-send-tracker.csv",
+    );
+
+    expect(csv).toContain(
+      "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md,rollout-owner-packets/ds-launch-owner,ds@example.org,nick@example.org; kiomi@example.org,drafted,,,,",
+    );
+    expect(csv).toContain("Confirmed owner");
+  });
+
+  it("rejects recipient assignments for unknown owner slugs", () => {
+    const status = getProductionRolloutOwnerPacketStatus({
+      foundFiles: createOwnerFilesWithRows({}),
+      sourceDirectoryName: "rollout-owner-packets",
+      outputDirectoryName: "rollout-csv",
+      options: {
+        minimumChapterCount: 2,
+        minimumStudentMembershipCount: 3,
+        minimumPilotChapterCount: 1,
+      },
+    });
+    const recipientAssignments = parseProductionRolloutOwnerRecipientAssignmentsCsv(
+      [
+        "ownerSlug,owner,recipientEmail,ccEmails,notes",
+        "unknown-owner,Unknown owner,owner@example.org,,",
+      ].join("\n"),
+    );
+
+    expect(() =>
+      getProductionRolloutOwnerSendTrackerFiles(status, {
+        recipientAssignments,
+      }),
+    ).toThrow("unknown ownerSlug unknown-owner");
   });
 });
 

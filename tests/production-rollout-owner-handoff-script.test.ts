@@ -42,6 +42,15 @@ describe("production rollout owner handoff script", () => {
       ),
     ).toBe(true);
     expect(
+      existsSync(
+        join(
+          outDir,
+          "production-rollout-owner-send-tracker",
+          "owner-recipient-assignments.csv",
+        ),
+      ),
+    ).toBe(true);
+    expect(
       readFileSync(
         join(outDir, "production-rollout-owner-email-drafts", "ds-launch-owner.md"),
         "utf8",
