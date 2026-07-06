@@ -59,6 +59,9 @@ describe("production rollout current status", () => {
     expect(status.nextCommands).toContain(
       "pnpm rollout:owner-requests --owner-dir rollout-owner-packets --out production-rollout-owner-requests",
     );
+    expect(status.nextCommands).toContain(
+      "pnpm rollout:owner-email-drafts --owner-dir rollout-owner-packets --out production-rollout-owner-email-drafts",
+    );
   });
 
   it("points to CSV assembly after owner packets are ready", () => {

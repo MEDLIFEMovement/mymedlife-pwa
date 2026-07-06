@@ -234,6 +234,7 @@ function getNextCommands(
     return [
       `pnpm rollout:owner-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-packet-status.md`,
       `pnpm rollout:owner-requests --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-requests`,
+      `pnpm rollout:owner-email-drafts --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-email-drafts`,
       "Ask each owner to fix the blockers in their folder.",
       `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-current-status.md`,
     ];

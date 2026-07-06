@@ -27,6 +27,9 @@ describe("production rollout workbook", () => {
       "pnpm rollout:owner-requests --owner-dir rollout-owner-packets --out production-rollout-owner-requests",
     );
     expect(workbook).toContain(
+      "pnpm rollout:owner-email-drafts --owner-dir rollout-owner-packets --out production-rollout-owner-email-drafts",
+    );
+    expect(workbook).toContain(
       "pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out rollout-csv",
     );
     expect(workbook).toContain(

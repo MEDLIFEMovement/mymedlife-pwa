@@ -11,6 +11,9 @@ import {
 import {
   getProductionRolloutOwnerRequestFiles,
 } from "./production-rollout-owner-requests.ts";
+import {
+  getProductionRolloutOwnerEmailDraftFiles,
+} from "./production-rollout-owner-email-drafts.ts";
 import type {
   ProductionRolloutOwnerPacketFoundFile,
 } from "./production-rollout-owner-packet-assembly.ts";
@@ -19,6 +22,7 @@ export type ProductionRolloutOwnerHandoffOptions = {
   outputDirectoryName?: string;
   ownerDirectoryName?: string;
   requestDirectoryName?: string;
+  emailDraftDirectoryName?: string;
   statusFilename?: string;
   statusOptions?: ProductionRolloutOwnerPacketStatusOptions;
 };
@@ -38,6 +42,7 @@ export function getProductionRolloutOwnerHandoff({
   outputDirectoryName = "production-rollout-owner-handoff",
   ownerDirectoryName = "rollout-owner-packets",
   requestDirectoryName = "production-rollout-owner-requests",
+  emailDraftDirectoryName = "production-rollout-owner-email-drafts",
   statusFilename = "production-rollout-owner-packet-status.md",
   statusOptions = {},
 }: ProductionRolloutOwnerHandoffOptions = {}): ProductionRolloutOwnerHandoff {
@@ -56,6 +61,12 @@ export function getProductionRolloutOwnerHandoff({
       content: file.content,
     }),
   );
+  const emailDraftFiles = getProductionRolloutOwnerEmailDraftFiles(status, {
+    requestDirectoryName,
+  }).map((file) => ({
+    path: `${emailDraftDirectoryName}/${file.path}`,
+    content: file.content,
+  }));
   const files = [
     {
       path: "README.md",
@@ -63,6 +74,7 @@ export function getProductionRolloutOwnerHandoff({
         outputDirectoryName,
         ownerDirectoryName,
         requestDirectoryName,
+        emailDraftDirectoryName,
         statusFilename,
         status,
       }),
@@ -73,6 +85,7 @@ export function getProductionRolloutOwnerHandoff({
       content: formatProductionRolloutOwnerPacketStatusReport(status),
     },
     ...requestFiles,
+    ...emailDraftFiles,
   ];
 
   return {
@@ -86,12 +99,14 @@ function formatProductionRolloutOwnerHandoffIndex({
   outputDirectoryName,
   ownerDirectoryName,
   requestDirectoryName,
+  emailDraftDirectoryName,
   statusFilename,
   status,
 }: {
   outputDirectoryName: string;
   ownerDirectoryName: string;
   requestDirectoryName: string;
+  emailDraftDirectoryName: string;
   statusFilename: string;
   status: ProductionRolloutOwnerPacketStatus;
 }) {
@@ -112,6 +127,7 @@ function formatProductionRolloutOwnerHandoffIndex({
     "",
     `- ${ownerDirectoryName}/: owner-specific README files and blank CSV templates to fill`,
     `- ${requestDirectoryName}/: owner-by-owner request docs generated from current blockers`,
+    `- ${emailDraftDirectoryName}/: copy/paste email drafts for the owner request handoff`,
     `- ${statusFilename}: count and structure status report`,
     "- README.md: this top-level guide",
     "",
@@ -124,16 +140,18 @@ function formatProductionRolloutOwnerHandoffIndex({
     "## Send Order",
     "",
     "1. Send each owner their matching folder under `rollout-owner-packets/`.",
-    "2. Send each owner their matching Markdown request under `production-rollout-owner-requests/`.",
-    "3. Ask each owner to return only their completed CSV files.",
-    "4. Rebuild this status before assembling the shared rollout CSV folder.",
-    "5. Do not invite students until the final invite gate passes.",
+    "2. Use each owner's matching email draft under `production-rollout-owner-email-drafts/`.",
+    "3. Include each owner's matching Markdown request under `production-rollout-owner-requests/`.",
+    "4. Ask each owner to return only their completed CSV files.",
+    "5. Rebuild this status before assembling the shared rollout CSV folder.",
+    "6. Do not invite students until the final invite gate passes.",
     "",
     "## Commands After Owners Return Data",
     "",
     "```bash",
     `pnpm rollout:owner-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${statusFilename}`,
     `pnpm rollout:owner-requests --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${requestDirectoryName}`,
+    `pnpm rollout:owner-email-drafts --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${emailDraftDirectoryName} --request-dir ${requestDirectoryName}`,
     `pnpm rollout:current-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out production-rollout-current-status.md`,
     `pnpm rollout:assemble-owner-packets --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out rollout-csv`,
     "pnpm rollout:check-csv --dir rollout-csv",
