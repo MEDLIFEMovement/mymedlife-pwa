@@ -46,6 +46,7 @@
     "rollout:approval-summary": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-approval-summary.mjs",
     "rollout:preflight": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-preflight.mjs",
     "rollout:rehearsal": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-rehearsal.mjs",
+    "figma-seed:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-figma-test-seed-artifacts.mjs",
     "test-production:build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/build-test-production-seed-environment.mjs",
     "test-production:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-test-production-seed-environment.mjs",
     "test-production:seed": "MYMEDLIFE_TEST_PRODUCTION_MODE=seed node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/apply-test-production-seed-environment.mjs",

@@ -190,6 +190,28 @@ describe("production rollout packet builder", () => {
     );
   });
 
+  it("rejects Test-prefixed visible labels before rollout evidence is assembled", () => {
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          chapters: "id,name,campus\nchapter-ucla,Test UCLA,UCLA",
+        }),
+      ),
+    ).toThrow(
+      "chapters CSV row 2 column name contains Test/Figma sandbox data (packet starts with Test); replace it with approved production rollout data.",
+    );
+
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          users: "email,displayName\nleader@medlifemovement.org,Test Chapter Leader",
+        }),
+      ),
+    ).toThrow(
+      "users CSV row 2 column displayName contains Test/Figma sandbox data (packet starts with Test); replace it with approved production rollout data.",
+    );
+  });
+
   it("rejects invalid role and status values before a packet is written", () => {
     expect(() =>
       buildProductionRolloutPacketFromCsvTables({

@@ -89,12 +89,18 @@ describe("production rollout bootstrap readiness", () => {
   it("blocks direct JSON packets that contain Figma sandbox seed markers", () => {
     const packet = createCompletePacket(30) as ProductionRolloutBootstrapPacket & {
       seed_family?: string;
+      source?: string;
+      environment?: string;
+      is_test?: boolean;
     };
-    packet.seed_family = "figma_seed_v1";
     packet.chapters[0] = {
       ...packet.chapters[0]!,
       name: "Test UCLA MEDLIFE",
     };
+    packet.seed_family = "figma_seed_v1";
+    packet.source = "figma_seed";
+    packet.environment = "sandbox";
+    packet.is_test = true;
 
     const readiness = getProductionRolloutBootstrapReadiness(packet);
 

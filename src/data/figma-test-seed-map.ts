@@ -1,3 +1,10 @@
+import {
+  getTestProductionSeedEnvironment,
+  getTestProductionVisibleLabels,
+  type TestLogin,
+  type TestProductionSeedEnvironment,
+} from "../services/test-production-seed-environment.ts";
+
 export const FIGMA_TEST_SEED_FAMILY = "figma_seed_v1";
 export const FIGMA_TEST_SEED_SOURCE = "figma_seed";
 export const FIGMA_TEST_SEED_ENVIRONMENT = "sandbox";
@@ -40,6 +47,50 @@ export type FigmaTestSeedRecord = {
   supportsShells: FigmaSeedShell[];
   markers: FigmaTestSeedMarkers;
   notes: string;
+};
+
+export type FigmaTestSeedShellKey =
+  | "member_app"
+  | "leader_command_center"
+  | "staff_command_center"
+  | "admin_backend"
+  | "slt_prep";
+
+export type FigmaTestSeedLogin = TestLogin & {
+  seedFamily: typeof FIGMA_TEST_SEED_FAMILY;
+  source: typeof FIGMA_TEST_SEED_SOURCE;
+  environment: typeof FIGMA_TEST_SEED_ENVIRONMENT;
+  isTest: true;
+};
+
+export type FigmaTestSeedShellRecord = {
+  shell: FigmaTestSeedShellKey;
+  label: string;
+  primaryRoute: string;
+  supportedRoles: string[];
+  logins: FigmaTestSeedLogin[];
+  notes: string;
+  excludedFromProductionEvidence: true;
+  exclusionReason: string;
+};
+
+export type FigmaTestSeedManifest = {
+  generatedAt: string;
+  seedFamily: typeof FIGMA_TEST_SEED_FAMILY;
+  source: typeof FIGMA_TEST_SEED_SOURCE;
+  environment: typeof FIGMA_TEST_SEED_ENVIRONMENT;
+  isTest: true;
+  sharedPassword: string;
+  shells: FigmaTestSeedShellRecord[];
+};
+
+export type FigmaTestSeedValidation = {
+  ready: boolean;
+  checks: Array<{
+    key: string;
+    passed: boolean;
+    message: string;
+  }>;
 };
 
 export const figmaTestSeedMarkers: FigmaTestSeedMarkers = {
@@ -223,6 +274,17 @@ export const figmaTestSeedRecords: FigmaTestSeedRecord[] = [
   },
 ];
 
+const requiredFigmaShells: FigmaSeedShell[] = [
+  "/app",
+  "/app/events",
+  "/campaigns",
+  "/proof-library",
+  "/app/slt-prep",
+  "/leader",
+  "/staff",
+  "/admin",
+];
+
 const figmaSeedMarkerStrings = new Set([
   FIGMA_TEST_SEED_SOURCE,
   FIGMA_TEST_SEED_FAMILY,
@@ -230,11 +292,83 @@ const figmaSeedMarkerStrings = new Set([
   "test_production_v1",
 ]);
 
+const shellDefinitions: Record<
+  FigmaTestSeedShellKey,
+  Omit<FigmaTestSeedShellRecord, "logins" | "excludedFromProductionEvidence" | "exclusionReason">
+> = {
+  member_app: {
+    shell: "member_app",
+    label: "Member app",
+    primaryRoute: "/app",
+    supportedRoles: ["general_member"],
+    notes: "Use a signed-in Test member to review the Figma member shell, events, and points routes.",
+  },
+  leader_command_center: {
+    shell: "leader_command_center",
+    label: "Leader command center",
+    primaryRoute: "/leader?view=overview",
+    supportedRoles: ["president_vp", "action_committee_chair"],
+    notes: "Use a signed-in Test chapter leader to review overview, committees, events, and stories.",
+  },
+  staff_command_center: {
+    shell: "staff_command_center",
+    label: "Staff command center",
+    primaryRoute: "/staff?view=chapters",
+    supportedRoles: ["coach", "admin"],
+    notes: "Use coach or admin Test staff accounts for portfolio, event operations, and read-only support views.",
+  },
+  admin_backend: {
+    shell: "admin_backend",
+    label: "Admin backend",
+    primaryRoute: "/admin",
+    supportedRoles: ["ds_admin", "super_admin"],
+    notes: "Use DS Admin or Super Admin Test accounts for audit, outbox, users, chapters, and launch controls.",
+  },
+  slt_prep: {
+    shell: "slt_prep",
+    label: "SLT Prep",
+    primaryRoute: "/app/slt-prep",
+    supportedRoles: ["general_member"],
+    notes: "This visible shell rides on the member sign-in path today; it remains sandbox-only and outside rollout proof.",
+  },
+};
+
+const shellRoleMap: Record<FigmaTestSeedShellKey, string[]> = {
+  member_app: ["general_member"],
+  leader_command_center: ["president_vp", "action_committee_chair"],
+  staff_command_center: ["coach", "admin"],
+  admin_backend: ["ds_admin", "super_admin"],
+  slt_prep: ["general_member"],
+};
+
 export function getFigmaTestSeedRecordsByShell(shell: FigmaSeedShell) {
   return figmaTestSeedRecords.filter((record) => record.supportsShells.includes(shell));
 }
 
-export function getFigmaTestSeedValidation() {
+export function buildFigmaTestSeedManifest(
+  environment = getTestProductionSeedEnvironment(),
+): FigmaTestSeedManifest {
+  return {
+    generatedAt: environment.generatedAt,
+    seedFamily: FIGMA_TEST_SEED_FAMILY,
+    source: FIGMA_TEST_SEED_SOURCE,
+    environment: FIGMA_TEST_SEED_ENVIRONMENT,
+    isTest: true,
+    sharedPassword: environment.password,
+    shells: (Object.keys(shellDefinitions) as FigmaTestSeedShellKey[]).map((shell) => ({
+      ...shellDefinitions[shell],
+      logins: getShellLogins(environment, shell),
+      excludedFromProductionEvidence: true,
+      exclusionReason: getFigmaTestSeedExclusionMessage(),
+    })),
+  };
+}
+
+export function getFigmaTestSeedValidation(
+  environment = getTestProductionSeedEnvironment(),
+): FigmaTestSeedValidation {
+  const manifest = buildFigmaTestSeedManifest(environment);
+  const visibleLabels = getTestProductionVisibleLabels(environment);
   const checks = [
     {
       key: "all_records_have_exact_markers",
@@ -266,12 +400,104 @@ export function getFigmaTestSeedValidation() {
         .every((record) => record.disposition === "fixture_only"),
       message: "Story, secret-placeholder, and SLT fixture rows are not marked for seeding.",
     },
+    {
+      key: "manifest_markers",
+      passed:
+        manifest.seedFamily === FIGMA_TEST_SEED_FAMILY &&
+        manifest.source === FIGMA_TEST_SEED_SOURCE &&
+        manifest.environment === FIGMA_TEST_SEED_ENVIRONMENT &&
+        manifest.isTest,
+      message: "Manifest carries figma_seed_v1, figma_seed, sandbox, and isTest markers.",
+    },
+    {
+      key: "manifest_shell_coverage",
+      passed: manifest.shells.length === 5,
+      message: "Manifest covers /app, /leader, /staff, /admin, and /app/slt-prep.",
+    },
+    {
+      key: "visible_test_prefix",
+      passed: visibleLabels.every((label) => label.startsWith("Test")),
+      message: "Every visible seeded label remains Test-prefixed.",
+    },
+    {
+      key: "login_test_prefix",
+      passed: manifest.shells.every((shell) =>
+        shell.logins.every(
+          (login) =>
+            login.displayName.startsWith("Test") &&
+            (login.chapterName === null || login.chapterName.startsWith("Test")),
+        ),
+      ),
+      message: "Every shell login preserves Test-prefixed names and chapters.",
+    },
+    {
+      key: "login_email_scope",
+      passed: manifest.shells.every((shell) =>
+        shell.logins.every(
+          (login) => login.email.startsWith("test.") && login.email.endsWith("@example.com"),
+        ),
+      ),
+      message: "Every shell login uses a fake test.*@example.com email.",
+    },
+    {
+      key: "production_exclusion",
+      passed: manifest.shells.every(
+        (shell) =>
+          shell.excludedFromProductionEvidence &&
+          shell.exclusionReason.includes("must stay out of production rollout evidence"),
+      ),
+      message: "Every shell record is explicitly marked as excluded from production rollout evidence.",
+    },
   ];
 
   return {
     ready: checks.every((check) => check.passed),
     checks,
   };
+}
+
+export function formatFigmaTestSeedLoginsMarkdown(
+  manifest = buildFigmaTestSeedManifest(),
+): string {
+  const lines = [
+    "# myMEDLIFE Figma Test Logins",
+    "",
+    `Seed family: \`${manifest.seedFamily}\``,
+    `Source: \`${manifest.source}\``,
+    `Environment: \`${manifest.environment}\``,
+    "",
+    "All accounts are sandbox-only Test data and must stay out of production rollout evidence.",
+    "",
+  ];
+
+  for (const shell of manifest.shells) {
+    lines.push(`## ${shell.label}`);
+    lines.push("");
+    lines.push(`- Primary route: \`${shell.primaryRoute}\``);
+    lines.push(`- Supported roles: ${shell.supportedRoles.map((role) => `\`${role}\``).join(", ")}`);
+    lines.push(`- Notes: ${shell.notes}`);
+    lines.push(`- Evidence posture: ${shell.exclusionReason}`);
+    lines.push("");
+    lines.push("| Display name | Email | Password | Role | Chapter | Demonstrates |");
+    lines.push("|---|---|---|---|---|---|");
+    for (const login of shell.logins) {
+      lines.push(
+        `| ${[
+          login.displayName,
+          login.email,
+          login.password,
+          login.role,
+          login.chapterName ?? "Test staff",
+          login.demonstrates,
+        ]
+          .map(escapeCell)
+          .join(" | ")} |`,
+      );
+    }
+    lines.push("");
+  }
+
+  return lines.join("\n");
 }
 
 export function getFigmaOrTestSeedEvidenceReason(value: unknown): string | null {
@@ -361,14 +587,27 @@ function getStringEvidenceReason(value: string, path: string): string | null {
   return null;
 }
 
-const requiredFigmaShells: FigmaSeedShell[] = [
-  "/app",
-  "/app/events",
-  "/campaigns",
-  "/proof-library",
-  "/app/slt-prep",
-  "/leader",
-  "/staff",
-  "/admin",
-];
+function getFigmaTestSeedExclusionMessage() {
+  return "Sandbox-only figma_seed_v1/Test data must stay out of production rollout evidence.";
+}
 
+function getShellLogins(
+  environment: TestProductionSeedEnvironment,
+  shell: FigmaTestSeedShellKey,
+): FigmaTestSeedLogin[] {
+  const roles = new Set(shellRoleMap[shell]);
+  return environment.logins
+    .filter((login) => roles.has(login.role))
+    .slice(0, shell === "staff_command_center" || shell === "admin_backend" ? 2 : 1)
+    .map((login) => ({
+      ...login,
+      seedFamily: FIGMA_TEST_SEED_FAMILY,
+      source: FIGMA_TEST_SEED_SOURCE,
+      environment: FIGMA_TEST_SEED_ENVIRONMENT,
+      isTest: true,
+    }));
+}
+
+function escapeCell(value: string) {
+  return value.replaceAll("|", "\\|");
+}
