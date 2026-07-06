@@ -2629,6 +2629,13 @@ function AuditLogsPage() {
 
   return (
     <div className="p-6 space-y-4">
+      <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+        <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+        <p className="text-[12px] text-amber-300/80 leading-relaxed">
+          This audit log is preview-only. Review seeded admin and system readback here, then use the audited evidence surfaces for live production proof or incident review.
+        </p>
+      </div>
+
       <div className="flex items-center gap-3">
         <div className="relative">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />

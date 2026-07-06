@@ -132,6 +132,17 @@ describe("Figma missing route placeholders", () => {
     expect(source).toContain("Use the audited admin workflow after approval for real environment or alert changes.");
   });
 
+  it("keeps audit logs visible without treating the panel as live production evidence", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const auditHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="audit" />);
+
+    expect(auditHtml).toContain("This audit log is preview-only.");
+    expect(auditHtml).toContain("use the audited evidence surfaces for live production proof or incident review");
+    expect(source).toContain("Review seeded admin and system readback here");
+  });
+
   it("keeps admin users and chapters detail surfaces visible without implying live mutation paths", async () => {
     const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
     const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
