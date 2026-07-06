@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
+import { ChapterDetailDrawer } from "@/components/figma-staff-command-center";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/staff",
@@ -251,6 +252,56 @@ describe("staff page", () => {
     expect(html).toContain("This Staff Command Center keeps the Admin handoff visible");
     expect(html).toContain("Current posture");
     expect(html).not.toContain("Enter Admin Panel");
+  });
+
+  it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
+    const html = renderToStaticMarkup(
+      <ChapterDetailDrawer
+        chapter={{
+          id: "chapter-test",
+          name: "Boston College",
+          school: "Boston College",
+          country: "USA",
+          region: "North America",
+          medlifeRegion: "New England",
+          coach: "Maria Santos",
+          leaders: ["Ivy Ramos"],
+          activeMembers: 32,
+          campaign: "Rush Month",
+          campaignStatus: "on-track",
+          leads: 48,
+          rsvps: 30,
+          attendance: 24,
+          followUps: 18,
+          assignments: 12,
+          evidencePending: 2,
+          evidenceApproved: 9,
+          pointsWeek: 620,
+          hubspotLifecycle: "MQL",
+          hubspotTasks: 3,
+          lumaEvents: 2,
+          lastActivity: "2h ago",
+          risk: "healthy",
+          decision: "Advance",
+          healthScore: 84,
+          newMembers: 6,
+          feedViews: 180,
+          chapterType: "established",
+          eventsThisYear: 9,
+          eventsThisMonth: 2,
+          leadAttendancePct: 50,
+          avgNpsScore: 62,
+          totalPointsYear: 7800,
+        }}
+        onClose={() => {}}
+      />,
+    );
+
+    expect(html).toContain("Preview Survey");
+    expect(html).toContain("Preview NPS Survey");
+    expect(html).toContain("Survey sending stays blocked in this preview");
+    expect(html).toContain("Survey sending is blocked in this preview");
+    expect(html).not.toContain(">Send NPS Survey<");
   });
 
   it("allows super admin to open the embedded staff admin path without parking it away", async () => {
