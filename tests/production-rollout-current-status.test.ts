@@ -1,0 +1,144 @@
+import { describe, expect, it } from "vitest";
+import {
+  formatProductionRolloutCurrentStatus,
+  getProductionRolloutCurrentStatus,
+  type ProductionRolloutCurrentStatusPaths,
+} from "@/services/production-rollout-current-status";
+import type {
+  ProductionRolloutOwnerPacketStatus,
+} from "@/services/production-rollout-owner-packet-status";
+
+const paths: ProductionRolloutCurrentStatusPaths = {
+  ownerDirectoryName: "rollout-owner-packets",
+  csvDirectoryName: "rollout-csv",
+  packetPath: "production-rollout-packet.json",
+  liveDataCountsPath: "production-live-data-counts.txt",
+  publicUrl: "https://www.mymedlife.org",
+};
+
+describe("production rollout current status", () => {
+  it("starts with the owner-packet handoff when no rollout artifacts exist", () => {
+    const status = getProductionRolloutCurrentStatus({
+      paths,
+      ownerDirectoryExists: false,
+      csvDirectoryExists: false,
+      rolloutPacketExists: false,
+      liveDataCountsExists: false,
+    });
+    const report = formatProductionRolloutCurrentStatus(status, paths);
+
+    expect(status.readyForFinalInviteGateReview).toBe(false);
+    expect(status.currentBlocker).toContain("Owner packet folder");
+    expect(status.nextCommands).toContain(
+      "pnpm rollout:owner-handoff --out production-rollout-owner-handoff",
+    );
+    expect(report).toContain("30-chapter rollout current status: NOT READY");
+    expect(report).toContain("owner packet folder: MISSING");
+    expect(report).toContain("This is not a production write");
+  });
+
+  it("points to owner requests when the owner folder exists but owner data is incomplete", () => {
+    const status = getProductionRolloutCurrentStatus({
+      paths,
+      ownerDirectoryExists: true,
+      csvDirectoryExists: false,
+      rolloutPacketExists: false,
+      liveDataCountsExists: false,
+      ownerPacketStatus: createOwnerStatus(false),
+    });
+
+    expect(status.currentBlocker).toContain("1/7 owners ready");
+    expect(status.nextCommands).toContain(
+      "pnpm rollout:owner-requests --owner-dir rollout-owner-packets --out production-rollout-owner-requests",
+    );
+  });
+
+  it("points to the final invite gate only after all local artifacts are ready", () => {
+    const status = getProductionRolloutCurrentStatus({
+      paths,
+      ownerDirectoryExists: true,
+      csvDirectoryExists: true,
+      rolloutPacketExists: true,
+      liveDataCountsExists: true,
+      ownerPacketStatus: createOwnerStatus(true),
+      rolloutReadiness: {
+        ready: true,
+        counts: {
+          activeChapters: 30,
+          users: 505,
+          approvedMemberships: 500,
+          activeStaffRoles: 3,
+          approvedStudentMemberships: 500,
+          activeCoachAssignments: 30,
+          activeCampaigns: 30,
+          linkedLumaCalendars: 30,
+          readyPilotEventProofChapters: 5,
+          activeLaunchOwners: 3,
+          memberWorkspaceUsers: 450,
+          leaderWorkspaceUsers: 50,
+          staffWorkspaceUsers: 2,
+          adminWorkspaceUsers: 1,
+          chaptersWithMemberWorkspaceAccess: 30,
+          chaptersWithLeaderWorkspaceAccess: 30,
+        },
+        blockers: [],
+        warnings: [],
+        nextSteps: [],
+      },
+      liveDataReadiness: {
+        ready: true,
+        minimumChapterCount: 30,
+        minimumApprovedMembershipCount: 500,
+        minimumPilotEventCount: 5,
+        counts: {
+          "auth.users": 505,
+          "app.profiles": 505,
+          "app.chapters.active": 30,
+          "app.memberships.approved": 500,
+          "app.staff_role_assignments.active": 3,
+          "app.coach_chapter_assignments.active": 30,
+          "app.campaigns.active": 30,
+          "app.chapter_events": 5,
+          "app.luma_event_links": 5,
+          "app.assignments": 5,
+          "app.points_events": 5,
+          "app.audit_logs": 5,
+        },
+        blockers: [],
+        warnings: [],
+        nextSteps: [],
+      },
+    });
+
+    expect(status.readyForFinalInviteGateReview).toBe(true);
+    expect(status.nextCommands[0]).toContain("pnpm production:invite-gate");
+  });
+});
+
+function createOwnerStatus(
+  readyForPacketBuild: boolean,
+): ProductionRolloutOwnerPacketStatus {
+  return {
+    readyForAssembly: readyForPacketBuild,
+    readyForPacketBuild,
+    sourceDirectoryName: "rollout-owner-packets",
+    outputDirectoryName: "rollout-csv",
+    ownerCount: 7,
+    readyOwnerCount: readyForPacketBuild ? 7 : 1,
+    owners: [],
+    assembly: {
+      ready: readyForPacketBuild,
+      sourceDirectoryName: "rollout-owner-packets",
+      outputDirectoryName: "rollout-csv",
+      files: [],
+      missingFiles: [],
+      duplicateFiles: [],
+      unexpectedFiles: [],
+      headerErrors: [],
+      nextCommands: [],
+      safetyRules: [],
+    },
+    nextCommands: [],
+    safetyRules: [],
+  };
+}
