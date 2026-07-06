@@ -167,6 +167,8 @@ export function formatProductionRolloutOwnerPacketIndex(
     `pnpm rollout:owner-recipients --owner-dir ${outputDirectoryName} --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md`,
     `pnpm rollout:owner-send-tracker --owner-dir ${outputDirectoryName} --out production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv`,
     `pnpm rollout:owner-followup --owner-dir ${outputDirectoryName} --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
+    `pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir ${outputDirectoryName} --out production-rollout-owner-return-intake.md`,
+    `pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir ${outputDirectoryName} --out production-rollout-owner-return-intake.md --apply`,
     `pnpm rollout:assemble-owner-packets --owner-dir ${outputDirectoryName} --out rollout-csv`,
     "pnpm rollout:data-request --dir rollout-csv --out production-rollout-data-request.md",
     "pnpm rollout:check-csv --dir rollout-csv",
