@@ -17,6 +17,7 @@
     "rollout:roster-import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-roster-import.mjs",
     "rollout:chapter-import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-chapter-import.mjs",
     "rollout:pilot-proof-import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-pilot-event-proof-import.mjs",
+    "rollout:signed-in-proof-import": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-signed-in-route-proof-import.mjs",
     "rollout:intake-status": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-intake-status.mjs",
     "rollout:chapter-matrix": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-chapter-matrix.mjs",
     "rollout:check-csv": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-csv-folder.mjs",

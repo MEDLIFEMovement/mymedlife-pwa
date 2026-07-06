@@ -156,6 +156,29 @@ app rows are applied. Before broad invitations, it must include passed evidence
 for one real member, one real leader, one real staff/coach user, and one real
 DS Admin or Super Admin.
 
+After production users and app rows exist, launch reviewers can convert a
+simpler signed-in route check sheet into the packet-ready proof file:
+
+```bash
+pnpm rollout:signed-in-proof-import --proof signed-in-route-proof-source.csv --out-dir rollout-csv
+```
+
+The reviewer sheet expects:
+
+```text
+email,workspace,observedPath,status,checkedAt,notes
+```
+
+Required fields are `email`, `workspace`, `observedPath`, `status`, and
+`checkedAt`. The helper fills the correct `expectedPath` for each workspace:
+`/app`, `/leader?view=overview`, `/staff?view=chapters`, or `/admin`. It accepts
+the canonical workspace values plus simple aliases like `member`, `leader`,
+`staff`, and `admin`. Passed rows must land on the exact expected route. The
+command writes local `signed-in-route-proof.csv` only. It does not sign in,
+create users, write Supabase rows, send invites, call Luma, change Vercel, or
+enable integrations. It refuses placeholder text, fake/test emails, external
+URLs, invalid timestamps, and credential-looking values.
+
 The validator blocks fake/test emails, unknown user references, unknown chapter
 references, duplicate user emails, duplicate chapter IDs, and credential-like
 fields.
