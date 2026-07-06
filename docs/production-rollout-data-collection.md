@@ -58,6 +58,31 @@ emails, duplicate chapter IDs, placeholder text, and calendar values that look
 like keys or tokens. It will not overwrite existing rollout rows unless
 `--force` is added intentionally.
 
+After the five pilot chapters have real RSVP, attendance, points, audit, and
+zero-send evidence, convert the reviewer evidence sheet into the packet-ready
+proof file:
+
+```bash
+pnpm rollout:pilot-proof-import --proof pilot-event-proof-source.csv --out-dir rollout-csv
+```
+
+The reviewer evidence sheet expects:
+
+```text
+chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditRecorded,zeroExternalSends,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,status,notes
+```
+
+Required fields are `chapterId`, `eventName`, `lumaEventId`, `rsvpCount`,
+`attendanceCount`, `pointsAwardedCount`, `auditRecorded`,
+`zeroExternalSends`, all five app route proof columns, `checkedAt`, and
+`reviewedByEmail`. `status` defaults to `ready`. Ready rows require at least
+one RSVP, at least one attendance check-in, matching attendance and points
+counts, `auditRecorded=yes`, and `zeroExternalSends=yes`. The command writes
+local `pilot-event-proof.csv` only. It does not call Luma, write Supabase rows,
+send invites, change Vercel, or enable integrations. It refuses placeholder
+text, fake/test reviewer emails, non-app routes, credential-looking values, and
+will not overwrite existing proof rows unless `--force` is added intentionally.
+
 The current local working copy is:
 
 ```text
