@@ -192,10 +192,28 @@ export function parseProductionLiveDataCountCsv(
   const headerIndex = lines.findIndex((line) => line === "relation,rows");
 
   if (headerIndex === -1) {
-    throw new Error("Could not find relation,rows CSV header in Supabase output.");
+    parseFormattedCountReportLines(lines, allowedRelations, counts);
+  } else {
+    parseCsvCountLines(lines.slice(headerIndex + 1), allowedRelations, counts);
   }
 
-  for (const line of lines.slice(headerIndex + 1)) {
+  const missing = productionLiveDataRelations.filter(
+    (relation) => counts[relation] === null,
+  );
+
+  if (missing.length > 0) {
+    throw new Error(`Supabase count output is missing: ${missing.join(", ")}.`);
+  }
+
+  return counts as ProductionLiveDataCounts;
+}
+
+function parseCsvCountLines(
+  lines: string[],
+  allowedRelations: Set<string>,
+  counts: Record<ProductionLiveDataRelation, number | null>,
+) {
+  for (const line of lines) {
     const match = /^([^,]+),(\d+)$/.exec(line);
 
     if (!match) {
@@ -210,16 +228,28 @@ export function parseProductionLiveDataCountCsv(
 
     counts[relation as ProductionLiveDataRelation] = Number(rowCount);
   }
+}
 
-  const missing = productionLiveDataRelations.filter(
-    (relation) => counts[relation] === null,
-  );
+function parseFormattedCountReportLines(
+  lines: string[],
+  allowedRelations: Set<string>,
+  counts: Record<ProductionLiveDataRelation, number | null>,
+) {
+  for (const line of lines) {
+    const match = /^- ([^:]+): (\d+)$/.exec(line);
 
-  if (missing.length > 0) {
-    throw new Error(`Supabase count output is missing: ${missing.join(", ")}.`);
+    if (!match) {
+      continue;
+    }
+
+    const [, relation, rowCount] = match;
+
+    if (!allowedRelations.has(relation)) {
+      continue;
+    }
+
+    counts[relation as ProductionLiveDataRelation] = Number(rowCount);
   }
-
-  return counts as ProductionLiveDataCounts;
 }
 
 function formatList(items: string[], emptyLabel: string) {
