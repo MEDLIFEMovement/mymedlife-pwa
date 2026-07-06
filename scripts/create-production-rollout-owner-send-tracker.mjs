@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker [--request-dir production-rollout-owner-requests] [--email-draft-dir production-rollout-owner-email-drafts] [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
+  "  pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker [--recipient-assignments owner-recipient-assignments.csv] [--request-dir production-rollout-owner-requests] [--email-draft-dir production-rollout-owner-email-drafts] [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
   "",
   "This reads owner-specific rollout CSV folders and writes a manual send/return tracker.",
   "It does not send email, create users, write Supabase rows, call Luma, send invites, trigger n8n, or change production config.",
@@ -20,6 +20,7 @@ try {
     },
     {
       getProductionRolloutOwnerSendTrackerFiles,
+      parseProductionRolloutOwnerRecipientAssignmentsCsv,
     },
     { getProductionRolloutOwnerPackets },
   ] = await Promise.all([
@@ -41,12 +42,18 @@ try {
       minimumPilotChapterCount: args.minimumPilotChapters,
     },
   });
+  const recipientAssignments = args.recipientAssignments
+    ? parseProductionRolloutOwnerRecipientAssignmentsCsv(
+        await readFile(resolve(args.recipientAssignments), "utf8"),
+      )
+    : [];
 
   await mkdir(outDir, { recursive: true });
 
   for (const file of getProductionRolloutOwnerSendTrackerFiles(status, {
     requestDirectoryName: args.requestDir,
     emailDraftDirectoryName: args.emailDraftDir,
+    recipientAssignments,
   })) {
     await writeFile(join(outDir, file.path), file.content);
   }
@@ -125,6 +132,7 @@ function parseArgs(args) {
     out,
     requestDir: getValue(args, "--request-dir") ?? "production-rollout-owner-requests",
     emailDraftDir: getValue(args, "--email-draft-dir") ?? "production-rollout-owner-email-drafts",
+    recipientAssignments: getValue(args, "--recipient-assignments"),
     outputDirectoryName: getValue(args, "--csv-dir") ?? "rollout-csv",
     minimumChapters: getPositiveWholeNumberArg(args, "--minimum-chapters", 30),
     minimumStudents: getPositiveWholeNumberArg(args, "--minimum-students", 500),

@@ -48,18 +48,72 @@ describe("production rollout owner send tracker script", () => {
 
     const readmePath = join(outDir, "README.md");
     const csvPath = join(outDir, "owner-send-tracker.csv");
+    const recipientAssignmentPath = join(
+      outDir,
+      "owner-recipient-assignments.csv",
+    );
 
     expect(output).toContain("Production rollout owner send tracker written");
     expect(output).toContain("Current status: NOT READY");
     expect(output).toContain("Owner progress: 0/7 owners ready");
     expect(existsSync(readmePath)).toBe(true);
     expect(existsSync(csvPath)).toBe(true);
+    expect(existsSync(recipientAssignmentPath)).toBe(true);
     expect(readFileSync(readmePath, "utf8")).toContain(
       "myMEDLIFE owner send tracker: NOT READY",
     );
     expect(readFileSync(csvPath, "utf8")).toContain(
       "ds-launch-owner,DS / launch owner,no,3",
     );
+    expect(readFileSync(recipientAssignmentPath, "utf8")).toContain(
+      "ownerSlug,owner,recipientEmail,ccEmails,notes",
+    );
+  });
+
+  it("prefills recipients from an assignment CSV", () => {
+    const directory = mkdtempSync(join(tmpdir(), "mymedlife-owner-send-tracker-"));
+    const ownerDir = join(directory, "rollout-owner-packets");
+    const outDir = join(directory, "production-rollout-owner-send-tracker");
+    const recipientAssignments = join(directory, "owner-recipient-assignments.csv");
+    writeOwnerPacketFolders(ownerDir, {});
+    writeFileSync(
+      recipientAssignments,
+      [
+        "ownerSlug,owner,recipientEmail,ccEmails,notes",
+        "ds-launch-owner,DS / launch owner,ds@example.org,kiomi@example.org,Confirmed owner",
+      ].join("\n"),
+    );
+
+    execFileSync(
+      process.execPath,
+      [
+        "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+        "scripts/create-production-rollout-owner-send-tracker.mjs",
+        "--owner-dir",
+        ownerDir,
+        "--out",
+        outDir,
+        "--recipient-assignments",
+        recipientAssignments,
+        "--minimum-chapters",
+        "2",
+        "--minimum-students",
+        "3",
+        "--minimum-pilot-chapters",
+        "1",
+      ],
+      {
+        encoding: "utf8",
+      },
+    );
+
+    const csv = readFileSync(join(outDir, "owner-send-tracker.csv"), "utf8");
+
+    expect(csv).toContain(
+      "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md",
+    );
+    expect(csv).toContain("ds@example.org,kiomi@example.org,drafted");
+    expect(csv).toContain("Confirmed owner");
   });
 
   it("fails when the output directory argument is missing", () => {

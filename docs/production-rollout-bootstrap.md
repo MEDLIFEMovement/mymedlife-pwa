@@ -38,19 +38,24 @@ The generated folder contains:
 - blank owner-specific CSV folders
 - owner request docs with the current blockers
 - copy/paste owner email drafts
-- a manual send/return tracker
+- a manual send/return tracker plus an optional recipient assignment template
 - a status report showing how many owners are ready
 
 The email drafts are manual text only. They do not send email, create users,
 write Supabase rows, call Luma, send invitations, trigger n8n, or change
-production config. Send each owner only their matching folder, request doc, and
-email draft. After owner CSVs come back, rerun:
+production config. Fill
+`production-rollout-owner-send-tracker/owner-recipient-assignments.csv` when
+owner recipients are confirmed, then regenerate the tracker with
+`--recipient-assignments` if you want the recipient and CC columns prefilled.
+Send each owner only their matching folder, request doc, and email draft. After
+owner CSVs come back, rerun:
 
 ```bash
 pnpm rollout:owner-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-packet-status.md
 pnpm rollout:owner-requests --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-requests
 pnpm rollout:owner-email-drafts --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-email-drafts
 pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker
+pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv
 pnpm rollout:owner-followup --owner-dir production-rollout-owner-handoff/rollout-owner-packets --tracker production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md
 pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-current-status.md
 ```
