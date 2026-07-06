@@ -236,6 +236,7 @@ function getNextCommands(
       `pnpm rollout:owner-requests --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-requests`,
       `pnpm rollout:owner-email-drafts --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-email-drafts`,
       `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker`,
+      `pnpm rollout:owner-followup --owner-dir ${input.paths.ownerDirectoryName} --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
       "Ask each owner to fix the blockers in their folder.",
       `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-current-status.md`,
     ];

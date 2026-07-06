@@ -34,6 +34,9 @@ describe("production rollout owner packet status", () => {
     expect(report).toContain(
       "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
     );
+    expect(report).toContain(
+      "pnpm rollout:owner-followup --owner-dir rollout-owner-packets --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md",
+    );
   });
 
   it("marks owner folders ready when expected files have enough data rows", () => {
@@ -73,6 +76,7 @@ describe("production rollout owner packet status", () => {
     expect(report).not.toContain("pnpm rollout:owner-requests");
     expect(report).not.toContain("pnpm rollout:owner-email-drafts");
     expect(report).not.toContain("pnpm rollout:owner-send-tracker");
+    expect(report).not.toContain("pnpm rollout:owner-followup");
     expect(report).toContain("Passing this status only means");
   });
 

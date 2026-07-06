@@ -163,6 +163,7 @@ export function formatProductionRolloutOwnerPacketIndex(
     `pnpm rollout:owner-requests --owner-dir ${outputDirectoryName} --out production-rollout-owner-requests`,
     `pnpm rollout:owner-email-drafts --owner-dir ${outputDirectoryName} --out production-rollout-owner-email-drafts`,
     `pnpm rollout:owner-send-tracker --owner-dir ${outputDirectoryName} --out production-rollout-owner-send-tracker`,
+    `pnpm rollout:owner-followup --owner-dir ${outputDirectoryName} --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
     `pnpm rollout:assemble-owner-packets --owner-dir ${outputDirectoryName} --out rollout-csv`,
     "pnpm rollout:data-request --dir rollout-csv --out production-rollout-data-request.md",
     "pnpm rollout:check-csv --dir rollout-csv",

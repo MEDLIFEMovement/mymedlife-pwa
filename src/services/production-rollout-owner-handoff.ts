@@ -171,6 +171,7 @@ function formatProductionRolloutOwnerHandoffIndex({
     `pnpm rollout:owner-requests --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${requestDirectoryName}`,
     `pnpm rollout:owner-email-drafts --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${emailDraftDirectoryName} --request-dir ${requestDirectoryName}`,
     `pnpm rollout:owner-send-tracker --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${sendTrackerDirectoryName} --request-dir ${requestDirectoryName} --email-draft-dir ${emailDraftDirectoryName}`,
+    `pnpm rollout:owner-followup --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --tracker ${outputDirectoryName}/${sendTrackerDirectoryName}/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
     `pnpm rollout:current-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out production-rollout-current-status.md`,
     `pnpm rollout:assemble-owner-packets --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out rollout-csv`,
     "pnpm rollout:check-csv --dir rollout-csv",
