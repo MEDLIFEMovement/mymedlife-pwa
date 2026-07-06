@@ -3,6 +3,7 @@ import {
   type ProductionRolloutCsvTemplate,
 } from "./production-rollout-csv-templates.ts";
 import { getProductionRolloutOwnerPackets } from "./production-rollout-owner-packets.ts";
+import { getFigmaOrTestSeedEvidenceReason } from "../data/figma-test-seed-map.ts";
 
 export type ProductionRolloutOwnerReturnedFile = {
   ownerSlug: string;
@@ -259,6 +260,46 @@ function getReturnedFileIssues({
     });
   }
 
+  const rowShapeIssue = getRowShapeIssue(file.content);
+
+  if (rowShapeIssue) {
+    issues.push({
+      ownerSlug: file.ownerSlug,
+      filename: file.filename,
+      message: `${file.ownerSlug}/${file.filename} ${rowShapeIssue}`,
+    });
+  }
+
+  const placeholderIssue = getPlaceholderIssue(file.content);
+
+  if (placeholderIssue) {
+    issues.push({
+      ownerSlug: file.ownerSlug,
+      filename: file.filename,
+      message: `${file.ownerSlug}/${file.filename} ${placeholderIssue}`,
+    });
+  }
+
+  const testSeedIssue = getTestSeedIssue(file.content);
+
+  if (testSeedIssue) {
+    issues.push({
+      ownerSlug: file.ownerSlug,
+      filename: file.filename,
+      message: `${file.ownerSlug}/${file.filename} ${testSeedIssue}`,
+    });
+  }
+
+  const fakeEmailIssue = getFakeEmailIssue(file.content);
+
+  if (fakeEmailIssue) {
+    issues.push({
+      ownerSlug: file.ownerSlug,
+      filename: file.filename,
+      message: `${file.ownerSlug}/${file.filename} ${fakeEmailIssue}`,
+    });
+  }
+
   const secretIssue = getSecretLikeIssue(file.content);
 
   if (secretIssue) {
@@ -336,6 +377,69 @@ function getDataRowCount(content: string) {
   return rows.filter((row) => row.trim().length > 0).length;
 }
 
+function getRowShapeIssue(content: string) {
+  const [headerRow = "", ...bodyRows] = content.split(/\r?\n/);
+  const expectedCellCount = splitCsvRow(headerRow).length;
+
+  if (expectedCellCount === 0) {
+    return "is missing a usable header row.";
+  }
+
+  for (const [index, row] of bodyRows.entries()) {
+    if (row.trim().length === 0) {
+      continue;
+    }
+
+    const actualCellCount = splitCsvRow(row).length;
+
+    if (actualCellCount !== expectedCellCount) {
+      return `row ${index + 2} has ${actualCellCount} cell(s); expected ${expectedCellCount}. Keep every returned row aligned to the generated header.`;
+    }
+  }
+
+  return null;
+}
+
+function getPlaceholderIssue(content: string) {
+  for (const [rowNumber, row] of getCsvRows(content)) {
+    for (const value of Object.values(row)) {
+      if (/<[^>\n]+>/.test(value) || /\b(TODO|TBD|PLACEHOLDER)\b/i.test(value)) {
+        return `row ${rowNumber} contains template placeholder text. Replace TODO/TBD/PLACEHOLDER or <...> values before intake.`;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getTestSeedIssue(content: string) {
+  for (const [rowNumber, row] of getCsvRows(content)) {
+    const reason = getFigmaOrTestSeedEvidenceReason(row);
+
+    if (reason) {
+      return `row ${rowNumber} contains Test/Figma sandbox evidence (${reason}). Replace it with real approved rollout data before intake.`;
+    }
+  }
+
+  return null;
+}
+
+function getFakeEmailIssue(content: string) {
+  for (const [rowNumber, row] of getCsvRows(content)) {
+    for (const [header, value] of Object.entries(row)) {
+      if (!header.toLowerCase().includes("email")) {
+        continue;
+      }
+
+      if (looksLikeFakeEmail(value)) {
+        return `row ${rowNumber} column ${header} uses test or placeholder email data (${value.trim()}). Replace it with an approved real email before intake.`;
+      }
+    }
+  }
+
+  return null;
+}
+
 function getSecretLikeIssue(content: string) {
   const patterns = [
     [/password\s*[=:,]/i, "a password field"],
@@ -350,6 +454,63 @@ function getSecretLikeIssue(content: string) {
   ] as const;
 
   return patterns.find(([pattern]) => pattern.test(content))?.[1] ?? null;
+}
+
+function* getCsvRows(content: string): Generator<[number, Record<string, string>]> {
+  const [headerRow = "", ...bodyRows] = content.split(/\r?\n/);
+  const headers = splitCsvRow(headerRow);
+
+  if (headers.length === 0) {
+    return;
+  }
+
+  for (const [index, row] of bodyRows.entries()) {
+    if (row.trim().length === 0) {
+      continue;
+    }
+
+    const cells = splitCsvRow(row);
+
+    if (cells.length !== headers.length) {
+      continue;
+    }
+
+    yield [
+      index + 2,
+      Object.fromEntries(headers.map((header, cellIndex) => [header, cells[cellIndex] ?? ""])),
+    ];
+  }
+}
+
+function splitCsvRow(row: string) {
+  return row.split(",").map((cell) => cell.trim());
+}
+
+function looksLikeFakeEmail(email: string) {
+  const normalized = email.trim().toLowerCase();
+  const emailParts = normalized.split("@");
+
+  if (emailParts.length !== 2) {
+    return true;
+  }
+
+  const [localPart, domain] = emailParts;
+  const blockedLocalParts = new Set(["fake", "placeholder", "todo", "tbd"]);
+  const blockedDomains = new Set([
+    "example.com",
+    "example.org",
+    "example.net",
+    "localhost",
+    "mymedlife.test",
+  ]);
+
+  return (
+    blockedLocalParts.has(localPart) ||
+    localPart.startsWith("fake+") ||
+    localPart.startsWith("placeholder+") ||
+    blockedDomains.has(domain) ||
+    domain.endsWith(".test")
+  );
 }
 
 function getFileKey({
