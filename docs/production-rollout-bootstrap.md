@@ -55,6 +55,8 @@ production config. Fill
 `production-rollout-owner-send-tracker/owner-recipient-assignments.csv` when
 owner recipients are confirmed, then regenerate the tracker with
 `--recipient-assignments` if you want the recipient and CC columns prefilled.
+The owner-recipient decision worksheet includes a copy/paste answer block for
+collecting the seven real recipient emails before any owner packets are sent.
 Send each owner only their matching folder, request doc, and email draft. After
 owner CSVs come back, rerun:
 

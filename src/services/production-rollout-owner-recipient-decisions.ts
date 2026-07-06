@@ -141,6 +141,14 @@ export function formatProductionRolloutOwnerRecipientDecisionWorksheet(
     "- If no person is known yet, keep the row blank and do not send that packet.",
     "- Do not add passwords, API keys, tokens, private notes, medical details, or raw table exports.",
     "",
+    "## Copy/Paste Answer Block",
+    "",
+    "Use this block to collect the seven real owner-recipient decisions. Replace blank values with real MEDLIFE email addresses; leave a row blank if no accountable owner is confirmed yet.",
+    "",
+    "```text",
+    ...worksheet.rows.map(formatAnswerBlockRow),
+    "```",
+    "",
     "## Decisions Needed",
     "",
     "| Owner packet | Current recipient | Suggested accountable seat | Why this owner matters | Files owned | Folder status | Required decision |",
@@ -182,6 +190,16 @@ export function formatProductionRolloutOwnerRecipientDecisionWorksheet(
     "- Do not invite students until the final invite gate says READY and human approval is recorded.",
     "",
   ].join("\n");
+}
+
+function formatAnswerBlockRow(row: ProductionRolloutOwnerRecipientDecisionRow) {
+  return [
+    row.ownerSlug,
+    `suggestedSeat=${row.suggestedAccountableSeat}`,
+    `recipientEmail=${row.recipientEmail}`,
+    `ccEmails=${row.ccEmails}`,
+    "notes=",
+  ].join(" | ");
 }
 
 function formatList(items: string[], emptyLabel: string, label: string) {
