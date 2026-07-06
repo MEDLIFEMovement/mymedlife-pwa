@@ -227,6 +227,17 @@ The validator blocks fake/test emails, unknown user references, unknown chapter
 references, duplicate user emails, duplicate chapter IDs, and credential-like
 fields.
 
+Draft/template/SOP/sample boundary:
+
+- draft, reviewed, scheduled, archived, template-version, builder-definition,
+  SOP sample, and sample-content material do not count as live rollout evidence
+  and must not be imported into the production packet as if they were real
+  launch rows.
+- Only explicitly live/active, owner-reviewed production content should advance
+  launch evidence.
+- Turning draft/template material into live behavior requires explicit DS/admin
+  approval outside this packet assembly flow.
+
 If the team needs a plain-English gap readout before the final invite gate, use:
 
 ```bash

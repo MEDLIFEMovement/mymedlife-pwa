@@ -1,4 +1,5 @@
 import { getFigmaOrTestSeedEvidenceReason } from "../data/figma-test-seed-map.ts";
+import { getDraftLiveContentObjectEvidenceReason } from "./draft-live-content-safety.ts";
 
 export type ProductionBootstrapChapter = {
   id: string;
@@ -582,6 +583,13 @@ export function getProductionRolloutBootstrapReadiness(
   if (testSeedEvidenceReason && !allowSandboxTestData) {
     blockers.push(
       `Remove Test/Figma sandbox data before production rollout: ${testSeedEvidenceReason}.`,
+    );
+  }
+
+  const draftLiveContentReason = getDraftLiveContentObjectEvidenceReason(packet);
+  if (draftLiveContentReason && !allowSandboxTestData) {
+    blockers.push(
+      `Remove draft/template/SOP sample content before production rollout: ${draftLiveContentReason}.`,
     );
   }
 

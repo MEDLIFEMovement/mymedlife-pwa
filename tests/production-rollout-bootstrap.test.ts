@@ -110,6 +110,30 @@ describe("production rollout bootstrap readiness", () => {
     );
   });
 
+  it("blocks direct JSON packets that contain draft/template/SOP sample content", () => {
+    const packet = createCompletePacket(30) as ProductionRolloutBootstrapPacket & {
+      workflowSnapshot?: {
+        sourceKind: string;
+        status: string;
+      };
+    };
+    packet.campaigns[0] = {
+      ...packet.campaigns[0]!,
+      status: "draft",
+    };
+    packet.workflowSnapshot = {
+      sourceKind: "template_version",
+      status: "reviewed",
+    };
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "Remove draft/template/SOP sample content before production rollout: packet.campaigns[0].status is marked draft.",
+    );
+  });
+
   it("blocks duplicate access and mapping rows before a broad invite", () => {
     const packet = createCompletePacket(30);
     packet.memberships.push({ ...packet.memberships[0]! });

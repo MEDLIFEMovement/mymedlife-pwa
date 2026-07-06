@@ -12,6 +12,7 @@ import type {
   ProductionRolloutBootstrapPacket,
 } from "@/services/production-rollout-bootstrap";
 import { getFigmaOrTestSeedEvidenceReason } from "../data/figma-test-seed-map.ts";
+import { getDraftLiveContentFieldEvidenceReason } from "./draft-live-content-safety.ts";
 
 export type ProductionRolloutCsvTables = {
   chapters: string;
@@ -261,6 +262,17 @@ function validateProductionRolloutCsvValue({
   if (testSeedReason) {
     throw new Error(
       `${tableName} CSV row ${rowNumber} column ${header} contains Test/Figma sandbox data (${testSeedReason}); replace it with approved production rollout data.`,
+    );
+  }
+
+  const draftLiveReason = getDraftLiveContentFieldEvidenceReason({
+    tableName,
+    header,
+    value,
+  });
+  if (draftLiveReason) {
+    throw new Error(
+      `${tableName} CSV row ${rowNumber} column ${header} contains draft/template/SOP sample content (${draftLiveReason}); replace it with approved live rollout data.`,
     );
   }
 
