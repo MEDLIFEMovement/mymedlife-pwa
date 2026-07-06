@@ -226,6 +226,7 @@ export function formatProductionRolloutWorkbook(outputDirectoryName = "rollout-c
     "## Validation Sequence",
     "",
     "```bash",
+    `pnpm rollout:data-request --dir ${outputDirectoryName} --out production-rollout-data-request.md`,
     `pnpm rollout:check-csv --dir ${outputDirectoryName}`,
     "pnpm rollout:build \\",
     `  --chapters ${outputDirectoryName}/chapters.csv \\`,

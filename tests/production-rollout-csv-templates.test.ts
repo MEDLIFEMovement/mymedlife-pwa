@@ -55,6 +55,9 @@ describe("production rollout CSV templates", () => {
     expect(readme).toContain(
       "pnpm rollout:workbook --out production-rollout-workbook.md --csv-dir rollout-csv",
     );
+    expect(readme).toContain(
+      "pnpm rollout:data-request --dir rollout-csv --out production-rollout-data-request.md",
+    );
     expect(readme).toContain("pnpm rollout:check-csv --dir rollout-csv");
     expect(readme).toContain("pnpm rollout:build");
     expect(readme).toContain("--chapters rollout-csv/chapters.csv");
@@ -82,6 +85,9 @@ describe("production rollout CSV templates", () => {
     );
     expect(readme).toContain(
       "pnpm rollout:workbook --out production-rollout-workbook.md --csv-dir .codex-artifacts/production-rollout-csv",
+    );
+    expect(readme).toContain(
+      "pnpm rollout:data-request --dir .codex-artifacts/production-rollout-csv --out production-rollout-data-request.md",
     );
     expect(readme).toContain(
       "--chapters .codex-artifacts/production-rollout-csv/chapters.csv",
