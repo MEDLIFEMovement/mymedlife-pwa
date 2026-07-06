@@ -1879,6 +1879,44 @@ function AdminHealth() {
 
 type AdminRole = "ds-admin" | "super-admin";
 
+function AdminRouteBlocked({ onBack }: { onBack: () => void }) {
+  return (
+    <div className="flex-1 flex items-center justify-center bg-[#0d1117]">
+      <div className="w-full max-w-sm text-center space-y-6">
+        <div className="flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
+            <Shield className="w-6 h-6 text-sky-400" />
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-lg font-bold text-white mb-1">Admin access blocked</h2>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            This Staff Command Center keeps the Admin handoff visible, but only{" "}
+            <span className="text-sky-400 font-semibold">DS Admin</span> and{" "}
+            <span className="text-sky-400 font-semibold">Super Admin</span> roles can open it.
+          </p>
+        </div>
+
+        <div className="bg-[#161b22] border border-white/[0.08] rounded-xl p-5 text-left">
+          <p className="text-[11px] text-slate-600 font-mono uppercase tracking-wider mb-2">Current posture</p>
+          <p className="text-[12px] text-slate-400 leading-relaxed">
+            Admin controls stay route-backed and visible for review, but this actor cannot open the
+            secure panel from the staff workspace.
+          </p>
+        </div>
+
+        <button
+          onClick={onBack}
+          className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors"
+        >
+          Return to dashboard
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void; onBack: () => void }) {
   const [picked, setPicked] = useState<AdminRole>("ds-admin");
 
@@ -1975,10 +2013,12 @@ const SCREEN_TITLES: Record<Screen, string> = {
 /* ─────────────────────────────────────────────────────────── */
 
 type FigmaStaffCommandCenterProps = {
+  canAccessAdminPanel?: boolean;
   initialView?: string;
 };
 
 export function FigmaStaffCommandCenter({
+  canAccessAdminPanel = false,
   initialView,
 }: FigmaStaffCommandCenterProps = {}) {
   const router = useRouter();
@@ -2093,7 +2133,11 @@ export function FigmaStaffCommandCenter({
 
         {/* Admin — role gate (shown before access granted) */}
         {activeScreen === "admin" && !adminRole && (
-          <AdminRoleGate onGrant={(role) => setAdminRole(role)} onBack={() => handleNavChange("chapters")} />
+          canAccessAdminPanel ? (
+            <AdminRoleGate onGrant={(role) => setAdminRole(role)} onBack={() => handleNavChange("chapters")} />
+          ) : (
+            <AdminRouteBlocked onBack={() => handleNavChange("chapters")} />
+          )
         )}
 
         {/* All other non-admin, non-SOP screens */}
@@ -2110,7 +2154,7 @@ export function FigmaStaffCommandCenter({
       </main>
 
       {/* Admin Panel full-screen overlay — DS Admin / Super Admin only */}
-      {activeScreen === "admin" && adminRole && (
+      {activeScreen === "admin" && adminRole && canAccessAdminPanel && (
         <div className="fixed inset-0 z-[60] flex flex-col">
           <AdminPanel onBack={() => { setAdminRole(null); handleNavChange("chapters"); }} />
         </div>

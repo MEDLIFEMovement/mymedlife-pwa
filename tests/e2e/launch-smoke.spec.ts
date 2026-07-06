@@ -215,18 +215,22 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("columnheader", { name: "Chapter" })).toBeVisible();
 
     await staffHeader.getByRole("link", { name: "Campaigns", exact: true }).click();
-    await expect(page).toHaveURL(/\/staff\?view=events/);
-    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
-    await expect(page.getByText("RSVP, attendance, and point readiness by chapter")).toBeVisible();
+    await expect(page).toHaveURL(/\/staff\?view=campaigns/);
+    await expect(page.getByRole("heading", { name: "Campaign Operations" })).toBeVisible();
+    await expect(page.getByText("7 campaigns active across all regions")).toBeVisible();
 
     await staffHeader.getByRole("link", { name: "Proof / UGC", exact: true }).click();
-    await expect(page).toHaveURL(/\/staff\?view=leaderboard/);
-    await expect(page.getByRole("heading", { name: "Organization Leaderboard" })).toBeVisible();
-    await expect(page.getByText("Chapter ranking by attendance-backed points")).toBeVisible();
+    await expect(page).toHaveURL(/\/staff\?view=proof_ugc/);
+    await expect(page.getByRole("heading", { name: "Proof / UGC Review Queue" })).toBeVisible();
+    await expect(page.getByText("items pending review")).toBeVisible();
+
+    await staffHeader.getByRole("link", { name: "Best Practices", exact: true }).click();
+    await expect(page).toHaveURL(/\/staff\?view=best_practices/);
+    await expect(page.getByRole("heading", { name: "Best Practices Library" })).toBeVisible();
 
     await staffHeader.getByRole("link", { name: "Admin", exact: true }).click();
-    await expect(page).toHaveURL(/\/staff\?view=chapters/);
-    await expect(page.getByRole("heading", { name: "Portfolio Overview" })).toBeVisible();
+    await expect(page).toHaveURL(/\/staff\?view=admin/);
+    await expect(page.getByRole("heading", { name: "Admin access blocked" })).toBeVisible();
   });
 
   test("filters the staff chapter table by chapter type without losing event and points columns", async ({
@@ -258,11 +262,11 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     const menuItems = [
       { label: "Chapters", view: "chapters", heading: "Portfolio Overview" },
-      { label: "Campaigns", view: "events", heading: "Events" },
-      { label: "Proof / UGC", view: "leaderboard", heading: "Organization Leaderboard" },
-      { label: "Best Practices", view: "leaderboard", heading: "Organization Leaderboard" },
-      { label: "Campaign SOPs", view: "chapters", heading: "Portfolio Overview" },
-      { label: "Admin", view: "chapters", heading: "Portfolio Overview" },
+      { label: "Campaigns", view: "campaigns", heading: "Campaign Operations" },
+      { label: "Proof / UGC", view: "proof_ugc", heading: "Proof / UGC Review Queue" },
+      { label: "Best Practices", view: "best_practices", heading: "Best Practices Library" },
+      { label: "Campaign SOPs", view: "sops", heading: "Campaign SOP Builder" },
+      { label: "Admin", view: "admin", heading: "Admin access blocked" },
     ] as const;
 
     for (const item of menuItems) {

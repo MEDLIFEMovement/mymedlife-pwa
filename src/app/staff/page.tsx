@@ -49,7 +49,10 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
   return (
     <>
       <WorkspaceAccountMenu actor={actor} currentWorkspace="staff_command_center" />
-      <FigmaStaffCommandCenter initialView={resolvedSearchParams?.view} />
+      <FigmaStaffCommandCenter
+        canAccessAdminPanel={canAccessAdminWorkspace(actor)}
+        initialView={resolvedSearchParams?.view}
+      />
     </>
   );
 }
