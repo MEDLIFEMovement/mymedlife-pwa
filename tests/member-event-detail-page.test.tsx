@@ -59,6 +59,7 @@ describe("member event detail route", () => {
     expect(html).toContain("Event RSVP");
     expect(html).toContain("Rush Month kickoff social");
     expect(html).toContain("Points Available");
+    expect(html).toContain("preview link only");
     expect(html).toContain("Route-backed preview");
     expect(html).toContain("Add to Calendar");
     expect(html).toContain("Share");

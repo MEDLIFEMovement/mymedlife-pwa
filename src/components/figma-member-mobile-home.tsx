@@ -71,6 +71,10 @@ function getMemberEventHomeRsvpHref(eventId: number) {
   return getMemberEventRsvpHref(eventId).replace("source=events", "source=home");
 }
 
+function getMemberEventHomeDetailHref(eventId: number) {
+  return getMemberEventDetailHref(eventId).replace("source=events", "source=home");
+}
+
 // ─── Primitives ────────────────────────────────────────────────────────────
 
 function cn(...c: (string | undefined | false | null)[]) {
@@ -395,12 +399,12 @@ function StudentHome({
             Invite 3 friends to the Intro GBM
           </p>
           <p className="text-blue-200 text-xs mt-1">Rush Month · Due Nov 15 · 30 pts</p>
-          <button
-            onClick={() => navigate("action")}
-            className="mt-3 flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-xl text-sm font-bold active:scale-[0.97] transition-all"
+          <Link
+            href={getMemberEventHomeDetailHref(1)}
+            className="mt-3 inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground transition-all active:scale-[0.97]"
           >
             Start next action <ArrowRight size={14} />
-          </button>
+          </Link>
         </div>
 
         {/* Points card — sits directly below priority in the blue zone */}
@@ -449,12 +453,12 @@ function StudentHome({
           <SLabel>Upcoming Events</SLabel>
           <div className="space-y-2">
             {[
-              { name: "Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", rsvp: false },
-              { name: "Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", rsvp: true },
+              { id: 1, name: "Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", rsvp: false },
+              { id: 2, name: "Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", rsvp: true },
             ].map((e, i) => (
-              <Card key={i} padding={false} onClick={() => navigate("events")}>
+              <Card key={e.id} padding={false}>
                 <div className="flex items-center gap-3 p-4">
-                  <Link href="/app/events" className="flex min-w-0 flex-1 items-center gap-3">
+                  <Link href={getMemberEventHomeDetailHref(e.id)} className="flex min-w-0 flex-1 items-center gap-3">
                     <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
                       <CalendarDays size={18} className="text-primary" />
                     </div>
@@ -467,10 +471,10 @@ function StudentHome({
                     </div>
                   </Link>
                   {e.rsvp ? (
-                    <Pill label="RSVP'd" variant="green" />
+                    <Link href={getMemberEventHomeDetailHref(e.id)}><Pill label="RSVP'd" variant="green" /></Link>
                   ) : (
                     <Link
-                      href={getMemberEventHomeRsvpHref(1)}
+                      href={getMemberEventHomeRsvpHref(e.id)}
                       onClick={(event) => event.stopPropagation()}
                       className="flex-shrink-0 rounded-xl border border-primary/50 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/5"
                     >
