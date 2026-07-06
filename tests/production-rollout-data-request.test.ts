@@ -57,7 +57,8 @@ describe("production rollout data request", () => {
     expect(request.ready).toBe(true);
     expect(request.sections.every((section) => section.status === "ready")).toBe(true);
     expect(report).toContain("myMEDLIFE 30-chapter data request: READY");
-    expect(report).toContain("pnpm production:invite-gate");
+    expect(report).toContain("pnpm production:invite-batches --packet production-rollout-packet.json --out production-invite-batches.md");
+    expect(report).toContain("--out production-invite-gate.md");
   });
 });
 

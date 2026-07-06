@@ -515,9 +515,9 @@ pnpm production:pilot-event-proof --packet production-rollout-packet.json
 pnpm production:live-data-proof-request --out production-live-data-proof-request.md
 pnpm production:data-counts --out production-live-data-counts.txt
 pnpm production:signed-in-route-proof --packet production-rollout-packet.json
-pnpm production:invite-batches --packet production-rollout-packet.json
+pnpm production:invite-batches --packet production-rollout-packet.json --out production-invite-batches.md
 pnpm rollout:approval-summary production-rollout-packet.json --out production-rollout-approval-summary.md
-pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org
+pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org --out production-invite-gate.md
 ```
 
 If local Supabase is not linked on the review machine, keep the approved

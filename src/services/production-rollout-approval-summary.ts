@@ -118,7 +118,8 @@ export function getProductionRolloutApprovalSummary(
         items: [
           "pnpm production:smoke https://www.mymedlife.org",
           "pnpm production:data-counts --out production-live-data-counts.txt",
-          "pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org",
+          "pnpm production:invite-batches --packet production-rollout-packet.json --out production-invite-batches.md",
+          "pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org --out production-invite-gate.md",
         ],
       },
     ],

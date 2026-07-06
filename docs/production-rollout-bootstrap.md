@@ -506,7 +506,8 @@ pnpm production:data-counts --out production-live-data-counts.txt
 pnpm production:invite-gate \
   --packet production-rollout-packet.json \
   --live-data-counts production-live-data-counts.txt \
-  --public-url https://www.mymedlife.org
+  --public-url https://www.mymedlife.org \
+  --out production-invite-gate.md
 ```
 
 This command checks:
@@ -670,7 +671,7 @@ After the packet includes signed-in proof and five-chapter event-loop proof, pla
 the first invite batches before any emails go out:
 
 ```bash
-pnpm production:invite-batches --packet production-rollout-packet.json
+pnpm production:invite-batches --packet production-rollout-packet.json --out production-invite-batches.md
 ```
 
 This checks that:
@@ -725,9 +726,9 @@ pnpm production:smoke https://www.mymedlife.org
 6. Verify signed-in routing for `/app`, `/leader`, `/staff`, and `/admin`.
 7. Record the signed-in evidence in `signed-in-route-proof.csv`, rebuild the
    packet.
-8. Run `pnpm production:invite-batches` and review batch 1 with the support and
+8. Run `pnpm production:invite-batches --out production-invite-batches.md` and review batch 1 with the support and
    rollback owner.
-9. Run `pnpm production:invite-gate`.
+9. Run `pnpm production:invite-gate --out production-invite-gate.md`.
 10. Only then invite the first production rollout group.
 
 ## Still Blocked

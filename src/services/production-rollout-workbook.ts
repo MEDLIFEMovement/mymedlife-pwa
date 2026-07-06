@@ -286,7 +286,7 @@ export function formatProductionRolloutWorkbook(outputDirectoryName = "rollout-c
     "pnpm rollout:luma-mappings --packet production-rollout-packet.json",
     "pnpm production:pilot-event-proof --packet production-rollout-packet.json",
     "pnpm production:signed-in-route-proof --packet production-rollout-packet.json",
-    "pnpm production:invite-batches --packet production-rollout-packet.json",
+    "pnpm production:invite-batches --packet production-rollout-packet.json --out production-invite-batches.md",
     "pnpm rollout:approval-summary production-rollout-packet.json --out production-rollout-approval-summary.md",
     "```",
     "",

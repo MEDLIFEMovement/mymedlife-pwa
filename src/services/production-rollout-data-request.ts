@@ -55,8 +55,8 @@ export function getProductionRolloutDataRequest(
       "pnpm rollout:luma-mappings --packet production-rollout-packet.json",
       "pnpm production:pilot-event-proof --packet production-rollout-packet.json",
       "pnpm production:signed-in-route-proof --packet production-rollout-packet.json",
-      "pnpm production:invite-batches --packet production-rollout-packet.json",
-      "pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org",
+      "pnpm production:invite-batches --packet production-rollout-packet.json --out production-invite-batches.md",
+      "pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org --out production-invite-gate.md",
     ],
     safetyRules: [
       "Use real approved MEDLIFE rollout data only.",
