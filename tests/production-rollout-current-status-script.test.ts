@@ -15,6 +15,70 @@ import {
 } from "@/services/production-rollout-owner-packets";
 
 describe("production rollout current status script", () => {
+  it("auto-discovers generated handoff artifacts when default folders are absent", () => {
+    const directory = mkdtempSync(join(tmpdir(), "mymedlife-current-status-"));
+    const handoffDir = join(
+      directory,
+      ".codex-artifacts",
+      "production-rollout-owner-handoff",
+    );
+    const ownerDir = join(handoffDir, "rollout-owner-packets");
+    const trackerDir = join(handoffDir, "production-rollout-owner-send-tracker");
+    const outPath = join(directory, "production-rollout-current-status.md");
+    writeOwnerPacketFolders(ownerDir);
+    mkdirSync(trackerDir, { recursive: true });
+    writeFileSync(
+      join(trackerDir, "owner-recipient-assignments.csv"),
+      [
+        "ownerSlug,owner,recipientEmail,ccEmails,notes",
+        "nick-hq-launch-owner,Nick / HQ launch owner,,,",
+        "ds-launch-owner,DS / launch owner,,,",
+        "chapter-launch-owners,Chapter launch owners,,,",
+        "sales-coaching-lead,Sales / coaching lead,,,",
+        "campaign-launch-owner,Campaign / launch owner,,,",
+        "luma-ds-owner,Luma / DS owner,,,",
+        "launch-owner-ds,Launch owner / DS,,,",
+      ].join("\n"),
+    );
+
+    try {
+      execFileSync(
+        process.execPath,
+        [
+          "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+          join(process.cwd(), "scripts/check-production-rollout-current-status.mjs"),
+          "--out",
+          outPath,
+        ],
+        {
+          cwd: directory,
+          encoding: "utf8",
+          stdio: "pipe",
+        },
+      );
+    } catch (error) {
+      expect(getProcessOutput(error, "stdout")).toContain(
+        "Production rollout current status written to",
+      );
+      const report = readFileSync(outPath, "utf8");
+
+      expect(report).toContain(
+        "- owner packet folder: .codex-artifacts/production-rollout-owner-handoff/rollout-owner-packets",
+      );
+      expect(report).toContain(
+        "- owner recipient assignments: .codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+      );
+      expect(report).toContain("Owner packet recipients are incomplete");
+      expect(report).toContain("0/7 owner recipients assigned");
+      expect(report).toContain(
+        "Fill .codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+      );
+      return;
+    }
+
+    throw new Error("Expected current status script to exit not ready.");
+  });
+
   it("writes a NOT READY report when owner artifacts are missing", () => {
     const directory = mkdtempSync(join(tmpdir(), "mymedlife-current-status-"));
     const outPath = join(directory, "production-rollout-current-status.md");

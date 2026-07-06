@@ -33,6 +33,14 @@ Start with the owner handoff kit before anyone edits the shared rollout packet:
 pnpm rollout:owner-handoff --out production-rollout-owner-handoff
 ```
 
+If this handoff has already been generated in `production-rollout-owner-handoff`
+or `.codex-artifacts/production-rollout-owner-handoff`, the default status check
+will find it automatically and show the current owner-recipient blocker:
+
+```bash
+pnpm rollout:current-status
+```
+
 The generated folder contains:
 
 - blank owner-specific CSV folders
