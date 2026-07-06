@@ -1,13 +1,4 @@
-import { redirect } from "next/navigation";
-
-import { FigmaMemberMobileHome } from "@/components/figma-member-mobile-home";
-import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
-import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
-import { getLandingRouteForActor } from "@/services/landing-route";
-import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
-import { getLocalActorContext } from "@/services/local-actor-context";
-import { canAccessMemberWorkspace } from "@/services/role-visibility";
-import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
+import { renderMemberMobileShellPage } from "./member-mobile-shell-page";
 
 type MemberHomePageProps = {
   searchParams?: Promise<{
@@ -18,25 +9,6 @@ type MemberHomePageProps = {
 
 export default async function MemberHomePage(props: MemberHomePageProps) {
   const emptySearchParams: { lumaResult?: string; lumaMessage?: string } = {};
-  const actor = await getLocalActorContext();
   await (props.searchParams ?? Promise.resolve(emptySearchParams));
-  const landingRoute = getLandingRouteForActor(actor);
-
-  if (shouldRedirectActorToLogin(actor)) {
-    redirect(buildLoginRedirectHref("/app"));
-  }
-
-  if (!canAccessMemberWorkspace(actor)) {
-    redirect(landingRoute);
-  }
-
-  return (
-    <>
-      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
-      {isPreviewWorkspaceAccess(actor, "student_app") ? (
-        <WorkspacePreviewBanner workspaceLabel="the General Student App" />
-      ) : null}
-      <FigmaMemberMobileHome />
-    </>
-  );
+  return renderMemberMobileShellPage({ redirectPath: "/app" });
 }

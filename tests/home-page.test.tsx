@@ -67,6 +67,7 @@ describe("home page", () => {
     expect(html).toContain("Rush Month");
     expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("Profile");
+    expect(html).toContain("Stories");
     expect(html).toContain("Events");
     expect(html).toContain("Points");
     expect(html).not.toContain("Local preview tools");
@@ -123,12 +124,14 @@ describe("home page", () => {
     );
     const lineCount = source.split("\n").length;
 
-    expect(lineCount).toBeGreaterThanOrEqual(3490);
-    expect(lineCount).toBeLessThanOrEqual(3535);
-    expect(source).toContain('const [screen, setScreen] = useState<Screen>("home");');
+    expect(lineCount).toBeGreaterThanOrEqual(3500);
+    expect(lineCount).toBeLessThanOrEqual(3565);
+    expect(source).toContain("initialScreen = \"home\"");
+    expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain('case "events": return <EventsScreen navigate={navigate} />;');
     expect(source).toContain('case "event-detail": return <EventDetailScreen navigate={navigate} />;');
     expect(source).toContain('case "points": return <PointsLeaderboard navigate={navigate} />;');
+    expect(source).toContain('"/app/stories"');
     expect(source).toContain('"/app/events"');
     expect(source).toContain('"/app/points"');
     expect(source).toContain('"/profile"');

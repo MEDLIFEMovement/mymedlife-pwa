@@ -279,6 +279,7 @@ export function getMobileQuickNavigationForActor(
     case "member":
       return [
         { href: "/app", label: "Home", helper: "Today" },
+        { href: "/app/stories", label: "Stories", helper: "Field" },
         { href: "/app/events", label: "Events", helper: "Meet" },
         { href: "/app/points", label: "Points", helper: "Rank" },
         ...(hasTravelerAccess(actor) && shouldShowTravelerPrepEntry()

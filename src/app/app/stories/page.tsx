@@ -1,12 +1,12 @@
 import { renderMemberMobileShellPage } from "@/app/app/member-mobile-shell-page";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 
-export const metadata = getStaticRouteMetadata("rushMonthLeaderboard");
+export const metadata = getStaticRouteMetadata("app");
 export const dynamic = "force-dynamic";
 
-export default async function AppPointsPage() {
+export default async function AppStoriesPage() {
   return renderMemberMobileShellPage({
-    initialScreen: "points",
-    redirectPath: "/app/points",
+    initialScreen: "stories",
+    redirectPath: "/app/stories",
   });
 }

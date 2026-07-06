@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions, react/no-unescaped-entities */
 
+import Link from "next/link";
 import React, { useState } from "react";
 import {
   Home, BarChart2, CalendarDays, Trophy, User, Users,
@@ -20,6 +21,11 @@ type Screen =
   | "points" | "events" | "event-detail" | "rsvp-confirm" | "checkin"
   | "stories" | "leader" | "assign" | "review"
   | "coach" | "admin";
+
+export type MemberMobileLaunchScreen = Extract<
+  Screen,
+  "home" | "events" | "points" | "stories"
+>;
 
 type Role = "student" | "leader" | "coach" | "admin";
 
@@ -244,9 +250,9 @@ function AlertBanner({
 function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen) => void }) {
   const items: { id: Screen | "profile"; label: string; Icon: typeof Home }[] = [
     { id: "home",    label: "Home",    Icon: Home },
+    { id: "stories", label: "Stories", Icon: Sparkles },
     { id: "events",  label: "Events",  Icon: CalendarDays },
     { id: "points",  label: "Points",  Icon: Trophy },
-    { id: "stories", label: "Stories", Icon: Sparkles },
     { id: "profile", label: "Profile", Icon: User },
   ];
   const EVENT_SCREENS: Screen[] = ["events", "event-detail", "rsvp-confirm", "checkin"];
@@ -259,7 +265,11 @@ function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen)
           : label === "Stories"
           ? STORY_SCREENS.includes(active)
           : active === id && label !== "Profile";
-        const routeHref = id === "events"
+        const routeHref = id === "home"
+          ? "/app"
+          : id === "stories"
+          ? "/app/stories"
+          : id === "events"
           ? "/app/events"
           : id === "points"
           ? "/app/points"
@@ -273,10 +283,10 @@ function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen)
 
         if (routeHref) {
           return (
-            <a key={idx} href={routeHref} className={className}>
+            <Link key={idx} href={routeHref} className={className}>
               <Icon size={20} />
               <span>{label}</span>
-            </a>
+            </Link>
           );
         }
 
@@ -369,9 +379,9 @@ function StudentHome({
         </div>
 
         {/* Points card — sits directly below priority in the blue zone */}
-        <div
-          onClick={() => navigate("points")}
-          className="mt-3 bg-white/10 border border-white/15 rounded-2xl px-4 py-3.5 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform hover:bg-white/15"
+        <Link
+          href="/app/points"
+          className="mt-3 flex items-center justify-between rounded-2xl border border-white/15 bg-white/10 px-4 py-3.5 transition-transform hover:bg-white/15 active:scale-[0.98]"
         >
           <div>
             <p className="text-blue-200 text-xs font-semibold">My Points · Rush Month</p>
@@ -385,12 +395,12 @@ function StudentHome({
             <Trophy size={32} className="text-accent" />
             <span className="text-blue-100 text-[11px] font-semibold">Leaderboard →</span>
           </div>
-        </div>
+        </Link>
 
         {/* Stories promo — green, right under points */}
-        <div
-          onClick={() => navigate("stories")}
-          className="mt-3 bg-gradient-to-r from-[#2D5016]/80 to-[#3D7A5A]/80 border border-white/10 rounded-2xl px-4 py-3.5 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform hover:brightness-110"
+        <Link
+          href="/app/stories"
+          className="mt-3 flex items-center justify-between rounded-2xl border border-white/10 bg-gradient-to-r from-[#2D5016]/80 to-[#3D7A5A]/80 px-4 py-3.5 transition-transform hover:brightness-110 active:scale-[0.98]"
         >
           <div>
             <p className="text-green-200 text-xs font-bold uppercase tracking-wide">From the Field</p>
@@ -403,7 +413,7 @@ function StudentHome({
             <Heart size={26} className="text-white/70 fill-white/20" />
             <p className="text-green-100 text-[11px] font-semibold">{stories.length} stories →</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       <div className="px-4 pt-5 space-y-6">
@@ -430,9 +440,13 @@ function StudentHome({
                   {e.rsvp ? (
                     <Pill label="RSVP'd" variant="green" />
                   ) : (
-                    <button onClick={(event) => { event.stopPropagation(); navigate("event-detail"); }} className="text-xs font-bold text-primary border border-primary/50 px-3 py-1.5 rounded-xl hover:bg-primary/5 flex-shrink-0">
+                    <Link
+                      href="/app/events/chapter-event-ucla-kickoff?source=home"
+                      onClick={(event) => event.stopPropagation()}
+                      className="flex-shrink-0 rounded-xl border border-primary/50 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/5"
+                    >
                       RSVP
-                    </button>
+                    </Link>
                   )}
                 </div>
               </Card>
@@ -3461,8 +3475,12 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
 
 const STUDENT_SCREENS: Screen[] = ["home", "campaign", "action", "evidence", "confirm", "points", "events", "event-detail", "rsvp-confirm", "checkin", "stories"];
 
-export function FigmaMemberMobileHome() {
-  const [screen, setScreen] = useState<Screen>("home");
+export function FigmaMemberMobileHome({
+  initialScreen = "home",
+}: {
+  initialScreen?: MemberMobileLaunchScreen;
+}) {
+  const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
 
   function navigate(s: Screen) {

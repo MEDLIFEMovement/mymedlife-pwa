@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarDays, Home, Trophy, User } from "lucide-react";
+import { CalendarDays, Home, Sparkles, Trophy, User } from "lucide-react";
 
 type StudentRouteQuickNavItem = {
   href: string;
@@ -9,10 +9,16 @@ type StudentRouteQuickNavItem = {
   Icon: typeof Home;
 };
 
-export type StudentRouteQuickNavKey = "home" | "events" | "points" | "profile";
+export type StudentRouteQuickNavKey =
+  | "home"
+  | "stories"
+  | "events"
+  | "points"
+  | "profile";
 
 const studentRouteQuickNavItems: StudentRouteQuickNavItem[] = [
   { key: "home", label: "Home", helper: "Today", href: "/app", Icon: Home },
+  { key: "stories", label: "Stories", helper: "Field", href: "/app/stories", Icon: Sparkles },
   { key: "events", label: "Events", helper: "RSVP", href: "/app/events", Icon: CalendarDays },
   { key: "points", label: "Points", helper: "Rank", href: "/app/points", Icon: Trophy },
   { key: "profile", label: "Profile", helper: "Me", href: "/profile", Icon: User },
@@ -26,7 +32,7 @@ export function StudentRouteQuickNav({
   return (
     <nav
       aria-label="Student quick navigation"
-      className="fixed bottom-3 left-1/2 z-50 grid w-[min(26.5rem,calc(100vw-1.5rem))] -translate-x-1/2 grid-cols-4 gap-1 rounded-[1.5rem] border border-slate-200 bg-white/96 p-2 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl"
+      className="fixed bottom-3 left-1/2 z-50 grid w-[min(28rem,calc(100vw-1.5rem))] -translate-x-1/2 grid-cols-5 gap-1 rounded-[1.5rem] border border-slate-200 bg-white/96 p-2 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur-xl"
     >
       {studentRouteQuickNavItems.map(({ href, label, helper, key, Icon }) => {
         const isActive = active === key;

@@ -7,6 +7,7 @@ export type AppRouteRegistryItem = {
 const appRouteRegistry: AppRouteRegistryItem[] = [
   { href: "/", label: "Home", routeType: "exact" },
   { href: "/app", label: "Member app", routeType: "exact" },
+  { href: "/app/stories", label: "Member stories", routeType: "exact" },
   { href: "/app/events", label: "Member events", routeType: "exact" },
   { href: "/app/events/", label: "Member event detail", routeType: "prefix" },
   { href: "/app/points", label: "Member points", routeType: "exact" },
