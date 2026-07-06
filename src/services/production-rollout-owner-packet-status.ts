@@ -272,7 +272,7 @@ function getFileStatusMessage({
   }
 
   if (rowCount < minimumRows) {
-    return `${filename} needs ${minimumRows} data rows; current: ${rowCount}.`;
+    return `${filename} needs ${minimumRows} ${pluralize("data row", minimumRows)}; current: ${rowCount}.`;
   }
 
   return `${filename} has enough rows for the next validation step.`;
@@ -290,6 +290,7 @@ function getNextCommands({
   if (!readyForPacketBuild) {
     return [
       `pnpm rollout:owner-status --owner-dir ${sourceDirectoryName} --out production-rollout-owner-packet-status.md`,
+      `pnpm rollout:owner-requests --owner-dir ${sourceDirectoryName} --out production-rollout-owner-requests`,
       "Ask each owner to fix the blockers in their folder.",
       "Rerun this status check before assembling the shared CSV folder.",
     ];
@@ -351,6 +352,10 @@ function getCsvDataRowCount(content: string) {
     .split(/\r?\n/)
     .slice(1)
     .filter((line) => line.trim().length > 0).length;
+}
+
+function pluralize(label: string, count: number) {
+  return count === 1 ? label : `${label}s`;
 }
 
 function formatList(items: string[], emptyLabel: string) {
