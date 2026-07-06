@@ -60,6 +60,36 @@ describe("figma test seed map", () => {
     ).toBe(true);
   });
 
+  it("covers exported high-risk Figma fixture values that must stay out of seeded sandbox rows", () => {
+    const byKey = new Map(figmaTestSeedRecords.map((record) => [record.key, record]));
+
+    expect(byKey.get("admin-fixtures")?.disposition).toBe("fixture_only");
+    expect(byKey.get("training-resource-fixtures")?.disposition).toBe("fixture_only");
+    expect(byKey.get("proof-stories")?.disposition).toBe("fixture_only");
+
+    expect(byKey.get("admin-fixtures")?.sourceValues).toEqual(
+      expect.arrayContaining([
+        "luma_live_<mock-token>",
+        "pat-na1-<mock-token>",
+        "sk-proj-<mock-token>",
+      ]),
+    );
+    expect(byKey.get("training-resource-fixtures")?.sourceValues).toEqual(
+      expect.arrayContaining([
+        "MEDLIFE Bridge Videos",
+        "greenleaf.org",
+        "coursera.org",
+      ]),
+    );
+    expect(byKey.get("proof-stories")?.sourceValues).toEqual(
+      expect.arrayContaining([
+        "Doña Carmen",
+        "Cassandra",
+        "images.unsplash.com",
+      ]),
+    );
+  });
+
   it("identifies markers that must never count as production rollout evidence", () => {
     expect(getFigmaOrTestSeedEvidenceReason("Test UCLA MEDLIFE")).toBe(
       "packet starts with Test",

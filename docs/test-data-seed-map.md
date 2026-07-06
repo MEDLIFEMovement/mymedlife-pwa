@@ -70,8 +70,9 @@ explicitly assigns a schema goal.
 | Evidence and proof review | Proof packs, screenshots, Bridge Videos, UGC cards, story submissions | `app.evidence_items`, review/status rows where schema exists | Seed only safe metadata. External URLs, images, patient stories, quotes, and social captions stay fixture-only unless consent/storage rules are approved. |
 | Staff portfolio summaries | Chapter health, risk, campaign status, coach assignments, analytics cards | `app.chapters`, `app.kpi_events`, app events/activity rows, staff review rows if present | Seed representative summaries. Broad global portfolio examples can stay fixture-only. |
 | Integrations/outbox | Luma, HubSpot, BigQuery, Shopify, GiveLively, n8n, OpenAI, Power BI, Meta, Hootsuite, Smile.io | `app.integration_events`, `app.automation_outbox`, `app.audit_logs` | Seed disabled/mock-safe status rows only. Never seed live credentials or enabled sends. |
-| Admin API keys | `secret-ref:luma:staging:v1`, `secret-ref:hubspot:disabled:v1`, similar placeholders | Fixture-only unless a secure secret-reference model is approved | Keep fixture-only. Do not seed real API keys or real secret refs. |
+| Admin API keys | `secret-ref:luma:staging:v1`, `secret-ref:hubspot:disabled:v1`, plus exported live-looking mock tokens such as `luma_live_*`, `pat-na1-*`, `sk-proj-*`, `n8n_whsec_*`, and BigQuery-style service-key strings | Fixture-only unless a secure secret-reference model is approved | Keep fixture-only. Do not seed real API keys or realistic mock key strings. Sanitize exported admin key examples before any persisted adapter is approved. |
 | SLT Prep | Test traveler, Test Peru SLT trip, checklist, payments, meetings, traveler success notes | Future SLT prep schema or fixture adapters | Fixture-only until schema and Figma source are approved. |
+| Leader resource library | MEDLIFE Bridge Videos, Greenleaf, VitalSmarts, Ashoka, Gallup, Coursera, external training/resource URLs | Future content-library schema only if Coordinator assigns it | Fixture-only. Do not seed third-party resource titles, org names, or URLs into rollout evidence paths. |
 
 ## Minimum Proof Account Classes
 
@@ -97,6 +98,8 @@ explicitly assigns a schema goal.
 | Intro GBM, Tabling at Bruin Walk, Rush Week Social, Fundraising Bake Sale, Community Meal Service, Bridge Video Workshop | `Test ...` event/proof instances |
 | Peru SLT \| July 2026 | `Test Peru SLT \| July 2026` if persisted as a trip instance |
 | Story/proof titles, patient/student quotes, external social links | Fixture-only until consent/source/storage rules are approved |
+| Leader training titles and external learning links | Fixture-only until a content-library/storage model is approved |
+| Export-only member prototype names such as Sofia Chen, Alex Kim, and legacy UCF/FIU chapter copy | Fixture-only unless a later UI wiring task normalizes them into explicit `Test ...` records |
 
 Do not rename MEDLIFE, Luma, Events, Points, SLT Prep, High School Chapter,
 College / University Chapter, provider names, campaign template names, or module
@@ -132,6 +135,21 @@ Current focused coverage:
 - `tests/figma-test-seed-map.test.ts`
 - `tests/production-rollout-packet-builder.test.ts`
 - `tests/production-rollout-bootstrap.test.ts`
+
+Additional audit findings from the exported Figma code folders:
+
+- `/Users/codex/Desktop/Staff Command Center Dashboard/` still contains
+  production-shaped mock API keys in the admin fixture export. Those values
+  must stay fixture-only and should be sanitized before any future persisted
+  sandbox adapter is allowed.
+- `/Users/codex/Desktop/Student Leadership Command Center/` includes a leader
+  training/resource surface with external URLs and third-party org names. Those
+  values should stay fixture-only rather than being pulled into seeded sandbox
+  rows.
+- `/Users/codex/Desktop/myMEDLIFE App Prototype/` still contains older UCF/FIU
+  member prototype names and events that are not part of the current
+  `figma_seed_v1` login/report path. They should remain fixture-only unless a
+  later UI wiring pass intentionally maps them into `Test ...` records.
 
 ## First Implementation Goal
 
