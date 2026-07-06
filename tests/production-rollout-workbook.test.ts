@@ -18,6 +18,9 @@ describe("production rollout workbook", () => {
     expect(workbook).toContain("# myMEDLIFE 30-Chapter Production Rollout Workbook");
     expect(workbook).toContain("pnpm rollout:owner-packets --out rollout-owner-packets");
     expect(workbook).toContain(
+      "pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out rollout-csv",
+    );
+    expect(workbook).toContain(
       "pnpm rollout:data-request --dir rollout-csv --out production-rollout-data-request.md",
     );
     expect(workbook).toContain("pnpm rollout:check-csv --dir rollout-csv");
