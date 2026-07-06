@@ -69,9 +69,9 @@ Purpose: give reviewers a plain-language map from visible launch-lane routes to 
 | `/admin/integrations/luma` | Luma status page | Secret-free Luma mode, linked-event posture, and blocked write controls. | DS/super admin |
 | `/admin/pilot-scope` | pilot scope page | One-chapter / first-five-chapter rollout scope and boundaries. | admin/DS/super admin |
 
-## Hidden Or De-emphasized During Launch Lane
+## Visible But Outside The Invite Gate
 
-These routes/modules may exist in code, but they are not part of the launch-lane smoke target:
+These routes/modules may exist in code and may remain visible, but they are not part of the launch-lane smoke target:
 
 - broad Rush Month legacy routes
 - broad SLT Prep sidebar entry
@@ -81,4 +81,4 @@ These routes/modules may exist in code, but they are not part of the launch-lane
 - non-Luma integrations
 - production API key management
 
-They should stay hidden, disabled, or explicitly blocked until their own launch slice is approved.
+They should stay parked, disabled, read-only, or explicitly blocked until their own launch slice is approved. Mere visibility should not block the 30-chapter invite gate; missing launch-critical event, RSVP, attendance, points, leaderboard, login, workspace, audit, or outbox proof still should.
