@@ -99,6 +99,18 @@ export function ChapterLeaderCommandCenterPanel({
       helper: "Show chapter points movement",
       tone: "secondary",
     },
+    {
+      label: "Review Members",
+      href: buildChapterLeaderCommandCenterHref("members", {
+        source: preservedChapterState.source,
+        memberId: preservedChapterState.memberId,
+        pipelineFilter: preservedChapterState.pipelineFilter,
+        searchQuery: preservedChapterState.searchQuery,
+        quickAction: "review_members",
+      }),
+      helper: "Open the member pipeline",
+      tone: "secondary",
+    },
   ];
   const dashboardHeading = getDashboardHeading(commandCenter.eventsOverview.monthLabel);
   const healthRankingLabel = getHealthRankingLabel(commandCenter);
@@ -445,7 +457,7 @@ export function ChapterLeaderCommandCenterPanel({
             </SectionCard>
 
             <SectionCard eyebrow="Quick Actions" title="Quick Actions">
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                 {overviewQuickActions.map((action) => (
                   <QuickActionLink key={action.label} action={action} variant="overview" />
                 ))}

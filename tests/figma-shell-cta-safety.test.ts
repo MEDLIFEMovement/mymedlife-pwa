@@ -85,4 +85,11 @@ describe("copied Figma shell CTA safety", () => {
     expect(staffSource).toContain("No live Luma writes from this shell");
     expect(staffSource).toContain("Workflow execution disabled");
   });
+
+  it("keeps the copied admin account row visibly delegated to the top-right session menu", () => {
+    const adminSource = readProjectFile("src/components/figma-admin-panel.tsx");
+
+    expect(adminSource).toContain("Use the top-right menu to switch workspaces or log out.");
+    expect(adminSource).toContain("Account menu");
+  });
 });
