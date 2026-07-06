@@ -12,7 +12,8 @@ const usage = [
 ].join("\n");
 
 try {
-  const args = parseArgs(process.argv.slice(2));
+  const rawArgs = process.argv.slice(2);
+  const args = await resolveGeneratedArtifactDefaults(parseArgs(rawArgs), rawArgs);
   const paths = {
     ownerDirectoryName: args.ownerDir,
     recipientAssignmentsPath: args.recipientAssignments,
@@ -226,6 +227,63 @@ async function fileExists(path) {
   } catch {
     return false;
   }
+}
+
+async function resolveGeneratedArtifactDefaults(args, rawArgs) {
+  if (hasArg(rawArgs, "--owner-dir")) {
+    return args;
+  }
+
+  if (await fileExists(args.ownerDir)) {
+    return args;
+  }
+
+  const handoffDir = await findGeneratedOwnerHandoffDirectory();
+
+  if (!handoffDir) {
+    return args;
+  }
+
+  const ownerDir = join(handoffDir, "rollout-owner-packets");
+  const recipientAssignments = join(
+    handoffDir,
+    "production-rollout-owner-send-tracker",
+    "owner-recipient-assignments.csv",
+  );
+  let resolvedRecipientAssignments = args.recipientAssignments;
+
+  if (
+    !resolvedRecipientAssignments &&
+    !hasArg(rawArgs, "--recipient-assignments") &&
+    (await fileExists(recipientAssignments))
+  ) {
+    resolvedRecipientAssignments = recipientAssignments;
+  }
+
+  return {
+    ...args,
+    ownerDir,
+    recipientAssignments: resolvedRecipientAssignments,
+  };
+}
+
+async function findGeneratedOwnerHandoffDirectory() {
+  const candidates = [
+    "production-rollout-owner-handoff",
+    ".codex-artifacts/production-rollout-owner-handoff",
+  ];
+
+  for (const candidate of candidates) {
+    if (await fileExists(join(candidate, "rollout-owner-packets"))) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function hasArg(args, name) {
+  return args.some((arg) => arg === name || arg.startsWith(`${name}=`));
 }
 
 function parseArgs(args) {
