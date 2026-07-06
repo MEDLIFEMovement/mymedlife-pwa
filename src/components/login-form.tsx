@@ -58,17 +58,10 @@ export function LoginForm({
           placeholder="you@example.com"
           required
           disabled={!signInEnabled}
-          className="w-full rounded-xl px-4 py-2.5 text-sm transition-all placeholder:text-[#6b7280] focus:outline-none disabled:opacity-60"
+          className="w-full rounded-xl border-[1.5px] border-white/10 bg-[#0d1117] px-4 py-2.5 text-sm text-[#f3f4f6] transition-all placeholder:text-[#6b7280] focus:border-[#b8253a] focus:outline-none disabled:opacity-60"
           style={{
             background: "#0d1117",
-            border: "1.5px solid rgba(255,255,255,0.1)",
             color: "#f3f4f6",
-          }}
-          onFocus={(event) => {
-            event.currentTarget.style.borderColor = "#b8253a";
-          }}
-          onBlur={(event) => {
-            event.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
           }}
         />
       </div>
@@ -99,17 +92,10 @@ export function LoginForm({
           placeholder="••••••••"
           required
           disabled={!signInEnabled}
-          className="w-full rounded-xl px-4 py-2.5 text-sm transition-all placeholder:text-[#6b7280] focus:outline-none disabled:opacity-60"
+          className="w-full rounded-xl border-[1.5px] border-white/10 bg-[#0d1117] px-4 py-2.5 text-sm text-[#f3f4f6] transition-all placeholder:text-[#6b7280] focus:border-[#b8253a] focus:outline-none disabled:opacity-60"
           style={{
             background: "#0d1117",
-            border: "1.5px solid rgba(255,255,255,0.1)",
             color: "#f3f4f6",
-          }}
-          onFocus={(event) => {
-            event.currentTarget.style.borderColor = "#b8253a";
-          }}
-          onBlur={(event) => {
-            event.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
           }}
         />
       </div>
