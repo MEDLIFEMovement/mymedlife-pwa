@@ -84,7 +84,12 @@ describe("Figma missing route placeholders", () => {
     const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
     const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
 
+    const modulesHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="modules" />);
+    expect(modulesHtml).toContain("This module surface is preview-only.");
+    expect(source).toContain("Module changes are blocked in this static admin shell; use the audited admin workflow after approval");
+
     const integrationsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="integrations" />);
+    expect(integrationsHtml).toContain("this integrations surface is preview-only");
     expect(integrationsHtml).toContain("Smile.io provider enablement is blocked until DS approval is complete");
     expect(integrationsHtml).toContain("Meta App Review and OAuth scope setup stay visible for DS review");
     expect(source).toContain("Publishing remains blocked in this preview");
