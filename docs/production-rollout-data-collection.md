@@ -238,6 +238,19 @@ Draft/template/SOP/sample boundary:
 - Turning draft/template material into live behavior requires explicit DS/admin
   approval outside this packet assembly flow.
 
+If the team wants a read-only SOP/template operator spec before future
+ingestion work, use:
+
+```bash
+pnpm rollout:sop-approval-readiness --out sop-template-approval-readiness.md
+```
+
+This does not inspect production, create users, write rows, or enable live SOP
+behavior. It simply summarizes what draft, reviewed, scheduled, live, and
+archived should mean; who must approve promotion toward live use; and which
+guards keep SOP/template/sample material out of launch evidence and launch-lane
+runtime behavior.
+
 If the team needs a plain-English gap readout before the final invite gate, use:
 
 ```bash
