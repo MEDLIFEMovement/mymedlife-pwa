@@ -142,6 +142,29 @@ describe("production pilot event proof readiness", () => {
     );
   });
 
+  it("blocks ready rows that still reference sandbox preview staging or sample evidence", () => {
+    const packet = createPilotPacket(5);
+    packet.pilotEventProof![0] = {
+      ...packet.pilotEventProof![0]!,
+      notes: "Local sandbox RSVP and attendance rehearsal only",
+    };
+    packet.pilotEventProof![1] = {
+      ...packet.pilotEventProof![1]!,
+      lumaEventId: "figma_seed_evt_chapter_02",
+    };
+
+    const readiness = getProductionPilotEventProofReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.counts.provenPilotChapters).toBe(3);
+    expect(readiness.blockers).toContain(
+      "chapter-01 pilot event evt-chapter-01 notes references local sandbox, which is local, preview, staging, sample, or setup-only evidence and cannot count as approved production pilot proof.",
+    );
+    expect(readiness.blockers).toContain(
+      "chapter-02 pilot event figma_seed_evt_chapter_02 lumaEventId references figma, which is local, preview, staging, sample, or setup-only evidence and cannot count as approved production pilot proof.",
+    );
+  });
+
   it("does not count paused or blocked rows as proven pilot chapters", () => {
     const packet = createPilotPacket(5);
     packet.pilotEventProof![0] = {
