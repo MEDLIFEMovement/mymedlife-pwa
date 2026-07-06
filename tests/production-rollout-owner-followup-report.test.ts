@@ -39,6 +39,7 @@ describe("production rollout owner follow-up report", () => {
     expect(report.summary.ownerCount).toBe(7);
     expect(report.summary.readyOwnerCount).toBe(0);
     expect(report.summary.draftedCount).toBe(7);
+    expect(report.summary.draftEvidenceCount).toBe(0);
     expect(report.summary.missingRecipientCount).toBe(7);
     expect(report.rows.find((row) => row.ownerSlug === "ds-launch-owner")).toMatchObject({
       trackerStatus: "drafted",
@@ -47,10 +48,43 @@ describe("production rollout owner follow-up report", () => {
     });
     expect(markdown).toContain("myMEDLIFE owner follow-up report: NOT READY");
     expect(markdown).toContain("- drafted: 7");
+    expect(markdown).toContain("- draft evidence rows: 0");
     expect(markdown).toContain("recipientEmail is missing.");
     expect(markdown).toContain("No missing tracker rows.");
     expect(markdown).toContain("No extra tracker rows.");
     expect(markdown).not.toContain("API_KEY=");
+  });
+
+  it("surfaces Gmail draft evidence without treating it as sent", () => {
+    const status = getProductionRolloutOwnerPacketStatus({
+      foundFiles: createOwnerFilesWithRows({}),
+      sourceDirectoryName: "rollout-owner-packets",
+      outputDirectoryName: "rollout-csv",
+      options: {
+        minimumChapterCount: 2,
+        minimumStudentMembershipCount: 3,
+        minimumPilotChapterCount: 1,
+      },
+    });
+    const trackerCsv = [
+      "ownerSlug,owner,ready,blockerCount,emailDraftPath,requestDocPath,ownerFolderPath,recipientEmail,ccEmails,draftId,draftedAt,sendStatus,sentAt,returnedAt,validatedAt,nextAction,notes",
+      "ds-launch-owner,DS / launch owner,no,3,draft.md,request.md,folder,ds@example.org,,r6012129993652831943,2026-07-06T04:00:00-04:00,drafted,,,,next,note",
+    ].join("\n");
+    const report = getProductionRolloutOwnerFollowupReport({
+      status,
+      trackerCsv,
+    });
+    const dsRow = report.rows.find((row) => row.ownerSlug === "ds-launch-owner");
+    const markdown = formatProductionRolloutOwnerFollowupReport(report);
+
+    expect(report.summary.draftEvidenceCount).toBe(1);
+    expect(dsRow?.trackerStatus).toBe("drafted");
+    expect(dsRow?.draftEvidence).toContain("r6012129993652831943");
+    expect(dsRow?.nextAction).toBe(
+      "Review/send the Gmail draft, then update tracker to sent.",
+    );
+    expect(markdown).toContain("- draft evidence rows: 1");
+    expect(markdown).toContain("r6012129993652831943");
   });
 
   it("flags returned trackers that still fail owner validation", () => {
@@ -107,7 +141,10 @@ describe("production rollout owner follow-up report", () => {
       status,
       requestDirectoryName: "requests",
       emailDraftDirectoryName: "drafts",
-    }).replaceAll(",,,validated,,,,", ",owner@example.org,,validated,,,2026-07-06,");
+    }).replaceAll(
+      ",,,,,validated,,,,",
+      ",owner@example.org,,,,validated,,,2026-07-06,",
+    );
     const report = getProductionRolloutOwnerFollowupReport({
       status,
       trackerCsv,

@@ -38,10 +38,10 @@ describe("production rollout owner send tracker", () => {
     expect(readme).toContain("pnpm rollout:owner-recipients");
     expect(readme).toContain("drafted");
     expect(csv).toContain(
-      "ownerSlug,owner,ready,blockerCount,emailDraftPath,requestDocPath,ownerFolderPath,recipientEmail,ccEmails,sendStatus,sentAt,returnedAt,validatedAt,nextAction,notes",
+      "ownerSlug,owner,ready,blockerCount,emailDraftPath,requestDocPath,ownerFolderPath,recipientEmail,ccEmails,draftId,draftedAt,sendStatus,sentAt,returnedAt,validatedAt,nextAction,notes",
     );
     expect(csv).toContain(
-      "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md,production-rollout-owner-handoff/rollout-owner-packets/ds-launch-owner,,,drafted,,,",
+      "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md,production-rollout-owner-handoff/rollout-owner-packets/ds-launch-owner,,,,,drafted,,,",
     );
     expect(csv).toContain(
       "\"Send the owner request, collect completed CSVs, then rerun owner status.\"",
@@ -82,7 +82,7 @@ describe("production rollout owner send tracker", () => {
     );
 
     expect(csv).toContain(
-      "luma-ds-owner,Luma / DS owner,yes,0,production-rollout-owner-email-drafts/luma-ds-owner.md,production-rollout-owner-requests/luma-ds-owner.md,rollout-owner-packets/luma-ds-owner,,,validated,,,",
+      "luma-ds-owner,Luma / DS owner,yes,0,production-rollout-owner-email-drafts/luma-ds-owner.md,production-rollout-owner-requests/luma-ds-owner.md,rollout-owner-packets/luma-ds-owner,,,,,validated,,,",
     );
     expect(csv).toContain(
       "Confirm this owner folder stays validated before packet assembly.",
@@ -120,7 +120,7 @@ describe("production rollout owner send tracker", () => {
     );
 
     expect(csv).toContain(
-      "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md,rollout-owner-packets/ds-launch-owner,ds@example.org,nick@example.org; kiomi@example.org,drafted,,,,",
+      "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md,rollout-owner-packets/ds-launch-owner,ds@example.org,nick@example.org; kiomi@example.org,,,drafted,,,",
     );
     expect(csv).toContain("Confirmed owner");
     expect(nextAssignmentCsv).toContain(

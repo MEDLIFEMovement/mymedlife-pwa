@@ -8,6 +8,8 @@ export type ProductionRolloutOwnerFollowupTrackerRow = {
   owner: string;
   recipientEmail: string;
   ccEmails: string;
+  draftId: string;
+  draftedAt: string;
   sendStatus: string;
   sentAt: string;
   returnedAt: string;
@@ -21,6 +23,7 @@ export type ProductionRolloutOwnerFollowupRow = {
   ownerReady: boolean;
   trackerStatus: string;
   blockerCount: number;
+  draftEvidence: string;
   issues: string[];
   nextAction: string;
 };
@@ -35,6 +38,7 @@ export type ProductionRolloutOwnerFollowupReport = {
     returnedCount: number;
     validatedCount: number;
     blockedCount: number;
+    draftEvidenceCount: number;
     missingRecipientCount: number;
     issueCount: number;
   };
@@ -107,6 +111,8 @@ export function getProductionRolloutOwnerFollowupReport({
       returnedCount: countStatus(rows, "returned"),
       validatedCount: countStatus(rows, "validated"),
       blockedCount: countStatus(rows, "blocked"),
+      draftEvidenceCount: rows.filter((row) => row.draftEvidence !== "None")
+        .length,
       missingRecipientCount: rows.filter((row) =>
         row.issues.some((issue) => issue === "recipientEmail is missing."),
       ).length,
@@ -136,16 +142,17 @@ export function formatProductionRolloutOwnerFollowupReport(
     `- returned: ${report.summary.returnedCount}`,
     `- validated: ${report.summary.validatedCount}`,
     `- blocked: ${report.summary.blockedCount}`,
+    `- draft evidence rows: ${report.summary.draftEvidenceCount}`,
     `- missing recipient emails: ${report.summary.missingRecipientCount}`,
     `- issue count: ${report.summary.issueCount}`,
     "",
     "## Owner Follow-Up",
     "",
-    "| Owner | Tracker status | Owner folder | Issues | Next action |",
-    "|---|---|---|---|---|",
+    "| Owner | Tracker status | Owner folder | Draft evidence | Issues | Next action |",
+    "|---|---|---|---|---|---|",
     ...report.rows.map(
       (row) =>
-        `| ${row.owner} | ${row.trackerStatus} | ${row.ownerReady ? "READY" : "NOT READY"} | ${formatCellList(row.issues)} | ${row.nextAction} |`,
+        `| ${row.owner} | ${row.trackerStatus} | ${row.ownerReady ? "READY" : "NOT READY"} | ${row.draftEvidence} | ${formatCellList(row.issues)} | ${row.nextAction} |`,
     ),
     "",
     "## Tracker Row Integrity",
@@ -206,6 +213,8 @@ export function parseOwnerSendTrackerCsv(
         owner: values.owner ?? "",
         recipientEmail: values.recipientEmail ?? "",
         ccEmails: values.ccEmails ?? "",
+        draftId: values.draftId ?? "",
+        draftedAt: values.draftedAt ?? "",
         sendStatus: normalizeStatus(values.sendStatus ?? ""),
         sentAt: values.sentAt ?? "",
         returnedAt: values.returnedAt ?? "",
@@ -231,9 +240,22 @@ function getOwnerFollowupRow({
     ownerReady: owner.ready,
     trackerStatus,
     blockerCount: owner.blockers.length,
+    draftEvidence: formatDraftEvidence(tracker),
     issues,
     nextAction: getNextAction({ owner, tracker, trackerStatus, issues }),
   };
+}
+
+function formatDraftEvidence(
+  tracker?: ProductionRolloutOwnerFollowupTrackerRow,
+) {
+  if (!tracker) {
+    return "None";
+  }
+
+  const evidence = [tracker.draftId, tracker.draftedAt].filter(Boolean);
+
+  return evidence.length > 0 ? evidence.join("<br>") : "None";
 }
 
 function getOwnerIssues({
@@ -302,6 +324,10 @@ function getNextAction({
   }
 
   if (trackerStatus === "drafted") {
+    if (tracker.draftId || tracker.draftedAt) {
+      return "Review/send the Gmail draft, then update tracker to sent.";
+    }
+
     return "Send the owner packet, request doc, and email draft.";
   }
 
