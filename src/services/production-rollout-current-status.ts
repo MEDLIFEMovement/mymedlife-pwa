@@ -274,6 +274,7 @@ function getNextCommands(
       !input.ownerRecipientStatus.readyForOwnerPacketSend
     ) {
       return [
+        `pnpm rollout:owner-recipient-decisions --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-owner-recipient-decisions.md`,
         `pnpm rollout:owner-recipients --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-owner-recipient-status.md`,
         `Fill ${recipientAssignmentsPath} with one valid recipient email for each owner packet.`,
         `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker --recipient-assignments ${recipientAssignmentsPath}`,
@@ -286,6 +287,7 @@ function getNextCommands(
       `pnpm rollout:owner-requests --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-requests`,
       `pnpm rollout:owner-email-drafts --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-email-drafts`,
       `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker`,
+      `pnpm rollout:owner-recipient-decisions --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-decisions.md`,
       `pnpm rollout:owner-recipients --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md`,
       `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-send-tracker/owner-recipient-assignments.csv`,
       `pnpm rollout:owner-followup --owner-dir ${input.paths.ownerDirectoryName} --tracker production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md`,
