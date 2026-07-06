@@ -4,7 +4,7 @@ import { dirname, join, resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir rollout-owner-packets --out production-rollout-owner-return-intake.md [--apply]",
+  "  pnpm rollout:owner-return-intake --returns-dir returned-owner-packets --owner-dir rollout-owner-packets --out production-rollout-owner-return-intake.md [--recipient-assignments owner-recipient-assignments.csv] [--owner-send-tracker owner-send-tracker.csv] [--apply]",
   "",
   "This reads returned owner CSV folders, validates headers and secret safety, and optionally copies safe CSVs into the owner packet folder.",
   "It does not create users, write Supabase rows, call Luma, send invites, trigger n8n, or change production config.",
@@ -33,6 +33,8 @@ try {
     returnedFiles,
     sourceDirectoryName: args.returnsDir,
     ownerDirectoryName: args.ownerDir,
+    recipientAssignmentsPath: args.recipientAssignments,
+    ownerSendTrackerPath: args.ownerSendTracker,
     applied: false,
   });
 
@@ -48,6 +50,8 @@ try {
       returnedFiles,
       sourceDirectoryName: args.returnsDir,
       ownerDirectoryName: args.ownerDir,
+      recipientAssignmentsPath: args.recipientAssignments,
+      ownerSendTrackerPath: args.ownerSendTracker,
       applied: true,
     });
   }
@@ -156,6 +160,8 @@ function parseArgs(args) {
     returnsDir,
     ownerDir,
     out,
+    recipientAssignments: getValue(args, "--recipient-assignments"),
+    ownerSendTracker: getValue(args, "--owner-send-tracker"),
     apply: args.includes("--apply"),
   };
 }

@@ -10,6 +10,8 @@ describe("production rollout owner return intake script", () => {
     const directory = mkdtempSync(join(tmpdir(), "mymedlife-owner-return-intake-"));
     const returnsDir = join(directory, "returned-owner-packets");
     const ownerDir = join(directory, "rollout-owner-packets");
+    const recipientAssignmentsPath = join(directory, "owner-recipient-assignments.csv");
+    const ownerSendTrackerPath = join(directory, "owner-send-tracker.csv");
     const outPath = join(directory, "owner-return-intake.md");
     const targetPath = join(ownerDir, "nick-hq-launch-owner", "chapters.csv");
 
@@ -26,6 +28,10 @@ describe("production rollout owner return intake script", () => {
       returnsDir,
       "--owner-dir",
       ownerDir,
+      "--recipient-assignments",
+      recipientAssignmentsPath,
+      "--owner-send-tracker",
+      ownerSendTrackerPath,
       "--out",
       outPath,
     ]);
@@ -36,6 +42,10 @@ describe("production rollout owner return intake script", () => {
     expect(result.stdout).toContain("Current status: READY TO APPLY");
     expect(report).toContain("myMEDLIFE returned owner CSV intake: READY TO APPLY");
     expect(report).toContain("Mode: DRY RUN");
+    expect(report).toContain(`Owner recipient assignments: ${recipientAssignmentsPath}`);
+    expect(report).toContain(`Owner send tracker: ${ownerSendTrackerPath}`);
+    expect(report).toContain(`--recipient-assignments ${recipientAssignmentsPath}`);
+    expect(report).toContain(`--owner-send-tracker ${ownerSendTrackerPath}`);
     expect(target).toBe("id,name,campus,region,status\n");
   });
 

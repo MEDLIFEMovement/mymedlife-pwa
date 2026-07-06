@@ -55,6 +55,42 @@ describe("production rollout owner return intake", () => {
     expect(report).toContain("Mode: APPLIED");
   });
 
+  it("carries tracker paths into the next status commands", () => {
+    const intake = getProductionRolloutOwnerReturnIntake({
+      returnedFiles: [
+        file(
+          "campaign-launch-owner",
+          "campaigns.csv",
+          "chapterId,name,slug,status\nchapter-ucla,Rush Month,rush-month-ucla,active\n",
+        ),
+      ],
+      ownerDirectoryName: "production-rollout-owner-handoff/rollout-owner-packets",
+      recipientAssignmentsPath:
+        "production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+      ownerSendTrackerPath:
+        "production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv",
+    });
+    const report = formatProductionRolloutOwnerReturnIntake(intake);
+
+    expect(report).toContain(
+      "Owner recipient assignments: production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+    );
+    expect(report).toContain(
+      "Owner send tracker: production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv",
+    );
+    expect(intake.nextCommands).toContain(
+      [
+        "pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets",
+        "--recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
+        "--owner-send-tracker production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv",
+        "--out production-rollout-current-status.md",
+      ].join(" "),
+    );
+    expect(report).not.toContain(
+      "pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-current-status.md",
+    );
+  });
+
   it("blocks files returned under the wrong owner", () => {
     const intake = getProductionRolloutOwnerReturnIntake({
       returnedFiles: [
