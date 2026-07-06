@@ -1,10 +1,10 @@
 /* global console, process */
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm production:invite-batches --packet production-rollout-packet.json [--max-recipients=75] [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
+  "  pnpm production:invite-batches --packet production-rollout-packet.json [--max-recipients=75] [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5] [--out production-invite-batches.md]",
   "",
   "This is read-only. It plans safe invite batches from the approved rollout packet.",
   "It does not create users, send email, write Supabase rows, call Luma, or change production config.",
@@ -43,8 +43,16 @@ try {
       5,
     ),
   });
+  const report = formatProductionInviteBatchReadiness(readiness);
+  const outPath = getArgValue(args, "--out");
 
-  console.log(formatProductionInviteBatchReadiness(readiness));
+  if (outPath) {
+    await writeFile(resolve(outPath), `${report}\n`);
+    console.log(`Production invite batch readiness written to ${resolve(outPath)}`);
+  } else {
+    console.log(report);
+  }
+
   process.exit(readiness.ready ? 0 : 1);
 } catch (error) {
   console.error("Production invite batch readiness: NOT READY");
