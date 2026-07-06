@@ -158,6 +158,29 @@ A new version of Supabase CLI is available.
     expect(counts["app.chapters.active"]).toBe(30);
     expect(counts["app.points_events"]).toBe(4);
   });
+
+  it("parses the formatted readiness report saved from production:data-counts", () => {
+    const expectedCounts = createCounts({
+      "auth.users": 503,
+      "app.profiles": 503,
+      "app.chapters.active": 30,
+      "app.memberships.approved": 500,
+      "app.staff_role_assignments.active": 4,
+      "app.coach_chapter_assignments.active": 30,
+      "app.campaigns.active": 30,
+      "app.chapter_events": 5,
+      "app.luma_event_links": 5,
+      "app.assignments": 30,
+      "app.points_events": 5,
+      "app.audit_logs": 5,
+    });
+    const report = formatProductionLiveDataReadiness(
+      getProductionLiveDataReadiness(expectedCounts),
+    );
+    const parsedCounts = parseProductionLiveDataCountCsv(report);
+
+    expect(parsedCounts).toEqual(expectedCounts);
+  });
 });
 
 function createCounts(
