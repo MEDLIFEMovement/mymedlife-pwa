@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { signOut } from "@/app/login/actions";
 import type { AuthSessionState } from "@/services/auth-session";
+import { getLocalSandboxAuthLandingRoute } from "@/services/local-sandbox-auth-routing";
 
 type AuthSessionPanelProps = {
   redirectTo?: string;
@@ -14,6 +15,11 @@ export function AuthSessionPanel({
   if (session.status !== "signed_in" || !session.user) {
     return null;
   }
+
+  const continueHref =
+    redirectTo === "/"
+      ? getLocalSandboxAuthLandingRoute(session.user.email) ?? redirectTo
+      : redirectTo;
 
   return (
     <section
@@ -39,7 +45,7 @@ export function AuthSessionPanel({
       </p>
       <div className="mt-6 grid gap-3">
         <Link
-          href={redirectTo}
+          href={continueHref}
           className="rounded-xl py-3 text-center text-sm font-bold text-white transition-all"
           style={{ background: "#b8253a" }}
         >
