@@ -1988,7 +1988,12 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
                 Points are earned by completing and submitting evidence for assigned chapter actions.
                 They reflect real engagement — not just showing up, but contributing meaningfully to the mission.
               </p>
-              <button onClick={() => navigate("campaign")} className="text-primary text-xs font-bold mt-2">See how to earn more points →</button>
+              <Link
+                href="/app/events?source=points"
+                className="inline-flex text-primary text-xs font-bold mt-2"
+              >
+                See how to earn more points →
+              </Link>
             </div>
           </div>
         </Card>

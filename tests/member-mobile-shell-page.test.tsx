@@ -90,5 +90,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Points &amp; Recognition");
     expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("Recent Approved Actions");
+    expect(html).toContain('href="/app/events?source=points"');
+    expect(html).toContain("See how to earn more points");
   });
 });
