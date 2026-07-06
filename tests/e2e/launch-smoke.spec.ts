@@ -344,6 +344,11 @@ test.describe("myMEDLIFE launch route smoke", () => {
       page.getByText("Smile.io sync stays visible for DS review, but point awards, tier sync, and reward writes remain blocked in this preview"),
     ).toBeVisible();
 
+    await page.locator("aside").getByRole("button", { name: "Audit Logs", exact: true }).click();
+    await expect(
+      page.getByText("This audit log is preview-only. Review seeded admin and system readback here, then use the audited evidence surfaces for live production proof or incident review."),
+    ).toBeVisible();
+
     await page.locator("aside").getByRole("button", { name: "API Keys", exact: true }).click();
     await expect(page.getByText("API keys stay masked in this preview")).toBeVisible();
 
