@@ -24,9 +24,12 @@ describe("production rollout current status script", () => {
     );
     const ownerDir = join(handoffDir, "rollout-owner-packets");
     const trackerDir = join(handoffDir, "production-rollout-owner-send-tracker");
+    const csvDir = join(directory, ".codex-artifacts", "production-rollout-csv");
     const outPath = join(directory, "production-rollout-current-status.md");
     writeOwnerPacketFolders(ownerDir);
     mkdirSync(trackerDir, { recursive: true });
+    mkdirSync(csvDir, { recursive: true });
+    writeFileSync(join(csvDir, "chapters.csv"), "id,name,campus,region,status\n");
     writeFileSync(
       join(trackerDir, "owner-recipient-assignments.csv"),
       [
@@ -68,6 +71,10 @@ describe("production rollout current status script", () => {
       expect(report).toContain(
         "- owner recipient assignments: .codex-artifacts/production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv",
       );
+      expect(report).toContain(
+        "- shared CSV folder: .codex-artifacts/production-rollout-csv",
+      );
+      expect(report).toContain("shared rollout CSV folder: FOUND");
       expect(report).toContain("Owner packet recipients are incomplete");
       expect(report).toContain("0/7 owner recipients assigned");
       expect(report).toContain(
