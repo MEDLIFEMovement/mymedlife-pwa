@@ -73,6 +73,11 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.goto("/app/points");
     await expect(page.getByText("Points & Recognition")).toBeVisible();
     await expect(page.getByText("Chapter Leaderboard")).toBeVisible();
+    await page.getByRole("link", { name: "See how to earn more points →" }).click();
+    await expect(page).toHaveURL(/\/app\/events\?source=points$/);
+    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+
+    await page.goto("/app/points");
     await page.getByRole("link", { name: "Profile", exact: true }).click();
     await expect(page).toHaveURL(/\/profile$/);
     await expect(page.getByRole("heading", { name: "Hi, Sofia" })).toBeVisible();
