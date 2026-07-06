@@ -5,13 +5,13 @@ export type LaunchLaneRouteWorkspace =
   | "staff"
   | "admin";
 
-export type LaunchLaneRouteStatus = "active" | "expected_blocked";
+export type LaunchLaneRouteStatus = "active";
 
-export type LaunchLaneRouteAccess = "public" | "owner_or_preview" | "owner_only" | "blocked";
+export type LaunchLaneRouteAccess = "public" | "owner_or_preview" | "owner_only";
 
-export type LaunchLaneRouteSandboxReview = "supported" | "blocked";
+export type LaunchLaneRouteSandboxReview = "supported";
 
-export type LaunchLaneRouteProductionProof = "required" | "blocked_pending_route";
+export type LaunchLaneRouteProductionProof = "required";
 
 export type LaunchLaneRouteReadiness = {
   canonicalHref: string;
@@ -108,15 +108,15 @@ const launchLaneAuthReadiness: readonly LaunchLaneRouteReadiness[] = [
     canonicalHref: "/app/stories",
     label: "Member stories",
     workspace: "member",
-    status: "expected_blocked",
+    status: "active",
     authRequirement: "signed_in",
-    access: "blocked",
+    access: "owner_or_preview",
     readOnly: true,
-    sandboxReview: "blocked",
-    productionProof: "blocked_pending_route",
+    sandboxReview: "supported",
+    productionProof: "required",
     rolloutEvidence: "exclude_test_and_preview",
     notes:
-      "This route is a known launch-lane expectation, but it is not a live member route on current main and should not be presented as shipped or production-proof-ready.",
+      "The member stories route is now live on current main. Local sandbox and preview review remain useful, but real production signed-in proof still requires a real member account and approved packet inputs.",
   },
   {
     canonicalHref: "/leader?view=overview",
@@ -294,9 +294,7 @@ export function getActiveLaunchLaneAuthReadiness(): LaunchLaneRouteReadiness[] {
 }
 
 export function getBlockedLaunchLaneAuthReadiness(): LaunchLaneRouteReadiness[] {
-  return launchLaneAuthReadiness.filter(
-    (route) => route.status === "expected_blocked",
-  );
+  return [];
 }
 
 export function getLaunchLaneAuthReadinessByHref(

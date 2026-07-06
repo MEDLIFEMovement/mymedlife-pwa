@@ -37,6 +37,7 @@ describe("launch lane auth readiness", () => {
     expect(
       routes.every(
         (route) =>
+          route.status === "active" &&
           route.readOnly &&
           route.rolloutEvidence === "exclude_test_and_preview" &&
           route.notes.length > 0,
@@ -44,7 +45,7 @@ describe("launch lane auth readiness", () => {
     ).toBe(true);
   });
 
-  it("keeps active routes known to the app registry and wired into the launch-lane smoke manifest", () => {
+  it("keeps active routes known to the app registry and only maps explicit smoke targets into the launch-lane smoke manifest", () => {
     const activeRoutes = getActiveLaunchLaneAuthReadiness();
     const manifestPaths = new Set(
       getRouteSmokeManifest(getMockLocalActorContext("admin@mymedlife.test")).routes.map(
@@ -87,21 +88,22 @@ describe("launch lane auth readiness", () => {
     });
   });
 
-  it("keeps /app/stories classified as an expected blocked route instead of live proof", () => {
+  it("treats /app/stories as a live member route while keeping sandbox proof out of rollout evidence", () => {
     const blockedRoutes = getBlockedLaunchLaneAuthReadiness();
     const storiesRoute = getLaunchLaneAuthReadinessByHref("/app/stories");
     const manifestPaths = getRouteSmokeManifest(
       getMockLocalActorContext("admin@mymedlife.test"),
     ).routes.map((route) => route.path);
 
-    expect(blockedRoutes).toHaveLength(1);
+    expect(blockedRoutes).toHaveLength(0);
     expect(storiesRoute).toMatchObject({
-      status: "expected_blocked",
-      access: "blocked",
-      sandboxReview: "blocked",
-      productionProof: "blocked_pending_route",
+      status: "active",
+      access: "owner_or_preview",
+      sandboxReview: "supported",
+      productionProof: "required",
+      rolloutEvidence: "exclude_test_and_preview",
     });
-    expect(isKnownAppRouteHref("/app/stories")).toBe(false);
+    expect(isKnownAppRouteHref("/app/stories")).toBe(true);
     expect(manifestPaths).not.toContain("/app/stories");
   });
 });
