@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildLocalSupabaseAuthUsersCompatibilitySql,
+  getLocalTestProductionSeedApplyPlan,
   getLocalTestProductionDbContainerName,
   getSupabaseProjectId,
 } from "@/services/test-production-seed-apply";
@@ -37,6 +38,17 @@ describe("test production seed apply helpers", () => {
     expect(() => getLocalTestProductionDbContainerName("[api]\nenabled = true")).toThrow(
       "Could not determine the local Supabase project_id from supabase/config.toml.",
     );
+  });
+
+  it("pre-cleans and normalizes only for local seed mode", () => {
+    expect(getLocalTestProductionSeedApplyPlan("seed")).toEqual({
+      shouldCleanupBeforeSeed: true,
+      shouldNormalizeAuthUsersAfterSeed: true,
+    });
+    expect(getLocalTestProductionSeedApplyPlan("cleanup")).toEqual({
+      shouldCleanupBeforeSeed: false,
+      shouldNormalizeAuthUsersAfterSeed: false,
+    });
   });
 
   it("builds a local auth compatibility update for legacy nullable auth.users fields", () => {

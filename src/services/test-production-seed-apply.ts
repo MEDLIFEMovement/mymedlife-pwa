@@ -25,6 +25,13 @@ export function getSupabaseProjectId(configToml: string): string | null {
   return match?.[1] ?? null;
 }
 
+export function getLocalTestProductionSeedApplyPlan(mode: "seed" | "cleanup") {
+  return {
+    shouldCleanupBeforeSeed: mode === "seed",
+    shouldNormalizeAuthUsersAfterSeed: mode === "seed",
+  };
+}
+
 export function buildLocalSupabaseAuthUsersCompatibilitySql(): string {
   return [
     "update auth.users",
