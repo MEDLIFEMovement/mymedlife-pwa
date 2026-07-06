@@ -218,7 +218,10 @@ the canonical workspace values plus simple aliases like `member`, `leader`,
 command writes local `signed-in-route-proof.csv` only. It does not sign in,
 create users, write Supabase rows, send invites, call Luma, change Vercel, or
 enable integrations. It refuses placeholder text, fake/test emails, external
-URLs, invalid timestamps, and credential-looking values.
+URLs, invalid timestamps, credential-looking values, and notes that identify
+preview-cookie, localhost, local sandbox, staging, Figma, SOP/sample, or
+missing-profile/setup-only evidence. Keep local rehearsal and production
+signed-in proof completely separate.
 
 The validator blocks fake/test emails, unknown user references, unknown chapter
 references, duplicate user emails, duplicate chapter IDs, and credential-like

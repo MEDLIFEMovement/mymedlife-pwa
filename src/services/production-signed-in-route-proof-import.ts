@@ -233,6 +233,7 @@ function validateSignedInProofValue(
 
   if (["observedPath", "notes"].includes(header)) {
     validateNoSecretLikeValue(rowNumber, header, value);
+    validateProductionProofSource(rowNumber, header, value);
   }
 
   if (header === "checkedAt" && !Number.isFinite(Date.parse(value))) {
@@ -303,6 +304,44 @@ function validateNoSecretLikeValue(rowNumber: number, header: string, value: str
   ) {
     throw new Error(
       `Signed-in proof CSV row ${rowNumber} column ${header} looks like a key or token. Keep secrets out of route evidence.`,
+    );
+  }
+}
+
+function validateProductionProofSource(
+  rowNumber: number,
+  header: string,
+  value: string,
+) {
+  const normalizedValue = value.toLowerCase();
+  const blockedMarkers = [
+    "preview cookie",
+    "preview-cookie",
+    "local preview",
+    "local sandbox",
+    "sandbox review",
+    "figma",
+    "figma_seed",
+    "test data",
+    "test user",
+    "sop sample",
+    "sample data",
+    "localhost",
+    "127.0.0.1",
+    ".vercel.app",
+    "staging.mymedlife.org",
+    "staging proof",
+    "auth_profile_missing",
+    "profile setup required",
+  ];
+
+  const matchedMarker = blockedMarkers.find((marker) =>
+    normalizedValue.includes(marker),
+  );
+
+  if (matchedMarker) {
+    throw new Error(
+      `Signed-in proof CSV row ${rowNumber} column ${header} references ${matchedMarker}, which is local, preview, staging, sample, or setup-only evidence and cannot count as approved production signed-in proof.`,
     );
   }
 }
