@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out rollout-csv",
+  "  pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out rollout-csv [--minimum-chapters=30] [--minimum-students=500] [--minimum-pilot-chapters=5]",
   "",
   "This assembles filled owner-specific CSV folders into the shared rollout-csv folder.",
   "It does not create users, write Supabase rows, call Luma, send invites, or change production config.",
@@ -15,11 +15,15 @@ try {
   const [
     {
       formatProductionRolloutOwnerPacketAssemblyReport,
-      getProductionRolloutOwnerPacketAssembly,
+    },
+    {
+      formatProductionRolloutOwnerPacketStatusReport,
+      getProductionRolloutOwnerPacketStatus,
     },
     { getProductionRolloutOwnerPackets },
   ] = await Promise.all([
     import("../src/services/production-rollout-owner-packet-assembly.ts"),
+    import("../src/services/production-rollout-owner-packet-status.ts"),
     import("../src/services/production-rollout-owner-packets.ts"),
   ]);
   const ownerDir = resolve(args.ownerDir);
@@ -28,16 +32,26 @@ try {
     ownerDir,
     knownOwnerSlugs: getProductionRolloutOwnerPackets().map((packet) => packet.slug),
   });
-  const assembly = getProductionRolloutOwnerPacketAssembly({
+  const status = getProductionRolloutOwnerPacketStatus({
     foundFiles,
     sourceDirectoryName: args.ownerDir,
     outputDirectoryName: args.out,
+    options: {
+      minimumChapterCount: args.minimumChapters,
+      minimumStudentMembershipCount: args.minimumStudents,
+      minimumPilotChapterCount: args.minimumPilotChapters,
+    },
   });
+  const assembly = status.assembly;
   const report = formatProductionRolloutOwnerPacketAssemblyReport(assembly);
 
-  console.log(report);
+  console.log(
+    status.readyForPacketBuild
+      ? report
+      : formatProductionRolloutOwnerPacketStatusReport(status),
+  );
 
-  if (!assembly.ready) {
+  if (!status.readyForPacketBuild) {
     process.exit(1);
   }
 
@@ -121,6 +135,9 @@ function parseArgs(args) {
   return {
     ownerDir,
     out,
+    minimumChapters: getPositiveWholeNumberArg(args, "--minimum-chapters", 30),
+    minimumStudents: getPositiveWholeNumberArg(args, "--minimum-students", 500),
+    minimumPilotChapters: getPositiveWholeNumberArg(args, "--minimum-pilot-chapters", 5),
   };
 }
 
@@ -138,4 +155,20 @@ function getValue(args, name) {
   }
 
   return args[index + 1];
+}
+
+function getPositiveWholeNumberArg(args, name, defaultValue) {
+  const rawValue = getValue(args, name);
+
+  if (!rawValue) {
+    return defaultValue;
+  }
+
+  const parsed = Number(rawValue);
+
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${name} must be a positive whole number.`);
+  }
+
+  return parsed;
 }

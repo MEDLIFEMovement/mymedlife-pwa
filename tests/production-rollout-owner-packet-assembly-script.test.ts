@@ -19,7 +19,18 @@ describe("production rollout owner packet assembly script", () => {
     const directory = mkdtempSync(join(tmpdir(), "mymedlife-owner-assembly-"));
     const ownerDir = join(directory, "rollout-owner-packets");
     const outDir = join(directory, "rollout-csv");
-    writeOwnerPacketFolders(ownerDir);
+    writeOwnerPacketFolders(ownerDir, [], {
+      "chapters.csv": 2,
+      "users.csv": 3,
+      "memberships.csv": 3,
+      "staff-roles.csv": 1,
+      "coach-assignments.csv": 2,
+      "campaigns.csv": 2,
+      "luma-calendars.csv": 2,
+      "pilot-event-proof.csv": 1,
+      "launch-owners.csv": 3,
+      "signed-in-route-proof.csv": 4,
+    });
 
     const output = execFileSync(
       process.execPath,
@@ -30,6 +41,12 @@ describe("production rollout owner packet assembly script", () => {
         ownerDir,
         "--out",
         outDir,
+        "--minimum-chapters",
+        "2",
+        "--minimum-students",
+        "3",
+        "--minimum-pilot-chapters",
+        "1",
       ],
       {
         encoding: "utf8",
@@ -38,13 +55,55 @@ describe("production rollout owner packet assembly script", () => {
 
     expect(output).toContain("myMEDLIFE owner packet assembly: READY");
     expect(output).toContain("Production rollout CSV folder assembled at");
-    expect(readFileSync(join(outDir, "users.csv"), "utf8")).toBe(
-      "email,displayName\n",
+    expect(readFileSync(join(outDir, "users.csv"), "utf8")).toContain(
+      "email,displayName\nvalue-0",
     );
     expect(readFileSync(join(outDir, "ASSEMBLY_REPORT.md"), "utf8")).toContain(
       "pnpm rollout:check-csv --dir",
     );
     expect(existsSync(join(outDir, "luma-calendars.csv"))).toBe(true);
+  });
+
+  it("fails before writing when owner files are only header templates", () => {
+    const directory = mkdtempSync(join(tmpdir(), "mymedlife-owner-assembly-"));
+    const ownerDir = join(directory, "rollout-owner-packets");
+    const outDir = join(directory, "rollout-csv");
+    writeOwnerPacketFolders(ownerDir);
+
+    try {
+      execFileSync(
+        process.execPath,
+        [
+          "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+          "scripts/assemble-production-rollout-owner-packets.mjs",
+          "--owner-dir",
+          ownerDir,
+          "--out",
+          outDir,
+          "--minimum-chapters",
+          "2",
+          "--minimum-students",
+          "3",
+          "--minimum-pilot-chapters",
+          "1",
+        ],
+        {
+          encoding: "utf8",
+          stdio: "pipe",
+        },
+      );
+    } catch (error) {
+      expect(getProcessOutput(error, "stdout")).toContain(
+        "myMEDLIFE owner packet status: NOT READY",
+      );
+      expect(getProcessOutput(error, "stdout")).toContain(
+        "users.csv needs 3 data rows; current: 0.",
+      );
+      expect(existsSync(outDir)).toBe(false);
+      return;
+    }
+
+    throw new Error("Expected owner packet assembly to fail on header-only owner files.");
   });
 
   it("fails before writing when an owner file is missing", () => {
@@ -63,6 +122,12 @@ describe("production rollout owner packet assembly script", () => {
           ownerDir,
           "--out",
           outDir,
+          "--minimum-chapters",
+          "2",
+          "--minimum-students",
+          "3",
+          "--minimum-pilot-chapters",
+          "1",
         ],
         {
           encoding: "utf8",
@@ -81,7 +146,11 @@ describe("production rollout owner packet assembly script", () => {
   });
 });
 
-function writeOwnerPacketFolders(ownerDir: string, omittedFiles: string[] = []) {
+function writeOwnerPacketFolders(
+  ownerDir: string,
+  omittedFiles: string[] = [],
+  rowCounts: Record<string, number> = {},
+) {
   for (const packet of getProductionRolloutOwnerPackets()) {
     const packetDir = join(ownerDir, packet.slug);
 
@@ -92,7 +161,16 @@ function writeOwnerPacketFolders(ownerDir: string, omittedFiles: string[] = []) 
         continue;
       }
 
-      writeFileSync(join(packetDir, file.path), file.content);
+      const rows = Array.from(
+        { length: rowCounts[file.path] ?? 0 },
+        (_, index) => `value-${index}`,
+      );
+      const content =
+        rows.length > 0
+          ? `${file.content}${rows.join("\n")}\n`
+          : file.content;
+
+      writeFileSync(join(packetDir, file.path), content);
     }
   }
 }
