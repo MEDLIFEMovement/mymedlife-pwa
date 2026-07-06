@@ -21,6 +21,7 @@
     "rollout:owner-send-tracker": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-send-tracker.mjs",
     "rollout:owner-recipients": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-owner-recipients.mjs",
     "rollout:owner-recipient-decisions": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-recipient-decisions.mjs",
+    "rollout:owner-recipient-answers": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-recipient-assignments-from-answer-block.mjs",
     "rollout:owner-followup": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-followup-report.mjs",
     "rollout:owner-handoff": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-rollout-owner-handoff.mjs",
     "rollout:current-status": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-rollout-current-status.mjs",

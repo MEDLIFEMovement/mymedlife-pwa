@@ -4,6 +4,9 @@ import type {
 import type {
   ProductionRolloutOwnerRecipientStatus,
 } from "./production-rollout-owner-recipient-status.ts";
+import type {
+  ProductionRolloutOwnerRecipientAssignment,
+} from "./production-rollout-owner-send-tracker.ts";
 
 export type ProductionRolloutOwnerRecipientDecisionRow = {
   ownerSlug: string;
@@ -28,6 +31,81 @@ export type ProductionRolloutOwnerRecipientDecisionWorksheet = {
   rows: ProductionRolloutOwnerRecipientDecisionRow[];
   assignmentIssues: string[];
 };
+
+export function parseProductionRolloutOwnerRecipientAnswerBlock(
+  content: string,
+): ProductionRolloutOwnerRecipientAssignment[] {
+  const assignments: ProductionRolloutOwnerRecipientAssignment[] = [];
+  const seenOwnerSlugs = new Set<string>();
+
+  for (const [index, rawLine] of content.split(/\r?\n/).entries()) {
+    const line = rawLine.trim();
+
+    if (
+      !line ||
+      line.startsWith("```") ||
+      line.startsWith("#") ||
+      !line.includes("|") ||
+      !line.includes("recipientEmail=")
+    ) {
+      continue;
+    }
+
+    const [ownerSlugPart, ...fieldParts] = line
+      .split("|")
+      .map((part) => part.trim());
+    const ownerSlug = ownerSlugPart ?? "";
+
+    if (!ownerSlug) {
+      throw new Error(`Owner recipient answer row ${index + 1} is missing ownerSlug.`);
+    }
+
+    if (seenOwnerSlugs.has(ownerSlug)) {
+      throw new Error(
+        `Owner recipient answer block has duplicate ownerSlug ${ownerSlug}.`,
+      );
+    }
+
+    seenOwnerSlugs.add(ownerSlug);
+
+    const values: Record<string, string> = {};
+
+    for (const fieldPart of fieldParts) {
+      if (!fieldPart) {
+        continue;
+      }
+
+      const equalsIndex = fieldPart.indexOf("=");
+
+      if (equalsIndex === -1) {
+        throw new Error(
+          `Owner recipient answer row ${index + 1} has malformed field ${fieldPart}.`,
+        );
+      }
+
+      const key = fieldPart.slice(0, equalsIndex).trim();
+      const value = fieldPart.slice(equalsIndex + 1).trim();
+
+      if (key === "recipientEmail" || key === "ccEmails" || key === "notes") {
+        values[key] = value;
+      }
+    }
+
+    assignments.push({
+      ownerSlug,
+      owner: "",
+      recipientEmail: values.recipientEmail ?? "",
+      ccEmails: values.ccEmails ?? "",
+      notes: values.notes ?? "",
+    });
+  }
+
+  if (assignments.length === 0) {
+    throw new Error("No owner recipient answer rows found.");
+  }
+
+  return assignments;
+}
 
 const recipientDecisionGuidance: Record<
   string,
@@ -178,6 +256,7 @@ export function formatProductionRolloutOwnerRecipientDecisionWorksheet(
     "## Next Commands",
     "",
     "```bash",
+    "pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --owner-dir <owner-dir> --out <owner-recipient-assignments.csv>",
     "pnpm rollout:owner-recipients --owner-dir <owner-dir> --recipient-assignments <owner-recipient-assignments.csv> --out production-rollout-owner-recipient-status.md",
     "pnpm rollout:owner-send-tracker --owner-dir <owner-dir> --out production-rollout-owner-send-tracker --recipient-assignments <owner-recipient-assignments.csv>",
     "pnpm rollout:current-status --owner-dir <owner-dir> --recipient-assignments <owner-recipient-assignments.csv> --out production-rollout-current-status.md",

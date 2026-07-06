@@ -213,12 +213,50 @@ function formatTrackerRow({
 export function formatProductionRolloutOwnerRecipientAssignmentsCsv(
   status: ProductionRolloutOwnerPacketStatus,
 ) {
-  const rows: Record<string, string>[] = status.owners.map((owner) => ({
-    ownerSlug: owner.ownerSlug,
-    owner: owner.owner,
-    recipientEmail: "",
-    ccEmails: "",
-    notes: "",
+  return formatProductionRolloutOwnerRecipientAssignmentsCsvFromAssignments(
+    status.owners.map((owner) => ({
+      ownerSlug: owner.ownerSlug,
+      owner: owner.owner,
+      recipientEmail: "",
+      ccEmails: "",
+      notes: "",
+    })),
+  );
+}
+
+export function hydrateProductionRolloutOwnerRecipientAssignments(
+  status: ProductionRolloutOwnerPacketStatus,
+  recipientAssignments: ProductionRolloutOwnerRecipientAssignment[],
+): ProductionRolloutOwnerRecipientAssignment[] {
+  const assignmentByOwnerSlug = new Map(
+    recipientAssignments.map((assignment) => [
+      assignment.ownerSlug,
+      assignment,
+    ]),
+  );
+
+  return status.owners.map((owner) => {
+    const assignment = assignmentByOwnerSlug.get(owner.ownerSlug);
+
+    return {
+      ownerSlug: owner.ownerSlug,
+      owner: owner.owner,
+      recipientEmail: assignment?.recipientEmail ?? "",
+      ccEmails: assignment?.ccEmails ?? "",
+      notes: assignment?.notes ?? "",
+    };
+  });
+}
+
+export function formatProductionRolloutOwnerRecipientAssignmentsCsvFromAssignments(
+  recipientAssignments: ProductionRolloutOwnerRecipientAssignment[],
+) {
+  const rows: Record<string, string>[] = recipientAssignments.map((assignment) => ({
+    ownerSlug: assignment.ownerSlug,
+    owner: assignment.owner,
+    recipientEmail: assignment.recipientEmail,
+    ccEmails: assignment.ccEmails,
+    notes: assignment.notes,
   }));
 
   return [
