@@ -439,6 +439,14 @@ Rules:
 After the CSV files are filled with real data:
 
 ```bash
+pnpm rollout:current-status --out production-rollout-current-status.md
+```
+
+This is the safest first status check. It reports the next missing artifact
+without requiring the owner folder, shared CSV folder, rollout packet, or
+production live-data proof to exist yet.
+
+```bash
 pnpm rollout:check-csv --dir rollout-csv
 ```
 
