@@ -1,5 +1,6 @@
 /* global console, process */
-import { mkdir, writeFile } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import { join, resolve } from "node:path";
 
@@ -63,9 +64,27 @@ try {
   ];
 
   if (args.local) {
-    queryArgs.push("--local");
+    const {
+      buildLocalSupabaseAuthUsersCompatibilitySql,
+      getLocalTestProductionDbContainerName,
+    } = await import(
+      "../src/services/test-production-seed-apply.ts"
+    );
+    const configToml = await readFile(resolve("supabase/config.toml"), "utf8");
+    const containerName = getLocalTestProductionDbContainerName(configToml);
+
+    console.log(`Applying ${mode} SQL from ${sqlPath} via local container ${containerName}`);
+    await runSqlFileWithDockerPsql(containerName, sqlPath);
+    if (mode === "seed") {
+      const authCompatibilityPath = join(outDir, "seed-local-auth-users-compatibility.sql");
+      await writeFile(authCompatibilityPath, buildLocalSupabaseAuthUsersCompatibilitySql());
+      console.log(`Normalizing local auth.users compatibility fields via ${authCompatibilityPath}`);
+      await runSqlFileWithDockerPsql(containerName, authCompatibilityPath);
+    }
   } else if (args.linked) {
     queryArgs.push("--linked");
+    console.log(`Applying ${mode} SQL from ${sqlPath}`);
+    await run("pnpm", queryArgs);
   } else if (args.dbUrlEnv) {
     const dbUrl = process.env[args.dbUrlEnv];
 
@@ -74,12 +93,11 @@ try {
     }
 
     queryArgs.push("--db-url", dbUrl);
+    console.log(`Applying ${mode} SQL from ${sqlPath}`);
+    await run("pnpm", queryArgs);
   } else {
     throw new Error("Choose exactly one target: --local, --linked, or --db-url-env NAME.");
   }
-
-  console.log(`Applying ${mode} SQL from ${sqlPath}`);
-  await run("pnpm", queryArgs);
 } catch (error) {
   console.error("Test production seed command was not applied.");
   console.error("");
@@ -130,6 +148,44 @@ function parseArgs(args) {
   }
 
   return parsed;
+}
+
+function runSqlFileWithDockerPsql(containerName, sqlPath) {
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn(
+      "docker",
+      [
+        "exec",
+        "-i",
+        containerName,
+        "psql",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres",
+      ],
+      {
+        stdio: ["pipe", "inherit", "inherit"],
+        env: process.env,
+      },
+    );
+
+    child.on("error", reject);
+
+    const input = createReadStream(sqlPath);
+    input.on("error", reject);
+    input.pipe(child.stdin);
+
+    child.on("exit", (code) => {
+      if (code === 0) {
+        resolvePromise();
+      } else {
+        reject(new Error(`docker exited with code ${code}`));
+      }
+    });
+  });
 }
 
 function run(command, args) {
