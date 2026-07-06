@@ -283,6 +283,13 @@ function getNextCommands(
     ];
   }
 
+  if (!input.liveDataReadiness || !input.liveDataReadiness.ready) {
+    return [
+      `pnpm production:data-counts > ${input.paths.liveDataCountsPath}`,
+      `pnpm rollout:current-status --packet ${input.paths.packetPath} --live-data-counts ${input.paths.liveDataCountsPath} --out production-rollout-current-status.md`,
+    ];
+  }
+
   return [
     `pnpm production:data-counts > ${input.paths.liveDataCountsPath}`,
     [
