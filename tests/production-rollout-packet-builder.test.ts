@@ -168,6 +168,29 @@ describe("production rollout packet builder", () => {
     );
   });
 
+  it("rejects draft/template/SOP sample content before production CSVs become rollout evidence", () => {
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          campaigns: "chapterId,name,slug,status\nchapter-ucla,Planning / Goal Setting,planning-goal-setting-ucla,draft",
+        }),
+      ),
+    ).toThrow(
+      "campaigns CSV row 2 column status contains draft/template/SOP sample content (campaigns.status is marked draft); replace it with approved live rollout data.",
+    );
+
+    expect(() =>
+      buildProductionRolloutPacketFromCsvTables(
+        createMinimalCsvTables({
+          pilotEventProof:
+            "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditEvidence,outboxStatus,notes\nchapter-ucla,Rush Month Kickoff,evt-ucla,5,4,4,recorded,zero_sends,SOP sample content only",
+        }),
+      ),
+    ).toThrow(
+      "pilotEventProof CSV row 2 column notes contains draft/template/SOP sample content (pilotEventProof.notes contains sop sample); replace it with approved live rollout data.",
+    );
+  });
+
   it("rejects fake email data before launch users or owners are imported", () => {
     expect(() =>
       buildProductionRolloutPacketFromCsvTables(

@@ -19,6 +19,11 @@ describe("production rollout data collection doc", () => {
     expect(doc).toContain("Do not put passwords, API keys, tokens, secrets");
     expect(doc).toContain("External writes remain off");
     expect(doc).toContain("This packet does not apply data by itself");
+    expect(doc).toContain("draft, reviewed, scheduled, archived, template-version");
+    expect(doc).toContain(
+      "Turning draft/template material into live behavior requires explicit DS/admin",
+    );
+    expect(doc).toContain("approval outside this packet assembly flow.");
   });
 
   it("gives reviewers copy-ready source sheet headers", () => {
