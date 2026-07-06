@@ -223,10 +223,16 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/staff\?view=proof_ugc/);
     await expect(page.getByRole("heading", { name: "Proof / UGC Review Queue" })).toBeVisible();
     await expect(page.getByText("items pending review")).toBeVisible();
+    await expect(page.getByText("provider fetch and queue writes are blocked in this preview")).toBeVisible();
 
     await staffHeader.getByRole("link", { name: "Best Practices", exact: true }).click();
     await expect(page).toHaveURL(/\/staff\?view=best_practices/);
     await expect(page.getByRole("heading", { name: "Best Practices Library" })).toBeVisible();
+
+    await staffHeader.getByRole("link", { name: "Campaign SOPs", exact: true }).click();
+    await expect(page).toHaveURL(/\/staff\?view=sops/);
+    await expect(page.getByRole("heading", { name: "Campaign SOP Builder" })).toBeVisible();
+    await expect(page.getByText("New Campaign SOP")).toBeVisible();
 
     await staffHeader.getByRole("link", { name: "Admin", exact: true }).click();
     await expect(page).toHaveURL(/\/staff\?view=admin/);

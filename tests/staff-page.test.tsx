@@ -191,6 +191,48 @@ describe("staff page", () => {
     expect(html).toContain(heading);
   });
 
+  it("keeps proof review submission and sharing controls visibly blocked inside the UGC surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "proof_ugc" }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("Story link ingestion is blocked until proof-review writes are approved");
+    expect(html).toContain("provider fetch and queue writes are blocked in this preview");
+    expect(source).toContain("External source links are blocked in this preview");
+    expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
+    expect(source).toContain("publishing and distribution actions remain blocked in this launch pass");
+  });
+
+  it("keeps campaign SOP creation and publish controls visibly blocked inside the SOP surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "sops" }),
+      }),
+    );
+
+    expect(html).toContain("New SOP creation is blocked until draft-live safety approval is complete");
+    expect(html).toContain("SOP duplication is blocked until template-write approval is complete");
+    expect(html).toContain("SOP archiving is blocked until draft-live safety approval is complete");
+    expect(html).toContain("Open Builder");
+  });
+
   it("keeps the admin handoff visible but blocked for non-admin staff", async () => {
     const actorModule = await import("@/services/local-actor-context");
 

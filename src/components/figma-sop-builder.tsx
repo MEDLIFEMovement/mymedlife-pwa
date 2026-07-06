@@ -401,7 +401,11 @@ export function LibraryScreen({ onOpen }: { onOpen: (c: Campaign) => void }) {
             </div>
             <h1 className="text-xl font-semibold text-foreground">Campaign SOP Library</h1>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
+          <button
+            disabled
+            title="New SOP creation is blocked until draft-live safety approval is complete"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold opacity-50 cursor-not-allowed"
+          >
             <Plus className="w-4 h-4" />
             New Campaign SOP
           </button>
@@ -504,10 +508,18 @@ export function LibraryScreen({ onOpen }: { onOpen: (c: Campaign) => void }) {
                       >
                         Open Builder
                       </button>
-                      <button className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors">
+                      <button
+                        disabled
+                        title="SOP duplication is blocked until template-write approval is complete"
+                        className="p-1.5 text-muted-foreground rounded-lg opacity-50 cursor-not-allowed"
+                      >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
-                      <button className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors">
+                      <button
+                        disabled
+                        title="SOP archiving is blocked until draft-live safety approval is complete"
+                        className="p-1.5 text-muted-foreground rounded-lg opacity-50 cursor-not-allowed"
+                      >
                         <Archive className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -1356,8 +1368,6 @@ function RolePreviewTab() {
 // ─── Version Review Tab ───────────────────────────────────────────────────────
 
 function VersionReviewTab({ campaign }: { campaign: Campaign }) {
-  const [showModal, setShowModal] = useState(false);
-
   const CHANGES = [
     { type: "modified", section: "Step 3 — Recruit 5 Friends", detail: "Points value updated: General Member 25 → 30 pts, E-board 45 → 50 pts" },
     { type: "added", section: "Step 5 — E-board Mid-Campaign Review", detail: "New required step added with approval gate. Reviewer: Coach." },
@@ -1379,13 +1389,18 @@ function VersionReviewTab({ campaign }: { campaign: Campaign }) {
           <p className="text-sm text-muted-foreground mt-0.5">{campaign.name}</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 border border-border text-muted-foreground rounded-lg text-sm font-semibold hover:bg-muted transition-colors">
+          <button
+            disabled
+            title="Rollback is blocked until draft-live safety approval is complete"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-border text-muted-foreground rounded-lg text-sm font-semibold opacity-50 cursor-not-allowed"
+          >
             <RotateCcw className="w-3.5 h-3.5" />
             Rollback to v3.1
           </button>
           <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
+            disabled
+            title="Publishing is blocked until draft-live safety approval is complete"
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold opacity-50 cursor-not-allowed"
           >
             <Upload className="w-3.5 h-3.5" />
             Publish Now
@@ -1455,47 +1470,11 @@ function VersionReviewTab({ campaign }: { campaign: Campaign }) {
         </div>
       </div>
 
-      {/* Publish modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-md p-6">
-            <div className="flex items-start justify-between mb-5">
-              <div>
-                <h3 className="text-base font-bold text-foreground">Publish {campaign.version}?</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">This will replace v3.1 as the live version.</p>
-              </div>
-              <button onClick={() => setShowModal(false)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3.5 mb-5">
-              <p className="text-sm text-amber-800 leading-relaxed">
-                <strong>4 changes</strong> will go live immediately. 6 roles will see updated workflows. This action is logged and can be rolled back.
-              </p>
-            </div>
-            <div className="space-y-2.5 mb-5">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Publish timing</label>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
-                >
-                  Publish Now
-                </button>
-                <button className="flex-1 py-2.5 border border-border text-muted-foreground rounded-lg text-sm font-semibold hover:bg-muted transition-colors">
-                  Schedule Later
-                </button>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowModal(false)}
-              className="w-full py-2.5 border border-border text-muted-foreground rounded-lg text-sm font-semibold hover:bg-muted transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+        <p className="text-sm text-amber-800 leading-relaxed">
+          Publish, schedule, and rollback controls stay visible for workflow review, but live SOP mutations remain blocked until the draft-live safety lane is approved.
+        </p>
+      </div>
     </div>
   );
 }
@@ -1534,11 +1513,18 @@ export function BuilderScreen({ campaign, onBack }: { campaign: Campaign; onBack
           <StatusBadge status={campaign.status} />
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button className="px-3 py-1.5 text-sm text-muted-foreground border border-border rounded-lg hover:bg-muted transition-colors flex items-center gap-1.5 font-semibold">
+          <button
+            onClick={() => setActiveTab("preview")}
+            className="px-3 py-1.5 text-sm text-muted-foreground border border-border rounded-lg hover:bg-muted transition-colors flex items-center gap-1.5 font-semibold"
+          >
             <Eye className="w-3.5 h-3.5" />
             Preview
           </button>
-          <button className="px-4 py-1.5 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1.5">
+          <button
+            disabled
+            title="SOP publish is blocked until draft-live safety approval is complete"
+            className="px-4 py-1.5 bg-primary text-primary-foreground text-sm font-semibold rounded-lg opacity-50 cursor-not-allowed flex items-center gap-1.5"
+          >
             <Upload className="w-3.5 h-3.5" />
             Publish
           </button>

@@ -1300,15 +1300,6 @@ function ProofUGCQueue() {
   const [platformFilter, setPlatformFilter] = useState("all");
   const [selectedCard, setSelectedCard] = useState<ContentCard | null>(null);
   const [linkInput, setLinkInput] = useState("");
-  const [linkSubmitting, setLinkSubmitting] = useState(false);
-  const [linkSuccess, setLinkSuccess] = useState(false);
-
-  const handleLinkSubmit = () => {
-    if (!linkInput.trim()) return;
-    setLinkSubmitting(true);
-    setTimeout(() => { setLinkSubmitting(false); setLinkSuccess(true); setLinkInput(""); }, 1200);
-    setTimeout(() => setLinkSuccess(false), 3000);
-  };
 
   const filtered = UGC_CARDS.filter((c) => {
     if (statusFilter !== "all" && c.visibility !== statusFilter) return false;
@@ -1335,7 +1326,6 @@ function ProofUGCQueue() {
               <input
                 value={linkInput}
                 onChange={(e) => setLinkInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleLinkSubmit()}
                 placeholder="https://www.instagram.com/p/…  or  https://loom.com/share/…"
                 className="w-full bg-muted/60 border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/25 pr-28"
               />
@@ -1355,25 +1345,18 @@ function ProofUGCQueue() {
               </div>
             </div>
             <button
-              onClick={handleLinkSubmit}
-              disabled={linkSubmitting || !linkInput.trim()}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
-                linkSuccess ? "bg-emerald-500 text-white" :
-                "bg-primary text-white hover:bg-primary/90 disabled:opacity-40"
-              }`}
+              disabled
+              title="Story link ingestion is blocked until proof-review writes are approved"
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-primary text-white opacity-50 cursor-not-allowed"
             >
-              {linkSubmitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> :
-               linkSuccess ? <CheckCircle className="w-3.5 h-3.5" /> :
-               <Send className="w-3.5 h-3.5" />}
-              {linkSuccess ? "Added!" : linkSubmitting ? "Fetching…" : "Submit"}
+              <Send className="w-3.5 h-3.5" />
+              Submit
             </button>
           </div>
-          {linkSuccess && (
-            <div className="mt-2 text-xs text-emerald-600 font-medium flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5" />
-              Link preview fetched and added to the review queue.
-            </div>
-          )}
+          <div className="mt-2 text-xs text-amber-700 font-medium flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Link ingestion stays visible for review, but provider fetch and queue writes are blocked in this preview.
+          </div>
         </div>
 
         {/* Filter bar */}
@@ -1531,11 +1514,14 @@ function ProofUGCQueue() {
                 <div className="absolute top-2 left-2"><PlatformBadge platform={selectedCard.platform} /></div>
               )}
               {selectedCard.url && (
-                <a href={selectedCard.url} target="_blank" rel="noreferrer"
-                  className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1 hover:bg-black/80 transition-colors"
-                  onClick={e => e.stopPropagation()}>
+                <button
+                  disabled
+                  title="External source links are blocked in this preview"
+                  className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1 opacity-70 cursor-not-allowed"
+                  onClick={e => e.stopPropagation()}
+                >
                   <ExternalLink className="w-2.5 h-2.5" /> Open link
-                </a>
+                </button>
               )}
             </div>
 
@@ -1570,13 +1556,17 @@ function ProofUGCQueue() {
                   ].map(({ label, i }) => (
                     <button
                       key={label}
-                      disabled={selectedCard.consent === "none" || (selectedCard.consent === "chapter-only" && i > 0) || selectedCard.consent === "pending"}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium border border-border hover:bg-secondary hover:border-primary/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                      disabled
+                      title="Proof sharing is blocked until feed publishing approval is complete"
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium border border-border disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       <Send className="w-3 h-3 text-primary flex-shrink-0" /> {label}
                     </button>
                   ))}
                 </div>
+                <p className="text-[10px] text-amber-700 mt-2 leading-relaxed">
+                  Share targets stay visible for moderation review, but publishing and distribution actions remain blocked in this launch pass.
+                </p>
               </div>
 
               {/* Actions */}
