@@ -1,3 +1,5 @@
+import { getFigmaOrTestSeedEvidenceReason } from "@/data/figma-test-seed-map";
+
 export type ProductionBootstrapChapter = {
   id: string;
   name: string;
@@ -571,6 +573,13 @@ export function getProductionRolloutBootstrapReadiness(
   if (containsPlaceholderLikeValue(packet)) {
     blockers.push(
       "Remove template placeholders like TODO, TBD, PLACEHOLDER, or <...> before production rollout.",
+    );
+  }
+
+  const testSeedEvidenceReason = getFigmaOrTestSeedEvidenceReason(packet);
+  if (testSeedEvidenceReason) {
+    blockers.push(
+      `Remove Test/Figma sandbox data before production rollout: ${testSeedEvidenceReason}.`,
     );
   }
 

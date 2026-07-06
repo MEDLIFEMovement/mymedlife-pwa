@@ -86,6 +86,24 @@ describe("production rollout bootstrap readiness", () => {
     );
   });
 
+  it("blocks direct JSON packets that contain Figma sandbox seed markers", () => {
+    const packet = createCompletePacket(30) as ProductionRolloutBootstrapPacket & {
+      seed_family?: string;
+    };
+    packet.seed_family = "figma_seed_v1";
+    packet.chapters[0] = {
+      ...packet.chapters[0]!,
+      name: "Test UCLA MEDLIFE",
+    };
+
+    const readiness = getProductionRolloutBootstrapReadiness(packet);
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "Remove Test/Figma sandbox data before production rollout: packet.chapters[0].name starts with Test.",
+    );
+  });
+
   it("blocks duplicate access and mapping rows before a broad invite", () => {
     const packet = createCompletePacket(30);
     packet.memberships.push({ ...packet.memberships[0]! });
