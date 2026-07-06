@@ -1,0 +1,302 @@
+import type {
+  ProductionLiveDataReadiness,
+} from "./production-live-data-readiness.ts";
+import type {
+  ProductionRolloutBootstrapReadiness,
+} from "./production-rollout-bootstrap.ts";
+import type {
+  ProductionRolloutOwnerPacketStatus,
+} from "./production-rollout-owner-packet-status.ts";
+
+export type ProductionRolloutCurrentStatusPaths = {
+  ownerDirectoryName: string;
+  csvDirectoryName: string;
+  packetPath: string;
+  liveDataCountsPath: string;
+  publicUrl: string;
+};
+
+export type ProductionRolloutCurrentStatusInput = {
+  paths: ProductionRolloutCurrentStatusPaths;
+  ownerDirectoryExists: boolean;
+  csvDirectoryExists: boolean;
+  rolloutPacketExists: boolean;
+  liveDataCountsExists: boolean;
+  ownerPacketStatus?: ProductionRolloutOwnerPacketStatus | null;
+  rolloutReadiness?: ProductionRolloutBootstrapReadiness | null;
+  liveDataReadiness?: ProductionLiveDataReadiness | null;
+  rolloutPacketError?: string | null;
+  liveDataCountsError?: string | null;
+};
+
+export type ProductionRolloutCurrentStatus = {
+  readyForFinalInviteGateReview: boolean;
+  currentBlocker: string;
+  artifactStatuses: string[];
+  nextCommands: string[];
+  safetyRules: string[];
+};
+
+export function getProductionRolloutCurrentStatus(
+  input: ProductionRolloutCurrentStatusInput,
+): ProductionRolloutCurrentStatus {
+  const currentBlocker = getCurrentBlocker(input);
+
+  return {
+    readyForFinalInviteGateReview: currentBlocker === null,
+    currentBlocker:
+      currentBlocker ??
+      "Run the final invite gate and record human approval before sending any broad invitations.",
+    artifactStatuses: getArtifactStatuses(input),
+    nextCommands: getNextCommands(input, currentBlocker),
+    safetyRules: [
+      "This status report reads local files only.",
+      "It does not create users, write Supabase rows, call Luma, send invites, send email/SMS, trigger n8n, or change production config.",
+      "Do not add passwords, temporary passwords, API keys, tokens, database URLs, private notes, screenshots of private rows, or raw table exports to rollout artifacts.",
+      "The launch lane remains limited to login, member app, leader command center, staff command center, Luma events, RSVP, attendance/check-in, points, and leaderboards.",
+      "Do not invite the 30-chapter cohort until the final invite gate says READY and human approval is recorded.",
+    ],
+  };
+}
+
+export function formatProductionRolloutCurrentStatus(
+  status: ProductionRolloutCurrentStatus,
+  paths: ProductionRolloutCurrentStatusPaths,
+): string {
+  return [
+    status.readyForFinalInviteGateReview
+      ? "30-chapter rollout current status: READY FOR FINAL INVITE GATE REVIEW"
+      : "30-chapter rollout current status: NOT READY",
+    "",
+    "Scope:",
+    "- Tracks readiness to invite about 500 students across 30 chapters.",
+    "- Focus stays on login, role workspaces, Luma events, RSVP, attendance/check-in, points, and leaderboards.",
+    "- This is not a production write, invitation send, or final approval.",
+    "",
+    "Artifact paths:",
+    `- owner packet folder: ${paths.ownerDirectoryName}`,
+    `- shared CSV folder: ${paths.csvDirectoryName}`,
+    `- rollout packet: ${paths.packetPath}`,
+    `- live-data count proof: ${paths.liveDataCountsPath}`,
+    `- public URL: ${paths.publicUrl}`,
+    "",
+    "Artifact status:",
+    ...status.artifactStatuses.map((line) => `- ${line}`),
+    "",
+    "Current blocker:",
+    `- ${status.currentBlocker}`,
+    "",
+    "Next commands:",
+    "```bash",
+    ...status.nextCommands,
+    "```",
+    "",
+    "Safety rules:",
+    ...status.safetyRules.map((rule) => `- ${rule}`),
+    "",
+  ].join("\n");
+}
+
+function getCurrentBlocker(input: ProductionRolloutCurrentStatusInput) {
+  if (!input.ownerDirectoryExists) {
+    return `Owner packet folder ${input.paths.ownerDirectoryName} is missing. Generate/send the owner handoff kit and collect returned owner CSVs first.`;
+  }
+
+  if (!input.ownerPacketStatus) {
+    return `Owner packet folder ${input.paths.ownerDirectoryName} could not be read.`;
+  }
+
+  if (!input.ownerPacketStatus.readyForPacketBuild) {
+    return `Owner packets are incomplete: ${input.ownerPacketStatus.readyOwnerCount}/${input.ownerPacketStatus.ownerCount} owners ready.`;
+  }
+
+  if (!input.csvDirectoryExists) {
+    return `Shared rollout CSV folder ${input.paths.csvDirectoryName} is missing. Assemble owner packets after all owners are ready.`;
+  }
+
+  if (!input.rolloutPacketExists) {
+    return `Production rollout packet ${input.paths.packetPath} is missing. Build it from the validated shared CSV folder.`;
+  }
+
+  if (input.rolloutPacketError) {
+    return `Production rollout packet could not be read: ${input.rolloutPacketError}`;
+  }
+
+  if (!input.rolloutReadiness) {
+    return "Production rollout packet readiness was not available.";
+  }
+
+  if (!input.rolloutReadiness.ready) {
+    return `Production rollout packet is not ready: ${input.rolloutReadiness.blockers[0] ?? "packet blockers remain"}`;
+  }
+
+  if (!input.liveDataCountsExists) {
+    return `Production live-data count proof ${input.paths.liveDataCountsPath} is missing. Run it only after approved production data apply.`;
+  }
+
+  if (input.liveDataCountsError) {
+    return `Production live-data count proof could not be read: ${input.liveDataCountsError}`;
+  }
+
+  if (!input.liveDataReadiness) {
+    return "Production live-data count readiness was not available.";
+  }
+
+  if (!input.liveDataReadiness.ready) {
+    return `Production live-data count proof is not ready: ${input.liveDataReadiness.blockers[0] ?? "count blockers remain"}`;
+  }
+
+  return null;
+}
+
+function getArtifactStatuses(input: ProductionRolloutCurrentStatusInput) {
+  return [
+    input.ownerDirectoryExists
+      ? getOwnerPacketStatusLine(input.ownerPacketStatus)
+      : "owner packet folder: MISSING",
+    input.csvDirectoryExists
+      ? "shared rollout CSV folder: FOUND"
+      : "shared rollout CSV folder: MISSING",
+    input.rolloutPacketExists
+      ? getRolloutPacketStatusLine(input)
+      : "production rollout packet: MISSING",
+    input.liveDataCountsExists
+      ? getLiveDataStatusLine(input)
+      : "production live-data count proof: MISSING",
+  ];
+}
+
+function getOwnerPacketStatusLine(
+  status: ProductionRolloutOwnerPacketStatus | null | undefined,
+) {
+  if (!status) {
+    return "owner packet folder: FOUND, status unreadable";
+  }
+
+  return status.readyForPacketBuild
+    ? `owner packets: READY (${status.readyOwnerCount}/${status.ownerCount} owners ready)`
+    : `owner packets: NOT READY (${status.readyOwnerCount}/${status.ownerCount} owners ready)`;
+}
+
+function getRolloutPacketStatusLine(input: ProductionRolloutCurrentStatusInput) {
+  if (input.rolloutPacketError) {
+    return "production rollout packet: FOUND, unreadable";
+  }
+
+  if (!input.rolloutReadiness) {
+    return "production rollout packet: FOUND, readiness unavailable";
+  }
+
+  return input.rolloutReadiness.ready
+    ? `production rollout packet: READY (${input.rolloutReadiness.counts.activeChapters} active chapters, ${input.rolloutReadiness.counts.approvedStudentMemberships} approved student/leader memberships)`
+    : `production rollout packet: NOT READY (${input.rolloutReadiness.blockers.length} blocker(s))`;
+}
+
+function getLiveDataStatusLine(input: ProductionRolloutCurrentStatusInput) {
+  if (input.liveDataCountsError) {
+    return "production live-data count proof: FOUND, unreadable";
+  }
+
+  if (!input.liveDataReadiness) {
+    return "production live-data count proof: FOUND, readiness unavailable";
+  }
+
+  return input.liveDataReadiness.ready
+    ? `production live-data count proof: READY (${input.liveDataReadiness.counts["app.chapters.active"]} active chapters, ${input.liveDataReadiness.counts["app.memberships.approved"]} approved memberships)`
+    : `production live-data count proof: NOT READY (${input.liveDataReadiness.blockers.length} blocker(s))`;
+}
+
+function getNextCommands(
+  input: ProductionRolloutCurrentStatusInput,
+  currentBlocker: string | null,
+) {
+  if (!currentBlocker) {
+    return [
+      [
+        "pnpm production:invite-gate",
+        `  --packet ${input.paths.packetPath}`,
+        `  --live-data-counts ${input.paths.liveDataCountsPath}`,
+        `  --public-url ${input.paths.publicUrl}`,
+      ].join(" \\\n"),
+    ];
+  }
+
+  if (!input.ownerDirectoryExists) {
+    return [
+      "pnpm rollout:owner-handoff --out production-rollout-owner-handoff",
+      "Send the matching owner folders and request docs to each owner.",
+      `Copy returned owner CSV folders into ${input.paths.ownerDirectoryName}/`,
+      `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-current-status.md`,
+    ];
+  }
+
+  if (input.ownerPacketStatus && !input.ownerPacketStatus.readyForPacketBuild) {
+    return [
+      `pnpm rollout:owner-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-packet-status.md`,
+      `pnpm rollout:owner-requests --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-requests`,
+      "Ask each owner to fix the blockers in their folder.",
+      `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-current-status.md`,
+    ];
+  }
+
+  if (!input.csvDirectoryExists) {
+    return [
+      `pnpm rollout:assemble-owner-packets --owner-dir ${input.paths.ownerDirectoryName} --out ${input.paths.csvDirectoryName}`,
+      `pnpm rollout:check-csv --dir ${input.paths.csvDirectoryName}`,
+      `pnpm rollout:preflight --dir ${input.paths.csvDirectoryName} --out production-rollout-preflight.md`,
+    ];
+  }
+
+  if (!input.rolloutPacketExists || input.rolloutPacketError) {
+    return [
+      [
+        "pnpm rollout:build",
+        `  --chapters ${input.paths.csvDirectoryName}/chapters.csv`,
+        `  --users ${input.paths.csvDirectoryName}/users.csv`,
+        `  --memberships ${input.paths.csvDirectoryName}/memberships.csv`,
+        `  --staff-roles ${input.paths.csvDirectoryName}/staff-roles.csv`,
+        `  --coach-assignments ${input.paths.csvDirectoryName}/coach-assignments.csv`,
+        `  --campaigns ${input.paths.csvDirectoryName}/campaigns.csv`,
+        `  --luma-calendars ${input.paths.csvDirectoryName}/luma-calendars.csv`,
+        `  --pilot-event-proof ${input.paths.csvDirectoryName}/pilot-event-proof.csv`,
+        `  --launch-owners ${input.paths.csvDirectoryName}/launch-owners.csv`,
+        `  --signed-in-route-proof ${input.paths.csvDirectoryName}/signed-in-route-proof.csv`,
+        `  --out ${input.paths.packetPath}`,
+      ].join(" \\\n"),
+      `pnpm rollout:check ${input.paths.packetPath}`,
+    ];
+  }
+
+  if (input.rolloutReadiness && !input.rolloutReadiness.ready) {
+    return [
+      `pnpm rollout:gaps ${input.paths.packetPath} --out production-rollout-gaps.md`,
+      `pnpm rollout:approval-summary ${input.paths.packetPath} --out production-rollout-approval-summary.md`,
+      "Fix the packet rows, rebuild, and rerun this status check.",
+    ];
+  }
+
+  if (!input.liveDataCountsExists || input.liveDataCountsError) {
+    return [
+      "pnpm production:live-data-proof-request --out production-live-data-proof-request.md",
+      `pnpm production:data-counts > ${input.paths.liveDataCountsPath}`,
+      `pnpm rollout:current-status --packet ${input.paths.packetPath} --live-data-counts ${input.paths.liveDataCountsPath} --out production-rollout-current-status.md`,
+    ];
+  }
+
+  if (!input.liveDataReadiness || !input.liveDataReadiness.ready) {
+    return [
+      `pnpm production:data-counts > ${input.paths.liveDataCountsPath}`,
+      `pnpm rollout:current-status --packet ${input.paths.packetPath} --live-data-counts ${input.paths.liveDataCountsPath} --out production-rollout-current-status.md`,
+    ];
+  }
+
+  return [
+    `pnpm production:data-counts > ${input.paths.liveDataCountsPath}`,
+    [
+      "pnpm production:invite-gate",
+      `  --packet ${input.paths.packetPath}`,
+      `  --live-data-counts ${input.paths.liveDataCountsPath}`,
+      `  --public-url ${input.paths.publicUrl}`,
+    ].join(" \\\n"),
+  ];
+}

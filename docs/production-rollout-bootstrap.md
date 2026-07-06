@@ -426,6 +426,17 @@ change Vercel settings, upload files, or enable integrations.
 
 ## 30-Chapter Invite Gate
 
+At any point in the rollout, run the current-status command to see the first
+missing artifact and the next safe command:
+
+```bash
+pnpm rollout:current-status --out production-rollout-current-status.md
+```
+
+This command is intentionally read-only and can return `NOT READY` without
+failing the launch process. Use it as the plain status report while owner data,
+CSV assembly, packet validation, and live-data proof are still in progress.
+
 After the rollout packet, handoff, public production route smoke, and production
 live-data count proof are ready, run the final broad-invite gate:
 

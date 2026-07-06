@@ -134,6 +134,7 @@ function formatProductionRolloutOwnerHandoffIndex({
     "```bash",
     `pnpm rollout:owner-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${statusFilename}`,
     `pnpm rollout:owner-requests --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${requestDirectoryName}`,
+    `pnpm rollout:current-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out production-rollout-current-status.md`,
     `pnpm rollout:assemble-owner-packets --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out rollout-csv`,
     "pnpm rollout:check-csv --dir rollout-csv",
     "pnpm rollout:build \\",
