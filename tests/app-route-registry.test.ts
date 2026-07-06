@@ -67,4 +67,27 @@ describe("app route registry", () => {
     expect(isKnownAppRouteHref("/admin/sop-library")).toBe(false);
     expect(isKnownAppRouteHref("/unknown")).toBe(false);
   });
+
+  it("keeps non-launch module families out of the visible events-and-points route set", () => {
+    const routes = getAppRouteRegistry();
+    const routeHrefs = routes.map((route) => route.href);
+    const blockedPrefixes = [
+      "/action-committees",
+      "/campaigns",
+      "/proof-library",
+      "/rush-month",
+      "/slt-prep",
+      "/admin/committees",
+      "/admin/feature-flags",
+      "/admin/permissions",
+      "/admin/sop-builder/",
+      "/admin/sop-library",
+      "/admin/theme",
+      "/admin/workflows",
+    ];
+
+    for (const blockedPrefix of blockedPrefixes) {
+      expect(routeHrefs.some((href) => href.startsWith(blockedPrefix))).toBe(false);
+    }
+  });
 });
