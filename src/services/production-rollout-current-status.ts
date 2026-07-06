@@ -25,6 +25,8 @@ export type ProductionRolloutCurrentStatusInput = {
   ownerDirectoryExists: boolean;
   csvDirectoryExists: boolean;
   csvDirectorySummary?: ProductionRolloutCsvDirectorySummary | null;
+  csvReadiness?: ProductionRolloutBootstrapReadiness | null;
+  csvReadinessError?: string | null;
   rolloutPacketExists: boolean;
   liveDataCountsExists: boolean;
   ownerPacketStatus?: ProductionRolloutOwnerPacketStatus | null;
@@ -149,6 +151,14 @@ function getCurrentBlocker(input: ProductionRolloutCurrentStatusInput) {
     return `Shared rollout CSV folder ${input.paths.csvDirectoryName} is header-only. Add approved 30-chapter launch data before building the packet.`;
   }
 
+  if (input.csvReadinessError) {
+    return `Shared rollout CSV folder could not be validated: ${input.csvReadinessError}`;
+  }
+
+  if (input.csvReadiness && !input.csvReadiness.ready) {
+    return `Shared rollout CSV folder is not ready: ${input.csvReadiness.blockers[0] ?? "CSV blockers remain"}`;
+  }
+
   if (!input.rolloutPacketExists) {
     return `Production rollout packet ${input.paths.packetPath} is missing. Build it from the validated shared CSV folder.`;
   }
@@ -224,6 +234,14 @@ function getOpenBlockers(input: ProductionRolloutCurrentStatusInput) {
     blockers.push(
       `Shared rollout CSV folder ${input.paths.csvDirectoryName} is header-only. Add approved 30-chapter launch data before building the packet.`,
     );
+  } else if (input.csvReadinessError) {
+    blockers.push(
+      `Shared rollout CSV folder could not be validated: ${input.csvReadinessError}`,
+    );
+  } else if (input.csvReadiness && !input.csvReadiness.ready) {
+    blockers.push(
+      `Shared rollout CSV folder is not ready: ${input.csvReadiness.blockers[0] ?? "CSV blockers remain"}`,
+    );
   }
 
   if (!input.rolloutPacketExists) {
@@ -268,7 +286,7 @@ function getArtifactStatuses(input: ProductionRolloutCurrentStatusInput) {
       : "owner packet folder: MISSING",
     ...getOwnerRecipientStatusLines(input.ownerRecipientStatus),
     input.csvDirectoryExists
-      ? getCsvDirectoryStatusLine(input.csvDirectorySummary)
+      ? getCsvDirectoryStatusLine(input)
       : "shared rollout CSV folder: MISSING",
     input.rolloutPacketExists
       ? getRolloutPacketStatusLine(input)
@@ -305,9 +323,9 @@ function getOwnerRecipientStatusLines(
   ];
 }
 
-function getCsvDirectoryStatusLine(
-  summary: ProductionRolloutCsvDirectorySummary | null | undefined,
-) {
+function getCsvDirectoryStatusLine(input: ProductionRolloutCurrentStatusInput) {
+  const summary = input.csvDirectorySummary;
+
   if (!summary) {
     return "shared rollout CSV folder: FOUND";
   }
@@ -318,6 +336,16 @@ function getCsvDirectoryStatusLine(
 
   if (summary.dataRowCount === 0) {
     return `shared rollout CSV folder: FOUND, header-only (${formatCount(summary.fileCount, "CSV file")}, 0 launch rows)`;
+  }
+
+  if (input.csvReadinessError) {
+    return `shared rollout CSV folder: FOUND, validation unreadable (${formatCount(summary.fileCount, "CSV file")}, ${formatCount(summary.dataRowCount, "launch row")})`;
+  }
+
+  if (input.csvReadiness) {
+    return input.csvReadiness.ready
+      ? `shared rollout CSV folder: READY (${formatCount(summary.fileCount, "CSV file")}, ${formatCount(summary.dataRowCount, "launch row")})`
+      : `shared rollout CSV folder: NOT READY (${input.csvReadiness.blockers.length} blocker(s), ${formatCount(summary.dataRowCount, "launch row")})`;
   }
 
   return `shared rollout CSV folder: FOUND (${formatCount(summary.fileCount, "CSV file")}, ${formatCount(summary.dataRowCount, "launch row")})`;
@@ -440,6 +468,15 @@ function getNextCommands(
       `Populate ${input.paths.csvDirectoryName} with approved owner-returned CSV rows.`,
       `pnpm rollout:check-csv --dir ${input.paths.csvDirectoryName}`,
       `pnpm rollout:preflight --dir ${input.paths.csvDirectoryName} --out production-rollout-preflight.md`,
+      `pnpm rollout:current-status --csv-dir ${input.paths.csvDirectoryName} --out production-rollout-current-status.md`,
+    ];
+  }
+
+  if (input.csvReadinessError || (input.csvReadiness && !input.csvReadiness.ready)) {
+    return [
+      `pnpm rollout:check-csv --dir ${input.paths.csvDirectoryName}`,
+      `pnpm rollout:preflight --dir ${input.paths.csvDirectoryName} --out production-rollout-preflight.md`,
+      "Fix the shared CSV rows above before building production-rollout-packet.json.",
       `pnpm rollout:current-status --csv-dir ${input.paths.csvDirectoryName} --out production-rollout-current-status.md`,
     ];
   }
