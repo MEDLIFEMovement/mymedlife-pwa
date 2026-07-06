@@ -73,7 +73,7 @@ export function formatProductionLiveDataProofRequest(
     "## Command If Supabase Is Linked Locally",
     "",
     "```bash",
-    `${dataCountCommand} > ${request.countsPath}`,
+    dataCountCommand,
     "```",
     "",
     "## Command If Supabase Is Not Linked Locally",
@@ -81,7 +81,7 @@ export function formatProductionLiveDataProofRequest(
     `Keep the approved production database URL in \`${request.dbUrlEnvName}\`. Do not paste it into the command, docs, PR comments, or Linear.`,
     "",
     "```bash",
-    `${dataCountCommandWithDbUrl} > ${request.countsPath}`,
+    dataCountCommandWithDbUrl,
     "```",
     "",
     "## Final Invite Gate Command",
@@ -145,6 +145,7 @@ function formatProductionDataCountCommand(
     `  --minimum-chapters=${request.minimumChapterCount}`,
     `  --minimum-approved-members=${request.minimumApprovedMembershipCount}`,
     `  --minimum-pilot-events=${request.minimumPilotEventCount}`,
+    `  --out ${request.countsPath}`,
   ]
     .filter(Boolean)
     .join(" \\\n");

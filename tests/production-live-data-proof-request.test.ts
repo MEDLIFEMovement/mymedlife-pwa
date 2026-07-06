@@ -18,6 +18,7 @@ describe("production live-data proof request", () => {
     expect(markdown).toContain("--minimum-chapters=30");
     expect(markdown).toContain("--minimum-approved-members=500");
     expect(markdown).toContain("--minimum-pilot-events=5");
+    expect(markdown).toContain("--out production-live-data-counts.txt");
     expect(markdown).toContain(
       "pnpm production:invite-gate \\\n  --packet production-rollout-packet.json",
     );
@@ -52,5 +53,6 @@ describe("production live-data proof request", () => {
     expect(markdown).toContain("--minimum-chapters=3");
     expect(markdown).toContain("--minimum-approved-members=20");
     expect(markdown).toContain("--minimum-pilot-events=1");
+    expect(markdown).toContain("--out tmp/counts.txt");
   });
 });

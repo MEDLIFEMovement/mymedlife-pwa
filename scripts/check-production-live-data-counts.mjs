@@ -1,9 +1,11 @@
 /* global console, process */
 import { spawnSync } from "node:child_process";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm production:data-counts [--db-url-env SUPABASE_DB_URL] [--minimum-chapters=30] [--minimum-approved-members=500] [--minimum-pilot-events=5]",
+  "  pnpm production:data-counts [--db-url-env SUPABASE_DB_URL] [--minimum-chapters=30] [--minimum-approved-members=500] [--minimum-pilot-events=5] [--out production-live-data-counts.txt]",
   "",
   "This is read-only. It runs aggregate count queries against production Supabase.",
   "By default it uses the linked Supabase project. Use --db-url-env to avoid depending on local supabase link state.",
@@ -21,6 +23,7 @@ try {
   const minimumChapters = getMinimumChapterCount(args);
   const minimumApprovedMembers = getMinimumApprovedMemberCount(args);
   const minimumPilotEvents = getMinimumPilotEventCount(args);
+  const outPath = getValue(args, "--out");
   const {
     formatProductionLiveDataReadiness,
     getProductionLiveDataReadiness,
@@ -54,8 +57,18 @@ try {
     minimumApprovedMembershipCount: minimumApprovedMembers,
     minimumPilotEventCount: minimumPilotEvents,
   });
+  const report = formatProductionLiveDataReadiness(readiness);
 
-  console.log(formatProductionLiveDataReadiness(readiness));
+  if (outPath) {
+    const resolvedOutPath = resolve(outPath);
+
+    await mkdir(dirname(resolvedOutPath), { recursive: true });
+    await writeFile(resolvedOutPath, `${report}\n`);
+    console.log(`Production live data count check written to ${resolvedOutPath}`);
+  } else {
+    console.log(report);
+  }
+
   process.exit(readiness.ready ? 0 : 1);
 } catch (error) {
   console.error("Production live data count check: NOT READY");

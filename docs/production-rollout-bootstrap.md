@@ -501,7 +501,7 @@ After the rollout packet, handoff, public production route smoke, and production
 live-data count proof are ready, run the final broad-invite gate:
 
 ```bash
-pnpm production:data-counts > production-live-data-counts.txt
+pnpm production:data-counts --out production-live-data-counts.txt
 
 pnpm production:invite-gate \
   --packet production-rollout-packet.json \
@@ -594,7 +594,7 @@ does not connect to Supabase, read data, write rows, send invites, or change
 configuration.
 
 ```bash
-pnpm production:data-counts
+pnpm production:data-counts --out production-live-data-counts.txt
 ```
 
 This command uses the linked Supabase production project by default and only
@@ -603,7 +603,7 @@ linked, keep the approved production database URL in an environment variable and
 run:
 
 ```bash
-pnpm production:data-counts --db-url-env SUPABASE_DB_URL
+pnpm production:data-counts --db-url-env SUPABASE_DB_URL --out production-live-data-counts.txt
 ```
 
 Do not paste database URLs, passwords, service keys, or tokens into command
@@ -618,7 +618,8 @@ memberships, 5 production chapter events, and 5 production Luma event links:
 pnpm production:data-counts \
   --minimum-chapters=30 \
   --minimum-approved-members=500 \
-  --minimum-pilot-events=5
+  --minimum-pilot-events=5 \
+  --out production-live-data-counts.txt
 ```
 
 The count check is not a replacement for the rollout packet validator. It proves
