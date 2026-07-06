@@ -69,6 +69,7 @@ export function getProductionInviteBatchReadiness(
   const blockers: string[] = [];
   const warnings: string[] = [];
   const packetReadiness = getProductionRolloutBootstrapReadiness(packet, {
+    ...options,
     minimumChapterCount: minimums.chapters,
     minimumStudentMembershipCount: minimums.students,
     minimumPilotChapterCount: minimums.pilotChapters,

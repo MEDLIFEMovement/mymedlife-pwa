@@ -4,7 +4,9 @@ import {
   FIGMA_TEST_SEED_ENVIRONMENT,
   FIGMA_TEST_SEED_FAMILY,
   FIGMA_TEST_SEED_SOURCE,
+  buildFigmaTestSeedManifest,
   figmaTestSeedRecords,
+  formatFigmaTestSeedLoginsMarkdown,
   getFigmaOrTestSeedEvidenceReason,
   getFigmaTestSeedRecordsByShell,
   getFigmaTestSeedValidation,
@@ -74,5 +76,50 @@ describe("figma test seed map", () => {
       }),
     ).toBe("packet.nested[0].seed_family is marked seed_family=figma_seed_v1");
   });
-});
 
+  it("builds a sandbox-only figma seed manifest for the visible shells", () => {
+    const manifest = buildFigmaTestSeedManifest();
+
+    expect(manifest.seedFamily).toBe(FIGMA_TEST_SEED_FAMILY);
+    expect(manifest.source).toBe(FIGMA_TEST_SEED_SOURCE);
+    expect(manifest.environment).toBe(FIGMA_TEST_SEED_ENVIRONMENT);
+    expect(manifest.isTest).toBe(true);
+    expect(manifest.shells.map((shell) => shell.primaryRoute)).toEqual([
+      "/app",
+      "/leader?view=overview",
+      "/staff?view=chapters",
+      "/admin",
+      "/app/slt-prep",
+    ]);
+  });
+
+  it("maps each shell to Test-prefixed sandbox logins", () => {
+    const manifest = buildFigmaTestSeedManifest();
+
+    for (const shell of manifest.shells) {
+      expect(shell.excludedFromProductionEvidence).toBe(true);
+      expect(shell.exclusionReason).toContain("must stay out of production rollout evidence");
+      expect(shell.logins.length).toBeGreaterThan(0);
+      for (const login of shell.logins) {
+        expect(login.seedFamily).toBe(FIGMA_TEST_SEED_FAMILY);
+        expect(login.source).toBe(FIGMA_TEST_SEED_SOURCE);
+        expect(login.environment).toBe(FIGMA_TEST_SEED_ENVIRONMENT);
+        expect(login.isTest).toBe(true);
+        expect(login.displayName.startsWith("Test")).toBe(true);
+        expect(login.email.startsWith("test.")).toBe(true);
+        expect(login.email.endsWith("@example.com")).toBe(true);
+        expect(login.chapterName === null || login.chapterName.startsWith("Test")).toBe(true);
+      }
+    }
+  });
+
+  it("renders a reviewer-friendly login report", () => {
+    const report = formatFigmaTestSeedLoginsMarkdown();
+
+    expect(report).toContain("# myMEDLIFE Figma Test Logins");
+    expect(report).toContain("`figma_seed_v1`");
+    expect(report).toContain("`sandbox`");
+    expect(report).toContain("/app/slt-prep");
+    expect(report).toContain("must stay out of production rollout evidence");
+  });
+});

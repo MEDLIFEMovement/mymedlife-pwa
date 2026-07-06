@@ -94,7 +94,7 @@ type TestAuthUser = {
   password: string;
 };
 
-type TestLogin = {
+export type TestLogin = {
   email: string;
   password: string;
   displayName: string;
@@ -688,7 +688,7 @@ export function getTestProductionSeedEnvironment(): TestProductionSeedEnvironmen
 export function validateTestProductionSeedEnvironment(
   environment = getTestProductionSeedEnvironment(),
 ): TestProductionSeedValidation {
-  const visibleLabels = getVisibleSeedLabels(environment);
+  const visibleLabels = getTestProductionVisibleLabels(environment);
   const emails = environment.rows.authUsers.map((user) => user.email);
   const assignmentStatuses = new Set(environment.rows.assignments.map((row) => row.status));
   const evidenceStatuses = new Set(environment.rows.evidenceItems.map((row) => row.status));
@@ -2142,7 +2142,9 @@ function stableHex(input: string) {
     .join("");
 }
 
-function getVisibleSeedLabels(environment: TestProductionSeedEnvironment) {
+export function getTestProductionVisibleLabels(
+  environment = getTestProductionSeedEnvironment(),
+) {
   const rows = environment.rows;
   return [
     ...rows.profiles.map((row) => row.display_name),
