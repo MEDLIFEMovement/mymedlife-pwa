@@ -110,6 +110,7 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     "When the owner folders are filled, assemble them back into the shared CSV folder:",
     "",
     "```bash",
+    "pnpm rollout:owner-status --owner-dir rollout-owner-packets --out production-rollout-owner-packet-status.md",
     `pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out ${outputDirectoryName}`,
     "```",
     "",

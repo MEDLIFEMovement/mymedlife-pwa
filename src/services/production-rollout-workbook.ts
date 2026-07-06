@@ -227,6 +227,7 @@ export function formatProductionRolloutWorkbook(outputDirectoryName = "rollout-c
     "",
     "```bash",
     "pnpm rollout:owner-packets --out rollout-owner-packets",
+    "pnpm rollout:owner-status --owner-dir rollout-owner-packets --out production-rollout-owner-packet-status.md",
     `pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out ${outputDirectoryName}`,
     `pnpm rollout:data-request --dir ${outputDirectoryName} --out production-rollout-data-request.md`,
     `pnpm rollout:check-csv --dir ${outputDirectoryName}`,
