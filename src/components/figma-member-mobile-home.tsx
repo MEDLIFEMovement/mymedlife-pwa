@@ -50,6 +50,23 @@ const VIEW_LABELS: Record<"leader" | "coach" | "admin", string> = {
   admin:  "Admin",
 };
 
+const MEMBER_EVENT_DETAIL_HREFS: Record<number, string> = {
+  1: "/app/events/chapter-event-ucla-kickoff?source=events",
+  2: "/app/events/chapter-event-lakeside-welcome?source=events",
+  3: "/app/events/chapter-event-boston-info-night?source=events",
+  4: "/app/events/chapter-event-ucsd-service-social?source=events",
+  5: "/app/events/chapter-event-mcgill-coffee-chat?source=events",
+};
+
+function getMemberEventDetailHref(eventId: number) {
+  return MEMBER_EVENT_DETAIL_HREFS[eventId] ?? "/app/events";
+}
+
+function getMemberEventRsvpHref(eventId: number) {
+  const detailHref = getMemberEventDetailHref(eventId);
+  return detailHref.includes("?") ? `${detailHref}&step=rsvp` : `${detailHref}?step=rsvp`;
+}
+
 // ─── Primitives ────────────────────────────────────────────────────────────
 
 function cn(...c: (string | undefined | false | null)[]) {
@@ -427,16 +444,18 @@ function StudentHome({
             ].map((e, i) => (
               <Card key={i} padding={false} onClick={() => navigate("events")}>
                 <div className="flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <CalendarDays size={18} className="text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground">{e.name}</p>
-                    <p className="text-xs text-muted-foreground">{e.date}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
-                      <MapPin size={9} className="flex-shrink-0" />{e.loc}
-                    </p>
-                  </div>
+                  <Link href="/app/events" className="flex min-w-0 flex-1 items-center gap-3">
+                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <CalendarDays size={18} className="text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-foreground">{e.name}</p>
+                      <p className="text-xs text-muted-foreground">{e.date}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
+                        <MapPin size={9} className="flex-shrink-0" />{e.loc}
+                      </p>
+                    </div>
+                  </Link>
                   {e.rsvp ? (
                     <Pill label="RSVP'd" variant="green" />
                   ) : (
@@ -457,7 +476,8 @@ function StudentHome({
         {/* Active campaign */}
         <div>
           <SLabel>Active Campaign</SLabel>
-          <Card onClick={() => navigate("events")} padding={false}>
+          <Link href="/app/events" className="block">
+            <Card padding={false}>
             <div className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -482,7 +502,8 @@ function StudentHome({
               <span className="text-xs text-muted-foreground">Chapter: 67% complete</span>
               <span className="text-xs font-semibold text-primary">22 / 34 members active</span>
             </div>
-          </Card>
+            </Card>
+          </Link>
         </div>
 
         {/* Take Action: My Tasks */}
@@ -527,7 +548,7 @@ function StudentHome({
         <div>
           <div className="flex items-center justify-between mb-3">
             <SLabel>Chapter Leaderboard</SLabel>
-            <button onClick={() => navigate("points")} className="text-primary text-xs font-semibold">Full board</button>
+            <Link href="/app/points" className="text-primary text-xs font-semibold">Full board</Link>
           </div>
           <Card>
             {[
@@ -2093,12 +2114,7 @@ const ALL_EVENTS: ChapterEvent[] = [
 
 function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
   const [activeCampaign, setActiveCampaign] = useState<CampaignTag | "All">("All");
-  const [rsvpdIds, setRsvpdIds] = useState<number[]>([2]);
-
-  function toggleRsvp(id: number, e: React.MouseEvent) {
-    e.stopPropagation();
-    setRsvpdIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
-  }
+  const rsvpdIds = [2];
 
   const visibleEvents = activeCampaign === "All"
     ? ALL_EVENTS
@@ -2189,7 +2205,7 @@ function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
 
         {/* Featured event */}
         {featuredEvent && (
-          <Card padding={false} onClick={() => navigate("event-detail")} className="overflow-hidden">
+          <Card padding={false} className="overflow-hidden">
             <div className="bg-gradient-to-r from-primary to-blue-500 px-4 py-2.5 flex items-center gap-2">
               <Zap size={13} className="text-amber-300 fill-amber-300 flex-shrink-0" />
               <span className="text-white text-xs font-bold uppercase tracking-wide">Featured</span>
@@ -2218,10 +2234,18 @@ function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
                 {featuredEvent.rsvps && <span className="text-xs text-muted-foreground ml-auto">{featuredEvent.rsvps} RSVPs</span>}
               </div>
               <div className="flex gap-2">
-                <button onClick={(e) => { e.stopPropagation(); navigate("event-detail"); }}
-                  className="flex-1 bg-primary text-white text-sm font-bold py-2.5 rounded-xl hover:opacity-90 transition-opacity">RSVP</button>
-                <button onClick={(e) => { e.stopPropagation(); navigate("event-detail"); }}
-                  className="flex-1 bg-secondary text-primary text-sm font-bold py-2.5 rounded-xl hover:bg-muted transition-colors">View Details</button>
+                <Link
+                  href={getMemberEventRsvpHref(featuredEvent.id)}
+                  className="flex flex-1 items-center justify-center rounded-xl bg-primary py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                >
+                  RSVP
+                </Link>
+                <Link
+                  href={getMemberEventDetailHref(featuredEvent.id)}
+                  className="flex flex-1 items-center justify-center rounded-xl bg-secondary py-2.5 text-sm font-bold text-primary transition-colors hover:bg-muted"
+                >
+                  View Details
+                </Link>
               </div>
             </div>
           </Card>
@@ -2238,41 +2262,42 @@ function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
                 return (
                   <div
                     key={ev.id}
-                    onClick={() => navigate("event-detail")}
                     className="bg-card rounded-2xl border border-border overflow-hidden cursor-pointer active:scale-[0.99] transition-transform hover:border-primary/20"
                     style={{ borderLeft: `4px solid ${typeCfg.color}` }}
                   >
                     <div className="flex items-start gap-3 p-4">
                       {/* Color-matched icon */}
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-                        style={{ background: typeCfg.bg }}
-                      >
-                        <CalendarDays size={18} style={{ color: typeCfg.color }} />
-                      </div>
+                      <Link href={getMemberEventDetailHref(ev.id)} className="flex min-w-0 flex-1 items-start gap-3">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                          style={{ background: typeCfg.bg }}
+                        >
+                          <CalendarDays size={18} style={{ color: typeCfg.color }} />
+                        </div>
 
-                      <div className="flex-1 min-w-0">
-                        {/* Type pill on its own line — instantly scannable */}
-                        <EventTypePill type={ev.eventType} />
-                        <p className="text-sm font-bold text-foreground leading-snug mt-1">{ev.title}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
-                          <MapPin size={9} className="flex-shrink-0" />{ev.loc}
-                        </p>
-                      </div>
+                        <div className="flex-1 min-w-0">
+                          {/* Type pill on its own line — instantly scannable */}
+                          <EventTypePill type={ev.eventType} />
+                          <p className="text-sm font-bold text-foreground leading-snug mt-1">{ev.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{ev.date}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-0.5 mt-0.5">
+                            <MapPin size={9} className="flex-shrink-0" />{ev.loc}
+                          </p>
+                        </div>
+                      </Link>
 
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                         <PointsPill pts={ev.pts} />
                         {isRsvpd ? (
                           <Pill label="RSVP'd" variant="green" />
                         ) : ev.status === "RSVP Open" ? (
-                          <button
-                            onClick={(e) => toggleRsvp(ev.id, e)}
+                          <Link
+                            href={getMemberEventRsvpHref(ev.id)}
                             className="text-[10px] font-bold px-2.5 py-1 rounded-full border hover:opacity-80"
                             style={{ color: typeCfg.text, borderColor: `${typeCfg.color}50`, background: typeCfg.bg }}
                           >
                             RSVP
-                          </button>
+                          </Link>
                         ) : (
                           <Pill label="Upcoming" variant="gray" />
                         )}
