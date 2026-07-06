@@ -72,6 +72,7 @@ export function getProductionInviteBatchReadiness(
     minimumChapterCount: minimums.chapters,
     minimumStudentMembershipCount: minimums.students,
     minimumPilotChapterCount: minimums.pilotChapters,
+    allowSandboxTestData: options.allowSandboxTestData,
   });
   const activeChapters = packet.chapters.filter(
     (chapter) => (chapter.status ?? "active") === "active",

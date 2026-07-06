@@ -11,7 +11,7 @@ import type {
   ProductionBootstrapUser,
   ProductionRolloutBootstrapPacket,
 } from "@/services/production-rollout-bootstrap";
-import { getFigmaOrTestSeedEvidenceReason } from "@/data/figma-test-seed-map";
+import { getFigmaOrTestSeedEvidenceReason } from "../data/figma-test-seed-map.ts";
 
 export type ProductionRolloutCsvTables = {
   chapters: string;

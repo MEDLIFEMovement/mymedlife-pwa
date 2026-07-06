@@ -1,4 +1,4 @@
-import { getFigmaOrTestSeedEvidenceReason } from "@/data/figma-test-seed-map";
+import { getFigmaOrTestSeedEvidenceReason } from "../data/figma-test-seed-map.ts";
 
 export type ProductionBootstrapChapter = {
   id: string;
@@ -135,6 +135,7 @@ export type ProductionRolloutBootstrapOptions = {
   minimumChapterCount?: number;
   minimumStudentMembershipCount?: number;
   minimumPilotChapterCount?: number;
+  allowSandboxTestData?: boolean;
 };
 
 export function formatProductionRolloutBootstrapReadiness(
@@ -233,6 +234,7 @@ export function getProductionRolloutBootstrapReadiness(
   const minimumChapterCount = options.minimumChapterCount ?? 30;
   const minimumStudentMembershipCount = options.minimumStudentMembershipCount ?? 500;
   const minimumPilotChapterCount = options.minimumPilotChapterCount ?? 5;
+  const allowSandboxTestData = options.allowSandboxTestData ?? false;
   const blockers: string[] = [];
   const warnings: string[] = [];
   const activeChapters = packet.chapters.filter(
@@ -577,7 +579,7 @@ export function getProductionRolloutBootstrapReadiness(
   }
 
   const testSeedEvidenceReason = getFigmaOrTestSeedEvidenceReason(packet);
-  if (testSeedEvidenceReason) {
+  if (testSeedEvidenceReason && !allowSandboxTestData) {
     blockers.push(
       `Remove Test/Figma sandbox data before production rollout: ${testSeedEvidenceReason}.`,
     );
