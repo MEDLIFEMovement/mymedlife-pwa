@@ -11,6 +11,43 @@ pnpm rollout:templates --out rollout-csv
 pnpm rollout:workbook --out production-rollout-workbook.md --csv-dir rollout-csv
 ```
 
+## Fast Intake Sheet Headers
+
+Use these exact headers if the rollout data is collected in Google Sheets before
+it is converted into packet-ready CSV files. Keep the sheets free of passwords,
+tokens, API keys, private notes, and fake/sample rows.
+
+Roster sheet for students, student leaders, coaches, staff, admins, and owners:
+
+```text
+email,displayName,chapterId,roleKey,status,chapterName
+```
+
+Chapter setup sheet for the 30 launch chapters, coach coverage, launch campaign,
+and Luma calendar mapping:
+
+```text
+chapterId,chapterName,campus,region,coachEmail,coachType,calendarId,calendarName,campaignName,campaignSlug
+```
+
+Five-chapter pilot event-loop proof sheet:
+
+```text
+chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditRecorded,zeroExternalSends,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,status,notes
+```
+
+Production signed-in route proof sheet:
+
+```text
+email,workspace,observedPath,status,checkedAt,notes
+```
+
+Launch owner sheet:
+
+```text
+email,ownerType,displayName,status
+```
+
 If HQ has one plain roster export for students and leaders, convert it into the
 two linked files that are easiest to mistype:
 

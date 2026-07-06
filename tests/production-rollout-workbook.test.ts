@@ -59,6 +59,10 @@ describe("production rollout workbook", () => {
     expect(workbook).toContain("support owner needs passed route proof for /staff?view=chapters");
     expect(workbook).toContain("rollback and production_apply owners need passed route proof for /admin");
     expect(workbook).toContain("workspace: student_app, leader_command_center, staff_command_center, admin_backend");
+    expect(workbook).toContain("## Fast Intake Sheet Headers");
+    expect(workbook).toContain("email,displayName,chapterId,roleKey,status,chapterName");
+    expect(workbook).toContain("chapterId,chapterName,campus,region,coachEmail,coachType,calendarId,calendarName,campaignName,campaignSlug");
+    expect(workbook).toContain("email,workspace,observedPath,status,checkedAt,notes");
     expect(workbook).toContain("<student-email>,<chapter-id>,general_member,approved");
     expect(workbook).not.toContain("member.001@medlifemovement.org");
     expect(workbook).not.toContain("test@example.com");
