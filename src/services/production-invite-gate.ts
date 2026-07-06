@@ -13,6 +13,9 @@ import type {
   ProductionLiveDataReadiness,
 } from "@/services/production-live-data-readiness";
 import {
+  getProductionInviteBatchReadiness,
+} from "@/services/production-invite-batches";
+import {
   getProductionSignedInRouteProofReadiness,
 } from "@/services/production-signed-in-route-proof";
 import { isKnownAppRouteHref } from "@/services/app-route-registry";
@@ -33,6 +36,7 @@ export type ProductionInviteGateInput = {
   rolloutHandoff: ProductionRolloutHandoff | null;
   liveDataReadiness?: ProductionLiveDataReadiness | null;
   minimumPilotChapterCount?: number;
+  maxRecipientsPerBatch?: number;
 };
 
 export type ProductionInviteGateReadiness = {
@@ -58,6 +62,11 @@ export function getProductionInviteGateReadiness(
     createWorkspaceAccessCheck(input.rolloutReadiness),
     createSignedInRouteProofCheck(input.rolloutPacket ?? null),
     createPilotEventLoopCheck(input.rolloutReadiness, minimumPilotChapterCount),
+    createInviteBatchCheck(
+      input.rolloutPacket ?? null,
+      minimumPilotChapterCount,
+      input.maxRecipientsPerBatch,
+    ),
     createLaunchOwnerCheck(input.rolloutReadiness),
     createHandoffCheck(input.rolloutHandoff),
   ];
@@ -364,6 +373,35 @@ function createSignedInRouteProofCheck(
   };
 }
 
+function createInviteBatchCheck(
+  rolloutPacket: ProductionRolloutBootstrapPacket | null,
+  minimumPilotChapterCount: number,
+  maxRecipientsPerBatch?: number,
+): ProductionInviteGateCheck {
+  if (!rolloutPacket) {
+    return {
+      key: "invite_batches",
+      label: "Safe invite batch plan",
+      passed: false,
+      detail: "packet was not provided",
+    };
+  }
+
+  const readiness = getProductionInviteBatchReadiness(rolloutPacket, {
+    minimumPilotChapterCount,
+    maxRecipientsPerBatch,
+  });
+
+  return {
+    key: "invite_batches",
+    label: "Safe invite batch plan",
+    passed: readiness.ready,
+    detail: readiness.ready
+      ? `${readiness.counts.plannedBatches} planned batch(es); batch 1 has ${readiness.counts.pilotReadyChapters} pilot-ready chapter(s); largest batch has ${readiness.counts.largestBatchRecipients} recipient(s)`
+      : summarizeList(readiness.blockers),
+  };
+}
+
 function createLaunchOwnerCheck(
   rolloutReadiness: ProductionRolloutBootstrapReadiness | null,
 ): ProductionInviteGateCheck {
@@ -446,6 +484,8 @@ function getNextStepForCheck(key: string) {
       return "Complete signed-in route proof for one member, leader, staff user, and admin after production data is applied.";
     case "pilot_event_loop":
       return "Complete the five-chapter Luma RSVP, attendance, points, audit, and outbox proof.";
+    case "invite_batches":
+      return "Prepare safe invite batches with the five pilot-ready chapters first and no batch above the recipient cap.";
     case "launch_owners":
       return "Name active support, rollback, and production apply owners in launch-owners.csv.";
     case "handoff":

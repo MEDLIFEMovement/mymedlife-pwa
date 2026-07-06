@@ -5,9 +5,9 @@ import { resolve } from "node:path";
 
 const usage = [
   "Usage:",
-  "  pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt [--public-url https://www.mymedlife.org] [--minimum-pilot-chapters=5]",
+  "  pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt [--public-url https://www.mymedlife.org] [--minimum-pilot-chapters=5] [--max-recipients=75]",
   "",
-  "This is read-only. It checks the public app route smoke plus the 30-chapter rollout packet, workspace coverage, pilot event proof, owners, and handoff posture.",
+  "This is read-only. It checks the public app route smoke plus the 30-chapter rollout packet, workspace coverage, pilot event proof, safe invite batches, owners, and handoff posture.",
   "The live-data-counts file should be the saved output from pnpm production:data-counts.",
 ].join("\n");
 
@@ -28,6 +28,11 @@ try {
     args,
     "--minimum-pilot-chapters",
     5,
+  );
+  const maxRecipientsPerBatch = getPositiveWholeNumberArg(
+    args,
+    "--max-recipients",
+    75,
   );
 
   if (!packetPath) {
@@ -85,6 +90,7 @@ try {
     rolloutHandoff: getProductionRolloutHandoff(packet),
     liveDataReadiness,
     minimumPilotChapterCount,
+    maxRecipientsPerBatch,
   });
 
   console.log(formatProductionInviteGateReadiness(inviteGate));

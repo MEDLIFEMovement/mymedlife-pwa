@@ -500,7 +500,8 @@ Before any production data apply, confirm:
   batch 1 is the reviewed five-chapter pilot group.
 - The redacted approval summary says `30-chapter approval summary: READY FOR
   FINAL GATE REVIEW`.
-- The invite gate says `30-chapter invite gate: READY`.
+- The invite gate says `30-chapter invite gate: READY`, including the safe
+  invite-batch check.
 - Nick approves the 30 chapters.
 - DS approves the user and role apply path.
 - The production apply owner is named.
