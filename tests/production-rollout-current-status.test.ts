@@ -111,6 +111,21 @@ describe("production rollout current status", () => {
     expect(status.artifactStatuses).toContain(
       "owner recipient assignments: NOT READY (0/7 recipients assigned, 7 missing)",
     );
+    expect(status.openBlockers).toContain(
+      "Owner packet recipients are incomplete: 0/7 owner recipients assigned, 7 missing recipient email(s).",
+    );
+    expect(status.openBlockers).toContain(
+      "Owner packets are incomplete: 1/7 owners ready.",
+    );
+    expect(status.openBlockers).toContain(
+      "Shared rollout CSV folder rollout-csv is missing.",
+    );
+    expect(status.openBlockers).toContain(
+      "Production rollout packet production-rollout-packet.json is missing.",
+    );
+    expect(status.openBlockers).toContain(
+      "Production live-data count proof production-live-data-counts.txt is missing.",
+    );
     expect(status.nextCommands).toContain(
       "Save the worksheet Copy/Paste Answer Block as owner-recipient-answers.txt.",
     );
@@ -122,6 +137,10 @@ describe("production rollout current status", () => {
     );
     expect(report).toContain(
       `- owner recipient assignments: ${recipientAssignmentsPath}`,
+    );
+    expect(report).toContain("Open blockers:");
+    expect(report).toContain(
+      "- Owner packet recipients are incomplete: 0/7 owner recipients assigned, 7 missing recipient email(s).",
     );
   });
 

@@ -43,6 +43,7 @@ export type ProductionRolloutCsvDirectorySummary = {
 export type ProductionRolloutCurrentStatus = {
   readyForFinalInviteGateReview: boolean;
   currentBlocker: string;
+  openBlockers: string[];
   artifactStatuses: string[];
   nextCommands: string[];
   safetyRules: string[];
@@ -52,12 +53,14 @@ export function getProductionRolloutCurrentStatus(
   input: ProductionRolloutCurrentStatusInput,
 ): ProductionRolloutCurrentStatus {
   const currentBlocker = getCurrentBlocker(input);
+  const openBlockers = getOpenBlockers(input);
 
   return {
     readyForFinalInviteGateReview: currentBlocker === null,
     currentBlocker:
       currentBlocker ??
       "Run the final invite gate and record human approval before sending any broad invitations.",
+    openBlockers,
     artifactStatuses: getArtifactStatuses(input),
     nextCommands: getNextCommands(input, currentBlocker),
     safetyRules: [
@@ -99,6 +102,9 @@ export function formatProductionRolloutCurrentStatus(
     "",
     "Current blocker:",
     `- ${status.currentBlocker}`,
+    "",
+    "Open blockers:",
+    ...formatOpenBlockers(status.openBlockers),
     "",
     "Next commands:",
     "```bash",
@@ -178,6 +184,83 @@ function getCurrentBlocker(input: ProductionRolloutCurrentStatusInput) {
   return null;
 }
 
+function getOpenBlockers(input: ProductionRolloutCurrentStatusInput) {
+  const blockers: string[] = [];
+
+  if (!input.ownerDirectoryExists) {
+    blockers.push(
+      `Owner packet folder ${input.paths.ownerDirectoryName} is missing.`,
+    );
+  } else if (!input.ownerPacketStatus) {
+    blockers.push(
+      `Owner packet folder ${input.paths.ownerDirectoryName} could not be read.`,
+    );
+  } else {
+    if (
+      input.ownerRecipientStatus &&
+      !input.ownerRecipientStatus.readyForOwnerPacketSend
+    ) {
+      blockers.push(
+        [
+          "Owner packet recipients are incomplete:",
+          `${input.ownerRecipientStatus.summary.assignedOwnerCount}/${input.ownerRecipientStatus.summary.ownerCount} owner recipients assigned,`,
+          `${input.ownerRecipientStatus.summary.missingRecipientCount} missing recipient email(s).`,
+        ].join(" "),
+      );
+    }
+
+    if (!input.ownerPacketStatus.readyForPacketBuild) {
+      blockers.push(
+        `Owner packets are incomplete: ${input.ownerPacketStatus.readyOwnerCount}/${input.ownerPacketStatus.ownerCount} owners ready.`,
+      );
+    }
+  }
+
+  if (!input.csvDirectoryExists) {
+    blockers.push(
+      `Shared rollout CSV folder ${input.paths.csvDirectoryName} is missing.`,
+    );
+  } else if (isHeaderOnlyCsvDirectory(input.csvDirectorySummary)) {
+    blockers.push(
+      `Shared rollout CSV folder ${input.paths.csvDirectoryName} is header-only. Add approved 30-chapter launch data before building the packet.`,
+    );
+  }
+
+  if (!input.rolloutPacketExists) {
+    blockers.push(
+      `Production rollout packet ${input.paths.packetPath} is missing.`,
+    );
+  } else if (input.rolloutPacketError) {
+    blockers.push(
+      `Production rollout packet could not be read: ${input.rolloutPacketError}`,
+    );
+  } else if (!input.rolloutReadiness) {
+    blockers.push("Production rollout packet readiness was not available.");
+  } else if (!input.rolloutReadiness.ready) {
+    blockers.push(
+      `Production rollout packet is not ready: ${input.rolloutReadiness.blockers[0] ?? "packet blockers remain"}`,
+    );
+  }
+
+  if (!input.liveDataCountsExists) {
+    blockers.push(
+      `Production live-data count proof ${input.paths.liveDataCountsPath} is missing.`,
+    );
+  } else if (input.liveDataCountsError) {
+    blockers.push(
+      `Production live-data count proof could not be read: ${input.liveDataCountsError}`,
+    );
+  } else if (!input.liveDataReadiness) {
+    blockers.push("Production live-data count readiness was not available.");
+  } else if (!input.liveDataReadiness.ready) {
+    blockers.push(
+      `Production live-data count proof is not ready: ${input.liveDataReadiness.blockers[0] ?? "count blockers remain"}`,
+    );
+  }
+
+  return blockers;
+}
+
 function getArtifactStatuses(input: ProductionRolloutCurrentStatusInput) {
   return [
     input.ownerDirectoryExists
@@ -248,6 +331,16 @@ function isHeaderOnlyCsvDirectory(
 
 function formatCount(count: number, singularLabel: string) {
   return `${count} ${count === 1 ? singularLabel : `${singularLabel}s`}`;
+}
+
+function formatOpenBlockers(blockers: string[]) {
+  if (blockers.length === 0) {
+    return [
+      "- No visible artifact blockers. Run the final invite gate and record human approval before sending broad invitations.",
+    ];
+  }
+
+  return blockers.map((blocker) => `- ${blocker}`);
 }
 
 function getRolloutPacketStatusLine(input: ProductionRolloutCurrentStatusInput) {
