@@ -457,6 +457,16 @@ change DNS, change Vercel settings, upload files, or enable integrations.
 Before inviting all 30 chapters, verify the smaller pilot loop on at least five
 chapters:
 
+If the reviewers collected the evidence in the simpler source-sheet format,
+convert it into the packet-ready proof CSV first:
+
+```bash
+pnpm rollout:pilot-proof-import --proof pilot-event-proof-source.csv --out-dir rollout-csv
+```
+
+This writes local `pilot-event-proof.csv` only. It does not call Luma, write
+Supabase rows, send invitations, change Vercel config, or enable integrations.
+
 ```bash
 pnpm production:pilot-event-proof --packet production-rollout-packet.json
 ```
