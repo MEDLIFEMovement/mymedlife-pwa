@@ -66,16 +66,25 @@ try {
   if (args.local) {
     const {
       buildLocalSupabaseAuthUsersCompatibilitySql,
+      getLocalTestProductionSeedApplyPlan,
       getLocalTestProductionDbContainerName,
     } = await import(
       "../src/services/test-production-seed-apply.ts"
     );
     const configToml = await readFile(resolve("supabase/config.toml"), "utf8");
     const containerName = getLocalTestProductionDbContainerName(configToml);
+    const localApplyPlan = getLocalTestProductionSeedApplyPlan(mode);
+
+    if (localApplyPlan.shouldCleanupBeforeSeed) {
+      const cleanupPath = join(outDir, "seed-preclean-test-production.sql");
+      await writeFile(cleanupPath, buildTestProductionCleanupSql(environment));
+      console.log(`Pre-cleaning local sandbox seed rows via ${cleanupPath}`);
+      await runSqlFileWithDockerPsql(containerName, cleanupPath);
+    }
 
     console.log(`Applying ${mode} SQL from ${sqlPath} via local container ${containerName}`);
     await runSqlFileWithDockerPsql(containerName, sqlPath);
-    if (mode === "seed") {
+    if (localApplyPlan.shouldNormalizeAuthUsersAfterSeed) {
       const authCompatibilityPath = join(outDir, "seed-local-auth-users-compatibility.sql");
       await writeFile(authCompatibilityPath, buildLocalSupabaseAuthUsersCompatibilitySql());
       console.log(`Normalizing local auth.users compatibility fields via ${authCompatibilityPath}`);
