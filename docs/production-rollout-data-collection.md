@@ -245,6 +245,20 @@ enough evidence, and repeats that preview-cookie, local sandbox, Test/Figma,
 SOP/sample, staging, fake screenshots, and missing-profile/setup-only sessions
 do not count as production signed-in proof.
 
+If the team wants to confirm that the required production proof classes still
+match the current active launch-lane auth metadata before collecting any real
+proof, use:
+
+```bash
+pnpm production:signed-in-route-proof:check
+```
+
+This read-only preflight does not inspect production accounts or packet rows. It
+only verifies that the expected member, leader, staff, and admin proof routes
+still align with active signed-in launch-lane metadata and that preview,
+sandbox, Test/Figma, SOP/sample, and staging markers still remain blocked from
+production proof imports.
+
 ## CSV Fields
 
 ### chapters.csv

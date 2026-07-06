@@ -6,6 +6,10 @@ import type {
   ProductionRolloutBootstrapPacket,
 } from "./production-rollout-bootstrap.ts";
 import { getBlockedProductionSignedInProofSourceMarker } from "./production-signed-in-route-proof-import.ts";
+import {
+  getActiveLaunchLaneAuthReadiness,
+  type LaunchLaneRouteWorkspace,
+} from "./launch-lane-auth-readiness.ts";
 
 export type ProductionSignedInRouteProofCheck = {
   key: string;
@@ -46,6 +50,17 @@ export type ProductionSignedInRouteProofGap = {
 export type ProductionSignedInRouteProofGapReport = {
   ready: boolean;
   gaps: ProductionSignedInRouteProofGap[];
+};
+
+export type ProductionSignedInRouteProofDriftCheck = {
+  key: string;
+  passed: boolean;
+  message: string;
+};
+
+export type ProductionSignedInRouteProofDriftValidation = {
+  ready: boolean;
+  checks: ProductionSignedInRouteProofDriftCheck[];
 };
 
 type RequiredRouteProof = {
@@ -255,6 +270,70 @@ export function formatProductionSignedInRouteProofGapReport(
     "",
     "Reminder:",
     "- Preview-cookie, local sandbox, Test/Figma/SOP sample, staging, fake screenshots, and missing-profile/setup-only sessions do not count as production signed-in proof.",
+  ].join("\n");
+}
+
+export function getProductionSignedInRouteProofDriftValidation(
+  readinessRoutes = getActiveLaunchLaneAuthReadiness(),
+): ProductionSignedInRouteProofDriftValidation {
+  const readinessByHref = new Map(
+    readinessRoutes.map((route) => [route.canonicalHref, route]),
+  );
+  const checks: ProductionSignedInRouteProofDriftCheck[] = [
+    {
+      key: "blocked-source-markers",
+      passed: [
+        "preview-cookie",
+        "local sandbox",
+        "figma_seed",
+        "sop sample",
+        "staging.mymedlife.org",
+      ].every((marker) => getBlockedProductionSignedInProofSourceMarker(marker) !== null),
+      message:
+        "Production signed-in proof import still rejects preview, sandbox, Figma/Test, SOP sample, and staging markers.",
+    },
+  ];
+
+  for (const required of requiredRouteProofs) {
+    const route = readinessByHref.get(required.expectedPath);
+    const workspace = getLaunchLaneWorkspaceForProofKey(required.key);
+
+    checks.push({
+      key: `${required.key}:route-alignment`,
+      passed:
+        Boolean(route) &&
+        route?.workspace === workspace &&
+        route?.status === "active" &&
+        route?.authRequirement === "signed_in" &&
+        route?.readOnly === true &&
+        route?.sandboxReview === "supported" &&
+        route?.productionProof === "required" &&
+        route?.rolloutEvidence === "exclude_test_and_preview",
+      message: `${required.label} stays aligned to active launch-lane route metadata at ${required.expectedPath}.`,
+    });
+  }
+
+  return {
+    ready: checks.every((check) => check.passed),
+    checks,
+  };
+}
+
+export function formatProductionSignedInRouteProofDriftValidation(
+  validation: ProductionSignedInRouteProofDriftValidation,
+): string {
+  return [
+    validation.ready
+      ? "Production signed-in route proof drift check: READY"
+      : "Production signed-in route proof drift check: NOT READY",
+    "",
+    "Checks:",
+    ...validation.checks.map(
+      (check) => `- ${check.passed ? "PASS" : "FAIL"} ${check.message}`,
+    ),
+    "",
+    "Reminder:",
+    "- This check is read-only. It validates route and evidence expectations only and does not collect production proof.",
   ].join("\n");
 }
 
@@ -681,5 +760,20 @@ function formatGapStatus(status: ProductionSignedInRouteProofGapStatus) {
       return "UNSAFE SOURCE";
     case "not_enough_evidence":
       return "NOT ENOUGH EVIDENCE";
+  }
+}
+
+function getLaunchLaneWorkspaceForProofKey(
+  key: RequiredRouteProof["key"],
+): Exclude<LaunchLaneRouteWorkspace, "public"> {
+  switch (key) {
+    case "student_app":
+      return "member";
+    case "leader_command_center":
+      return "leader";
+    case "staff_command_center":
+      return "staff";
+    case "admin_backend":
+      return "admin";
   }
 }
