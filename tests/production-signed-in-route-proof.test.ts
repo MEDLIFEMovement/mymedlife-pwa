@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatProductionSignedInRouteProofDriftValidation,
   formatProductionSignedInRouteProofGapReport,
   formatProductionSignedInRouteProofReadiness,
+  getProductionSignedInRouteProofDriftValidation,
   getProductionSignedInRouteProofGapReport,
   getProductionSignedInRouteProofReadiness,
 } from "@/services/production-signed-in-route-proof";
@@ -312,6 +314,39 @@ describe("production signed-in route proof", () => {
           detail: "packet was not provided",
         }),
       ]),
+    );
+  });
+
+  it("keeps production proof route expectations aligned with launch-lane metadata", () => {
+    const validation = getProductionSignedInRouteProofDriftValidation();
+
+    expect(validation.ready).toBe(true);
+    expect(validation.checks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "blocked-source-markers",
+          passed: true,
+        }),
+        expect.objectContaining({
+          key: "student_app:route-alignment",
+          passed: true,
+        }),
+        expect.objectContaining({
+          key: "leader_command_center:route-alignment",
+          passed: true,
+        }),
+        expect.objectContaining({
+          key: "staff_command_center:route-alignment",
+          passed: true,
+        }),
+        expect.objectContaining({
+          key: "admin_backend:route-alignment",
+          passed: true,
+        }),
+      ]),
+    );
+    expect(formatProductionSignedInRouteProofDriftValidation(validation)).toContain(
+      "Production signed-in route proof drift check: READY",
     );
   });
 

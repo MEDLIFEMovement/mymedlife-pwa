@@ -62,6 +62,7 @@
     "production:invite-gate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-invite-gate.mjs",
     "production:pilot-event-proof": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-pilot-event-proof.mjs",
     "production:signed-in-route-proof": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-signed-in-route-proof.mjs",
+    "production:signed-in-route-proof:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-signed-in-route-proof-drift.mjs",
     "production:signed-in-route-proof-gaps": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-signed-in-route-proof-gaps.mjs",
     "production:smoke": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/production-core-route-smoke.mjs",
     "supabase:start": "pnpm dlx supabase@2.106.0 start",
