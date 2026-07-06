@@ -2384,14 +2384,20 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
         <GitBranch size={36} style={{ color: role.color }}/>
       </div>
       <div className="text-center max-w-lg">
-        <h2 className="text-2xl font-black text-slate-900 mb-2">Transition Plan Activated</h2>
+        <h2 className="text-2xl font-black text-slate-900 mb-2">Transition Plan Preview Ready</h2>
         <p className="text-sm text-slate-500 leading-relaxed">
-          The <strong className="text-slate-800">{role.label}</strong> transition plan is live.
+          Review how the <strong className="text-slate-800">{role.label}</strong> transition plan would read once the audited transition workflow is approved.
           {nominees.length > 0 && <> {nominees.length} candidate{nominees.length > 1 ? "s" : ""} nominated.</>}
           {primaryMember && <> Primary: <strong className="text-slate-800">{primaryMember.name}</strong>.</>}
           {formattedTarget && ` Target date: ${formattedTarget}.`}
         </p>
-        <p className="text-xs text-slate-400 mt-2">{activeTasks.length} transition tasks assigned · Nominees notified in myMEDLIFE.</p>
+        <p className="text-xs text-slate-400 mt-2">No live plan was activated, no nominees were notified, and no transition tasks were published from this preview.</p>
+      </div>
+      <div className="max-w-lg rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-left">
+        <div className="flex items-start gap-2.5">
+          <Shield size={14} className="mt-0.5 shrink-0 text-amber-600"/>
+          <p className="text-[11px] text-amber-700">{LEADER_PREVIEW_ONLY_COPY}</p>
+        </div>
       </div>
       <div className="flex gap-3 mt-2">
         <button onClick={onBack} className="px-5 py-2.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-xl cursor-pointer hover:bg-slate-50">Back to Succession</button>
@@ -2423,7 +2429,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
           disabled={step !== 4 || nominees.length === 0}
           onClick={() => setPublished(true)}
           className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
-          <Flag size={14}/>Activate Plan
+          <Flag size={14}/>Preview Plan
         </button>
       </div>
 
@@ -3599,6 +3605,9 @@ const ACTION_TYPES = [
   { id:"custom",    label:"Custom Action",            desc:"Define your own action with a clear outcome", icon:Zap,          pts:0   },
 ];
 
+const LEADER_PREVIEW_ONLY_COPY =
+  "This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.";
+
 function AssignActionModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<1|2|3>(1);
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
@@ -3629,14 +3638,18 @@ function AssignActionModal({ onClose }: { onClose: () => void }) {
           <CheckCircle size={32} className="text-green-500"/>
         </div>
         <div className="text-center">
-          <div className="text-lg font-black text-slate-900">Task Assigned!</div>
+          <div className="text-lg font-black text-slate-900">Assignment Preview Ready</div>
           <p className="text-sm text-slate-500 mt-1">
-            <strong>{selectedNames.join(", ")}</strong> {selectedNames.length > 1 ? "have" : "has"} been assigned
-            {" "}<strong>{chosenAction?.id === "custom" ? customLabel : chosenAction?.label}</strong>.
+            Review how <strong>{selectedNames.join(", ")}</strong> {selectedNames.length > 1 ? "would receive" : "would receive"}
+            {" "}<strong>{chosenAction?.id === "custom" ? customLabel : chosenAction?.label}</strong> once the audited assignment workflow is approved.
           </p>
-          <p className="text-xs text-slate-400 mt-1">They'll see it in their myMEDLIFE feed and action list.</p>
+          <p className="text-xs text-slate-400 mt-1">No live task was created, no reminders were sent, and no member feed changed in this preview.</p>
         </div>
-        <button onClick={onClose} className="mt-2 px-6 py-2 bg-[#1A56E8] text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">Done</button>
+        <div className="mx-6 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <Shield size={13} className="mt-0.5 shrink-0 text-amber-600"/>
+          <p className="text-left text-[11px] text-amber-700">{LEADER_PREVIEW_ONLY_COPY}</p>
+        </div>
+        <button onClick={onClose} className="mt-2 px-6 py-2 bg-[#1A56E8] text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors">Close Preview</button>
       </div>
     </ModalShell>
   );
@@ -3721,6 +3734,11 @@ function AssignActionModal({ onClose }: { onClose: () => void }) {
       {/* Step 3: details */}
       {step === 3 && (
         <div className="px-6 py-4 space-y-4">
+          <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+            <Shield size={13} className="mt-0.5 shrink-0 text-amber-600"/>
+            <p className="text-[11px] text-amber-700">{LEADER_PREVIEW_ONLY_COPY}</p>
+          </div>
+
           {/* Summary */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-3">
             {chosenAction && <chosenAction.icon size={16} className="text-blue-600 mt-0.5 shrink-0"/>}
@@ -3779,7 +3797,7 @@ function AssignActionModal({ onClose }: { onClose: () => void }) {
             else setDone(true);
           }}
           className="px-5 py-2 bg-[#1A56E8] text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-          {step === 3 ? `Assign to ${selectedMembers.length} Member${selectedMembers.length > 1 ? "s" : ""}` : "Continue →"}
+          {step === 3 ? `Preview for ${selectedMembers.length} Member${selectedMembers.length > 1 ? "s" : ""}` : "Continue →"}
         </button>
       </div>
     </ModalShell>
@@ -3830,11 +3848,15 @@ function PromoteLeaderModal({ onClose, onViewProfile }: { onClose: () => void; o
           <Star size={28} style={{ color: chosenLevel.color }}/>
         </div>
         <div className="text-center">
-          <div className="text-lg font-black text-slate-900">{member.name} has been promoted!</div>
+          <div className="text-lg font-black text-slate-900">Promotion Preview Ready</div>
           <p className="text-sm text-slate-500 mt-1">
-            New role: <strong style={{ color: chosenLevel.color }}>{chosenLevel.label}</strong>
+            Review how <strong>{member.name}</strong> would appear as <strong style={{ color: chosenLevel.color }}>{chosenLevel.label}</strong> once the audited leadership-change workflow is approved.
           </p>
-          <p className="text-xs text-slate-400 mt-1">Their pipeline status has been updated. The chapter will see their new role.</p>
+          <p className="text-xs text-slate-400 mt-1">No live role, pipeline, or chapter visibility changed in this preview.</p>
+        </div>
+        <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <Shield size={13} className="mt-0.5 shrink-0 text-amber-600"/>
+          <p className="text-left text-[11px] text-amber-700">{LEADER_PREVIEW_ONLY_COPY}</p>
         </div>
         <div className="flex gap-3 mt-2">
           <button onClick={() => { onViewProfile(member.id); onClose(); }}
@@ -3950,6 +3972,11 @@ function PromoteLeaderModal({ onClose, onViewProfile }: { onClose: () => void; o
       {/* Step 3: confirm values */}
       {step === 3 && member && chosenLevel && (
         <div className="px-6 py-4 space-y-4">
+          <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+            <Shield size={13} className="mt-0.5 shrink-0 text-amber-600"/>
+            <p className="text-[11px] text-amber-700">{LEADER_PREVIEW_ONLY_COPY}</p>
+          </div>
+
           <div className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: chosenLevel.color, background: chosenLevel.color + "0d" }}>
             <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: chosenLevel.color }}/>
             <div className="text-xs font-bold" style={{ color: chosenLevel.color }}>
@@ -4024,7 +4051,7 @@ function PromoteLeaderModal({ onClose, onViewProfile }: { onClose: () => void; o
             else setDone(true);
           }}
           className="px-5 py-2 bg-[#1A56E8] text-white text-xs font-bold rounded-lg cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-          {step === 3 ? `Confirm Promotion` : "Continue →"}
+          {step === 3 ? `Preview Promotion` : "Continue →"}
         </button>
       </div>
     </ModalShell>
