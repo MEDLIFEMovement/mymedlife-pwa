@@ -74,7 +74,9 @@ describe("production rollout current status script", () => {
       expect(report).toContain(
         "- shared CSV folder: .codex-artifacts/production-rollout-csv",
       );
-      expect(report).toContain("shared rollout CSV folder: FOUND");
+      expect(report).toContain(
+        "shared rollout CSV folder: FOUND, header-only (1 CSV file, 0 launch rows)",
+      );
       expect(report).toContain("Owner packet recipients are incomplete");
       expect(report).toContain("0/7 owner recipients assigned");
       expect(report).toContain(
