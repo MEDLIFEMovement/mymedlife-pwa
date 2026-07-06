@@ -7,9 +7,13 @@ import type {
 import type {
   ProductionRolloutOwnerPacketStatus,
 } from "./production-rollout-owner-packet-status.ts";
+import type {
+  ProductionRolloutOwnerRecipientStatus,
+} from "./production-rollout-owner-recipient-status.ts";
 
 export type ProductionRolloutCurrentStatusPaths = {
   ownerDirectoryName: string;
+  recipientAssignmentsPath?: string;
   csvDirectoryName: string;
   packetPath: string;
   liveDataCountsPath: string;
@@ -23,6 +27,7 @@ export type ProductionRolloutCurrentStatusInput = {
   rolloutPacketExists: boolean;
   liveDataCountsExists: boolean;
   ownerPacketStatus?: ProductionRolloutOwnerPacketStatus | null;
+  ownerRecipientStatus?: ProductionRolloutOwnerRecipientStatus | null;
   rolloutReadiness?: ProductionRolloutBootstrapReadiness | null;
   liveDataReadiness?: ProductionLiveDataReadiness | null;
   rolloutPacketError?: string | null;
@@ -75,6 +80,9 @@ export function formatProductionRolloutCurrentStatus(
     "",
     "Artifact paths:",
     `- owner packet folder: ${paths.ownerDirectoryName}`,
+    ...(paths.recipientAssignmentsPath
+      ? [`- owner recipient assignments: ${paths.recipientAssignmentsPath}`]
+      : []),
     `- shared CSV folder: ${paths.csvDirectoryName}`,
     `- rollout packet: ${paths.packetPath}`,
     `- live-data count proof: ${paths.liveDataCountsPath}`,
@@ -107,6 +115,17 @@ function getCurrentBlocker(input: ProductionRolloutCurrentStatusInput) {
   }
 
   if (!input.ownerPacketStatus.readyForPacketBuild) {
+    if (
+      input.ownerRecipientStatus &&
+      !input.ownerRecipientStatus.readyForOwnerPacketSend
+    ) {
+      return [
+        "Owner packet recipients are incomplete:",
+        `${input.ownerRecipientStatus.summary.assignedOwnerCount}/${input.ownerRecipientStatus.summary.ownerCount} owner recipients assigned,`,
+        `${input.ownerRecipientStatus.summary.missingRecipientCount} missing recipient email(s).`,
+      ].join(" ");
+    }
+
     return `Owner packets are incomplete: ${input.ownerPacketStatus.readyOwnerCount}/${input.ownerPacketStatus.ownerCount} owners ready.`;
   }
 
@@ -154,6 +173,7 @@ function getArtifactStatuses(input: ProductionRolloutCurrentStatusInput) {
     input.ownerDirectoryExists
       ? getOwnerPacketStatusLine(input.ownerPacketStatus)
       : "owner packet folder: MISSING",
+    ...getOwnerRecipientStatusLines(input.ownerRecipientStatus),
     input.csvDirectoryExists
       ? "shared rollout CSV folder: FOUND"
       : "shared rollout CSV folder: MISSING",
@@ -176,6 +196,20 @@ function getOwnerPacketStatusLine(
   return status.readyForPacketBuild
     ? `owner packets: READY (${status.readyOwnerCount}/${status.ownerCount} owners ready)`
     : `owner packets: NOT READY (${status.readyOwnerCount}/${status.ownerCount} owners ready)`;
+}
+
+function getOwnerRecipientStatusLines(
+  status: ProductionRolloutOwnerRecipientStatus | null | undefined,
+) {
+  if (!status) {
+    return [];
+  }
+
+  return [
+    status.readyForOwnerPacketSend
+      ? `owner recipient assignments: READY (${status.summary.assignedOwnerCount}/${status.summary.ownerCount} recipients assigned)`
+      : `owner recipient assignments: NOT READY (${status.summary.assignedOwnerCount}/${status.summary.ownerCount} recipients assigned, ${status.summary.missingRecipientCount} missing)`,
+  ];
 }
 
 function getRolloutPacketStatusLine(input: ProductionRolloutCurrentStatusInput) {
@@ -231,6 +265,22 @@ function getNextCommands(
   }
 
   if (input.ownerPacketStatus && !input.ownerPacketStatus.readyForPacketBuild) {
+    const recipientAssignmentsPath =
+      input.paths.recipientAssignmentsPath ??
+      "production-rollout-owner-send-tracker/owner-recipient-assignments.csv";
+
+    if (
+      input.ownerRecipientStatus &&
+      !input.ownerRecipientStatus.readyForOwnerPacketSend
+    ) {
+      return [
+        `pnpm rollout:owner-recipients --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-owner-recipient-status.md`,
+        `Fill ${recipientAssignmentsPath} with one valid recipient email for each owner packet.`,
+        `pnpm rollout:owner-send-tracker --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-send-tracker --recipient-assignments ${recipientAssignmentsPath}`,
+        `pnpm rollout:current-status --owner-dir ${input.paths.ownerDirectoryName} --recipient-assignments ${recipientAssignmentsPath} --out production-rollout-current-status.md`,
+      ];
+    }
+
     return [
       `pnpm rollout:owner-status --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-packet-status.md`,
       `pnpm rollout:owner-requests --owner-dir ${input.paths.ownerDirectoryName} --out production-rollout-owner-requests`,
