@@ -11,6 +11,8 @@ export const productionLiveDataRelations = [
   "app.assignments",
   "app.points_events",
   "app.audit_logs",
+  "app.automation_outbox.total",
+  "app.automation_outbox.unsafe",
 ] as const;
 
 export type ProductionLiveDataRelation =
@@ -122,6 +124,18 @@ export function getProductionLiveDataReadiness(
   if (counts["app.audit_logs"] === 0) {
     warnings.push(
       "No production audit logs exist yet; run the approved write/readback rehearsal before broad rollout.",
+    );
+  }
+
+  if (counts["app.automation_outbox.unsafe"] > 0) {
+    blockers.push(
+      `Production automation outbox has ${counts["app.automation_outbox.unsafe"]} row(s) in unsafe live-send statuses. Resolve approved, sent, failed, or dead-lettered outbox rows before inviting students.`,
+    );
+  }
+
+  if (counts["app.automation_outbox.total"] === 0) {
+    warnings.push(
+      "No production automation outbox rows exist yet; zero-send proof still needs the five-chapter event-loop rehearsal.",
     );
   }
 

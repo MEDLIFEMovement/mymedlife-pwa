@@ -283,6 +283,52 @@ describe("production invite gate", () => {
     );
   });
 
+  it("blocks broad invites when production outbox has unsafe live-send rows", () => {
+    const readiness = getProductionInviteGateReadiness({
+      publicUrl: "https://www.mymedlife.org",
+      routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
+      rolloutReadiness: createReadyRolloutReadiness(),
+      rolloutHandoff: createReadyRolloutHandoff(),
+      liveDataReadiness: createReadyLiveDataReadiness({
+        counts: {
+          "app.automation_outbox.total": 6,
+          "app.automation_outbox.unsafe": 1,
+        },
+      }),
+    });
+    const liveDataCheck = readiness.checks.find(
+      (check) => check.key === "production_live_data",
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(liveDataCheck?.passed).toBe(false);
+    expect(liveDataCheck?.detail).toContain(
+      "production live data app.automation_outbox.unsafe has 1 unsafe live-send row(s); expected 0.",
+    );
+    expect(readiness.nextSteps).toContain(
+      "Run the production live data count check after the rollout packet is applied, then attach the count proof to the invite gate.",
+    );
+  });
+
+  it("shows clean production outbox counts in the passed live-data detail", () => {
+    const readiness = getProductionInviteGateReadiness({
+      publicUrl: "https://www.mymedlife.org",
+      routeSmoke: createReadyRouteSmoke(),
+      rolloutPacket: createReadyRolloutPacket(),
+      rolloutReadiness: createReadyRolloutReadiness(),
+      rolloutHandoff: createReadyRolloutHandoff(),
+      liveDataReadiness: createReadyLiveDataReadiness(),
+    });
+    const liveDataCheck = readiness.checks.find(
+      (check) => check.key === "production_live_data",
+    );
+
+    expect(liveDataCheck?.passed).toBe(true);
+    expect(liveDataCheck?.detail).toContain("5 outbox row(s)");
+    expect(liveDataCheck?.detail).toContain("0 unsafe outbox row(s)");
+  });
+
   it("blocks broad invites until the invite batch plan is safe", () => {
     const packet = createReadyRolloutPacket();
 
@@ -427,6 +473,8 @@ function createReadyLiveDataReadiness(
       "app.assignments": 30,
       "app.points_events": 5,
       "app.audit_logs": 10,
+      "app.automation_outbox.total": 5,
+      "app.automation_outbox.unsafe": 0,
       ...overrides.counts,
     },
     blockers: [],

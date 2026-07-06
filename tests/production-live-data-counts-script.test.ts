@@ -64,6 +64,8 @@ function createReadyCountCsv() {
     "app.assignments": 30,
     "app.points_events": 5,
     "app.audit_logs": 5,
+    "app.automation_outbox.total": 5,
+    "app.automation_outbox.unsafe": 0,
   };
 
   return [

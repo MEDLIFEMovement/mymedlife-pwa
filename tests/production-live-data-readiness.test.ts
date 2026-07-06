@@ -49,6 +49,7 @@ describe("production live data readiness", () => {
         "app.campaigns.active": 30,
         "app.chapter_events": 5,
         "app.luma_event_links": 5,
+        "app.automation_outbox.total": 5,
       }),
     );
 
@@ -111,6 +112,29 @@ describe("production live data readiness", () => {
     );
   });
 
+  it("blocks production rollout when live-send outbox statuses are present", () => {
+    const readiness = getProductionLiveDataReadiness(
+      createCounts({
+        "auth.users": 503,
+        "app.profiles": 503,
+        "app.chapters.active": 30,
+        "app.memberships.approved": 500,
+        "app.staff_role_assignments.active": 4,
+        "app.coach_chapter_assignments.active": 30,
+        "app.campaigns.active": 30,
+        "app.chapter_events": 5,
+        "app.luma_event_links": 5,
+        "app.automation_outbox.total": 6,
+        "app.automation_outbox.unsafe": 1,
+      }),
+    );
+
+    expect(readiness.ready).toBe(false);
+    expect(readiness.blockers).toContain(
+      "Production automation outbox has 1 row(s) in unsafe live-send statuses. Resolve approved, sent, failed, or dead-lettered outbox rows before inviting students.",
+    );
+  });
+
   it("supports smaller explicit event floors for rehearsals", () => {
     const readiness = getProductionLiveDataReadiness(
       createCounts({
@@ -141,6 +165,8 @@ Initialising login role...
 relation,rows
 app.assignments,0
 app.audit_logs,0
+app.automation_outbox.total,3
+app.automation_outbox.unsafe,0
 app.campaigns.active,30
 app.chapters.active,30
 app.coach_chapter_assignments.active,30
@@ -157,6 +183,8 @@ A new version of Supabase CLI is available.
     expect(counts["auth.users"]).toBe(90);
     expect(counts["app.chapters.active"]).toBe(30);
     expect(counts["app.points_events"]).toBe(4);
+    expect(counts["app.automation_outbox.total"]).toBe(3);
+    expect(counts["app.automation_outbox.unsafe"]).toBe(0);
   });
 
   it("parses the formatted readiness report saved from production:data-counts", () => {
@@ -173,6 +201,8 @@ A new version of Supabase CLI is available.
       "app.assignments": 30,
       "app.points_events": 5,
       "app.audit_logs": 5,
+      "app.automation_outbox.total": 5,
+      "app.automation_outbox.unsafe": 0,
     });
     const report = formatProductionLiveDataReadiness(
       getProductionLiveDataReadiness(expectedCounts),
@@ -199,6 +229,8 @@ function createCounts(
     "app.assignments": 0,
     "app.points_events": 0,
     "app.audit_logs": 0,
+    "app.automation_outbox.total": 0,
+    "app.automation_outbox.unsafe": 0,
     ...overrides,
   };
 }

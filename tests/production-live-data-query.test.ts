@@ -25,6 +25,7 @@ describe("production live data query", () => {
     expect(args).not.toContain("--linked");
     expect(args.at(-1)).toContain("app.chapters.active");
     expect(args.at(-1)).toContain("app.luma_event_links");
+    expect(args.at(-1)).toContain("app.automation_outbox.unsafe");
   });
 
   it("redacts database URLs from Supabase CLI output before sharing errors", () => {

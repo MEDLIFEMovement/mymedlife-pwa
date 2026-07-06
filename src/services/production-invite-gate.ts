@@ -243,6 +243,8 @@ function createLiveDataCheck(
             `${counts["app.memberships.approved"]} approved membership row(s)`,
             `${counts["app.chapter_events"]} chapter event row(s)`,
             `${counts["app.luma_event_links"]} Luma event link row(s)`,
+            `${counts["app.automation_outbox.total"]} outbox row(s)`,
+            `${counts["app.automation_outbox.unsafe"]} unsafe outbox row(s)`,
             "packet count alignment passed",
           ].join("; "),
   };
@@ -287,13 +289,19 @@ function getLiveDataPacketMismatchBlockers(
     { relation: "app.luma_event_links", expected: expectedPilotProofRows },
     { relation: "app.points_events", expected: expectedPilotProofRows },
     { relation: "app.audit_logs", expected: expectedPilotProofRows },
+    { relation: "app.automation_outbox.unsafe", expected: 0 },
   ];
 
   return requirements
-    .filter(({ relation, expected }) => counts[relation] < expected)
-    .map(
-      ({ relation, expected }) =>
-        `production live data ${relation} has ${counts[relation]} row(s); expected at least ${expected} from the rollout packet.`,
+    .filter(({ relation, expected }) =>
+      relation === "app.automation_outbox.unsafe"
+        ? counts[relation] !== expected
+        : counts[relation] < expected,
+    )
+    .map(({ relation, expected }) =>
+      relation === "app.automation_outbox.unsafe"
+        ? `production live data ${relation} has ${counts[relation]} unsafe live-send row(s); expected ${expected}.`
+        : `production live data ${relation} has ${counts[relation]} row(s); expected at least ${expected} from the rollout packet.`,
     );
 }
 
