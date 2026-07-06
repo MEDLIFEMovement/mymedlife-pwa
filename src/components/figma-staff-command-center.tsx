@@ -437,7 +437,7 @@ function NPSSurveyPreview({ onClose }: { onClose: () => void }) {
 /*  CHAPTER DETAIL DRAWER                                       */
 /* ─────────────────────────────────────────────────────────── */
 
-function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: () => void }) {
+export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: () => void }) {
   const [note, setNote] = useState("");
   const [showSurvey, setShowSurvey] = useState(false);
 
@@ -536,9 +536,16 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
                     {chapter.eventsThisYear > 0 ? `${Math.min(94, 58 + chapter.eventsThisYear)}%` : "—"}
                   </div>
                 </div>
-                <button onClick={() => setShowSurvey(true)} className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors">
-                  <Send className="w-3 h-3" /> Send NPS Survey
+                <button
+                  onClick={() => setShowSurvey(true)}
+                  title="Survey sending is blocked in this preview"
+                  className="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  <Send className="w-3 h-3" /> Preview NPS Survey
                 </button>
+              </div>
+              <div className="text-[10px] text-amber-600 font-medium mb-2">
+                Survey sending stays blocked in this preview. Use the NPS buttons to review the chapter survey flow only.
               </div>
               {recentEvents.length > 0 ? (
                 <div className="space-y-1.5">
@@ -625,8 +632,12 @@ function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: 
           <button disabled title="Content sending is blocked until external-send approval is complete" className="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5">
             <Send className="w-3.5 h-3.5" /> Send Content
           </button>
-          <button onClick={() => setShowSurvey(true)} className="flex-1 bg-secondary border border-primary/20 text-primary py-2 rounded-lg text-sm font-semibold hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5">
-            <Star className="w-3.5 h-3.5" /> Send NPS Survey
+          <button
+            onClick={() => setShowSurvey(true)}
+            title="Survey sending is blocked in this preview"
+            className="flex-1 bg-secondary border border-primary/20 text-primary py-2 rounded-lg text-sm font-semibold hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5"
+          >
+            <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
           <button disabled title="External chapter links are blocked in this preview" className="px-3 py-2 bg-muted text-foreground rounded-lg text-sm hover:bg-muted/70 transition-colors">
             <ExternalLink className="w-3.5 h-3.5" />

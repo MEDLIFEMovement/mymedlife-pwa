@@ -259,6 +259,22 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("cell", { name: "Needs review" }).first()).toBeVisible();
   });
 
+  test("keeps staff chapter-detail survey controls preview-only", async ({
+    context,
+    page,
+  }) => {
+    await selectPreviewActor(context, "general.staff@mymedlife.test");
+
+    await page.goto("/staff?view=chapters");
+    await page.getByRole("row", { name: /UC Berkeley/i }).click();
+
+    await expect(page.getByText("Chapter Detail", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Preview NPS Survey" }).first()).toBeVisible();
+    await expect(
+      page.getByText("Survey sending stays blocked in this preview. Use the NPS buttons to review the chapter survey flow only."),
+    ).toBeVisible();
+  });
+
   test("clicks every staff command center menu item into its matching screen", async ({
     context,
     page,
