@@ -21,6 +21,21 @@ describe("production rollout data collection doc", () => {
     expect(doc).toContain("This packet does not apply data by itself");
   });
 
+  it("gives reviewers copy-ready source sheet headers", () => {
+    expect(doc).toContain("## Fast Intake Sheet Headers");
+    expect(doc).toContain(
+      "email,displayName,chapterId,roleKey,status,chapterName",
+    );
+    expect(doc).toContain(
+      "chapterId,chapterName,campus,region,coachEmail,coachType,calendarId,calendarName,campaignName,campaignSlug",
+    );
+    expect(doc).toContain(
+      "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditRecorded,zeroExternalSends,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,status,notes",
+    );
+    expect(doc).toContain("email,workspace,observedPath,status,checkedAt,notes");
+    expect(doc).toContain("email,ownerType,displayName,status");
+  });
+
   it("points reviewers to the build, validation, handoff, and launch checks", () => {
     expect(doc).toContain("pnpm rollout:build");
     expect(doc).toContain("pnpm rollout:chapter-matrix --dir rollout-csv");
