@@ -467,6 +467,7 @@ pnpm rollout:gaps production-rollout-packet.json --out production-rollout-gaps.m
 pnpm rollout:handoff production-rollout-packet.json --out production-rollout-handoff.md
 pnpm production:launch-check --packet production-rollout-packet.json
 pnpm production:pilot-event-proof --packet production-rollout-packet.json
+pnpm production:live-data-proof-request --out production-live-data-proof-request.md
 pnpm production:data-counts > production-live-data-counts.txt
 pnpm production:signed-in-route-proof --packet production-rollout-packet.json
 pnpm production:invite-batches --packet production-rollout-packet.json
@@ -483,6 +484,11 @@ pnpm production:data-counts --db-url-env SUPABASE_DB_URL > production-live-data-
 
 Do not paste database URLs, passwords, service keys, or tokens into command
 lines, docs, PR comments, or Linear.
+
+Use `production-live-data-proof-request.md` as the plain-language ask for the
+DS/platform production owner. It tells them when to run the count-only proof,
+which command to use, which rows must appear, and which private values must stay
+out of GitHub, Linear, screenshots, and email.
 
 ## Review Checklist
 

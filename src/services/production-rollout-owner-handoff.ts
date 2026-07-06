@@ -149,6 +149,7 @@ function formatProductionRolloutOwnerHandoffIndex({
     "  --signed-in-route-proof rollout-csv/signed-in-route-proof.csv \\",
     "  --out production-rollout-packet.json",
     "pnpm rollout:check production-rollout-packet.json",
+    "pnpm production:live-data-proof-request --out production-live-data-proof-request.md",
     "pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org",
     "```",
     "",
@@ -157,6 +158,7 @@ function formatProductionRolloutOwnerHandoffIndex({
     ...status.safetyRules.map((rule) => `- ${rule}`),
     "- Do not add passwords, temporary passwords, API keys, tokens, secrets, private notes, or helper columns.",
     "- Do not create production users or send invitations from this kit.",
+    "- After approved production apply, request count-only live-data proof before the final invite gate.",
     "- Keep the launch lane focused on login, member app, leader command center, staff command center, Luma events, RSVP, attendance/check-in, points, and leaderboards.",
     "",
   ].join("\n");
