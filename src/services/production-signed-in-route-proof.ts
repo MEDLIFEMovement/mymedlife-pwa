@@ -63,15 +63,18 @@ export type ProductionSignedInRouteProofDriftValidation = {
   checks: ProductionSignedInRouteProofDriftCheck[];
 };
 
-type RequiredRouteProof = {
+export type ProductionSignedInRouteProofRequirement = {
   key: ProductionBootstrapSignedInRouteProof["workspace"];
   label: string;
   expectedPath: string;
+  roleDetail: string;
+};
+
+type RequiredRouteProof = ProductionSignedInRouteProofRequirement & {
   hasRequiredRole: (
     email: string,
     packet: ProductionRolloutBootstrapPacket,
   ) => boolean;
-  roleDetail: string;
 };
 
 const requiredRouteProofs: RequiredRouteProof[] = [
@@ -104,6 +107,15 @@ const requiredRouteProofs: RequiredRouteProof[] = [
     roleDetail: "active ds_admin or super_admin staff role",
   },
 ];
+
+export function getProductionSignedInRouteProofRequirements(): ProductionSignedInRouteProofRequirement[] {
+  return requiredRouteProofs.map((required) => ({
+    key: required.key,
+    label: required.label,
+    expectedPath: required.expectedPath,
+    roleDetail: required.roleDetail,
+  }));
+}
 
 const directMemberRoles: readonly ProductionBootstrapMembership["roleKey"][] = [
   "general_member",

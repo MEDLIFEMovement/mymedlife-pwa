@@ -49,6 +49,7 @@ describe("production rollout data collection doc", () => {
     expect(doc).toContain("pnpm production:launch-check --packet");
     expect(doc).toContain("pnpm production:data-counts --out production-live-data-counts.txt");
     expect(doc).toContain("pnpm production:signed-in-route-proof --packet");
+    expect(doc).toContain("pnpm production:signed-in-route-proof-readiness --out production-signed-in-route-proof-readiness.md");
     expect(doc).toContain("pnpm rollout:sop-approval-readiness --out sop-template-approval-readiness.md");
     expect(doc).toContain("pnpm rollout:sop-promotion-boundary --manifest sop-template-manifest.json --out sop-template-promotion-boundary.md");
     expect(doc).toContain("pnpm rollout:approval-summary production-rollout-packet.json");

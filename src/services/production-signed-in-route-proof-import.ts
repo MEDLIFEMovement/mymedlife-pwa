@@ -78,6 +78,10 @@ const blockedProductionProofSourceMarkers = [
   "profile setup required",
 ] as const;
 
+export function getBlockedProductionSignedInProofSourceMarkers() {
+  return [...blockedProductionProofSourceMarkers];
+}
+
 export function buildProductionSignedInRouteProofImport(
   proofCsv: string,
 ): ProductionSignedInRouteProofImportResult {
