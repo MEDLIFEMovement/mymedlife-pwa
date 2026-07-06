@@ -5,6 +5,7 @@ import type {
   ProductionBootstrapStaffRole,
   ProductionRolloutBootstrapPacket,
 } from "./production-rollout-bootstrap.ts";
+import { getBlockedProductionSignedInProofSourceMarker } from "./production-signed-in-route-proof-import.ts";
 
 export type ProductionSignedInRouteProofCheck = {
   key: string;
@@ -25,6 +26,26 @@ export type ProductionSignedInRouteProofReadiness = {
     pilotChaptersWithLeaderProof: number;
     pilotChaptersWithMemberAndLeaderProof: number;
   };
+};
+
+export type ProductionSignedInRouteProofGapStatus =
+  | "present"
+  | "missing"
+  | "wrong_path"
+  | "unsafe_source"
+  | "not_enough_evidence";
+
+export type ProductionSignedInRouteProofGap = {
+  key: ProductionBootstrapSignedInRouteProof["workspace"];
+  label: string;
+  expectedPath: string;
+  status: ProductionSignedInRouteProofGapStatus;
+  detail: string;
+};
+
+export type ProductionSignedInRouteProofGapReport = {
+  ready: boolean;
+  gaps: ProductionSignedInRouteProofGap[];
 };
 
 type RequiredRouteProof = {
@@ -200,6 +221,43 @@ export function formatProductionSignedInRouteProofReadiness(
   ].join("\n");
 }
 
+export function getProductionSignedInRouteProofGapReport(
+  packet: ProductionRolloutBootstrapPacket | null,
+): ProductionSignedInRouteProofGapReport {
+  const proofRows = packet?.signedInRouteProof ?? [];
+
+  return {
+    ready: packet !== null && requiredRouteProofs.every((required) => {
+      return (
+        getProductionSignedInRouteProofGap(packet, proofRows, required).status ===
+        "present"
+      );
+    }),
+    gaps: requiredRouteProofs.map((required) =>
+      getProductionSignedInRouteProofGap(packet, proofRows, required),
+    ),
+  };
+}
+
+export function formatProductionSignedInRouteProofGapReport(
+  report: ProductionSignedInRouteProofGapReport,
+): string {
+  return [
+    report.ready
+      ? "Production signed-in route proof gaps: CLEAR"
+      : "Production signed-in route proof gaps: OPEN",
+    "",
+    "Required classes:",
+    ...report.gaps.map(
+      (gap) =>
+        `- ${formatGapStatus(gap.status)} ${gap.label} (${gap.expectedPath}): ${gap.detail}`,
+    ),
+    "",
+    "Reminder:",
+    "- Preview-cookie, local sandbox, Test/Figma/SOP sample, staging, fake screenshots, and missing-profile/setup-only sessions do not count as production signed-in proof.",
+  ].join("\n");
+}
+
 function createRequiredRouteProofCheck(
   packet: ProductionRolloutBootstrapPacket,
   proofRows: ProductionBootstrapSignedInRouteProof[],
@@ -228,6 +286,119 @@ function createRequiredRouteProofCheck(
     label: required.label,
     passed: true,
     detail: `${matchingProof.email} reached ${matchingProof.observedPath}`,
+  };
+}
+
+function getProductionSignedInRouteProofGap(
+  packet: ProductionRolloutBootstrapPacket | null,
+  proofRows: ProductionBootstrapSignedInRouteProof[],
+  required: RequiredRouteProof,
+): ProductionSignedInRouteProofGap {
+  if (!packet) {
+    return {
+      key: required.key,
+      label: required.label,
+      expectedPath: required.expectedPath,
+      status: "missing",
+      detail: "packet was not provided",
+    };
+  }
+
+  const workspaceRows = proofRows.filter((proof) => proof.workspace === required.key);
+
+  if (workspaceRows.length === 0) {
+    return {
+      key: required.key,
+      label: required.label,
+      expectedPath: required.expectedPath,
+      status: "missing",
+      detail: `needs one real passed proof row for ${required.roleDetail}`,
+    };
+  }
+
+  const unsafeRow = workspaceRows.find((proof) => {
+    return Boolean(
+      getBlockedProductionSignedInProofSourceMarker(proof.notes) ??
+        getBlockedProductionSignedInProofSourceMarker(proof.observedPath),
+    );
+  });
+
+  if (unsafeRow) {
+    const matchedMarker =
+      getBlockedProductionSignedInProofSourceMarker(unsafeRow.notes) ??
+      getBlockedProductionSignedInProofSourceMarker(unsafeRow.observedPath);
+
+    return {
+      key: required.key,
+      label: required.label,
+      expectedPath: required.expectedPath,
+      status: "unsafe_source",
+      detail: `${unsafeRow.email} references ${matchedMarker}, which is not valid production proof`,
+    };
+  }
+
+  const passedRow = workspaceRows.find((proof) => proof.status === "passed");
+
+  if (
+    passedRow &&
+    passedRow.expectedPath === required.expectedPath &&
+    passedRow.observedPath === required.expectedPath &&
+    isValidCheckedAt(passedRow.checkedAt) &&
+    required.hasRequiredRole(passedRow.email, packet)
+  ) {
+    return {
+      key: required.key,
+      label: required.label,
+      expectedPath: required.expectedPath,
+      status: "present",
+      detail: `${passedRow.email} reached ${passedRow.observedPath}`,
+    };
+  }
+
+  if (passedRow && passedRow.observedPath !== required.expectedPath) {
+    return {
+      key: required.key,
+      label: required.label,
+      expectedPath: required.expectedPath,
+      status: "wrong_path",
+      detail: `${passedRow.email} observed ${passedRow.observedPath}; expected ${required.expectedPath}`,
+    };
+  }
+
+  const mostRelevantRow = passedRow ?? workspaceRows[0];
+  const reasons: string[] = [];
+
+  if (mostRelevantRow.expectedPath !== required.expectedPath) {
+    reasons.push(`expectedPath is ${mostRelevantRow.expectedPath}`);
+  }
+
+  if (
+    mostRelevantRow.status === "passed" &&
+    !isValidCheckedAt(mostRelevantRow.checkedAt)
+  ) {
+    reasons.push("checkedAt is missing");
+  }
+
+  if (
+    mostRelevantRow.status === "passed" &&
+    !required.hasRequiredRole(mostRelevantRow.email, packet)
+  ) {
+    reasons.push(`email lacks ${required.roleDetail}`);
+  }
+
+  if (mostRelevantRow.status !== "passed") {
+    reasons.push(`status is ${mostRelevantRow.status ?? "not_checked"}`);
+  }
+
+  return {
+    key: required.key,
+    label: required.label,
+    expectedPath: required.expectedPath,
+    status: "not_enough_evidence",
+    detail:
+      reasons.length > 0
+        ? `${mostRelevantRow.email}: ${reasons.join("; ")}`
+        : `${mostRelevantRow.email} does not yet provide enough production proof`,
   };
 }
 
@@ -496,4 +667,19 @@ function formatList(items: string[], emptyLabel: string) {
   }
 
   return items.map((item) => `- ${item}`);
+}
+
+function formatGapStatus(status: ProductionSignedInRouteProofGapStatus) {
+  switch (status) {
+    case "present":
+      return "PRESENT";
+    case "missing":
+      return "MISSING";
+    case "wrong_path":
+      return "WRONG PATH";
+    case "unsafe_source":
+      return "UNSAFE SOURCE";
+    case "not_enough_evidence":
+      return "NOT ENOUGH EVIDENCE";
+  }
 }

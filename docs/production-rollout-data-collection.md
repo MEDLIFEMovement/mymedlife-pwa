@@ -227,6 +227,24 @@ The validator blocks fake/test emails, unknown user references, unknown chapter
 references, duplicate user emails, duplicate chapter IDs, and credential-like
 fields.
 
+If the team needs a plain-English gap readout before the final invite gate, use:
+
+```bash
+pnpm production:signed-in-route-proof-gaps --packet production-rollout-packet.json
+```
+
+This read-only report summarizes the four required proof classes:
+
+- member -> `/app`
+- leader -> `/leader?view=overview`
+- staff/support -> `/staff?view=chapters`
+- DS/admin -> `/admin`
+
+It marks each class as present, missing, wrong path, unsafe source, or not
+enough evidence, and repeats that preview-cookie, local sandbox, Test/Figma,
+SOP/sample, staging, fake screenshots, and missing-profile/setup-only sessions
+do not count as production signed-in proof.
+
 ## CSV Fields
 
 ### chapters.csv
