@@ -230,41 +230,40 @@ async function fileExists(path) {
 }
 
 async function resolveGeneratedArtifactDefaults(args, rawArgs) {
-  if (hasArg(rawArgs, "--owner-dir")) {
-    return args;
+  const resolved = { ...args };
+
+  if (!hasArg(rawArgs, "--owner-dir") && !(await fileExists(args.ownerDir))) {
+    const handoffDir = await findGeneratedOwnerHandoffDirectory();
+
+    if (handoffDir) {
+      const ownerDir = join(handoffDir, "rollout-owner-packets");
+      const recipientAssignments = join(
+        handoffDir,
+        "production-rollout-owner-send-tracker",
+        "owner-recipient-assignments.csv",
+      );
+
+      resolved.ownerDir = ownerDir;
+
+      if (
+        !resolved.recipientAssignments &&
+        !hasArg(rawArgs, "--recipient-assignments") &&
+        (await fileExists(recipientAssignments))
+      ) {
+        resolved.recipientAssignments = recipientAssignments;
+      }
+    }
   }
 
-  if (await fileExists(args.ownerDir)) {
-    return args;
+  if (!hasArg(rawArgs, "--csv-dir") && !(await fileExists(resolved.csvDir))) {
+    const csvDir = await findGeneratedCsvDirectory();
+
+    if (csvDir) {
+      resolved.csvDir = csvDir;
+    }
   }
 
-  const handoffDir = await findGeneratedOwnerHandoffDirectory();
-
-  if (!handoffDir) {
-    return args;
-  }
-
-  const ownerDir = join(handoffDir, "rollout-owner-packets");
-  const recipientAssignments = join(
-    handoffDir,
-    "production-rollout-owner-send-tracker",
-    "owner-recipient-assignments.csv",
-  );
-  let resolvedRecipientAssignments = args.recipientAssignments;
-
-  if (
-    !resolvedRecipientAssignments &&
-    !hasArg(rawArgs, "--recipient-assignments") &&
-    (await fileExists(recipientAssignments))
-  ) {
-    resolvedRecipientAssignments = recipientAssignments;
-  }
-
-  return {
-    ...args,
-    ownerDir,
-    recipientAssignments: resolvedRecipientAssignments,
-  };
+  return resolved;
 }
 
 async function findGeneratedOwnerHandoffDirectory() {
@@ -275,6 +274,21 @@ async function findGeneratedOwnerHandoffDirectory() {
 
   for (const candidate of candidates) {
     if (await fileExists(join(candidate, "rollout-owner-packets"))) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+async function findGeneratedCsvDirectory() {
+  const candidates = [
+    "rollout-csv",
+    ".codex-artifacts/production-rollout-csv",
+  ];
+
+  for (const candidate of candidates) {
+    if (await fileExists(join(candidate, "chapters.csv"))) {
       return candidate;
     }
   }
