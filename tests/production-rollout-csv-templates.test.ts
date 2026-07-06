@@ -69,6 +69,9 @@ describe("production rollout CSV templates", () => {
       "pnpm rollout:owner-email-drafts --owner-dir rollout-owner-packets --out production-rollout-owner-email-drafts",
     );
     expect(readme).toContain(
+      "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
+    );
+    expect(readme).toContain(
       "pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out rollout-csv",
     );
     expect(readme).toContain(
@@ -114,6 +117,9 @@ describe("production rollout CSV templates", () => {
     );
     expect(readme).toContain(
       "pnpm rollout:owner-email-drafts --owner-dir rollout-owner-packets --out production-rollout-owner-email-drafts",
+    );
+    expect(readme).toContain(
+      "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
     );
     expect(readme).toContain(
       "pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out .codex-artifacts/production-rollout-csv",

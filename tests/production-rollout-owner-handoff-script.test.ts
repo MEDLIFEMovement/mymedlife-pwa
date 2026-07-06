@@ -37,6 +37,11 @@ describe("production rollout owner handoff script", () => {
     expect(existsSync(join(outDir, "production-rollout-owner-requests", "ds-launch-owner.md"))).toBe(true);
     expect(existsSync(join(outDir, "production-rollout-owner-email-drafts", "ds-launch-owner.md"))).toBe(true);
     expect(
+      existsSync(
+        join(outDir, "production-rollout-owner-send-tracker", "owner-send-tracker.csv"),
+      ),
+    ).toBe(true);
+    expect(
       readFileSync(
         join(outDir, "production-rollout-owner-email-drafts", "ds-launch-owner.md"),
         "utf8",
@@ -45,6 +50,12 @@ describe("production rollout owner handoff script", () => {
     expect(
       readFileSync(join(outDir, "production-rollout-owner-packet-status.md"), "utf8"),
     ).toContain("Owner progress: 0/7 owners ready");
+    expect(
+      readFileSync(
+        join(outDir, "production-rollout-owner-send-tracker", "owner-send-tracker.csv"),
+        "utf8",
+      ),
+    ).toContain("ds-launch-owner,DS / launch owner,no,3");
   });
 
   it("requires an output directory", () => {

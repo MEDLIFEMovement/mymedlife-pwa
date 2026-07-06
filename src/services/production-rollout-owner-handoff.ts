@@ -14,6 +14,9 @@ import {
 import {
   getProductionRolloutOwnerEmailDraftFiles,
 } from "./production-rollout-owner-email-drafts.ts";
+import {
+  getProductionRolloutOwnerSendTrackerFiles,
+} from "./production-rollout-owner-send-tracker.ts";
 import type {
   ProductionRolloutOwnerPacketFoundFile,
 } from "./production-rollout-owner-packet-assembly.ts";
@@ -23,6 +26,7 @@ export type ProductionRolloutOwnerHandoffOptions = {
   ownerDirectoryName?: string;
   requestDirectoryName?: string;
   emailDraftDirectoryName?: string;
+  sendTrackerDirectoryName?: string;
   statusFilename?: string;
   statusOptions?: ProductionRolloutOwnerPacketStatusOptions;
 };
@@ -43,6 +47,7 @@ export function getProductionRolloutOwnerHandoff({
   ownerDirectoryName = "rollout-owner-packets",
   requestDirectoryName = "production-rollout-owner-requests",
   emailDraftDirectoryName = "production-rollout-owner-email-drafts",
+  sendTrackerDirectoryName = "production-rollout-owner-send-tracker",
   statusFilename = "production-rollout-owner-packet-status.md",
   statusOptions = {},
 }: ProductionRolloutOwnerHandoffOptions = {}): ProductionRolloutOwnerHandoff {
@@ -67,6 +72,13 @@ export function getProductionRolloutOwnerHandoff({
     path: `${emailDraftDirectoryName}/${file.path}`,
     content: file.content,
   }));
+  const sendTrackerFiles = getProductionRolloutOwnerSendTrackerFiles(status, {
+    requestDirectoryName,
+    emailDraftDirectoryName,
+  }).map((file) => ({
+    path: `${sendTrackerDirectoryName}/${file.path}`,
+    content: file.content,
+  }));
   const files = [
     {
       path: "README.md",
@@ -75,6 +87,7 @@ export function getProductionRolloutOwnerHandoff({
         ownerDirectoryName,
         requestDirectoryName,
         emailDraftDirectoryName,
+        sendTrackerDirectoryName,
         statusFilename,
         status,
       }),
@@ -86,6 +99,7 @@ export function getProductionRolloutOwnerHandoff({
     },
     ...requestFiles,
     ...emailDraftFiles,
+    ...sendTrackerFiles,
   ];
 
   return {
@@ -100,6 +114,7 @@ function formatProductionRolloutOwnerHandoffIndex({
   ownerDirectoryName,
   requestDirectoryName,
   emailDraftDirectoryName,
+  sendTrackerDirectoryName,
   statusFilename,
   status,
 }: {
@@ -107,6 +122,7 @@ function formatProductionRolloutOwnerHandoffIndex({
   ownerDirectoryName: string;
   requestDirectoryName: string;
   emailDraftDirectoryName: string;
+  sendTrackerDirectoryName: string;
   statusFilename: string;
   status: ProductionRolloutOwnerPacketStatus;
 }) {
@@ -128,6 +144,7 @@ function formatProductionRolloutOwnerHandoffIndex({
     `- ${ownerDirectoryName}/: owner-specific README files and blank CSV templates to fill`,
     `- ${requestDirectoryName}/: owner-by-owner request docs generated from current blockers`,
     `- ${emailDraftDirectoryName}/: copy/paste email drafts for the owner request handoff`,
+    `- ${sendTrackerDirectoryName}/: manual send/return tracker for owner packet follow-up`,
     `- ${statusFilename}: count and structure status report`,
     "- README.md: this top-level guide",
     "",
@@ -141,10 +158,11 @@ function formatProductionRolloutOwnerHandoffIndex({
     "",
     "1. Send each owner their matching folder under `rollout-owner-packets/`.",
     "2. Use each owner's matching email draft under `production-rollout-owner-email-drafts/`.",
-    "3. Include each owner's matching Markdown request under `production-rollout-owner-requests/`.",
-    "4. Ask each owner to return only their completed CSV files.",
-    "5. Rebuild this status before assembling the shared rollout CSV folder.",
-    "6. Do not invite students until the final invite gate passes.",
+    "3. Track sent/returned/validated status in `production-rollout-owner-send-tracker/owner-send-tracker.csv`.",
+    "4. Include each owner's matching Markdown request under `production-rollout-owner-requests/`.",
+    "5. Ask each owner to return only their completed CSV files.",
+    "6. Rebuild this status before assembling the shared rollout CSV folder.",
+    "7. Do not invite students until the final invite gate passes.",
     "",
     "## Commands After Owners Return Data",
     "",
@@ -152,6 +170,7 @@ function formatProductionRolloutOwnerHandoffIndex({
     `pnpm rollout:owner-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${statusFilename}`,
     `pnpm rollout:owner-requests --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${requestDirectoryName}`,
     `pnpm rollout:owner-email-drafts --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${emailDraftDirectoryName} --request-dir ${requestDirectoryName}`,
+    `pnpm rollout:owner-send-tracker --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out ${outputDirectoryName}/${sendTrackerDirectoryName} --request-dir ${requestDirectoryName} --email-draft-dir ${emailDraftDirectoryName}`,
     `pnpm rollout:current-status --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out production-rollout-current-status.md`,
     `pnpm rollout:assemble-owner-packets --owner-dir ${outputDirectoryName}/${ownerDirectoryName} --out rollout-csv`,
     "pnpm rollout:check-csv --dir rollout-csv",
