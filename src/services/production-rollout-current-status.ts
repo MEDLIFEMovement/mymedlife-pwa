@@ -385,20 +385,20 @@ function getNextCommands(
   if (!input.liveDataCountsExists || input.liveDataCountsError) {
     return [
       "pnpm production:live-data-proof-request --out production-live-data-proof-request.md",
-      `pnpm production:data-counts > ${input.paths.liveDataCountsPath}`,
+      `pnpm production:data-counts --out ${input.paths.liveDataCountsPath}`,
       `pnpm rollout:current-status --packet ${input.paths.packetPath} --live-data-counts ${input.paths.liveDataCountsPath} --out production-rollout-current-status.md`,
     ];
   }
 
   if (!input.liveDataReadiness || !input.liveDataReadiness.ready) {
     return [
-      `pnpm production:data-counts > ${input.paths.liveDataCountsPath}`,
+      `pnpm production:data-counts --out ${input.paths.liveDataCountsPath}`,
       `pnpm rollout:current-status --packet ${input.paths.packetPath} --live-data-counts ${input.paths.liveDataCountsPath} --out production-rollout-current-status.md`,
     ];
   }
 
   return [
-    `pnpm production:data-counts > ${input.paths.liveDataCountsPath}`,
+    `pnpm production:data-counts --out ${input.paths.liveDataCountsPath}`,
     [
       "pnpm production:invite-gate",
       `  --packet ${input.paths.packetPath}`,

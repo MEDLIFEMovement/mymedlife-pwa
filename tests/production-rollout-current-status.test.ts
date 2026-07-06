@@ -301,7 +301,7 @@ describe("production rollout current status", () => {
       "Production live-data count readiness was not available.",
     );
     expect(status.nextCommands).toContain(
-      "pnpm production:data-counts > production-live-data-counts.txt",
+      "pnpm production:data-counts --out production-live-data-counts.txt",
     );
   });
 
@@ -325,7 +325,7 @@ describe("production rollout current status", () => {
       "Add at least 500 approved production memberships.",
     );
     expect(status.nextCommands).toContain(
-      "pnpm production:data-counts > production-live-data-counts.txt",
+      "pnpm production:data-counts --out production-live-data-counts.txt",
     );
   });
 

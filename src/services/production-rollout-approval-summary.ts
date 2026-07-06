@@ -117,7 +117,7 @@ export function getProductionRolloutApprovalSummary(
         title: "Final-gate commands still required",
         items: [
           "pnpm production:smoke https://www.mymedlife.org",
-          "pnpm production:data-counts > production-live-data-counts.txt",
+          "pnpm production:data-counts --out production-live-data-counts.txt",
           "pnpm production:invite-gate --packet production-rollout-packet.json --live-data-counts production-live-data-counts.txt --public-url https://www.mymedlife.org",
         ],
       },

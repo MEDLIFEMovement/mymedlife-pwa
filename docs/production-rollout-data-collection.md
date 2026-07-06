@@ -513,7 +513,7 @@ pnpm rollout:handoff production-rollout-packet.json --out production-rollout-han
 pnpm production:launch-check --packet production-rollout-packet.json
 pnpm production:pilot-event-proof --packet production-rollout-packet.json
 pnpm production:live-data-proof-request --out production-live-data-proof-request.md
-pnpm production:data-counts > production-live-data-counts.txt
+pnpm production:data-counts --out production-live-data-counts.txt
 pnpm production:signed-in-route-proof --packet production-rollout-packet.json
 pnpm production:invite-batches --packet production-rollout-packet.json
 pnpm rollout:approval-summary production-rollout-packet.json --out production-rollout-approval-summary.md
@@ -524,7 +524,7 @@ If local Supabase is not linked on the review machine, keep the approved
 production database URL in an environment variable and use:
 
 ```bash
-pnpm production:data-counts --db-url-env SUPABASE_DB_URL > production-live-data-counts.txt
+pnpm production:data-counts --db-url-env SUPABASE_DB_URL --out production-live-data-counts.txt
 ```
 
 Do not paste database URLs, passwords, service keys, or tokens into command
