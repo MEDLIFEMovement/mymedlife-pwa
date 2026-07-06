@@ -2670,6 +2670,13 @@ function SystemHealthPage() {
 
   return (
     <div className="p-6 space-y-5">
+      <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+        <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+        <p className="text-[12px] text-amber-300/80 leading-relaxed">
+          This system-health panel is preview-only. Use it to review seeded posture and blocked integrations, not as a live production monitoring surface.
+        </p>
+      </div>
+
       <div className={`flex items-center gap-3 border rounded-lg px-4 py-3 ${overallColors[overall]}`}>
         <HealthDot status={overall} />
         <div>
@@ -2742,13 +2749,23 @@ function SystemHealthPage() {
 function SettingsPage() {
   return (
     <div className="p-6 space-y-5 max-w-xl">
+      <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg p-4">
+        <AlertTriangle size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+        <div>
+          <div className="text-[13px] font-bold text-amber-400 mb-1">Preview Configuration Only</div>
+          <p className="text-[12px] text-amber-300/70 leading-relaxed">
+            These settings stay visible for DS review, but this surface does not change live production configuration. Use the audited admin workflow after approval for real environment or alert changes.
+          </p>
+        </div>
+      </div>
+
       <div className="bg-[#161b22] border border-white/[0.06] rounded-lg">
         <SectionHeader title="Admin Access Controls" />
         {[
-          { label: "Session timeout", value: "4 hours" },
-          { label: "MFA for production toggles", value: "Required" },
+          { label: "Session timeout", value: "4 hours (policy target)" },
+          { label: "MFA for production toggles", value: "Required in audited workflow" },
           { label: "Audit log retention", value: "90 days" },
-          { label: "Admin email alerts", value: "Enabled" },
+          { label: "Admin email alerts", value: "Configured (preview only)" },
           { label: "Environment", value: "Staging / mock-safe" },
         ].map((s) => (
           <div key={s.label} className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.04] last:border-0">

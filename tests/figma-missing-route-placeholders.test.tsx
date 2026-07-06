@@ -113,6 +113,20 @@ describe("Figma missing route placeholders", () => {
     expect(source).toContain("Global point defaults require the workflow-admin save path");
   });
 
+  it("keeps system health and settings visible without presenting them as live production ops controls", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const healthHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="health" />);
+    expect(healthHtml).toContain("This system-health panel is preview-only.");
+    expect(healthHtml).toContain("System-health refresh is blocked in this static shell");
+
+    const settingsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="settings" />);
+    expect(settingsHtml).toContain("Preview Configuration Only");
+    expect(settingsHtml).toContain("Configured (preview only)");
+    expect(source).toContain("Use the audited admin workflow after approval for real environment or alert changes.");
+  });
+
   it("parks SLT Prep through /slt-prep during the events and points launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
