@@ -330,9 +330,27 @@ export async function getSupabaseLocalActorContext(
 ): Promise<LocalActorContext> {
   const snapshot = await readLocalActorSnapshot(client);
   const normalizedEmail = selectedEmail.toLowerCase();
-  const profile =
-    snapshot.profiles.find((item) => item.email.toLowerCase() === normalizedEmail) ??
-    snapshot.profiles[0];
+  const matchedProfile = snapshot.profiles.find(
+    (item) => item.email.toLowerCase() === normalizedEmail,
+  );
+
+  if (!matchedProfile) {
+    const shouldTreatAsMissingProfile =
+      options.allowMockFallbackWhenProfileMissing === false ||
+      (identitySource === "local_auth_session" && authSessionStatus === "signed_in");
+
+    if (shouldTreatAsMissingProfile) {
+      return getMissingProfileActorContext(
+        selectedEmail,
+        "Supabase Auth is signed in, but this user does not have a myMEDLIFE profile or role assignment yet.",
+        identitySource,
+        authSessionStatus,
+        isLocalOnly,
+      );
+    }
+  }
+
+  const profile = matchedProfile ?? snapshot.profiles[0];
 
   if (!profile) {
     if (options.allowMockFallbackWhenProfileMissing === false) {
