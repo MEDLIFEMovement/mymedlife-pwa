@@ -31,6 +31,19 @@ The Figma-specific map now defines these markers in code and records which shell
 each mapped Test or fixture record supports. It is intentionally local/sandbox
 only and does not create production users, production rows, or invites.
 
+Local sandbox reviewers can now generate:
+
+- `.codex-artifacts/figma-seed/figma-test-seed-manifest.json`
+- `.codex-artifacts/figma-seed/figma-shell-test-logins.md`
+- `.codex-artifacts/figma-seed/figma-signed-in-role-proof.json`
+- `.codex-artifacts/figma-seed/figma-signed-in-role-proof.md`
+
+Use `pnpm figma-seed:build` for the seed manifest/login map and
+`pnpm figma-seed:proof` for the route-logic proof report. The proof report stays
+local/sandbox-only, confirms member/leader/staff/admin landing routes, and
+keeps `/app/slt-prep` as a sandbox review alias instead of signed-in production
+evidence.
+
 ## Proposed Model Locations
 
 | Layer | Proposed location | Purpose |
