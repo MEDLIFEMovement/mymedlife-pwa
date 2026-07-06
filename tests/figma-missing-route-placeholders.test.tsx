@@ -101,6 +101,18 @@ describe("Figma missing route placeholders", () => {
     expect(source).toContain("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview");
   });
 
+  it("keeps admin points policy controls visibly blocked instead of acting like a live editor", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const pointsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="points" />);
+
+    expect(pointsHtml).toContain("Points policy editing is blocked in this preview.");
+    expect(pointsHtml).toContain("Points System");
+    expect(source).toContain("Points policy edits are blocked in this preview until the audited workflow is approved");
+    expect(source).toContain("Global point defaults require the workflow-admin save path");
+  });
+
   it("parks SLT Prep through /slt-prep during the events and points launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
