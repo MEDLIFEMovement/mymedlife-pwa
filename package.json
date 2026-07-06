@@ -42,6 +42,7 @@
     "test-production:cleanup": "MYMEDLIFE_TEST_PRODUCTION_MODE=cleanup node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/apply-test-production-seed-environment.mjs",
     "production:launch-check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-core-production-launch-readiness.mjs",
     "production:data-counts": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-live-data-counts.mjs",
+    "production:live-data-proof-request": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/create-production-live-data-proof-request.mjs",
     "production:domain": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-domain-readiness.mjs",
     "production:invite-batches": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-invite-batches.mjs",
     "production:invite-gate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-production-invite-gate.mjs",

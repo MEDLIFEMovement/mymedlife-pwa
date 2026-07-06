@@ -515,6 +515,14 @@ After the reviewed packet is applied by the approved production owner, verify th
 live Supabase launch tables with:
 
 ```bash
+pnpm production:live-data-proof-request --out production-live-data-proof-request.md
+```
+
+This writes the plain-language count-proof request for the DS/platform owner. It
+does not connect to Supabase, read data, write rows, send invites, or change
+configuration.
+
+```bash
 pnpm production:data-counts
 ```
 
