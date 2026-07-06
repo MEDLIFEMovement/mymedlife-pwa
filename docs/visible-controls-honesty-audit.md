@@ -64,9 +64,9 @@ Counts below are control groups, not every repeated row/card instance.
 | `/leader` | Bell notification affordance | Visible disabled/blocked affordance. | `disabled` | Later notification center decision. | Pass |
 | `/leader?view=overview` | Create Event | Opens event performance/create-event flow. | `wired` | None for staged flow. | Pass |
 | `/leader?view=overview` | Assign Task | Opens local assign-action modal; no approved write. | `explicitly blocked` | Later assignment-create write approval. | Pass |
-| `/leader?view=overview` | Review Members | Visible quick action; should focus member pipeline when future work resumes. | `outside invite gate` | Documented follow-up; not blocking invite gate. | Watch |
+| `/leader?view=overview` | Review Members | Visible quick action opens the member-pipeline quick-action state. | `wired` | None. | Pass |
 | `/leader?view=overview` | Promote Emerging Leader | Opens local modal; no role mutation. | `explicitly blocked` | Later role/pipeline approval. | Pass |
-| `/leader?view=overview` | Share Bridge Video | Visible quick action toward Bridge Videos; feed/share writes blocked. | `outside invite gate` | Later feed/share approval. | Watch |
+| `/leader?view=overview` | Share Bridge Video | Visible impact quick action opens the bridge-video handoff state; later share writes stay blocked. | `wired` / `explicitly blocked` | Later feed/share approval. | Pass |
 | `/leader?view=leaderboard` | Metric filter buttons | Switch local leaderboard metric. | `wired` | None. | Pass |
 | `/leader?view=leaderboard` | Ranking/member/chapter rows | Display ranking details; no mutation. | `read-only` | Optional future profile drill-in. | Pass |
 | `/leader?view=members` | Member rows | Open member profile shell state. | `wired` | None. | Pass |
@@ -82,7 +82,7 @@ Counts below are control groups, not every repeated row/card instance.
 | `/leader?view=training` | Add Resource, filters, expand cards, Watch/View Deck/share/send/list controls | Local shell/readback; external share/send controls blocked. | `outside invite gate` / `disabled` | Later resource/feed approval. | Pass |
 | `/staff` | Top nav: Chapters, Campaigns, Proof/UGC, Best Practices, Campaign SOPs, Admin | Opens copied Figma staff shell states. | `wired` | None. | Pass |
 | `/staff?view=chapters` | Search, clear, region/coach/sort filters | Local filtering. | `wired` | None. | Pass |
-| `/staff?view=chapters` | Export | Visible control; should not imply production export. | `explicitly blocked` | Add/keep disabled or blocked copy before live export approval. | Watch |
+| `/staff?view=chapters` | Export | Visible control; disabled with blocked copy until reporting/export approval exists. | `explicitly blocked` | Later approved export story. | Pass |
 | `/staff?view=chapters` | Chapter table rows | Open local chapter detail drawer. | `wired` | None. | Pass |
 | `/staff?view=chapters` | Preview Survey / NPS modal / score buttons / feedback / submit | Local preview only; no external send. | `read-only` / `explicitly blocked` | Later NPS send/write approval. | Pass |
 | `/staff?view=chapters` | Send Content / Send NPS Survey / external-link footer buttons | Visible but no live sends. | `disabled` / `explicitly blocked` | Later content/NPS send approval. | Pass |
@@ -97,7 +97,7 @@ Counts below are control groups, not every repeated row/card instance.
 | `/staff?view=admin` | DS/Super Admin role radios, Enter Admin Panel, Return to dashboard | Opens gated redacted admin overlay only after role choice. | `wired` | None. | Pass |
 | `/admin` | Vertical nav: Overview, Users, Chapters, Luma Events, Points, Audit Logs, System Health, Settings | Local admin shell screens and route-backed review surfaces. | `wired` / `read-only` | None. | Pass |
 | `/admin` | Modules, Integrations, API Keys, disabled modules group | Visible but blocked/disabled where they imply feature toggles, provider tests, secrets, or production writes. | `disabled` / `explicitly blocked` / `outside invite gate` | Later DS/Admin integration security lane. | Pass |
-| `/admin` | Notification bell, user chip/logout icon | Notification disabled; user chip informational in copied shell. | `disabled` | Future account menu/logout if this shell becomes the session owner. | Watch |
+| `/admin` | Notification bell, user chip/logout icon | Notification disabled; copied-shell account row explicitly delegates logout and workspace switching to the top-right session menu. | `disabled` | None for current shell ownership. | Pass |
 | `/admin/users` | User search/filter/table row | Local/admin route-backed search/detail posture. | `wired` / `read-only` | None. | Pass |
 | `/admin/users` | Change Role / Edit Modules / Resend Invite / Disable User | Disabled/blocked unless audited write flags are approved. | `disabled` / `explicitly blocked` | Later admin write and invite approval. | Pass |
 | `/admin/chapters` | Chapter search/table row | Local/admin route-backed search/detail posture. | `wired` / `read-only` | None. | Pass |
@@ -110,18 +110,18 @@ Counts below are control groups, not every repeated row/card instance.
 
 ## Required Fixes
 
-No code fix was made in this pass. The audit found no confirmed silent-dead
-controls in the copied Figma shell files that would require a tiny safe patch.
+This follow-up pass landed small code and test updates so the three tracked
+controls now match their intended honest state without changing the Figma shell
+structure.
 
-Watch items for the next control-wiring lane:
+No remaining watch items from this audit slice. The three tracked controls are
+now honest:
 
-1. Staff `Export` should stay disabled or explicitly blocked until there is an
-   approved export story.
-2. Admin copied-shell user chip/logout affordance should remain informational
-   unless the Figma admin shell becomes the real session/account-menu owner.
-3. Leader quick actions such as `Review Members` and `Share Bridge Video` should
-   keep their Figma placement but receive route-backed focus behavior in a later
-   small PR.
+1. Staff `Export` is visibly blocked until an approved export story exists.
+2. The copied admin account row now clearly points to the top-right session menu
+   for workspace switching and logout.
+3. Leader `Review Members` and `Share Bridge Video` remain in their Figma
+   positions and are verified as route-backed handoffs.
 
 ## Figma Preservation Statement
 

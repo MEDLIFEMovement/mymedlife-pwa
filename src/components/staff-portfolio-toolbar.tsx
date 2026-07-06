@@ -264,7 +264,10 @@ export function StaffPortfolioToolbar({
       <button
         type="button"
         onClick={handleExportClick}
-        className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700"
+        disabled
+        aria-disabled="true"
+        title="Export is blocked until reporting approval is complete"
+        className="cursor-not-allowed rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-500 opacity-70"
       >
         Export
       </button>

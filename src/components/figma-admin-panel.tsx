@@ -259,7 +259,8 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
 
       <div className="px-3 py-3 border-t border-white/[0.05]">
         <div
-          className="flex items-center gap-2.5 px-2 py-2 rounded"
+          aria-disabled="true"
+          className="flex items-center gap-2.5 rounded px-2 py-2 opacity-90 select-none"
           title="Use the top-right account menu to switch workspaces or log out."
         >
           <div className="size-6 rounded-full bg-sky-500/20 border border-sky-500/20 flex items-center justify-center flex-shrink-0">
@@ -268,6 +269,9 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
           <div className="flex-1 min-w-0">
             <div className="text-[12px] text-slate-300 font-semibold leading-tight">Chen Wei</div>
             <div className="text-[10px] text-slate-600 font-mono">Super Admin</div>
+            <div className="mt-1 text-[9px] text-slate-500">
+              Use the top-right menu to switch workspaces or log out.
+            </div>
           </div>
           <span className="rounded border border-white/[0.06] px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-slate-600">
             Account menu

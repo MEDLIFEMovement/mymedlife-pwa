@@ -183,6 +183,17 @@ describe("chapter leader command center", () => {
     expect(markup).not.toContain("Impact Snapshot");
   });
 
+  it("keeps Review Members wired from the overview hero into the member-pipeline quick-action state", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data);
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain("href=\"/leader?view=members&amp;quickAction=review_members\"");
+    expect(markup).toContain(">Review Members<");
+  });
+
   it("keeps the desktop rail compact so navigation stays in the operating frame", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const commandCenter = getChapterLeaderCommandCenter(actor, data);
@@ -1388,6 +1399,21 @@ describe("chapter leader command center", () => {
     expect(markup).toContain("Local Community Impact");
     expect(markup).toContain("MEDLIFE Global Impact");
     expect(markup).not.toContain("Impact focus");
+  });
+
+  it("keeps Share Bridge Video wired from the impact dashboard into the bridge-video handoff", () => {
+    const actor = getMockLocalActorContext("leader.a@mymedlife.test");
+    const commandCenter = getChapterLeaderCommandCenter(actor, data, {
+      view: "impact",
+    });
+    const markup = renderToStaticMarkup(
+      createElement(ChapterLeaderCommandCenterPanel, { commandCenter }),
+    );
+
+    expect(markup).toContain(
+      "href=\"/leader?view=impact&amp;quickAction=create_impact_bridge_video\"",
+    );
+    expect(markup).toContain(">Share Bridge Video<");
   });
 
   it("keeps the selected member visible when impact is opened from a member-specific route", () => {
