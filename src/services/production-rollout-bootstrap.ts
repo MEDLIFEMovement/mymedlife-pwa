@@ -726,6 +726,8 @@ function addReadyPilotProofBlockers(
 
   if (!proof.checkedAt?.trim()) {
     blockers.push(`${proofLabel} needs a checkedAt timestamp.`);
+  } else if (!isValidCheckedAt(proof.checkedAt)) {
+    blockers.push(`${proofLabel} checkedAt must be a valid timestamp.`);
   }
 
   if (!proof.reviewedByEmail?.trim()) {
@@ -841,6 +843,10 @@ function hasFakeEmail(email: string) {
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
+}
+
+function isValidCheckedAt(value: string | undefined) {
+  return Boolean(value?.trim()) && Number.isFinite(Date.parse(value ?? ""));
 }
 
 function normalizeId(value: string) {
