@@ -100,4 +100,27 @@ describe("production pilot event proof import", () => {
       ),
     ).toThrow(/credential/);
   });
+
+  it("rejects preview local sandbox staging figma and setup-only pilot proof notes", () => {
+    for (const note of [
+      "Verified with preview-cookie role switch",
+      "Local sandbox RSVP and attendance rehearsal only",
+      "Copied from sandbox role exercise checklist",
+      "Used localhost browser session",
+      "Checked in staging.mymedlife.org",
+      "Figma seed rehearsal row",
+      "figma-sandbox-role-exercise output",
+      "SOP sample evidence",
+      "auth_profile_missing state confirmed",
+    ]) {
+      expect(() =>
+        buildProductionPilotEventProofImport(
+          [
+            "chapterId,eventName,lumaEventId,rsvpCount,attendanceCount,pointsAwardedCount,auditRecorded,zeroExternalSends,eventRoute,attendanceRoute,pointsRoute,auditRoute,outboxRoute,checkedAt,reviewedByEmail,notes",
+            `chapter-ucla,Rush Month Kickoff,evt-ucla-rush,10,9,9,yes,yes,/app/events/evt-ucla-rush,/leader?view=events,/leader?view=leaderboard,/admin/audit-log,/admin/integration-outbox,2026-07-05T15:00:00Z,reviewer@medlifemovement.org,${note}`,
+          ].join("\n"),
+        ),
+      ).toThrow(/cannot count as approved production pilot proof/);
+    }
+  });
 });
