@@ -215,6 +215,71 @@ describe("production rollout current status", () => {
     );
   });
 
+  it("keeps partially filled CSV folders ahead of packet build", () => {
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        ownerDirectoryExists: true,
+        csvDirectoryExists: true,
+        csvDirectorySummary: {
+          fileCount: 10,
+          dataRowCount: 22,
+        },
+        csvReadiness: createRolloutReadiness({
+          ready: false,
+          blockers: [
+            "Add at least 30 active chapters before production rollout. Current active chapters: 2.",
+          ],
+        }),
+        rolloutPacketExists: false,
+        ownerPacketStatus: createOwnerStatus(true),
+      }),
+    );
+
+    expect(status.currentBlocker).toContain(
+      "Shared rollout CSV folder is not ready",
+    );
+    expect(status.currentBlocker).toContain("Current active chapters: 2");
+    expect(status.openBlockers).toContain(
+      "Shared rollout CSV folder is not ready: Add at least 30 active chapters before production rollout. Current active chapters: 2.",
+    );
+    expect(status.artifactStatuses).toContain(
+      "shared rollout CSV folder: NOT READY (1 blocker(s), 22 launch rows)",
+    );
+    expect(status.nextCommands).toContain(
+      "pnpm rollout:check-csv --dir rollout-csv",
+    );
+    expect(status.nextCommands).toContain(
+      "Fix the shared CSV rows above before building production-rollout-packet.json.",
+    );
+    expect(status.nextCommands[0]).not.toContain("pnpm rollout:build");
+  });
+
+  it("shows CSV validation errors before packet build", () => {
+    const status = getProductionRolloutCurrentStatus(
+      createBaseInput({
+        ownerDirectoryExists: true,
+        csvDirectoryExists: true,
+        csvDirectorySummary: {
+          fileCount: 9,
+          dataRowCount: 42,
+        },
+        csvReadinessError: "Missing or unreadable memberships.csv in rollout-csv.",
+        rolloutPacketExists: false,
+        ownerPacketStatus: createOwnerStatus(true),
+      }),
+    );
+
+    expect(status.currentBlocker).toBe(
+      "Shared rollout CSV folder could not be validated: Missing or unreadable memberships.csv in rollout-csv.",
+    );
+    expect(status.artifactStatuses).toContain(
+      "shared rollout CSV folder: FOUND, validation unreadable (9 CSV files, 42 launch rows)",
+    );
+    expect(status.nextCommands).toContain(
+      "pnpm rollout:preflight --dir rollout-csv --out production-rollout-preflight.md",
+    );
+  });
+
   it("blocks packet build when the shared CSV folder is only headers", () => {
     const status = getProductionRolloutCurrentStatus(
       createBaseInput({

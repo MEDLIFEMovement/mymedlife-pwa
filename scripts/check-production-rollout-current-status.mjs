@@ -37,6 +37,7 @@ try {
     {
       parseProductionRolloutOwnerRecipientAssignmentsCsv,
     },
+    { buildProductionRolloutPacketFromCsvTables },
     { getProductionRolloutBootstrapReadiness },
     {
       getProductionLiveDataReadiness,
@@ -48,6 +49,7 @@ try {
     import("../src/services/production-rollout-owner-packets.ts"),
     import("../src/services/production-rollout-owner-recipient-status.ts"),
     import("../src/services/production-rollout-owner-send-tracker.ts"),
+    import("../src/services/production-rollout-packet-builder.ts"),
     import("../src/services/production-rollout-bootstrap.ts"),
     import("../src/services/production-live-data-readiness.ts"),
   ]);
@@ -58,6 +60,15 @@ try {
   const csvDirectorySummary = csvDirectoryExists
     ? await getCsvDirectorySummary(args.csvDir)
     : null;
+  const { csvReadiness, csvReadinessError } =
+    csvDirectoryExists && !isHeaderOnlyCsvDirectorySummary(csvDirectorySummary)
+      ? await readCsvReadiness({
+          csvDir: args.csvDir,
+          buildProductionRolloutPacketFromCsvTables,
+          getProductionRolloutBootstrapReadiness,
+          options: args,
+        })
+      : { csvReadiness: null, csvReadinessError: null };
   const ownerPacketStatus = ownerDirectoryExists
     ? getProductionRolloutOwnerPacketStatus({
         foundFiles: await readOwnerPacketCsvFiles({
@@ -105,6 +116,8 @@ try {
     ownerDirectoryExists,
     csvDirectoryExists,
     csvDirectorySummary,
+    csvReadiness,
+    csvReadinessError,
     rolloutPacketExists,
     liveDataCountsExists,
     ownerPacketStatus,
@@ -176,6 +189,42 @@ async function readRolloutReadiness({
   }
 }
 
+async function readCsvReadiness({
+  csvDir,
+  buildProductionRolloutPacketFromCsvTables,
+  getProductionRolloutBootstrapReadiness,
+  options,
+}) {
+  try {
+    const packet = buildProductionRolloutPacketFromCsvTables({
+      chapters: await readCsv(csvDir, "chapters.csv"),
+      users: await readCsv(csvDir, "users.csv"),
+      memberships: await readCsv(csvDir, "memberships.csv"),
+      staffRoles: await readCsv(csvDir, "staff-roles.csv"),
+      coachAssignments: await readCsv(csvDir, "coach-assignments.csv"),
+      campaigns: await readCsv(csvDir, "campaigns.csv"),
+      lumaCalendars: await readCsv(csvDir, "luma-calendars.csv"),
+      pilotEventProof: await readCsv(csvDir, "pilot-event-proof.csv"),
+      launchOwners: await readCsv(csvDir, "launch-owners.csv"),
+      signedInRouteProof: await readCsv(csvDir, "signed-in-route-proof.csv"),
+    });
+
+    return {
+      csvReadiness: getProductionRolloutBootstrapReadiness(packet, {
+        minimumChapterCount: options.minimumChapters,
+        minimumStudentMembershipCount: options.minimumStudents,
+        minimumPilotChapterCount: options.minimumPilotChapters,
+      }),
+      csvReadinessError: null,
+    };
+  } catch (error) {
+    return {
+      csvReadiness: null,
+      csvReadinessError: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 async function readLiveDataReadiness({
   liveDataCountsPath,
   getProductionLiveDataReadiness,
@@ -242,6 +291,18 @@ async function getCsvDirectorySummary(csvDir) {
     fileCount: filenames.length,
     dataRowCount,
   };
+}
+
+async function readCsv(csvDir, filename) {
+  try {
+    return await readFile(join(csvDir, filename), "utf8");
+  } catch {
+    throw new Error(`Missing or unreadable ${filename} in ${csvDir}.`);
+  }
+}
+
+function isHeaderOnlyCsvDirectorySummary(summary) {
+  return Boolean(summary && summary.fileCount > 0 && summary.dataRowCount === 0);
 }
 
 async function fileExists(path) {
