@@ -260,8 +260,6 @@ describe("leader page", () => {
       }),
     );
     expect(committeesHtml).toContain("Committee creation is blocked in this preview.");
-    expect(committeesHtml).toContain("Committee chair assignment is blocked in this preview.");
-    expect(committeesHtml).toContain("Committee detail drill-in is not wired yet.");
 
     const impactHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -318,5 +316,7 @@ describe("leader page", () => {
     expect(source).toContain("Leadership page not yet available");
     expect(source).toContain("WORKSPACE_SWITCHER_BLOCKED_COPY");
     expect(source).toContain("Workspace switching is handled by the account menu above this shell.");
+    expect(source).toContain("Committee chair assignment is blocked in this preview.");
+    expect(source).toContain("Committee detail drill-in is not wired yet.");
   });
 });
