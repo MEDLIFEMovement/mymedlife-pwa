@@ -275,23 +275,27 @@ function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen)
   const EVENT_SCREENS: Screen[] = ["events", "event-detail", "rsvp-confirm", "checkin"];
   const STORY_SCREENS: Screen[] = ["stories"];
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-card border-t border-border z-50 flex pb-safe">
+    <nav
+      aria-label="Member bottom navigation"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-card border-t border-border z-50 flex pb-safe"
+    >
       {items.map(({ id, label, Icon }, idx) => {
         const isActive = label === "Events"
           ? EVENT_SCREENS.includes(active)
           : label === "Stories"
           ? STORY_SCREENS.includes(active)
           : active === id && label !== "Profile";
-        const routeHref = id === "home"
-          ? "/app"
+        const strokeWidth = isActive ? 2.5 : 1.8;
+        const routeHref = id === "events"
+          ? "/app/events"
           : id === "stories"
           ? "/app/stories"
-          : id === "events"
-          ? "/app/events"
           : id === "points"
           ? "/app/points"
           : id === "profile"
           ? "/profile"
+          : id === "home"
+          ? "/app"
           : null;
         const className = cn(
           "flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-colors",
@@ -301,7 +305,7 @@ function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen)
         if (routeHref) {
           return (
             <Link key={idx} href={routeHref} className={className}>
-              <Icon size={20} />
+              <Icon size={20} strokeWidth={strokeWidth} />
               <span>{label}</span>
             </Link>
           );
@@ -419,16 +423,18 @@ function StudentHome({
           href="/app/stories"
           className="mt-3 flex items-center justify-between rounded-2xl border border-white/10 bg-gradient-to-r from-[#2D5016]/80 to-[#3D7A5A]/80 px-4 py-3.5 transition-transform hover:brightness-110 active:scale-[0.98]"
         >
-          <div>
-            <p className="text-green-200 text-xs font-bold uppercase tracking-wide">From the Field</p>
-            <p className="text-white text-base font-extrabold mt-0.5">MEDLIFE Stories</p>
-            <p className="text-green-100 text-xs mt-0.5 leading-snug max-w-[200px]">
-              Field notes, student voices, and moments from the mission.
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-1 flex-shrink-0">
-            <Heart size={26} className="text-white/70 fill-white/20" />
-            <p className="text-green-100 text-[11px] font-semibold">{stories.length} stories →</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-200 text-xs font-bold uppercase tracking-wide">From the Field</p>
+              <p className="text-white text-base font-extrabold mt-0.5">MEDLIFE Stories</p>
+              <p className="text-green-100 text-xs mt-0.5 leading-snug max-w-[200px]">
+                Field notes, student voices, and moments from the mission.
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+              <Heart size={26} className="text-white/70 fill-white/20" />
+              <p className="text-green-100 text-[11px] font-semibold">{stories.length} stories →</p>
+            </div>
           </div>
         </Link>
       </div>
@@ -3328,6 +3334,8 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                     <div className="flex items-center">
                       <div className="flex items-center gap-4 flex-1">
                         <button
+                          type="button"
+                          title="Preview-only reaction. This does not publish or sync anywhere."
                           onClick={() => toggleLike(story.id)}
                           className="active:scale-90 transition-transform"
                         >
@@ -3336,12 +3344,30 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                             className={cn("transition-all", isLiked ? "fill-red-500 text-red-500" : "text-black")}
                           />
                         </button>
-                        <button onClick={() => setSelectedStory(story)}>
+                        <button
+                          type="button"
+                          title="Open this story in the local review modal."
+                          onClick={() => setSelectedStory(story)}
+                        >
                           <MessageSquare size={24} className="text-black" />
                         </button>
-                        <Share2 size={23} className="text-black" />
+                        <button
+                          type="button"
+                          disabled
+                          title="Sharing is blocked in this preview until publishing approval is complete."
+                          className="cursor-not-allowed opacity-60"
+                        >
+                          <Share2 size={23} className="text-black" />
+                        </button>
                       </div>
-                      <Bookmark size={23} className="text-black" />
+                      <button
+                        type="button"
+                        disabled
+                        title="Saving stories is blocked in this preview."
+                        className="cursor-not-allowed opacity-60"
+                      >
+                        <Bookmark size={23} className="text-black" />
+                      </button>
                     </div>
 
                     {/* Likes */}

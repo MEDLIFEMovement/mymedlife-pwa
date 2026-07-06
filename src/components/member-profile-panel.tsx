@@ -74,6 +74,16 @@ export function MemberProfilePanel({
               second dashboard, so profile can hand you back to the event-and-points loop
               when you are ready to move again.
             </p>
+            <div className="mt-4 rounded-[1.2rem] border border-[#bfdbfe] bg-white/90 p-3">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
+                Read-only profile
+              </p>
+              <ul className="mt-2 grid gap-2 text-sm leading-6 text-slate-600">
+                {workspace.safetyNotes.slice(0, 2).map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
+            </div>
           </SurfacePanel>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
