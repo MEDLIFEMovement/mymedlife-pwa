@@ -555,6 +555,17 @@ actually populated.
 After production users and app rows are applied, fill `signed-in-route-proof.csv`,
 rebuild the packet, and run:
 
+If reviewers collected route checks in the simpler source-sheet format, convert
+them first:
+
+```bash
+pnpm rollout:signed-in-proof-import --proof signed-in-route-proof-source.csv --out-dir rollout-csv
+```
+
+This writes local `signed-in-route-proof.csv` only. It does not sign in, create
+users, write Supabase rows, send invitations, call Luma, change Vercel config,
+or enable integrations.
+
 ```bash
 pnpm production:signed-in-route-proof --packet production-rollout-packet.json
 ```
