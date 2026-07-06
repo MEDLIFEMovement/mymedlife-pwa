@@ -239,6 +239,58 @@ describe("leader page", () => {
     expect(html).toContain(expectedCopy);
   });
 
+  it("keeps blocked leader controls visibly honest inside the restored shell", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader blocked-control guidance."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    const committeesHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "committees",
+        }),
+      }),
+    );
+    expect(committeesHtml).toContain("Committee creation is blocked in this preview.");
+
+    const impactHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "impact",
+        }),
+      }),
+    );
+    expect(impactHtml).toContain("Impact story sharing is blocked in this preview until feed-sharing approval is complete.");
+    expect(impactHtml).toContain("Field-update submission is blocked in this preview until write approval is complete.");
+
+    const bridgeHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "bridge_videos",
+        }),
+      }),
+    );
+    expect(bridgeHtml).toContain("Bridge-video submission is blocked in this preview until write approval is complete.");
+
+    const feedHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "feed_analytics",
+        }),
+      }),
+    );
+    expect(feedHtml).toContain("Feed sharing is blocked in this preview until staff approval is complete.");
+    expect(feedHtml).toContain("Direct member outreach is blocked in this preview until messaging approval is complete.");
+  });
+
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
     const source = readFileSync(
       join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
@@ -247,7 +299,7 @@ describe("leader page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3950);
-    expect(lineCount).toBeLessThanOrEqual(4150);
+    expect(lineCount).toBeLessThanOrEqual(4170);
     expect(source).toContain('initialScreen = "home"');
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain("<Sidebar active={screen} onNav={navigateToScreen}/>");
@@ -262,5 +314,9 @@ describe("leader page", () => {
     expect(source).toContain("MedlifeStoriesScreen");
     expect(source).toContain("MISSING_LEADERSHIP_PAGES");
     expect(source).toContain("Leadership page not yet available");
+    expect(source).toContain("WORKSPACE_SWITCHER_BLOCKED_COPY");
+    expect(source).toContain("Workspace switching is handled by the account menu above this shell.");
+    expect(source).toContain("Committee chair assignment is blocked in this preview.");
+    expect(source).toContain("Committee detail drill-in is not wired yet.");
   });
 });
