@@ -39,6 +39,33 @@ const routeHeaders = new Set([
   "outboxRoute",
 ]);
 
+const blockedProductionPilotProofSourceMarkers = [
+  "preview cookie",
+  "preview-cookie",
+  "local preview",
+  "local sandbox",
+  "sandbox review",
+  "sandbox role exercise",
+  "figma-sandbox-role-exercise",
+  "figma",
+  "figma_seed",
+  "test data",
+  "test user",
+  "sop sample",
+  "sample data",
+  "localhost",
+  "127.0.0.1",
+  ".vercel.app",
+  "staging.mymedlife.org",
+  "staging proof",
+  "auth_profile_missing",
+  "profile setup required",
+] as const;
+
+export function getBlockedProductionPilotProofSourceMarkers() {
+  return [...blockedProductionPilotProofSourceMarkers];
+}
+
 export function buildProductionPilotEventProofImport(
   proofCsv: string,
 ): ProductionPilotEventProofImportResult {
@@ -305,6 +332,7 @@ function validateProofImportValue(rowNumber: number, header: string, value: stri
 
   if (["lumaEventId", "notes"].includes(header)) {
     validateNoSecretLikeValue(rowNumber, header, value);
+    validateProductionProofSource(rowNumber, header, value);
   }
 }
 
@@ -373,6 +401,32 @@ function validateNoSecretLikeValue(rowNumber: number, header: string, value: str
       `Pilot proof CSV row ${rowNumber} column ${header} looks like a key or token. Keep secrets out of rollout evidence.`,
     );
   }
+}
+
+function validateProductionProofSource(
+  rowNumber: number,
+  header: string,
+  value: string,
+) {
+  const matchedMarker = getBlockedProductionPilotProofSourceMarker(value);
+
+  if (matchedMarker) {
+    throw new Error(
+      `Pilot proof CSV row ${rowNumber} column ${header} references ${matchedMarker}, which is local, preview, staging, sample, or setup-only evidence and cannot count as approved production pilot proof.`,
+    );
+  }
+}
+
+export function getBlockedProductionPilotProofSourceMarker(
+  value: string | undefined | null,
+): string | null {
+  const normalizedValue = value?.toLowerCase() ?? "";
+
+  return (
+    blockedProductionPilotProofSourceMarkers.find((marker) =>
+      normalizedValue.includes(marker),
+    ) ?? null
+  );
 }
 
 function parseCsvRows(csv: string): string[][] {
