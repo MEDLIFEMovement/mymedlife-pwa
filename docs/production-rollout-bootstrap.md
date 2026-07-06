@@ -497,6 +497,26 @@ This command is intentionally read-only and can return `NOT READY` without
 failing the launch process. Use it as the plain status report while owner data,
 CSV assembly, packet validation, and live-data proof are still in progress.
 
+## Target-Scale Rehearsal
+
+While the real owner-returned CSVs are still being collected, run the
+target-scale rehearsal to prove the rollout checks can handle the 30-chapter /
+500-student shape:
+
+```bash
+pnpm rollout:rehearsal --out production-rollout-rehearsal.md
+```
+
+This command uses generated `Test` data only. It exercises the CSV intake,
+chapter matrix, Luma mapping, five-chapter event-loop proof, signed-in route
+proof, and invite-batch checks without writing `production-rollout-packet.json`.
+
+It is read-only. It does not create users, write Supabase rows, call Luma, send
+invites, send email/SMS, trigger n8n, change Vercel settings, or approve the
+launch. Real owner-recipient assignments, real rollout CSV rows, production
+data counts, and final human approval are still required before inviting
+students.
+
 After the rollout packet, handoff, public production route smoke, and production
 live-data count proof are ready, run the final broad-invite gate:
 
