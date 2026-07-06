@@ -304,7 +304,8 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "traveler.a@mymedlife.test");
     await page.goto("/app/slt-prep");
     await expect(page).toHaveURL(/\/app\/events$/);
-    await expect(page.getByRole("heading", { name: "RSVP, show up, earn points" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+    await expect(page.getByText("Show up. Check in. Earn points.")).toBeVisible();
   });
 
   test("blocks unauthorized admin URLs and logs out through the account menu", async ({
