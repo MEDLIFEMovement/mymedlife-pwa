@@ -40,22 +40,37 @@ export function LoginForm({
       }}
     >
       <input type="hidden" name="redirectTo" value={redirectTo} />
+
       <div>
         <label
+          htmlFor="login-email"
           className="mb-1.5 block text-xs font-semibold uppercase tracking-wide"
           style={{ color: "#6b7280" }}
         >
           Email
-          <input
-            name="email"
-            type="email"
-            defaultValue={state.email}
-            autoComplete="email"
-            placeholder="you@example.com"
-            className="w-full rounded-xl border-[1.5px] border-white/10 bg-[#0d1117] px-4 py-2.5 text-sm text-[#f3f4f6] transition-all placeholder:text-[#6b7280] focus:border-[#b8253a] focus:outline-none focus:ring-2 focus:ring-[#b8253a]/20 disabled:opacity-60"
-            disabled={!signInEnabled}
-          />
         </label>
+        <input
+          id="login-email"
+          name="email"
+          type="email"
+          defaultValue={state.email}
+          autoComplete="email"
+          placeholder="you@example.com"
+          required
+          disabled={!signInEnabled}
+          className="w-full rounded-xl px-4 py-2.5 text-sm transition-all placeholder:text-[#6b7280] focus:outline-none disabled:opacity-60"
+          style={{
+            background: "#0d1117",
+            border: "1.5px solid rgba(255,255,255,0.1)",
+            color: "#f3f4f6",
+          }}
+          onFocus={(event) => {
+            event.currentTarget.style.borderColor = "#b8253a";
+          }}
+          onBlur={(event) => {
+            event.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+          }}
+        />
       </div>
 
       <div>
@@ -82,31 +97,40 @@ export function LoginForm({
           type="password"
           autoComplete="current-password"
           placeholder="••••••••"
-          className="w-full rounded-xl border-[1.5px] border-white/10 bg-[#0d1117] px-4 py-2.5 text-sm text-[#f3f4f6] transition-all placeholder:text-[#6b7280] focus:border-[#b8253a] focus:outline-none focus:ring-2 focus:ring-[#b8253a]/20 disabled:opacity-60"
+          required
           disabled={!signInEnabled}
+          className="w-full rounded-xl px-4 py-2.5 text-sm transition-all placeholder:text-[#6b7280] focus:outline-none disabled:opacity-60"
+          style={{
+            background: "#0d1117",
+            border: "1.5px solid rgba(255,255,255,0.1)",
+            color: "#f3f4f6",
+          }}
+          onFocus={(event) => {
+            event.currentTarget.style.borderColor = "#b8253a";
+          }}
+          onBlur={(event) => {
+            event.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+          }}
         />
       </div>
 
       {state.status !== "idle" ? (
-        <div
+        <p
           role="status"
-          className={[
-            "rounded-lg border px-3 py-2 text-xs leading-5",
-            state.status === "error" ? "text-[#fca5a5]" : "text-[#93c5fd]",
-          ].join(" ")}
+          className="rounded-lg px-3 py-2 text-xs"
           style={{
+            color: state.status === "error" ? "#fca5a5" : "#93c5fd",
             background:
               state.status === "error"
                 ? "rgba(184,37,58,0.15)"
                 : "rgba(37,99,235,0.12)",
-            borderColor:
-              state.status === "error"
-                ? "rgba(184,37,58,0.3)"
-                : "rgba(37,99,235,0.24)",
+            border: state.status === "error"
+              ? "1px solid rgba(184,37,58,0.3)"
+              : "1px solid rgba(37,99,235,0.24)",
           }}
         >
           {state.message}
-        </div>
+        </p>
       ) : null}
 
       <SubmitButton signInEnabled={signInEnabled} />

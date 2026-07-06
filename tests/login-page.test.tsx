@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
+import { getAuthSessionState } from "@/services/auth-session";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/login",
@@ -80,6 +82,51 @@ describe("login page", () => {
     expect(html).not.toContain("/admin");
     expect(html).not.toContain('class="sr-only"');
     expect(html).not.toContain('value="password"');
+  });
+
+  it("preserves the signed-in continuation flow inside the login shell", async () => {
+    vi.mocked(createLocalSupabaseServerClient).mockResolvedValueOnce({
+      client: {} as Awaited<ReturnType<typeof createLocalSupabaseServerClient>>["client"],
+      config: {
+        enabled: true,
+        mode: "local_supabase",
+        isLocalOnly: true,
+        isHostedStaging: false,
+        environment: "local",
+        url: "http://127.0.0.1:54321",
+        anonKey: "test-anon-key",
+        reason: "Local Supabase Auth is active.",
+      },
+    });
+
+    vi.mocked(getAuthSessionState).mockResolvedValueOnce({
+      status: "signed_in",
+      isLocalOnly: true,
+      isHostedStaging: false,
+      environment: "local",
+      message: "Local Supabase Auth session is active.",
+      user: {
+        id: "user-1",
+        email: "member.a@mymedlife.test",
+        displayName: "Test Member",
+      },
+    });
+
+    const { default: LoginPage } = await import("@/app/login/page");
+    const html = renderToStaticMarkup(
+      await LoginPage({
+        searchParams: Promise.resolve({ redirectTo: "/leader?view=overview" }),
+      }),
+    );
+
+    expect(html).toContain("myMEDLIFE");
+    expect(html).toContain("Sign in to your workspace");
+    expect(html).toContain("Current session");
+    expect(html).toContain("Test Member");
+    expect(html).toContain("member.a@mymedlife.test");
+    expect(html).toContain("Continue into myMEDLIFE");
+    expect(html).toContain('href="/leader?view=overview"');
+    expect(html).toContain("Sign out");
   });
 
   it("keeps a nested workspace redirect such as SLT Prep intact", async () => {
