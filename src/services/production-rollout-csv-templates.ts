@@ -119,6 +119,7 @@ export function getProductionRolloutCsvTemplateReadme(outputDirectoryName = "rol
     "pnpm rollout:owner-status --owner-dir rollout-owner-packets --out production-rollout-owner-packet-status.md",
     "pnpm rollout:owner-requests --owner-dir rollout-owner-packets --out production-rollout-owner-requests",
     "pnpm rollout:owner-email-drafts --owner-dir rollout-owner-packets --out production-rollout-owner-email-drafts",
+    "pnpm rollout:owner-send-tracker --owner-dir rollout-owner-packets --out production-rollout-owner-send-tracker",
     `pnpm rollout:assemble-owner-packets --owner-dir rollout-owner-packets --out ${outputDirectoryName}`,
     "```",
     "",

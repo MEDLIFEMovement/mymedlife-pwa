@@ -38,6 +38,7 @@ The generated folder contains:
 - blank owner-specific CSV folders
 - owner request docs with the current blockers
 - copy/paste owner email drafts
+- a manual send/return tracker
 - a status report showing how many owners are ready
 
 The email drafts are manual text only. They do not send email, create users,
@@ -49,6 +50,7 @@ email draft. After owner CSVs come back, rerun:
 pnpm rollout:owner-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-packet-status.md
 pnpm rollout:owner-requests --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-requests
 pnpm rollout:owner-email-drafts --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-email-drafts
+pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker
 pnpm rollout:current-status --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-current-status.md
 ```
 
