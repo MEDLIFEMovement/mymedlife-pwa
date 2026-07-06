@@ -403,6 +403,13 @@ function UsersPage() {
   return (
     <>
       <div className="p-6 space-y-4">
+        <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+          <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[12px] text-amber-300/80 leading-relaxed">
+            This user directory is preview-only. Review seeded access, role posture, and blocked actions here, then use the audited admin workflow for any real user, role, or invite changes.
+          </p>
+        </div>
+
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
@@ -473,6 +480,13 @@ function UsersPage() {
       <Drawer open={!!selected} onClose={() => setSelected(null)} title="User Detail">
         {selected && (
           <div className="space-y-4">
+            <div className="flex items-start gap-2 bg-sky-500/8 border border-sky-500/15 rounded p-3">
+              <AlertCircle size={13} className="text-sky-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-sky-300/80 leading-relaxed">
+                Directory details, module access, and activity history shown here are preview/readback data. They do not confirm live production mutations from this shell.
+              </p>
+            </div>
+
             <div className="flex items-center gap-3">
               <div className="size-11 rounded-full bg-sky-500/15 border border-sky-500/15 flex items-center justify-center flex-shrink-0">
                 <span className="text-sky-400 font-bold text-[13px]">
@@ -553,6 +567,13 @@ function ChaptersPage() {
   return (
     <>
       <div className="p-6 space-y-4">
+        <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+          <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[12px] text-amber-300/80 leading-relaxed">
+            This chapter directory is preview-only. Review seeded chapter posture, readback metrics, and blocked admin actions here, then use the audited workflow for any real chapter or owner changes.
+          </p>
+        </div>
+
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
@@ -601,6 +622,13 @@ function ChaptersPage() {
       <Drawer open={!!selected} onClose={() => setSelected(null)} title="Chapter Detail">
         {selected && (
           <div className="space-y-4">
+            <div className="flex items-start gap-2 bg-sky-500/8 border border-sky-500/15 rounded p-3">
+              <AlertCircle size={13} className="text-sky-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-sky-300/80 leading-relaxed">
+                Chapter metrics, module access, and risk posture shown here are preview/readback data. They do not represent an approved live admin change path from this shell.
+              </p>
+            </div>
+
             <div>
               <h2 className="text-white font-bold text-[17px]">{selected.name}</h2>
               <p className="text-slate-500 text-[12px] mt-0.5">{selected.school} · {selected.region}</p>

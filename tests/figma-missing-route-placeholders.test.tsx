@@ -127,6 +127,21 @@ describe("Figma missing route placeholders", () => {
     expect(source).toContain("Use the audited admin workflow after approval for real environment or alert changes.");
   });
 
+  it("keeps admin users and chapters detail surfaces visible without implying live mutation paths", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const usersHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="users" />);
+    expect(usersHtml).toContain("This user directory is preview-only.");
+    expect(source).toContain("Directory details, module access, and activity history shown here are preview/readback data.");
+    expect(source).toContain("Invite emails are blocked until external-send approval is complete");
+
+    const chaptersHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="chapters" />);
+    expect(chaptersHtml).toContain("This chapter directory is preview-only.");
+    expect(source).toContain("Chapter metrics, module access, and risk posture shown here are preview/readback data.");
+    expect(source).toContain("Chapter event drill-in is handled by the staff events view");
+  });
+
   it("parks SLT Prep through /slt-prep during the events and points launch lane", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
