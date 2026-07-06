@@ -1952,8 +1952,11 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
 
 const NAV_ITEMS: { key: Screen; label: string; icon: ReactNode }[] = [
   { key:"chapters", label:"Chapters", icon:<LayoutDashboard className="w-3.5 h-3.5" /> },
-  { key:"events", label:"Events", icon:<Calendar className="w-3.5 h-3.5" /> },
-  { key:"reports", label:"Leaderboard", icon:<BarChart3 className="w-3.5 h-3.5" /> },
+  { key:"campaigns", label:"Campaigns", icon:<Megaphone className="w-3.5 h-3.5" /> },
+  { key:"ugc", label:"Proof / UGC", icon:<Film className="w-3.5 h-3.5" /> },
+  { key:"best-practices", label:"Best Practices", icon:<BookOpen className="w-3.5 h-3.5" /> },
+  { key:"sops", label:"Campaign SOPs", icon:<GitBranch className="w-3.5 h-3.5" /> },
+  { key:"admin", label:"Admin", icon:<Settings className="w-3.5 h-3.5" /> },
 ];
 
 const SCREEN_TITLES: Record<Screen, string> = {

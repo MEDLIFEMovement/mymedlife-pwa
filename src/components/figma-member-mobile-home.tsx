@@ -246,6 +246,7 @@ function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen)
     { id: "home",    label: "Home",    Icon: Home },
     { id: "events",  label: "Events",  Icon: CalendarDays },
     { id: "points",  label: "Points",  Icon: Trophy },
+    { id: "stories", label: "Stories", Icon: Sparkles },
     { id: "profile", label: "Profile", Icon: User },
   ];
   const EVENT_SCREENS: Screen[] = ["events", "event-detail", "rsvp-confirm", "checkin"];
