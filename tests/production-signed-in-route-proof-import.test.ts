@@ -130,9 +130,11 @@ describe("production signed-in route proof import", () => {
     for (const note of [
       "Verified with preview-cookie role switch",
       "Local sandbox proof only",
+      "Copied from sandbox role exercise checklist",
       "Used localhost browser session",
       "Checked in staging.mymedlife.org",
       "Figma seed rehearsal row",
+      "figma-sandbox-role-exercise output",
       "SOP sample evidence",
       "auth_profile_missing state confirmed",
     ]) {

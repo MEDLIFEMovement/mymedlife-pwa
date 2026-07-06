@@ -37,12 +37,48 @@ Local sandbox reviewers can now generate:
 - `.codex-artifacts/figma-seed/figma-shell-test-logins.md`
 - `.codex-artifacts/figma-seed/figma-signed-in-role-proof.json`
 - `.codex-artifacts/figma-seed/figma-signed-in-role-proof.md`
+- `.codex-artifacts/figma-seed/figma-sandbox-role-exercise.json`
+- `.codex-artifacts/figma-seed/figma-sandbox-role-exercise.md`
 
 Use `pnpm figma-seed:build` for the seed manifest/login map and
-`pnpm figma-seed:proof` for the route-logic proof report. The proof report stays
-local/sandbox-only, confirms member/leader/staff/admin landing routes, and
-keeps `/app/slt-prep` as a sandbox review alias instead of signed-in production
-evidence.
+`pnpm figma-seed:proof` for the route-logic proof report. Use
+`pnpm figma-seed:exercise` for the local-only shell exercise checklist that
+maps Test logins to launch-lane review routes. These reports stay
+local/sandbox-only, confirm member/leader/staff/admin landing routes, keep
+`/app/slt-prep` as a sandbox review alias instead of signed-in production
+evidence, and explicitly say they cannot satisfy production signed-in proof or
+invite-gate proof.
+
+Recommended local-only sandbox flow:
+
+1. Build the Figma seed artifacts:
+
+   ```bash
+   pnpm figma-seed:build
+   ```
+
+2. Build the route-logic proof report:
+
+   ```bash
+   pnpm figma-seed:proof
+   ```
+
+3. Build the role exercise checklist:
+
+   ```bash
+   pnpm figma-seed:exercise
+   ```
+
+4. If a real local browser session is needed, apply the local seed only:
+
+   ```bash
+   MYMEDLIFE_TEST_PRODUCTION_CONFIRM=CREATE_TEST_DATA pnpm test-production:seed -- --local
+   ```
+
+5. Use only the generated `figma-sandbox-role-exercise.md` and
+   `figma-signed-in-role-proof.md` artifacts for sandbox QA. Do not copy those
+   rows, screenshots, or notes into `signed-in-route-proof.csv`, the rollout
+   packet, or the invite gate.
 
 ## Proposed Model Locations
 
