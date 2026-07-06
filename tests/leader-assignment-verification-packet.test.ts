@@ -72,6 +72,7 @@ describe("leader assignment verification packet", () => {
   it("blocks local Supabase data until HQ decision readback exists", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const packet = getLeaderAssignmentPacket(actor, withSupabaseBase(), {
+      ...localSupabaseEnv(),
       MYMEDLIFE_AUTH_MODE: "local_supabase",
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
@@ -90,6 +91,7 @@ describe("leader assignment verification packet", () => {
   it("marks assignment creation ready only with HQ readback, local auth, and flags", () => {
     const actor = getMockLocalActorContext("admin@mymedlife.test");
     const packet = getLeaderAssignmentPacket(actor, withHqDecisionReadback(), {
+      ...localSupabaseEnv(),
       MYMEDLIFE_AUTH_MODE: "local_supabase",
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
@@ -122,6 +124,7 @@ describe("leader assignment verification packet", () => {
         makeAssignment(defaultLeaderAssignmentInput.title),
       ],
     }), {
+      ...localSupabaseEnv(),
       MYMEDLIFE_AUTH_MODE: "local_supabase",
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
@@ -137,6 +140,7 @@ describe("leader assignment verification packet", () => {
   it("shows observed assignment readback after the local records exist", () => {
     const actor = getMockLocalActorContext("super.admin@mymedlife.test");
     const packet = getLeaderAssignmentPacket(actor, withAssignmentReadback(), {
+      ...localSupabaseEnv(),
       MYMEDLIFE_AUTH_MODE: "local_supabase",
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
@@ -406,5 +410,12 @@ function makeAssignment(title: string): Assignment {
       "Choose one student owner, confirm the event goal, and tell them what proof/testimonial should be collected afterward.",
     points: 15,
     kpi: "Rush Month event owner assigned",
+  };
+}
+
+function localSupabaseEnv() {
+  return {
+    NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: "local-anon-key",
   };
 }

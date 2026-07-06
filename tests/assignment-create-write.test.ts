@@ -23,6 +23,7 @@ describe("assignment-create write readiness", () => {
   it("requires local writes and the assignment-create approval flag", () => {
     expect(
       getAssignmentCreateWriteConfig({
+        ...localSupabaseEnv(),
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       }),
     ).toMatchObject({
@@ -33,6 +34,7 @@ describe("assignment-create write readiness", () => {
 
     expect(
       getAssignmentCreateWriteConfig({
+        ...localSupabaseEnv(),
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
       }),
@@ -43,6 +45,38 @@ describe("assignment-create write readiness", () => {
     });
   });
 
+  it("keeps hosted staging and production assignment creation disabled even when flags are flipped", () => {
+    expect(
+      getAssignmentCreateWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "staging_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://rceupryepjgkdeqgxzrc.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "staging-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://staging.mymedlife.org",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      reason:
+        "Hosted staging Supabase Auth stays disabled until write and upload flags are off. Turn off: MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES, MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE.",
+    });
+
+    expect(
+      getAssignmentCreateWriteConfig({
+        MYMEDLIFE_AUTH_MODE: "production_supabase",
+        NEXT_PUBLIC_SUPABASE_URL: "https://fnlhontvvprwgooevzdl.supabase.co",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "production-publishable-key",
+        NEXT_PUBLIC_SITE_URL: "https://www.mymedlife.org",
+        MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
+        MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
+      }),
+    ).toMatchObject({
+      enabled: false,
+      reason:
+        "Hosted production Supabase Auth stays disabled until all write and upload flags are off. Turn off: MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES, MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE.",
+    });
+  });
+
   it("keeps the write locked without auth-derived actor context", () => {
     const actor = getMockLocalActorContext("leader.a@mymedlife.test");
     const readiness = getAssignmentCreateWriteReadiness(
@@ -50,6 +84,7 @@ describe("assignment-create write readiness", () => {
       makeAssignmentInput(),
       makeContext(),
       {
+        ...localSupabaseEnv(),
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
       },
@@ -77,6 +112,7 @@ describe("assignment-create write readiness", () => {
       makeAssignmentInput(),
       makeContext(),
       {
+        ...localSupabaseEnv(),
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
       },
@@ -89,6 +125,7 @@ describe("assignment-create write readiness", () => {
 
   it("blocks Admin and DS Admin from assignment creation ownership", () => {
     const env = {
+      ...localSupabaseEnv(),
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
     };
@@ -122,6 +159,7 @@ describe("assignment-create write readiness", () => {
       "signed_in",
     );
     const env = {
+      ...localSupabaseEnv(),
       MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
       MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
     };
@@ -179,6 +217,7 @@ describe("assignment-create write readiness", () => {
         existingAssignments: [makeExistingAssignment("Assign a tabling owner")],
       },
       {
+        ...localSupabaseEnv(),
         MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES: "true",
         MYMEDLIFE_ENABLE_ASSIGNMENT_CREATE_WRITE: "true",
       },
@@ -276,6 +315,14 @@ function makeAssignmentInput() {
     points: 15,
     kpi: "rush_month_event_owner_assigned",
   } as const;
+}
+
+function localSupabaseEnv() {
+  return {
+    MYMEDLIFE_AUTH_MODE: "local_supabase",
+    NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: "local-anon-key",
+  };
 }
 
 function makeContext() {

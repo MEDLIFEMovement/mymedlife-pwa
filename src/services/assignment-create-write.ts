@@ -4,6 +4,7 @@ import {
   type ChapterAssignmentInput,
 } from "@/services/local-action-contracts";
 import type { LocalActorContext } from "@/services/local-actor-context";
+import { getSupabaseAuthConfig } from "@/services/supabase-auth-config";
 import { isUuid } from "@/services/action-start-write";
 import { isActorAllowedForPlannedWrite } from "@/services/write-plan-matrix";
 import type { Assignment, ChapterRole } from "@/shared/types/domain";
@@ -21,7 +22,7 @@ export type AssignmentCreateWriteConfig =
     }
   | {
       enabled: false;
-      isLocalOnly: true;
+      isLocalOnly: boolean;
       externalWritesEnabled: false;
       remindersEnabled: false;
       reason: string;
@@ -96,6 +97,40 @@ export type AssignmentCreateReadbackState = {
 export function getAssignmentCreateWriteConfig(
   env: EnvSource = process.env,
 ): AssignmentCreateWriteConfig {
+  const authConfig = getSupabaseAuthConfig(env);
+
+  if (!authConfig.enabled) {
+    return {
+      enabled: false,
+      isLocalOnly: authConfig.isLocalOnly,
+      externalWritesEnabled: false,
+      remindersEnabled: false,
+      reason: authConfig.reason,
+    };
+  }
+
+  if (authConfig.isHostedStaging) {
+    return {
+      enabled: false,
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      remindersEnabled: false,
+      reason:
+        "Hosted staging assignment creation remains disabled until a dedicated staging browser-write gate is explicitly approved.",
+    };
+  }
+
+  if (!authConfig.isLocalOnly) {
+    return {
+      enabled: false,
+      isLocalOnly: false,
+      externalWritesEnabled: false,
+      remindersEnabled: false,
+      reason:
+        "Hosted production assignment creation remains disabled until a future approved production gate exists.",
+    };
+  }
+
   if (env.MYMEDLIFE_ALLOW_LOCAL_SUPABASE_WRITES !== "true") {
     return {
       enabled: false,
