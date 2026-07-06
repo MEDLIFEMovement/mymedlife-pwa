@@ -42,18 +42,22 @@ describe("member Figma route pages", () => {
     expect(html).toContain("Assigned Actions by Role");
     expect(html).toContain("What Good Looks Like");
     expect(html).toContain('href="/app/events"');
+    expect(html).toContain('href="/app/stories"');
+    expect(html).toContain('href="/proof-library/upload"');
     expect(html).toContain('href="/rush-month/actions"');
   });
 
-  it("parks the old proof library route inside the member points launch lane", async () => {
+  it("renders the member proof library surface instead of parking it into points", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(getSignedInMember());
 
     const { default: ProofLibraryPage } = await import("@/app/proof-library/page");
+    const html = renderToStaticMarkup(await ProofLibraryPage());
 
-    await expect(ProofLibraryPage()).rejects.toThrow(
-      "NEXT_REDIRECT:/app/points?source=points",
-    );
+    expect(html).toContain("Proof library");
+    expect(html).toContain("What is happening with my proof?");
+    expect(html).toContain("Open member stories");
+    expect(html).toContain('href="/proof-library/upload"');
   });
 });

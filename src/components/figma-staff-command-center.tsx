@@ -1599,10 +1599,16 @@ function ProofUGCQueue() {
               <div>
                 <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Coach Note</div>
                 <textarea
-                  placeholder="Add context or caption for this story…"
-                  className="w-full bg-muted/50 rounded-lg p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary/30 border border-border"
+                  readOnly
+                  title="Caption and coach-note drafting stays local-only in this preview"
+                  value="Caption and coach-note drafting stays local-only in this preview. No moderation note save runs from this panel."
+                  className="w-full bg-muted/50 rounded-lg p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none border border-border"
                   rows={3}
                 />
+                <p className="mt-1.5 text-[10px] leading-relaxed text-amber-700">
+                  Context drafting stays visible for review, but no coach note, moderation note,
+                  or caption save runs from this queue.
+                </p>
               </div>
             </div>
           </div>
