@@ -987,11 +987,30 @@ const LEDGER_ROWS = [
 
 // ─── Toggle helper ─────────────────────────────────────────────────────────────
 
-function AdminToggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function AdminToggle({
+  checked,
+  onChange,
+  disabled = false,
+  title,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+  title?: string;
+}) {
   return (
     <button
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-4.5 w-8 items-center rounded-full transition-colors flex-shrink-0 ${checked ? "bg-emerald-500" : "bg-slate-700"}`}
+      type="button"
+      disabled={disabled}
+      title={title}
+      onClick={() => {
+        if (!disabled) {
+          onChange(!checked);
+        }
+      }}
+      className={`relative inline-flex h-4.5 w-8 items-center rounded-full transition-colors flex-shrink-0 ${
+        checked ? "bg-emerald-500" : "bg-slate-700"
+      } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
       style={{ width: 32, height: 18 }}
     >
       <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform shadow-sm ${checked ? "translate-x-4" : "translate-x-1"}`} />
@@ -1032,6 +1051,7 @@ function PointsPage() {
   ] as const;
 
   const filteredLedger = LEDGER_ROWS.filter(r => ledgerFilter === "all" || r.status === ledgerFilter);
+  const blockedPointsControlTitle = "Points policy edits are blocked in this preview until the audited workflow is approved";
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -1050,7 +1070,7 @@ function PointsPage() {
         ))}
         <div className="ml-auto flex items-center gap-2 py-2.5">
           <span className="text-[11px] text-slate-600">Points System</span>
-          <AdminToggle checked={globalEnabled} onChange={setGlobalEnabled} />
+          <AdminToggle checked={globalEnabled} onChange={setGlobalEnabled} disabled title={blockedPointsControlTitle} />
           <Badge status={globalEnabled ? "enabled" : "disabled"} />
         </div>
       </div>
@@ -1060,6 +1080,12 @@ function PointsPage() {
         {/* ── Overview ─────────────────────────────────────────────────────── */}
         {tab === "overview" && (
           <div className="p-6 space-y-5">
+            <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg px-4 py-3">
+              <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-amber-300/80 leading-relaxed">
+                Points policy editing is blocked in this preview. Review the defaults and ledger here, then use the audited workflow after approval for any real points-rule changes.
+              </p>
+            </div>
             {/* Summary cards */}
             <div className="grid grid-cols-4 gap-3">
               {[
@@ -1157,7 +1183,7 @@ function PointsPage() {
                   <span className="text-[12px] font-semibold text-slate-300">Default Points by Role</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-slate-600">Points Enabled Globally</span>
-                    <AdminToggle checked={globalEnabled} onChange={setGlobalEnabled} />
+                    <AdminToggle checked={globalEnabled} onChange={setGlobalEnabled} disabled title={blockedPointsControlTitle} />
                   </div>
                 </div>
                 <table className="w-full text-[13px]">
@@ -1181,6 +1207,8 @@ function PointsPage() {
                             <AdminToggle
                               checked={r.enabled && globalEnabled}
                               onChange={v => updateRole(idx, "enabled", v)}
+                              disabled
+                              title={blockedPointsControlTitle}
                             />
                           </div>
                         </td>
@@ -1190,8 +1218,9 @@ function PointsPage() {
                               type="number"
                               value={r.points}
                               onChange={e => updateRole(idx, "points", Number(e.target.value))}
-                              disabled={!globalEnabled}
+                              disabled
                               className="w-20 text-right bg-[#0d1117] border border-white/[0.08] rounded px-2 py-1 text-[12px] text-slate-200 font-mono focus:outline-none focus:border-sky-500/40 disabled:opacity-30"
+                              title={blockedPointsControlTitle}
                             />
                           ) : (
                             <span className="text-[12px] text-slate-700 font-mono">—</span>
@@ -1203,7 +1232,9 @@ function PointsPage() {
                               type="number"
                               value={r.capPerStep}
                               onChange={e => updateRole(idx, "capPerStep", Number(e.target.value))}
+                              disabled
                               className="w-16 text-center bg-[#0d1117] border border-white/[0.08] rounded px-2 py-1 text-[12px] text-slate-200 font-mono focus:outline-none focus:border-sky-500/40"
+                              title={blockedPointsControlTitle}
                             />
                           ) : (
                             <span className="text-[12px] text-slate-700 font-mono">—</span>
@@ -1214,6 +1245,8 @@ function PointsPage() {
                             <AdminToggle
                               checked={r.smileSync && smileSync}
                               onChange={v => updateRole(idx, "smileSync", v)}
+                              disabled
+                              title={blockedPointsControlTitle}
                             />
                           </div>
                         </td>
@@ -1243,7 +1276,7 @@ function PointsPage() {
                   ].map(({ label, state, set }) => (
                     <div key={label} className="flex items-center justify-between">
                       <span className="text-[12px] text-slate-400">{label}</span>
-                      <AdminToggle checked={state} onChange={set} />
+                      <AdminToggle checked={state} onChange={set} disabled title={blockedPointsControlTitle} />
                     </div>
                   ))}
                 </div>
@@ -1257,6 +1290,8 @@ function PointsPage() {
                     <input
                       type="number"
                       defaultValue={25}
+                      disabled
+                      title={blockedPointsControlTitle}
                       className="w-full bg-[#0d1117] border border-white/[0.08] rounded px-3 py-2 text-[13px] text-slate-200 font-mono focus:outline-none focus:border-sky-500/40"
                     />
                   </div>
@@ -1374,6 +1409,8 @@ function PointsPage() {
                       type="number"
                       defaultValue={defaultVal || undefined}
                       placeholder={placeholder ?? String(defaultVal)}
+                      disabled
+                      title={blockedPointsControlTitle}
                       className="w-full bg-[#0d1117] border border-white/[0.08] rounded px-3 py-2 text-[13px] text-slate-200 font-mono focus:outline-none focus:border-sky-500/40 placeholder-slate-700"
                     />
                   </div>
@@ -1399,7 +1436,7 @@ function PointsPage() {
                       <div className="text-[13px] text-slate-300 font-medium">{label}</div>
                       <div className="text-[11px] text-slate-600 mt-0.5 leading-relaxed">{desc}</div>
                     </div>
-                    <AdminToggle checked={state} onChange={set} />
+                    <AdminToggle checked={state} onChange={set} disabled title={blockedPointsControlTitle} />
                   </div>
                 ))}
               </div>
