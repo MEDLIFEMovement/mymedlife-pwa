@@ -342,7 +342,11 @@ describe("production rollout current status", () => {
     });
 
     expect(status.readyForFinalInviteGateReview).toBe(true);
-    expect(status.nextCommands[0]).toContain("pnpm production:invite-gate");
+    expect(status.nextCommands).toContain(
+      "pnpm production:invite-batches --packet production-rollout-packet.json --out production-invite-batches.md",
+    );
+    expect(status.nextCommands[2]).toContain("pnpm production:invite-gate");
+    expect(status.nextCommands[2]).toContain("--out production-invite-gate.md");
   });
 });
 

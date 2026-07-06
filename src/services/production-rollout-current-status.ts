@@ -283,14 +283,7 @@ function getNextCommands(
   currentBlocker: string | null,
 ) {
   if (!currentBlocker) {
-    return [
-      [
-        "pnpm production:invite-gate",
-        `  --packet ${input.paths.packetPath}`,
-        `  --live-data-counts ${input.paths.liveDataCountsPath}`,
-        `  --public-url ${input.paths.publicUrl}`,
-      ].join(" \\\n"),
-    ];
+    return getFinalInviteGateCommands(input);
   }
 
   if (!input.ownerDirectoryExists) {
@@ -397,13 +390,19 @@ function getNextCommands(
     ];
   }
 
+  return getFinalInviteGateCommands(input);
+}
+
+function getFinalInviteGateCommands(input: ProductionRolloutCurrentStatusInput) {
   return [
     `pnpm production:data-counts --out ${input.paths.liveDataCountsPath}`,
+    `pnpm production:invite-batches --packet ${input.paths.packetPath} --out production-invite-batches.md`,
     [
       "pnpm production:invite-gate",
       `  --packet ${input.paths.packetPath}`,
       `  --live-data-counts ${input.paths.liveDataCountsPath}`,
       `  --public-url ${input.paths.publicUrl}`,
+      "  --out production-invite-gate.md",
     ].join(" \\\n"),
   ];
 }

@@ -22,6 +22,7 @@ describe("production live-data proof request", () => {
     expect(markdown).toContain(
       "pnpm production:invite-gate \\\n  --packet production-rollout-packet.json",
     );
+    expect(markdown).toContain("--out production-invite-gate.md");
     expect(markdown).toContain(
       "confirmation that no names, emails, passwords, tokens, database URLs, or row-level exports were included",
     );
