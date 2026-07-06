@@ -308,6 +308,12 @@ still align with active signed-in launch-lane metadata and that preview,
 sandbox, Test/Figma, SOP/sample, and staging markers still remain blocked from
 production proof imports.
 
+If reviewers want one compact index that explains which signed-in proof
+preflight command to run, when to use sandbox-only reports, and what still
+cannot count as production proof, use:
+
+`docs/production-signed-in-proof-preflight.md`
+
 ## CSV Fields
 
 ### chapters.csv
