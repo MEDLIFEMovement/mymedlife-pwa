@@ -55,6 +55,27 @@ const workspaceAliases: Record<string, SignedInRouteWorkspace> = {
   super_admin: "admin_backend",
 };
 
+const blockedProductionProofSourceMarkers = [
+  "preview cookie",
+  "preview-cookie",
+  "local preview",
+  "local sandbox",
+  "sandbox review",
+  "figma",
+  "figma_seed",
+  "test data",
+  "test user",
+  "sop sample",
+  "sample data",
+  "localhost",
+  "127.0.0.1",
+  ".vercel.app",
+  "staging.mymedlife.org",
+  "staging proof",
+  "auth_profile_missing",
+  "profile setup required",
+] as const;
+
 export function buildProductionSignedInRouteProofImport(
   proofCsv: string,
 ): ProductionSignedInRouteProofImportResult {
@@ -313,37 +334,25 @@ function validateProductionProofSource(
   header: string,
   value: string,
 ) {
-  const normalizedValue = value.toLowerCase();
-  const blockedMarkers = [
-    "preview cookie",
-    "preview-cookie",
-    "local preview",
-    "local sandbox",
-    "sandbox review",
-    "figma",
-    "figma_seed",
-    "test data",
-    "test user",
-    "sop sample",
-    "sample data",
-    "localhost",
-    "127.0.0.1",
-    ".vercel.app",
-    "staging.mymedlife.org",
-    "staging proof",
-    "auth_profile_missing",
-    "profile setup required",
-  ];
-
-  const matchedMarker = blockedMarkers.find((marker) =>
-    normalizedValue.includes(marker),
-  );
+  const matchedMarker = getBlockedProductionSignedInProofSourceMarker(value);
 
   if (matchedMarker) {
     throw new Error(
       `Signed-in proof CSV row ${rowNumber} column ${header} references ${matchedMarker}, which is local, preview, staging, sample, or setup-only evidence and cannot count as approved production signed-in proof.`,
     );
   }
+}
+
+export function getBlockedProductionSignedInProofSourceMarker(
+  value: string | undefined | null,
+): string | null {
+  const normalizedValue = value?.toLowerCase() ?? "";
+
+  return (
+    blockedProductionProofSourceMarkers.find((marker) =>
+      normalizedValue.includes(marker),
+    ) ?? null
+  );
 }
 
 function parseCsvRows(csv: string): string[][] {

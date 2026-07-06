@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatProductionSignedInRouteProofGapReport,
   formatProductionSignedInRouteProofReadiness,
+  getProductionSignedInRouteProofGapReport,
   getProductionSignedInRouteProofReadiness,
 } from "@/services/production-signed-in-route-proof";
 import type { ProductionRolloutBootstrapPacket } from "@/services/production-rollout-bootstrap";
@@ -141,6 +143,175 @@ describe("production signed-in route proof", () => {
     );
     expect(formatProductionSignedInRouteProofReadiness(readiness)).toContain(
       "Pilot chapters with member and leader proof: 1/2",
+    );
+  });
+
+  it("reports plain-English gaps by required proof class", () => {
+    const packet = createPacket();
+    packet.signedInRouteProof = [
+      {
+        email: "member@medlifemovement.org",
+        workspace: "student_app",
+        expectedPath: "/app",
+        observedPath: "/app",
+        status: "passed",
+        checkedAt: "2026-07-05T15:00:00Z",
+      },
+      {
+        email: "leader@medlifemovement.org",
+        workspace: "leader_command_center",
+        expectedPath: "/leader?view=overview",
+        observedPath: "/app",
+        status: "passed",
+        checkedAt: "2026-07-05T15:01:00Z",
+      },
+      {
+        email: "coach@medlifemovement.org",
+        workspace: "staff_command_center",
+        expectedPath: "/staff?view=chapters",
+        observedPath: "/staff?view=chapters",
+        status: "passed",
+        checkedAt: "2026-07-05T15:02:00Z",
+        notes: "Verified with preview-cookie role switch",
+      },
+    ];
+
+    const report = getProductionSignedInRouteProofGapReport(packet);
+
+    expect(report.ready).toBe(false);
+    expect(report.gaps).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "student_app",
+          status: "present",
+        }),
+        expect.objectContaining({
+          key: "leader_command_center",
+          status: "wrong_path",
+        }),
+        expect.objectContaining({
+          key: "staff_command_center",
+          status: "unsafe_source",
+        }),
+        expect.objectContaining({
+          key: "admin_backend",
+          status: "missing",
+        }),
+      ]),
+    );
+    expect(formatProductionSignedInRouteProofGapReport(report)).toContain(
+      "Production signed-in route proof gaps: OPEN",
+    );
+    expect(formatProductionSignedInRouteProofGapReport(report)).toContain(
+      "Preview-cookie, local sandbox, Test/Figma/SOP sample, staging, fake screenshots, and missing-profile/setup-only sessions do not count as production signed-in proof.",
+    );
+  });
+
+  it("reports clear when every required production proof class is present", () => {
+    const report = getProductionSignedInRouteProofGapReport(createPacket());
+
+    expect(report.ready).toBe(true);
+    expect(report.gaps).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "student_app",
+          status: "present",
+        }),
+        expect.objectContaining({
+          key: "leader_command_center",
+          status: "present",
+        }),
+        expect.objectContaining({
+          key: "staff_command_center",
+          status: "present",
+        }),
+        expect.objectContaining({
+          key: "admin_backend",
+          status: "present",
+        }),
+      ]),
+    );
+    expect(formatProductionSignedInRouteProofGapReport(report)).toContain(
+      "Production signed-in route proof gaps: CLEAR",
+    );
+  });
+
+  it("reports not-enough-evidence and packet-missing cases honestly", () => {
+    const packet = createPacket();
+    packet.signedInRouteProof = [
+      {
+        email: "member@medlifemovement.org",
+        workspace: "student_app",
+        expectedPath: "/app",
+        observedPath: "/app",
+        status: "passed",
+        checkedAt: "",
+      },
+      {
+        email: "leader@medlifemovement.org",
+        workspace: "leader_command_center",
+        expectedPath: "/leader?view=overview",
+        observedPath: "/leader?view=overview",
+        status: "failed",
+        checkedAt: "2026-07-05T15:01:00Z",
+      },
+      {
+        email: "coach@medlifemovement.org",
+        workspace: "staff_command_center",
+        expectedPath: "/staff?view=chapters",
+        observedPath: "/staff?view=chapters",
+        status: "passed",
+        checkedAt: "2026-07-05T15:02:00Z",
+      },
+      {
+        email: "member@medlifemovement.org",
+        workspace: "admin_backend",
+        expectedPath: "/admin",
+        observedPath: "/admin",
+        status: "passed",
+        checkedAt: "2026-07-05T15:03:00Z",
+      },
+    ];
+
+    const report = getProductionSignedInRouteProofGapReport(packet);
+
+    expect(report.ready).toBe(false);
+    expect(report.gaps).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "student_app",
+          status: "not_enough_evidence",
+          detail: "member@medlifemovement.org: checkedAt is missing",
+        }),
+        expect.objectContaining({
+          key: "leader_command_center",
+          status: "not_enough_evidence",
+          detail: "leader@medlifemovement.org: status is failed",
+        }),
+        expect.objectContaining({
+          key: "staff_command_center",
+          status: "present",
+        }),
+        expect.objectContaining({
+          key: "admin_backend",
+          status: "not_enough_evidence",
+          detail:
+            "member@medlifemovement.org: email lacks active ds_admin or super_admin staff role",
+        }),
+      ]),
+    );
+
+    const missingPacketReport = getProductionSignedInRouteProofGapReport(null);
+
+    expect(missingPacketReport.ready).toBe(false);
+    expect(missingPacketReport.gaps).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          key: "student_app",
+          status: "missing",
+          detail: "packet was not provided",
+        }),
+      ]),
     );
   });
 
