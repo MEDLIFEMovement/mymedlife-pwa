@@ -1,3 +1,8 @@
+import {
+  getLeaderCommandCenterViewForScreen,
+  resolveLeaderCommandCenterScreen,
+} from "@/services/leader-command-center-routing";
+
 export type LeaderLaunchLaneCoreView =
   | "overview"
   | "events"
@@ -72,10 +77,17 @@ export function resolveLeaderLaunchLaneView(
 export function getLeaderLaunchLaneCanonicalHref(
   searchParams: Record<string, string | undefined> = {},
 ): string | null {
-  const resolution = resolveLeaderLaunchLaneView(searchParams.view);
-  const canonicalView = getLeaderLaunchLaneCanonicalView(resolution.coreView);
+  const requestedView = normalizeRequestedView(searchParams.view);
 
-  if (resolution.requestedView === null || resolution.requestedView === canonicalView) {
+  if (requestedView === null) {
+    return null;
+  }
+
+  const normalizedView = requestedView.toLowerCase().replace(/[\s-]+/g, "_");
+  const resolvedScreen = resolveLeaderCommandCenterScreen(normalizedView);
+  const canonicalView = getLeaderCommandCenterViewForScreen(resolvedScreen);
+
+  if (normalizedView === canonicalView) {
     return null;
   }
 
@@ -100,17 +112,6 @@ function createResolution(
 function normalizeRequestedView(value?: string | null) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
-}
-
-function getLeaderLaunchLaneCanonicalView(coreView: LeaderLaunchLaneCoreView) {
-  switch (coreView) {
-    case "overview":
-      return "overview";
-    case "events":
-      return "events";
-    case "leaderboard":
-      return "leaderboard";
-  }
 }
 
 function withQuery(baseHref: string, query: Record<string, string | undefined>) {

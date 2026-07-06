@@ -143,7 +143,19 @@ test.describe("myMEDLIFE launch route smoke", () => {
     const menuItems = [
       { label: "Chapter Home", view: "overview", heading: /Chapter Metrics/ },
       { label: "Chapter Leaderboard", view: "leaderboard", heading: "Chapter Leaderboard" },
+      { label: "Feed Analytics", view: "feed_analytics", heading: "Feed & Engagement Analytics" },
+      { label: "Member Leaderboard", view: "members", heading: "Member Leaderboard" },
+      { label: "Member Profile", view: "member_profile", heading: "Member Profile" },
+      { label: "Event Committees", view: "committees", heading: "Event Committees" },
       { label: "Event Performance", view: "events", heading: "Event Performance" },
+      { label: "Create Event", view: "create_event", heading: "Create New Event" },
+      { label: "Impact", view: "impact", heading: "Impact Dashboard" },
+      { label: "Bridge Videos", view: "bridge_videos", heading: "Bridge Video Hub" },
+      { label: "MEDLIFE Stories", view: "stories", heading: "MEDLIFE Stories" },
+      { label: "Current Leaders", view: "leaders", heading: "Current Leaders" },
+      { label: "Succession", view: "succession", heading: "Leadership Succession" },
+      { label: "Values", view: "values", heading: "MEDLIFE Values" },
+      { label: "Leadership Training", view: "training", heading: "Leadership & Resources Hub" },
     ] as const;
 
     await page.goto("/leader?view=overview");
