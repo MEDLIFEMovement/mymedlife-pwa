@@ -51,12 +51,13 @@ The generated folder contains:
 
 The email drafts are manual text only. They do not send email, create users,
 write Supabase rows, call Luma, send invitations, trigger n8n, or change
-production config. Fill
-`production-rollout-owner-send-tracker/owner-recipient-assignments.csv` when
-owner recipients are confirmed, then regenerate the tracker with
-`--recipient-assignments` if you want the recipient and CC columns prefilled.
-The owner-recipient decision worksheet includes a copy/paste answer block for
-collecting the seven real recipient emails before any owner packets are sent.
+production config. Use the owner-recipient decision worksheet to collect the
+seven real recipient emails in its Copy/Paste Answer Block. Save that block as
+`owner-recipient-answers.txt`, then run `pnpm rollout:owner-recipient-answers`
+to generate
+`production-rollout-owner-send-tracker/owner-recipient-assignments.csv`. After
+that, regenerate the tracker with `--recipient-assignments` if you want the
+recipient and CC columns prefilled.
 Send each owner only their matching folder, request doc, and email draft. After
 owner CSVs come back, rerun:
 
@@ -66,6 +67,7 @@ pnpm rollout:owner-requests --owner-dir production-rollout-owner-handoff/rollout
 pnpm rollout:owner-email-drafts --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-email-drafts
 pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker
 pnpm rollout:owner-recipient-decisions --owner-dir production-rollout-owner-handoff/rollout-owner-packets --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-decisions.md
+pnpm rollout:owner-recipient-answers --answers owner-recipient-answers.txt --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv
 pnpm rollout:owner-recipients --owner-dir production-rollout-owner-handoff/rollout-owner-packets --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv --out production-rollout-owner-recipient-status.md
 pnpm rollout:owner-send-tracker --owner-dir production-rollout-owner-handoff/rollout-owner-packets --out production-rollout-owner-handoff/production-rollout-owner-send-tracker --recipient-assignments production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-recipient-assignments.csv
 pnpm rollout:owner-followup --owner-dir production-rollout-owner-handoff/rollout-owner-packets --tracker production-rollout-owner-handoff/production-rollout-owner-send-tracker/owner-send-tracker.csv --out production-rollout-owner-followup-report.md
