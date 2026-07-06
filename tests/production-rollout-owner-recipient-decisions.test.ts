@@ -6,6 +6,7 @@ import {
 import {
   formatProductionRolloutOwnerRecipientDecisionWorksheet,
   getProductionRolloutOwnerRecipientDecisionWorksheet,
+  parseProductionRolloutOwnerRecipientAnswerBlock,
 } from "@/services/production-rollout-owner-recipient-decisions";
 import {
   getProductionRolloutOwnerRecipientStatus,
@@ -15,6 +16,54 @@ import {
 } from "@/services/production-rollout-owner-send-tracker";
 
 describe("production rollout owner recipient decision worksheet", () => {
+  it("parses the copy/paste answer block into recipient assignments", () => {
+    const assignments = parseProductionRolloutOwnerRecipientAnswerBlock(
+      [
+        "Here are the approved owner recipients:",
+        "```text",
+        "nick-hq-launch-owner | suggestedSeat=Nick or named HQ launch operator | recipientEmail=nick@example.org | ccEmails=kiomi@example.org, ds@example.org | notes=primary launch approver",
+        "ds-launch-owner | suggestedSeat=DS / platform owner | recipientEmail=ds@example.org | ccEmails=nick@example.org | notes=production data owner",
+        "```",
+      ].join("\n"),
+    );
+
+    expect(assignments).toEqual([
+      {
+        ownerSlug: "nick-hq-launch-owner",
+        owner: "",
+        recipientEmail: "nick@example.org",
+        ccEmails: "kiomi@example.org, ds@example.org",
+        notes: "primary launch approver",
+      },
+      {
+        ownerSlug: "ds-launch-owner",
+        owner: "",
+        recipientEmail: "ds@example.org",
+        ccEmails: "nick@example.org",
+        notes: "production data owner",
+      },
+    ]);
+  });
+
+  it("rejects duplicate answer block owner slugs", () => {
+    expect(() =>
+      parseProductionRolloutOwnerRecipientAnswerBlock(
+        [
+          "ds-launch-owner | suggestedSeat=DS / platform owner | recipientEmail=ds@example.org | ccEmails= | notes=",
+          "ds-launch-owner | suggestedSeat=DS / platform owner | recipientEmail=renato@example.org | ccEmails= | notes=",
+        ].join("\n"),
+      ),
+    ).toThrow("duplicate ownerSlug ds-launch-owner");
+  });
+
+  it("rejects answer block text without owner recipient rows", () => {
+    expect(() =>
+      parseProductionRolloutOwnerRecipientAnswerBlock(
+        "Please assign the seven owner recipients later.",
+      ),
+    ).toThrow("No owner recipient answer rows found.");
+  });
+
   it("turns blank owner recipient rows into a clear decision worksheet", () => {
     const status = createOwnerStatus();
     const recipientStatus = getProductionRolloutOwnerRecipientStatus({

@@ -4,7 +4,9 @@ import {
   getProductionRolloutOwnerPacketStatus,
 } from "@/services/production-rollout-owner-packet-status";
 import {
+  formatProductionRolloutOwnerRecipientAssignmentsCsvFromAssignments,
   getProductionRolloutOwnerSendTrackerFiles,
+  hydrateProductionRolloutOwnerRecipientAssignments,
   parseProductionRolloutOwnerRecipientAssignmentsCsv,
 } from "@/services/production-rollout-owner-send-tracker";
 
@@ -115,6 +117,41 @@ describe("production rollout owner send tracker", () => {
       "ds-launch-owner,DS / launch owner,no,3,production-rollout-owner-email-drafts/ds-launch-owner.md,production-rollout-owner-requests/ds-launch-owner.md,rollout-owner-packets/ds-launch-owner,ds@example.org,nick@example.org; kiomi@example.org,drafted,,,,",
     );
     expect(csv).toContain("Confirmed owner");
+  });
+
+  it("hydrates pasted answer assignments into the full owner assignment CSV", () => {
+    const status = getProductionRolloutOwnerPacketStatus({
+      foundFiles: createOwnerFilesWithRows({}),
+      sourceDirectoryName: "rollout-owner-packets",
+      outputDirectoryName: "rollout-csv",
+      options: {
+        minimumChapterCount: 2,
+        minimumStudentMembershipCount: 3,
+        minimumPilotChapterCount: 1,
+      },
+    });
+    const hydratedAssignments = hydrateProductionRolloutOwnerRecipientAssignments(
+      status,
+      [
+        {
+          ownerSlug: "ds-launch-owner",
+          owner: "",
+          recipientEmail: "ds@example.org",
+          ccEmails: "nick@example.org",
+          notes: "production data owner",
+        },
+      ],
+    );
+    const csv = formatProductionRolloutOwnerRecipientAssignmentsCsvFromAssignments(
+      hydratedAssignments,
+    );
+
+    expect(hydratedAssignments).toHaveLength(7);
+    expect(csv).toContain("ownerSlug,owner,recipientEmail,ccEmails,notes");
+    expect(csv).toContain(
+      "ds-launch-owner,DS / launch owner,ds@example.org,nick@example.org,production data owner",
+    );
+    expect(csv).toContain("nick-hq-launch-owner,Nick / HQ launch owner,,,");
   });
 
   it("rejects recipient assignments for unknown owner slugs", () => {
