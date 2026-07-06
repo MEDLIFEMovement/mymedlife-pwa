@@ -149,13 +149,9 @@ describe("staff page", () => {
   });
 
   it.each([
-    ["campaigns", "/staff?view=events"],
-    ["proof_ugc", "/staff?view=leaderboard"],
-    ["feed_studio", "/staff?view=leaderboard"],
-    ["feed_analytics", "/staff?view=leaderboard"],
-    ["best_practices", "/staff?view=leaderboard"],
+    ["feed_studio", "/staff?view=proof_ugc"],
+    ["feed_analytics", "/staff?view=proof_ugc"],
     ["hubspot", "/staff?view=chapters"],
-    ["admin", "/staff?view=chapters"],
     ["support_notes", "/staff?view=chapters"],
   ])("parks the %s staff view inside the launch lane", async (view, expectedHref) => {
     const actorModule = await import("@/services/local-actor-context");
@@ -171,6 +167,48 @@ describe("staff page", () => {
         searchParams: Promise.resolve({ view }),
       }),
     ).rejects.toThrow(`NEXT_REDIRECT:${expectedHref}`);
+  });
+
+  it.each([
+    ["campaigns", "Campaign Operations"],
+    ["proof_ugc", "Proof / UGC Review Queue"],
+    ["best_practices", "Best Practices Library"],
+    ["sops", "Campaign SOP Builder"],
+  ])("keeps the %s staff tab route-backed instead of parking it away", async (view, heading) => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view }),
+      }),
+    );
+
+    expect(html).toContain(heading);
+  });
+
+  it("keeps the admin handoff visible but blocked for non-admin staff", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "admin" }),
+      }),
+    );
+
+    expect(html).toContain("Admin access blocked");
+    expect(html).toContain("This Staff Command Center keeps the Admin handoff visible");
+    expect(html).toContain("Current posture");
+    expect(html).not.toContain("Enter Admin Panel");
   });
 
   it("allows super admin to open the embedded staff admin path without parking it away", async () => {
@@ -198,7 +236,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2195);
+    expect(lineCount).toBeLessThanOrEqual(2245);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

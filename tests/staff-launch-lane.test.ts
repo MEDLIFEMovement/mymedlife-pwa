@@ -8,74 +8,83 @@ import {
 describe("staff launch lane", () => {
   it("keeps the core staff views unchanged", () => {
     expect(resolveStaffLaunchLaneView("chapters")).toMatchObject({
-      coreView: "chapters",
+      canonicalView: "chapters",
       parkedNotice: null,
     });
     expect(resolveStaffLaunchLaneView("campaigns")).toMatchObject({
-      coreView: "events",
+      canonicalView: "campaigns",
       parkedNotice: null,
     });
     expect(resolveStaffLaunchLaneView("leaderboard")).toMatchObject({
-      coreView: "points",
+      canonicalView: "leaderboard",
+      parkedNotice: null,
+    });
+    expect(resolveStaffLaunchLaneView("proof_ugc")).toMatchObject({
+      canonicalView: "proof_ugc",
+      parkedNotice: null,
+    });
+    expect(resolveStaffLaunchLaneView("best_practices")).toMatchObject({
+      canonicalView: "best_practices",
+      parkedNotice: null,
+    });
+    expect(resolveStaffLaunchLaneView("sops")).toMatchObject({
+      canonicalView: "sops",
+      parkedNotice: null,
+    });
+    expect(resolveStaffLaunchLaneView("admin")).toMatchObject({
+      canonicalView: "admin",
       parkedNotice: null,
     });
   });
 
   it("parks support detail inside the chapter list", () => {
     expect(resolveStaffLaunchLaneView("chapter_detail")).toMatchObject({
-      coreView: "chapters",
+      canonicalView: "chapters",
       parkedNotice: {
         eyebrow: "Support lane parked",
       },
     });
     expect(resolveStaffLaunchLaneView("support_notes")).toMatchObject({
-      coreView: "chapters",
+      canonicalView: "chapters",
     });
   });
 
-  it("parks proof and content lanes inside the points view", () => {
-    expect(resolveStaffLaunchLaneView("proof_ugc")).toMatchObject({
-      coreView: "points",
+  it("parks extra feed workflow aliases inside the Proof / UGC view", () => {
+    expect(resolveStaffLaunchLaneView("feed_studio")).toMatchObject({
+      canonicalView: "proof_ugc",
       parkedNotice: {
         eyebrow: "Story lane parked",
       },
     });
-    expect(resolveStaffLaunchLaneView("feed_studio")).toMatchObject({
-      coreView: "points",
-    });
     expect(resolveStaffLaunchLaneView("feed_analytics")).toMatchObject({
-      coreView: "points",
-    });
-    expect(resolveStaffLaunchLaneView("best_practices")).toMatchObject({
-      coreView: "points",
+      canonicalView: "proof_ugc",
     });
   });
 
   it("parks external systems back inside the chapter list", () => {
     expect(resolveStaffLaunchLaneView("hubspot")).toMatchObject({
-      coreView: "chapters",
+      canonicalView: "chapters",
       parkedNotice: {
         eyebrow: "External systems parked",
       },
     });
-    expect(resolveStaffLaunchLaneView("admin")).toMatchObject({
-      coreView: "chapters",
-    });
   });
 
-  it("canonicalizes parked and alias views back to the core staff tabs", () => {
-    expect(getStaffLaunchLaneCanonicalHref({ view: "campaigns" })).toBe(
-      "/staff?view=events",
-    );
+  it("keeps source-backed staff tabs stable while canonicalizing only aliases", () => {
+    expect(getStaffLaunchLaneCanonicalHref({ view: "campaigns" })).toBeNull();
+    expect(getStaffLaunchLaneCanonicalHref({ view: "proof_ugc" })).toBeNull();
+    expect(getStaffLaunchLaneCanonicalHref({ view: "best_practices" })).toBeNull();
+    expect(getStaffLaunchLaneCanonicalHref({ view: "sops" })).toBeNull();
+    expect(getStaffLaunchLaneCanonicalHref({ view: "admin" })).toBeNull();
     expect(getStaffLaunchLaneCanonicalHref({ view: "points" })).toBe(
       "/staff?view=leaderboard",
     );
     expect(
       getStaffLaunchLaneCanonicalHref({
-        view: "proof_ugc",
+        view: "feed_studio",
         event: "chapter-event-ucla",
       }),
-    ).toBe("/staff?view=leaderboard&event=chapter-event-ucla");
+    ).toBe("/staff?view=proof_ugc&event=chapter-event-ucla");
     expect(getStaffLaunchLaneCanonicalHref({ view: "chapters" })).toBeNull();
   });
 });
