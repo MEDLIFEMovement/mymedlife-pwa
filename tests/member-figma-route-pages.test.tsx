@@ -1,3 +1,4 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
@@ -28,16 +29,20 @@ function getSignedInMember() {
 }
 
 describe("member Figma route pages", () => {
-  it("parks the old campaigns route inside the member events launch lane", async () => {
+  it("renders the source-backed member campaign shell instead of parking campaigns away", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(getSignedInMember());
 
     const { default: CampaignsPage } = await import("@/app/campaigns/page");
+    const html = renderToStaticMarkup(await CampaignsPage());
 
-    await expect(CampaignsPage()).rejects.toThrow(
-      "NEXT_REDIRECT:/app/events?source=campaigns",
-    );
+    expect(html).toContain("Rush Month");
+    expect(html).toContain("Campaign KPIs");
+    expect(html).toContain("Assigned Actions by Role");
+    expect(html).toContain("What Good Looks Like");
+    expect(html).toContain('href="/app/events"');
+    expect(html).toContain('href="/rush-month/actions"');
   });
 
   it("parks the old proof library route inside the member points launch lane", async () => {
