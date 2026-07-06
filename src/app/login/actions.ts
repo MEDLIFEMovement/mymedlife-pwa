@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createLocalSupabaseServerClient } from "@/lib/supabase-server";
 import { normalizeLoginRedirect } from "@/services/auth-session";
+import { getLocalSandboxAuthLandingRoute } from "@/services/local-sandbox-auth-routing";
 import { localActorPreviewCookieName } from "@/services/local-actor-context";
 
 export type LoginActionState = {
@@ -61,7 +62,10 @@ export async function signInWithPassword(
     };
   }
 
-  redirect(redirectTo);
+  const localSandboxRoute =
+    redirectTo === "/" ? getLocalSandboxAuthLandingRoute(email) : null;
+
+  redirect(localSandboxRoute ?? redirectTo);
 }
 
 export async function signOut() {
