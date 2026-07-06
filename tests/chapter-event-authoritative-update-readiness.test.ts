@@ -93,9 +93,9 @@ describe("chapter-event authoritative update readiness", () => {
       env,
     );
 
-    expect(readiness.canSubmit).toBe(false);
-    expect(readiness.resultCodeIfSubmitted).toBe("server_boundary_not_ready");
-    expect(readiness.reason).toContain("Reviewed server-only wrapper is not ready.");
+    expect(readiness.canSubmit).toBe(true);
+    expect(readiness.resultCodeIfSubmitted).toBe("chapter_event_updated");
+    expect(readiness.reason).toContain("reviewed server-only localhost boundary");
     expect(
       readiness.checks.find((check) => check.key === "database_function_ready"),
     ).toEqual(expect.objectContaining({ passed: true }));
@@ -110,7 +110,7 @@ describe("chapter-event authoritative update readiness", () => {
     ).toEqual(expect.objectContaining({ passed: true }));
     expect(
       readiness.checks.find((check) => check.key === "server_boundary_implemented"),
-    ).toEqual(expect.objectContaining({ passed: false }));
+    ).toEqual(expect.objectContaining({ passed: true }));
   });
 
   it("rejects deferred and narrative fields from the future authoritative payload", () => {
