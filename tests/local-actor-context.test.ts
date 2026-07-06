@@ -166,6 +166,24 @@ describe("local actor context service", () => {
     expect(actor.isLocalOnly).toBe(false);
   });
 
+  it("does not collapse a signed-in auth email onto the first local profile row", async () => {
+    const actor = await getSupabaseLocalActorContext(
+      createFakeClient(fakeActorRows),
+      "missing.user@mymedlife.test",
+      "Using signed-in local user.",
+      "local_auth_session",
+      "signed_in",
+    );
+
+    expect(actor.source.status).toBe("auth_profile_missing");
+    expect(actor.source.mode).toBe("supabase");
+    expect(actor.user.email).toBe("missing.user@mymedlife.test");
+    expect(actor.user.displayName).toBe("Missing User");
+    expect(actor.user.displayName).not.toBe("Sofia Alvarez");
+    expect(actor.chapterRoles).toEqual([]);
+    expect(actor.staffRoles).toEqual([]);
+  });
+
   it("keeps missing-profile auth context setup-only", () => {
     const actor = getMissingProfileActorContext(
       "new.user@medlifemovement.org",
