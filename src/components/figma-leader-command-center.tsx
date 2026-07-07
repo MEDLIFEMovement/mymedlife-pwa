@@ -2956,13 +2956,13 @@ function ValuesScreen() {
             Three values guide every MEDLIFE leader. They are not automatic — they require human review, honest conversation, and intentional practice.
           </p>
         </div>
-        <a
-          href="https://www.hubspot.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#1A56E8] text-white text-sm font-bold rounded-xl cursor-pointer hover:bg-blue-700 transition-colors shadow-sm">
+        <Btn
+          variant="primary"
+          blockedTitle="Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists."
+          className="shadow-sm"
+        >
           <MessageSquare size={14}/>Values Alignment Interview
-        </a>
+        </Btn>
       </div>
 
       {/* Values cards */}
@@ -2993,14 +2993,13 @@ function ValuesScreen() {
             {/* Interview CTA bar */}
             <div className="px-7 py-3 border-t flex items-center justify-between" style={{ borderColor: v.border, background: v.color + "0a" }}>
               <span className="text-xs text-slate-500">Values alignment requires a human conversation — not an automatic score.</span>
-              <a
-                href="https://www.hubspot.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg cursor-pointer transition-colors text-white"
-                style={{ background: v.color }}>
+              <Btn
+                variant="secondary"
+                blockedTitle="Interview scheduling is blocked in this preview until the approved leadership-review workflow exists."
+                className="!text-white !border-transparent"
+              >
                 <MessageSquare size={11}/>Schedule Interview
-              </a>
+              </Btn>
             </div>
           </div>
         ))}
@@ -3012,12 +3011,15 @@ function ValuesScreen() {
         <div>
           <div className="font-bold text-white text-sm mb-1">Values Alignment Interview</div>
           <p className="text-xs text-blue-200 leading-relaxed">
-            The Values Alignment Interview is a structured conversation between a chapter leader and a candidate for Chair or E-Board. It is not a test — it is a chance to understand who someone is, what drives them, and whether they are ready to lead with character, fire, and growth. Use the interview form linked above to capture your notes and submit a recommendation.
+            The Values Alignment Interview is a structured conversation between a chapter leader and a candidate for Chair or E-Board. It is not a test — it is a chance to understand who someone is, what drives them, and whether they are ready to lead with character, fire, and growth. Use this preview guidance to understand the review standard while the actual scheduling and submission workflow stays blocked.
           </p>
-          <a href="https://www.hubspot.com" target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-blue-300 hover:text-white transition-colors cursor-pointer">
+          <Btn
+            variant="ghost"
+            blockedTitle="The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists."
+            className="mt-3 !px-0 !py-0 !border-0 !bg-transparent !text-blue-300 hover:!bg-transparent hover:!text-white"
+          >
             <ExternalLink size={11}/>Open Values Alignment Interview Form →
-          </a>
+          </Btn>
         </div>
       </div>
     </div>
