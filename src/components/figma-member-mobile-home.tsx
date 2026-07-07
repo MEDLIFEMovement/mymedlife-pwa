@@ -379,8 +379,8 @@ function StudentHome({
       <div className="bg-primary px-5 pt-12 pb-8">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider">UCLA MEDLIFE</p>
-            <h1 className="text-white text-2xl font-extrabold mt-1">Hi, Sofia 👋</h1>
+            <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider">TEST UCLA MEDLIFE</p>
+            <h1 className="text-white text-2xl font-extrabold mt-1">Hi, TEST Sofia 👋</h1>
             <p className="text-blue-200 text-sm mt-1">You are making a difference.</p>
           </div>
           <button disabled title="Notifications are blocked in this preview" className="relative p-2.5 rounded-xl bg-white/10 mt-1">
@@ -396,7 +396,7 @@ function StudentHome({
             <p className="text-yellow-200 text-xs font-bold uppercase tracking-wide">This Week's Priority</p>
           </div>
           <p className="text-white font-bold text-[15px] leading-snug">
-            Invite 3 friends to the Intro GBM
+            Invite 3 TEST friends to the TEST Intro GBM
           </p>
           <p className="text-blue-200 text-xs mt-1">Rush Month · Due Nov 15 · 30 pts</p>
           <Link
@@ -453,8 +453,8 @@ function StudentHome({
           <SLabel>Upcoming Events</SLabel>
           <div className="space-y-2">
             {[
-              { id: 1, name: "Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", rsvp: false },
-              { id: 2, name: "Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", rsvp: true },
+              { id: 1, name: "TEST Intro GBM", date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman 2100", rsvp: false },
+              { id: 2, name: "TEST Tabling at Bruin Walk", date: "Tue Nov 13 · 11:00 AM", loc: "Bruin Walk Table 7", rsvp: true },
             ].map((e, i) => (
               <Card key={e.id} padding={false}>
                 <div className="flex items-center gap-3 p-4">
@@ -528,9 +528,9 @@ function StudentHome({
           </div>
           <div className="space-y-2">
             {[
-              { title: "Invite 3 friends to the Intro GBM", due: "Nov 15", pts: 30, status: "Not started", variant: "gray" as const },
-              { title: "Share Rush Week flyer on Instagram", due: "Nov 14", pts: 20, status: "In progress", variant: "blue" as const },
-              { title: "Add 5 leads to the spreadsheet", due: "Nov 16", pts: 25, status: "Submitted", variant: "yellow" as const },
+              { title: "Invite 3 TEST friends to the TEST Intro GBM", due: "Nov 15", pts: 30, status: "Not started", variant: "gray" as const },
+              { title: "Share TEST Rush Week flyer on Instagram", due: "Nov 14", pts: 20, status: "In progress", variant: "blue" as const },
+              { title: "Add 5 TEST leads to the TEST spreadsheet", due: "Nov 16", pts: 25, status: "Submitted", variant: "yellow" as const },
             ].map((a, i) => (
               <Card key={i} onClick={() => navigate("action")} padding={false}>
                 <div className="flex items-center gap-3 p-4">
@@ -566,15 +566,15 @@ function StudentHome({
           </div>
           <Card>
             {[
-              { rank: 1, name: "Aisha N.", pts: 220, me: false },
-              { rank: 2, name: "Marcus T.", pts: 185, me: false },
-              { rank: 3, name: "Sofia R.", pts: 145, me: true },
-              { rank: 4, name: "James L.", pts: 130, me: false },
+              { rank: 1, name: "TEST Aisha N.", pts: 220, me: false },
+              { rank: 2, name: "TEST Marcus T.", pts: 185, me: false },
+              { rank: 3, name: "TEST Sofia R.", pts: 145, me: true },
+              { rank: 4, name: "TEST James L.", pts: 130, me: false },
             ].map((m) => (
               <div key={m.rank} className={cn("flex items-center gap-3 py-3 border-b border-border last:border-0", m.me && "bg-primary/5 -mx-4 px-4 rounded-xl")}>
                 <span className="w-6 text-center text-sm">{m.rank === 1 ? "🥇" : m.rank === 2 ? "🥈" : m.rank === 3 ? "🥉" : m.rank}</span>
                 <span className={cn("flex-1 text-sm", m.me ? "font-extrabold text-primary" : "font-medium")}>
-                  {m.me ? "You (Sofia R.)" : m.name}
+                  {m.me ? "You (TEST Sofia R.)" : m.name}
                 </span>
                 <span className="text-sm font-bold text-foreground font-[DM_Mono,monospace]">{m.pts} pts</span>
               </div>
@@ -588,11 +588,11 @@ function StudentHome({
             <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-extrabold">DK</div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <p className="text-xs font-bold text-foreground">Coach David Kim</p>
+                <p className="text-xs font-bold text-foreground">TEST Coach David Kim</p>
                 <span className="text-xs text-muted-foreground">· Nov 12</span>
               </div>
               <p className="text-sm text-foreground leading-relaxed">
-                "Great energy this week, UCLA! Focus on Intro GBM follow-ups — this is where we convert interest into members. Keep it up."
+                "TEST great energy this week, TEST UCLA! Focus on TEST Intro GBM follow-ups — this is where we convert interest into TEST members. Keep it up."
               </p>
             </div>
           </div>
@@ -650,13 +650,13 @@ function CampaignPage({ navigate }: { navigate: (s: Screen) => void }) {
   const [whyOpen, setWhyOpen] = useState(false);
   const kpis = [
     { label: "Leads Captured", value: 47, total: 80, pct: 59 },
-    { label: "Intro GBM RSVPs", value: 23, total: 50, pct: 46 },
+    { label: "TEST Intro GBM RSVPs", value: 23, total: 50, pct: 46 },
     { label: "Follow-ups Done", value: 18, total: 47, pct: 38 },
     { label: "New Members", value: 9, total: 25, pct: 36 },
   ];
   const goodLooks = [
     "Every member has at least 1 assigned action",
-    "Intro GBM event is live on Luma with RSVP link",
+    "TEST Intro GBM event is live on Luma with RSVP link",
     "Chapter tabled at least 2x this week",
     "Follow-up messages sent within 24h of first touch",
     "KPIs reviewed in weekly E-Board meeting",
@@ -790,7 +790,7 @@ function CampaignPage({ navigate }: { navigate: (s: Screen) => void }) {
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-bold text-foreground">Intro GBM</p>
+              <p className="text-sm font-bold text-foreground">TEST Intro GBM</p>
                 <Pill label="Luma" variant="purple" />
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">Thu Nov 15 · 6:00 PM · Ackerman 2100</p>
@@ -825,7 +825,7 @@ function ActionDetail({ navigate }: { navigate: (s: Screen) => void }) {
             <Pill label="Not started" variant="gray" />
           </div>
           <h1 className="text-xl font-extrabold text-foreground leading-snug">
-            Invite 3 friends to the Intro GBM
+            Invite 3 TEST friends to the TEST Intro GBM
           </h1>
           <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
@@ -834,7 +834,7 @@ function ActionDetail({ navigate }: { navigate: (s: Screen) => void }) {
             </span>
             <span className="flex items-center gap-1">
               <Users size={13} />
-              Assigned by Marcus T.
+              Assigned by TEST Marcus T.
             </span>
           </div>
         </div>
@@ -933,7 +933,7 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
         {/* Assignment summary */}
         <Card className="bg-secondary/50 border-secondary">
           <p className="text-xs font-bold text-primary uppercase tracking-wide mb-1">Submitting for</p>
-          <p className="text-sm font-bold text-foreground">Invite 3 friends to the Intro GBM</p>
+          <p className="text-sm font-bold text-foreground">Invite 3 TEST friends to the TEST Intro GBM</p>
           <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
             <span>Rush Month</span>
             <span>·</span>
@@ -1003,7 +1003,7 @@ function EvidenceSubmission({ navigate }: { navigate: (s: Screen) => void }) {
               </label>
               <textarea
                 rows={5}
-                placeholder="I invited Sofia, Marcus, and Priya. Two of them RSVPd on Luma and one said they would come..."
+                placeholder="I invited TEST Sofia, TEST Marcus, and TEST Priya. Two of them RSVPd on Luma and one said they would come..."
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 className="w-full bg-card border border-border rounded-xl px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none focus:border-primary transition-colors"
@@ -1063,7 +1063,7 @@ function Confirmation({ navigate }: { navigate: (s: Screen) => void }) {
       </div>
       <h1 className="text-2xl font-extrabold text-foreground">Evidence Submitted!</h1>
       <p className="text-muted-foreground text-sm mt-2 leading-relaxed max-w-xs">
-        Marcus T. will review your submission within 24–48 hours. You will earn 30 points once approved.
+        TEST Marcus T. will review your submission within 24–48 hours. You will earn 30 points once approved.
       </p>
 
       <div className="w-full mt-8 space-y-3">
@@ -1891,9 +1891,9 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
           <Card>
             <div className="space-y-3">
               {[
-                { campaign: "Rush Month", pts: 75, max: 150, color: "bg-primary" },
-                { campaign: "Spring Showcase (prev.)", pts: 45, max: 100, color: "bg-emerald-500" },
-                { campaign: "Community Health Fair", pts: 25, max: 80, color: "bg-amber-400" },
+                { campaign: "TEST Rush Month", pts: 75, max: 150, color: "bg-primary" },
+                { campaign: "TEST Spring Showcase (prev.)", pts: 45, max: 100, color: "bg-emerald-500" },
+                { campaign: "TEST Community Health Fair", pts: 25, max: 80, color: "bg-amber-400" },
               ].map((c) => (
                 <div key={c.campaign}>
                   <div className="flex justify-between text-xs mb-1.5">
@@ -1932,12 +1932,12 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
           <SLabel>Chapter Leaderboard — Rush Month</SLabel>
           <Card>
             {[
-              { rank: 1, name: "Aisha N.", role: "President", pts: 220 },
-              { rank: 2, name: "Marcus T.", role: "VP Outreach", pts: 185 },
-              { rank: 3, name: "Sofia R.", role: "General Member", pts: 145, me: true },
-              { rank: 4, name: "James L.", role: "General Member", pts: 130 },
-              { rank: 5, name: "Priya K.", role: "Committee Chair", pts: 110 },
-              { rank: 6, name: "Kevin M.", role: "General Member", pts: 95 },
+              { rank: 1, name: "TEST Aisha N.", role: "President", pts: 220 },
+              { rank: 2, name: "TEST Marcus T.", role: "VP Outreach", pts: 185 },
+              { rank: 3, name: "TEST Sofia R.", role: "General Member", pts: 145, me: true },
+              { rank: 4, name: "TEST James L.", role: "General Member", pts: 130 },
+              { rank: 5, name: "TEST Priya K.", role: "Committee Chair", pts: 110 },
+              { rank: 6, name: "TEST Kevin M.", role: "General Member", pts: 95 },
             ].map((m) => (
               <div
                 key={m.rank}
@@ -1951,7 +1951,7 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-sm", m.me ? "font-extrabold text-primary" : "font-semibold text-foreground")}>
-                    {m.me ? "You (Sofia R.)" : m.name}
+                    {m.me ? "You (TEST Sofia R.)" : m.name}
                   </p>
                   <p className="text-xs text-muted-foreground">{m.role}</p>
                 </div>
@@ -1966,9 +1966,9 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
           <SLabel>Recent Approved Actions</SLabel>
           <div className="space-y-2">
             {[
-              { action: "Share Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago" },
-              { action: "Attend Bruin Walk tabling shift", pts: 15, time: "Approved yesterday" },
-              { action: "Add 5 leads to the chapter spreadsheet", pts: 25, time: "Approved 3d ago" },
+              { action: "Share TEST Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago" },
+              { action: "Attend TEST Bruin Walk tabling shift", pts: 15, time: "Approved yesterday" },
+              { action: "Add 5 TEST leads to the chapter spreadsheet", pts: 25, time: "Approved 3d ago" },
             ].map((a) => (
               <Card key={a.action} padding={false}>
                 <div className="flex items-center gap-3 p-4">
@@ -2104,7 +2104,7 @@ const CAMPAIGNS: { name: CampaignTag; phase: string; color: string; accent: stri
     phase: "Ongoing",
     color: "from-[#3D7A5A] to-emerald-600",
     accent: "bg-[#3D7A5A]/10 text-[#3D7A5A] border-[#3D7A5A]/20",
-    description: "Raise funds for smokeless stoves and water filters in Peru.",
+    description: "TEST Raise funds for smokeless stoves and water filters in TEST Peru.",
     progress: 42,
   },
   {
@@ -2118,17 +2118,17 @@ const CAMPAIGNS: { name: CampaignTag; phase: string; color: string; accent: stri
 ];
 
 const ALL_EVENTS: ChapterEvent[] = [
-  { id: 1,  title: "Intro GBM",                   date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman Union 2100",       pts: 20, status: "RSVP Open",  campaign: "Rush Month",          eventType: "GBM",                  featured: true, luma: true, organizer: "Marcus T.", rsvps: 23 },
-  { id: 2,  title: "Tabling at Bruin Walk",        date: "Tue Nov 13 · 11 AM",   loc: "Bruin Walk Table 7",        pts: 15, status: "RSVP Open",  campaign: "Rush Month",          eventType: "Local Volunteering"    },
-  { id: 3,  title: "Rush Week Social",             date: "Sat Nov 18 · 7:00 PM", loc: "Student Activities Center", pts: 10, status: "Upcoming",   campaign: "Rush Month",          eventType: "Meet People / Social"  },
-  { id: 4,  title: "Rush Month Recap GBM",         date: "Mon Nov 25 · 6:30 PM", loc: "Boelter 4413",              pts: 15, status: "Upcoming",   campaign: "Rush Month",          eventType: "GBM"                   },
-  { id: 5,  title: "Spring Showcase Kickoff",      date: "Fri Jan 10 · 5:00 PM", loc: "Covel Commons",             pts: 20, status: "Upcoming",   campaign: "Spring Showcase",     eventType: "Growing the Movement"  },
-  { id: 6,  title: "Showcase Planning Meeting",    date: "Tue Jan 14 · 6:00 PM", loc: "Powell 320",                pts: 10, status: "Upcoming",   campaign: "Spring Showcase",     eventType: "Growing the Movement"  },
-  { id: 7,  title: "Fundraising Bake Sale",        date: "Wed Nov 20 · 11 AM",   loc: "Bruin Plaza",               pts: 20, status: "Upcoming",   campaign: "Safe Homes Fundraiser", eventType: "Fundraising"         },
-  { id: 8,  title: "Donor Info Night",             date: "Thu Nov 21 · 7:00 PM", loc: "Ackerman 2100",             pts: 15, status: "Upcoming",   campaign: "Safe Homes Fundraiser", eventType: "Fundraising"         },
-  { id: 9,  title: "Health Fair Planning Session", date: "Wed Dec 4 · 5:30 PM",  loc: "Engineering VI 289",        pts: 10, status: "Upcoming",   campaign: "Community Health Fair", eventType: "Engaged Education"   },
-  { id: 10, title: "First Aid Training",           date: "Sat Nov 30 · 10 AM",   loc: "Bunche Hall 1209A",         pts: 30, status: "RSVP Open",  campaign: "General",             eventType: "Skills Session"        },
-  { id: 11, title: "Member Orientation",           date: "Wed Nov 22 · 5:30 PM", loc: "Engineering VI 289",        pts: 25, status: "Upcoming",   campaign: "General",             eventType: "Growing the Movement"  },
+  { id: 1,  title: "TEST Intro GBM",                   date: "Thu Nov 15 · 6:00 PM", loc: "Ackerman Union 2100",       pts: 20, status: "RSVP Open",  campaign: "Rush Month",            eventType: "GBM",                  featured: true, luma: true, organizer: "TEST Marcus T.", rsvps: 23 },
+  { id: 2,  title: "TEST Tabling at Bruin Walk",        date: "Tue Nov 13 · 11 AM",   loc: "Bruin Walk Table 7",        pts: 15, status: "RSVP Open",  campaign: "Rush Month",            eventType: "Local Volunteering"    },
+  { id: 3,  title: "TEST Rush Week Social",             date: "Sat Nov 18 · 7:00 PM", loc: "Student Activities Center", pts: 10, status: "Upcoming",   campaign: "Rush Month",            eventType: "Meet People / Social"  },
+  { id: 4,  title: "TEST Rush Month Recap GBM",         date: "Mon Nov 25 · 6:30 PM", loc: "Boelter 4413",              pts: 15, status: "Upcoming",   campaign: "Rush Month",            eventType: "GBM"                   },
+  { id: 5,  title: "TEST Spring Showcase Kickoff",      date: "Fri Jan 10 · 5:00 PM", loc: "Covel Commons",             pts: 20, status: "Upcoming",   campaign: "Spring Showcase",       eventType: "Growing the Movement"  },
+  { id: 6,  title: "TEST Showcase Planning Meeting",    date: "Tue Jan 14 · 6:00 PM", loc: "Powell 320",                pts: 10, status: "Upcoming",   campaign: "Spring Showcase",       eventType: "Growing the Movement"  },
+  { id: 7,  title: "TEST Fundraising Bake Sale",        date: "Wed Nov 20 · 11 AM",   loc: "Bruin Plaza",               pts: 20, status: "Upcoming",   campaign: "Safe Homes Fundraiser", eventType: "Fundraising"           },
+  { id: 8,  title: "TEST Donor Info Night",             date: "Thu Nov 21 · 7:00 PM", loc: "Ackerman 2100",             pts: 15, status: "Upcoming",   campaign: "Safe Homes Fundraiser", eventType: "Fundraising"           },
+  { id: 9,  title: "TEST Health Fair Planning Session", date: "Wed Dec 4 · 5:30 PM",  loc: "Engineering VI 289",        pts: 10, status: "Upcoming",   campaign: "Community Health Fair", eventType: "Engaged Education"     },
+  { id: 10, title: "TEST First Aid Training",           date: "Sat Nov 30 · 10 AM",   loc: "Bunche Hall 1209A",         pts: 30, status: "RSVP Open",  campaign: "General",               eventType: "Skills Session"        },
+  { id: 11, title: "TEST Member Orientation",           date: "Wed Nov 22 · 5:30 PM", loc: "Engineering VI 289",        pts: 25, status: "Upcoming",   campaign: "General",               eventType: "Growing the Movement"  },
 ];
 
 function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
@@ -2150,7 +2150,7 @@ function EventsScreen({ navigate }: { navigate: (s: Screen) => void }) {
     <div className="pb-28">
       {/* Header */}
       <div className="bg-primary px-5 pt-12 pb-5">
-        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">UCLA MEDLIFE</p>
+        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">TEST UCLA MEDLIFE</p>
         <h1 className="text-white text-2xl font-extrabold mt-1">Events</h1>
         <p className="text-blue-200 text-sm mt-0.5">Show up. Check in. Earn points.</p>
       </div>
@@ -2365,10 +2365,10 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <Pill label="RSVP Open" variant="green" />
-              <Pill label="Rush Month" variant="blue" />
+              <Pill label="TEST Rush Month" variant="blue" />
             </div>
-            <h1 className="text-white text-2xl font-extrabold leading-snug">Intro GBM</h1>
-            <p className="text-blue-200 text-sm mt-1">UCLA MEDLIFE · Thu Nov 15 · 6:00 PM</p>
+            <h1 className="text-white text-2xl font-extrabold leading-snug">TEST Intro GBM</h1>
+            <p className="text-blue-200 text-sm mt-1">TEST UCLA MEDLIFE · Thu Nov 15 · 6:00 PM</p>
           </div>
         </div>
 
@@ -2451,11 +2451,11 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
             </div>
             <div className="flex items-center gap-2.5">
               <MapPin size={15} className="text-primary flex-shrink-0" />
-              <span>Ackerman Union 2100 · UCLA Campus</span>
+              <span>TEST Ackerman Union 2100 · TEST UCLA Campus</span>
             </div>
             <div className="flex items-center gap-2.5">
               <Users size={15} className="text-primary flex-shrink-0" />
-              <span>Organized by <span className="text-primary font-semibold">Marcus T.</span></span>
+              <span>Organized by <span className="text-primary font-semibold">TEST Marcus T.</span></span>
             </div>
           </div>
         </Card>
@@ -2464,8 +2464,8 @@ function EventDetailScreen({ navigate }: { navigate: (s: Screen) => void }) {
         <Card>
           <p className="text-xs font-bold text-primary uppercase tracking-wide mb-2">About this event</p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Our Intro GBM is the main event for Rush Month — the first time potential new members
-            experience what UCLA MEDLIFE is all about. Come learn about our mission, meet current members,
+            Our TEST Intro GBM is the main event for TEST Rush Month — the first time potential new TEST members
+            experience what TEST UCLA MEDLIFE is all about. Come learn about our mission, meet current TEST members,
             and find out how to get involved in global health equity work.
           </p>
         </Card>
@@ -2520,7 +2520,7 @@ function RsvpConfirmScreen({ navigate }: { navigate: (s: Screen) => void }) {
             </div>
             <div className="flex items-center gap-2">
               <MapPin size={14} className="text-primary" />
-              <span>Ackerman Union 2100 · UCLA</span>
+              <span>TEST Ackerman Union 2100 · TEST UCLA</span>
             </div>
           </div>
         </Card>
@@ -2568,7 +2568,7 @@ function CheckInScreen({ navigate }: { navigate: (s: Screen) => void }) {
               <div className="flex items-center gap-2 mb-2">
                 <Pill label="RSVP'd" variant="green" />
               </div>
-              <h2 className="font-extrabold text-foreground text-lg">Intro GBM — Rush Month</h2>
+              <h2 className="font-extrabold text-foreground text-lg">TEST Intro GBM — TEST Rush Month</h2>
               <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1.5">
                 <Clock size={13} />
                 Thu Nov 15 · 6:00 PM – 8:00 PM
@@ -2607,15 +2607,15 @@ function CheckInScreen({ navigate }: { navigate: (s: Screen) => void }) {
             </div>
             <h1 className="text-2xl font-extrabold text-foreground mb-1">Checked in!</h1>
             <p className="text-4xl font-extrabold text-amber-500 mb-1 mt-2">+20 points</p>
-            <p className="text-muted-foreground text-sm mb-8">Thanks for coming out, Sofia!</p>
+            <p className="text-muted-foreground text-sm mb-8">Thanks for coming out, TEST Sofia!</p>
 
             {/* Mini leaderboard */}
             <Card className="w-full bg-secondary/50 border-secondary text-left mb-6">
               <p className="text-xs font-bold text-primary uppercase tracking-wide mb-3">Chapter Leaderboard</p>
               {[
-                { name: "Aisha N.", pts: 220 },
-                { name: "Marcus T.", pts: 185 },
-                { name: "Sofia R. (you)", pts: 165, me: true },
+                { name: "TEST Aisha N.", pts: 220 },
+                { name: "TEST Marcus T.", pts: 185 },
+                { name: "TEST Sofia R. (you)", pts: 165, me: true },
               ].map((m, i) => (
                 <div key={m.name} className={cn("flex items-center gap-3 py-2 border-b border-border last:border-0", m.me && "font-bold text-primary")}>
                   <span className="text-sm w-5 text-center">{i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"}</span>
@@ -2651,82 +2651,82 @@ interface Story {
 
 const stories: Story[] = [
   {
-    id: 1, title: "Students in Lima joined a Mobile Clinic this weekend",
-    caption: "Twenty-three MEDLIFE volunteers set up in San Juan de Lurigancho, seeing over 180 patients in a single day. This is why we show up.",
-    source: "field", type: "Field Story", chapter: "Nationwide", country: "Peru", tag: "Featured",
+    id: 1, title: "TEST Students in Lima joined a Mobile Clinic this weekend",
+    caption: "TEST Twenty-three MEDLIFE volunteers set up in San Juan de Lurigancho, seeing over 180 patients in a single day. This is why we show up.",
+    source: "field", type: "Field Story", chapter: "TEST Nationwide", country: "TEST Peru", tag: "Featured",
     image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&h=600&fit=crop&auto=format",
     likes: 214, views: 1847, date: "Jun 28, 2025", featured: true, trending: true,
-    quote: '"We didn\'t just hand out medicine — we listened." — Ana, Penn State MEDLIFE',
-    body: "On a humid Saturday morning in San Juan de Lurigancho, students from twelve different universities arrived before dawn. By 7am, the Mobile Clinic was fully operational. Nurses triaged patients while volunteers translated, escorted, and connected families to the services they needed. This clinic marks the 400th service event MEDLIFE has run in Lima alone.",
+    quote: '"TEST We didn\'t just hand out medicine — we listened." — TEST Ana, TEST Penn State MEDLIFE',
+    body: "TEST On a humid Saturday morning in San Juan de Lurigancho, students from twelve different universities arrived before dawn. By 7am, the Mobile Clinic was fully operational. Nurses triaged patients while volunteers translated, escorted, and connected families to the services they needed. This clinic marks the 400th service event MEDLIFE has run in Lima alone.",
     filters: ["For You", "Field Stories", "Featured"],
   },
   {
-    id: 2, title: "UConn MEDLIFE chapter packed the room at their intro event",
-    caption: "Over 90 students showed up to learn about MEDLIFE's mission. The chapter is already planning their first fundraiser for September.",
-    source: "instagram", type: "Chapter Highlight", chapter: "UConn", country: "USA",
+    id: 2, title: "TEST UConn MEDLIFE chapter packed the room at their intro event",
+    caption: "TEST Over 90 students showed up to learn about MEDLIFE's mission. The chapter is already planning their first fundraiser for September.",
+    source: "instagram", type: "Chapter Highlight", chapter: "TEST UConn", country: "TEST USA",
     image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=530&fit=crop&auto=format",
     likes: 88, views: 612, date: "Jun 25, 2025", featured: false, trending: false,
     filters: ["For You", "My Chapter", "Events"],
   },
   {
-    id: 3, title: "Trip reflection: two weeks in Ecuador changed everything",
-    caption: "Cassandra from Florida State shares what she learned in the cloud forests of Chimborazo Province — from patient care to community organizing.",
-    source: "linkedin", type: "Student Story", chapter: "Florida State", country: "Ecuador",
+    id: 3, title: "TEST Trip reflection: two weeks in Ecuador changed everything",
+    caption: "TEST Cassandra from TEST Florida State shares what she learned in the cloud forests of Chimborazo Province — from patient care to community organizing.",
+    source: "linkedin", type: "Student Story", chapter: "TEST Florida State", country: "TEST Ecuador",
     image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=530&fit=crop&auto=format",
     likes: 143, views: 934, date: "Jun 22, 2025", featured: false, trending: true,
-    quote: '"I came to help. I left understanding what help actually means."',
-    body: "Cassandra spent fourteen days in Riobamba with a MEDLIFE team running environmental health assessments. She wrote about the moment she realized that medicine without infrastructure is incomplete — and why she's now leading a Safe Homes fundraising campaign back at FSU.",
+    quote: '"TEST I came to help. I left understanding what help actually means."',
+    body: "TEST Cassandra spent fourteen days in Riobamba with a MEDLIFE team running environmental health assessments. She wrote about the moment she realized that medicine without infrastructure is incomplete — and why she's now leading a TEST Safe Homes fundraising campaign back at TEST FSU.",
     filters: ["For You", "Student Stories", "Trip Moments"],
   },
   {
-    id: 4, title: "Safe Homes project update: 12 stoves, 4 weeks, one community",
-    caption: "The Cajamarca team completed Phase 2 of the smokeless stove installation project. Respiratory illness rates in this community are already declining.",
-    source: "field", type: "Field Story", chapter: "Program Staff", country: "Peru", tag: "From the Field",
+    id: 4, title: "TEST Safe Homes project update: 12 stoves, 4 weeks, one community",
+    caption: "TEST The Cajamarca team completed Phase 2 of the smokeless stove installation project. Respiratory illness rates in this community are already declining.",
+    source: "field", type: "Field Story", chapter: "TEST Program Staff", country: "TEST Peru", tag: "From the Field",
     image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&h=530&fit=crop&auto=format",
     likes: 176, views: 1103, date: "Jun 19, 2025", featured: true,
-    quote: '"The family invited us in for lunch after we finished. That meal meant more than any metric."',
-    body: "Twelve smokeless stoves installed. Four weeks of community organizing. One neighborhood transformed. The Cajamarca Safe Homes team worked alongside local masons to build and install improved cookstoves that reduce indoor smoke exposure — a leading driver of childhood respiratory disease in highland Peru. Phase 3 begins in August.",
+    quote: '"TEST The family invited us in for lunch after we finished. That meal meant more than any metric."',
+    body: "TEST Twelve smokeless stoves installed. Four weeks of community organizing. One neighborhood transformed. The Cajamarca Safe Homes team worked alongside local masons to build and install improved cookstoves that reduce indoor smoke exposure — a leading driver of childhood respiratory disease in highland Peru. Phase 3 begins in August.",
     filters: ["Field Stories", "Featured"],
   },
   {
-    id: 5, title: "Why I joined MEDLIFE — a student interview",
-    caption: "Marcus from Rutgers talks about growing up without healthcare access and why that shaped his decision to volunteer internationally.",
-    source: "loom", type: "Student Story", chapter: "Rutgers", country: "USA",
+    id: 5, title: "TEST Why I joined MEDLIFE — a student interview",
+    caption: "TEST Marcus from TEST Rutgers talks about growing up without healthcare access and why that shaped his decision to volunteer internationally.",
+    source: "loom", type: "Student Story", chapter: "TEST Rutgers", country: "TEST USA",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&h=530&fit=crop&auto=format",
     likes: 97, views: 489, date: "Jun 17, 2025", featured: false, isVideo: true, duration: "6:34",
     embedUrl: "https://www.loom.com/embed/dQw4w9WgXcQ",
     filters: ["Student Stories", "For You"],
   },
   {
-    id: 6, title: "Community health fair draws 300+ in Managua",
-    caption: "The Nicaragua team partnered with a local health center to run dental screenings, vision checks, and preventive health education for an entire Saturday.",
-    source: "facebook", type: "Event Highlight", chapter: "Miami MEDLIFE", country: "Nicaragua",
+    id: 6, title: "TEST Community health fair draws 300+ in Managua",
+    caption: "TEST The Nicaragua team partnered with a local health center to run dental screenings, vision checks, and preventive health education for an entire Saturday.",
+    source: "facebook", type: "Event Highlight", chapter: "TEST Miami MEDLIFE", country: "TEST Nicaragua",
     image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&h=530&fit=crop&auto=format",
     likes: 61, views: 378, date: "Jun 14, 2025", featured: false,
     filters: ["Events", "Field Stories"],
   },
   {
-    id: 7, title: "Fundraising milestone: $42,000 raised for Safe Homes 2025",
-    caption: "Seventeen chapters rallied to hit this goal before summer. Every dollar funds construction materials and community labor for stove and water filter projects.",
-    source: "instagram", type: "Fundraising", chapter: "National Campaign", country: "MEDLIFE", tag: "Trending",
+    id: 7, title: "TEST Fundraising milestone: $42,000 raised for Safe Homes 2025",
+    caption: "TEST Seventeen chapters rallied to hit this goal before summer. Every dollar funds construction materials and community labor for stove and water filter projects.",
+    source: "instagram", type: "Fundraising", chapter: "TEST National Campaign", country: "MEDLIFE", tag: "Trending",
     image: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800&h=530&fit=crop&auto=format",
     likes: 203, views: 1542, date: "Jun 10, 2025", featured: false, trending: true,
     filters: ["For You", "Featured"],
   },
   {
-    id: 8, title: "A grandmother's story: forty years without access to a doctor",
-    caption: "Doña Carmen, 72, describes what it meant to finally receive a full health evaluation — and the student who sat with her through the wait.",
-    source: "field", type: "Patient Voice", chapter: "Program Staff", country: "Guatemala", tag: "Patient Voice",
+    id: 8, title: "TEST A grandmother's story: forty years without access to a doctor",
+    caption: "TEST Doña Carmen, 72, describes what it meant to finally receive a full health evaluation — and the student who sat with her through the wait.",
+    source: "field", type: "Patient Voice", chapter: "TEST Program Staff", country: "TEST Guatemala", tag: "Patient Voice",
     image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=800&h=530&fit=crop&auto=format",
     likes: 318, views: 2104, date: "Jun 6, 2025", featured: true,
-    quote: '"The young woman held my hand the whole time. I wasn\'t afraid anymore."',
-    body: "Doña Carmen walked two hours from her village to attend the MEDLIFE Mobile Clinic in Quetzaltenango. She had never seen a physician. A MEDLIFE student volunteer, Priya from Johns Hopkins, stayed with her through every step — translating from Spanish to Mam, explaining each test, and making sure she understood her diagnosis and next steps.",
+    quote: '"TEST The young woman held my hand the whole time. I wasn\'t afraid anymore."',
+    body: "TEST Doña Carmen walked two hours from her village to attend the MEDLIFE Mobile Clinic in Quetzaltenango. She had never seen a physician. A MEDLIFE student volunteer, TEST Priya from TEST Johns Hopkins, stayed with her through every step — translating from Spanish to Mam, explaining each test, and making sure she understood her diagnosis and next steps.",
     filters: ["Field Stories", "Featured", "For You"],
   },
   {
-    id: 9, title: "Yale chapter hosts pre-trip training weekend",
-    caption: "Forty-two students went through clinical skills workshops, cultural competency training, and logistics prep ahead of their July trip to Peru.",
-    source: "youtube", type: "Chapter Highlight", chapter: "Yale", country: "USA",
+    id: 9, title: "TEST Yale chapter hosts pre-trip training weekend",
+    caption: "TEST Forty-two students went through clinical skills workshops, cultural competency training, and logistics prep ahead of their July trip to Peru.",
+    source: "youtube", type: "Chapter Highlight", chapter: "TEST Yale", country: "TEST USA",
     image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=530&fit=crop&auto=format",
     likes: 54, views: 301, date: "Jun 2, 2025", featured: false, isVideo: true, duration: "4:12",
     embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",

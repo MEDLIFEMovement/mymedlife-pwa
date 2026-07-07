@@ -80,7 +80,7 @@ describe("member mobile shell routes", () => {
 
     expect(html).toContain(">Events<");
     expect(html).toContain("Show up. Check in. Earn points.");
-    expect(html).toContain("Intro GBM");
+    expect(html).toContain("TEST Intro GBM");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events"');
     expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=events"');
@@ -101,6 +101,46 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Recent Approved Actions");
     expect(html).toContain('href="/app/events?source=points"');
     expect(html).toContain("See how to earn more points");
+  });
+
+  it("keeps internal member preview states visibly marked as TEST content", () => {
+    const previewScreens = [
+      "campaign",
+      "action",
+      "evidence",
+      "confirm",
+      "event-detail",
+      "rsvp-confirm",
+      "checkin",
+      "points",
+      "events",
+      "stories",
+    ] as const;
+    const htmlByScreen = new Map(
+      previewScreens.map((screen) => [
+        screen,
+        renderToStaticMarkup(<FigmaMemberMobileHome initialScreen={screen as never} />),
+      ]),
+    );
+
+    expect(htmlByScreen.get("campaign")).toContain("TEST Intro GBM RSVPs");
+    expect(htmlByScreen.get("campaign")).toContain("TEST Intro GBM event is live on Luma");
+    expect(htmlByScreen.get("campaign")).toContain("TEST Intro GBM");
+    expect(htmlByScreen.get("action")).toContain("Invite 3 TEST friends to the TEST Intro GBM");
+    expect(htmlByScreen.get("action")).toContain("Assigned by TEST Marcus T.");
+    expect(htmlByScreen.get("evidence")).toContain("Invite 3 TEST friends to the TEST Intro GBM");
+    expect(htmlByScreen.get("evidence")).toContain("Privacy Reminder");
+    expect(htmlByScreen.get("confirm")).toContain("TEST Marcus T. will review your submission");
+    expect(htmlByScreen.get("points")).toContain("TEST Rush Month");
+    expect(htmlByScreen.get("points")).toContain("You (TEST Sofia R.)");
+    expect(htmlByScreen.get("points")).toContain("Share TEST Rush Week flyer on Instagram");
+    expect(htmlByScreen.get("events")).toContain("TEST Spring Showcase Kickoff");
+    expect(htmlByScreen.get("event-detail")).toContain("TEST Ackerman Union 2100");
+    expect(htmlByScreen.get("event-detail")).toContain("Organized by <span class=\"text-primary font-semibold\">TEST Marcus T.</span>");
+    expect(htmlByScreen.get("rsvp-confirm")).toContain("TEST Ackerman Union 2100");
+    expect(htmlByScreen.get("checkin")).toContain("TEST Intro GBM — TEST Rush Month");
+    expect(htmlByScreen.get("stories")).toContain("TEST Students in Lima joined a Mobile Clinic");
+    expect(htmlByScreen.get("stories")).toContain("TEST UConn MEDLIFE chapter packed the room");
   });
 
   it("keeps assignment and admin communication controls preview-only", () => {
