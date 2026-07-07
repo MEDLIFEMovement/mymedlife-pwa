@@ -7,9 +7,9 @@ import {
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
 import {
+  getSltTripPrepSubnavItems,
   getSltTripPrepWorkspace,
   sltTripPrepMobileQuickNavItems,
-  sltTripPrepSubnavItems,
 } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getSltPrepPageContext } from "../page-context";
@@ -22,9 +22,13 @@ export default async function SltPrepNotificationsPage() {
   const workspace = getSltTripPrepWorkspace(actor);
 
   return (
-    <AppShell actor={actor} mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}>
+    <AppShell
+      actor={actor}
+      hideTopHeader
+      mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
+    >
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...sltTripPrepSubnavItems]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
 
       {!workspace.canReadWorkspace || !workspace.traveler ? (
         <RestrictedState
@@ -35,44 +39,56 @@ export default async function SltPrepNotificationsPage() {
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-              Notification center
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">
-              Readiness updates for {workspace.traveler.firstName}
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
-              The state is visible, but all reminders are still mock previews. No email, SMS, or
-              push message is sent from this app.
-            </p>
+          <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08)]">
+            <div className="bg-[#0066CC] px-4 py-4">
+              <h1 className="text-lg font-semibold text-white">Notifications</h1>
+            </div>
+            <div className="px-5 py-5">
+              <div className="flex items-center justify-between gap-4 rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">Push notifications</p>
+                  <p className="mt-1 text-sm text-slate-500">Notification settings stay read-only in this preview.</p>
+                </div>
+                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-500">
+                  Active
+                </span>
+              </div>
+            </div>
           </section>
 
-          <SltPrepSectionCard eyebrow="Recent updates" title="Keep alerts human-readable">
+          <SltPrepSectionCard eyebrow="Recent notifications" title="Messages you would see here" variant="light">
             <div className="grid gap-3">
               {workspace.traveler.notifications.map((item) => (
                 <article
                   key={item.id}
-                  className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4"
+                  className="rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h2 className="text-lg font-semibold text-white">{item.title}</h2>
-                      <p className="mt-1 text-sm text-white/58">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
+                      <p className="mt-1 text-sm text-slate-500">
                         {item.sentLabel} • {item.channelLabel}
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-white/68">{item.summary}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
                     </div>
                     <SltPrepTonePill
-                      tone={
-                        item.tone === "urgent"
-                          ? "red"
-                          : item.tone === "watch"
-                            ? "yellow"
-                            : "green"
-                      }
-                      label={item.tone}
+                      tone={item.tone === "urgent" ? "red" : item.tone === "watch" ? "yellow" : "green"}
+                      label={item.tone === "urgent" ? "Urgent" : item.tone === "watch" ? "Due soon" : "Info"}
+                      variant="light"
                     />
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      disabled
+                      className="rounded-xl bg-slate-200 px-4 py-3 text-sm font-bold text-slate-500"
+                    >
+                      Complete now is blocked
+                    </button>
+                    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                      No email, SMS, push, reminder, or provider sync fires from this notification center.
+                    </div>
                   </div>
                 </article>
               ))}

@@ -158,7 +158,7 @@ describe("Figma missing route placeholders", () => {
     expect(source).toContain("Chapter event drill-in is handled by the staff events view");
   });
 
-  it("keeps /slt-prep visible as a source-confidence-limited traveler readiness preview", async () => {
+  it("keeps /slt-prep visible as a source-backed traveler readiness preview", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -172,12 +172,12 @@ describe("Figma missing route placeholders", () => {
     const { default: SltPrepPage } = await import("@/app/slt-prep/page");
     const html = renderToStaticMarkup(await SltPrepPage());
 
-    expect(html).toContain("Figma page missing - implementation blocked");
-    expect(html).toContain("Sofia Alvarez");
-    expect(html).toContain("Current travel plan");
+    expect(html).not.toContain("Figma page missing - implementation blocked");
+    expect(html).toContain("Peru SLT");
+    expect(html).toContain("What is complete, missing, or due soon?");
   });
 
-  it("keeps the /app/slt-prep alias on the same source-confidence-limited preview surface", async () => {
+  it("keeps the /app/slt-prep alias on the same source-backed preview surface", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -191,8 +191,8 @@ describe("Figma missing route placeholders", () => {
     const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
     const html = renderToStaticMarkup(await AppSltPrepPage());
 
-    expect(html).toContain("Figma page missing - implementation blocked");
-    expect(html).toContain("Readiness");
-    expect(html).toContain("What needs attention right now?");
+    expect(html).not.toContain("Figma page missing - implementation blocked");
+    expect(html).toContain("Complete next step");
+    expect(html).toContain("Next deadline");
   });
 });

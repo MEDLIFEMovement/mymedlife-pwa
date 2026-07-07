@@ -8,9 +8,9 @@ import {
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
 import {
+  getSltTripPrepSubnavItems,
   getSltTripPrepWorkspace,
   sltTripPrepMobileQuickNavItems,
-  sltTripPrepSubnavItems,
 } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getSltPrepPageContext } from "../page-context";
@@ -23,9 +23,13 @@ export default async function SltPrepFormsPage() {
   const workspace = getSltTripPrepWorkspace(actor);
 
   return (
-    <AppShell actor={actor} mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}>
+    <AppShell
+      actor={actor}
+      hideTopHeader
+      mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
+    >
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...sltTripPrepSubnavItems]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
 
       {!workspace.canReadWorkspace || !workspace.traveler ? (
         <RestrictedState
@@ -36,42 +40,55 @@ export default async function SltPrepFormsPage() {
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-              Required forms
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">
-              Forms hub for {workspace.traveler.firstName}
-            </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
-              Keep forms simple: what is done, what is waiting for review, and what still needs
-              a human signature before departure.
-            </p>
+          <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08)]">
+            <div className="bg-[#0066CC] px-4 py-4">
+              <h1 className="text-lg font-semibold text-white">Required Forms</h1>
+            </div>
+            <div className="px-5 py-5">
+              <p className="text-sm leading-6 text-slate-600">
+                Keep the student language simple: what form is done, what still needs a signature,
+                and what remains in review. Inline HubSpot or Drive writes stay blocked.
+              </p>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <SltPrepMiniStat
+                  label="Forms complete"
+                  value={`${workspace.traveler.forms.filter((item) => item.status === "submitted").length}`}
+                  variant="light"
+                />
+                <SltPrepMiniStat
+                  label="In review"
+                  value={`${workspace.traveler.forms.filter((item) => item.status === "in_review").length}`}
+                  variant="light"
+                />
+                <SltPrepMiniStat
+                  label="Needs signature"
+                  value={`${workspace.traveler.forms.filter((item) => item.status === "needs_signature").length}`}
+                  variant="light"
+                />
+              </div>
+            </div>
           </section>
 
-          <section className="grid gap-3 sm:grid-cols-3">
-            <SltPrepMiniStat label="Forms" value={`${workspace.traveler.forms.length}`} />
-            <SltPrepMiniStat
-              label="Submitted"
-              value={`${workspace.traveler.forms.filter((item) => item.status === "submitted").length}`}
-            />
-            <SltPrepMiniStat
-              label="Needs signature"
-              value={`${workspace.traveler.forms.filter((item) => item.status === "needs_signature").length}`}
-            />
-          </section>
-
-          <SltPrepSectionCard eyebrow="Form states" title="Readable, reviewable, and mock-safe">
+          <SltPrepSectionCard eyebrow="Form states" title="Student-friendly form language" variant="light">
             <div className="grid gap-3">
               {workspace.traveler.forms.map((item) => (
                 <article
                   key={item.id}
-                  className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4"
+                  className="rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h2 className="text-lg font-semibold text-white">{item.title}</h2>
-                      <p className="mt-2 text-sm leading-6 text-white/68">{item.summary}</p>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg font-semibold text-slate-950">{item.title}</h2>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
+                      <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                        <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
+                          {item.dueLabel}
+                        </span>
+                        <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
+                          {item.sourceLabel}
+                        </span>
+                      </div>
                     </div>
                     <SltPrepTonePill
                       tone={
@@ -81,16 +98,28 @@ export default async function SltPrepFormsPage() {
                             ? "red"
                             : "yellow"
                       }
-                      label={item.status.replace("_", " ")}
+                      label={
+                        item.status === "submitted"
+                          ? "Complete"
+                          : item.status === "needs_signature"
+                            ? "Needs signature"
+                            : "In review"
+                      }
+                      variant="light"
                     />
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/54">
-                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
-                      {item.dueLabel}
-                    </span>
-                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
-                      {item.sourceLabel}
-                    </span>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      disabled
+                      className="rounded-xl bg-slate-200 px-4 py-3 text-sm font-bold text-slate-500"
+                    >
+                      {item.status === "submitted" ? "Edit form is blocked" : "Complete form is blocked"}
+                    </button>
+                    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                      Preview only. No HubSpot, Drive, or form submission runs from this route.
+                    </div>
                   </div>
                 </article>
               ))}
