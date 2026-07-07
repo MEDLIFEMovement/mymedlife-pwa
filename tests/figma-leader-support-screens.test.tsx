@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -42,6 +43,9 @@ describe("copied Figma leader support screens", () => {
     expect(html).toContain("What Is Servant Leadership?");
     expect(html).toContain("MEDLIFE Chapter Leadership Guide");
     expect(html).toContain("Open Resource");
+    expect(html).toContain("Resource publishing is blocked in this preview until leadership-content approval is complete.");
+    expect(html).toContain("Video playback is blocked in this preview.");
+    expect(html).toContain("Deck viewing is blocked in this preview.");
   });
 
   it("renders the copied MEDLIFE Stories surface with filters and featured stories", () => {
@@ -59,5 +63,15 @@ describe("copied Figma leader support screens", () => {
     expect(html).toContain("Fundraising milestone");
     expect(html).toContain("curated by staff");
     expect(html).toContain("9 stories published");
+    expect(html).toContain("Story publishing is blocked in this preview until proof and feed approvals are complete.");
+    expect(html).toContain("Story reactions stay visible for shell fidelity, but they are preview-only in this leadership view.");
+  });
+
+  it("keeps hidden leader share controls explicitly blocked in the copied source", () => {
+    const trainingSource = readFileSync("src/components/figma-leader-training-screen.tsx", "utf8");
+
+    expect(trainingSource).toContain("Leadership resource sharing is blocked in this preview until feed approval is complete.");
+    expect(trainingSource).toContain("Committee sends are blocked in this preview until messaging approval is complete.");
+    expect(trainingSource).toContain("Leadership reading-list saves are blocked in this preview until write approval is complete.");
   });
 });
