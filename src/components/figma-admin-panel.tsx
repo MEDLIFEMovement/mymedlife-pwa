@@ -229,15 +229,25 @@ const NAV_DISABLED = [
 ];
 
 function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string) => void; onBack?: () => void }) {
+  const isEmbeddedPreview = Boolean(onBack);
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-[#090d12] border-r border-white/[0.05] flex flex-col z-40">
       {onBack && (
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-4 py-2.5 text-slate-600 hover:text-slate-300 text-[11px] border-b border-white/[0.05] transition-colors w-full group"
+          aria-label="Command Center"
+          className="flex w-full items-start gap-2 border-b border-white/[0.05] px-4 py-3 text-left text-slate-300 transition-colors hover:bg-white/[0.02] hover:text-white group"
         >
-          <ChevronRight size={11} className="rotate-180 text-slate-700 group-hover:text-slate-400 transition-colors" />
-          Command Center
+          <ChevronRight size={11} className="mt-0.5 rotate-180 text-slate-500 group-hover:text-sky-300 transition-colors" />
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold tracking-[0.08em] uppercase text-slate-200 group-hover:text-white">
+              Command Center
+            </div>
+            <div className="mt-0.5 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
+              Return to staff preview
+            </div>
+          </div>
         </button>
       )}
       <div className="px-4 py-5 border-b border-white/[0.05]">
@@ -248,6 +258,11 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
           <div>
             <div className="text-[11px] font-bold text-white tracking-[0.15em] uppercase">myMEDLIFE</div>
             <div className="text-[10px] text-slate-500 font-mono tracking-wider">DS Admin · v2.4</div>
+            {isEmbeddedPreview ? (
+              <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[9px] font-mono uppercase tracking-[0.16em] text-sky-300">
+                Embedded Preview
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -299,11 +314,13 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
             <div className="text-[12px] text-slate-300 font-semibold leading-tight">TEST Chen Wei</div>
             <div className="text-[10px] text-slate-600 font-mono">Super Admin</div>
             <div className="mt-1 text-[9px] text-slate-500">
-              Use the top-right menu to switch workspaces or log out.
+              {isEmbeddedPreview
+                ? "Return with Command Center, or use the top-right menu to switch workspaces or log out."
+                : "Use the top-right menu to switch workspaces or log out."}
             </div>
           </div>
           <span className="rounded border border-white/[0.06] px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-slate-600">
-            Account menu
+            {isEmbeddedPreview ? "Staff embed" : "Account menu"}
           </span>
         </div>
       </div>
@@ -2944,7 +2961,7 @@ function SettingsPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
           >
             <CheckCircle2 size={11} />
-            Save Settings
+            Save blocked
           </button>
           <button
             disabled
@@ -2952,7 +2969,7 @@ function SettingsPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-300 border border-amber-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
           >
             <Bell size={11} />
-            Test Alerts
+            Alert test blocked
           </button>
           <button
             disabled
@@ -2960,7 +2977,7 @@ function SettingsPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
           >
             <FileText size={11} />
-            Export Settings
+            Export blocked
           </button>
         </div>
       </div>
@@ -2970,7 +2987,7 @@ function SettingsPage() {
         <div>
           <div className="text-[13px] font-bold text-amber-400 mb-1">Restricted Environment</div>
           <p className="text-[12px] text-amber-300/70 leading-relaxed">
-            This control panel is restricted to DS Admin and Super Admin roles only. All actions are logged, audited, and cannot be undone without leaving a trail. Contact your security team for access changes.
+            This preview stays restricted to DS Admin and Super Admin roles. Real environment, alert, and access changes remain blocked here until the audited admin workflow is explicitly approved.
           </p>
         </div>
       </div>
