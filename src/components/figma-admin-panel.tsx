@@ -2710,7 +2710,25 @@ function AuditLogsPage() {
           <option value="warning">Warning</option>
           <option value="error">Error</option>
         </select>
-        <span className="ml-auto text-[11px] text-slate-600 font-mono">{filtered.length} entries</span>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[11px] text-slate-600 font-mono">{filtered.length} entries</span>
+          <button
+            disabled
+            title="Audit export is blocked in this preview; use the audited evidence surfaces for live incident review"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <FileText size={11} />
+            Export Readback
+          </button>
+          <button
+            disabled
+            title="Incident runbook handoff is blocked in this preview"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-300 border border-amber-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <Shield size={11} />
+            Open Runbook
+          </button>
+        </div>
       </div>
 
       <div className="bg-[#161b22] border border-white/[0.06] rounded-lg overflow-hidden">
@@ -2802,10 +2820,32 @@ function SystemHealthPage() {
             {healthyCount} of {services.length} services show healthy preview posture; refresh remains blocked in this shell
           </div>
         </div>
-        <button disabled title="System-health refresh is blocked in this static shell" className="ml-auto flex items-center gap-1.5 text-[12px] opacity-60 hover:opacity-100 transition-opacity">
-          <RefreshCw size={12} />
-          Refresh
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            disabled
+            title="System-health refresh is blocked in this static shell"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <RefreshCw size={11} />
+            Refresh
+          </button>
+          <button
+            disabled
+            title="Health-check retries are blocked in this preview shell"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <RotateCcw size={11} />
+            Retry Checks
+          </button>
+          <button
+            disabled
+            title="Monitoring exports are blocked in this preview shell"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <FileText size={11} />
+            Export Snapshot
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
