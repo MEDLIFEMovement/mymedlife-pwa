@@ -254,7 +254,7 @@ describe("leader page", () => {
       expect(html).toContain("Preview Promotion");
       expect(html).toContain("Preview Leadership Action");
       expect(html).toContain("Preview E-Board Succession");
-      expect(html).toContain("Add Note");
+      expect(html).toContain("Preview Note");
     }
 
     if (view === "succession") {
@@ -486,6 +486,7 @@ describe("leader page", () => {
     expect(source).toContain("const [selectedMembers, setSelectedMembers] = useState<number[]>(initialMemberIds);");
     expect(source).toContain("const [selectedMemberId, setSelectedMemberId] = useState<number | null>(initialMemberId);");
     expect(source).toContain("Leader note saving is blocked in this preview until the audited note workflow is approved.");
+    expect(source).toContain("Preview Note");
   });
 
   it("keeps the leader training resources shell source-faithful while making preview-only states obvious", () => {

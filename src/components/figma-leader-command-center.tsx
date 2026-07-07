@@ -992,7 +992,7 @@ function ProfileScreen({
               className="w-full justify-start"
               blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
             >
-              <Edit size={11}/>Add Note
+              <Edit size={11}/>Preview Note
             </Btn>
           </div>
         </div>
@@ -1046,7 +1046,7 @@ function ProfileScreen({
                 variant="secondary"
                 blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
               >
-                <Edit size={10}/>Add Note
+                <Edit size={10}/>Preview Note
               </Btn>
             </div>
             <div className="bg-slate-50 rounded-lg p-3">
