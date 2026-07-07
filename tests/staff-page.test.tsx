@@ -340,8 +340,9 @@ describe("staff page", () => {
 
     expect(html).toContain("Admin access blocked");
     expect(html).toContain("This Staff Command Center keeps the Admin handoff visible");
+    expect(html).toContain("admin preview route");
     expect(html).toContain("Current posture");
-    expect(html).not.toContain("Enter Admin Panel");
+    expect(html).not.toContain("Open Admin preview");
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
@@ -412,11 +413,14 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("Restricted Access");
-    expect(html).toContain("Enter Admin Panel");
+    expect(html).toContain("Restricted Preview Access");
+    expect(html).toContain("Preview as");
+    expect(html).toContain("Open Admin preview");
     expect(html).toContain("DS Admin");
     expect(html).toContain("Super Admin");
-    expect(readFileSync("src/components/figma-staff-command-center.tsx", "utf8")).toContain("Retry blocked");
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+    expect(source).toContain("Retry blocked");
+    expect(source).toContain("Previewing as");
   });
 
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {
