@@ -320,18 +320,18 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "ds.admin@mymedlife.test");
 
     const adminItems = [
-      { label: "Overview", heading: "Overview" },
-      { label: "Users", heading: "Users" },
-      { label: "Chapters", heading: "Chapters" },
-      { label: "Modules", heading: "Modules & Feature Flags" },
-      { label: "Luma Events", heading: "Luma Events" },
-      { label: "Points", heading: "Points" },
-      { label: "Integrations", heading: "Integrations" },
-      { label: "Audit Logs", heading: "Audit Logs" },
-      { label: "System Health", heading: "System Health" },
-      { label: "API Keys", heading: "API Keys" },
-      { label: "MCP Connections", heading: "MCP Connections" },
-      { label: "Settings", heading: "Settings" },
+      { label: "Overview", heading: "Overview", view: "overview" },
+      { label: "Users", heading: "Users", view: "users" },
+      { label: "Chapters", heading: "Chapters", view: "chapters" },
+      { label: "Modules", heading: "Modules & Feature Flags", view: "modules" },
+      { label: "Luma Events", heading: "Luma Events", view: "luma" },
+      { label: "Points", heading: "Points", view: "points" },
+      { label: "Integrations", heading: "Integrations", view: "integrations" },
+      { label: "Audit Logs", heading: "Audit Logs", view: "audit" },
+      { label: "System Health", heading: "System Health", view: "health" },
+      { label: "API Keys", heading: "API Keys", view: "apikeys" },
+      { label: "MCP Connections", heading: "MCP Connections", view: "mcp" },
+      { label: "Settings", heading: "Settings", view: "settings" },
     ] as const;
 
     await page.goto("/admin");
@@ -342,6 +342,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
         .locator("aside")
         .getByRole("button", { name: item.label, exact: true })
         .click();
+      await expect(page).toHaveURL(new RegExp(`/admin\\?view=${item.view}$`));
       await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
     }
 

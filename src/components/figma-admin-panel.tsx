@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard, Users, BookOpen, ToggleLeft, CalendarDays,
   Award, Link2, FileText, Activity, Settings, X, Search,
@@ -3608,8 +3609,21 @@ export function FigmaAdminPanel({
   initialActive?: string;
   onBack?: () => void;
 }) {
-  const [active, setActive] = useState(initialActive);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const routeActiveParam = pathname.startsWith("/staff")
+    ? searchParams.get("adminView")
+    : searchParams.get("view");
+  const routeActive = routeActiveParam ? resolveAdminShellView(routeActiveParam) : null;
+  const active = routeActive ?? resolveAdminShellView(initialActive);
   const page = PAGES[active] ?? PAGES.overview;
+
+  const handleNav = (id: string) => {
+    router.replace(buildAdminShellHref(id, pathname, searchParams.toString()), {
+      scroll: false,
+    });
+  };
 
   const renderPage = () => {
     switch (active) {
@@ -3631,7 +3645,7 @@ export function FigmaAdminPanel({
 
   return (
     <div className="flex min-h-screen bg-[#0d1117] overflow-hidden" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
-      <Sidebar active={active} onNav={setActive} onBack={onBack} />
+      <Sidebar active={active} onNav={handleNav} onBack={onBack} />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
         <Header title={page.title} subtitle={page.subtitle} />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
@@ -3640,4 +3654,23 @@ export function FigmaAdminPanel({
       </div>
     </div>
   );
+}
+
+function resolveAdminShellView(view: string | null | undefined): string {
+  if (!view) return "overview";
+  return Object.prototype.hasOwnProperty.call(PAGES, view) ? view : "overview";
+}
+
+function buildAdminShellHref(active: string, pathname: string, search: string): string {
+  const params = new URLSearchParams(search);
+
+  if (pathname.startsWith("/staff")) {
+    params.set("view", "admin");
+    params.set("adminView", active);
+  } else {
+    params.set("view", active);
+  }
+
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
