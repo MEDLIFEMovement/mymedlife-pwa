@@ -657,7 +657,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Chapter Leaderboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Learn from top chapters. Find ideas to try. Rise together.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST benchmark preview. Sample chapter comparisons stay visible for review, but they do not count as live chapter rankings, rollout evidence, or production planning truth.</p>
         </div>
         {/* Region filter */}
         <select className="text-xs border border-slate-200 rounded-lg px-3 py-1.5 bg-white text-slate-700 font-medium"
@@ -686,25 +686,25 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
       <div className="grid grid-cols-4 gap-4">
         {/* National / Organizational average */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 text-center">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Organizational Average</div>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Organizational Average</div>
           <div className="text-3xl font-black tabular-nums" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
             {fmtVal(nationalAvg)}
           </div>
-          <div className="text-xs text-slate-400 mt-1">{active.label} · {CHAPTERS.length} chapters</div>
+          <div className="text-xs text-slate-400 mt-1">TEST benchmark only · {active.label} · {CHAPTERS.length} chapters</div>
         </div>
 
         {/* Regional average */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 text-center">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Regional Average</div>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Regional Average</div>
           <div className="text-3xl font-black tabular-nums" style={{ color:"#7C3AED", fontFamily:"'JetBrains Mono',monospace" }}>
             {fmtVal(regionalAvg)}
           </div>
-          <div className="text-xs text-slate-400 mt-1">{bcRegion} region · {regionalChapters.length} chapter{regionalChapters.length!==1?"s":""}</div>
+          <div className="text-xs text-slate-400 mt-1">TEST benchmark only · {bcRegion} region · {regionalChapters.length} chapter{regionalChapters.length!==1?"s":""}</div>
         </div>
 
         {/* BC vs national */}
         <div className={`rounded-2xl border p-5 text-center ${bcAbove ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Boston College vs. National</div>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Boston College vs. National Preview</div>
           <div className="flex items-center justify-center gap-3 mb-1">
             <span className="text-2xl font-black tabular-nums" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
               {fmtVal(bcVal)}
@@ -716,8 +716,8 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
           </div>
           <div className={`text-xs font-semibold ${bcAbove ? "text-green-700" : "text-amber-700"}`}>
             {bcAbove
-              ? `${sortKey==="funds" ? `$${(bcVal-nationalAvg).toLocaleString()}` : bcVal-nationalAvg} above national average`
-              : `${sortKey==="funds" ? `$${(nationalAvg-bcVal).toLocaleString()}` : nationalAvg-bcVal} below national average — room to grow`}
+              ? `TEST benchmark: ${sortKey==="funds" ? `$${(bcVal-nationalAvg).toLocaleString()}` : bcVal-nationalAvg} above national average`
+              : `TEST benchmark: ${sortKey==="funds" ? `$${(nationalAvg-bcVal).toLocaleString()}` : nationalAvg-bcVal} below national average — preview gap to review`}
           </div>
         </div>
 
@@ -725,7 +725,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
         {sorted[0] && (
           <div className="rounded-2xl border p-5 text-center" style={{ background: active.color + "0d", borderColor: active.color + "40" }}>
             <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: active.color }}>
-              {filterRegion === "All Regions" ? "National Leader" : `${filterRegion} Leader`}
+              {filterRegion === "All Regions" ? "TEST National Leader Preview" : `TEST ${filterRegion} Leader Preview`}
             </div>
             <div className="text-sm font-black text-slate-900 mb-1">{sorted[0].name}</div>
             <div className="text-3xl font-black tabular-nums mb-1" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
@@ -739,9 +739,9 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
       {/* Insight tip */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 flex items-start gap-2">
         <Sparkles size={15} className="text-blue-500 mt-0.5 shrink-0"/>
-        {sortKey==="events" && <span><strong>Ideas to try:</strong> UCLA assigns event creation as a first action for new members — every new recruit creates one. UT Austin tracks creator names on every event to build a leaderboard within the chapter.</span>}
-        {sortKey==="slt"    && <span><strong>Ideas to try:</strong> McGill's 38-participant SLT record comes from weekly testimonial posts from alumni. UCLA hosts a dedicated SLT alumni Q&A each semester that consistently converts 60%+ of attendees.</span>}
-        {sortKey==="funds"  && <span><strong>Ideas to try:</strong> UCLA's Moving Mountains campaign runs a live donation tracker on their chapter Instagram story. McGill uses a chapter-vs-chapter challenge to motivate donors in the final week.</span>}
+        {sortKey==="events" && <span><strong>TEST benchmark idea:</strong> TEST UCLA MEDLIFE assigns event creation as a first action for new members, and TEST UT Austin MEDLIFE tracks creator names on each event. Keep this as sample comparison guidance only, not a live operational recommendation.</span>}
+        {sortKey==="slt"    && <span><strong>TEST benchmark idea:</strong> TEST McGill MEDLIFE pairs alumni testimonial posts with a dedicated SLT Q&amp;A night, and TEST UCLA MEDLIFE follows up personally after each session. Keep this as sample comparison guidance only, not a live operational recommendation.</span>}
+        {sortKey==="funds"  && <span><strong>TEST benchmark idea:</strong> TEST UCLA MEDLIFE runs a Moving Mountains tracker on chapter social, and TEST McGill MEDLIFE uses a chapter challenge at the end of the campaign. Keep this as sample comparison guidance only, not a live operational recommendation.</span>}
       </div>
 
       {/* Ranked leaderboard table */}
@@ -872,7 +872,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
                     })}
                   </div>
                 </div>
-                <Btn variant="ghost" onClick={() => onNavigate("bridge")}><BookOpen size={11}/>Top Bridge Videos</Btn>
+                <Btn variant="ghost" onClick={() => onNavigate("bridge")}><BookOpen size={11}/>Open Bridge Video Previews</Btn>
               </div>
             </div>
           );
@@ -3360,9 +3360,9 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Member Leaderboard</h1>
-          <p className="text-sm text-slate-500 mt-1">See how members rank within the chapter, region, and organization.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST leaderboard preview. Sample member ranking context stays visible for review, but it does not grant live member-management authority.</p>
         </div>
-        <Btn variant="primary"><Plus size={11}/>Add Member</Btn>
+        <Btn variant="primary" blockedTitle="Member roster creation is blocked in this preview. Use the visible leaderboard only for TEST comparison review."><Plus size={11}/>Add Member</Btn>
       </div>
 
       {/* View tabs */}
@@ -3384,7 +3384,7 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
           <span>
             {view==="regional"
               ? <><strong>New England Region</strong> — TEST members from Boston College, MIT, Northeastern, BU, and other New England chapters.</>
-              : <><strong>Organizational Leaderboard</strong> — members from all MEDLIFE chapters globally, sorted by total points.</>}
+              : <><strong>Organizational Leaderboard</strong> — TEST members from MEDLIFE chapters globally, sorted by sample total points.</>}
             {" "}TEST Boston College members are <strong>highlighted</strong>.
           </span>
         </div>
@@ -3465,7 +3465,7 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
       {view !== "chapter" && (
         <p className="text-[11px] text-slate-400 text-center">
           Showing {rows.length} members across {view==="regional" ? "New England" : "the organization"}.
-          Only chapter-wide points, events, and tasks are shown — values alignment and profile details are private.
+          Only chapter-wide points, events, and tasks are shown in this TEST preview — values alignment and profile details are private.
         </p>
       )}
     </div>
