@@ -236,7 +236,7 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
       {onBack && (
         <button
           onClick={onBack}
-          aria-label="Return to Staff Command Center"
+          aria-label="Command Center"
           className="flex w-full items-start gap-2 border-b border-white/[0.05] px-4 py-3 text-left text-slate-300 transition-colors hover:bg-white/[0.02] hover:text-white group"
         >
           <ChevronRight size={11} className="mt-0.5 rotate-180 text-slate-500 group-hover:text-sky-300 transition-colors" />
