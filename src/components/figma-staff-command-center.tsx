@@ -2126,12 +2126,11 @@ export function FigmaStaffCommandCenter({
           </nav>
 
           {/* Right */}
-          <div className="pointer-events-none ml-auto flex min-w-0 max-w-[11.5rem] flex-none items-center justify-end gap-2 sm:max-w-[12.5rem] sm:gap-3 lg:max-w-[13rem] xl:max-w-[14rem]">
+          <div className="pointer-events-none ml-auto flex min-w-0 max-w-[11.5rem] flex-none items-center justify-end sm:max-w-[12.5rem] lg:max-w-[13rem] xl:max-w-[14rem]">
             <div className="pointer-events-none flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1">
               <AlertTriangle className="w-3 h-3 text-red-400" />
               <span className="truncate text-xs font-semibold text-red-300">2 chapters need intervention</span>
             </div>
-            <div className="hidden h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-sidebar lg:flex">JS</div>
           </div>
         </div>
       </header>
