@@ -10,11 +10,12 @@ import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
 import {
   getSltTripPrepChecklistWorkspace,
+  getSltTripPrepSubnavItems,
   type SltTripPrepChecklistFilter,
   sltTripPrepMobileQuickNavItems,
-  sltTripPrepSubnavItems,
 } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import type { TripPrepChecklistItem } from "@/shared/types/slt-trip-prep";
 import { getSltPrepPageContext } from "../page-context";
 
 export const metadata = getStaticRouteMetadata("sltPrepChecklist");
@@ -26,9 +27,7 @@ type ChecklistPageProps = {
   }>;
 };
 
-export default async function SltPrepChecklistPage({
-  searchParams,
-}: ChecklistPageProps) {
+export default async function SltPrepChecklistPage({ searchParams }: ChecklistPageProps) {
   const emptySearchParams: { filter?: string } = {};
   const [{ actor, data }, search] = await Promise.all([
     getSltPrepPageContext("/slt-prep/checklist"),
@@ -38,9 +37,13 @@ export default async function SltPrepChecklistPage({
   const workspace = getSltTripPrepChecklistWorkspace(actor, filter);
 
   return (
-    <AppShell actor={actor} mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}>
+    <AppShell
+      actor={actor}
+      hideTopHeader
+      mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
+    >
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...sltTripPrepSubnavItems]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
 
       {!workspace.canReadChecklist || !workspace.traveler ? (
         <RestrictedState
@@ -51,30 +54,38 @@ export default async function SltPrepChecklistPage({
         />
       ) : (
         <>
-          <section className="rounded-[2rem] border border-white/12 bg-[#071d1a]/90 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-100">
-              Traveler readiness checklist
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">{workspace.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-white/68">
-              {workspace.summary}
-            </p>
+          <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08)]">
+            <div className="bg-[#0066CC] px-4 py-4">
+              <div className="flex items-center gap-3">
+                <Link href="/slt-prep" className="text-sm font-semibold text-white/86">
+                  ← Trip Prep
+                </Link>
+                <h1 className="text-lg font-semibold text-white">Readiness Checklist</h1>
+              </div>
+            </div>
+            <div className="px-5 py-5">
+              <p className="text-sm leading-6 text-slate-600">
+                Use the checklist the way the exported SLT screen intends: open one item at a time,
+                see what is complete, what is due soon, and what still needs follow-up before departure.
+              </p>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <SltPrepMiniStat label="Total items" value={`${workspace.counts.total}`} variant="light" />
+                <SltPrepMiniStat label="Complete" value={`${workspace.counts.complete}`} variant="light" />
+                <SltPrepMiniStat
+                  label="Needs attention"
+                  value={`${workspace.counts.needsAttention}`}
+                  variant="light"
+                />
+                <SltPrepMiniStat label="Upcoming" value={`${workspace.counts.upcoming}`} variant="light" />
+              </div>
+            </div>
           </section>
 
-          <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <SltPrepMiniStat label="Total items" value={`${workspace.counts.total}`} />
-            <SltPrepMiniStat label="Complete" value={`${workspace.counts.complete}`} />
-            <SltPrepMiniStat
-              label="Needs follow-up"
-              value={`${workspace.counts.needsAttention}`}
-            />
-            <SltPrepMiniStat label="Upcoming" value={`${workspace.counts.upcoming}`} />
-          </section>
-
-          <div className="flex flex-wrap gap-2">
+          <section className="flex flex-wrap gap-2">
             {[
-              { key: "all", label: "All items" },
-              { key: "needs_attention", label: "Needs follow-up" },
+              { key: "all", label: "All" },
+              { key: "needs_attention", label: "Due Soon / Missing" },
               { key: "complete", label: "Complete" },
             ].map((option) => {
               const isActive = option.key === workspace.filter;
@@ -87,51 +98,56 @@ export default async function SltPrepChecklistPage({
                   className={[
                     "rounded-full border px-4 py-2 text-sm font-semibold transition",
                     isActive
-                      ? "border-[#f7d05e]/35 bg-[#f7d05e]/14 text-white"
-                      : "border-white/10 bg-black/20 text-white/70 hover:border-white/20 hover:text-white",
+                      ? "border-[#0066CC] bg-[#0066CC] text-white"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-950",
                   ].join(" ")}
                 >
                   {option.label}
                 </Link>
               );
             })}
-          </div>
+          </section>
 
-          <SltPrepSectionCard eyebrow="Checklist items" title="Open one item at a time">
+          <SltPrepSectionCard eyebrow="Checklist items" title="Open each missing or due-soon item" variant="light">
             <div className="grid gap-3">
-              {workspace.items.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/slt-prep/checklist/${item.id}`}
-                  className="rounded-[1.35rem] border border-white/10 bg-black/20 p-4 transition hover:border-[#f7d05e]/35 hover:bg-white/[0.07]"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/44">
-                        {item.category}
-                      </p>
-                      <h2 className="mt-2 text-lg font-semibold text-white">{item.title}</h2>
-                      <p className="mt-2 max-w-2xl text-sm leading-6 text-white/68">
-                        {item.summary}
-                      </p>
-                    </div>
-                    <SltPrepTonePill
-                      tone={toChecklistTone(item.status)}
-                      label={item.status.replace("_", " ")}
-                    />
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-white/54">
-                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
-                      {item.dueLabel}
-                    </span>
-                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
-                      {item.owner}
-                    </span>
-                    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1">
-                      {item.mockSource}
+              {groupChecklistItems(workspace.items).map((group) => (
+                <section key={group.label}>
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-bold tracking-tight text-slate-900">{group.label}</h2>
+                    <span className="text-sm text-slate-400">
+                      {group.items.filter((item) => item.status === "complete").length}/{group.items.length}
                     </span>
                   </div>
-                </Link>
+                  <div className="space-y-3">
+                    {group.items.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={`/slt-prep/checklist/${item.id}`}
+                        className="block rounded-[1.35rem] border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-slate-100/80"
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-base font-semibold text-slate-950">{item.title}</p>
+                            <p className="mt-2 text-sm leading-6 text-slate-600">{item.summary}</p>
+                            <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                              <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
+                                {item.dueLabel}
+                              </span>
+                              <span className="rounded-full border border-slate-200 bg-white px-3 py-1">
+                                {item.mockSource}
+                              </span>
+                            </div>
+                          </div>
+                          <SltPrepTonePill
+                            tone={toChecklistTone(item)}
+                            label={getChecklistLabel(item)}
+                            variant="light"
+                          />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           </SltPrepSectionCard>
@@ -153,14 +169,54 @@ function parseChecklistFilter(value: string | undefined): SltTripPrepChecklistFi
   return "all";
 }
 
-function toChecklistTone(status: string): "red" | "yellow" | "green" {
-  if (status === "needs_attention") {
+function groupChecklistItems(items: TripPrepChecklistItem[]) {
+  const groups = [
+    { label: "Payments", match: (item: TripPrepChecklistItem) => item.category === "Payments" },
+    {
+      label: "Required Forms",
+      match: (item: TripPrepChecklistItem) => item.category === "Required forms",
+    },
+    {
+      label: "Travel Details",
+      match: (item: TripPrepChecklistItem) =>
+        item.category === "Travel docs" || item.category === "Flights",
+    },
+    { label: "Meetings", match: (item: TripPrepChecklistItem) => item.category === "Meetings" },
+    {
+      label: "Extensions / Extra Tours",
+      match: (item: TripPrepChecklistItem) => item.category === "Extensions",
+    },
+  ];
+
+  return groups
+    .map((group) => ({
+      label: group.label,
+      items: items.filter(group.match),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
+function toChecklistTone(item: TripPrepChecklistItem): "red" | "yellow" | "green" {
+  if (item.status === "needs_attention") {
     return "red";
   }
 
-  if (status === "in_review" || status === "upcoming") {
+  if (item.status === "in_review" || item.status === "upcoming") {
     return "yellow";
   }
 
   return "green";
+}
+
+function getChecklistLabel(item: TripPrepChecklistItem) {
+  switch (item.status) {
+    case "needs_attention":
+      return "Missing";
+    case "in_review":
+      return "In review";
+    case "upcoming":
+      return "Due soon";
+    case "complete":
+      return "Complete";
+  }
 }

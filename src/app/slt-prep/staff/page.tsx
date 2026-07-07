@@ -14,7 +14,7 @@ import {
   type SltTripPrepStaffFocusFilter,
   type SltTripPrepStaffRiskFilter,
 } from "@/services/slt-trip-prep-staff-workspace";
-import { sltTripPrepSubnavItems } from "@/services/slt-trip-prep-workspace";
+import { getSltTripPrepSubnavItems } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
 import { getSltPrepPageContext } from "../page-context";
 
@@ -54,7 +54,7 @@ export default async function SltPrepStaffPage({ searchParams }: StaffPageProps)
   return (
     <AppShell actor={actor}>
       <DataSourceNotice source={data.source} />
-      <SltPrepSubnav items={[...sltTripPrepSubnavItems]} />
+      <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
 
       {!workspace.canReadDashboard || !workspace.selectedTraveler ? (
         <RestrictedState

@@ -96,7 +96,7 @@ describe("SLT Prep routes", () => {
 
     expect(html).toContain("Completion preview");
     expect(html).toContain("Open admin packet");
-    expect(html).toContain("Preview completion packet");
+    expect(html).toContain("Review payment status");
   });
 
   type SltPrepRoutePage = (props: {
@@ -117,56 +117,56 @@ describe("SLT Prep routes", () => {
       importer: () => import("@/app/slt-prep/checklist/page"),
       render: (Page) =>
         Page({ searchParams: Promise.resolve({ filter: "needs_attention" }) }),
-      text: "Needs follow-up",
+      text: "Open each missing or due-soon item",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/forms",
       importer: () => import("@/app/slt-prep/forms/page"),
       render: (Page) => Page({ searchParams: Promise.resolve({}) }),
-      text: "Forms hub for Sofia",
+      text: "Student-friendly form language",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/payments",
       importer: () => import("@/app/slt-prep/payments/page"),
       render: (Page) => Page({ searchParams: Promise.resolve({}) }),
-      text: "Finance view for Sofia",
+      text: "Readable without live checkout",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/meetings",
       importer: () => import("@/app/slt-prep/meetings/page"),
       render: (Page) => Page({ searchParams: Promise.resolve({}) }),
-      text: "Meeting plan for Sofia",
+      text: "Required preparation touchpoints",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/extensions",
       importer: () => import("@/app/slt-prep/extensions/page"),
       render: (Page) => Page({ searchParams: Promise.resolve({}) }),
-      text: "Optional add-ons for Sofia",
+      text: "Understand the choices without live booking",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/timeline",
       importer: () => import("@/app/slt-prep/timeline/page"),
       render: (Page) => Page({ searchParams: Promise.resolve({}) }),
-      text: "Timeline to July 18, 2026",
+      text: "Everything in sequence",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/notifications",
       importer: () => import("@/app/slt-prep/notifications/page"),
       render: (Page) => Page({ searchParams: Promise.resolve({}) }),
-      text: "No email, SMS, or push message is sent from this app.",
+      text: "No email, SMS, push, reminder, or provider sync fires from this notification center.",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/profile",
       importer: () => import("@/app/slt-prep/profile/page"),
       render: (Page) => Page({ searchParams: Promise.resolve({}) }),
-      text: "Profile and flight context for Sofia Alvarez",
+      text: "Source-confidence note",
       email: "traveler.a@mymedlife.test",
     },
     {
