@@ -189,7 +189,6 @@ const NAV_PRIMARY = [
   { id: "audit", label: "Audit Logs", icon: FileText },
   { id: "health", label: "System Health", icon: Activity },
   { id: "apikeys", label: "API Keys", icon: KeyRound },
-  { id: "mcp", label: "MCP Connections", icon: Cpu },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -248,6 +247,14 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
         <div className="mt-5 pt-3 border-t border-white/[0.04]">
           <div className="px-3 mb-2">
             <span className="text-[9px] text-slate-700 font-mono uppercase tracking-[0.15em]">Disabled Modules</span>
+          </div>
+          <div
+            aria-disabled="true"
+            className="flex items-center gap-2.5 px-3 py-[7px] text-[12px] text-slate-700 cursor-not-allowed select-none"
+            title="MCP policy review stays outside the launch-critical admin menu in this preview"
+          >
+            <Cpu size={13} className="text-slate-800" />
+            MCP Connections
           </div>
           {NAV_DISABLED.map(({ id, label, icon: Icon }) => (
             <div key={id} className="flex items-center gap-2.5 px-3 py-[7px] text-[12px] text-slate-700 cursor-not-allowed select-none">
