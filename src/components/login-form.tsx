@@ -79,7 +79,7 @@ export function LoginForm({
             type="button"
             className="text-xs font-medium transition-opacity hover:opacity-70"
             style={{ color: "#b8253a" }}
-            title="Password reset is not available in this review build."
+            title="Use the secure link from your invite or password reset email."
           >
             Forgot password?
           </button>
