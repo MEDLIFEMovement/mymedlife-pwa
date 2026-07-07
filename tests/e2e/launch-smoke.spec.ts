@@ -47,7 +47,8 @@ test.describe("myMEDLIFE launch route smoke", () => {
       .getByRole("link", { name: "Stories", exact: true })
       .click();
     await expect(page).toHaveURL(/\/app\/stories$/);
-    await expect(page.getByRole("heading", { name: "MEDLIFE Stories", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Stories", exact: true })).toBeVisible();
+    await expect(page.getByText("MEDLIFE Stories · preview-only student feed")).toBeVisible();
 
     await page.getByRole("link", { name: "Events" }).click();
     await expect(page).toHaveURL(/\/app\/events$/);

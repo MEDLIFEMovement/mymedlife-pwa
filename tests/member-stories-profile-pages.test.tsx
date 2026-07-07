@@ -50,7 +50,7 @@ describe("member stories and profile pages", () => {
     const { default: AppStoriesPage } = await import("@/app/app/stories/page");
     const html = renderToStaticMarkup(await AppStoriesPage({}));
 
-    expect(html).toContain("MEDLIFE Stories");
+    expect(html).toContain(">Stories<");
     expect(html).toContain("Stories");
     expect(html).toContain("Read more");
     expect(html).toContain('href="/app"');
@@ -58,7 +58,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/events"');
     expect(html).toContain('href="/app/points"');
     expect(html).toContain('href="/profile"');
-    expect(html).toContain("Preview-only student feed");
+    expect(html).toContain("MEDLIFE Stories · preview-only student feed");
     expect(html).toContain("Preview");
     expect(html).toContain("TEST @nationwide");
     expect(html).toContain("TEST @uconn");
@@ -102,7 +102,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Story saving is blocked in this preview");
     expect(html).toContain("preview likes");
     expect(html).toContain("preview views");
-    expect(html).toContain("Preview only - save and source links stay blocked in this reader.");
+    expect(html).toContain("Preview only - reactions, saves, and source links stay blocked in this reader.");
     expect(html).toContain("TEST UConn");
   });
 
