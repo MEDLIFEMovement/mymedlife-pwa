@@ -336,6 +336,8 @@ describe("leader page", () => {
     expect(feedHtml).toContain("TEST analytics preview.");
     expect(feedHtml).toContain("Feed sharing is blocked in this preview until staff approval is complete.");
     expect(feedHtml).toContain("Direct member outreach is blocked in this preview until messaging approval is complete.");
+    expect(feedHtml).toContain("Preview Feed Share");
+    expect(feedHtml).toContain("Preview Member Prompt");
     expect(feedHtml).toContain("TEST How to Run a Successful Info Night");
 
     const valuesHtml = renderToStaticMarkup(
@@ -374,6 +376,17 @@ describe("leader page", () => {
     expect(trainingHtml).toContain("TEST MEDLIFE Chapter Leadership Guide — Full Onboarding");
     expect(trainingHtml).toContain("Preview Link");
     expect(trainingHtml).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
+
+    const storiesHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "stories",
+        }),
+      }),
+    );
+    expect(storiesHtml).toContain("TEST stories preview.");
+    expect(storiesHtml).toContain("Preview Story Intake");
+    expect(storiesHtml).toContain("TEST MEDLIFE Stories preview");
   });
 
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
@@ -420,7 +433,9 @@ describe("leader page", () => {
     expect(source).toContain("Preview Video");
     expect(source).toContain("Preview Feed Share");
     expect(source).toContain("Preview Feature");
+    expect(source).toContain("Preview →");
     expect(source).toContain("TEST analytics preview. Sample posts, engagement, and outreach cues stay visible for review, but they do not count as live feed evidence or messaging authority.");
+    expect(source).toContain("Preview Member Prompt");
     expect(source).toContain('subject:"TEST Rosa M."');
     expect(source).toContain('location:"TEST Pisac, Cusco Region"');
     expect(source).toContain("Bridge video sharing is blocked in this preview until staff approval is complete.");
@@ -490,5 +505,18 @@ describe("leader page", () => {
     expect(source).toContain("Preview Link");
     expect(source).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
     expect(source).not.toContain('href={r.url}');
+  });
+
+  it("keeps leader stories controls preview-safe and TEST-labeled instead of sounding live", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-stories-screen.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("Preview Story Intake");
+    expect(source).toContain("Preview Save");
+    expect(source).toContain("Preview Source on");
+    expect(source).toContain("TEST stories preview. Sample chapter, field, and student stories stay visible for review, but no save, source-open, publish, or feed sync action is live.");
+    expect(source).toContain("TEST MEDLIFE Stories preview — curated by staff · requires approval before publishing");
   });
 });
