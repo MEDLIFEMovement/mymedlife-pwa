@@ -13,6 +13,7 @@ import {
 
 type CampaignStatus = "live" | "draft" | "archived" | "scheduled";
 type StepStatus = "live" | "draft" | "inactive" | "deprecated";
+type CommTriggerStatus = "blocked" | "draft";
 type BuilderTab = "steps" | "role-matrix" | "completion" | "points" | "comms" | "preview" | "version";
 type RolePermission = "read" | "submit" | "approve" | "configure" | "—";
 
@@ -253,11 +254,11 @@ const ROLE_MATRIX_STEP1: RoleMatrixEntry[] = [
 ];
 
 const COMM_TRIGGERS = [
-  { id: 1, trigger: "Step becomes active", audience: "All enrolled members", channel: "Push notification", timing: "Immediately", source: "myMEDLIFE", status: "live" as const },
-  { id: 2, trigger: "Member submits evidence", audience: "Coach, DS Admin", channel: "In-app message", timing: "Immediately", source: "myMEDLIFE", status: "live" as const },
-  { id: 3, trigger: "Step deadline approaching (48h)", audience: "Assigned member", channel: "Email + Push", timing: "48h before deadline", source: "HubSpot", status: "live" as const },
-  { id: 4, trigger: "Step overdue — no submission", audience: "E-board + Coach", channel: "Escalation message", timing: "1h after deadline passes", source: "myMEDLIFE", status: "live" as const },
-  { id: 5, trigger: "Step approved & completed", audience: "Member", channel: "In-app + Feed update", timing: "Immediately on approval", source: "myMEDLIFE", status: "draft" as const },
+  { id: 1, trigger: "Step becomes active", audience: "All enrolled members", channel: "Push notification", timing: "Immediately", source: "myMEDLIFE", status: "blocked" as CommTriggerStatus },
+  { id: 2, trigger: "Member submits evidence", audience: "Coach, DS Admin", channel: "In-app message", timing: "Immediately", source: "myMEDLIFE", status: "blocked" as CommTriggerStatus },
+  { id: 3, trigger: "Step deadline approaching (48h)", audience: "Assigned member", channel: "Email + Push", timing: "48h before deadline", source: "HubSpot", status: "blocked" as CommTriggerStatus },
+  { id: 4, trigger: "Step overdue — no submission", audience: "E-board + Coach", channel: "Escalation message", timing: "1h after deadline passes", source: "myMEDLIFE", status: "blocked" as CommTriggerStatus },
+  { id: 5, trigger: "Step approved & completed", audience: "Member", channel: "In-app + Feed update", timing: "Immediately on approval", source: "myMEDLIFE", status: "blocked" as CommTriggerStatus },
 ];
 
 const POINTS_DATA = [
@@ -283,7 +284,7 @@ const ROLE_PREVIEWS = [
     approval: "Not required for this role on this step",
     points: "30 points awarded upon completion",
     kpi: "+1 to Recruitment Rate",
-    hubspot: "2 email reminders via HubSpot: 48h and 24h before deadline",
+    hubspot: "Preview only — HubSpot reminders stay blocked until provider-send approval",
   },
   {
     role: "Action Committee Chair",
@@ -295,7 +296,7 @@ const ROLE_PREVIEWS = [
     approval: "Can approve submissions if delegated by Coach",
     points: "40 points upon completion",
     kpi: "+1 Recruitment Rate + role-level modifier applied",
-    hubspot: "1 escalation alert if chapter falls below 40% completion",
+    hubspot: "Preview only — escalation alerts stay blocked until provider-send approval",
   },
   {
     role: "Coach",
@@ -307,7 +308,7 @@ const ROLE_PREVIEWS = [
     approval: "Final approver — approval triggers next step unlock",
     points: "No points (staff role)",
     kpi: "Campaign Health KPI updated immediately on approval",
-    hubspot: "Approval request email sent via HubSpot on submission",
+    hubspot: "Preview only — approval request email is not sent from this shell",
   },
   {
     role: "DS Admin",
@@ -325,10 +326,11 @@ const ROLE_PREVIEWS = [
 
 // ─── Utility Components ───────────────────────────────────────────────────────
 
-function StatusBadge({ status }: { status: CampaignStatus | StepStatus | "live" | "draft" }) {
+function StatusBadge({ status }: { status: CampaignStatus | StepStatus | CommTriggerStatus }) {
   const config: Record<string, string> = {
     live: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     draft: "bg-amber-50 text-amber-700 border border-amber-200",
+    blocked: "bg-slate-100 text-slate-500 border border-slate-200",
     archived: "bg-slate-100 text-slate-500 border border-slate-200",
     scheduled: "bg-blue-50 text-blue-700 border border-blue-200",
     inactive: "bg-slate-100 text-slate-500 border border-slate-200",
@@ -336,6 +338,7 @@ function StatusBadge({ status }: { status: CampaignStatus | StepStatus | "live" 
   };
   const labels: Record<string, string> = {
     live: "Live", draft: "Draft", archived: "Archived",
+    blocked: "Blocked",
     scheduled: "Scheduled", inactive: "Inactive", deprecated: "Deprecated",
   };
   return (
@@ -1238,11 +1241,15 @@ function CommTriggersTab({ step }: { step: Step | null }) {
           <h2 className="text-lg font-semibold text-foreground">Communication Trigger Matrix</h2>
           {step && (
             <p className="text-sm text-muted-foreground mt-0.5">
-              Step {step.number}: {step.name} &middot; {step.commCount} active triggers
+              Step {step.number}: {step.name} &middot; {step.commCount} preview triggers
             </p>
           )}
         </div>
-        <button className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
+        <button
+          disabled
+          title="Adding communication triggers is blocked until provider-send approval is complete"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-semibold opacity-50 cursor-not-allowed"
+        >
           <Plus className="w-3.5 h-3.5" />
           Add Trigger
         </button>
@@ -1287,7 +1294,11 @@ function CommTriggersTab({ step }: { step: Step | null }) {
                 </span>
               </div>
             </div>
-            <button className="p-1.5 hover:bg-muted rounded-md transition-colors text-muted-foreground shrink-0">
+            <button
+              disabled
+              title="Editing communication triggers is blocked until provider-send approval is complete"
+              className="p-1.5 rounded-md text-muted-foreground shrink-0 opacity-50 cursor-not-allowed"
+            >
               <Edit3 className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -1296,7 +1307,8 @@ function CommTriggersTab({ step }: { step: Step | null }) {
 
       <p className="mt-6 text-xs text-muted-foreground flex items-center gap-1.5">
         <Info className="w-3.5 h-3.5 shrink-0" />
-        Orange-tagged triggers fire via HubSpot. All others are handled by myMEDLIFE internal systems. Workflow first — communications are downstream.
+        Orange-tagged triggers identify future HubSpot routing. No HubSpot, push, feed, escalation, or internal message sends run from this preview.
+        Workflow first — communications are downstream.
       </p>
     </div>
   );
