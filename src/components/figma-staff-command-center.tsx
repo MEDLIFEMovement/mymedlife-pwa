@@ -461,7 +461,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
             </div>
             <h2 className="text-base font-bold text-foreground">{chapter.name}</h2>
             <div className="text-xs text-muted-foreground">{chapter.school}</div>
-            <div className="mt-1 text-[11px] text-amber-700">Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer.</div>
+            <div className="mt-1 text-[11px] text-amber-700">Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer. Use the Admin tab for DS directory and audit review.</div>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{chapter.country}</span>
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{chapter.activeMembers} members</span>
@@ -1621,7 +1621,7 @@ function ProofUGCQueue() {
                   ))}
                 </div>
                 <p className="text-[10px] text-amber-700 mt-2 leading-relaxed">
-                  Share targets stay visible for moderation review, but publishing and distribution actions remain blocked in this launch pass.
+                  Share targets stay visible for moderation review. Use the Admin tab for DS review of audit and blocked-control posture; publishing and distribution actions remain blocked in this launch pass.
                 </p>
               </div>
 
@@ -1663,7 +1663,7 @@ function ProofUGCQueue() {
               <Eye className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="text-sm font-semibold text-foreground mb-1">Select a story to review</div>
-            <div className="text-xs text-muted-foreground leading-relaxed">Click any card to see consent status, sharing options, and actions.</div>
+            <div className="text-xs text-muted-foreground leading-relaxed">Click any card to review consent and blocked actions, or use the Admin tab for DS preview.</div>
           </div>
         )}
 
