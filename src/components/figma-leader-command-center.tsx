@@ -432,11 +432,13 @@ function FillBar({ pct, color="#1A56E8" }: { pct: number; color?: string }) {
 function HomeScreen({
   onCreateEvent,
   onOpenEvents,
-  onOpenLeaderboard,
+  onAssignAction,
+  onPromote,
 }: {
   onCreateEvent: () => void;
   onOpenEvents: () => void;
-  onOpenLeaderboard: () => void;
+  onAssignAction: () => void;
+  onPromote: () => void;
 }) {
   return (
     <div className="space-y-5">
@@ -535,8 +537,15 @@ function HomeScreen({
           <SH sub="">Quick Actions</SH>
           <div className="mt-2 space-y-1.5">
             <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={11}/>Create Event</Btn>
-            <Btn variant="secondary"  className="w-full justify-start" onClick={onOpenEvents}><CheckCircle size={11}/>Review RSVPs & Attendance</Btn>
-            <Btn variant="secondary"  className="w-full justify-start" onClick={onOpenLeaderboard}><Trophy size={11}/>Check Chapter Leaderboard</Btn>
+            <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={11}/>Assign Task</Btn>
+            <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={11}/>Promote Emerging Leader</Btn>
+            <Btn
+              variant="secondary"
+              className="w-full justify-start"
+              blockedTitle="Bridge video sharing is blocked in this preview until staff approval is complete."
+            >
+              <Video size={11}/>Share Bridge Video
+            </Btn>
           </div>
         </div>
       </div>
@@ -4225,8 +4234,9 @@ export function FigmaLeaderCommandCenter({
           {screen==="home"        && (
             <HomeScreen
               onCreateEvent={handleCreateEvent}
+              onAssignAction={() => openAssignActionPreview()}
+              onPromote={() => openPromotePreview()}
               onOpenEvents={() => navigateToScreen("events")}
-              onOpenLeaderboard={() => navigateToScreen("leaderboard")}
             />
           )}
           {screen==="leaderboard" && <LeaderboardScreen onNavigate={navigateToScreen}/>}
