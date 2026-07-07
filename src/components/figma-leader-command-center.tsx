@@ -2299,7 +2299,7 @@ function BridgeScreen() {
               {/* Footer */}
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <span className="text-[10px] text-slate-400">Submitted {v.date}</span>
-                <span className="text-[11px] text-blue-500 font-semibold group-hover:underline">Watch →</span>
+                <span className="text-[11px] text-blue-500 font-semibold group-hover:underline">Preview →</span>
               </div>
             </div>
           </button>
@@ -3043,8 +3043,8 @@ function FeedScreen() {
           <p className="text-sm text-slate-500 mt-1">TEST analytics preview. Sample posts, engagement, and outreach cues stay visible for review, but they do not count as live feed evidence or messaging authority.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" blockedTitle="Feed sharing is blocked in this preview until staff approval is complete."><Share2 size={11}/>Share to Feed</Btn>
-          <Btn variant="primary" blockedTitle="Direct member outreach is blocked in this preview until messaging approval is complete."><MessageSquare size={11}/>Ask Members to Respond</Btn>
+          <Btn variant="secondary" blockedTitle="Feed sharing is blocked in this preview until staff approval is complete."><Share2 size={11}/>Preview Feed Share</Btn>
+          <Btn variant="primary" blockedTitle="Direct member outreach is blocked in this preview until messaging approval is complete."><MessageSquare size={11}/>Preview Member Prompt</Btn>
         </div>
       </div>
 

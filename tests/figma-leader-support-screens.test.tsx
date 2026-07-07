@@ -58,7 +58,7 @@ describe("copied Figma leader support screens", () => {
     expect(html).toContain("MEDLIFE Stories");
     expect(html).toContain("TEST stories preview.");
     expect(html).toContain("TEST live from the field preview");
-    expect(html).toContain("Add Story");
+    expect(html).toContain("Preview Story Intake");
     expect(html).toContain("For You");
     expect(html).toContain("My Chapter");
     expect(html).toContain("Field Stories");
@@ -86,5 +86,7 @@ describe("copied Figma leader support screens", () => {
     expect(storiesSource).toContain("Story saving is blocked in this preview");
     expect(storiesSource).toContain("External story sources are blocked in this preview until feed-sharing approval is complete");
     expect(storiesSource).toContain("TEST MEDLIFE Stories preview — curated by staff · requires approval before publishing");
+    expect(storiesSource).toContain("Preview Save");
+    expect(storiesSource).toContain("Preview Source on");
   });
 });
