@@ -1751,56 +1751,56 @@ interface FieldStory {
 
 const FIELD_STORIES: FieldStory[] = [
   {
-    id:1, mc:"MC21", type:"patient", subject:"Rosa M.", age:"68",
-    location:"Pisac, Cusco Region", photo:"photo-1760726394506-855463da8979",
-    headline:"First dental visit in over a decade",
-    excerpt:"Rosa walked three hours from her highland village to reach the MC21 clinic. She had never received dental care.",
-    full:"Rosa walked three hours from her village in the mountains above Pisac to reach the MC21 mobile clinic in Cusco. At 68, she had never received professional dental care. With the help of volunteer dentists and a BC student translator, she received two extractions and a full cleaning. Her daughter, who accompanied her, wept with gratitude. Rosa left holding a toothbrush — her first — and a follow-up care card. This is the moment we work toward.",
+    id:1, mc:"MC21", type:"patient", subject:"TEST Rosa M.", age:"68",
+    location:"TEST Pisac, Cusco Region", photo:"photo-1760726394506-855463da8979",
+    headline:"TEST first dental visit in over a decade",
+    excerpt:"TEST preview story: Rosa walked three hours from her highland village to reach the MC21 clinic. She had never received dental care.",
+    full:"TEST preview story: Rosa walked three hours from her village in the mountains above Pisac to reach the MC21 mobile clinic in Cusco. At 68, she had never received professional dental care. With the help of volunteer dentists and a BC student translator, she received two extractions and a full cleaning. Her daughter, who accompanied her, wept with gratitude. Rosa left holding a toothbrush — her first — and a follow-up care card. This is the moment we work toward.",
     stats:[{label:"Clinic",value:"MC21"},{label:"Visit type",value:"Dental"},{label:"Travel to clinic",value:"3 hours"},{label:"First visit",value:"Yes"}],
     sharedBy:"TEST Sofia Reyes", date:"Jan 18, 2025", tags:["Dental","Elder care","MC21"],
   },
   {
-    id:2, mc:"MC21", type:"patient", subject:"Miguel A.", age:"7",
-    location:"San Blas, Cusco", photo:"photo-1771648761386-beeb4b7d658c",
-    headline:"Caught early — a pediatric case that couldn't wait",
-    excerpt:"Miguel's mother brought him to MC21 with persistent coughing. The checkup revealed a respiratory issue that required immediate referral.",
-    full:"Miguel's mother had been worried about her son's persistent cough for months. She couldn't afford a clinic visit in the city. At MC21, our volunteer physicians identified signs of a lower respiratory infection that needed prompt antibiotic treatment. A referral was arranged with a partner clinic in Cusco city. Miguel received his first-ever pediatric examination — and his mother left with medication, a follow-up plan, and the knowledge that her son would be okay. Stories like Miguel's are why early intervention matters.",
+    id:2, mc:"MC21", type:"patient", subject:"TEST Miguel A.", age:"7",
+    location:"TEST San Blas, Cusco", photo:"photo-1771648761386-beeb4b7d658c",
+    headline:"TEST caught early — a pediatric case that couldn't wait",
+    excerpt:"TEST preview story: Miguel's mother brought him to MC21 with persistent coughing. The checkup revealed a respiratory issue that required immediate referral.",
+    full:"TEST preview story: Miguel's mother had been worried about her son's persistent cough for months. She couldn't afford a clinic visit in the city. At MC21, our volunteer physicians identified signs of a lower respiratory infection that needed prompt antibiotic treatment. A referral was arranged with a partner clinic in Cusco city. Miguel received his first-ever pediatric examination — and his mother left with medication, a follow-up plan, and the knowledge that her son would be okay. Stories like Miguel's are why early intervention matters.",
     stats:[{label:"Clinic",value:"MC21"},{label:"Visit type",value:"Pediatric"},{label:"Follow-up needed",value:"Yes"},{label:"Referred",value:"Cusco Regional Hospital"}],
     sharedBy:"TEST Marcus Chen", date:"Jan 19, 2025", tags:["Pediatric","Referral","MC21"],
   },
   {
-    id:3, mc:"MC21", type:"project", subject:"Stairway Safety Project — Pisac",
-    location:"Pisac District, Cusco", photo:"photo-1669334872047-b9facb3f92d0",
-    headline:"A stairway that makes a community safer every day",
-    excerpt:"MC21 volunteers and community members built 40 meters of safety stairs on a steep hillside used daily by over 200 residents.",
-    full:"The hillside settlement above Pisac had no safe path connecting its upper and lower sections. Residents — including children and elders — navigated a steep, eroding slope daily. MC21 volunteers worked alongside community members over three days to construct 40 meters of reinforced earthen stairways with handrails. The project was funded in part by Moving Mountains donations from chapters across the MEDLIFE network. An estimated 200 residents now use the stairs daily. The community named the path 'El Camino de Salud' — the path of health.",
+    id:3, mc:"MC21", type:"project", subject:"TEST Stairway Safety Project — Pisac",
+    location:"TEST Pisac District, Cusco", photo:"photo-1669334872047-b9facb3f92d0",
+    headline:"TEST a stairway that makes a community safer every day",
+    excerpt:"TEST preview story: MC21 volunteers and community members built 40 meters of safety stairs on a steep hillside used daily by over 200 residents.",
+    full:"TEST preview story: The hillside settlement above Pisac had no safe path connecting its upper and lower sections. Residents — including children and elders — navigated a steep, eroding slope daily. MC21 volunteers worked alongside community members over three days to construct 40 meters of reinforced earthen stairways with handrails. The project was funded in part by Moving Mountains donations from chapters across the MEDLIFE network. An estimated 200 residents now use the stairs daily. The community named the path 'El Camino de Salud' — the path of health.",
     stats:[{label:"Clinic",value:"MC21"},{label:"Project type",value:"Infrastructure"},{label:"Stairs built",value:"40 meters"},{label:"Beneficiaries",value:"200+"},{label:"Funded by",value:"Moving Mountains"}],
     sharedBy:"TEST DeShawn Williams", date:"Jan 20, 2025", tags:["Infrastructure","Community","MC21","Moving Mountains"],
   },
   {
-    id:4, mc:"MC20", type:"patient", subject:"Carmen V.", age:"34",
-    location:"Villa El Salvador, Lima", photo:"photo-1760726356114-92dfc3fbb8fb",
-    headline:"A screening that changed everything",
-    excerpt:"Carmen almost didn't come. A neighbor told her about the clinic. What she learned that day may have saved her life.",
-    full:"Carmen almost skipped the clinic. She felt healthy and assumed it wasn't necessary. But a neighbor told her the line was short and the doctors were kind. The women's health screening our team provided detected a cervical abnormality that required follow-up biopsy. Carmen was referred to a public hospital in Lima and has since begun treatment. She later sent a message through a community health worker: 'If I hadn't come that day, I would not have known.' This is preventive care working exactly as it should.",
+    id:4, mc:"MC20", type:"patient", subject:"TEST Carmen V.", age:"34",
+    location:"TEST Villa El Salvador, Lima", photo:"photo-1760726356114-92dfc3fbb8fb",
+    headline:"TEST a screening that changed everything",
+    excerpt:"TEST preview story: Carmen almost didn't come. A neighbor told her about the clinic. What she learned that day may have saved her life.",
+    full:"TEST preview story: Carmen almost skipped the clinic. She felt healthy and assumed it wasn't necessary. But a neighbor told her the line was short and the doctors were kind. The women's health screening our team provided detected a cervical abnormality that required follow-up biopsy. Carmen was referred to a public hospital in Lima and has since begun treatment. She later sent a message through a community health worker: 'If I hadn't come that day, I would not have known.' This is preventive care working exactly as it should.",
     stats:[{label:"Clinic",value:"MC20"},{label:"Visit type",value:"Women's Health"},{label:"Follow-up",value:"Biopsy referral"},{label:"Outcome",value:"Treatment initiated"}],
     sharedBy:"TEST Priya Sharma", date:"Mar 12, 2024", tags:["Women's Health","Prevention","MC20"],
   },
   {
-    id:5, mc:"MC20", type:"project", subject:"Community Health Education Mural",
-    location:"Villa El Salvador, Lima", photo:"photo-1550290129-41b39a6fdfe8",
-    headline:"Knowledge painted on a wall — lasting longer than one clinic day",
-    excerpt:"Working with local artists and community leaders, MC20 volunteers created a health education mural that stays in the community long after the clinic ends.",
-    full:"Mobile clinic days are powerful but temporary. The MC20 team partnered with local artists and the Villa El Salvador community council to design and paint a large health education mural on the wall of the community center. The mural covers hand hygiene, maternal nutrition, dental care, and when to seek medical attention. It was designed in collaboration with residents and is written in simple Spanish with illustrations. Over 1,200 people pass this mural daily. It is a reminder that MEDLIFE's work doesn't end when we leave.",
+    id:5, mc:"MC20", type:"project", subject:"TEST Community Health Education Mural",
+    location:"TEST Villa El Salvador, Lima", photo:"photo-1550290129-41b39a6fdfe8",
+    headline:"TEST knowledge painted on a wall — lasting longer than one clinic day",
+    excerpt:"TEST preview story: Working with local artists and community leaders, MC20 volunteers created a health education mural that stays in the community long after the clinic ends.",
+    full:"TEST preview story: Mobile clinic days are powerful but temporary. The MC20 team partnered with local artists and the Villa El Salvador community council to design and paint a large health education mural on the wall of the community center. The mural covers hand hygiene, maternal nutrition, dental care, and when to seek medical attention. It was designed in collaboration with residents and is written in simple Spanish with illustrations. Over 1,200 people pass this mural daily. It is a reminder that MEDLIFE's work doesn't end when we leave.",
     stats:[{label:"Clinic",value:"MC20"},{label:"Project type",value:"Health Education"},{label:"Mural area",value:"12m × 4m"},{label:"Daily visibility",value:"1,200+ residents"}],
     sharedBy:"TEST Amara Okonkwo", date:"Mar 14, 2024", tags:["Education","Community","MC20"],
   },
   {
-    id:6, mc:"MC19", type:"patient", subject:"The Quispe Family",
-    location:"Ayacucho Region", photo:"photo-1763809677372-3064c11c29f0",
-    headline:"Three generations seen in a single afternoon",
-    excerpt:"A grandmother, her daughter, and granddaughter all received care at MC19 — the only medical attention any of them had received in years.",
-    full:"Abuela Quispe, 74, came with her daughter Lucía, 42, and granddaughter Valentina, 9. None of them had seen a doctor in over three years. At MC19, all three received medical examinations. Abuela had unmanaged hypertension that was identified and referred for follow-up. Lucía received a women's health screening. Valentina received a pediatric checkup and vaccinations. The family left with medication, referral letters, and smiles. Three generations. One afternoon. This is what accessible healthcare looks like.",
+    id:6, mc:"MC19", type:"patient", subject:"TEST The Quispe Family",
+    location:"TEST Ayacucho Region", photo:"photo-1763809677372-3064c11c29f0",
+    headline:"TEST three generations seen in a single afternoon",
+    excerpt:"TEST preview story: A grandmother, her daughter, and granddaughter all received care at MC19 — the only medical attention any of them had received in years.",
+    full:"TEST preview story: Abuela Quispe, 74, came with her daughter Lucía, 42, and granddaughter Valentina, 9. None of them had seen a doctor in over three years. At MC19, all three received medical examinations. Abuela had unmanaged hypertension that was identified and referred for follow-up. Lucía received a women's health screening. Valentina received a pediatric checkup and vaccinations. The family left with medication, referral letters, and smiles. Three generations. One afternoon. This is what accessible healthcare looks like.",
     stats:[{label:"Clinic",value:"MC19"},{label:"Patients",value:"3 (1 family)"},{label:"Visit types",value:"Medical, Pediatric, Women's"},{label:"Referred",value:"Yes — Abuela Quispe"}],
     sharedBy:"TEST Nadia Osei", date:"Aug 9, 2023", tags:["Family","Multi-generational","MC19"],
   },
@@ -1832,7 +1832,7 @@ function ImpactScreen() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Impact Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">This is why we do this. Real people. Real change.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST impact preview. Sample stories and metrics stay visible for review, but they do not count as live chapter impact or rollout evidence.</p>
         </div>
         <div className="flex gap-2">
           <Btn variant="secondary" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Share Impact Story</Btn>
@@ -1843,9 +1843,9 @@ function ImpactScreen() {
       {/* Chapter impact summary cards */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { bg:"from-blue-600 to-blue-800",   emoji:"🍽️", n:"1,840", label:"meals served",   story:"Your chapter served 1,840 meals to 420 people in the Boston community this year." },
-          { bg:"from-indigo-600 to-indigo-800",emoji:"🏥", n:"420",   label:"clinic patients", story:"18 chapter SLT travelers contributed to care for 420 patients across MC19, MC20, and MC21." },
-          { bg:"from-amber-500 to-amber-700",  emoji:"💛", n:"#3",    label:"network rank",    story:"Your Moving Mountains campaign ranks #3 globally — helping fund real projects at each MC." },
+          { bg:"from-blue-600 to-blue-800",   emoji:"🍽️", n:"1,840", label:"meals served",   story:"TEST preview: your chapter served 1,840 meals to 420 people in the Boston community this year." },
+          { bg:"from-indigo-600 to-indigo-800",emoji:"🏥", n:"420",   label:"clinic patients", story:"TEST preview: 18 chapter SLT travelers contributed to care for 420 patients across MC19, MC20, and MC21." },
+          { bg:"from-amber-500 to-amber-700",  emoji:"💛", n:"#3",    label:"network rank",    story:"TEST preview: your Moving Mountains campaign ranks #3 globally — helping fund real projects at each MC." },
         ].map((s,i) => (
           <div key={i} className={`bg-gradient-to-br ${s.bg} text-white rounded-2xl p-6`}>
             <div className="text-4xl mb-2">{s.emoji}</div>
@@ -2215,7 +2215,7 @@ function BridgeScreen() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Bridge Video Hub</h1>
-          <p className="text-sm text-slate-500 mt-1 italic">"MEDLIFE leaders build a bridge for the next generation."</p>
+          <p className="text-sm text-slate-500 mt-1 italic">TEST bridge-video preview. Sample submissions stay visible for review, but no playback, featuring, or publishing is live.</p>
         </div>
         <Btn variant="primary" blockedTitle="Bridge-video submission is blocked in this preview until write approval is complete."><Upload size={11}/>Submit for Approval</Btn>
       </div>
@@ -3040,7 +3040,7 @@ function FeedScreen() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Feed & Engagement Analytics</h1>
-          <p className="text-sm text-slate-500 mt-1">Understand what content drives real action — not just views.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST analytics preview. Sample posts, engagement, and outreach cues stay visible for review, but they do not count as live feed evidence or messaging authority.</p>
         </div>
         <div className="flex gap-2">
           <Btn variant="secondary" blockedTitle="Feed sharing is blocked in this preview until staff approval is complete."><Share2 size={11}/>Share to Feed</Btn>

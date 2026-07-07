@@ -284,8 +284,11 @@ describe("leader page", () => {
         }),
       }),
     );
+    expect(impactHtml).toContain("TEST impact preview.");
     expect(impactHtml).toContain("Impact story sharing is blocked in this preview until feed-sharing approval is complete.");
     expect(impactHtml).toContain("Field-update submission is blocked in this preview until write approval is complete.");
+    expect(impactHtml).toContain("TEST Rosa M.");
+    expect(impactHtml).toContain("TEST preview story:");
 
     const bridgeHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -294,6 +297,7 @@ describe("leader page", () => {
         }),
       }),
     );
+    expect(bridgeHtml).toContain("TEST bridge-video preview.");
     expect(bridgeHtml).toContain("Bridge-video submission is blocked in this preview until write approval is complete.");
 
     const feedHtml = renderToStaticMarkup(
@@ -303,8 +307,10 @@ describe("leader page", () => {
         }),
       }),
     );
+    expect(feedHtml).toContain("TEST analytics preview.");
     expect(feedHtml).toContain("Feed sharing is blocked in this preview until staff approval is complete.");
     expect(feedHtml).toContain("Direct member outreach is blocked in this preview until messaging approval is complete.");
+    expect(feedHtml).toContain("TEST How to Run a Successful Info Night");
 
     const valuesHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -345,6 +351,11 @@ describe("leader page", () => {
     expect(source).toContain("Workspace switching is handled by the account menu above this shell.");
     expect(source).toContain("Committee chair assignment is blocked in this preview.");
     expect(source).toContain("Committee detail drill-in is not wired yet.");
+    expect(source).toContain("TEST impact preview. Sample stories and metrics stay visible for review, but they do not count as live chapter impact or rollout evidence.");
+    expect(source).toContain("TEST bridge-video preview. Sample submissions stay visible for review, but no playback, featuring, or publishing is live.");
+    expect(source).toContain("TEST analytics preview. Sample posts, engagement, and outreach cues stay visible for review, but they do not count as live feed evidence or messaging authority.");
+    expect(source).toContain('subject:"TEST Rosa M."');
+    expect(source).toContain('location:"TEST Pisac, Cusco Region"');
     expect(source).toContain("Bridge video sharing is blocked in this preview until staff approval is complete.");
     expect(source).not.toContain('href="https://www.hubspot.com"');
   });
