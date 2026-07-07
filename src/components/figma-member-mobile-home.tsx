@@ -3316,7 +3316,7 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: {
         </div>
         <div className="border-t border-border bg-card px-5 pb-4">
           <p className="pt-3 text-center text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
-            Preview only - save and source links stay blocked in this reader.
+            Preview only - reactions, saves, and source links stay blocked in this reader.
           </p>
         </div>
       </div>
@@ -3357,10 +3357,10 @@ function StoriesScreen({
                 className="text-xl font-bold text-black"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                MEDLIFE Stories
+                Stories
               </h1>
               <p className="mt-1 text-[11px] font-medium text-gray-400">
-                Preview-only student feed
+                MEDLIFE Stories · preview-only student feed
               </p>
             </div>
             <div className="flex items-center gap-1.5">

@@ -59,9 +59,9 @@ describe("member mobile shell routes", () => {
     const { default: StoriesPage } = await import("@/app/app/stories/page");
     const html = renderToStaticMarkup(await StoriesPage({}));
 
-    expect(html).toContain("MEDLIFE Stories");
+    expect(html).toContain(">Stories<");
+    expect(html).toContain("MEDLIFE Stories · preview-only student feed");
     expect(html).toContain("For You");
-    expect(html).toContain("Preview-only student feed");
     expect(html).toContain("Preview");
     expect(html).toContain("TEST @uconn");
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
