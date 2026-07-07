@@ -10,6 +10,10 @@ Supporting traceability artifact: `docs/user-stories/story-to-test-traceability.
 maps MVP stories and priority backlog slices to exact route, component, service,
 and e2e test evidence.
 
+Latest-main builder steering artifact:
+`docs/user-stories/latest-main-builder-crosswalk.md` summarizes the next
+recommended #1/#2/#3/#4 slices after the latest merged shell wave.
+
 ## Source And Truth Rules
 
 - Repo implementation truth wins for current status.
