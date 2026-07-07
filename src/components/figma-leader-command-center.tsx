@@ -37,12 +37,12 @@ const NAVY = "#07192E";
 const MEMBERS = [
   { id: 1, name: "TEST Sofia Reyes",    initials: "SR", color: "#1A56E8", role: "President",            committee: "E-Board",           pts: 1240, ptsWk: 85,  ptsLast: 72,  evtCreated: 8,  evtAttended: 18, evtPct: 94, actions: 24, evidence: 19, bridge: 3, fundraising: 1200, slt: true,  volunteer: 12, engage: 94, lastActive: "Today",       values: "Values Aligned",        pipeline: "E-Board",          nextStep: "TEST mentor successors and submit bridge video" },
   { id: 2, name: "TEST Marcus Chen",    initials: "MC", color: "#7C3AED", role: "VP of Events",         committee: "E-Board",           pts: 1085, ptsWk: 67,  ptsLast: 81,  evtCreated: 11, evtAttended: 16, evtPct: 84, actions: 19, evidence: 15, bridge: 2, fundraising:  850, slt: true,  volunteer:  8, engage: 78, lastActive: "Today",       values: "Values Aligned",        pipeline: "E-Board",          nextStep: "TEST submit bridge video for events transition" },
-  { id: 3, name: "TEST Amara Okonkwo",  initials: "AO", color: "#059669", role: "Fundraising Chair",    committee: "Fundraising",       pts:  920, ptsWk: 55,  ptsLast: 48,  evtCreated:  3, evtAttended: 14, evtPct: 73, actions: 18, evidence: 14, bridge: 1, fundraising: 2100, slt: false, volunteer:  5, engage: 65, lastActive: "Yesterday",   values: "Values Aligned",        pipeline: "Chair",            nextStep: "TEST strong E-Board candidate — nominate" },
-  { id: 4, name: "TEST Jordan Kim",     initials: "JK", color: "#0891B2", role: "Recruitment Chair",    committee: "Recruitment",       pts:  875, ptsWk: 62,  ptsLast: 55,  evtCreated:  5, evtAttended: 15, evtPct: 78, actions: 16, evidence: 12, bridge: 2, fundraising:  400, slt: true,  volunteer:  9, engage: 82, lastActive: "Today",       values: "Values Aligned",        pipeline: "Chair candidate",  nextStep: "TEST promote to Chair — ready now" },
+  { id: 3, name: "TEST Amara Okonkwo",  initials: "AO", color: "#059669", role: "Fundraising Chair",    committee: "Fundraising",       pts:  920, ptsWk: 55,  ptsLast: 48,  evtCreated:  3, evtAttended: 14, evtPct: 73, actions: 18, evidence: 14, bridge: 1, fundraising: 2100, slt: false, volunteer:  5, engage: 65, lastActive: "Yesterday",   values: "Values Aligned",        pipeline: "Chair",            nextStep: "TEST strong E-Board candidate — nomination preview" },
+  { id: 4, name: "TEST Jordan Kim",     initials: "JK", color: "#0891B2", role: "Recruitment Chair",    committee: "Recruitment",       pts:  875, ptsWk: 62,  ptsLast: 55,  evtCreated:  5, evtAttended: 15, evtPct: 78, actions: 16, evidence: 12, bridge: 2, fundraising:  400, slt: true,  volunteer:  9, engage: 82, lastActive: "Today",       values: "Values Aligned",        pipeline: "Chair candidate",  nextStep: "TEST chair promotion preview — ready now" },
   { id: 5, name: "TEST Priya Sharma",   initials: "PS", color: "#DB2777", role: "Comms Chair",          committee: "Communications",    pts:  810, ptsWk: 48,  ptsLast: 52,  evtCreated:  2, evtAttended: 13, evtPct: 68, actions: 14, evidence: 11, bridge: 4, fundraising:  300, slt: false, volunteer:  4, engage: 91, lastActive: "Today",       values: "Values Aligned",        pipeline: "Chair",            nextStep: "TEST submit evidence for 3 open tasks" },
   { id: 6, name: "TEST DeShawn Williams",initials:"DW", color: "#D97706", role: "SLT Promotions Chair", committee: "SLT Promotion",     pts:  745, ptsWk: 71,  ptsLast: 45,  evtCreated:  4, evtAttended: 12, evtPct: 63, actions: 15, evidence: 10, bridge: 1, fundraising:  200, slt: true,  volunteer:  6, engage: 70, lastActive: "2 days ago",  values: "Values Aligned",        pipeline: "Chair",            nextStep: "TEST host SLT info session this week" },
   { id: 7, name: "TEST Elena Vasquez",  initials: "EV", color: "#16A34A", role: "Active Member",        committee: "Events",            pts:  680, ptsWk: 44,  ptsLast: 38,  evtCreated:  2, evtAttended: 11, evtPct: 57, actions: 12, evidence:  9, bridge: 0, fundraising:  150, slt: true,  volunteer:  7, engage: 60, lastActive: "Yesterday",   values: "Watch / needs coaching",pipeline: "Active contributor",nextStep: "TEST assign growth action before values interview" },
-  { id: 8, name: "TEST Theo Nakamura",  initials: "TN", color: "#6366F1", role: "Active Member",        committee: "Recruitment",       pts:  620, ptsWk: 38,  ptsLast: 41,  evtCreated:  1, evtAttended: 10, evtPct: 52, actions: 10, evidence:  8, bridge: 1, fundraising:  100, slt: false, volunteer:  5, engage: 55, lastActive: "3 days ago",  values: "Needs interview",       pipeline: "Active contributor",nextStep: "TEST schedule values interview" },
+  { id: 8, name: "TEST Theo Nakamura",  initials: "TN", color: "#6366F1", role: "Active Member",        committee: "Recruitment",       pts:  620, ptsWk: 38,  ptsLast: 41,  evtCreated:  1, evtAttended: 10, evtPct: 52, actions: 10, evidence:  8, bridge: 1, fundraising:  100, slt: false, volunteer:  5, engage: 55, lastActive: "3 days ago",  values: "Needs interview",       pipeline: "Active contributor",nextStep: "TEST schedule values interview preview" },
   { id: 9, name: "TEST Nadia Osei",     initials: "NO", color: "#059669", role: "Active Member",        committee: "Service",           pts:  590, ptsWk: 42,  ptsLast: 35,  evtCreated:  1, evtAttended: 10, evtPct: 52, actions: 11, evidence:  9, bridge: 1, fundraising:  200, slt: true,  volunteer: 14, engage: 67, lastActive: "Yesterday",   values: "Values Aligned",        pipeline: "Chair candidate",  nextStep: "TEST interview for Service Committee Chair" },
   { id:10, name: "TEST Ryan O'Brien",   initials: "RO", color: "#0891B2", role: "Active Member",        committee: "Member Engagement", pts:  540, ptsWk: 33,  ptsLast: 29,  evtCreated:  2, evtAttended:  9, evtPct: 47, actions:  9, evidence:  7, bridge: 0, fundraising:  125, slt: false, volunteer:  3, engage: 58, lastActive: "3 days ago",  values: "Watch / needs coaching",pipeline: "Active contributor",nextStep: "TEST assign growth action" },
   { id:11, name: "TEST Aaliyah Brooks",  initials:"AB", color: "#7C3AED", role: "General Member",       committee: "Fundraising",       pts:  420, ptsWk: 25,  ptsLast: 18,  evtCreated:  0, evtAttended:  7, evtPct: 36, actions:  6, evidence:  4, bridge: 0, fundraising:   75, slt: false, volunteer:  2, engage: 40, lastActive: "1 week ago",  values: "Needs interview",       pipeline: "General member",   nextStep: "TEST complete first independent action" },
@@ -115,7 +115,7 @@ const COMMITTEES = [
   {
     id:7, name:"TEST Smiles Movement", color:"#F59E0B", chairs:[],
     members:5, openActs:4, doneActs:3, bridge:0, pts:380, kpi:28,
-    health:"Inactive", rec:"TEST coaching note: appoint a chair immediately and plan the first dental health awareness event.",
+    health:"Inactive", rec:"TEST coaching note: review chair coverage first, then preview the first dental health awareness event follow-through.",
     evtThisYear:2, evtLastMonth:0, evtLastWeek:0, evtNextWeek:0, evtNextMonth:1,
     upcoming:[
       { name:"TEST Dental Health Pop-Up", date:"Jul 18", rsvp:0 },
@@ -922,10 +922,10 @@ function ProfileScreen({
 
   const timeline = [
     { date:"Jun 12", event:"TEST attended SLT Interest Meeting" },
-    { date:"Jun 10", event:"TEST created Moving Mountains Kickoff event" },
+    { date:"Jun 10", event:"TEST reviewed Moving Mountains Kickoff event handoff preview" },
     { date:"Jun 8",  event:"TEST submitted evidence for 3 actions" },
     { date:"Jun 3",  event:"TEST completed fundraising action — $420 raised" },
-    { date:"May 29", event:"TEST promoted to committee co-lead" },
+    { date:"May 29", event:"TEST reviewed committee co-lead readiness preview" },
     { date:"May 22", event:"TEST submitted bridge video: Info Night Guide" },
   ];
 
@@ -938,7 +938,7 @@ function ProfileScreen({
       <div>
         <h1 className="text-2xl font-black text-slate-900">Member Profile</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Review this member's points, events, actions, notes, and next leadership move.
+          Review this TEST member's points, event follow-through, preview actions, blocked notes, and succession handoff posture.
         </p>
       </div>
 
@@ -989,7 +989,7 @@ function ProfileScreen({
           <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Leadership Actions</div>
             <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Preview Promotion</Btn>
-            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Preview Leadership Action</Btn>
+            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Preview Leadership Follow-through</Btn>
             <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Preview E-Board Succession</Btn>
             <Btn
               variant="secondary"
@@ -1086,7 +1086,7 @@ function CommitteesScreen({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Event Committees</h1>
-          <p className="text-sm text-slate-500 mt-1">Monitor whether each TEST committee is moving the chapter forward. Committee setup, chair changes, and operational follow-through stay preview-only in this shell.</p>
+          <p className="text-sm text-slate-500 mt-1">Monitor whether each TEST committee is moving the chapter forward. Committee ownership, member review, and attendance follow-through stay preview-only in this shell.</p>
         </div>
         <Btn variant="primary" blockedTitle="Committee creation is blocked in this preview."><Plus size={11}/>Preview Committee Setup</Btn>
       </div>
@@ -1209,7 +1209,7 @@ function CommitteesScreen({
                       Upcoming Events ({c.upcoming.length})
                     </div>
                     {c.upcoming.length === 0 ? (
-                      <div className="text-xs text-slate-400 italic">No events scheduled. Assign one now.</div>
+                      <div className="text-xs text-slate-400 italic">No TEST event previews scheduled. Review committee ownership before staging the next one.</div>
                     ) : (
                       <div className="space-y-2">
                         {c.upcoming.map((ev, i) => (
@@ -1270,11 +1270,12 @@ function CommitteesScreen({
                   {/* Recommendation + CTAs */}
                   <div className="space-y-4">
                     <div>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Recommended Action</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview Follow-through</div>
                       <p className="text-xs text-slate-700 leading-relaxed">{c.rec}</p>
                     </div>
                     <div>
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Quick Actions</div>
+                      <p className="text-[11px] text-slate-500 leading-relaxed mb-2">Keep chair coverage, member review, and attendance follow-through visible here without turning on live committee writes.</p>
                       <div className="space-y-1.5">
                         <Btn
                           variant="primary"
@@ -1283,8 +1284,8 @@ function CommitteesScreen({
                         >
                           <Plus size={10}/>Preview Chair Assignment
                         </Btn>
-                        <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={10}/>Promote Member</Btn>
-                        <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Assign Task</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={10}/>Preview Succession Review</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Preview Member Follow-through</Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Create Event Preview</Btn>
                         <Btn
                           variant="ghost"
@@ -1563,7 +1564,7 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Event Performance</h1>
-          <p className="text-sm text-slate-500 mt-1">Track TEST event execution previews, survey posture, follow-up readiness, and chapter-wide attendance readback without turning on live event operations.</p>
+          <p className="text-sm text-slate-500 mt-1">Track TEST event execution previews, survey posture, committee follow-through, and chapter-wide attendance readback without turning on live event operations.</p>
         </div>
         <Btn variant="primary" onClick={() => setShowCreate(true)}><Plus size={11}/>Create Event Preview</Btn>
       </div>
