@@ -356,16 +356,16 @@ describe("owned route redirect service", () => {
     );
   });
 
-  it("parks SLT prep routes outside the 30-chapter events and points rollout", () => {
+  it("keeps SLT prep redirects on their source-backed traveler and staff preview surfaces", () => {
     expect(
       getSltPrepRouteRedirectHref(getMockLocalActorContext("traveler.a@mymedlife.test")),
-    ).toBe("/app/events");
+    ).toBe("/app/slt-prep");
     expect(
       getSltPrepRouteRedirectHref(getMockLocalActorContext("leader.a@mymedlife.test")),
-    ).toBe("/leader?view=events");
+    ).toBe("/slt-prep");
     expect(
       getSltPrepRouteRedirectHref(getMockLocalActorContext("coach@mymedlife.test")),
-    ).toBe("/staff?view=events&campaign=rush-month");
+    ).toBe("/slt-prep/staff");
     expect(
       getSltPrepRouteRedirectHref(getMockLocalActorContext("ds.admin@mymedlife.test")),
     ).toBe("/admin");
