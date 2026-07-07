@@ -282,6 +282,8 @@ describe("staff page", () => {
     expect(source).toContain("External source links are blocked in this preview");
     expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
     expect(source).toContain("Use the Admin tab for DS review of audit and blocked-control posture");
+    expect(source).toContain('href="/staff?view=admin&adminView=audit"');
+    expect(source).toContain("Open Admin preview");
     expect(source).toContain("publishing and distribution actions remain blocked in this launch pass");
     expect(source).toContain("Click any card to review consent and blocked actions, or use the Admin tab for DS preview.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
@@ -401,6 +403,7 @@ describe("staff page", () => {
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
+    expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters"');
     expect(html).toContain("no note save, intervention write, or follow-up write runs from this drawer");
     expect(html).toContain("disabled:cursor-not-allowed");
     expect(html).not.toContain(">Send NPS Survey<");
