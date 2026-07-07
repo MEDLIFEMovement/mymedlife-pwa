@@ -3192,6 +3192,7 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: {
   story: Story; liked: boolean; onToggleLike: (id: number) => void; closeHref: string;
 }) {
   const cfg = sourceConfig[story.source];
+  const previewSourceLabel = `${cfg.label} preview`;
   return (
     /* ── Mobile: true full-screen story reader ── */
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
@@ -3238,10 +3239,7 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: {
               {story.tag && <TagBadge tag={story.tag} />}
               {story.featured && !story.tag && <TagBadge tag="Featured" />}
             </div>
-            {story.duration && (
-              <span className="absolute bottom-3 right-4 bg-black/70 text-white text-xs px-2 py-0.5 rounded"
-                style={{ fontFamily: "'DM Mono', monospace" }}>{story.duration}</span>
-            )}
+            {story.duration && <span className="absolute bottom-3 right-4 bg-black/70 text-white text-xs px-2 py-0.5 rounded" style={{ fontFamily: "'DM Mono', monospace" }}>{story.duration}</span>}
           </div>
         )}
 
@@ -3297,27 +3295,20 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: {
               liked={liked}
               onToggle={onToggleLike}
             />
-            <span className="text-xs text-muted-foreground"
-              style={{ fontFamily: "'DM Mono', monospace" }}>
-              {story.views.toLocaleString()} preview views
-            </span>
+            <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} preview views</span>
           </div>
           <div className="flex items-center gap-2">
-            <button disabled title="Story saving is blocked in this preview" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground px-3 py-2.5 rounded-xl hover:bg-muted transition-colors">
+            <button type="button" disabled title="Story saving is blocked in this preview" className="flex cursor-not-allowed items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground opacity-75">
               <Bookmark size={15} />
-              <span className="hidden sm:inline">Save</span>
+              <span className="hidden sm:inline">Save preview</span>
             </button>
-            <button type="button" disabled title="External source links are blocked in this preview until feed-sharing approval is complete"
-              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white opacity-75 cursor-not-allowed"
-              style={{ background: cfg.bg }}>
-              <ExternalLink size={14} /> {cfg.label}
+            <button type="button" disabled title="External source links are blocked in this preview until feed-sharing approval is complete" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white opacity-75 cursor-not-allowed" style={{ background: cfg.bg }}>
+              <ExternalLink size={14} /> {previewSourceLabel}
             </button>
           </div>
         </div>
         <div className="border-t border-border bg-card px-5 pb-4">
-          <p className="pt-3 text-center text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
-            Preview only - reactions, saves, and source links stay blocked in this reader.
-          </p>
+          <p className="pt-3 text-center text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>Preview only - reactions, save preview, and source previews stay blocked in this reader.</p>
         </div>
       </div>
     </div>
