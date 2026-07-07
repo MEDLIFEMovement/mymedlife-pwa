@@ -2689,6 +2689,10 @@ interface Story {
   isVideo?: boolean; embedUrl?: string; duration?: string; quote?: string; body?: string; filters: StoryFilter[];
 }
 
+function stripTestPrefix(value: string) {
+  return value.replace(/^TEST\s+/i, "").trim();
+}
+
 const stories: Story[] = [
   {
     id: 1, title: "TEST Students in Lima joined a Mobile Clinic this weekend",
@@ -2796,11 +2800,44 @@ const STORY_CATEGORIES: { filter: StoryFilter; emoji: string; short: string; col
   { filter: "Featured",       emoji: "⭐",  short: "Featured", color: "#D97706", bg: "#FEF3C7" },
 ];
 
-function getStoryPreviewHandle(chapter: string) {
-  const withoutVisibleTest = chapter.replace(/\bTEST\b/gi, "").trim();
-  const normalized = withoutVisibleTest.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+function resolveStoryFilter(value?: string | null): StoryFilter {
+  return STORY_FILTERS.find((filter) => filter === value) ?? "For You";
+}
 
-  return `TEST @${normalized || "mymedlife"}`;
+function getStoryById(value?: string | null) {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed)) {
+    return null;
+  }
+
+  return stories.find((story) => story.id === parsed) ?? null;
+}
+
+function buildStoriesHref({
+  filter,
+  storyId,
+}: {
+  filter: StoryFilter;
+  storyId?: number | null;
+}) {
+  const params = new URLSearchParams();
+  params.set("filter", filter);
+
+  if (typeof storyId === "number") {
+    params.set("story", String(storyId));
+  }
+
+  return `/app/stories?${params.toString()}`;
+}
+
+function getStoryPreviewHandle(chapter: string) {
+  const normalized = stripTestPrefix(chapter).toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return `TEST @${normalized || "medlife"}`;
+}
+
+function getStoryPreviewAvatarLabel(chapter: string) {
+  return stripTestPrefix(chapter).charAt(0).toUpperCase() || "M";
 }
 
 function SourceBadge({ source }: { source: StorySource }) {
@@ -3146,21 +3183,16 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
   );
 }
 
-function StoryModal({ story, liked, onToggleLike, onClose }: {
-  story: Story; liked: boolean; onToggleLike: (id: number) => void; onClose: () => void;
+function StoryModal({ story, liked, onToggleLike, closeHref }: {
+  story: Story; liked: boolean; onToggleLike: (id: number) => void; closeHref: string;
 }) {
-  React.useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => { document.removeEventListener("keydown", handler); };
-  }, [onClose]);
   const cfg = sourceConfig[story.source];
   return (
     /* ── Mobile: true full-screen story reader ── */
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
 
       {/* Desktop backdrop tap-to-close */}
-      <div className="absolute inset-0 hidden sm:block" onClick={onClose} />
+      <Link href={closeHref} aria-label="Close story reader" className="absolute inset-0 hidden sm:block" />
 
       {/* Reader container */}
       <div className="relative w-full h-full sm:max-w-2xl sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:shadow-2xl bg-card overflow-hidden flex flex-col z-10">
@@ -3169,10 +3201,12 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
         {story.isVideo ? (
           <div className="flex-shrink-0 relative">
             <VideoPlayer story={story} />
-            <button onClick={onClose}
-              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white z-10">
+            <Link
+              href={closeHref}
+              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white z-10"
+            >
               <ArrowLeft size={18} />
-            </button>
+            </Link>
           </div>
         ) : (
           <div className="relative flex-shrink-0 bg-muted" style={{ aspectRatio: "16/9" }}>
@@ -3180,14 +3214,18 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
             {/* Close */}
-            <button onClick={onClose}
-              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors">
+            <Link
+              href={closeHref}
+              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            >
               <ArrowLeft size={18} />
-            </button>
-            <button onClick={onClose}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm hidden sm:flex items-center justify-center text-white hover:bg-black/60 transition-colors">
+            </Link>
+            <Link
+              href={closeHref}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm hidden sm:flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            >
               <X size={16} />
-            </button>
+            </Link>
 
             {/* Source + tag badges bottom-left of image */}
             <div className="absolute bottom-3 left-4 flex items-center gap-2 flex-wrap">
@@ -3276,15 +3314,28 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
   );
 }
 
-function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
-  const [activeFilter, setActiveFilter] = useState<StoryFilter>("For You");
-  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+function StoriesScreen({
+  navigate,
+  initialFilter,
+  initialStoryId,
+}: {
+  navigate: (s: Screen) => void;
+  initialFilter?: string | null;
+  initialStoryId?: string | null;
+}) {
+  const activeFilter = resolveStoryFilter(initialFilter);
+  const selectedStory = getStoryById(initialStoryId);
+
+  const selectFilter = (filter: StoryFilter) => {
+    window.location.assign(buildStoriesHref({ filter }));
+  };
 
   const toggleLike = (id: number) => {
     void id;
   };
 
   const filtered = stories.filter((s) => s.filters.includes(activeFilter));
+  const closeHref = buildStoriesHref({ filter: activeFilter });
 
   return (
     <>
@@ -3310,8 +3361,11 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
           <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
             {STORY_FILTERS.map((f) => (
               <button
+                type="button"
                 key={f}
-                onClick={() => setActiveFilter(f)}
+                aria-label={`Apply story filter: ${f}`}
+                title={`Apply story filter: ${f}`}
+                onClick={() => selectFilter(f)}
                 className={cn(
                   "flex-shrink-0 px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border transition-all",
                   activeFilter === f
@@ -3334,6 +3388,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
           <div>
             {filtered.map((story) => {
               const handle = getStoryPreviewHandle(story.chapter);
+              const storyHref = buildStoriesHref({ filter: activeFilter, storyId: story.id });
 
               return (
                 <div key={story.id} className="border-b border-gray-200">
@@ -3343,7 +3398,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                         className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
                         style={{ background: sourceConfig[story.source].bg.startsWith("linear") ? "#e6683c" : sourceConfig[story.source].bg }}
                       >
-                        {story.chapter[0]}
+                        {getStoryPreviewAvatarLabel(story.chapter)}
                       </div>
                       <div className="leading-tight">
                         <p className="text-[13px] font-semibold text-black">{handle}</p>
@@ -3360,10 +3415,10 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                     </button>
                   </div>
 
-                  <div
-                    className="relative w-full bg-gray-100 cursor-pointer"
+                  <Link
+                    href={storyHref}
+                    className="relative block w-full bg-gray-100 cursor-pointer"
                     style={{ aspectRatio: "1/1" }}
-                    onClick={() => setSelectedStory(story)}
                   >
                     <img
                       src={story.image}
@@ -3377,7 +3432,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </Link>
 
                   <div className="px-3 pt-2">
                     <div className="flex items-center">
@@ -3390,13 +3445,12 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                         >
                           <Heart size={26} className="text-black" />
                         </button>
-                        <button
-                          type="button"
-                          title="Open this story in the local review modal."
-                          onClick={() => setSelectedStory(story)}
+                        <Link
+                          href={storyHref}
+                          title="Open this story in the route-backed preview reader."
                         >
                           <MessageSquare size={24} className="text-black" />
-                        </button>
+                        </Link>
                         <button
                           type="button"
                           disabled
@@ -3425,12 +3479,12 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                       {story.title}
                     </p>
 
-                    <button
-                      onClick={() => setSelectedStory(story)}
+                    <Link
+                      href={storyHref}
                       className="text-[13px] text-gray-400 mt-0.5 block"
                     >
                       Read more
-                    </button>
+                    </Link>
 
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1 pb-3">
                       {story.date}
@@ -3449,7 +3503,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
           story={selectedStory}
           liked={false}
           onToggleLike={toggleLike}
-          onClose={() => setSelectedStory(null)}
+          closeHref={closeHref}
         />
       )}
     </>
@@ -3463,9 +3517,13 @@ const STUDENT_SCREENS: Screen[] = ["home", "campaign", "action", "evidence", "co
 export function FigmaMemberMobileHome({
   initialScreen = "home",
   sltPrepEntry = null,
+  initialStoriesFilter = null,
+  initialStoryId = null,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
+  initialStoriesFilter?: string | null;
+  initialStoryId?: string | null;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3489,7 +3547,14 @@ export function FigmaMemberMobileHome({
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
       case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;
       case "checkin": return <CheckInScreen navigate={navigate} />;
-      case "stories": return <StoriesScreen navigate={navigate} />;
+      case "stories":
+        return (
+          <StoriesScreen
+            navigate={navigate}
+            initialFilter={initialStoriesFilter}
+            initialStoryId={initialStoryId}
+          />
+        );
       case "leader": return <LeadershipDashboard navigate={navigate} />;
       case "assign": return <AssignAction navigate={navigate} />;
       case "review": return <ReviewEvidence navigate={navigate} />;

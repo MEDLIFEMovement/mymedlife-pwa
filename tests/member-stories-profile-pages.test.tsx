@@ -48,7 +48,7 @@ describe("member stories and profile pages", () => {
     );
 
     const { default: AppStoriesPage } = await import("@/app/app/stories/page");
-    const html = renderToStaticMarkup(await AppStoriesPage());
+    const html = renderToStaticMarkup(await AppStoriesPage({}));
 
     expect(html).toContain("MEDLIFE Stories");
     expect(html).toContain("Stories");
@@ -60,6 +60,11 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/profile"');
     expect(html).toContain("Preview-only student feed");
     expect(html).toContain("Preview");
+    expect(html).toContain("TEST @nationwide");
+    expect(html).toContain("TEST @uconn");
+    expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
+    expect(html).toContain('href="/app/stories?filter=For+You&amp;story=2"');
+    expect(html).toContain('aria-label="Apply story filter: Events"');
     expect(html).toContain("Preview-only reaction. Likes are not saved, synced, or counted as production proof.");
     expect(html).toContain("preview likes");
     expect(html).toContain("Sharing is blocked in this preview until publishing approval is complete");
@@ -70,6 +75,31 @@ describe("member stories and profile pages", () => {
     expect(html).not.toContain("Live from the field");
     expect(html).not.toContain("Add Story");
     expect(html).not.toContain("stories published");
+  });
+
+  it("renders a route-backed story reader when the stories query selects one", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: AppStoriesPage } = await import("@/app/app/stories/page");
+    const html = renderToStaticMarkup(
+      await AppStoriesPage({
+        searchParams: Promise.resolve({
+          filter: "Events",
+          story: "2",
+        }),
+      }),
+    );
+
+    expect(html).toContain("TEST UConn MEDLIFE chapter packed the room at their intro event");
+    expect(html).toContain("TEST Over 90 students showed up to learn about MEDLIFE&#x27;s mission.");
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain("External source links are blocked in this preview until feed-sharing approval is complete");
+    expect(html).toContain("Story saving is blocked in this preview");
+    expect(html).toContain("TEST UConn");
   });
 
   it("keeps profile route-backed and explicitly read-only", async () => {
