@@ -104,6 +104,14 @@ describe("Figma missing route placeholders", () => {
     expect(integrationsHtml).toContain("providers have no live credentials or outbound path");
     expect(integrationsHtml).toContain("Smile.io provider enablement is blocked until DS approval is complete");
     expect(integrationsHtml).toContain("Meta App Review and OAuth scope setup stay visible for DS review");
+    expect(integrationsHtml).toContain("Enable blocked");
+    expect(integrationsHtml).toContain("Test blocked");
+    expect(integrationsHtml).toContain("OAuth blocked");
+    expect(integrationsHtml).not.toContain("Enable Integration");
+    expect(integrationsHtml).not.toContain("Test Connection");
+    expect(source).toContain("Connect blocked");
+    expect(source).not.toContain("Connect Page");
+    expect(source).not.toContain("Connect Account");
     expect(source).toContain("Publishing remains blocked in this preview");
 
     const apiKeysHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="apikeys" />);
