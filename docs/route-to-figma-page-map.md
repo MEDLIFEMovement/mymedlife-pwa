@@ -60,7 +60,7 @@ This map records the launch-critical routes and the Figma-derived shell/page tha
 | Audit Logs | `/admin/audit-log` | Audit posture | Audit route | Active |
 | Integration Outbox | `/admin/integration-outbox` | Integration safety | Outbox route | Active |
 | Visual console menu | `/admin` local screen state | Admin backend shell | `FigmaAdminPanel` primary menu | Active |
-| MCP Connections | none in primary menu | Non-gate module | Disabled/read-only modules group only | May remain visible if clearly parked or blocked |
+| MCP Connections | `/admin` local screen state | Admin MCP policy / provider console | `FigmaAdminPanel` primary menu | Active as visible blocked review surface |
 
 ## Launch Mode Boundary
 
