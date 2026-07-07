@@ -10,7 +10,7 @@ describe("copied Figma leader support screens", () => {
   it("renders the copied create-event workspace with the expected form sections", () => {
     const html = renderToStaticMarkup(<CreateEventForm onBack={() => undefined} />);
 
-    expect(html).toContain("Create New Event");
+    expect(html).toContain("Create Event Preview");
     expect(html).toContain("1. Event Type");
     expect(html).toContain("Info / General Meeting");
     expect(html).toContain("Fundraiser");
@@ -22,9 +22,12 @@ describe("copied Figma leader support screens", () => {
     expect(html).toContain("5. RSVP Settings");
     expect(html).toContain("6. Share &amp; Publish");
     expect(html).toContain("Chapter App Feed");
+    expect(html).toContain("stages TEST event previews only");
     expect(html).toContain("Your Event Name");
-    expect(html).toContain("RSVP for This Event");
+    expect(html).toContain("Preview RSVP Button");
     expect(html).toContain("Stage Event");
+    expect(html).toContain("Prepare a chapter feed preview in myMEDLIFE");
+    expect(html).not.toContain("Notify all chapter members in myMEDLIFE");
     expect(html).toContain("Ready to stage?");
     expect(html).not.toContain("Publish Event");
   });
