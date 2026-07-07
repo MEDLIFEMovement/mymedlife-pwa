@@ -267,5 +267,8 @@ describe("Figma missing route placeholders", () => {
     expect(html).not.toContain("Figma page missing - implementation blocked");
     expect(html).toContain("Complete next step");
     expect(html).toContain("Next deadline");
+    expect(html).toContain('href="/app/stories"');
+    expect(html).toContain('href="/app/points"');
+    expect(html).not.toContain('href="/rush-month/events"');
   });
 });

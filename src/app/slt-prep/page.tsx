@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
+import { StudentAppShell } from "@/components/student-app-shell";
 import {
   ensureVisibleTestLabel,
   SltPrepSectionCard,
@@ -8,28 +9,31 @@ import {
 } from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
+import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import {
   getSltTripPrepSubnavItems,
   getSltTripPrepWorkspace,
   sltTripPrepMobileQuickNavItems,
 } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 import type { TripPrepTraveler } from "@/shared/types/slt-trip-prep";
 import { getSltPrepPageContext } from "./page-context";
 
 export const metadata = getStaticRouteMetadata("sltPrep");
 export const dynamic = "force-dynamic";
 
-export async function renderSltPrepPage(redirectPath = "/slt-prep") {
+type SltPrepShellMode = "standalone" | "member";
+
+export async function renderSltPrepPage(
+  redirectPath = "/slt-prep",
+  shellMode: SltPrepShellMode = "standalone",
+) {
   const { actor, data } = await getSltPrepPageContext(redirectPath);
   const workspace = getSltTripPrepWorkspace(actor);
-
-  return (
-    <AppShell
-      actor={actor}
-      hideTopHeader
-      mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
-    >
+  const content = (
+    <>
       <DataSourceNotice source={data.source} />
       <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
 
@@ -43,6 +47,33 @@ export async function renderSltPrepPage(redirectPath = "/slt-prep") {
       ) : (
         <SltPrepOverviewSurface workspace={workspace} />
       )}
+    </>
+  );
+
+  if (shellMode === "member") {
+    return (
+      <StudentAppShell
+        actor={actor}
+        hideTopHeader
+        showMobileQuickItemHelpers={false}
+        showDebugTools={false}
+      >
+        <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
+        {isPreviewWorkspaceAccess(actor, "student_app") ? (
+          <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+        ) : null}
+        {content}
+      </StudentAppShell>
+    );
+  }
+
+  return (
+    <AppShell
+      actor={actor}
+      hideTopHeader
+      mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
+    >
+      {content}
     </AppShell>
   );
 }

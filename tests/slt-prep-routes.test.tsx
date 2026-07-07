@@ -86,6 +86,20 @@ describe("SLT Prep routes", () => {
     );
   });
 
+  it("renders the /app/slt-prep alias inside the member shell instead of the standalone SLT quick nav", async () => {
+    mockPathname = "/app/slt-prep";
+    await primeSignedInActor("traveler.a@mymedlife.test");
+
+    const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
+    const html = renderToStaticMarkup(await AppSltPrepPage());
+
+    expect(html).toContain('href="/app/stories"');
+    expect(html).toContain('href="/app/events"');
+    expect(html).toContain('href="/app/points"');
+    expect(html).toContain('href="/profile"');
+    expect(html).not.toContain('href="/rush-month/events"');
+  });
+
   it("renders the checklist detail preview packet with the admin handoff still blocked from writes", async () => {
     mockPathname = "/slt-prep/checklist/second-installment";
     await primeSignedInActor("admin@mymedlife.test");
