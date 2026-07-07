@@ -99,10 +99,14 @@ describe("SLT Prep routes", () => {
     expect(html).toContain("Preview completion packet");
   });
 
+  type SltPrepRoutePage = (props: {
+    searchParams: Promise<Record<string, string>>;
+  }) => Promise<ReactNode>;
+
   type RouteHarness = {
     pathname: string;
-    importer: () => Promise<{ default: (...args: any[]) => Promise<ReactNode> }>;
-    render: (Page: (...args: any[]) => Promise<ReactNode>) => Promise<ReactNode>;
+    importer: () => Promise<{ default: SltPrepRoutePage }>;
+    render: (Page: SltPrepRoutePage) => Promise<ReactNode>;
     text: string;
     email: string;
   };
@@ -119,49 +123,49 @@ describe("SLT Prep routes", () => {
     {
       pathname: "/slt-prep/forms",
       importer: () => import("@/app/slt-prep/forms/page"),
-      render: (Page) => Page(),
+      render: (Page) => Page({ searchParams: Promise.resolve({}) }),
       text: "Forms hub for Sofia",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/payments",
       importer: () => import("@/app/slt-prep/payments/page"),
-      render: (Page) => Page(),
+      render: (Page) => Page({ searchParams: Promise.resolve({}) }),
       text: "Finance view for Sofia",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/meetings",
       importer: () => import("@/app/slt-prep/meetings/page"),
-      render: (Page) => Page(),
+      render: (Page) => Page({ searchParams: Promise.resolve({}) }),
       text: "Meeting plan for Sofia",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/extensions",
       importer: () => import("@/app/slt-prep/extensions/page"),
-      render: (Page) => Page(),
+      render: (Page) => Page({ searchParams: Promise.resolve({}) }),
       text: "Optional add-ons for Sofia",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/timeline",
       importer: () => import("@/app/slt-prep/timeline/page"),
-      render: (Page) => Page(),
+      render: (Page) => Page({ searchParams: Promise.resolve({}) }),
       text: "Timeline to July 18, 2026",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/notifications",
       importer: () => import("@/app/slt-prep/notifications/page"),
-      render: (Page) => Page(),
+      render: (Page) => Page({ searchParams: Promise.resolve({}) }),
       text: "No email, SMS, or push message is sent from this app.",
       email: "traveler.a@mymedlife.test",
     },
     {
       pathname: "/slt-prep/profile",
       importer: () => import("@/app/slt-prep/profile/page"),
-      render: (Page) => Page(),
+      render: (Page) => Page({ searchParams: Promise.resolve({}) }),
       text: "Profile and flight context for Sofia Alvarez",
       email: "traveler.a@mymedlife.test",
     },
@@ -187,8 +191,8 @@ describe("SLT Prep routes", () => {
       mockPathname = pathname;
       await primeSignedInActor(email);
 
-      const module = await importer();
-      const html = renderToStaticMarkup(await render(module.default));
+      const routeModule = await importer();
+      const html = renderToStaticMarkup(await render(routeModule.default));
 
       expect(html).toContain(text);
     },
