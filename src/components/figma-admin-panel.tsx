@@ -991,7 +991,7 @@ function LumaPage() {
       </div>
 
       <div className="flex gap-2">
-        <button disabled title="Use /admin/integrations/luma for the audited Luma test connection" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Test Connection</button>
+        <button disabled title="Use /admin/integrations/luma for the audited Luma test connection" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Test blocked</button>
         <button disabled title="Mock event sync is blocked in this static admin shell" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Sync Mock Event</button>
         <button disabled title="Use /admin/integration-outbox for outbox readback" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">View Outbox</button>
       </div>
@@ -1695,7 +1695,7 @@ function SmileioCard() {
                 : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
             }`}
           >
-            {enabled ? "Disable" : "Enable Integration"}
+            {enabled ? "Disable blocked" : "Enable blocked"}
           </button>
         </div>
       </div>
@@ -1775,7 +1775,7 @@ function SmileioCard() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50"
                 >
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
-                  {testing ? "Testing…" : "Test Connection"}
+                  {testing ? "Testing…" : "Test blocked"}
                 </button>
                 {testResult === "success" && (
                   <span className="text-[12px] text-emerald-400 flex items-center gap-1.5">
@@ -2037,7 +2037,7 @@ function MetaCard() {
               enabled ? "bg-red-500/8 text-red-400 border-red-500/15 opacity-50 cursor-not-allowed"
                       : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 opacity-50 cursor-not-allowed"
             }`}>
-            {enabled ? "Disable" : "Enable Integration"}
+            {enabled ? "Disable blocked" : "Enable blocked"}
           </button>
         </div>
       </div>
@@ -2089,7 +2089,7 @@ function MetaCard() {
                 <button onClick={handleTest} disabled title="Meta connection tests are blocked until DS approval is complete"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium transition-colors opacity-50 cursor-not-allowed">
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
-                  {testing ? "Testing…" : "Test Connection"}
+                  {testing ? "Testing…" : "Test blocked"}
                 </button>
                 {testResult === "success" && <span className="text-[12px] text-emerald-400 flex items-center gap-1"><CheckCircle2 size={13} /> Connected · 180ms</span>}
                 {testResult === "error"   && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle size={13} /> Enable integration first</span>}
@@ -2141,7 +2141,7 @@ function MetaCard() {
                 </p>
               </div>
               <button disabled title="Facebook page connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
-                <Plus size={12} /> Connect Page
+                <Plus size={12} /> Connect blocked
               </button>
             </div>
             <div className="bg-[#0d1117]/40 border border-white/[0.05] rounded-lg overflow-hidden">
@@ -2200,7 +2200,7 @@ function MetaCard() {
                 <p className="text-[12px] text-slate-500 mt-0.5">Must be linked to a Facebook Page. Enables post publishing and UGC sync (tagged posts, stories).</p>
               </div>
               <button disabled title="Instagram account connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
-                <Plus size={12} /> Connect Account
+                <Plus size={12} /> Connect blocked
               </button>
             </div>
             <div className="bg-[#0d1117]/40 border border-white/[0.05] rounded-lg overflow-hidden">
@@ -2332,7 +2332,7 @@ function HootsuiteCard() {
               enabled ? "bg-red-500/8 text-red-400 border-red-500/15 opacity-50 cursor-not-allowed"
                       : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 opacity-50 cursor-not-allowed"
             }`}>
-            {enabled ? "Disable" : "Enable Integration"}
+            {enabled ? "Disable blocked" : "Enable blocked"}
           </button>
         </div>
       </div>
@@ -2376,14 +2376,14 @@ function HootsuiteCard() {
                 <div className="text-[10px] text-slate-700 font-mono uppercase tracking-wider mb-1">OAuth Status</div>
                 <div className="flex items-center gap-2">
                   <Badge status="inactive" label="not authorized" />
-                  <button disabled title="OAuth authorization is blocked until hosted secret ownership is approved" className="text-[11px] text-sky-400 transition-colors font-medium opacity-50 cursor-not-allowed">Authorize via OAuth →</button>
+                  <button disabled title="OAuth authorization is blocked until hosted secret ownership is approved" className="text-[11px] text-sky-400 transition-colors font-medium opacity-50 cursor-not-allowed">OAuth blocked</button>
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-1">
                 <button onClick={handleTest} disabled title="Hootsuite connection tests are blocked until DS approval is complete"
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium transition-colors opacity-50 cursor-not-allowed">
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
-                  {testing ? "Testing…" : "Test Connection"}
+                  {testing ? "Testing…" : "Test blocked"}
                 </button>
                 {testResult === "success" && <span className="text-[12px] text-emerald-400 flex items-center gap-1"><CheckCircle2 size={13} /> Connected · 240ms</span>}
                 {testResult === "error"   && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle size={13} /> Enable integration first</span>}
@@ -2654,11 +2654,11 @@ function IntegrationsPage() {
                 </div>
               )}
               <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
-                <button disabled title="Integration tests are blocked until provider credentials are approved" className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">Test</button>
+                <button disabled title="Integration tests are blocked until provider credentials are approved" className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">Test blocked</button>
                 {int.enabled ? (
                   <button disabled title="Provider logs are available only from the audited integration log surface" className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] transition-colors opacity-50 cursor-not-allowed">View Logs</button>
                 ) : (
-                  <button disabled title="Provider enabling is blocked until DS approval is complete" className="px-2.5 py-1 bg-emerald-500/8 text-emerald-400 border border-emerald-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">Enable</button>
+                  <button disabled title="Provider enabling is blocked until DS approval is complete" className="px-2.5 py-1 bg-emerald-500/8 text-emerald-400 border border-emerald-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">Enable blocked</button>
                 )}
               </div>
             </div>
