@@ -1586,9 +1586,11 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
                           <ChevronDown size={9} className={npsEventId===e.id ? "rotate-180 transition-transform" : "transition-transform"}/>
                         </button>
                       ) : e.status === "Past" ? (
-                        <button onClick={() => setSurveyEvent({ id:e.id, name:e.name })}
+                        <button
+                          onClick={() => setSurveyEvent({ id:e.id, name:e.name })}
+                          title="Survey sending is blocked in this preview"
                           className="text-[10px] font-semibold text-blue-500 hover:underline cursor-pointer whitespace-nowrap">
-                          Send survey
+                          Preview survey
                         </button>
                       ) : (
                         <span className="text-[10px] text-slate-300">—</span>

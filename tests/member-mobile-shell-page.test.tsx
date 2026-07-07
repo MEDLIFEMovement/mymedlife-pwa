@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
+import { FigmaMemberMobileHome } from "@/components/figma-member-mobile-home";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 
 vi.mock("next/navigation", () => ({
@@ -94,5 +97,32 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("Recent Approved Actions");
     expect(html).toContain('href="/app/events?source=points"');
     expect(html).toContain("See how to earn more points");
+  });
+
+  it("keeps assignment and admin communication controls preview-only", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-member-mobile-home.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("Preview only - no member notifications");
+    expect(source).toContain("Close assignment preview");
+    expect(source).not.toContain("This will notify all General Members immediately");
+
+    const adminHtml = renderToStaticMarkup(
+      <FigmaMemberMobileHome initialScreen="admin" />,
+    );
+
+    expect(adminHtml).toContain("Integration posture: preview-only; external writes blocked");
+    expect(adminHtml).toContain("No CRM sync, contact mutation, or task creation from this preview.");
+    expect(adminHtml).toContain("No event writes, reminders, attendance sync, or RSVP writeback from this preview.");
+    expect(adminHtml).toContain("Automation Outbox Preview (n8n disabled)");
+    expect(adminHtml).toContain("HubSpot lifecycle update blocked");
+    expect(adminHtml).toContain("Luma attendance sync blocked");
+    expect(adminHtml).toContain("Overdue action reminder blocked");
+    expect(adminHtml).toContain("Preview only - no email, SMS, push, or n8n workflow");
+    expect(adminHtml).not.toContain("47 contacts synced today");
+    expect(adminHtml).not.toContain("Luma attendance sync</p>");
+    expect(adminHtml).not.toContain("System health: 5 of 6 integrations active");
   });
 });
