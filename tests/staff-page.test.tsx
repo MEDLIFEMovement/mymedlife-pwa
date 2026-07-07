@@ -119,12 +119,17 @@ describe("staff page", () => {
     expect(html).toContain("Attended");
     expect(html).toContain("Lead→Event %");
     expect(html).toContain("Points/Yr");
+    expect(html).toContain("TEST UC Berkeley");
+    expect(html).toContain("TEST Maria Santos");
     expect(html).toContain("Search chapter or school");
     expect(html).toContain(">Type<");
     expect(html).toContain("High School");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
     expect(html).toContain("Export");
+    expect(html).not.toContain(">TEST Chapters<");
+    expect(html).not.toContain(">TEST Campaigns<");
+    expect(html).not.toContain(">TEST Proof / UGC<");
   });
 
   it.each([
@@ -236,6 +241,9 @@ describe("staff page", () => {
 
     expect(html).toContain("Story link ingestion is blocked until proof-review writes are approved");
     expect(html).toContain("provider fetch and queue writes are blocked in this preview");
+    expect(html).toContain("TEST Rush Month tabling");
+    expect(html).toContain("TEST Priya Nair");
+    expect(source).toContain("TEST Best Practice: QR Lead Capture");
     expect(source).toContain("External source links are blocked in this preview");
     expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
     expect(source).toContain("publishing and distribution actions remain blocked in this launch pass");

@@ -146,6 +146,34 @@ describe("Figma missing route placeholders", () => {
     expect(source).toContain("Review seeded admin and system readback here");
   });
 
+  it("marks seeded DS Admin people, chapters, and social placeholders with a visible TEST prefix while keeping product labels clean", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    const usersHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="users" />);
+    expect(usersHtml).toContain("TEST Aaliyah Johnson");
+    expect(usersHtml).toContain("TEST Howard University");
+
+    const chaptersHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="chapters" />);
+    expect(chaptersHtml).toContain("TEST UCLA MEDLIFE");
+    expect(chaptersHtml).toContain("TEST Dr. R. Patel");
+
+    const auditHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="audit" />);
+    expect(auditHtml).toContain("TEST Soledad Vega");
+    expect(auditHtml).toContain("TEST Community Health Fair");
+
+    const integrationsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="integrations" />);
+    expect(source).toContain("TEST MEDLIFE Stanford");
+    expect(source).toContain("@TEST_medlife_stanford");
+    expect(integrationsHtml).toContain("Luma");
+    expect(integrationsHtml).toContain("HubSpot");
+    expect(integrationsHtml).toContain("Smile.io");
+    expect(integrationsHtml).toContain("MCP Connections");
+    expect(integrationsHtml).not.toContain("TEST Luma");
+    expect(integrationsHtml).not.toContain("TEST HubSpot");
+    expect(integrationsHtml).not.toContain("TEST Smile.io");
+  });
+
   it("keeps admin users and chapters detail surfaces visible without implying live mutation paths", async () => {
     const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
     const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");

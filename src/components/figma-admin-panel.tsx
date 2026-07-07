@@ -17,34 +17,34 @@ type UserStatus = "active" | "inactive" | "pending";
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 const USERS_DATA = [
-  { id: 1, name: "Aaliyah Johnson", email: "aaliyah.j@medlife.org", role: "Chapter Leader", chapter: "Howard University", workspace: "DC-Metro", modules: ["Events", "RSVP", "Points"], lastLogin: "2026-06-30 14:22", status: "active" as UserStatus },
-  { id: 2, name: "Marcus Rivera", email: "m.rivera@medlife.org", role: "Staff", chapter: "UCLA", workspace: "West Coast", modules: ["Events", "RSVP", "Attendance", "Points"], lastLogin: "2026-06-30 11:05", status: "active" as UserStatus },
-  { id: 3, name: "Priya Nair", email: "p.nair@medlife.org", role: "Coach", chapter: "Emory University", workspace: "Southeast", modules: ["Events", "Points"], lastLogin: "2026-06-29 09:38", status: "active" as UserStatus },
-  { id: 4, name: "Devon Carter", email: "d.carter@medlife.org", role: "Student", chapter: "Morehouse College", workspace: "Southeast", modules: ["Events", "RSVP"], lastLogin: "2026-06-28 16:14", status: "active" as UserStatus },
-  { id: 5, name: "Fatima Hassan", email: "f.hassan@medlife.org", role: "Chapter Leader", chapter: "Michigan State", workspace: "Midwest", modules: ["Events", "RSVP", "Points"], lastLogin: "2026-06-27 10:00", status: "inactive" as UserStatus },
-  { id: 6, name: "James Okafor", email: "j.okafor@medlife.org", role: "Student", chapter: "Spelman College", workspace: "Southeast", modules: ["Events"], lastLogin: "2026-06-25 08:45", status: "pending" as UserStatus },
-  { id: 7, name: "Soledad Vega", email: "s.vega@medlife.org", role: "DS Admin", chapter: "—", workspace: "Global", modules: ["All Modules"], lastLogin: "2026-07-01 09:00", status: "active" as UserStatus },
-  { id: 8, name: "Chen Wei", email: "c.wei@medlife.org", role: "Super Admin", chapter: "—", workspace: "Global", modules: ["All Modules"], lastLogin: "2026-07-01 08:30", status: "active" as UserStatus },
+  { id: 1, name: "TEST Aaliyah Johnson", email: "TEST.aaliyah.j@medlife.org", role: "Chapter Leader", chapter: "TEST Howard University", workspace: "TEST DC-Metro", modules: ["Events", "RSVP", "Points"], lastLogin: "2026-06-30 14:22", status: "active" as UserStatus },
+  { id: 2, name: "TEST Marcus Rivera", email: "TEST.m.rivera@medlife.org", role: "Staff", chapter: "TEST UCLA", workspace: "TEST West Coast", modules: ["Events", "RSVP", "Attendance", "Points"], lastLogin: "2026-06-30 11:05", status: "active" as UserStatus },
+  { id: 3, name: "TEST Priya Nair", email: "TEST.p.nair@medlife.org", role: "Coach", chapter: "TEST Emory University", workspace: "TEST Southeast", modules: ["Events", "Points"], lastLogin: "2026-06-29 09:38", status: "active" as UserStatus },
+  { id: 4, name: "TEST Devon Carter", email: "TEST.d.carter@medlife.org", role: "Student", chapter: "TEST Morehouse College", workspace: "TEST Southeast", modules: ["Events", "RSVP"], lastLogin: "2026-06-28 16:14", status: "active" as UserStatus },
+  { id: 5, name: "TEST Fatima Hassan", email: "TEST.f.hassan@medlife.org", role: "Chapter Leader", chapter: "TEST Michigan State", workspace: "TEST Midwest", modules: ["Events", "RSVP", "Points"], lastLogin: "2026-06-27 10:00", status: "inactive" as UserStatus },
+  { id: 6, name: "TEST James Okafor", email: "TEST.j.okafor@medlife.org", role: "Student", chapter: "TEST Spelman College", workspace: "TEST Southeast", modules: ["Events"], lastLogin: "2026-06-25 08:45", status: "pending" as UserStatus },
+  { id: 7, name: "TEST Soledad Vega", email: "TEST.s.vega@medlife.org", role: "DS Admin", chapter: "—", workspace: "TEST Global", modules: ["All Modules"], lastLogin: "2026-07-01 09:00", status: "active" as UserStatus },
+  { id: 8, name: "TEST Chen Wei", email: "TEST.c.wei@medlife.org", role: "Super Admin", chapter: "—", workspace: "TEST Global", modules: ["All Modules"], lastLogin: "2026-07-01 08:30", status: "active" as UserStatus },
 ];
 
 const CHAPTERS_DATA = [
-  { id: 1, name: "Howard University", school: "Howard University", region: "DC-Metro", coach: "Dr. S. Williams", members: 42, upcomingEvents: 3, rsvps: 87, attendance: 74, points: 3240, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 2, name: "UCLA MEDLIFE", school: "UCLA", region: "West Coast", coach: "Dr. R. Patel", members: 68, upcomingEvents: 5, rsvps: 142, attendance: 118, points: 5890, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 3, name: "Emory University", school: "Emory University", region: "Southeast", coach: "Dr. K. Brown", members: 31, upcomingEvents: 1, rsvps: 28, attendance: 20, points: 840, modules: ["Events", "RSVP", "Points"], risk: "medium" },
-  { id: 4, name: "Morehouse College", school: "Morehouse College", region: "Southeast", coach: "Dr. T. Jackson", members: 28, upcomingEvents: 2, rsvps: 41, attendance: 35, points: 1450, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
-  { id: 5, name: "Michigan State", school: "Michigan State University", region: "Midwest", coach: "Dr. L. Chen", members: 39, upcomingEvents: 0, rsvps: 12, attendance: 8, points: 290, modules: ["Events"], risk: "high" },
-  { id: 6, name: "Spelman College", school: "Spelman College", region: "Southeast", coach: "Dr. N. Osei", members: 24, upcomingEvents: 1, rsvps: 19, attendance: 14, points: 560, modules: ["Events", "RSVP"], risk: "medium" },
+  { id: 1, name: "TEST Howard University", school: "TEST Howard University", region: "TEST DC-Metro", coach: "TEST Dr. S. Williams", members: 42, upcomingEvents: 3, rsvps: 87, attendance: 74, points: 3240, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 2, name: "TEST UCLA MEDLIFE", school: "TEST UCLA", region: "TEST West Coast", coach: "TEST Dr. R. Patel", members: 68, upcomingEvents: 5, rsvps: 142, attendance: 118, points: 5890, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 3, name: "TEST Emory University", school: "TEST Emory University", region: "TEST Southeast", coach: "TEST Dr. K. Brown", members: 31, upcomingEvents: 1, rsvps: 28, attendance: 20, points: 840, modules: ["Events", "RSVP", "Points"], risk: "medium" },
+  { id: 4, name: "TEST Morehouse College", school: "TEST Morehouse College", region: "TEST Southeast", coach: "TEST Dr. T. Jackson", members: 28, upcomingEvents: 2, rsvps: 41, attendance: 35, points: 1450, modules: ["Events", "RSVP", "Attendance", "Points"], risk: "low" },
+  { id: 5, name: "TEST Michigan State", school: "TEST Michigan State University", region: "TEST Midwest", coach: "TEST Dr. L. Chen", members: 39, upcomingEvents: 0, rsvps: 12, attendance: 8, points: 290, modules: ["Events"], risk: "high" },
+  { id: 6, name: "TEST Spelman College", school: "TEST Spelman College", region: "TEST Southeast", coach: "TEST Dr. N. Osei", members: 24, upcomingEvents: 1, rsvps: 19, attendance: 14, points: 560, modules: ["Events", "RSVP"], risk: "medium" },
 ];
 
 const MODULES_DATA = [
-  { id: "luma-events", name: "Luma Events / RSVP / Attendance / Points", description: "Core launch module. Event creation via Luma, RSVP, attendance tracking, and point awarding.", status: "staging-only" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Luma staging readback", "Points Service", "Blocked Outbox"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-06-15 10:30", reason: "Staging/mock-safe only — production Luma writes remain disabled" },
-  { id: "sop-builder", name: "SOP Builder / Next Actions", description: "Standard operating procedure builder for chapter leaders. In development.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Task Service"], lastChangedBy: "Soledad Vega", lastChangedAt: "2026-05-20 14:00", reason: "Not ready for production — pending UX review" },
-  { id: "task-assignment", name: "Task Assignment", description: "Assign and track tasks across chapter members and staff.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Task Service", "Notifications"], lastChangedBy: "Soledad Vega", lastChangedAt: "2026-05-20 14:00", reason: "Deferred to Phase 2" },
-  { id: "ugc-feed", name: "UGC / Feed / Proof", description: "User-generated content feed and proof-of-work submissions.", status: "disabled" as ModuleStatus, environment: "internal", health: "unknown" as HealthStatus, dependencies: ["Storage", "Moderation"], lastChangedBy: "Soledad Vega", lastChangedAt: "2026-05-01 09:00", reason: "Deferred to Phase 3" },
-  { id: "staff-analytics", name: "Staff Analytics", description: "Chapter performance metrics and coach dashboards.", status: "staging-only" as ModuleStatus, environment: "staging", health: "degraded" as HealthStatus, dependencies: ["BigQuery", "Analytics Service"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-06-01 11:45", reason: "Data model under revision" },
-  { id: "integrations-outbox", name: "Integrations / Outbox", description: "Outbound event pipeline to HubSpot, BigQuery, and n8n workflows.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["HubSpot disabled", "BigQuery disabled", "n8n disabled"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-06-20 16:00", reason: "Live sends and external writes are blocked in this run" },
-  { id: "mcp-analytics", name: "MCP Read-only Analytics", description: "AI-assisted read-only analytics queries via MCP.", status: "internal-only" as ModuleStatus, environment: "internal", health: "unknown" as HealthStatus, dependencies: ["OpenAI", "BigQuery"], lastChangedBy: "Chen Wei", lastChangedAt: "2026-04-10 10:00", reason: "Internal testing only — not user-facing" },
-  { id: "theme-tokens", name: "Theme / Design Tokens", description: "Dynamic visual theming and design token overrides per workspace.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: [], lastChangedBy: "Soledad Vega", lastChangedAt: "2026-05-15 13:30", reason: "Design system stabilization in progress" },
+  { id: "luma-events", name: "Luma Events / RSVP / Attendance / Points", description: "Core launch module. Event creation via Luma, RSVP, attendance tracking, and point awarding.", status: "staging-only" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Luma staging readback", "Points Service", "Blocked Outbox"], lastChangedBy: "TEST Chen Wei", lastChangedAt: "2026-06-15 10:30", reason: "Staging/mock-safe only — production Luma writes remain disabled" },
+  { id: "sop-builder", name: "SOP Builder / Next Actions", description: "Standard operating procedure builder for chapter leaders. In development.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Task Service"], lastChangedBy: "TEST Soledad Vega", lastChangedAt: "2026-05-20 14:00", reason: "Not ready for production — pending UX review" },
+  { id: "task-assignment", name: "Task Assignment", description: "Assign and track tasks across chapter members and staff.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["Task Service", "Notifications"], lastChangedBy: "TEST Soledad Vega", lastChangedAt: "2026-05-20 14:00", reason: "Deferred to Phase 2" },
+  { id: "ugc-feed", name: "UGC / Feed / Proof", description: "User-generated content feed and proof-of-work submissions.", status: "disabled" as ModuleStatus, environment: "internal", health: "unknown" as HealthStatus, dependencies: ["Storage", "Moderation"], lastChangedBy: "TEST Soledad Vega", lastChangedAt: "2026-05-01 09:00", reason: "Deferred to Phase 3" },
+  { id: "staff-analytics", name: "Staff Analytics", description: "Chapter performance metrics and coach dashboards.", status: "staging-only" as ModuleStatus, environment: "staging", health: "degraded" as HealthStatus, dependencies: ["BigQuery", "Analytics Service"], lastChangedBy: "TEST Chen Wei", lastChangedAt: "2026-06-01 11:45", reason: "Data model under revision" },
+  { id: "integrations-outbox", name: "Integrations / Outbox", description: "Outbound event pipeline to HubSpot, BigQuery, and n8n workflows.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: ["HubSpot disabled", "BigQuery disabled", "n8n disabled"], lastChangedBy: "TEST Chen Wei", lastChangedAt: "2026-06-20 16:00", reason: "Live sends and external writes are blocked in this run" },
+  { id: "mcp-analytics", name: "MCP Read-only Analytics", description: "AI-assisted read-only analytics queries via MCP.", status: "internal-only" as ModuleStatus, environment: "internal", health: "unknown" as HealthStatus, dependencies: ["OpenAI", "BigQuery"], lastChangedBy: "TEST Chen Wei", lastChangedAt: "2026-04-10 10:00", reason: "Internal testing only — not user-facing" },
+  { id: "theme-tokens", name: "Theme / Design Tokens", description: "Dynamic visual theming and design token overrides per workspace.", status: "disabled" as ModuleStatus, environment: "staging", health: "unknown" as HealthStatus, dependencies: [], lastChangedBy: "TEST Soledad Vega", lastChangedAt: "2026-05-15 13:30", reason: "Design system stabilization in progress" },
 ];
 
 const INTEGRATIONS_DATA = [
@@ -62,23 +62,23 @@ const INTEGRATIONS_DATA = [
 ];
 
 const AUDIT_LOGS = [
-  { id: 1, timestamp: "2026-07-01 09:14:22", actor: "Chen Wei", role: "Super Admin", action: "module.review", target: "Luma Events", oldValue: "disabled", newValue: "staging-only", reason: "Staging/mock-safe review — no production write", status: "warning" },
-  { id: 2, timestamp: "2026-07-01 08:55:10", actor: "Soledad Vega", role: "DS Admin", action: "user.role_change", target: "Marcus Rivera", oldValue: "Student", newValue: "Staff", reason: "Promotion approved by Dr. Patel", status: "success" },
+  { id: 1, timestamp: "2026-07-01 09:14:22", actor: "TEST Chen Wei", role: "Super Admin", action: "module.review", target: "Luma Events", oldValue: "disabled", newValue: "staging-only", reason: "Staging/mock-safe review — no production write", status: "warning" },
+  { id: 2, timestamp: "2026-07-01 08:55:10", actor: "TEST Soledad Vega", role: "DS Admin", action: "user.role_change", target: "TEST Marcus Rivera", oldValue: "Student", newValue: "Staff", reason: "Promotion approved by TEST Dr. Patel", status: "success" },
   { id: 3, timestamp: "2026-06-30 17:30:04", actor: "system", role: "System", action: "luma.sync_blocked", target: "Luma API", oldValue: "—", newValue: "—", reason: "Live Luma sync disabled in staging/mock-safe mode", status: "warning" },
-  { id: 4, timestamp: "2026-06-30 16:45:18", actor: "Soledad Vega", role: "DS Admin", action: "chapter.module_change", target: "Michigan State", oldValue: "Events, RSVP, Points", newValue: "Events only", reason: "Low engagement — reducing scope", status: "success" },
-  { id: 5, timestamp: "2026-06-30 14:22:33", actor: "system", role: "System", action: "points.duplicate_blocked", target: "Devon Carter", oldValue: "0", newValue: "0", reason: "Duplicate attendance detected", status: "warning" },
-  { id: 6, timestamp: "2026-06-30 11:10:55", actor: "Chen Wei", role: "Super Admin", action: "integration.test_blocked", target: "BigQuery", oldValue: "—", newValue: "—", reason: "Warehouse connector disabled until DS approval", status: "warning" },
-  { id: 7, timestamp: "2026-06-29 09:38:14", actor: "system", role: "System", action: "access.denied", target: "Priya Nair", oldValue: "—", newValue: "—", reason: "Attempted SOP Builder (disabled module)", status: "error" },
-  { id: 8, timestamp: "2026-06-28 15:00:00", actor: "Soledad Vega", role: "DS Admin", action: "points.previewed", target: "Morehouse College", oldValue: "0", newValue: "+50", reason: "Event attendance preview: Community Health Fair", status: "warning" },
+  { id: 4, timestamp: "2026-06-30 16:45:18", actor: "TEST Soledad Vega", role: "DS Admin", action: "chapter.module_change", target: "TEST Michigan State", oldValue: "Events, RSVP, Points", newValue: "Events only", reason: "Low engagement — reducing scope", status: "success" },
+  { id: 5, timestamp: "2026-06-30 14:22:33", actor: "system", role: "System", action: "points.duplicate_blocked", target: "TEST Devon Carter", oldValue: "0", newValue: "0", reason: "Duplicate attendance detected", status: "warning" },
+  { id: 6, timestamp: "2026-06-30 11:10:55", actor: "TEST Chen Wei", role: "Super Admin", action: "integration.test_blocked", target: "BigQuery", oldValue: "—", newValue: "—", reason: "Warehouse connector disabled until DS approval", status: "warning" },
+  { id: 7, timestamp: "2026-06-29 09:38:14", actor: "system", role: "System", action: "access.denied", target: "TEST Priya Nair", oldValue: "—", newValue: "—", reason: "Attempted SOP Builder (disabled module)", status: "error" },
+  { id: 8, timestamp: "2026-06-28 15:00:00", actor: "TEST Soledad Vega", role: "DS Admin", action: "points.previewed", target: "TEST Morehouse College", oldValue: "0", newValue: "+50", reason: "Event attendance preview: TEST Community Health Fair", status: "warning" },
 ];
 
 const API_KEYS_DATA = [
-  { id: "luma", provider: "Luma", label: "Luma API Key", key: "secret-ref:luma:staging:v1", environment: "staging", status: "inactive", lastRotated: "2026-05-10", expiresAt: "2027-05-10", createdBy: "Chen Wei", scopes: ["events:read", "events:write", "rsvp:read"] },
-  { id: "hubspot", provider: "HubSpot", label: "HubSpot Private App Token", key: "secret-ref:hubspot:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-04-01", expiresAt: "Never", createdBy: "Soledad Vega", scopes: ["contacts:write", "contacts:read", "deals:read"] },
-  { id: "bigquery", provider: "BigQuery", label: "BigQuery Service Account Key", key: "secret-ref:bigquery:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-03-15", expiresAt: "Never", createdBy: "Chen Wei", scopes: ["bigquery.tables.create", "bigquery.jobs.create"] },
-  { id: "n8n", provider: "n8n", label: "n8n Webhook Secret", key: "secret-ref:n8n:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-06-01", expiresAt: "Never", createdBy: "Chen Wei", scopes: ["webhook:receive"] },
-  { id: "openai", provider: "OpenAI", label: "OpenAI API Key", key: "secret-ref:openai:internal:v1", environment: "internal", status: "inactive", lastRotated: "2026-02-20", expiresAt: "Never", createdBy: "Chen Wei", scopes: ["completions", "chat"] },
-  { id: "powerbi", provider: "Power BI", label: "Power BI Client Secret", key: "secret-ref:powerbi:staging:v1", environment: "staging", status: "inactive", lastRotated: "2025-12-01", expiresAt: "2026-12-01", createdBy: "Soledad Vega", scopes: ["dataset:read", "report:read"] },
+  { id: "luma", provider: "Luma", label: "Luma API Key", key: "secret-ref:luma:staging:v1", environment: "staging", status: "inactive", lastRotated: "2026-05-10", expiresAt: "2027-05-10", createdBy: "TEST Chen Wei", scopes: ["events:read", "events:write", "rsvp:read"] },
+  { id: "hubspot", provider: "HubSpot", label: "HubSpot Private App Token", key: "secret-ref:hubspot:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-04-01", expiresAt: "Never", createdBy: "TEST Soledad Vega", scopes: ["contacts:write", "contacts:read", "deals:read"] },
+  { id: "bigquery", provider: "BigQuery", label: "BigQuery Service Account Key", key: "secret-ref:bigquery:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-03-15", expiresAt: "Never", createdBy: "TEST Chen Wei", scopes: ["bigquery.tables.create", "bigquery.jobs.create"] },
+  { id: "n8n", provider: "n8n", label: "n8n Webhook Secret", key: "secret-ref:n8n:disabled:v1", environment: "disabled", status: "inactive", lastRotated: "2026-06-01", expiresAt: "Never", createdBy: "TEST Chen Wei", scopes: ["webhook:receive"] },
+  { id: "openai", provider: "OpenAI", label: "OpenAI API Key", key: "secret-ref:openai:internal:v1", environment: "internal", status: "inactive", lastRotated: "2026-02-20", expiresAt: "Never", createdBy: "TEST Chen Wei", scopes: ["completions", "chat"] },
+  { id: "powerbi", provider: "Power BI", label: "Power BI Client Secret", key: "secret-ref:powerbi:staging:v1", environment: "staging", status: "inactive", lastRotated: "2025-12-01", expiresAt: "2026-12-01", createdBy: "TEST Soledad Vega", scopes: ["dataset:read", "report:read"] },
 ];
 
 // ─── Utility Components ─────────────────────────────────────────────────────────
@@ -268,7 +268,7 @@ function Sidebar({ active, onNav, onBack }: { active: string; onNav: (id: string
             <span className="text-[9px] text-sky-400 font-bold">CW</span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[12px] text-slate-300 font-semibold leading-tight">Chen Wei</div>
+            <div className="text-[12px] text-slate-300 font-semibold leading-tight">TEST Chen Wei</div>
             <div className="text-[10px] text-slate-600 font-mono">Super Admin</div>
             <div className="mt-1 text-[9px] text-slate-500">
               Use the top-right menu to switch workspaces or log out.
@@ -527,7 +527,7 @@ function UsersPage() {
               <div className="text-[10px] text-slate-700 font-mono uppercase tracking-wider mb-2">Recent Activity</div>
               <div className="space-y-2">
                 {[
-                  "Attended: Community Health Fair — 2026-06-30",
+                  "Attended: TEST Community Health Fair — 2026-06-30",
                   "RSVP: Medical Ethics Symposium — 2026-06-28",
                   "Login from 192.168.1.45 — 2026-06-28",
                 ].map((a) => (
@@ -694,7 +694,7 @@ function ModulesPage() {
     setMods((prev) =>
       prev.map((m) =>
         m.id === target.id
-          ? { ...m, status: (m.status === "enabled" ? "disabled" : "enabled") as ModuleStatus, lastChangedBy: "Chen Wei", lastChangedAt: new Date().toISOString().slice(0, 16).replace("T", " "), reason }
+          ? { ...m, status: (m.status === "enabled" ? "disabled" : "enabled") as ModuleStatus, lastChangedBy: "TEST Chen Wei", lastChangedAt: new Date().toISOString().slice(0, 16).replace("T", " "), reason }
           : m
       )
     );
@@ -975,7 +975,7 @@ const GLOBAL_ROLE_DEFAULTS = [
 
 const SOP_STEP_POINTS = [
   {
-    campaign: "Rush Month / Recruitment", color: "text-sky-400", borderColor: "border-sky-500/20",
+    campaign: "TEST Rush Month / Recruitment", color: "text-sky-400", borderColor: "border-sky-500/20",
     steps: [
       { step: "Intro GBM — Member Attendance", phase: "Launch", kpi: "Attendance Rate", ownerRole: "Action Committee Chair", pointsOn: true, approvalReq: false, gm: 30, acm: 35, acc: 40, eb: 50, chapterPts: 25, capUser: 1, override: false },
       { step: "Recruit 5 Friends to Intro GBM", phase: "Recruitment", kpi: "Recruitment Rate", ownerRole: "General Member", pointsOn: true, approvalReq: false, gm: 30, acm: 35, acc: 40, eb: 50, chapterPts: 25, capUser: 1, override: false },
@@ -985,7 +985,7 @@ const SOP_STEP_POINTS = [
     ]
   },
   {
-    campaign: "Chapter Engagement", color: "text-emerald-400", borderColor: "border-emerald-500/20",
+    campaign: "TEST Chapter Engagement", color: "text-emerald-400", borderColor: "border-emerald-500/20",
     steps: [
       { step: "Monthly GBM Attendance", phase: "Engagement", kpi: "Attendance Rate", ownerRole: "Action Committee Chair", pointsOn: true, approvalReq: false, gm: 25, acm: 30, acc: 35, eb: 45, chapterPts: 20, capUser: 1, override: true },
       { step: "Action Committee Task Completion", phase: "Execution", kpi: "Assignment Completion", ownerRole: "Action Committee Member", pointsOn: true, approvalReq: false, gm: 20, acm: 30, acc: 35, eb: 40, chapterPts: 15, capUser: 1, override: true },
@@ -993,7 +993,7 @@ const SOP_STEP_POINTS = [
     ]
   },
   {
-    campaign: "Moving Mountains", color: "text-violet-400", borderColor: "border-violet-500/20",
+    campaign: "TEST Moving Mountains", color: "text-violet-400", borderColor: "border-violet-500/20",
     steps: [
       { step: "Bridge Video Submission", phase: "Content", kpi: "Evidence Submitted", ownerRole: "General Member", pointsOn: true, approvalReq: true, gm: 40, acm: 45, acc: 50, eb: 60, chapterPts: 30, capUser: 1, override: true },
       { step: "Community Event Participation", phase: "Impact", kpi: "Attendance Rate", ownerRole: "General Member", pointsOn: true, approvalReq: false, gm: 30, acm: 35, acc: 40, eb: 50, chapterPts: 25, capUser: 2, override: false },
@@ -1003,21 +1003,21 @@ const SOP_STEP_POINTS = [
 ];
 
 const CHAPTER_LEADERBOARD = [
-  { name: "UCLA MEDLIFE", region: "West Coast", pts: 5890, members: 68, trend: "up" },
-  { name: "Howard University", region: "DC-Metro", pts: 3240, members: 42, trend: "up" },
-  { name: "Morehouse College", region: "Southeast", pts: 1450, members: 28, trend: "stable" },
-  { name: "Emory University", region: "Southeast", pts: 840, members: 31, trend: "down" },
-  { name: "Spelman College", region: "Southeast", pts: 560, members: 24, trend: "stable" },
-  { name: "Michigan State", region: "Midwest", pts: 290, members: 39, trend: "down" },
+  { name: "TEST UCLA MEDLIFE", region: "TEST West Coast", pts: 5890, members: 68, trend: "up" },
+  { name: "TEST Howard University", region: "TEST DC-Metro", pts: 3240, members: 42, trend: "up" },
+  { name: "TEST Morehouse College", region: "TEST Southeast", pts: 1450, members: 28, trend: "stable" },
+  { name: "TEST Emory University", region: "TEST Southeast", pts: 840, members: 31, trend: "down" },
+  { name: "TEST Spelman College", region: "TEST Southeast", pts: 560, members: 24, trend: "stable" },
+  { name: "TEST Michigan State", region: "TEST Midwest", pts: 290, members: 39, trend: "down" },
 ];
 
 const LEDGER_ROWS = [
-  { user: "Aaliyah Johnson", role: "Chapter Leader", chapter: "Howard", campaign: "Rush Month", step: "Intro GBM — Member Attendance", pts: 30, chapterPts: 25, time: "2026-07-01 09:14", status: "success", smileSynced: true },
-  { user: "Marcus Rivera", role: "Staff", chapter: "UCLA", campaign: "Chapter Engagement", step: "Monthly GBM Attendance", pts: 0, chapterPts: 0, time: "2026-06-30 14:22", status: "success", smileSynced: false },
-  { user: "Devon Carter", role: "Student", chapter: "Morehouse", campaign: "Rush Month", step: "Intro GBM — Member Attendance", pts: 30, chapterPts: 25, time: "2026-06-30 14:20", status: "success", smileSynced: true },
-  { user: "Devon Carter", role: "Student", chapter: "Morehouse", campaign: "Rush Month", step: "Intro GBM — Member Attendance", pts: 0, chapterPts: 0, time: "2026-06-30 14:20", status: "warning", smileSynced: false },
-  { user: "Priya Nair", role: "Coach", chapter: "Emory", campaign: "Chapter Engagement", step: "Action Committee Task Completion", pts: 0, chapterPts: 0, time: "2026-06-29 09:38", status: "error", smileSynced: false },
-  { user: "Fatima Hassan", role: "Chapter Leader", chapter: "Michigan State", campaign: "Rush Month", step: "Complete Onboarding Checklist", pts: 30, chapterPts: 25, time: "2026-06-28 16:14", status: "success", smileSynced: false },
+  { user: "TEST Aaliyah Johnson", role: "Chapter Leader", chapter: "TEST Howard", campaign: "TEST Rush Month", step: "Intro GBM — Member Attendance", pts: 30, chapterPts: 25, time: "2026-07-01 09:14", status: "success", smileSynced: true },
+  { user: "TEST Marcus Rivera", role: "Staff", chapter: "TEST UCLA", campaign: "TEST Chapter Engagement", step: "Monthly GBM Attendance", pts: 0, chapterPts: 0, time: "2026-06-30 14:22", status: "success", smileSynced: false },
+  { user: "TEST Devon Carter", role: "Student", chapter: "TEST Morehouse", campaign: "TEST Rush Month", step: "Intro GBM — Member Attendance", pts: 30, chapterPts: 25, time: "2026-06-30 14:20", status: "success", smileSynced: true },
+  { user: "TEST Devon Carter", role: "Student", chapter: "TEST Morehouse", campaign: "TEST Rush Month", step: "Intro GBM — Member Attendance", pts: 0, chapterPts: 0, time: "2026-06-30 14:20", status: "warning", smileSynced: false },
+  { user: "TEST Priya Nair", role: "Coach", chapter: "TEST Emory", campaign: "TEST Chapter Engagement", step: "Action Committee Task Completion", pts: 0, chapterPts: 0, time: "2026-06-29 09:38", status: "error", smileSynced: false },
+  { user: "TEST Fatima Hassan", role: "Chapter Leader", chapter: "TEST Michigan State", campaign: "TEST Rush Month", step: "Complete Onboarding Checklist", pts: 30, chapterPts: 25, time: "2026-06-28 16:14", status: "success", smileSynced: false },
 ];
 
 // ─── Toggle helper ─────────────────────────────────────────────────────────────
@@ -1947,20 +1947,20 @@ function MetaCard() {
   const META_BLUE = "#1877F2";
 
   const CHAPTER_PAGES = [
-    { chapter: "UC Berkeley",          page: "MEDLIFE UC Berkeley",    followers: 1240, status: "pending" as const },
-    { chapter: "University of Florida",page: "MEDLIFE UF",             followers: 2880, status: "pending" as const },
-    { chapter: "Stanford University",  page: "MEDLIFE Stanford",       followers: 3410, status: "pending" as const },
-    { chapter: "UNAM Mexico City",     page: "MEDLIFE UNAM",           followers: 1890, status: "pending" as const },
-    { chapter: "USP São Paulo",        page: "MEDLIFE USP",            followers: 2150, status: "pending" as const },
-    { chapter: "University of Nairobi",page: "MEDLIFE Nairobi Chapter",followers: 960,  status: "pending" as const },
+    { chapter: "TEST UC Berkeley",          page: "TEST MEDLIFE UC Berkeley",    followers: 1240, status: "pending" as const },
+    { chapter: "TEST University of Florida",page: "TEST MEDLIFE UF",             followers: 2880, status: "pending" as const },
+    { chapter: "TEST Stanford University",  page: "TEST MEDLIFE Stanford",       followers: 3410, status: "pending" as const },
+    { chapter: "TEST UNAM Mexico City",     page: "TEST MEDLIFE UNAM",           followers: 1890, status: "pending" as const },
+    { chapter: "TEST USP São Paulo",        page: "TEST MEDLIFE USP",            followers: 2150, status: "pending" as const },
+    { chapter: "TEST University of Nairobi",page: "TEST MEDLIFE Nairobi Chapter",followers: 960,  status: "pending" as const },
   ];
 
   const IG_ACCOUNTS = [
-    { chapter: "UC Berkeley",          handle: "@medlife_ucberkeley",  followers: 3280, verified: true,  status: "pending" as const },
-    { chapter: "Stanford University",  handle: "@medlife_stanford",    followers: 4120, verified: true,  status: "pending" as const },
-    { chapter: "University of Florida",handle: "@medlife_uf",          followers: 2640, verified: false, status: "pending" as const },
-    { chapter: "UNAM Mexico City",     handle: "@medlife_unam",        followers: 2910, verified: false, status: "pending" as const },
-    { chapter: "USP São Paulo",        handle: "@medlife_usp_oficial", followers: 1780, verified: false, status: "pending" as const },
+    { chapter: "TEST UC Berkeley",          handle: "@TEST_medlife_ucberkeley",  followers: 3280, verified: true,  status: "pending" as const },
+    { chapter: "TEST Stanford University",  handle: "@TEST_medlife_stanford",    followers: 4120, verified: true,  status: "pending" as const },
+    { chapter: "TEST University of Florida",handle: "@TEST_medlife_uf",          followers: 2640, verified: false, status: "pending" as const },
+    { chapter: "TEST UNAM Mexico City",     handle: "@TEST_medlife_unam",        followers: 2910, verified: false, status: "pending" as const },
+    { chapter: "TEST USP São Paulo",        handle: "@TEST_medlife_usp_oficial", followers: 1780, verified: false, status: "pending" as const },
   ];
 
   const handleTest = () => {
@@ -2251,11 +2251,11 @@ function HootsuiteCard() {
   ];
 
   const STREAMS = [
-    { chapter: "UC Berkeley",           networks: ["Facebook","Instagram","Twitter/X"], lastPost: "—", autoApprove: false },
-    { chapter: "Stanford University",    networks: ["Facebook","Instagram"],            lastPost: "—", autoApprove: false },
-    { chapter: "University of Florida", networks: ["Facebook","Instagram","TikTok"],   lastPost: "—", autoApprove: false },
-    { chapter: "UNAM Mexico City",       networks: ["Facebook","Instagram"],            lastPost: "—", autoApprove: false },
-    { chapter: "USP São Paulo",          networks: ["Facebook","Instagram"],            lastPost: "—", autoApprove: false },
+    { chapter: "TEST UC Berkeley",           networks: ["Facebook","Instagram","Twitter/X"], lastPost: "—", autoApprove: false },
+    { chapter: "TEST Stanford University",    networks: ["Facebook","Instagram"],            lastPost: "—", autoApprove: false },
+    { chapter: "TEST University of Florida", networks: ["Facebook","Instagram","TikTok"],   lastPost: "—", autoApprove: false },
+    { chapter: "TEST UNAM Mexico City",       networks: ["Facebook","Instagram"],            lastPost: "—", autoApprove: false },
+    { chapter: "TEST USP São Paulo",          networks: ["Facebook","Instagram"],            lastPost: "—", autoApprove: false },
   ];
 
   const handleTest = () => {
