@@ -2883,7 +2883,9 @@ function HeartBtn({ count, storyId, liked, onToggle }: { count: number; storyId:
       <span className="relative transition-transform duration-200">
         <Heart size={16} className="fill-transparent" />
       </span>
-      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px" }}>{count}</span>
+      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px" }}>
+        {count.toLocaleString()} preview likes
+      </span>
     </button>
   );
 }
@@ -3079,7 +3081,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
               <div className="flex items-center gap-4">
                 <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
                 <span className="text-sm text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
-                  {story.views.toLocaleString()} views
+                  {story.views.toLocaleString()} preview views
                 </span>
               </div>
               <span className="text-sm text-muted-foreground">{story.date}</span>
@@ -3117,7 +3119,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
             <div className="mt-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
-                <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} views</span>
+                <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} preview views</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin size={11} /><span>{story.country}</span>
@@ -3171,7 +3173,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
             <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
             {/* View count: larger text on mobile */}
             <span className="text-sm md:text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
-              {story.views >= 1000 ? `${(story.views / 1000).toFixed(1)}k` : story.views} views
+              {story.views >= 1000 ? `${(story.views / 1000).toFixed(1)}k` : story.views} preview views
             </span>
           </div>
           <div className="flex items-center gap-1 text-sm md:text-xs text-muted-foreground">
@@ -3294,7 +3296,7 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: {
             />
             <span className="text-xs text-muted-foreground"
               style={{ fontFamily: "'DM Mono', monospace" }}>
-              {story.views.toLocaleString()} views
+              {story.views.toLocaleString()} preview views
             </span>
           </div>
           <div className="flex items-center gap-2">

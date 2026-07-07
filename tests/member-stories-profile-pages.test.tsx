@@ -99,6 +99,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/stories?filter=Events"');
     expect(html).toContain("External source links are blocked in this preview until feed-sharing approval is complete");
     expect(html).toContain("Story saving is blocked in this preview");
+    expect(html).toContain("preview likes");
+    expect(html).toContain("preview views");
     expect(html).toContain("TEST UConn");
   });
 
