@@ -284,7 +284,7 @@ function AlertBanner({
 function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen) => void }) {
   const items: { id: Screen | "profile"; label: string; Icon: typeof Home }[] = [
     { id: "home",    label: "Home",    Icon: Home },
-    { id: "stories", label: "Stories", Icon: Sparkles },
+    { id: "stories", label: "Stories", Icon: Heart },
     { id: "events",  label: "Events",  Icon: CalendarDays },
     { id: "points",  label: "Points",  Icon: Trophy },
     { id: "profile", label: "Profile", Icon: User },
@@ -321,7 +321,7 @@ function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen)
 
         if (routeHref) {
           return (
-            <Link key={idx} href={routeHref} className={className}>
+            <Link key={idx} href={routeHref} className={className} aria-current={isActive ? "page" : undefined}>
               <Icon size={20} strokeWidth={strokeWidth} />
               <span>{label}</span>
             </Link>
@@ -3310,6 +3310,11 @@ function StoryModal({ story, liked, onToggleLike, closeHref }: {
               <ExternalLink size={14} /> {cfg.label}
             </button>
           </div>
+        </div>
+        <div className="border-t border-border bg-card px-5 pb-4">
+          <p className="pt-3 text-center text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
+            Preview only - save and source links stay blocked in this reader.
+          </p>
         </div>
       </div>
     </div>

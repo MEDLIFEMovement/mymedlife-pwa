@@ -101,6 +101,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Story saving is blocked in this preview");
     expect(html).toContain("preview likes");
     expect(html).toContain("preview views");
+    expect(html).toContain("Preview only - save and source links stay blocked in this reader.");
     expect(html).toContain("TEST UConn");
   });
 
