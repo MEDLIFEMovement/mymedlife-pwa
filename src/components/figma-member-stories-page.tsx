@@ -98,17 +98,41 @@ export function FigmaMemberStoriesPage({
             <div className="px-3 pt-2">
               <div className="flex items-center">
                 <div className="flex flex-1 items-center gap-4">
-                  <button type="button" className="p-1" aria-label="Like story">
+                  <button
+                    type="button"
+                    disabled
+                    title="Preview-only reaction. Likes are not saved, synced, or counted as production proof."
+                    className="cursor-not-allowed p-1 opacity-70"
+                    aria-label="Preview-only like story"
+                  >
                     <Heart size={24} className="text-black" />
                   </button>
-                  <button type="button" className="p-1" aria-label="Comment on story">
+                  <button
+                    type="button"
+                    disabled
+                    title="Story comments are blocked in this preview."
+                    className="cursor-not-allowed p-1 opacity-70"
+                    aria-label="Preview-only comment on story"
+                  >
                     <MessageCircle size={23} className="text-black" />
                   </button>
-                  <button type="button" className="p-1" aria-label="Share story">
+                  <button
+                    type="button"
+                    disabled
+                    title="Sharing is blocked in this preview until publishing approval is complete."
+                    className="cursor-not-allowed p-1 opacity-70"
+                    aria-label="Preview-only share story"
+                  >
                     <Send size={22} className="text-black" />
                   </button>
                 </div>
-                <button type="button" className="p-1" aria-label="Save story">
+                <button
+                  type="button"
+                  disabled
+                  title="Saving stories is blocked in this preview."
+                  className="cursor-not-allowed p-1 opacity-70"
+                  aria-label="Preview-only save story"
+                >
                   <Bookmark size={23} className="text-black" />
                 </button>
               </div>
