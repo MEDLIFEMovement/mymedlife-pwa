@@ -6,6 +6,10 @@ Linear planning reference: MED-512
 Purpose: decompose the repo-truth story inventory into PR-sized delivery slices
 for the narrow launch lane without overstating production readiness.
 
+Supporting traceability artifact: `docs/user-stories/story-to-test-traceability.md`
+maps MVP stories and priority backlog slices to exact route, component, service,
+and e2e test evidence.
+
 ## Source And Truth Rules
 
 - Repo implementation truth wins for current status.
