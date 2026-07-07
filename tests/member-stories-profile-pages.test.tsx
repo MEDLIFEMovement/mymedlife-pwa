@@ -58,6 +58,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/points"');
     expect(html).toContain('href="/profile"');
     expect(html).toContain("Story creation is blocked until publishing approval is complete");
+    expect(html).toContain("Preview-only reaction. Likes are not saved, synced, or counted as production proof.");
+    expect(html).toContain("preview likes");
     expect(html).toContain("Sharing is blocked in this preview until publishing approval is complete");
     expect(html).toContain("Saving stories is blocked in this preview");
   });

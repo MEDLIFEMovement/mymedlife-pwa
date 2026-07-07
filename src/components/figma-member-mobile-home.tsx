@@ -1,6 +1,6 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unused-expressions, react/no-unescaped-entities */
+/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-vars, react/no-unescaped-entities */
 
 import Link from "next/link";
 import React, { useState } from "react";
@@ -2785,18 +2785,19 @@ function TagBadge({ tag }: { tag: string }) {
 }
 
 function HeartBtn({ count, storyId, liked, onToggle }: { count: number; storyId: number; liked: boolean; onToggle: (id: number) => void }) {
-  const [burst, setBurst] = useState(false);
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onToggle(storyId);
-    if (!liked) { setBurst(true); setTimeout(() => setBurst(false), 400); }
-  };
+  void storyId;
+  void liked;
+  void onToggle;
+
   return (
-    <button onClick={handleClick}
-      className={`flex items-center gap-1.5 text-sm transition-all duration-200 group ${liked ? "text-primary" : "text-muted-foreground hover:text-primary"}`}>
-      <span className={`relative transition-transform duration-200 ${burst ? "scale-125" : liked ? "scale-110" : "scale-100"}`}>
-        <Heart size={16} className={`transition-all duration-200 ${liked ? "fill-primary stroke-primary" : "fill-transparent group-hover:fill-primary/10"}`} />
-        {burst && <span className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-primary opacity-40" /></span>}
+    <button
+      type="button"
+      disabled
+      title="Preview-only reaction. Likes are not saved, synced, or counted as production proof."
+      className="flex cursor-not-allowed items-center gap-1.5 text-sm text-muted-foreground opacity-75"
+    >
+      <span className="relative transition-transform duration-200">
+        <Heart size={16} className="fill-transparent" />
       </span>
       <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px" }}>{count}</span>
     </button>
@@ -2813,13 +2814,8 @@ function MobileStoryCard({ story, liked, onToggleLike, onClick }: {
   onToggleLike: (id: number) => void;
   onClick: (s: Story) => void;
 }) {
-  const [burst, setBurst] = useState(false);
-
-  function handleLike(e: React.MouseEvent) {
-    e.stopPropagation();
-    onToggleLike(story.id);
-    if (!liked) { setBurst(true); setTimeout(() => setBurst(false), 400); }
-  }
+  void liked;
+  void onToggleLike;
 
   return (
     <div
@@ -2878,22 +2874,19 @@ function MobileStoryCard({ story, liked, onToggleLike, onClick }: {
       {/* Slim engagement strip — no caption or description text */}
       <div className="bg-[#111827] px-5 py-3 flex items-center justify-between">
         <button
-          onClick={handleLike}
-          className={`flex items-center gap-2 text-sm transition-all group ${liked ? "text-red-400" : "text-white/50 hover:text-white/80"}`}
+          type="button"
+          disabled
+          title="Preview-only reaction. Likes are not saved, synced, or counted as production proof."
+          className="flex cursor-not-allowed items-center gap-2 text-sm text-white/50 opacity-75"
         >
-          <span className={`transition-transform duration-200 ${burst ? "scale-125" : liked ? "scale-110" : "scale-100"} relative`}>
+          <span className="relative transition-transform duration-200">
             <Heart
               size={18}
-              className={`transition-all duration-200 ${liked ? "fill-red-400 stroke-red-400" : "fill-transparent group-hover:fill-white/10"}`}
+              className="fill-transparent"
             />
-            {burst && (
-              <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <span className="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-red-400 opacity-40" />
-              </span>
-            )}
           </span>
           <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "12px" }}>
-            {liked ? story.likes + 1 : story.likes}
+            {story.likes}
           </span>
         </button>
 
@@ -3000,7 +2993,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
             <div className="flex items-center gap-2"><SourceBadge source={story.source} /></div>
             <div className="flex items-center justify-between pt-1 border-t border-border">
               <div className="flex items-center gap-4">
-                <HeartBtn count={liked ? story.likes + 1 : story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
+                <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
                 <span className="text-sm text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
                   {story.views.toLocaleString()} views
                 </span>
@@ -3039,7 +3032,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
             </div>
             <div className="mt-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <HeartBtn count={liked ? story.likes + 1 : story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
+                <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
                 <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} views</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -3091,7 +3084,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
 
         <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
           <div className="flex items-center gap-3">
-            <HeartBtn count={liked ? story.likes + 1 : story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
+            <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
             {/* View count: larger text on mobile */}
             <span className="text-sm md:text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
               {story.views >= 1000 ? `${(story.views / 1000).toFixed(1)}k` : story.views} views
@@ -3209,7 +3202,7 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
         <div className="flex-shrink-0 px-5 py-4 border-t border-border flex items-center justify-between gap-3 bg-card">
           <div className="flex items-center gap-3">
             <HeartBtn
-              count={liked ? story.likes + 1 : story.likes}
+              count={story.likes}
               storyId={story.id}
               liked={liked}
               onToggle={onToggleLike}
@@ -3238,11 +3231,10 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
 
 function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
   const [activeFilter, setActiveFilter] = useState<StoryFilter>("For You");
-  const [likedIds, setLikedIds] = useState<Set<number>>(new Set());
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
 
   const toggleLike = (id: number) => {
-    setLikedIds((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+    void id;
   };
 
   const filtered = stories.filter((s) => s.filters.includes(activeFilter));
@@ -3294,8 +3286,6 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
         ) : (
           <div>
             {filtered.map((story) => {
-              const isLiked = likedIds.has(story.id);
-              const likeCount = isLiked ? story.likes + 1 : story.likes;
               // derive a simple handle from chapter name
               const handle = story.chapter.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
 
@@ -3348,13 +3338,13 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                       <div className="flex items-center gap-4 flex-1">
                         <button
                           type="button"
-                          title="Preview-only reaction. This does not publish or sync anywhere."
-                          onClick={() => toggleLike(story.id)}
-                          className="active:scale-90 transition-transform"
+                          disabled
+                          title="Preview-only reaction. Likes are not saved, synced, or counted as production proof."
+                          className="cursor-not-allowed opacity-70"
                         >
                           <Heart
                             size={26}
-                            className={cn("transition-all", isLiked ? "fill-red-500 text-red-500" : "text-black")}
+                            className="text-black"
                           />
                         </button>
                         <button
@@ -3385,7 +3375,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
 
                     {/* Likes */}
                     <p className="text-[13px] font-semibold text-black mt-1.5 mb-1">
-                      {likeCount.toLocaleString()} likes
+                      {story.likes.toLocaleString()} preview likes
                     </p>
 
                     {/* Caption: bold username + story title */}
@@ -3494,7 +3484,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                 <div className="col-span-2 lg:col-span-3">
                   <StoryCard
                     story={featuredStory}
-                    liked={likedIds.has(featuredStory.id)}
+                    liked={false}
                     onToggleLike={toggleLike}
                     onClick={setSelectedStory}
                     featured
@@ -3505,7 +3495,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                 <StoryCard
                   key={story.id}
                   story={story}
-                  liked={likedIds.has(story.id)}
+                  liked={false}
                   onToggleLike={toggleLike}
                   onClick={setSelectedStory}
                 />
@@ -3526,7 +3516,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
       {selectedStory && (
         <StoryModal
           story={selectedStory}
-          liked={likedIds.has(selectedStory.id)}
+          liked={false}
           onToggleLike={toggleLike}
           onClose={() => setSelectedStory(null)}
         />
