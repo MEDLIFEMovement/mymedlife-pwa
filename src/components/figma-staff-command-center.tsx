@@ -1948,7 +1948,7 @@ function AdminRouteBlocked({ onBack }: { onBack: () => void }) {
           <p className="text-sm text-slate-400 leading-relaxed">
             This Staff Command Center keeps the Admin handoff visible, but only{" "}
             <span className="text-sky-400 font-semibold">DS Admin</span> and{" "}
-            <span className="text-sky-400 font-semibold">Super Admin</span> roles can open it.
+            <span className="text-sky-400 font-semibold">Super Admin</span> roles can open the admin preview route.
           </p>
         </div>
 
@@ -1985,17 +1985,17 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-white mb-1">Restricted Access</h2>
+          <h2 className="text-lg font-bold text-white mb-1">Restricted Preview Access</h2>
           <p className="text-sm text-slate-400 leading-relaxed">
-            The Admin panel is restricted to <span className="text-sky-400 font-semibold">DS Admin</span> and{" "}
+            The Admin preview is restricted to <span className="text-sky-400 font-semibold">DS Admin</span> and{" "}
             <span className="text-sky-400 font-semibold">Super Admin</span> roles only.
-            All actions are logged and audited.
+            All deeper admin actions stay logged, audited, and blocked or read-only unless the shell explicitly says otherwise.
           </p>
         </div>
 
         {/* Role selector */}
         <div className="bg-[#161b22] border border-white/[0.08] rounded-xl p-5 text-left space-y-3">
-          <p className="text-[11px] text-slate-600 font-mono uppercase tracking-wider mb-1">Sign in as</p>
+          <p className="text-[11px] text-slate-600 font-mono uppercase tracking-wider mb-1">Preview as</p>
           {([
             { value: "ds-admin" as AdminRole, label: "DS Admin", desc: "Data Systems Administrator — full read access, no key rotation" },
             { value: "super-admin" as AdminRole, label: "Super Admin", desc: "Full access including API key rotation, write toggles, and role changes" },
@@ -2026,7 +2026,7 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
           onClick={() => onGrant(picked)}
           className="w-full py-2.5 bg-sky-500 text-white rounded-lg text-sm font-semibold hover:bg-sky-400 transition-colors"
         >
-          Enter Admin Panel
+          Open Admin preview
         </button>
 
         <p className="text-[11px] text-slate-700">
@@ -2163,7 +2163,7 @@ export function FigmaStaffCommandCenter({
             {activeScreen === "campaigns" && "7 campaigns active across all regions"}
             {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
             {activeScreen === "best-practices" && `${BEST_PRACTICES.length} verified best practices ready to share`}
-            {activeScreen === "admin" && (adminRole ? `Signed in as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · Full system access` : "Restricted to DS Admin and Super Admin only")}
+            {activeScreen === "admin" && (adminRole ? `Previewing as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · blocked controls stay preview-only unless explicitly approved` : "Restricted to DS Admin and Super Admin only")}
             {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
           </div>
         </div>
