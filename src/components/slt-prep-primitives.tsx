@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 
+export function ensureVisibleTestLabel(value: string) {
+  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
+}
+
 export function SltPrepMiniStat({
   label,
   value,

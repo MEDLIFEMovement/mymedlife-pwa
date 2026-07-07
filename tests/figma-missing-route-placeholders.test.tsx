@@ -227,7 +227,7 @@ describe("Figma missing route placeholders", () => {
     const html = renderToStaticMarkup(await SltPrepPage());
 
     expect(html).not.toContain("Figma page missing - implementation blocked");
-    expect(html).toContain("Peru SLT");
+    expect(html).toContain("TEST Peru SLT");
     expect(html).toContain("What is complete, missing, or due soon?");
   });
 

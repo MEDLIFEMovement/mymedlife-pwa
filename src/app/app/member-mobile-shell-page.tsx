@@ -9,7 +9,8 @@ import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import { buildLoginRedirectHref, shouldRedirectActorToLogin } from "@/services/login-route";
 import { getLocalActorContext } from "@/services/local-actor-context";
-import { canAccessMemberWorkspace } from "@/services/role-visibility";
+import { canAccessMemberWorkspace, hasTravelerAccess } from "@/services/role-visibility";
+import { getSltTripPrepWorkspace } from "@/services/slt-trip-prep-workspace";
 import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 
 export async function renderMemberMobileShellPage({
@@ -21,6 +22,18 @@ export async function renderMemberMobileShellPage({
 }) {
   const actor = await getLocalActorContext();
   const landingRoute = getLandingRouteForActor(actor);
+  const sltPrepWorkspace = hasTravelerAccess(actor) ? getSltTripPrepWorkspace(actor) : null;
+  const sltPrepEntry =
+    sltPrepWorkspace?.canReadWorkspace && sltPrepWorkspace.traveler
+      ? {
+          href: "/app/slt-prep?source=home",
+          tripLabel: ensureVisibleTestLabel(sltPrepWorkspace.traveler.tripLabel),
+          cityLabel: ensureVisibleTestLabel(sltPrepWorkspace.traveler.cityLabel),
+          countdownLabel: sltPrepWorkspace.countdownLabel,
+          readinessLabel: sltPrepWorkspace.readiness.label,
+          nextStepLabel: ensureVisibleTestLabel(sltPrepWorkspace.nextStep.label),
+        }
+      : null;
 
   if (shouldRedirectActorToLogin(actor)) {
     redirect(buildLoginRedirectHref(redirectPath));
@@ -36,7 +49,11 @@ export async function renderMemberMobileShellPage({
       {isPreviewWorkspaceAccess(actor, "student_app") ? (
         <WorkspacePreviewBanner workspaceLabel="the General Student App" />
       ) : null}
-      <FigmaMemberMobileHome initialScreen={initialScreen} />
+      <FigmaMemberMobileHome initialScreen={initialScreen} sltPrepEntry={sltPrepEntry} />
     </>
   );
+}
+
+function ensureVisibleTestLabel(value: string) {
+  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }

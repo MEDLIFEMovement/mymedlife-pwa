@@ -103,6 +103,7 @@ describe("SLT Prep routes", () => {
     expect(html).toContain("Completion preview");
     expect(html).toContain("Open admin packet");
     expect(html).toContain("Review payment status");
+    expect(html).toContain("TEST Trip deposit and installment");
   });
 
   it("keeps the SLT overview blocked for DS Admin readers", async () => {
@@ -179,6 +180,18 @@ describe("SLT Prep routes", () => {
     expect(html).toContain("No open deadlines remain in this preview.");
     expect(html).toContain("No upcoming pre-trip meetings are visible right now.");
     expect(html).toContain("Future wired");
+  });
+
+  it("keeps the traveler home handoff route-backed with TEST-labeled SLT preview content", async () => {
+    await primeSignedInActor("traveler.a@mymedlife.test");
+
+    const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
+    const html = renderToStaticMarkup(await AppSltPrepPage());
+
+    expect(html).toContain("TEST Peru SLT");
+    expect(html).toContain("TEST Lima and Cusco, Peru");
+    expect(html).toContain("TEST Return flight still needs final confirmation");
+    expect(html).toContain("TEST Payment milestones mirror Shopify states without creating or editing live orders.");
   });
 
   type SltPrepRoutePage = (props: {

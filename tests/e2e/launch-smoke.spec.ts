@@ -413,9 +413,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
     }
 
     await selectPreviewActor(context, "traveler.a@mymedlife.test");
-    await page.goto("/app/slt-prep");
-    await expect(page).toHaveURL(/\/app\/slt-prep$/);
-    await expect(page.getByRole("heading", { name: "Peru SLT" })).toBeVisible();
+    await page.goto("/app");
+    await page.getByRole("link", { name: /TEST Peru SLT/ }).click();
+    await expect(page).toHaveURL(/\/app\/slt-prep\?source=home$/);
+    await expect(page.getByRole("heading", { name: "TEST Peru SLT" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Complete next step" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "What is due next?" })).toBeVisible();
   });

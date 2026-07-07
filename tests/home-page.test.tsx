@@ -75,9 +75,10 @@ describe("home page", () => {
     expect(html).toContain('href="/app/stories"');
     expect(html).not.toContain("Local preview tools");
     expect(html).not.toContain('href="/slt-prep"');
+    expect(html).not.toContain('href="/app/slt-prep?source=home"');
   });
 
-  it("keeps traveler users inside the same Figma mobile shell when SLT Prep stays hidden from the launch lane", async () => {
+  it("adds a route-backed SLT Prep handoff for traveler users inside the member shell", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -95,8 +96,10 @@ describe("home page", () => {
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Upcoming Events");
     expect(html).toContain("Start next action");
-    expect(html).not.toContain("Open SLT Prep");
-    expect(html).not.toContain('href="/app/slt-prep?source=home"');
+    expect(html).toContain("SLT Prep");
+    expect(html).toContain("TEST Peru SLT");
+    expect(html).toContain("TEST Return flight still needs final confirmation");
+    expect(html).toContain('href="/app/slt-prep?source=home"');
   });
 
   it("keeps committee members on the owned mobile home route instead of redirecting them away", async () => {
