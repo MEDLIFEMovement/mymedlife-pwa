@@ -130,6 +130,7 @@ describe("staff page", () => {
     expect(html).toContain("pr-24");
     expect(html).toContain("sm:pr-[15rem]");
     expect(html).toContain("pointer-events-none");
+    expect(html).toContain("pointer-events-none ml-auto flex min-w-0 flex-none items-center justify-end gap-2 sm:gap-3");
     expect(html).toContain("truncate text-xs font-semibold text-red-300");
     expect(html).toContain("hidden h-7 w-7 flex-shrink-0");
     expect(html).not.toContain(">TEST Chapters<");
