@@ -144,6 +144,14 @@ describe("leader page", () => {
     expect(html).not.toContain("Chapter Metrics — June 2025");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Luma readback");
+
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
+      "utf8",
+    );
+    expect(source).toContain("Preview survey");
+    expect(source).toContain("Survey sending is blocked in this preview");
+    expect(source).not.toContain(">Send survey");
   });
 
   it("renders the chapter leaderboard when reviewers open /leader?view=leaderboard", async () => {

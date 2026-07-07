@@ -24,7 +24,7 @@ type Screen =
 
 export type MemberMobileLaunchScreen = Extract<
   Screen,
-  "home" | "events" | "points" | "stories"
+  "home" | "events" | "points" | "stories" | "admin"
 >;
 
 type Role = "student" | "leader" | "coach" | "admin";
@@ -1448,12 +1448,12 @@ function AssignAction({ navigate }: { navigate: (s: Screen) => void }) {
               </div>
             </Card>
             <AlertBanner
-              message="This will notify all General Members immediately."
+              message="Preview only - no member notifications, reminders, feed updates, or live assignments will send from this screen."
               type="info"
             />
             <div className="space-y-2">
               <PrimaryBtn
-                label="Assign action"
+                label="Close assignment preview"
                 onClick={() => navigate("leader")}
                 full
                 icon={<Check size={15} />}
@@ -1736,12 +1736,12 @@ function CoachDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
   const [showIntegrationNotice, setShowIntegrationNotice] = useState(false);
   const integrations = [
-    { name: "Supabase / Postgres", status: "Connected", detail: "Last sync 2 min ago", ok: true },
-    { name: "HubSpot CRM", status: "Connected", detail: "47 contacts synced today", ok: true },
-    { name: "Luma Events", status: "Connected", detail: "3 events active", ok: true },
-    { name: "n8n Automation", status: "Warning", detail: "1 workflow paused", ok: false },
-    { name: "Power BI", status: "Connected", detail: "Dashboard updated 1h ago", ok: true },
-    { name: "AI Summary Layer", status: "Connected", detail: "Last run: Today 8:00 AM", ok: true },
+    { name: "Supabase / Postgres", status: "Review only", detail: "Auth and route posture only; no production rows are read here.", ok: true },
+    { name: "HubSpot CRM", status: "Blocked", detail: "No CRM sync, contact mutation, or task creation from this preview.", ok: false },
+    { name: "Luma Events", status: "Blocked", detail: "No event writes, reminders, attendance sync, or RSVP writeback from this preview.", ok: false },
+    { name: "n8n Automation", status: "Blocked", detail: "No workflow execution, replay, retry, or provider send from this preview.", ok: false },
+    { name: "Power BI", status: "Review only", detail: "Reporting preview only; no warehouse export from this screen.", ok: true },
+    { name: "AI Summary Layer", status: "Review only", detail: "Static preview copy only; no recommendation job runs here.", ok: true },
   ];
 
   return (
@@ -1753,7 +1753,7 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
         </button>
         <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">Platform Admin</p>
         <h1 className="text-white text-2xl font-extrabold mt-1">Admin Console</h1>
-        <p className="text-blue-200 text-sm mt-1">System health: 5 of 6 integrations active</p>
+        <p className="text-blue-200 text-sm mt-1">Integration posture: preview-only; external writes blocked</p>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 pt-5 space-y-6">
@@ -1816,12 +1816,12 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 
         {/* Automation outbox */}
         <div>
-          <SLabel>Automation Outbox (n8n)</SLabel>
+          <SLabel>Automation Outbox Preview (n8n disabled)</SLabel>
           <Card padding={false}>
             {[
-              { action: "HubSpot lifecycle update", trigger: "Evidence approved · Sofia R.", time: "3m ago", ok: true },
-              { action: "Luma attendance sync", trigger: "Event ended · Intro GBM", time: "2h ago", ok: true },
-              { action: "Overdue action reminder", trigger: "Scheduled · 8:00 AM daily", time: "6h ago", ok: false },
+              { action: "HubSpot lifecycle update blocked", trigger: "Preview only - no contact mutation", time: "not sent", ok: false },
+              { action: "Luma attendance sync blocked", trigger: "Preview only - no RSVP or attendance writeback", time: "not sent", ok: false },
+              { action: "Overdue action reminder blocked", trigger: "Preview only - no email, SMS, push, or n8n workflow", time: "not sent", ok: false },
             ].map((job, i) => (
               <div
                 key={job.action}
