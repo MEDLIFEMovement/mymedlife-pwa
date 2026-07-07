@@ -142,6 +142,8 @@ function EventDetailView({
 }) {
   const detailHref = buildEventStepHref(event.id, "detail", source);
   const rsvpHref = buildEventStepHref(event.id, "rsvp", source);
+  const checkInHref = buildEventStepHref(event.id, "checkin", source);
+  const pointsHref = buildEventStepHref(event.id, "points", source);
   const visibleEventTitle = ensureVisibleTestLabel(event.title);
   const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
   const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
@@ -305,12 +307,22 @@ function EventDetailView({
             steps are route-backed local preview states here, with no live writes or external
             sends.
           </p>
+          <p className="mt-2 text-xs leading-5 text-slate-600">
+            Review the full TEST event loop here, then use the approved in-person attendance flow
+            for real RSVP, check-in, and points-award writes.
+          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link href={detailHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
               Detail
             </Link>
             <Link href={rsvpHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
               RSVP
+            </Link>
+            <Link href={checkInHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+              Check-In
+            </Link>
+            <Link href={pointsHref} className="rounded-full border border-[#bfdbfe] bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+              Points
             </Link>
           </div>
         </div>
