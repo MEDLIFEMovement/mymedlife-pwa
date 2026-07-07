@@ -174,7 +174,39 @@ describe("Figma missing route placeholders", () => {
     const settingsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="settings" />);
     expect(settingsHtml).toContain("Preview Configuration Only");
     expect(settingsHtml).toContain("Configured (preview only)");
+    expect(settingsHtml).toContain("Save blocked");
+    expect(settingsHtml).toContain("Alert test blocked");
+    expect(settingsHtml).toContain("Export blocked");
     expect(source).toContain("Use the audited admin workflow after approval for real environment or alert changes.");
+  });
+
+  it("keeps the embedded admin sidebar visibly tied back to the staff command center preview", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams("view=admin&adminView=settings");
+
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel initialActive="settings" onBack={() => {}} />,
+    );
+
+    expect(html).toContain("Command Center");
+    expect(html).toContain("Return to staff preview");
+    expect(html).toContain("Embedded Preview");
+    expect(html).toContain("Staff embed");
+    expect(html).toContain("Return with Command Center");
+    expect(html).toContain("Overview");
+    expect(html).toContain("Users");
+    expect(html).toContain("Chapters");
+    expect(html).toContain("Modules");
+    expect(html).toContain("Luma Events");
+    expect(html).toContain("Points");
+    expect(html).toContain("Integrations");
+    expect(html).toContain("Audit Logs");
+    expect(html).toContain("System Health");
+    expect(html).toContain("API Keys");
+    expect(html).toContain("MCP Connections");
+    expect(html).toContain("Settings");
   });
 
   it("keeps audit logs visible without treating the panel as live production evidence", async () => {
