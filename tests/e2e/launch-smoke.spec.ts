@@ -327,7 +327,6 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Audit Logs", heading: "Audit Logs" },
       { label: "System Health", heading: "System Health" },
       { label: "API Keys", heading: "API Keys" },
-      { label: "MCP Connections", heading: "MCP Connections" },
       { label: "Settings", heading: "Settings" },
     ] as const;
 
@@ -355,11 +354,8 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.locator("aside").getByRole("button", { name: "API Keys", exact: true }).click();
     await expect(page.getByText("API keys stay masked in this preview")).toBeVisible();
 
-    await page.locator("aside").getByRole("button", { name: "MCP Connections", exact: true }).click();
-    await expect(
-      page.getByTitle("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview"),
-    ).toBeVisible();
-
+    await expect(page.locator("aside").getByRole("button", { name: "MCP Connections", exact: true })).toHaveCount(0);
+    await expect(page.locator("aside").getByTitle("MCP policy review stays outside the launch-critical admin menu in this preview")).toBeVisible();
     await expect(page.locator("aside").getByText("MCP Analytics")).toBeVisible();
     await expect(page.locator("aside").getByText("Account menu")).toBeVisible();
   });
@@ -379,12 +375,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     const adminSidebar = page.locator("aside").first();
     await expect(adminSidebar.getByRole("button", { name: "Command Center" })).toBeVisible();
-    await expect(adminSidebar.getByRole("button", { name: "MCP Connections", exact: true })).toBeVisible();
+    await expect(adminSidebar.getByRole("button", { name: "MCP Connections", exact: true })).toHaveCount(0);
+    await expect(adminSidebar.getByTitle("MCP policy review stays outside the launch-critical admin menu in this preview")).toBeVisible();
     await expect(adminSidebar.getByText("MCP Analytics")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
-
-    await adminSidebar.getByRole("button", { name: "MCP Connections", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "MCP Connections" })).toBeVisible();
 
     await adminSidebar.getByRole("button", { name: "Command Center" }).click();
     await expect(page).toHaveURL(/\/staff\?view=chapters$/);
