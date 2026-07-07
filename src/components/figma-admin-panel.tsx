@@ -140,6 +140,33 @@ function SectionHeader({ title, count }: { title: string; count?: number }) {
   );
 }
 
+function AdminReviewPostureCard({
+  title,
+  summary,
+  items,
+}: {
+  title: string;
+  summary: string;
+  items: Array<{ label: string; value: string }>;
+}) {
+  return (
+    <div className="bg-[#161b22] border border-white/[0.06] rounded-lg px-4 py-4 space-y-3">
+      <div>
+        <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">{title}</div>
+        <p className="text-[12px] text-slate-500 leading-relaxed mt-1">{summary}</p>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {items.map((item) => (
+          <div key={item.label} className="bg-[#0d1117]/60 border border-white/[0.04] rounded-lg px-3 py-2">
+            <div className="text-[9px] text-slate-700 font-mono uppercase tracking-wider mb-1">{item.label}</div>
+            <div className="text-[11px] text-slate-300 leading-relaxed">{item.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Drawer ─────────────────────────────────────────────────────────────────────
 function Drawer({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   if (!open) return null;
@@ -683,6 +710,9 @@ function ModulesPage() {
   const [target, setTarget] = useState<typeof MODULES_DATA[0] | null>(null);
   const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const blockedModules = mods.filter((mod) => mod.status === "disabled" || mod.status === "emergency-disabled").length;
+  const stagedModules = mods.filter((mod) => mod.status === "staging-only" || mod.status === "mock-only").length;
+  const internalModules = mods.filter((mod) => mod.status === "internal-only").length;
 
   const openToggle = (mod: typeof MODULES_DATA[0]) => {
     setTarget(mod);
@@ -713,6 +743,16 @@ function ModulesPage() {
             This module surface is preview-only. Review staged module posture and blocked toggle paths here, then use the audited admin workflow after approval for any real module activation or shutdown.
           </p>
         </div>
+
+        <AdminReviewPostureCard
+          title="Module Review Posture"
+          summary="Review seeded module state here, but treat every toggle path as workflow-owned. Disabled, staging-only, and internal-only modules stay visible so DS Admin can compare source intent without implying live control."
+          items={[
+            { label: "Blocked Here", value: `${blockedModules} disabled or emergency-disabled modules` },
+            { label: "Preview Only", value: `${stagedModules} staging/mock-safe modules still require audited activation` },
+            { label: "Internal", value: `${internalModules} internal-only modules remain non-user-facing` },
+          ]}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           {mods.map((mod) => (
@@ -2527,6 +2567,9 @@ function HootsuiteCard() {
 function IntegrationsPage() {
   const FEATURED_IDS = ["smileio", "meta", "hootsuite"];
   const coreIntegrations = INTEGRATIONS_DATA.filter((i) => !FEATURED_IDS.includes(i.id));
+  const disabledProviders = INTEGRATIONS_DATA.filter((integration) => integration.environment === "disabled").length;
+  const stagingProviders = INTEGRATIONS_DATA.filter((integration) => integration.environment === "staging").length;
+  const internalProviders = INTEGRATIONS_DATA.filter((integration) => integration.environment === "internal").length;
 
   return (
     <div className="p-6 space-y-6">
@@ -2536,6 +2579,16 @@ function IntegrationsPage() {
           These provider controls stay visible for DS review, but this integrations surface is preview-only. Connection tests, enablement, syncs, exports, and external writes remain blocked until the audited workflow is approved.
         </p>
       </div>
+
+      <AdminReviewPostureCard
+        title="Provider Review Posture"
+        summary="This page is for DS Admin comparison and launch-readiness review only. Providers stay visible by family, but connection tests, enablement, syncs, exports, and sends remain blocked until the audited integration workflow is approved."
+        items={[
+          { label: "Disabled", value: `${disabledProviders} providers have no live credentials or outbound path` },
+          { label: "Staging", value: `${stagingProviders} providers remain mock-safe or staging-only` },
+          { label: "Internal", value: `${internalProviders} provider surfaces stay DS-only for review` },
+        ]}
+      />
 
       {/* Smile.io featured */}
       <div>
@@ -2714,7 +2767,10 @@ function SystemHealthPage() {
     { name: "BigQuery Connector", status: "unknown" as HealthStatus, uptime: "n/a", latency: "n/a", note: "Warehouse exports disabled" },
   ];
 
-  const overall: HealthStatus = services.some((s) => s.status === "down") ? "down" : services.some((s) => s.status === "degraded") ? "degraded" : "healthy";
+  const healthyCount = services.filter((s) => s.status === "healthy").length;
+  const blockedCount = services.filter((s) => s.status === "unknown").length;
+  const degradedCount = services.filter((s) => s.status === "degraded" || s.status === "down").length;
+  const overall: HealthStatus = "unknown";
   const overallColors = { healthy: "bg-emerald-500/8 border-emerald-500/15 text-emerald-400", degraded: "bg-amber-500/8 border-amber-500/15 text-amber-400", down: "bg-red-500/8 border-red-500/15 text-red-400", unknown: "bg-slate-500/8 border-slate-500/15 text-slate-400" };
 
   return (
@@ -2726,14 +2782,24 @@ function SystemHealthPage() {
         </p>
       </div>
 
+      <AdminReviewPostureCard
+        title="Monitoring Review Posture"
+        summary="Treat this page as seeded monitoring readback, not live production observability. Healthy rows reflect preview posture only, while blocked integrations remain visible so DS Admin can review launch dependencies without implying active ops control."
+        items={[
+          { label: "Healthy in Preview", value: `${healthyCount} seeded services show nominal posture` },
+          { label: "Blocked / Unknown", value: `${blockedCount} services stay disconnected or readback-only` },
+          { label: "Degraded", value: `${degradedCount} services still need follow-up before any live claim` },
+        ]}
+      />
+
       <div className={`flex items-center gap-3 border rounded-lg px-4 py-3 ${overallColors[overall]}`}>
         <HealthDot status={overall} />
         <div>
           <div className="text-[13px] font-bold">
-            {overall === "healthy" ? "All Systems Operational" : overall === "degraded" ? "Partial Degradation Detected" : "System Outage"}
+            Seeded Monitoring Snapshot
           </div>
           <div className="text-[11px] opacity-60 mt-0.5">
-            {services.filter((s) => s.status === "healthy").length} of {services.length} services healthy
+            {healthyCount} of {services.length} services show healthy preview posture; refresh remains blocked in this shell
           </div>
         </div>
         <button disabled title="System-health refresh is blocked in this static shell" className="ml-auto flex items-center gap-1.5 text-[12px] opacity-60 hover:opacity-100 transition-opacity">
@@ -3012,6 +3078,8 @@ function ApiKeysPage() {
 
   const activeKeys = keys.filter((k) => k.status === "active");
   const inactiveKeys = keys.filter((k) => k.status === "inactive");
+  const internalKeys = keys.filter((k) => k.environment === "internal").length;
+  const disabledKeys = keys.filter((k) => k.environment === "disabled").length;
 
   const KeyCard = ({ k }: { k: typeof API_KEYS_DATA[0] }) => {
     const isRevealed = revealed[k.id];
@@ -3143,6 +3211,16 @@ function ApiKeysPage() {
             API keys stay masked in this preview. Reveal, copy, rotate, and revoke controls remain visible for workflow review, but the audited secrets workflow is still blocked here.
           </p>
         </div>
+
+        <AdminReviewPostureCard
+          title="Secrets Review Posture"
+          summary="Use this page to confirm which credentials exist, which environments they belong to, and which workflows remain blocked. Key material stays masked and every sensitive action remains visible for review only."
+          items={[
+            { label: "Active", value: `${activeKeys.length} seeded active keys still stay masked here` },
+            { label: "Disabled", value: `${disabledKeys} keys belong to disabled provider paths` },
+            { label: "Internal", value: `${internalKeys} keys remain DS/internal review only` },
+          ]}
+        />
 
         {/* Active keys */}
         <div className="space-y-3">
@@ -3324,6 +3402,9 @@ function McpPage() {
   const [providers, setProviders] = useState(MCP_PROVIDERS_INIT);
   const [pending, setPending] = useState<{ id: string; field: "writeAccess" | "readAccess" | "connect" } | null>(null);
   const isSuperAdmin = CURRENT_USER_ROLE === "Super Admin";
+  const connectedProviders = providers.filter((provider) => provider.status === "connected").length;
+  const disconnectedProviders = providers.filter((provider) => provider.status === "disconnected").length;
+  const readOnlyProviders = providers.filter((provider) => provider.readAccess && !provider.writeAccess).length;
 
   const handleGateSuccess = () => {
     if (!pending) return;
@@ -3355,6 +3436,16 @@ function McpPage() {
             </p>
           </div>
         </div>
+
+        <AdminReviewPostureCard
+          title="MCP Review Posture"
+          summary="Keep MCP providers visible so DS Admin can review policy and deep-link fidelity, but treat every connection state as preview-only. Read access may be shown, while write access and connection changes remain blocked in this shell."
+          items={[
+            { label: "Connected", value: `${connectedProviders} providers show seeded connection posture` },
+            { label: "Read-only", value: `${readOnlyProviders} providers remain read-only by policy` },
+            { label: "Disconnected", value: `${disconnectedProviders} providers stay visible without activation` },
+          ]}
+        />
 
         {/* Provider Cards */}
         <div className="space-y-4">
