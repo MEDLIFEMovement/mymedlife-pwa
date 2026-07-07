@@ -646,9 +646,9 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
           >
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
-          <button disabled title="External chapter links are blocked in this preview" className="rounded-lg bg-muted px-3 py-2 text-sm text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50">
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
+          <a href="/staff?view=admin&adminView=chapters" title="Open the embedded Admin preview for DS directory and audit review" className="rounded-lg bg-muted px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/70">
+            <Shield className="w-3.5 h-3.5" />
+          </a>
         </div>
       </div>
 
@@ -1583,7 +1583,7 @@ function ProofUGCQueue() {
 
             <div className="px-4 py-3 border-b border-border">
               <div className="text-xs font-bold text-foreground leading-snug">{selectedCard.linkTitle ?? selectedCard.assignment}</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">{selectedCard.chapter} · {selectedCard.student}</div>
+              <div className="mt-0.5 flex items-center justify-between gap-2 text-[10px]"><span className="min-w-0 truncate text-muted-foreground">{selectedCard.chapter} · {selectedCard.student}</span><a href="/staff?view=admin&adminView=audit" className="font-semibold text-primary hover:underline">Open Admin preview</a></div>
             </div>
 
             <div className="p-4 space-y-4">
