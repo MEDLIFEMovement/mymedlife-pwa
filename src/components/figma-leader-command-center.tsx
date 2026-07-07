@@ -2446,7 +2446,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
     </div>
   );
 
-  const stepLabels = ["Choose Role","Set Timeline","Assign Tasks","Review & Activate"];
+  const stepLabels = ["Choose Role","Set Timeline","Assign Tasks","Review & Preview"];
 
   return (
     <div className="space-y-0">
@@ -2685,7 +2685,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
               {!primaryId && nominees.length > 0 && (
                 <div className="flex items-start gap-2.5 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
                   <AlertTriangle size={14} className="text-amber-500 mt-0.5 shrink-0"/>
-                  <p className="text-xs text-amber-800">No primary candidate set. Go back to Step 3 and mark one nominee as primary before activating.</p>
+                  <p className="text-xs text-amber-800">No primary candidate set. Go back to Step 3 and mark one nominee as primary before previewing completion.</p>
                 </div>
               )}
             </div>
@@ -2795,7 +2795,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
             onClick={() => setPublished(true)}
             className="px-6 py-2.5 text-white text-sm font-bold rounded-xl cursor-pointer hover:opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: role?.color || BLUE }}>
-            <Flag size={14} className="inline mr-1.5"/>Activate Transition Plan
+            <Flag size={14} className="inline mr-1.5"/>Preview Transition Plan
           </button>
         )}
       </div>
@@ -2839,7 +2839,7 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Leadership Succession</h1>
-          <p className="text-sm text-slate-500 mt-1">Ensure the chapter can survive and grow beyond any single leader.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.</p>
         </div>
         <div className="flex gap-2">
           <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Nominate Candidate</Btn>
@@ -2902,12 +2902,12 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
             <div className="mt-3 relative">
               <div className="absolute left-[6px] top-1 bottom-1 w-px bg-slate-200"/>
               {[
-                { date:"Jun 2025", event:"Appoint Member Engagement chair", status:"urgent" },
-                { date:"Jul 2025", event:"Values interviews for all chair candidates", status:"upcoming" },
-                { date:"Aug 2025", event:"Bridge videos due from all chairs", status:"upcoming" },
-                { date:"Sep 2025", event:"E-Board nominations open for Fall", status:"planned" },
-                { date:"Nov 2025", event:"President succession announced", status:"planned" },
-                { date:"May 2026", event:"Full E-Board transition complete", status:"planned" },
+                { date:"Jun 2025", event:"TEST Appoint Member Engagement chair", status:"urgent" },
+                { date:"Jul 2025", event:"TEST Values interviews for all chair candidates", status:"upcoming" },
+                { date:"Aug 2025", event:"TEST Bridge videos due from all chairs", status:"upcoming" },
+                { date:"Sep 2025", event:"TEST E-Board nominations open for Fall", status:"planned" },
+                { date:"Nov 2025", event:"TEST President succession announced", status:"planned" },
+                { date:"May 2026", event:"TEST Full E-Board transition complete", status:"planned" },
               ].map((t,i)=>(
                 <div key={i} className="pl-6 pb-3 relative last:pb-0">
                   <div className={`absolute left-0 top-1.5 w-3 h-3 rounded-full border-2 border-white
@@ -2953,7 +2953,7 @@ function ValuesScreen() {
         <div>
           <h1 className="text-2xl font-black text-slate-900">MEDLIFE Values</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Three values guide every MEDLIFE leader. They are not automatic — they require human review, honest conversation, and intentional practice.
+            TEST values preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.
           </p>
         </div>
         <Btn
