@@ -34,16 +34,18 @@ describe("copied Figma leader support screens", () => {
 
     expect(html).toContain("Leadership &amp; Resources Hub");
     expect(html).toContain("Videos, presentations, and external resources");
+    expect(html).toContain("TEST training preview.");
     expect(html).toContain("Add Resource");
     expect(html).toContain("All (16)");
     expect(html).toContain("Videos (6)");
     expect(html).toContain("Presentations (5)");
     expect(html).toContain("External Links (5)");
-    expect(html).toContain("Featured");
-    expect(html).toContain("What Is Servant Leadership?");
-    expect(html).toContain("MEDLIFE Chapter Leadership Guide");
-    expect(html).toContain("Open Resource");
+    expect(html).toContain("TEST Featured Resources");
+    expect(html).toContain("TEST What Is Servant Leadership?");
+    expect(html).toContain("TEST MEDLIFE Chapter Leadership Guide");
+    expect(html).toContain("Preview Link");
     expect(html).toContain("Resource publishing is blocked in this preview until leadership-content approval is complete.");
+    expect(html).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
     expect(html).toContain("Video playback is blocked in this preview.");
     expect(html).toContain("Deck viewing is blocked in this preview.");
   });
