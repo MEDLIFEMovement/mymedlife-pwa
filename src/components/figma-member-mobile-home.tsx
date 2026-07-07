@@ -1896,19 +1896,21 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 
 function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
   const badges = [
-    { name: "Rush Starter", desc: "Complete first Rush Month action", earned: true },
-    { name: "Connector", desc: "Invite 10+ members to a chapter event", earned: true },
-    { name: "Evidence Pro", desc: "3 approvals in a single week", earned: false },
-    { name: "Chapter MVP", desc: "Top 3 on leaderboard for 2 weeks", earned: false },
+    { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
+    { name: "TEST Connector", desc: "Invite 10+ TEST members to a TEST chapter event", earned: true },
+    { name: "TEST Evidence Pro", desc: "3 TEST approvals in a single week", earned: false },
+    { name: "TEST Chapter MVP", desc: "Top 3 on the TEST leaderboard for 2 weeks", earned: false },
   ];
 
   return (
     <div className="pb-24">
       {/* Header */}
       <div className="bg-primary px-5 pt-12 pb-8">
-        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">UCLA MEDLIFE</p>
+        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">TEST UCLA MEDLIFE</p>
         <h1 className="text-white text-2xl font-extrabold mt-1">Points & Recognition</h1>
-        <p className="text-blue-200 text-sm mt-1">Points come from meaningful action.</p>
+        <p className="text-blue-200 text-sm mt-1">
+          Preview-only TEST points come from route-backed member actions.
+        </p>
 
         <div className="mt-5 grid grid-cols-3 gap-3">
           {[
@@ -1969,7 +1971,7 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
 
         {/* Leaderboard */}
         <div>
-          <SLabel>Chapter Leaderboard — Rush Month</SLabel>
+          <SLabel>Chapter Leaderboard — TEST Rush Month</SLabel>
           <Card>
             {[
               { rank: 1, name: "TEST Aisha N.", role: "President", pts: 220 },
@@ -2006,9 +2008,9 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
           <SLabel>Recent Approved Actions</SLabel>
           <div className="space-y-2">
             {[
-              { action: "Share TEST Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago" },
-              { action: "Attend TEST Bruin Walk tabling shift", pts: 15, time: "Approved yesterday" },
-              { action: "Add 5 TEST leads to the chapter spreadsheet", pts: 25, time: "Approved 3d ago" },
+              { action: "Share TEST Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago in preview" },
+              { action: "Attend TEST Bruin Walk tabling shift", pts: 15, time: "Approved yesterday in preview" },
+              { action: "Add 5 TEST leads to the TEST chapter spreadsheet", pts: 25, time: "Approved 3d ago in preview" },
             ].map((a) => (
               <Card key={a.action} padding={false}>
                 <div className="flex items-center gap-3 p-4">
@@ -2033,8 +2035,9 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
             <div>
               <p className="text-sm font-bold text-foreground">How points work</p>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                Points are earned by completing and submitting evidence for assigned chapter actions.
-                They reflect real engagement — not just showing up, but contributing meaningfully to the mission.
+                TEST points in this member shell are a read-only preview of the event, RSVP,
+                attendance, and action loop. They do not write to a live leaderboard, rewards
+                system, or provider integration.
               </p>
               <Link
                 href="/app/events?source=points"

@@ -107,8 +107,13 @@ describe("member mobile shell routes", () => {
     const html = renderToStaticMarkup(await PointsPage());
 
     expect(html).toContain("Points &amp; Recognition");
-    expect(html).toContain("Chapter Leaderboard");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("Preview-only TEST points come from route-backed member actions.");
+    expect(html).toContain("Chapter Leaderboard — TEST Rush Month");
+    expect(html).toContain("TEST Aisha N.");
     expect(html).toContain("Recent Approved Actions");
+    expect(html).toContain("Add 5 TEST leads to the TEST chapter spreadsheet");
+    expect(html).toContain("TEST points in this member shell are a read-only preview");
     expect(html).toContain('href="/app/events?source=points"');
     expect(html).toContain("See how to earn more points");
   });
