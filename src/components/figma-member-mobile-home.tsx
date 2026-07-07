@@ -3366,6 +3366,7 @@ function StoriesScreen({
                 key={f}
                 aria-label={`Apply story filter: ${f}`}
                 title={`Apply story filter: ${f}`}
+                aria-pressed={activeFilter === f}
                 onClick={() => selectFilter(f)}
                 className={cn(
                   "flex-shrink-0 px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border transition-all",
