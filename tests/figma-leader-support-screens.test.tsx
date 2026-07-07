@@ -35,7 +35,7 @@ describe("copied Figma leader support screens", () => {
     expect(html).toContain("Leadership &amp; Resources Hub");
     expect(html).toContain("Videos, presentations, and external resources");
     expect(html).toContain("TEST training preview.");
-    expect(html).toContain("Add Resource");
+    expect(html).toContain("Preview Resource Intake");
     expect(html).toContain("All (16)");
     expect(html).toContain("Videos (6)");
     expect(html).toContain("Presentations (5)");
@@ -43,6 +43,8 @@ describe("copied Figma leader support screens", () => {
     expect(html).toContain("TEST Featured Resources");
     expect(html).toContain("TEST What Is Servant Leadership?");
     expect(html).toContain("TEST MEDLIFE Chapter Leadership Guide");
+    expect(html).toContain("Preview Video");
+    expect(html).toContain("Preview Deck");
     expect(html).toContain("Preview Link");
     expect(html).toContain("Resource publishing is blocked in this preview until leadership-content approval is complete.");
     expect(html).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
@@ -78,6 +80,9 @@ describe("copied Figma leader support screens", () => {
     expect(trainingSource).toContain("Leadership resource sharing is blocked in this preview until feed approval is complete.");
     expect(trainingSource).toContain("Committee sends are blocked in this preview until messaging approval is complete.");
     expect(trainingSource).toContain("Leadership reading-list saves are blocked in this preview until write approval is complete.");
+    expect(trainingSource).toContain("Preview Chapter Feed Share");
+    expect(trainingSource).toContain("Preview Committee Send");
+    expect(trainingSource).toContain("Preview Reading List Add");
     expect(storiesSource).toContain("Story saving is blocked in this preview");
     expect(storiesSource).toContain("External story sources are blocked in this preview until feed-sharing approval is complete");
     expect(storiesSource).toContain("TEST MEDLIFE Stories preview — curated by staff · requires approval before publishing");

@@ -256,6 +256,25 @@ describe("leader page", () => {
       expect(html).toContain("Preview E-Board Succession");
       expect(html).toContain("Add Note");
     }
+
+    if (view === "succession") {
+      expect(html).toContain("Preview Candidate Nomination");
+      expect(html).toContain("Preview Transition Plan");
+      expect(html).toContain("TEST succession preview.");
+    }
+
+    if (view === "values") {
+      expect(html).toContain("Preview Values Interview");
+      expect(html).toContain("Preview Interview Scheduling");
+      expect(html).toContain("Preview Interview Form");
+      expect(html).toContain("TEST values preview.");
+    }
+
+    if (view === "training") {
+      expect(html).toContain("Preview Resource Intake");
+      expect(html).toContain("Preview Video");
+      expect(html).toContain("Preview Deck");
+    }
   });
 
   it("keeps blocked leader controls visibly honest inside the restored shell", async () => {

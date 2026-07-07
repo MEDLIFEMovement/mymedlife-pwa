@@ -272,7 +272,7 @@ export function TrainingScreen() {
             Videos, presentations, and external resources to develop MEDLIFE leaders.
           </p>
         </div>
-        <Btn variant="primary" blockedTitle="Resource publishing is blocked in this preview until leadership-content approval is complete."><Plus size={11}/>Add Resource</Btn>
+        <Btn variant="primary" blockedTitle="Resource publishing is blocked in this preview until leadership-content approval is complete."><Plus size={11}/>Preview Resource Intake</Btn>
       </div>
 
       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
@@ -416,7 +416,7 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
               className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity"
               style={{ background: meta.color }}>
               {r.type==="video" ? <Play size={11}/> : <Upload size={11}/>}
-              {r.type==="video" ? "Watch" : "View Deck"}
+              {r.type==="video" ? "Preview Video" : "Preview Deck"}
             </button>
           )}
           <button
@@ -430,9 +430,9 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
         {expanded && (
           <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Share this resource</div>
-            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership resource sharing is blocked in this preview until feed approval is complete."><Bell size={10}/>Share to Chapter Feed</Btn>
-            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Committee sends are blocked in this preview until messaging approval is complete."><Users size={10}/>Send to Committee</Btn>
-            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership reading-list saves are blocked in this preview until write approval is complete."><Star size={10}/>Add to Leadership Reading List</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership resource sharing is blocked in this preview until feed approval is complete."><Bell size={10}/>Preview Chapter Feed Share</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Committee sends are blocked in this preview until messaging approval is complete."><Users size={10}/>Preview Committee Send</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership reading-list saves are blocked in this preview until write approval is complete."><Star size={10}/>Preview Reading List Add</Btn>
           </div>
         )}
       </div>
