@@ -226,6 +226,9 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page).toHaveURL(/\/staff\?view=campaigns/);
     await expect(page.getByRole("heading", { name: "Campaign Operations" })).toBeVisible();
     await expect(page.getByText("7 campaigns active across all regions")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open campaign shell" })).toHaveAttribute("href", "/campaigns/rush-month");
+    await expect(page.getByRole("link", { name: "Open event loop" })).toHaveAttribute("href", "/rush-month/events");
+    await expect(page.getByRole("button", { name: "Launch blocked" })).toBeDisabled();
 
     await staffHeader.getByRole("link", { name: "Proof / UGC", exact: true }).click();
     await expect(page).toHaveURL(/\/staff\?view=proof_ugc/);

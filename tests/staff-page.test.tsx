@@ -192,6 +192,33 @@ describe("staff page", () => {
     expect(html).toContain(heading);
   });
 
+  it("keeps staff campaign handoffs route-backed while launch and sync actions stay blocked", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "campaigns" }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain('href="/campaigns/rush-month"');
+    expect(html).toContain('href="/rush-month/events"');
+    expect(html).toContain("Launch blocked");
+    expect(html).toContain("writes, syncs, and rollout proof remain preview-only");
+    expect(source).toContain('"/campaigns/slt-promotion"');
+    expect(source).toContain('"/campaigns/moving-mountains"');
+    expect(source).toContain('"/campaigns/leadership-transition"');
+    expect(source).toContain('"/campaigns/planning-goal-setting"');
+    expect(source).toContain('"/staff?view=events"');
+    expect(source).toContain('"/staff?view=proof_ugc"');
+  });
+
   it("keeps proof review submission and sharing controls visibly blocked inside the UGC surface", async () => {
     const actorModule = await import("@/services/local-actor-context");
 

@@ -871,6 +871,8 @@ function CampaignOps() {
   const [regionFilter, setRegionFilter] = useState("all");
   const [coachFilter, setCoachFilter]   = useState("all");
   const [showRiskTooltip, setShowRiskTooltip] = useState(false);
+  const campaignShellHrefs: Record<string, string | undefined> = { "Rush Month": "/campaigns/rush-month", "SLT Promotion": "/campaigns/slt-promotion", "Moving Mountains": "/campaigns/moving-mountains", "Leadership Transition": "/campaigns/leadership-transition", "Chapter Organization and Planning": "/campaigns/planning-goal-setting" };
+  const campaignLaneLinks: Record<string, { href: string; label: string } | undefined> = { "Rush Month": { href: "/rush-month/events", label: "Open event loop" }, "Chapter Events": { href: "/staff?view=events", label: "Open event operations" }, "Social Media": { href: "/staff?view=proof_ugc", label: "Open proof / UGC lane" } };
 
   const CAMPAIGNS = [
     "Rush Month",
@@ -1031,6 +1033,12 @@ function CampaignOps() {
               </div>
             </div>
           )}
+        </div>
+        <div className="px-4 py-3 border-b border-border bg-slate-50/60 flex flex-wrap items-center gap-2">
+          {campaignShellHrefs[activeCampaign] ? <a href={campaignShellHrefs[activeCampaign]} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 hover:border-primary/40 hover:text-primary transition-colors">Open campaign shell <ArrowRight className="w-3 h-3" /></a> : <button disabled title="No deeper campaign shell is source-backed for this staff tab yet" className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-400 cursor-not-allowed">Shell pending</button>}
+          {campaignLaneLinks[activeCampaign] ? <a href={campaignLaneLinks[activeCampaign]?.href} className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-1.5 text-[11px] font-semibold text-cyan-700 hover:border-cyan-300 transition-colors">{campaignLaneLinks[activeCampaign]?.label} <ArrowRight className="w-3 h-3" /></a> : null}
+          <button disabled title="Campaign template save, launch, closeout, lead persistence, proof completion, points awards, and provider sync remain blocked in this preview" className="inline-flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-[11px] font-semibold text-amber-700 cursor-not-allowed">Launch blocked</button>
+          <span className="text-[11px] text-slate-500">Route-backed review stays visible here, but writes, syncs, and rollout proof remain preview-only.</span>
         </div>
 
         {/* ── Rush Month table ───────────────────────────────────────────── */}
