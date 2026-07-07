@@ -905,11 +905,11 @@ function ProfileScreen({
     {w:"May W3",pts:Math.round(m.pts*0.11)},{w:"May W4",pts:Math.round(m.pts*0.12)},
     {w:"Jun W1",pts:m.ptsLast},{w:"Jun W2",pts:m.ptsWk},
   ];
-  const rec = m.pipeline==="E-Board" ? { label:"Strong E-Board candidate", color:"#16A34A", bg:"#F0FDF4", border:"#BBF7D0" }
-    : m.pipeline==="Chair" ? { label:"Ready for Chair role", color:"#1A56E8", bg:"#EFF6FF", border:"#BFDBFE" }
-    : m.pipeline==="Chair candidate" ? { label:"Promote to Chair", color:"#0891B2", bg:"#ECFEFF", border:"#A5F3FC" }
-    : m.values==="Values Aligned" ? { label:"Needs more task activity", color:"#D97706", bg:"#FFFBEB", border:"#FDE68A" }
-    : { label:"Needs values interview", color:"#D97706", bg:"#FFFBEB", border:"#FDE68A" };
+  const rec = m.pipeline==="E-Board" ? { label:"TEST strong E-Board candidate preview", color:"#16A34A", bg:"#F0FDF4", border:"#BBF7D0" }
+    : m.pipeline==="Chair" ? { label:"TEST ready for Chair role preview", color:"#1A56E8", bg:"#EFF6FF", border:"#BFDBFE" }
+    : m.pipeline==="Chair candidate" ? { label:"TEST promote-to-Chair preview", color:"#0891B2", bg:"#ECFEFF", border:"#A5F3FC" }
+    : m.values==="Values Aligned" ? { label:"TEST needs more task activity", color:"#D97706", bg:"#FFFBEB", border:"#FDE68A" }
+    : { label:"TEST needs values interview", color:"#D97706", bg:"#FFFBEB", border:"#FDE68A" };
 
   // Chapter rank (top 20 only — we don't show rank to everyone)
   const chapterSorted = [...MEMBERS].sort((a,b) => b.pts - a.pts);
@@ -984,9 +984,9 @@ function ProfileScreen({
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Leadership Actions</div>
-            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Promote to Officer</Btn>
-            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Assign Leadership Action</Btn>
-            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Nominate for E-Board</Btn>
+            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Preview Promotion</Btn>
+            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Preview Leadership Action</Btn>
+            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Preview E-Board Succession</Btn>
             <Btn
               variant="secondary"
               className="w-full justify-start"
@@ -3930,7 +3930,7 @@ function PromoteLeaderModal({
         <div>
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Step {step} of 3</div>
           <h2 className="text-lg font-black text-slate-900">
-            {step === 1 ? "Select Member to Promote" : step === 2 ? "Choose New Pipeline Role" : "Confirm Values & Promote"}
+            {step === 1 ? "Select Member for Preview" : step === 2 ? "Choose Preview Pipeline Role" : "Confirm Values & Preview Promotion"}
           </h2>
         </div>
         <div className="flex gap-1.5">
@@ -3943,7 +3943,7 @@ function PromoteLeaderModal({
       {/* Step 1: pick member */}
       {step === 1 && (
         <div className="px-6 py-4 flex flex-col gap-3">
-          <p className="text-xs text-slate-500">Promotions are based on action, consistency, and character — not just points. Select the member you want to move up.</p>
+          <p className="text-xs text-slate-500">TEST promotion preview. Leadership development still depends on human review, so this flow only previews how a member could move up.</p>
           <div className="relative">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
             <input className="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -3996,7 +3996,7 @@ function PromoteLeaderModal({
           </div>
 
           {/* Pipeline options */}
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Promote to</div>
+          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Preview role path</div>
           <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
             {availableLevels.length === 0 && (
               <p className="text-xs text-slate-500 py-4 text-center">This member is already at the highest pipeline level.</p>
@@ -4031,14 +4031,14 @@ function PromoteLeaderModal({
           <div className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: chosenLevel.color, background: chosenLevel.color + "0d" }}>
             <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: chosenLevel.color }}/>
             <div className="text-xs font-bold" style={{ color: chosenLevel.color }}>
-              Promoting {member.name} → {chosenLevel.label}
+              Previewing {member.name} → {chosenLevel.label}
             </div>
           </div>
 
           <div>
             <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2">
               MEDLIFE Values Alignment
-              <span className="ml-1 text-slate-400 normal-case font-normal">— confirm all three before promoting</span>
+              <span className="ml-1 text-slate-400 normal-case font-normal">— confirm all three before previewing a leadership move</span>
             </div>
             <div className="space-y-2">
               {VALUES_CHECKS.map(v => {
@@ -4070,16 +4070,16 @@ function PromoteLeaderModal({
                 {interviewDone && <CheckCircle size={12} className="text-white"/>}
               </div>
               <div>
-                <div className="text-xs font-bold text-slate-800">Values interview completed</div>
-                <div className="text-[11px] text-amber-700 mt-0.5">Required for {chosenLevel.label} promotion — confirms character, fire, and growth in conversation</div>
+                <div className="text-xs font-bold text-slate-800">TEST values interview completed in preview</div>
+                <div className="text-[11px] text-amber-700 mt-0.5">Required for {chosenLevel.label} preview — confirms character, fire, and growth in conversation before any approved leadership change.</div>
               </div>
             </button>
           )}
 
           <div>
-            <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Promotion Note <span className="text-slate-400 font-normal normal-case">(optional — visible to leadership)</span></label>
+            <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Preview Note <span className="text-slate-400 font-normal normal-case">(optional — visible to leadership)</span></label>
             <textarea rows={2} className="mt-1.5 w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
-              placeholder="e.g. 'Consistently shows up, recruits, and takes ownership. Ready for a bigger role.'"
+              placeholder="e.g. 'TEST preview note: consistently shows up, recruits, and takes ownership. Ready for a bigger role once the approved workflow exists.'"
               value={note} onChange={e => setNote(e.target.value)}/>
           </div>
         </div>

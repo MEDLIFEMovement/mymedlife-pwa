@@ -251,9 +251,9 @@ describe("leader page", () => {
     expect(html).toContain(expectedCopy);
 
     if (view === "member_profile") {
-      expect(html).toContain("Promote to Officer");
-      expect(html).toContain("Assign Leadership Action");
-      expect(html).toContain("Nominate for E-Board");
+      expect(html).toContain("Preview Promotion");
+      expect(html).toContain("Preview Leadership Action");
+      expect(html).toContain("Preview E-Board Succession");
       expect(html).toContain("Add Note");
     }
   });
@@ -407,6 +407,13 @@ describe("leader page", () => {
     expect(source).toContain("No live task was created, no reminders were sent, and no member feed changed in this preview.");
     expect(source).toContain("Promotion Preview Ready");
     expect(source).toContain("No live role, pipeline, or chapter visibility changed in this preview.");
+    expect(source).toContain("TEST promotion preview. Leadership development still depends on human review, so this flow only previews how a member could move up.");
+    expect(source).toContain("Preview role path");
+    expect(source).toContain("Confirm Values & Preview Promotion");
+    expect(source).toContain("TEST values interview completed in preview");
+    expect(source).toContain("Preview Leadership Action");
+    expect(source).toContain("Preview E-Board Succession");
+    expect(source).toContain("TEST strong E-Board candidate preview");
     expect(source).toContain("Transition Plan Preview Ready");
     expect(source).toContain("No live plan was activated, no nominees were notified, and no transition tasks were published from this preview.");
     expect(source).toContain("This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.");
