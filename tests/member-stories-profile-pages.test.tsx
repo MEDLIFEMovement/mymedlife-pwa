@@ -65,6 +65,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Sharing is blocked in this preview until publishing approval is complete");
     expect(html).toContain("Saving stories is blocked in this preview");
     expect(html).toContain("Story options are blocked in this preview.");
+    expect(html).toContain("TEST @uconn");
+    expect(html).not.toContain(">testuconn<");
     expect(html).not.toContain("Live from the field");
     expect(html).not.toContain("Add Story");
     expect(html).not.toContain("stories published");

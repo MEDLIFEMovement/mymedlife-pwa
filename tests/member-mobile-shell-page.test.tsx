@@ -63,6 +63,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("For You");
     expect(html).toContain("Preview-only student feed");
     expect(html).toContain("Preview");
+    expect(html).toContain("TEST @uconn");
     expect(html).not.toContain("Live from the field");
     expect(html).not.toContain("Add Story");
     expect(html).not.toContain("stories published");

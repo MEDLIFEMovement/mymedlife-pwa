@@ -2796,6 +2796,13 @@ const STORY_CATEGORIES: { filter: StoryFilter; emoji: string; short: string; col
   { filter: "Featured",       emoji: "⭐",  short: "Featured", color: "#D97706", bg: "#FEF3C7" },
 ];
 
+function getStoryPreviewHandle(chapter: string) {
+  const withoutVisibleTest = chapter.replace(/\bTEST\b/gi, "").trim();
+  const normalized = withoutVisibleTest.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+
+  return `TEST @${normalized || "mymedlife"}`;
+}
+
 function SourceBadge({ source }: { source: StorySource }) {
   const cfg = sourceConfig[source];
   return (
@@ -3326,7 +3333,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
         ) : (
           <div>
             {filtered.map((story) => {
-              const handle = story.chapter.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+              const handle = getStoryPreviewHandle(story.chapter);
 
               return (
                 <div key={story.id} className="border-b border-gray-200">
