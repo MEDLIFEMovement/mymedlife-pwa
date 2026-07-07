@@ -96,7 +96,7 @@ describe("leader page", () => {
 
     expect(html).toContain("Leadership Center");
     expect(html).toContain("Chapter Dashboard · Jun 2025");
-    expect(html).toContain("Boston College MEDLIFE");
+    expect(html).toContain("TEST Boston College MEDLIFE");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Create Event");
     expect(html).toContain("Chapter Metrics — June 2025");
@@ -179,7 +179,7 @@ describe("leader page", () => {
     expect(html).toContain("Points Score");
     expect(html).toContain("Organizational Average");
     expect(html).toContain("Boston College vs. National");
-    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Your Chapter");
     expect(html).not.toContain("Chapter Metrics — June 2025");
   });
