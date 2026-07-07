@@ -1334,14 +1334,27 @@ function PlatformBadge({ platform }: { platform: Platform }) {
   );
 }
 
+type ProofQueueStatusFilter = "all" | "pending" | "approved" | "rejected";
+
 function ProofUGCQueue() {
-  const [statusFilter, setStatusFilter] = useState<"all" | ContentCard["visibility"]>("all");
+  const [statusFilter, setStatusFilter] = useState<ProofQueueStatusFilter>("all");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [selectedCard, setSelectedCard] = useState<ContentCard | null>(null);
   const [linkInput, setLinkInput] = useState("");
+  const approvedCount = UGC_CARDS.filter(
+    (c) => c.visibility === "chapter" || c.visibility === "selected",
+  ).length;
 
   const filtered = UGC_CARDS.filter((c) => {
-    if (statusFilter !== "all" && c.visibility !== statusFilter) return false;
+    if (statusFilter === "pending" && c.visibility !== "pending") return false;
+    if (statusFilter === "rejected" && c.visibility !== "rejected") return false;
+    if (
+      statusFilter === "approved" &&
+      c.visibility !== "chapter" &&
+      c.visibility !== "selected"
+    ) {
+      return false;
+    }
     if (platformFilter !== "all" && c.platform !== platformFilter) return false;
     return true;
   });
@@ -1404,8 +1417,8 @@ function ProofUGCQueue() {
             {([
               { key:"all", label:`All (${UGC_CARDS.length})` },
               { key:"pending", label:`Pending (${pendingCount})` },
-              { key:"chapter", label:"Approved" },
-              { key:"rejected", label:"Rejected" },
+              { key:"approved", label:`Approved (${approvedCount})` },
+              { key:"rejected", label:`Rejected (${UGC_CARDS.filter((c) => c.visibility === "rejected").length})` },
             ] as const).map(({ key, label }) => (
               <button
                 key={key}
@@ -1610,14 +1623,14 @@ function ProofUGCQueue() {
 
               {/* Actions */}
               <div className="space-y-1.5">
-                <button disabled title="Best-practice publishing is blocked until feed approval is complete" className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center justify-center gap-1.5">
+                <button disabled title="Best-practice publishing is blocked until feed approval is complete" className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-1.5">
                   <Star className="w-3.5 h-3.5" /> Mark as Best Practice
                 </button>
                 <div className="flex gap-1.5">
-                  <button disabled title="Change requests are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
+                  <button disabled title="Change requests are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50">
                     Request Changes
                   </button>
-                  <button disabled title="Reject decisions are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
+                  <button disabled title="Reject decisions are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50">
                     Reject
                   </button>
                 </div>
@@ -1761,15 +1774,21 @@ function BestPracticesLibrary() {
               </div>
             </div>
             <div className="px-4 pb-4 flex gap-2">
-              <button disabled title="Feed sharing is blocked until external publishing approval is complete" className="flex-1 py-1.5 bg-primary text-white rounded text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1">
+              <button disabled title="Feed sharing is blocked until external publishing approval is complete" className="flex-1 py-1.5 bg-primary text-white rounded text-xs font-semibold hover:bg-primary/90 transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-1">
                 <Send className="w-3 h-3" /> Share to Feed
               </button>
-              <button disabled title="Coach emails are blocked until external-send approval is complete" className="flex-1 py-1.5 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors flex items-center justify-center gap-1">
+              <button disabled title="Coach emails are blocked until external-send approval is complete" className="flex-1 py-1.5 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-1">
                 <Mail className="w-3 h-3" /> Send to Coaches
               </button>
-              <button disabled title="Bookmarking best practices is blocked in this preview" className="py-1.5 px-2 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors">
+              <button disabled title="Bookmarking best practices is blocked in this preview" className="py-1.5 px-2 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50">
                 <Bookmark className="w-3 h-3" />
               </button>
+            </div>
+            <div className="px-4 pb-4 -mt-1">
+              <p className="text-[10px] leading-relaxed text-amber-700">
+                Best-practice sharing stays visible for review, but feed publishing,
+                coach outreach, and bookmarking remain blocked in this preview.
+              </p>
             </div>
           </div>
         ))}
