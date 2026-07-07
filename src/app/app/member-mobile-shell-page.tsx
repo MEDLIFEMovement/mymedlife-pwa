@@ -16,9 +16,13 @@ import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 export async function renderMemberMobileShellPage({
   initialScreen,
   redirectPath,
+  initialStoriesFilter,
+  initialStoryId,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   redirectPath: string;
+  initialStoriesFilter?: string | null;
+  initialStoryId?: string | null;
 }) {
   const actor = await getLocalActorContext();
   const landingRoute = getLandingRouteForActor(actor);
@@ -49,7 +53,12 @@ export async function renderMemberMobileShellPage({
       {isPreviewWorkspaceAccess(actor, "student_app") ? (
         <WorkspacePreviewBanner workspaceLabel="the General Student App" />
       ) : null}
-      <FigmaMemberMobileHome initialScreen={initialScreen} sltPrepEntry={sltPrepEntry} />
+      <FigmaMemberMobileHome
+        initialScreen={initialScreen}
+        sltPrepEntry={sltPrepEntry}
+        initialStoriesFilter={initialStoriesFilter}
+        initialStoryId={initialStoryId}
+      />
     </>
   );
 }
