@@ -461,6 +461,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
             </div>
             <h2 className="text-base font-bold text-foreground">{chapter.name}</h2>
             <div className="text-xs text-muted-foreground">{chapter.school}</div>
+            <div className="mt-1 text-[11px] text-amber-700">Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer.</div>
             <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" />{chapter.country}</span>
               <span className="flex items-center gap-1"><Users className="w-3 h-3" />{chapter.activeMembers} members</span>
@@ -1405,12 +1406,12 @@ function ProofUGCQueue() {
               className="px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 bg-primary text-white opacity-50 cursor-not-allowed"
             >
               <Send className="w-3.5 h-3.5" />
-              Submit
+              Submit blocked
             </button>
           </div>
           <div className="mt-2 text-xs text-amber-700 font-medium flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5" />
-            Link ingestion stays visible for review, but provider fetch and queue writes are blocked in this preview.
+            Link submission stays visible for review, but provider fetch and queue writes are blocked in this preview.
           </div>
         </div>
 
@@ -1958,17 +1959,14 @@ function AdminRouteBlocked({ onBack }: { onBack: () => void }) {
 
         <div className="bg-[#161b22] border border-white/[0.08] rounded-xl p-5 text-left">
           <p className="text-[11px] text-slate-600 font-mono uppercase tracking-wider mb-2">Current posture</p>
-          <p className="text-[12px] text-slate-400 leading-relaxed">
-            Admin controls stay route-backed and visible for review, but this actor cannot open the
-            secure panel from the staff workspace.
-          </p>
+          <p className="text-[12px] text-slate-400 leading-relaxed">Admin controls stay route-backed and visible for review, but this actor cannot open the embedded admin preview from the staff workspace.</p>
         </div>
 
         <button
           onClick={onBack}
           className="w-full py-2.5 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-700 transition-colors"
         >
-          Return to dashboard
+          Return to chapters
         </button>
       </div>
     </div>
@@ -2035,7 +2033,7 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
 
         <p className="text-[11px] text-slate-700">
           Not DS Admin or Super Admin?{" "}
-          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">Return to dashboard</button>
+          <button onClick={onBack} className="text-slate-500 underline underline-offset-2">Return to chapters</button>
         </p>
       </div>
     </div>

@@ -275,6 +275,7 @@ describe("staff page", () => {
     expect(html).toContain("Story link ingestion is blocked until proof-review writes are approved");
     expect(html).toContain("provider fetch and queue writes are blocked in this preview");
     expect(html).toContain("Approved (2)");
+    expect(html).toContain("Submit blocked");
     expect(html).toContain("TEST Rush Month tabling");
     expect(html).toContain("TEST Priya Nair");
     expect(source).toContain("TEST Best Practice: QR Lead Capture");
@@ -342,6 +343,8 @@ describe("staff page", () => {
     expect(html).toContain("This Staff Command Center keeps the Admin handoff visible");
     expect(html).toContain("admin preview route");
     expect(html).toContain("Current posture");
+    expect(html).toContain("embedded admin preview from the staff workspace");
+    expect(html).toContain("Return to chapters");
     expect(html).not.toContain("Open Admin preview");
   });
 
@@ -391,6 +394,7 @@ describe("staff page", () => {
     expect(html).toContain("Preview Survey");
     expect(html).toContain("Preview NPS Survey");
     expect(html).toContain("Send blocked");
+    expect(html).toContain("Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer.");
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
