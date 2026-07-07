@@ -29,7 +29,7 @@ Rule used: every visible navigation item must route, open a visible state, be cl
 | `/staff?view=leaderboard` | Staff Leaderboard route | Show org leaderboard | Fell back to Portfolio Overview | Added URL-backed staff shell state and organization leaderboard panel | Pass |
 | `/staff?view=chapters` | Staff top nav | Menu clicks route to their screens | Prototype-only state could feel inert before hydration | Converted top nav to real links with hydrated app navigation | Pass |
 | `/admin` | Admin vertical menu | Every visible primary menu item opens its matching admin screen | Admin visual shell was not covered by browser click-through evidence | Added browser smoke over Overview, Users, Chapters, Modules, Luma Events, Points, Integrations, Audit Logs, System Health, API Keys, Settings | Pass |
-| `/admin` | MCP Connections | Keep MCP out of launch-critical primary menu | MCP was visible as a primary clickable admin item | Removed MCP Connections from primary nav; MCP Analytics remains visibly disabled in Disabled Modules | Pass |
+| `/admin` | MCP Connections | Keep the Renato-facing DS Admin menu complete while blocking unsafe MCP behavior | MCP was previously removed from the primary admin nav, which drifted from the DS Admin shell contract | Restored MCP Connections to the primary nav and kept connection/write actions visibly blocked; MCP Analytics remains visibly disabled in Disabled Modules | Pass |
 | `/admin` | Footer identity row | Avoid a faux logout control | Footer row looked clickable but did not own logout | Made it informational and pointed reviewers to the real top-right account menu | Pass |
 | `/admin` as member | Manual URL access | Redirect unauthorized member away from admin | Not covered in browser smoke | Added browser smoke proving member preview redirects to `/app` | Pass |
 | Account menu | Log out | Clear preview actor and return to sign-in | Account menu was unit-tested but not browser-tested | Added browser smoke that opens the account menu, clicks Log out, and lands on `/login` | Pass |
@@ -43,7 +43,7 @@ Verified with Playwright against the running local app:
 - Leader: `/leader?view=overview` -> Chapter Leaderboard, Member Leaderboard, Event Performance, Create Event, Feed Analytics, Succession.
 - Leader full menu sweep: Chapter Home, Chapter Leaderboard, Feed Analytics, Member Leaderboard, Member Profile, Event Committees, Event Performance, Create Event, Impact, Bridge Videos, MEDLIFE Stories, Current Leaders, Succession, Values, Leadership Training.
 - Staff full menu sweep: Chapters, Events, Leaderboard, Campaigns, Proof / UGC, Best Practices, Campaign SOPs, Admin.
-- Admin visual menu sweep: Overview, Users, Chapters, Modules, Luma Events, Points, Integrations, Audit Logs, System Health, API Keys, Settings.
+- Admin visual menu sweep: Overview, Users, Chapters, Modules, Luma Events, Points, Integrations, Audit Logs, System Health, API Keys, MCP Connections, Settings.
 - Admin route-level readback: `/admin/users`, `/admin/chapters`, `/admin/integrations/luma`, `/admin/audit-log`, `/admin/integration-outbox`.
 - SLT Prep route alias: `/app/slt-prep` with traveler preview actor.
 - Access/session checks: member preview redirect away from `/admin`; account menu logout returns to `/login`.
