@@ -1847,7 +1847,7 @@ function SmileioCard() {
           <div className="space-y-4">
             <div className="mb-2">
               <p className="text-[13px] text-slate-300 font-medium">Tier Mapping</p>
-              <p className="text-[12px] text-slate-500 mt-0.5">Smile.io loyalty tiers mapped to myMEDLIFE membership levels. Tier upgrades trigger in-app notifications and unlocked perks.</p>
+              <p className="text-[12px] text-slate-500 mt-0.5">Smile.io loyalty tiers mapped to myMEDLIFE membership levels. Tier notifications, perks, and downstream sync stay preview-only until the audited loyalty workflow is approved.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -1879,9 +1879,9 @@ function SmileioCard() {
               <div className="space-y-2.5">
                 {[
                   { label: "Downgrade policy", value: "Never downgrade — points are cumulative" },
-                  { label: "Upgrade trigger", value: "Immediate on point award if threshold crossed" },
-                  { label: "Notification", value: "In-app + push notification to member" },
-                  { label: "HubSpot sync", value: "Lifecycle stage updated on tier change" },
+                  { label: "Upgrade trigger", value: "Preview only — threshold checks stay read-only in this shell" },
+                  { label: "Notification", value: "Blocked — no in-app or push notification is sent from tier changes" },
+                  { label: "HubSpot sync", value: "Blocked — no lifecycle sync runs from tier changes" },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex items-start justify-between gap-4">
                     <span className="text-[12px] text-slate-500">{label}</span>
