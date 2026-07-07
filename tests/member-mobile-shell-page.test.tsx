@@ -57,12 +57,22 @@ describe("member mobile shell routes", () => {
     );
 
     const { default: StoriesPage } = await import("@/app/app/stories/page");
-    const html = renderToStaticMarkup(await StoriesPage());
+    const html = renderToStaticMarkup(await StoriesPage({}));
 
-    expect(html).toContain("MEDLIFE Stories");
+    expect(html).toContain(">Stories<");
+    expect(html).toContain("MEDLIFE Stories · preview-only student feed");
     expect(html).toContain("For You");
-    expect(html).toContain("Preview-only student feed");
     expect(html).toContain("Preview");
+    expect(html).toContain("TEST @uconn");
+    expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
+    expect(html).toContain("preview likes");
+    expect(html).toContain("Preview only - comments open the reader; shares and saves stay blocked.");
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain(">Home<");
+    expect(html).toContain(">Stories<");
+    expect(html).toContain(">Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Profile<");
     expect(html).not.toContain("Live from the field");
     expect(html).not.toContain("Add Story");
     expect(html).not.toContain("stories published");
@@ -97,8 +107,13 @@ describe("member mobile shell routes", () => {
     const html = renderToStaticMarkup(await PointsPage());
 
     expect(html).toContain("Points &amp; Recognition");
-    expect(html).toContain("Chapter Leaderboard");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("Preview-only TEST points come from route-backed member actions.");
+    expect(html).toContain("Chapter Leaderboard — TEST Rush Month");
+    expect(html).toContain("TEST Aisha N.");
     expect(html).toContain("Recent Approved Actions");
+    expect(html).toContain("Add 5 TEST leads to the TEST chapter spreadsheet");
+    expect(html).toContain("TEST points in this member shell are a read-only preview");
     expect(html).toContain('href="/app/events?source=points"');
     expect(html).toContain("See how to earn more points");
   });

@@ -357,6 +357,10 @@ function healthPill(h: string) {
   return <Pill label={h} color={map[h] ?? "slate"} />;
 }
 
+function toTestLabel(name: string) {
+  return name.startsWith("TEST ") ? name : `TEST ${name}`;
+}
+
 /** Primary / secondary / ghost button */
 function Btn({ children, variant="primary", onClick, className="", blockedTitle }: {
   children: React.ReactNode; variant?: "primary"|"secondary"|"ghost"|"danger";
@@ -533,7 +537,7 @@ function HomeScreen({
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <SH>This Week's Priority</SH>
-          <p className="text-xs text-slate-600 mt-2 mb-4 leading-relaxed">Publish the next Luma event, drive RSVPs, confirm attendance, and keep the chapter leaderboard moving.</p>
+          <p className="text-xs text-slate-600 mt-2 mb-4 leading-relaxed">Stage the next TEST event preview, review RSVP posture, preview attendance follow-through, and keep the chapter leaderboard moving.</p>
           <SH sub="">Quick Actions</SH>
           <div className="mt-2 space-y-1.5">
             <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={11}/>Create Event</Btn>
@@ -657,7 +661,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Chapter Leaderboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Learn from top chapters. Find ideas to try. Rise together.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST benchmark preview. Sample chapter comparisons stay visible for review, but they do not count as live chapter rankings, rollout evidence, or production planning truth.</p>
         </div>
         {/* Region filter */}
         <select className="text-xs border border-slate-200 rounded-lg px-3 py-1.5 bg-white text-slate-700 font-medium"
@@ -686,25 +690,25 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
       <div className="grid grid-cols-4 gap-4">
         {/* National / Organizational average */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 text-center">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Organizational Average</div>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Organizational Average</div>
           <div className="text-3xl font-black tabular-nums" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
             {fmtVal(nationalAvg)}
           </div>
-          <div className="text-xs text-slate-400 mt-1">{active.label} · {CHAPTERS.length} chapters</div>
+          <div className="text-xs text-slate-400 mt-1">TEST benchmark only · {active.label} · {CHAPTERS.length} chapters</div>
         </div>
 
         {/* Regional average */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 text-center">
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Regional Average</div>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Regional Average</div>
           <div className="text-3xl font-black tabular-nums" style={{ color:"#7C3AED", fontFamily:"'JetBrains Mono',monospace" }}>
             {fmtVal(regionalAvg)}
           </div>
-          <div className="text-xs text-slate-400 mt-1">{bcRegion} region · {regionalChapters.length} chapter{regionalChapters.length!==1?"s":""}</div>
+          <div className="text-xs text-slate-400 mt-1">TEST benchmark only · {bcRegion} region · {regionalChapters.length} chapter{regionalChapters.length!==1?"s":""}</div>
         </div>
 
         {/* BC vs national */}
         <div className={`rounded-2xl border p-5 text-center ${bcAbove ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Boston College vs. National</div>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Boston College vs. National Preview</div>
           <div className="flex items-center justify-center gap-3 mb-1">
             <span className="text-2xl font-black tabular-nums" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
               {fmtVal(bcVal)}
@@ -716,8 +720,8 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
           </div>
           <div className={`text-xs font-semibold ${bcAbove ? "text-green-700" : "text-amber-700"}`}>
             {bcAbove
-              ? `${sortKey==="funds" ? `$${(bcVal-nationalAvg).toLocaleString()}` : bcVal-nationalAvg} above national average`
-              : `${sortKey==="funds" ? `$${(nationalAvg-bcVal).toLocaleString()}` : nationalAvg-bcVal} below national average — room to grow`}
+              ? `TEST benchmark: ${sortKey==="funds" ? `$${(bcVal-nationalAvg).toLocaleString()}` : bcVal-nationalAvg} above national average`
+              : `TEST benchmark: ${sortKey==="funds" ? `$${(nationalAvg-bcVal).toLocaleString()}` : nationalAvg-bcVal} below national average — preview gap to review`}
           </div>
         </div>
 
@@ -725,7 +729,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
         {sorted[0] && (
           <div className="rounded-2xl border p-5 text-center" style={{ background: active.color + "0d", borderColor: active.color + "40" }}>
             <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: active.color }}>
-              {filterRegion === "All Regions" ? "National Leader" : `${filterRegion} Leader`}
+              {filterRegion === "All Regions" ? "TEST National Leader Preview" : `TEST ${filterRegion} Leader Preview`}
             </div>
             <div className="text-sm font-black text-slate-900 mb-1">{sorted[0].name}</div>
             <div className="text-3xl font-black tabular-nums mb-1" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
@@ -739,9 +743,9 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
       {/* Insight tip */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 flex items-start gap-2">
         <Sparkles size={15} className="text-blue-500 mt-0.5 shrink-0"/>
-        {sortKey==="events" && <span><strong>Ideas to try:</strong> UCLA assigns event creation as a first action for new members — every new recruit creates one. UT Austin tracks creator names on every event to build a leaderboard within the chapter.</span>}
-        {sortKey==="slt"    && <span><strong>Ideas to try:</strong> McGill's 38-participant SLT record comes from weekly testimonial posts from alumni. UCLA hosts a dedicated SLT alumni Q&A each semester that consistently converts 60%+ of attendees.</span>}
-        {sortKey==="funds"  && <span><strong>Ideas to try:</strong> UCLA's Moving Mountains campaign runs a live donation tracker on their chapter Instagram story. McGill uses a chapter-vs-chapter challenge to motivate donors in the final week.</span>}
+        {sortKey==="events" && <span><strong>TEST benchmark idea:</strong> TEST UCLA MEDLIFE assigns event creation as a first action for new members, and TEST UT Austin MEDLIFE tracks creator names on each event. Keep this as sample comparison guidance only, not a live operational recommendation.</span>}
+        {sortKey==="slt"    && <span><strong>TEST benchmark idea:</strong> TEST McGill MEDLIFE pairs alumni testimonial posts with a dedicated SLT Q&amp;A night, and TEST UCLA MEDLIFE follows up personally after each session. Keep this as sample comparison guidance only, not a live operational recommendation.</span>}
+        {sortKey==="funds"  && <span><strong>TEST benchmark idea:</strong> TEST UCLA MEDLIFE runs a Moving Mountains tracker on chapter social, and TEST McGill MEDLIFE uses a chapter challenge at the end of the campaign. Keep this as sample comparison guidance only, not a live operational recommendation.</span>}
       </div>
 
       {/* Ranked leaderboard table */}
@@ -872,7 +876,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
                     })}
                   </div>
                 </div>
-                <Btn variant="ghost" onClick={() => onNavigate("bridge")}><BookOpen size={11}/>Top Bridge Videos</Btn>
+                <Btn variant="ghost" onClick={() => onNavigate("bridge")}><BookOpen size={11}/>Open Bridge Video Previews</Btn>
               </div>
             </div>
           );
@@ -905,11 +909,11 @@ function ProfileScreen({
     {w:"May W3",pts:Math.round(m.pts*0.11)},{w:"May W4",pts:Math.round(m.pts*0.12)},
     {w:"Jun W1",pts:m.ptsLast},{w:"Jun W2",pts:m.ptsWk},
   ];
-  const rec = m.pipeline==="E-Board" ? { label:"Strong E-Board candidate", color:"#16A34A", bg:"#F0FDF4", border:"#BBF7D0" }
-    : m.pipeline==="Chair" ? { label:"Ready for Chair role", color:"#1A56E8", bg:"#EFF6FF", border:"#BFDBFE" }
-    : m.pipeline==="Chair candidate" ? { label:"Promote to Chair", color:"#0891B2", bg:"#ECFEFF", border:"#A5F3FC" }
-    : m.values==="Values Aligned" ? { label:"Needs more task activity", color:"#D97706", bg:"#FFFBEB", border:"#FDE68A" }
-    : { label:"Needs values interview", color:"#D97706", bg:"#FFFBEB", border:"#FDE68A" };
+  const rec = m.pipeline==="E-Board" ? { label:"TEST strong E-Board candidate preview", color:"#16A34A", bg:"#F0FDF4", border:"#BBF7D0" }
+    : m.pipeline==="Chair" ? { label:"TEST ready for Chair role preview", color:"#1A56E8", bg:"#EFF6FF", border:"#BFDBFE" }
+    : m.pipeline==="Chair candidate" ? { label:"TEST promote-to-Chair preview", color:"#0891B2", bg:"#ECFEFF", border:"#A5F3FC" }
+    : m.values==="Values Aligned" ? { label:"TEST needs more task activity", color:"#D97706", bg:"#FFFBEB", border:"#FDE68A" }
+    : { label:"TEST needs values interview", color:"#D97706", bg:"#FFFBEB", border:"#FDE68A" };
 
   // Chapter rank (top 20 only — we don't show rank to everyone)
   const chapterSorted = [...MEMBERS].sort((a,b) => b.pts - a.pts);
@@ -984,15 +988,15 @@ function ProfileScreen({
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Leadership Actions</div>
-            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Promote to Officer</Btn>
-            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Assign Leadership Action</Btn>
-            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Nominate for E-Board</Btn>
+            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Preview Promotion</Btn>
+            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Preview Leadership Action</Btn>
+            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Preview E-Board Succession</Btn>
             <Btn
               variant="secondary"
               className="w-full justify-start"
               blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
             >
-              <Edit size={11}/>Add Note
+              <Edit size={11}/>Preview Note
             </Btn>
           </div>
         </div>
@@ -1046,7 +1050,7 @@ function ProfileScreen({
                 variant="secondary"
                 blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
               >
-                <Edit size={10}/>Add Note
+                <Edit size={10}/>Preview Note
               </Btn>
             </div>
             <div className="bg-slate-50 rounded-lg p-3">
@@ -1082,9 +1086,9 @@ function CommitteesScreen({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Event Committees</h1>
-          <p className="text-sm text-slate-500 mt-1">Monitor whether each committee is moving the chapter forward — not just existing.</p>
+          <p className="text-sm text-slate-500 mt-1">Monitor whether each TEST committee is moving the chapter forward. Committee setup, chair changes, and operational follow-through stay preview-only in this shell.</p>
         </div>
-        <Btn variant="primary" blockedTitle="Committee creation is blocked in this preview."><Plus size={11}/>Add Committee</Btn>
+        <Btn variant="primary" blockedTitle="Committee creation is blocked in this preview."><Plus size={11}/>Preview Committee Setup</Btn>
       </div>
 
       {/* Summary cards — chapter-wide */}
@@ -1277,17 +1281,17 @@ function CommitteesScreen({
                           className="w-full justify-start"
                           blockedTitle="Committee chair assignment is blocked in this preview."
                         >
-                          <Plus size={10}/>Add Chair
+                          <Plus size={10}/>Preview Chair Assignment
                         </Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={10}/>Promote Member</Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Assign Task</Btn>
-                        <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Create Event</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Create Event Preview</Btn>
                         <Btn
                           variant="ghost"
                           className="w-full justify-start"
                           blockedTitle="Committee detail drill-in is not wired yet. Use this expanded committee card for the current preview context."
                         >
-                          <Eye size={10}/>Review Committee
+                          <Eye size={10}/>Preview Committee Review
                         </Btn>
                       </div>
                     </div>
@@ -1559,9 +1563,9 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Event Performance</h1>
-          <p className="text-sm text-slate-500 mt-1">Track event execution, scores, follow-up, and chapter-wide attendance.</p>
+          <p className="text-sm text-slate-500 mt-1">Track TEST event execution previews, survey posture, follow-up readiness, and chapter-wide attendance readback without turning on live event operations.</p>
         </div>
-        <Btn variant="primary" onClick={() => setShowCreate(true)}><Plus size={11}/>Create Event</Btn>
+        <Btn variant="primary" onClick={() => setShowCreate(true)}><Plus size={11}/>Create Event Preview</Btn>
       </div>
 
       {/* Summary cards — now includes NPS */}
@@ -1835,8 +1839,8 @@ function ImpactScreen() {
           <p className="text-sm text-slate-500 mt-1">TEST impact preview. Sample stories and metrics stay visible for review, but they do not count as live chapter impact or rollout evidence.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Share Impact Story</Btn>
-          <Btn variant="primary" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video size={11}/>Create Bridge Video</Btn>
+          <Btn variant="secondary" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Preview Impact Share</Btn>
+          <Btn variant="primary" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video size={11}/>Preview Bridge Video</Btn>
         </div>
       </div>
 
@@ -1852,7 +1856,7 @@ function ImpactScreen() {
             <div className="text-4xl font-black mb-0.5">{s.n}</div>
             <div className="text-sm font-semibold opacity-80 mb-3">{s.label}</div>
             <p className="text-xs leading-relaxed opacity-75 mb-4">{s.story}</p>
-            <button disabled title="Impact sharing is blocked in this preview until feed-sharing approval is complete" className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Share →</button>
+            <button disabled title="Impact sharing is blocked in this preview until feed-sharing approval is complete" className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Preview Share →</button>
           </div>
         ))}
       </div>
@@ -1938,7 +1942,7 @@ function ImpactScreen() {
                 </button>
               )}
             </div>
-            <Btn variant="primary" blockedTitle="Field-update submission is blocked in this preview until write approval is complete."><Plus size={11}/>Submit Field Update</Btn>
+            <Btn variant="primary" blockedTitle="Field-update submission is blocked in this preview until write approval is complete."><Plus size={11}/>Preview Field Update</Btn>
           </div>
         </div>
 
@@ -2092,9 +2096,9 @@ function ImpactScreen() {
 
               {/* Share actions */}
               <div className="flex gap-2 pt-1">
-                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Share to Chapter Feed</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video  size={11}/>Create Bridge Video</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Presentation export is blocked in this preview."><Upload size={11}/>Add to Presentation</Btn>
+                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Preview Chapter Feed Share</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video  size={11}/>Preview Bridge Video</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Presentation export is blocked in this preview."><Upload size={11}/>Preview Presentation Add</Btn>
               </div>
             </div>
           </div>
@@ -2198,9 +2202,9 @@ function BridgeScreen() {
 
               {/* Actions */}
               <div className="flex gap-2 pt-1">
-                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Bridge video playback is blocked in this preview."><Play    size={11}/>Watch Video</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge video sharing is blocked in this preview until staff approval is complete."><Share2  size={11}/>Share to Feed</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Featuring a bridge video is blocked in this preview until staff approval is complete."><Star    size={11}/>Feature</Btn>
+                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Bridge video playback is blocked in this preview."><Play    size={11}/>Preview Video</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge video sharing is blocked in this preview until staff approval is complete."><Share2  size={11}/>Preview Feed Share</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Featuring a bridge video is blocked in this preview until staff approval is complete."><Star    size={11}/>Preview Feature</Btn>
               </div>
               <div className="flex items-start gap-2.5 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
                 <Shield size={13} className="text-amber-500 mt-0.5 shrink-0"/>
@@ -2217,7 +2221,7 @@ function BridgeScreen() {
           <h1 className="text-2xl font-black text-slate-900">Bridge Video Hub</h1>
           <p className="text-sm text-slate-500 mt-1 italic">TEST bridge-video preview. Sample submissions stay visible for review, but no playback, featuring, or publishing is live.</p>
         </div>
-        <Btn variant="primary" blockedTitle="Bridge-video submission is blocked in this preview until write approval is complete."><Upload size={11}/>Submit for Approval</Btn>
+        <Btn variant="primary" blockedTitle="Bridge-video submission is blocked in this preview until write approval is complete."><Upload size={11}/>Preview Submission</Btn>
       </div>
 
       {/* Approval notice */}
@@ -2299,7 +2303,7 @@ function BridgeScreen() {
               {/* Footer */}
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <span className="text-[10px] text-slate-400">Submitted {v.date}</span>
-                <span className="text-[11px] text-blue-500 font-semibold group-hover:underline">Watch →</span>
+                <span className="text-[11px] text-blue-500 font-semibold group-hover:underline">Preview →</span>
               </div>
             </div>
           </button>
@@ -2423,7 +2427,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
         <p className="text-sm text-slate-500 leading-relaxed">
           Review how the <strong className="text-slate-800">{role.label}</strong> transition plan would read once the audited transition workflow is approved.
           {nominees.length > 0 && <> {nominees.length} candidate{nominees.length > 1 ? "s" : ""} nominated.</>}
-          {primaryMember && <> Primary: <strong className="text-slate-800">{primaryMember.name}</strong>.</>}
+          {primaryMember && <> Primary: <strong className="text-slate-800">{toTestLabel(primaryMember.name)}</strong>.</>}
           {formattedTarget && ` Target date: ${formattedTarget}.`}
         </p>
         <p className="text-xs text-slate-400 mt-2">No live plan was activated, no nominees were notified, and no transition tasks were published from this preview.</p>
@@ -2439,14 +2443,14 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
         {primaryId && (
           <button onClick={() => onViewProfile(primaryId)}
             className="px-5 py-2.5 text-sm font-bold rounded-xl cursor-pointer text-white hover:opacity-90" style={{ background: role.color }}>
-            View {primaryMember?.name.split(" ")[0]}'s Profile
+            View {primaryMember ? toTestLabel(primaryMember.name).split(" ")[1] : "TEST"}'s Profile
           </button>
         )}
       </div>
     </div>
   );
 
-  const stepLabels = ["Choose Role","Set Timeline","Assign Tasks","Review & Activate"];
+  const stepLabels = ["Choose Role","Set Timeline","Assign Tasks","Review & Preview"];
 
   return (
     <div className="space-y-0">
@@ -2685,7 +2689,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
               {!primaryId && nominees.length > 0 && (
                 <div className="flex items-start gap-2.5 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
                   <AlertTriangle size={14} className="text-amber-500 mt-0.5 shrink-0"/>
-                  <p className="text-xs text-amber-800">No primary candidate set. Go back to Step 3 and mark one nominee as primary before activating.</p>
+                  <p className="text-xs text-amber-800">No primary candidate set. Go back to Step 3 and mark one nominee as primary before previewing completion.</p>
                 </div>
               )}
             </div>
@@ -2713,7 +2717,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
                 <div className="flex justify-between">
                   <span className="text-slate-400">Primary</span>
                   <span className="font-semibold text-slate-800">
-                    {primaryMember ? primaryMember.name.split(" ")[0] : "—"}
+                    {primaryMember ? toTestLabel(primaryMember.name).split(" ")[1] : "—"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -2730,7 +2734,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
                 <div className="flex items-center gap-2.5">
                   <Avatar name={primaryMember.name} color={primaryMember.color} size={36}/>
                   <div>
-                    <div className="text-sm font-black text-slate-900">{primaryMember.name}</div>
+                    <div className="text-sm font-black text-slate-900">{toTestLabel(primaryMember.name)}</div>
                     <div className="text-xs text-slate-400">{primaryMember.role}</div>
                   </div>
                 </div>
@@ -2795,7 +2799,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
             onClick={() => setPublished(true)}
             className="px-6 py-2.5 text-white text-sm font-bold rounded-xl cursor-pointer hover:opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: role?.color || BLUE }}>
-            <Flag size={14} className="inline mr-1.5"/>Activate Transition Plan
+            <Flag size={14} className="inline mr-1.5"/>Preview Transition Plan
           </button>
         )}
       </div>
@@ -2839,11 +2843,11 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Leadership Succession</h1>
-          <p className="text-sm text-slate-500 mt-1">Ensure the chapter can survive and grow beyond any single leader.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Nominate Candidate</Btn>
-          <Btn variant="primary"    onClick={() => setShowTransition(true)}><ArrowRight size={11}/>Start Transition Plan</Btn>
+          <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Preview Candidate Nomination</Btn>
+          <Btn variant="primary"    onClick={() => setShowTransition(true)}><ArrowRight size={11}/>Preview Transition Plan</Btn>
         </div>
       </div>
 
@@ -2887,7 +2891,7 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
                     <span className="text-[11px] font-black text-slate-400 w-6 text-center shrink-0" style={{fontFamily:"'JetBrains Mono',monospace"}}>#{idx+1}</span>
                     <Avatar name={m.name} color={m.color} size={24}/>
                     <div>
-                      <div className="text-xs font-semibold text-slate-800">{m.name}</div>
+                      <div className="text-xs font-semibold text-slate-800">{toTestLabel(m.name)}</div>
                       <div className="text-[10px] text-slate-400">{m.committee} · {m.pts.toLocaleString()} pts</div>
                     </div>
                   </div>
@@ -2902,12 +2906,12 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
             <div className="mt-3 relative">
               <div className="absolute left-[6px] top-1 bottom-1 w-px bg-slate-200"/>
               {[
-                { date:"Jun 2025", event:"Appoint Member Engagement chair", status:"urgent" },
-                { date:"Jul 2025", event:"Values interviews for all chair candidates", status:"upcoming" },
-                { date:"Aug 2025", event:"Bridge videos due from all chairs", status:"upcoming" },
-                { date:"Sep 2025", event:"E-Board nominations open for Fall", status:"planned" },
-                { date:"Nov 2025", event:"President succession announced", status:"planned" },
-                { date:"May 2026", event:"Full E-Board transition complete", status:"planned" },
+                { date:"Jun 2025", event:"TEST Appoint Member Engagement chair", status:"urgent" },
+                { date:"Jul 2025", event:"TEST Values interviews for all chair candidates", status:"upcoming" },
+                { date:"Aug 2025", event:"TEST Bridge videos due from all chairs", status:"upcoming" },
+                { date:"Sep 2025", event:"TEST E-Board nominations open for Fall", status:"planned" },
+                { date:"Nov 2025", event:"TEST President succession announced", status:"planned" },
+                { date:"May 2026", event:"TEST Full E-Board transition complete", status:"planned" },
               ].map((t,i)=>(
                 <div key={i} className="pl-6 pb-3 relative last:pb-0">
                   <div className={`absolute left-0 top-1.5 w-3 h-3 rounded-full border-2 border-white
@@ -2953,7 +2957,7 @@ function ValuesScreen() {
         <div>
           <h1 className="text-2xl font-black text-slate-900">MEDLIFE Values</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Three values guide every MEDLIFE leader. They are not automatic — they require human review, honest conversation, and intentional practice.
+            TEST values preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.
           </p>
         </div>
         <Btn
@@ -2961,7 +2965,7 @@ function ValuesScreen() {
           blockedTitle="Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists."
           className="shadow-sm"
         >
-          <MessageSquare size={14}/>Values Alignment Interview
+          <MessageSquare size={14}/>Preview Values Interview
         </Btn>
       </div>
 
@@ -2998,7 +3002,7 @@ function ValuesScreen() {
                 blockedTitle="Interview scheduling is blocked in this preview until the approved leadership-review workflow exists."
                 className="!text-white !border-transparent"
               >
-                <MessageSquare size={11}/>Schedule Interview
+                <MessageSquare size={11}/>Preview Interview Scheduling
               </Btn>
             </div>
           </div>
@@ -3013,12 +3017,13 @@ function ValuesScreen() {
           <p className="text-xs text-blue-200 leading-relaxed">
             The Values Alignment Interview is a structured conversation between a chapter leader and a candidate for Chair or E-Board. It is not a test — it is a chance to understand who someone is, what drives them, and whether they are ready to lead with character, fire, and growth. Use this preview guidance to understand the review standard while the actual scheduling and submission workflow stays blocked.
           </p>
+          <p className="text-[11px] text-blue-300 mt-2">No live invite, contact sync, form submission, or provider handoff is sent from this preview.</p>
           <Btn
             variant="ghost"
             blockedTitle="The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists."
             className="mt-3 !px-0 !py-0 !border-0 !bg-transparent !text-blue-300 hover:!bg-transparent hover:!text-white"
           >
-            <ExternalLink size={11}/>Open Values Alignment Interview Form →
+            <ExternalLink size={11}/>Preview Interview Form<span className="sr-only"> Preview Values Interview Form</span> →
           </Btn>
         </div>
       </div>
@@ -3043,8 +3048,8 @@ function FeedScreen() {
           <p className="text-sm text-slate-500 mt-1">TEST analytics preview. Sample posts, engagement, and outreach cues stay visible for review, but they do not count as live feed evidence or messaging authority.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" blockedTitle="Feed sharing is blocked in this preview until staff approval is complete."><Share2 size={11}/>Share to Feed</Btn>
-          <Btn variant="primary" blockedTitle="Direct member outreach is blocked in this preview until messaging approval is complete."><MessageSquare size={11}/>Ask Members to Respond</Btn>
+          <Btn variant="secondary" blockedTitle="Feed sharing is blocked in this preview until staff approval is complete."><Share2 size={11}/>Preview Feed Share</Btn>
+          <Btn variant="primary" blockedTitle="Direct member outreach is blocked in this preview until messaging approval is complete."><MessageSquare size={11}/>Preview Member Prompt</Btn>
         </div>
       </div>
 
@@ -3360,9 +3365,9 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Member Leaderboard</h1>
-          <p className="text-sm text-slate-500 mt-1">See how members rank within the chapter, region, and organization.</p>
+          <p className="text-sm text-slate-500 mt-1">TEST leaderboard preview. Sample member ranking context stays visible for review, but it does not grant live member-management authority.</p>
         </div>
-        <Btn variant="primary"><Plus size={11}/>Add Member</Btn>
+        <Btn variant="primary" blockedTitle="Member roster creation is blocked in this preview. Use the visible leaderboard only for TEST comparison review."><Plus size={11}/>Add Member</Btn>
       </div>
 
       {/* View tabs */}
@@ -3384,7 +3389,7 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
           <span>
             {view==="regional"
               ? <><strong>New England Region</strong> — TEST members from Boston College, MIT, Northeastern, BU, and other New England chapters.</>
-              : <><strong>Organizational Leaderboard</strong> — members from all MEDLIFE chapters globally, sorted by total points.</>}
+              : <><strong>Organizational Leaderboard</strong> — TEST members from MEDLIFE chapters globally, sorted by sample total points.</>}
             {" "}TEST Boston College members are <strong>highlighted</strong>.
           </span>
         </div>
@@ -3465,7 +3470,7 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
       {view !== "chapter" && (
         <p className="text-[11px] text-slate-400 text-center">
           Showing {rows.length} members across {view==="regional" ? "New England" : "the organization"}.
-          Only chapter-wide points, events, and tasks are shown — values alignment and profile details are private.
+          Only chapter-wide points, events, and tasks are shown in this TEST preview — values alignment and profile details are private.
         </p>
       )}
     </div>
@@ -3930,7 +3935,7 @@ function PromoteLeaderModal({
         <div>
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Step {step} of 3</div>
           <h2 className="text-lg font-black text-slate-900">
-            {step === 1 ? "Select Member to Promote" : step === 2 ? "Choose New Pipeline Role" : "Confirm Values & Promote"}
+            {step === 1 ? "Select Member for Preview" : step === 2 ? "Choose Preview Pipeline Role" : "Confirm Values & Preview Promotion"}
           </h2>
         </div>
         <div className="flex gap-1.5">
@@ -3943,7 +3948,7 @@ function PromoteLeaderModal({
       {/* Step 1: pick member */}
       {step === 1 && (
         <div className="px-6 py-4 flex flex-col gap-3">
-          <p className="text-xs text-slate-500">Promotions are based on action, consistency, and character — not just points. Select the member you want to move up.</p>
+          <p className="text-xs text-slate-500">TEST promotion preview. Leadership development still depends on human review, so this flow only previews how a member could move up.</p>
           <div className="relative">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
             <input className="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
@@ -3996,7 +4001,7 @@ function PromoteLeaderModal({
           </div>
 
           {/* Pipeline options */}
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Promote to</div>
+          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Preview role path</div>
           <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
             {availableLevels.length === 0 && (
               <p className="text-xs text-slate-500 py-4 text-center">This member is already at the highest pipeline level.</p>
@@ -4031,14 +4036,14 @@ function PromoteLeaderModal({
           <div className="flex items-center gap-3 p-3 rounded-xl border" style={{ borderColor: chosenLevel.color, background: chosenLevel.color + "0d" }}>
             <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: chosenLevel.color }}/>
             <div className="text-xs font-bold" style={{ color: chosenLevel.color }}>
-              Promoting {member.name} → {chosenLevel.label}
+              Previewing {member.name} → {chosenLevel.label}
             </div>
           </div>
 
           <div>
             <div className="text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2">
               MEDLIFE Values Alignment
-              <span className="ml-1 text-slate-400 normal-case font-normal">— confirm all three before promoting</span>
+              <span className="ml-1 text-slate-400 normal-case font-normal">— confirm all three before previewing a leadership move</span>
             </div>
             <div className="space-y-2">
               {VALUES_CHECKS.map(v => {
@@ -4070,16 +4075,16 @@ function PromoteLeaderModal({
                 {interviewDone && <CheckCircle size={12} className="text-white"/>}
               </div>
               <div>
-                <div className="text-xs font-bold text-slate-800">Values interview completed</div>
-                <div className="text-[11px] text-amber-700 mt-0.5">Required for {chosenLevel.label} promotion — confirms character, fire, and growth in conversation</div>
+                <div className="text-xs font-bold text-slate-800">TEST values interview completed in preview</div>
+                <div className="text-[11px] text-amber-700 mt-0.5">Required for {chosenLevel.label} preview — confirms character, fire, and growth in conversation before any approved leadership change.</div>
               </div>
             </button>
           )}
 
           <div>
-            <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Promotion Note <span className="text-slate-400 font-normal normal-case">(optional — visible to leadership)</span></label>
+            <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Preview Note <span className="text-slate-400 font-normal normal-case">(optional — visible to leadership)</span></label>
             <textarea rows={2} className="mt-1.5 w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
-              placeholder="e.g. 'Consistently shows up, recruits, and takes ownership. Ready for a bigger role.'"
+              placeholder="e.g. 'TEST preview note: consistently shows up, recruits, and takes ownership. Ready for a bigger role once the approved workflow exists.'"
               value={note} onChange={e => setNote(e.target.value)}/>
           </div>
         </div>

@@ -119,6 +119,9 @@ interface BestPractice {
 
 type Screen = "chapters" | "campaigns" | "events" | "ugc" | "reports" | "admin" | "best-practices" | "sops";
 
+const STAFF_HEADER_ACCOUNT_CLEARANCE = "pr-[11rem] sm:pr-[16rem] lg:pr-[18rem] xl:pr-[19rem]";
+const STAFF_HEADER_ALERT_VISIBILITY = "hidden md:flex max-w-[8.5rem] lg:max-w-[10rem] xl:max-w-[11.5rem]";
+
 /* ─────────────────────────────────────────────────────────── */
 /*  MOCK DATA                                                   */
 /* ─────────────────────────────────────────────────────────── */
@@ -632,8 +635,8 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
 
         {/* Footer */}
         <div className="border-t border-border p-4 flex gap-2 flex-shrink-0">
-          <button disabled title="Content sending is blocked until external-send approval is complete" className="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5">
-            <Send className="w-3.5 h-3.5" /> Send Content
+          <button disabled title="Content sending is blocked until external-send approval is complete" className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary py-2 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50">
+            <Send className="w-3.5 h-3.5" /> Send blocked
           </button>
           <button
             onClick={() => setShowSurvey(true)}
@@ -642,7 +645,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
           >
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
-          <button disabled title="External chapter links are blocked in this preview" className="px-3 py-2 bg-muted text-foreground rounded-lg text-sm hover:bg-muted/70 transition-colors">
+          <button disabled title="External chapter links are blocked in this preview" className="rounded-lg bg-muted px-3 py-2 text-sm text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50">
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -738,8 +741,8 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           </select>
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
-        <button disabled title="Export is blocked until reporting approval is complete" className="ml-auto flex items-center gap-1.5 px-3 py-2 bg-muted text-foreground rounded-lg text-xs font-semibold hover:bg-muted/70 transition-colors">
-          <Download className="w-3.5 h-3.5" /> Export
+        <button disabled title="Export is blocked until reporting approval is complete" className="ml-auto flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-xs font-semibold text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50">
+          <Download className="w-3.5 h-3.5" /> Export blocked
         </button>
       </div>
 
@@ -1334,14 +1337,27 @@ function PlatformBadge({ platform }: { platform: Platform }) {
   );
 }
 
+type ProofQueueStatusFilter = "all" | "pending" | "approved" | "rejected";
+
 function ProofUGCQueue() {
-  const [statusFilter, setStatusFilter] = useState<"all" | ContentCard["visibility"]>("all");
+  const [statusFilter, setStatusFilter] = useState<ProofQueueStatusFilter>("all");
   const [platformFilter, setPlatformFilter] = useState("all");
   const [selectedCard, setSelectedCard] = useState<ContentCard | null>(null);
   const [linkInput, setLinkInput] = useState("");
+  const approvedCount = UGC_CARDS.filter(
+    (c) => c.visibility === "chapter" || c.visibility === "selected",
+  ).length;
 
   const filtered = UGC_CARDS.filter((c) => {
-    if (statusFilter !== "all" && c.visibility !== statusFilter) return false;
+    if (statusFilter === "pending" && c.visibility !== "pending") return false;
+    if (statusFilter === "rejected" && c.visibility !== "rejected") return false;
+    if (
+      statusFilter === "approved" &&
+      c.visibility !== "chapter" &&
+      c.visibility !== "selected"
+    ) {
+      return false;
+    }
     if (platformFilter !== "all" && c.platform !== platformFilter) return false;
     return true;
   });
@@ -1404,8 +1420,8 @@ function ProofUGCQueue() {
             {([
               { key:"all", label:`All (${UGC_CARDS.length})` },
               { key:"pending", label:`Pending (${pendingCount})` },
-              { key:"chapter", label:"Approved" },
-              { key:"rejected", label:"Rejected" },
+              { key:"approved", label:`Approved (${approvedCount})` },
+              { key:"rejected", label:`Rejected (${UGC_CARDS.filter((c) => c.visibility === "rejected").length})` },
             ] as const).map(({ key, label }) => (
               <button
                 key={key}
@@ -1610,14 +1626,14 @@ function ProofUGCQueue() {
 
               {/* Actions */}
               <div className="space-y-1.5">
-                <button disabled title="Best-practice publishing is blocked until feed approval is complete" className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors flex items-center justify-center gap-1.5">
+                <button disabled title="Best-practice publishing is blocked until feed approval is complete" className="w-full px-3 py-2 rounded-lg text-xs font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-1.5">
                   <Star className="w-3.5 h-3.5" /> Mark as Best Practice
                 </button>
                 <div className="flex gap-1.5">
-                  <button disabled title="Change requests are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
+                  <button disabled title="Change requests are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50">
                     Request Changes
                   </button>
-                  <button disabled title="Reject decisions are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
+                  <button disabled title="Reject decisions are blocked until proof-review writes are approved" className="flex-1 px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50">
                     Reject
                   </button>
                 </div>
@@ -1761,15 +1777,21 @@ function BestPracticesLibrary() {
               </div>
             </div>
             <div className="px-4 pb-4 flex gap-2">
-              <button disabled title="Feed sharing is blocked until external publishing approval is complete" className="flex-1 py-1.5 bg-primary text-white rounded text-xs font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1">
+              <button disabled title="Feed sharing is blocked until external publishing approval is complete" className="flex-1 py-1.5 bg-primary text-white rounded text-xs font-semibold hover:bg-primary/90 transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-1">
                 <Send className="w-3 h-3" /> Share to Feed
               </button>
-              <button disabled title="Coach emails are blocked until external-send approval is complete" className="flex-1 py-1.5 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors flex items-center justify-center gap-1">
+              <button disabled title="Coach emails are blocked until external-send approval is complete" className="flex-1 py-1.5 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50 flex items-center justify-center gap-1">
                 <Mail className="w-3 h-3" /> Send to Coaches
               </button>
-              <button disabled title="Bookmarking best practices is blocked in this preview" className="py-1.5 px-2 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors">
+              <button disabled title="Bookmarking best practices is blocked in this preview" className="py-1.5 px-2 bg-muted text-foreground rounded text-xs font-semibold hover:bg-muted/70 transition-colors disabled:cursor-not-allowed disabled:opacity-50">
                 <Bookmark className="w-3 h-3" />
               </button>
+            </div>
+            <div className="px-4 pb-4 -mt-1">
+              <p className="text-[10px] leading-relaxed text-amber-700">
+                Best-practice sharing stays visible for review, but feed publishing,
+                coach outreach, and bookmarking remain blocked in this preview.
+              </p>
             </div>
           </div>
         ))}
@@ -1837,7 +1859,7 @@ function AdminHealth() {
             </div>
             <div className="flex gap-2">
               <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-semibold">{outbox.filter(o=>o.status==="failed").length} failed</span>
-              <button disabled title="Outbox retries are blocked until automation approval is complete" className="flex items-center gap-1 text-xs text-primary hover:underline"><RotateCcw className="w-3 h-3" /> Retry Failed</button>
+              <button disabled title="Outbox retries are blocked until automation approval is complete" className="flex items-center gap-1 text-xs font-medium text-primary disabled:cursor-not-allowed disabled:opacity-50"><RotateCcw className="w-3 h-3" /> Retry blocked</button>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -1929,7 +1951,8 @@ function AdminRouteBlocked({ onBack }: { onBack: () => void }) {
           <p className="text-sm text-slate-400 leading-relaxed">
             This Staff Command Center keeps the Admin handoff visible, but only{" "}
             <span className="text-sky-400 font-semibold">DS Admin</span> and{" "}
-            <span className="text-sky-400 font-semibold">Super Admin</span> roles can open it.
+            <span className="text-sky-400 font-semibold">Super Admin</span> roles can open the
+            admin preview route.
           </p>
         </div>
 
@@ -1966,17 +1989,17 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-white mb-1">Restricted Access</h2>
+          <h2 className="text-lg font-bold text-white mb-1">Restricted Preview Access</h2>
           <p className="text-sm text-slate-400 leading-relaxed">
-            The Admin panel is restricted to <span className="text-sky-400 font-semibold">DS Admin</span> and{" "}
+            The Admin preview is restricted to <span className="text-sky-400 font-semibold">DS Admin</span> and{" "}
             <span className="text-sky-400 font-semibold">Super Admin</span> roles only.
-            All actions are logged and audited.
+            All deeper admin actions stay logged, audited, and blocked or read-only unless the shell explicitly says otherwise.
           </p>
         </div>
 
         {/* Role selector */}
         <div className="bg-[#161b22] border border-white/[0.08] rounded-xl p-5 text-left space-y-3">
-          <p className="text-[11px] text-slate-600 font-mono uppercase tracking-wider mb-1">Sign in as</p>
+          <p className="text-[11px] text-slate-600 font-mono uppercase tracking-wider mb-1">Preview as</p>
           {([
             { value: "ds-admin" as AdminRole, label: "DS Admin", desc: "Data Systems Administrator — full read access, no key rotation" },
             { value: "super-admin" as AdminRole, label: "Super Admin", desc: "Full access including API key rotation, write toggles, and role changes" },
@@ -2007,7 +2030,7 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
           onClick={() => onGrant(picked)}
           className="w-full py-2.5 bg-sky-500 text-white rounded-lg text-sm font-semibold hover:bg-sky-400 transition-colors"
         >
-          Enter Admin Panel
+          Open Admin preview
         </button>
 
         <p className="text-[11px] text-slate-700">
@@ -2086,7 +2109,7 @@ export function FigmaStaffCommandCenter({
     <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily:"'Plus Jakarta Sans', system-ui, sans-serif" }}>
       {/* Top Bar */}
       <header className="bg-sidebar border-b border-sidebar-border flex-shrink-0 z-30 relative">
-        <div className="flex h-12 items-center gap-4 px-5 pr-24 sm:gap-6 sm:pr-[15rem]">
+        <div className={`flex h-12 items-center gap-4 overflow-hidden px-5 sm:gap-6 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
           {/* Logo */}
           <a
             href={buildStaffShellHref("chapters", pathname, searchParams.toString())}
@@ -2126,18 +2149,17 @@ export function FigmaStaffCommandCenter({
           </nav>
 
           {/* Right */}
-          <div className="pointer-events-none ml-auto flex min-w-0 flex-none items-center justify-end gap-2 sm:gap-3">
-            <div className="pointer-events-none flex min-w-0 max-w-[10.5rem] items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1 sm:max-w-[12rem] lg:max-w-none">
+          <div className={`pointer-events-none ml-auto min-w-0 flex-none items-center justify-end ${STAFF_HEADER_ALERT_VISIBILITY}`}>
+            <div className="pointer-events-none flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1">
               <AlertTriangle className="w-3 h-3 text-red-400" />
               <span className="truncate text-xs font-semibold text-red-300">2 chapters need intervention</span>
             </div>
-            <div className="hidden h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-sidebar lg:flex">JS</div>
           </div>
         </div>
       </header>
 
       {/* Page Header */}
-      <div className="flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 pr-24 sm:pr-[15rem]">
+      <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
         <div className="min-w-0">
           <h1 className="text-base font-bold text-foreground">{SCREEN_TITLES[activeScreen]}</h1>
           <div className="mt-0.5 text-xs text-muted-foreground">
@@ -2145,11 +2167,11 @@ export function FigmaStaffCommandCenter({
             {activeScreen === "campaigns" && "7 campaigns active across all regions"}
             {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
             {activeScreen === "best-practices" && `${BEST_PRACTICES.length} verified best practices ready to share`}
-            {activeScreen === "admin" && (adminRole ? `Signed in as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · Full system access` : "Restricted to DS Admin and Super Admin only")}
+            {activeScreen === "admin" && (adminRole ? `Previewing as ${adminRole === "super-admin" ? "Super Admin" : "DS Admin"} · blocked controls stay preview-only unless explicitly approved` : "Restricted to DS Admin and Super Admin only")}
             {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
           </div>
         </div>
-        <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground md:block">Jun 17, 2026 · 14:41 UTC</div>
+        <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground xl:block">Jun 17, 2026 · 14:41 UTC</div>
       </div>
 
       {/* Content */}
@@ -2304,6 +2326,9 @@ function buildStaffCampaignHref(campaign: string, pathname: string, search: stri
 function buildStaffShellHref(screen: Screen, pathname: string, search: string): string {
   const params = new URLSearchParams(search);
   params.set("view", getStaffShellViewParam(screen));
+  if (screen !== "admin") {
+    params.delete("adminView");
+  }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }

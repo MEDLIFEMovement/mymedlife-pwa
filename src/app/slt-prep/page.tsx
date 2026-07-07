@@ -1,34 +1,39 @@
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
+import { StudentAppShell } from "@/components/student-app-shell";
 import {
+  ensureVisibleTestLabel,
   SltPrepSectionCard,
   SltPrepTonePill,
 } from "@/components/slt-prep-primitives";
 import { SltPrepSubnav } from "@/components/slt-prep-subnav";
 import { RestrictedState } from "@/components/restricted-state";
+import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
+import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
 import {
   getSltTripPrepSubnavItems,
   getSltTripPrepWorkspace,
   sltTripPrepMobileQuickNavItems,
 } from "@/services/slt-trip-prep-workspace";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
+import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 import type { TripPrepTraveler } from "@/shared/types/slt-trip-prep";
 import { getSltPrepPageContext } from "./page-context";
 
 export const metadata = getStaticRouteMetadata("sltPrep");
 export const dynamic = "force-dynamic";
 
-export async function renderSltPrepPage(redirectPath = "/slt-prep") {
+type SltPrepShellMode = "standalone" | "member";
+
+export async function renderSltPrepPage(
+  redirectPath = "/slt-prep",
+  shellMode: SltPrepShellMode = "standalone",
+) {
   const { actor, data } = await getSltPrepPageContext(redirectPath);
   const workspace = getSltTripPrepWorkspace(actor);
-
-  return (
-    <AppShell
-      actor={actor}
-      hideTopHeader
-      mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
-    >
+  const content = (
+    <>
       <DataSourceNotice source={data.source} />
       <SltPrepSubnav items={[...getSltTripPrepSubnavItems(actor)]} />
 
@@ -42,6 +47,33 @@ export async function renderSltPrepPage(redirectPath = "/slt-prep") {
       ) : (
         <SltPrepOverviewSurface workspace={workspace} />
       )}
+    </>
+  );
+
+  if (shellMode === "member") {
+    return (
+      <StudentAppShell
+        actor={actor}
+        hideTopHeader
+        showMobileQuickItemHelpers={false}
+        showDebugTools={false}
+      >
+        <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
+        {isPreviewWorkspaceAccess(actor, "student_app") ? (
+          <WorkspacePreviewBanner workspaceLabel="the General Student App" />
+        ) : null}
+        {content}
+      </StudentAppShell>
+    );
+  }
+
+  return (
+    <AppShell
+      actor={actor}
+      hideTopHeader
+      mobileQuickItemsOverride={[...sltTripPrepMobileQuickNavItems]}
+    >
+      {content}
     </AppShell>
   );
 }
@@ -67,6 +99,9 @@ function SltPrepOverviewSurface({
   const upcomingDeadlines = traveler.timeline.filter((event) => event.status !== "complete").slice(0, 3);
   const sections = buildOverviewSections(traveler);
   const alert = traveler.alerts[0];
+  const visibleTripName = ensureVisibleTestLabel(tripName);
+  const visibleCityLabel = ensureVisibleTestLabel(traveler.cityLabel);
+  const visibleChapterName = ensureVisibleTestLabel(traveler.chapterName);
 
   return (
     <>
@@ -88,10 +123,10 @@ function SltPrepOverviewSurface({
           </div>
 
           <h1 className="mt-5 text-[2rem] font-black leading-none tracking-tight text-white sm:text-[2.35rem]">
-            {tripName}
+            {visibleTripName}
           </h1>
           <p className="mt-1 text-sm font-semibold tracking-wide text-white/56">{tripSeason}</p>
-          <p className="mt-3 text-xs text-white/55">{traveler.cityLabel}</p>
+          <p className="mt-3 text-xs text-white/55">{visibleCityLabel}</p>
 
           <div className="mt-7 rounded-[1.6rem] border border-white/14 bg-white/10 p-5 backdrop-blur-xl">
             <div className="flex items-end justify-between gap-4">
@@ -131,7 +166,7 @@ function SltPrepOverviewSurface({
                 label={workspace.readiness.label}
               />
               <span className="rounded-full border border-white/14 bg-white/10 px-3 py-1 text-xs font-semibold text-white/78">
-                {traveler.chapterName}
+                {visibleChapterName}
               </span>
             </div>
           </div>
@@ -147,8 +182,12 @@ function SltPrepOverviewSurface({
           </div>
           <div className="px-4 pb-5 pt-4">
             <p className={getAlertEyebrow(alert.tone)}>{alert.dueLabel}</p>
-            <h2 className="mt-1 text-xl font-bold leading-tight text-slate-950">{alert.label}</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-500">{alert.summary}</p>
+            <h2 className="mt-1 text-xl font-bold leading-tight text-slate-950">
+              {ensureVisibleTestLabel(alert.label)}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              {ensureVisibleTestLabel(alert.summary)}
+            </p>
             <Link
               href={alert.href}
               className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[#FFB81C] px-4 py-3 text-base font-bold tracking-wide text-slate-950 shadow-sm transition hover:brightness-95"
@@ -168,7 +207,9 @@ function SltPrepOverviewSurface({
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-950">{upcomingDeadlines[0].label}</p>
+                  <p className="text-sm font-semibold text-slate-950">
+                    {ensureVisibleTestLabel(upcomingDeadlines[0].label)}
+                  </p>
                   <p className="mt-1 text-sm text-slate-500">{upcomingDeadlines[0].dateLabel}</p>
                 </div>
                 <SltPrepTonePill
@@ -177,7 +218,9 @@ function SltPrepOverviewSurface({
                   variant="light"
                 />
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{upcomingDeadlines[0].summary}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {ensureVisibleTestLabel(upcomingDeadlines[0].summary)}
+              </p>
             </Link>
           ) : (
             <p className="text-sm leading-6 text-slate-600">No open deadlines remain in this preview.</p>
@@ -192,12 +235,16 @@ function SltPrepOverviewSurface({
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-950">{nextMeeting.title}</p>
+                  <p className="text-sm font-semibold text-slate-950">
+                    {ensureVisibleTestLabel(nextMeeting.title)}
+                  </p>
                   <p className="mt-1 text-sm text-slate-500">{nextMeeting.timingLabel}</p>
                 </div>
                 <SltPrepTonePill tone="yellow" label="Upcoming" variant="light" />
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{nextMeeting.summary}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {ensureVisibleTestLabel(nextMeeting.summary)}
+              </p>
             </Link>
           ) : (
             <p className="text-sm leading-6 text-slate-600">No upcoming pre-trip meetings are visible right now.</p>
@@ -221,7 +268,9 @@ function SltPrepOverviewSurface({
                   <p className="text-sm font-bold text-slate-950">{section.label}</p>
                   <SltPrepTonePill tone={section.tone} label={section.badge} variant="light" />
                 </div>
-                <p className="mt-1 text-xs leading-5 text-slate-500">{section.summary}</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  {ensureVisibleTestLabel(section.summary)}
+                </p>
               </div>
               <span className="text-sm font-semibold text-slate-300">→</span>
             </Link>
@@ -231,7 +280,7 @@ function SltPrepOverviewSurface({
 
       <SltPrepSectionCard eyebrow="Preview safety" title="What stays blocked for now" variant="light">
         <div className="grid gap-3">
-          {[
+              {[
             traveler.mockSources.shopify,
             traveler.mockSources.hubspot,
             traveler.mockSources.luma,
@@ -241,7 +290,7 @@ function SltPrepOverviewSurface({
               key={note}
               className="rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600"
             >
-              {note}
+              {ensureVisibleTestLabel(note)}
             </p>
           ))}
         </div>

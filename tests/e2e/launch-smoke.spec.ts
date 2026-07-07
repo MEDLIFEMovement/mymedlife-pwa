@@ -47,7 +47,8 @@ test.describe("myMEDLIFE launch route smoke", () => {
       .getByRole("link", { name: "Stories", exact: true })
       .click();
     await expect(page).toHaveURL(/\/app\/stories$/);
-    await expect(page.getByRole("heading", { name: "MEDLIFE Stories", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Stories", exact: true })).toBeVisible();
+    await expect(page.getByText("MEDLIFE Stories · preview-only student feed")).toBeVisible();
 
     await page.getByRole("link", { name: "Events" }).click();
     await expect(page).toHaveURL(/\/app\/events$/);
@@ -169,7 +170,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.goto("/leader?view=overview");
     await page.getByRole("button", { name: "Create Event" }).first().click();
     await expect(page).toHaveURL(/\/leader\?view=events/);
-    await expect(page.getByRole("heading", { name: "Create New Event" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create Event Preview" })).toBeVisible();
   });
 
   test("clicks every student command center menu item into its matching screen", async ({
@@ -186,7 +187,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Member Profile", view: "member_profile", heading: "Member Profile" },
       { label: "Event Committees", view: "committees", heading: "Event Committees" },
       { label: "Event Performance", view: "events", heading: "Event Performance" },
-      { label: "Create Event", view: "create_event", heading: "Create New Event" },
+      { label: "Create Event", view: "create_event", heading: "Create Event Preview" },
       { label: "Impact", view: "impact", heading: "Impact Dashboard" },
       { label: "Bridge Videos", view: "bridge_videos", heading: "Bridge Video Hub" },
       { label: "MEDLIFE Stories", view: "stories", heading: "MEDLIFE Stories" },
@@ -320,18 +321,18 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await selectPreviewActor(context, "ds.admin@mymedlife.test");
 
     const adminItems = [
-      { label: "Overview", heading: "Overview" },
-      { label: "Users", heading: "Users" },
-      { label: "Chapters", heading: "Chapters" },
-      { label: "Modules", heading: "Modules & Feature Flags" },
-      { label: "Luma Events", heading: "Luma Events" },
-      { label: "Points", heading: "Points" },
-      { label: "Integrations", heading: "Integrations" },
-      { label: "Audit Logs", heading: "Audit Logs" },
-      { label: "System Health", heading: "System Health" },
-      { label: "API Keys", heading: "API Keys" },
-      { label: "MCP Connections", heading: "MCP Connections" },
-      { label: "Settings", heading: "Settings" },
+      { label: "Overview", heading: "Overview", view: "overview" },
+      { label: "Users", heading: "Users", view: "users" },
+      { label: "Chapters", heading: "Chapters", view: "chapters" },
+      { label: "Modules", heading: "Modules & Feature Flags", view: "modules" },
+      { label: "Luma Events", heading: "Luma Events", view: "luma" },
+      { label: "Points", heading: "Points", view: "points" },
+      { label: "Integrations", heading: "Integrations", view: "integrations" },
+      { label: "Audit Logs", heading: "Audit Logs", view: "audit" },
+      { label: "System Health", heading: "System Health", view: "health" },
+      { label: "API Keys", heading: "API Keys", view: "apikeys" },
+      { label: "MCP Connections", heading: "MCP Connections", view: "mcp" },
+      { label: "Settings", heading: "Settings", view: "settings" },
     ] as const;
 
     await page.goto("/admin");
@@ -342,6 +343,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
         .locator("aside")
         .getByRole("button", { name: item.label, exact: true })
         .click();
+      await expect(page).toHaveURL(new RegExp(`/admin\\?view=${item.view}$`));
       await expect(page.getByRole("heading", { name: item.heading })).toBeVisible();
     }
 
@@ -362,6 +364,11 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByText("MCP Access Policy")).toBeVisible();
     await expect(page.locator("aside").getByText("MCP Analytics")).toBeVisible();
     await expect(page.locator("aside").getByText("Account menu")).toBeVisible();
+
+    await page.locator("aside").getByRole("button", { name: "Settings", exact: true }).click();
+    await expect(
+      page.getByText("Keep these controls visible for DS Admin parity review, but treat every config save, alert test, and settings export as blocked until the audited admin workflow is approved."),
+    ).toBeVisible();
   });
 
   test("opens the embedded staff admin surface with the DS Admin menu family intact", async ({
@@ -372,10 +379,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     await page.goto("/staff?view=admin");
     await expect(page).toHaveURL(/\/staff\?view=admin$/);
-    await expect(page.getByRole("heading", { name: "Restricted Access" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Restricted Preview Access" })).toBeVisible();
 
     await page.getByRole("radio", { name: "Super Admin" }).check();
-    await page.getByRole("button", { name: "Enter Admin Panel" }).click();
+    await page.getByRole("button", { name: "Open Admin preview" }).click();
 
     const adminSidebar = page.locator("aside").first();
     await expect(adminSidebar.getByRole("button", { name: "Command Center" })).toBeVisible();
@@ -412,9 +419,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
     }
 
     await selectPreviewActor(context, "traveler.a@mymedlife.test");
-    await page.goto("/app/slt-prep");
-    await expect(page).toHaveURL(/\/app\/slt-prep$/);
-    await expect(page.getByRole("heading", { name: "Peru SLT" })).toBeVisible();
+    await page.goto("/app");
+    await page.getByRole("link", { name: /TEST Peru SLT/ }).click();
+    await expect(page).toHaveURL(/\/app\/slt-prep\?source=home$/);
+    await expect(page.getByRole("heading", { name: "TEST Peru SLT" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Complete next step" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "What is due next?" })).toBeVisible();
   });

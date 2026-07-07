@@ -49,6 +49,8 @@ function Btn({ children, variant="primary", onClick, className="", blockedTitle 
 // ─── Leadership & Resources Hub ──────────────────────────────────────
 
 const ROLE_TAGS   = ["All Roles", "President", "VP / E-Board", "Committee Chair", "General Member"];
+const TRAINING_PREVIEW_COPY =
+  "TEST training preview. Sample leadership-development resources stay visible for review, but no publishing, playback, deck viewing, external opens, or chapter sharing is live.";
 
 type ResourceType = "video" | "deck" | "link";
 
@@ -74,25 +76,25 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   // ── Videos ──
   {
     id:1, type:"video",
-    title:"What Is Servant Leadership? A MEDLIFE Framework",
+    title:"TEST What Is Servant Leadership? A MEDLIFE Framework",
     description:"MEDLIFE's executive director walks through the organization's leadership philosophy: how servant leadership, impeccable character, and fire/agency work together in student chapters.",
-    author:"MEDLIFE Staff", source:"MEDLIFE YouTube", duration:"18 min",
+    author:"TEST MEDLIFE Staff", source:"MEDLIFE YouTube", duration:"18 min",
     values:["Impeccable Character","Fire / Agency","Growth"], roles:["President","VP / E-Board"],
     tags:["Leadership","Foundations","MEDLIFE"], featured:true, added:"May 2025",
     thumbnail:"linear-gradient(135deg, #1A56E8, #3B82F6)",
   },
   {
     id:2, type:"video",
-    title:"How to Run Your First Committee as Chair",
+    title:"TEST How to Run Your First Committee as Chair",
     description:"A former chapter president shares what she learned in her first semester as Events Chair — how to set expectations, delegate, give feedback, and keep members engaged.",
-    author:"Sofia Reyes", source:"MEDLIFE Bridge Videos", duration:"12 min",
+    author:"TEST Sofia Reyes", source:"MEDLIFE Bridge Videos", duration:"12 min",
     values:["Fire / Agency","Growth"], roles:["Committee Chair"],
     tags:["Committees","Chair","Delegation"], featured:true, added:"Apr 2025",
     thumbnail:"linear-gradient(135deg, #7C3AED, #A855F7)",
   },
   {
     id:3, type:"video",
-    title:"Difficult Conversations: Coaching Without Conflict",
+    title:"TEST Difficult Conversations: Coaching Without Conflict",
     description:"Stanford's d.school course excerpt on giving feedback with empathy. Especially relevant when addressing underperforming committee members or values misalignment.",
     author:"Stanford d.school", source:"YouTube", duration:"24 min",
     values:["Impeccable Character","Growth"], roles:["President","VP / E-Board","Committee Chair"],
@@ -101,16 +103,16 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   },
   {
     id:4, type:"video",
-    title:"Fire & Agency: How Student Leaders Create Change",
+    title:"TEST Fire & Agency: How Student Leaders Create Change",
     description:"A former MEDLIFE SLT participant and chapter president shares how agency — doing things without being asked — transformed their chapter and their own growth.",
-    author:"MEDLIFE Alumni Panel", source:"MEDLIFE YouTube", duration:"31 min",
+    author:"TEST MEDLIFE Alumni Panel", source:"MEDLIFE YouTube", duration:"31 min",
     values:["Fire / Agency"], roles:["General Member","Committee Chair"],
     tags:["Agency","Motivation","Values"], featured:false, added:"Feb 2025",
     thumbnail:"linear-gradient(135deg, #D97706, #F59E0B)",
   },
   {
     id:5, type:"video",
-    title:"Leading Meetings That Actually Work",
+    title:"TEST Leading Meetings That Actually Work",
     description:"A practical guide to facilitating productive meetings — agenda design, time management, inclusive participation, and following up on decisions made.",
     author:"Harvard Leadership Lab", source:"YouTube", duration:"14 min",
     values:["Impeccable Character","Fire / Agency"], roles:["President","VP / E-Board","Committee Chair"],
@@ -119,7 +121,7 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   },
   {
     id:6, type:"video",
-    title:"Building a Leadership Pipeline in Student Organizations",
+    title:"TEST Building a Leadership Pipeline in Student Organizations",
     description:"How to identify, develop, and promote emerging leaders before you need them. Covers pipeline thinking, mentorship, and transition planning in the student org context.",
     author:"NASPA Leadership Institute", source:"NASPA", duration:"42 min",
     values:["Growth","Impeccable Character"], roles:["President","VP / E-Board"],
@@ -130,34 +132,34 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   // ── Decks / Presentations ──
   {
     id:7, type:"deck",
-    title:"MEDLIFE Chapter Leadership Guide — Full Onboarding",
+    title:"TEST MEDLIFE Chapter Leadership Guide — Full Onboarding",
     description:"The official chapter leadership onboarding deck. Covers MEDLIFE's mission, the three values, chapter structure, E-Board roles, action committees, KPIs, and what success looks like.",
-    author:"MEDLIFE Staff", source:"MEDLIFE HQ", slides:48,
+    author:"TEST MEDLIFE Staff", source:"MEDLIFE HQ", slides:48,
     values:["Impeccable Character","Fire / Agency","Growth"], roles:["President","VP / E-Board","Committee Chair"],
     tags:["Onboarding","Official","Foundations"], featured:true, added:"Jan 2025",
     thumbnail:"linear-gradient(135deg, #1A56E8, #6366F1)",
   },
   {
     id:8, type:"deck",
-    title:"Values Interview Framework: Conducting a Great Interview",
+    title:"TEST Values Interview Framework: Conducting a Great Interview",
     description:"Step-by-step guide for running a values interview with a chair or E-Board candidate. Includes sample questions for each of the three values, scoring notes, and debrief template.",
-    author:"MEDLIFE Staff", source:"MEDLIFE HQ", slides:22,
+    author:"TEST MEDLIFE Staff", source:"MEDLIFE HQ", slides:22,
     values:["Impeccable Character","Fire / Agency","Growth"], roles:["President","VP / E-Board"],
     tags:["Values Interview","Hiring","Leadership"], featured:true, added:"Feb 2025",
     thumbnail:"linear-gradient(135deg, #059669, #10B981)",
   },
   {
     id:9, type:"deck",
-    title:"Moving Mountains Campaign Playbook",
+    title:"TEST Moving Mountains Campaign Playbook",
     description:"How to run a successful fundraising campaign from kickoff to close. Covers goal-setting, team motivation, social media strategy, donor outreach, and tracking.",
-    author:"MEDLIFE Fundraising Team", source:"MEDLIFE HQ", slides:34,
+    author:"TEST MEDLIFE Fundraising Team", source:"MEDLIFE HQ", slides:34,
     values:["Fire / Agency"], roles:["Committee Chair","General Member"],
     tags:["Fundraising","Campaign","Moving Mountains"], featured:false, added:"Mar 2025",
     thumbnail:"linear-gradient(135deg, #D97706, #B45309)",
   },
   {
     id:10, type:"deck",
-    title:"Chapter Health: Understanding Your Dashboard",
+    title:"TEST Chapter Health: Understanding Your Dashboard",
     description:"A walkthrough of what each metric on your chapter health dashboard means, how it's calculated, and what leaders can do this week to improve it.",
     author:"MEDLIFE Staff", source:"MEDLIFE HQ", slides:18,
     values:["Growth"], roles:["President","VP / E-Board","Committee Chair"],
@@ -166,7 +168,7 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   },
   {
     id:11, type:"deck",
-    title:"SLT Preparation: What to Know Before You Go",
+    title:"TEST SLT Preparation: What to Know Before You Go",
     description:"Pre-departure orientation deck for students going on a MEDLIFE Service-Learning Trip. Covers clinic operations, cultural humility, safety, evidence collection, and impact documentation.",
     author:"MEDLIFE Programs Team", source:"MEDLIFE HQ", slides:41,
     values:["Impeccable Character","Growth"], roles:["General Member","Committee Chair"],
@@ -177,7 +179,7 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   // ── External Links ──
   {
     id:12, type:"link",
-    title:"The Servant Leader — Robert Greenleaf Center",
+    title:"TEST The Servant Leader — Robert Greenleaf Center",
     description:"The foundational text and framework behind servant leadership. Essential reading for any chapter president or E-Board member seeking to understand MEDLIFE's leadership philosophy at a deeper level.",
     author:"Greenleaf Center for Servant Leadership", source:"greenleaf.org", url:"https://www.greenleaf.org",
     values:["Impeccable Character","Growth"], roles:["President","VP / E-Board"],
@@ -186,7 +188,7 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   },
   {
     id:13, type:"link",
-    title:"Crucial Conversations — Free Summary & Toolkit",
+    title:"TEST Crucial Conversations — Free Summary & Toolkit",
     description:"Tools for holding high-stakes conversations where opinions differ and emotions run high. Especially useful for values misalignment discussions and leadership performance conversations.",
     author:"VitalSmarts", source:"cruciallearning.com", url:"https://cruciallearning.com",
     values:["Impeccable Character","Fire / Agency"], roles:["President","VP / E-Board","Committee Chair"],
@@ -195,7 +197,7 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   },
   {
     id:14, type:"link",
-    title:"AshokaU — Social Innovation Leadership Resources",
+    title:"TEST AshokaU — Social Innovation Leadership Resources",
     description:"Free leadership development resources for student changemakers. Includes frameworks for building a culture of initiative, managing diverse teams, and sustaining a mission-driven organization.",
     author:"Ashoka", source:"ashoka.org/ashokau", url:"https://www.ashoka.org",
     values:["Fire / Agency","Growth"], roles:["President","VP / E-Board","General Member"],
@@ -204,7 +206,7 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   },
   {
     id:15, type:"link",
-    title:"CliftonStrengths — Free Student Access (via your university)",
+    title:"TEST CliftonStrengths — Free Student Access (via your university)",
     description:"Discover the top 5 strengths of each chapter leader. Useful as a team exercise during E-Board onboarding or committee chair training to build self-awareness and complementary teams.",
     author:"Gallup", source:"gallup.com/cliftonstrengths", url:"https://www.gallup.com/cliftonstrengths",
     values:["Growth"], roles:["All Roles"],
@@ -213,7 +215,7 @@ const TRAINING_RESOURCES: TrainingResource[] = [
   },
   {
     id:16, type:"link",
-    title:"Global Health Leadership — Coursera (Johns Hopkins)",
+    title:"TEST Global Health Leadership — Coursera (Johns Hopkins)",
     description:"A free 6-week course on global health leadership, equity, and systems thinking. Ideal for SLT participants and chapter leaders interested in understanding the 'why' behind MEDLIFE's mission.",
     author:"Johns Hopkins Bloomberg School of Public Health", source:"coursera.org", url:"https://www.coursera.org",
     values:["Growth","Impeccable Character"], roles:["General Member","Committee Chair","VP / E-Board"],
@@ -270,7 +272,11 @@ export function TrainingScreen() {
             Videos, presentations, and external resources to develop MEDLIFE leaders.
           </p>
         </div>
-        <Btn variant="primary" blockedTitle="Resource publishing is blocked in this preview until leadership-content approval is complete."><Plus size={11}/>Add Resource</Btn>
+        <Btn variant="primary" blockedTitle="Resource publishing is blocked in this preview until leadership-content approval is complete."><Plus size={11}/>Preview Resource Intake</Btn>
+      </div>
+
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+        <p className="text-sm text-amber-900">{TRAINING_PREVIEW_COPY}</p>
       </div>
 
       {/* Filters row */}
@@ -300,7 +306,7 @@ export function TrainingScreen() {
             value={search} onChange={e => setSearch(e.target.value)}/>
         </div>
 
-        <span className="text-xs text-slate-400 ml-auto font-medium">{filtered.length} resources</span>
+        <span className="text-xs text-slate-400 ml-auto font-medium">{filtered.length} TEST resources</span>
       </div>
 
       {/* Featured resources */}
@@ -308,7 +314,7 @@ export function TrainingScreen() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Star size={14} className="text-amber-500"/>
-            <h2 className="text-sm font-black text-slate-900">Featured</h2>
+            <h2 className="text-sm font-black text-slate-900">TEST Featured Resources</h2>
           </div>
           <div className="grid grid-cols-3 gap-4">
             {featured.map(r => (
@@ -322,7 +328,7 @@ export function TrainingScreen() {
       {rest.length > 0 && (
         <div>
           {featured.length > 0 && (
-            <h2 className="text-sm font-black text-slate-900 mb-3">All Resources</h2>
+            <h2 className="text-sm font-black text-slate-900 mb-3">All TEST Resources</h2>
           )}
           <div className="grid grid-cols-3 gap-4">
             {rest.map(r => (
@@ -335,7 +341,7 @@ export function TrainingScreen() {
       {filtered.length === 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center text-slate-400">
           <BookOpen size={36} className="mx-auto mb-3 opacity-25"/>
-          <p className="text-sm font-semibold">No resources match this filter.</p>
+          <p className="text-sm font-semibold">No TEST resources match this filter.</p>
           <p className="text-xs mt-1">Try adjusting your search, type, or values filter.</p>
         </div>
       )}
@@ -359,7 +365,7 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
         {r.featured && (
           <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-0.5 bg-amber-400 rounded-full">
             <Star size={9} className="text-amber-900"/>
-            <span className="text-[9px] font-black text-amber-900">Featured</span>
+            <span className="text-[9px] font-black text-amber-900">TEST Featured</span>
           </div>
         )}
         {/* Type + duration/slides badge */}
@@ -394,11 +400,14 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
         {/* Actions */}
         <div className="flex gap-2">
           {r.type === "link" ? (
-            <a href={r.url} target="_blank" rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity"
+            <button
+              type="button"
+              disabled
+              title="External resource opens are blocked in this preview until leadership-content approval is complete."
+              className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-70 disabled:cursor-not-allowed"
               style={{ background: meta.color }}>
-              <ExternalLink size={11}/>Open Resource
-            </a>
+              <ExternalLink size={11}/>Preview Link
+            </button>
           ) : (
             <button
               type="button"
@@ -407,11 +416,12 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
               className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity"
               style={{ background: meta.color }}>
               {r.type==="video" ? <Play size={11}/> : <Upload size={11}/>}
-              {r.type==="video" ? "Watch" : "View Deck"}
+              {r.type==="video" ? "Preview Video" : "Preview Deck"}
             </button>
           )}
           <button
             onClick={onToggle}
+            title="Preview-only resource sharing options are visible for review in this shell."
             className="px-3 py-2 text-xs font-semibold border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 text-slate-600 transition-colors">
             <Share2 size={11}/>
           </button>
@@ -421,9 +431,9 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
         {expanded && (
           <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Share this resource</div>
-            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership resource sharing is blocked in this preview until feed approval is complete."><Bell size={10}/>Share to Chapter Feed</Btn>
-            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Committee sends are blocked in this preview until messaging approval is complete."><Users size={10}/>Send to Committee</Btn>
-            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership reading-list saves are blocked in this preview until write approval is complete."><Star size={10}/>Add to Leadership Reading List</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership resource sharing is blocked in this preview until feed approval is complete."><Bell size={10}/>Preview Chapter Feed Share</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Committee sends are blocked in this preview until messaging approval is complete."><Users size={10}/>Preview Committee Send</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership reading-list saves are blocked in this preview until write approval is complete."><Star size={10}/>Preview Reading List Add</Btn>
           </div>
         )}
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard, Users, BookOpen, ToggleLeft, CalendarDays,
   Award, Link2, FileText, Activity, Settings, X, Search,
@@ -135,6 +136,33 @@ function SectionHeader({ title, count }: { title: string; count?: number }) {
     <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
       <h3 className="text-[12px] font-semibold text-slate-300 uppercase tracking-widest">{title}</h3>
       {count !== undefined && <span className="text-[11px] text-slate-600 font-mono">{count} entries</span>}
+    </div>
+  );
+}
+
+function AdminReviewPostureCard({
+  title,
+  summary,
+  items,
+}: {
+  title: string;
+  summary: string;
+  items: Array<{ label: string; value: string }>;
+}) {
+  return (
+    <div className="bg-[#161b22] border border-white/[0.06] rounded-lg px-4 py-4 space-y-3">
+      <div>
+        <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">{title}</div>
+        <p className="text-[12px] text-slate-500 leading-relaxed mt-1">{summary}</p>
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        {items.map((item) => (
+          <div key={item.label} className="bg-[#0d1117]/60 border border-white/[0.04] rounded-lg px-3 py-2">
+            <div className="text-[9px] text-slate-700 font-mono uppercase tracking-wider mb-1">{item.label}</div>
+            <div className="text-[11px] text-slate-300 leading-relaxed">{item.value}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -682,6 +710,9 @@ function ModulesPage() {
   const [target, setTarget] = useState<typeof MODULES_DATA[0] | null>(null);
   const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const blockedModules = mods.filter((mod) => mod.status === "disabled" || mod.status === "emergency-disabled").length;
+  const stagedModules = mods.filter((mod) => mod.status === "staging-only" || mod.status === "mock-only").length;
+  const internalModules = mods.filter((mod) => mod.status === "internal-only").length;
 
   const openToggle = (mod: typeof MODULES_DATA[0]) => {
     setTarget(mod);
@@ -712,6 +743,16 @@ function ModulesPage() {
             This module surface is preview-only. Review staged module posture and blocked toggle paths here, then use the audited admin workflow after approval for any real module activation or shutdown.
           </p>
         </div>
+
+        <AdminReviewPostureCard
+          title="Module Review Posture"
+          summary="Review seeded module state here, but treat every toggle path as workflow-owned. Disabled, staging-only, and internal-only modules stay visible so DS Admin can compare source intent without implying live control."
+          items={[
+            { label: "Blocked Here", value: `${blockedModules} disabled or emergency-disabled modules` },
+            { label: "Preview Only", value: `${stagedModules} staging/mock-safe modules still require audited activation` },
+            { label: "Internal", value: `${internalModules} internal-only modules remain non-user-facing` },
+          ]}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           {mods.map((mod) => (
@@ -950,7 +991,7 @@ function LumaPage() {
       </div>
 
       <div className="flex gap-2">
-        <button disabled title="Use /admin/integrations/luma for the audited Luma test connection" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Test Connection</button>
+        <button disabled title="Use /admin/integrations/luma for the audited Luma test connection" className="px-3 py-1.5 bg-sky-500/12 text-sky-400 border border-sky-500/20 rounded text-[12px] hover:bg-sky-500/20 transition-colors">Test blocked</button>
         <button disabled title="Mock event sync is blocked in this static admin shell" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">Sync Mock Event</button>
         <button disabled title="Use /admin/integration-outbox for outbox readback" className="px-3 py-1.5 bg-white/[0.04] text-slate-300 border border-white/[0.08] rounded text-[12px] hover:bg-white/[0.07] transition-colors">View Outbox</button>
       </div>
@@ -1654,7 +1695,7 @@ function SmileioCard() {
                 : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
             }`}
           >
-            {enabled ? "Disable" : "Enable Integration"}
+            {enabled ? "Disable blocked" : "Enable blocked"}
           </button>
         </div>
       </div>
@@ -1734,7 +1775,7 @@ function SmileioCard() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50"
                 >
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
-                  {testing ? "Testing…" : "Test Connection"}
+                  {testing ? "Testing…" : "Test blocked"}
                 </button>
                 {testResult === "success" && (
                   <span className="text-[12px] text-emerald-400 flex items-center gap-1.5">
@@ -1993,10 +2034,10 @@ function MetaCard() {
           <Badge status={enabled ? "enabled" : "disabled"} />
           <button onClick={() => { setEnabled(!enabled); setTestResult(null); }} disabled title="Meta provider enablement is blocked until DS approval is complete"
             className={`px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors ${
-              enabled ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15"
-                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
+              enabled ? "bg-red-500/8 text-red-400 border-red-500/15 opacity-50 cursor-not-allowed"
+                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 opacity-50 cursor-not-allowed"
             }`}>
-            {enabled ? "Disable" : "Enable Integration"}
+            {enabled ? "Disable blocked" : "Enable blocked"}
           </button>
         </div>
       </div>
@@ -2035,7 +2076,7 @@ function MetaCard() {
                     {tokenRevealed ? "EAABwzLixnjYBO3ZBXk9pXm..." : `EAABwzLix${"•".repeat(20)}k4f2`}
                   </div>
                   <button onClick={() => setTokenRevealed(!tokenRevealed)} disabled title="Meta system token reveal is blocked in this preview"
-                    className="p-2 text-slate-500 hover:text-slate-200 border border-white/[0.06] rounded bg-[#0d1117]/40">
+                    className="p-2 text-slate-500 border border-white/[0.06] rounded bg-[#0d1117]/40 opacity-50 cursor-not-allowed">
                     {tokenRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
@@ -2046,9 +2087,9 @@ function MetaCard() {
               </div>
               <div className="flex items-center gap-3 pt-1">
                 <button onClick={handleTest} disabled title="Meta connection tests are blocked until DS approval is complete"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium transition-colors opacity-50 cursor-not-allowed">
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
-                  {testing ? "Testing…" : "Test Connection"}
+                  {testing ? "Testing…" : "Test blocked"}
                 </button>
                 {testResult === "success" && <span className="text-[12px] text-emerald-400 flex items-center gap-1"><CheckCircle2 size={13} /> Connected · 180ms</span>}
                 {testResult === "error"   && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle size={13} /> Enable integration first</span>}
@@ -2099,8 +2140,8 @@ function MetaCard() {
                   chapter&apos;s page admins.
                 </p>
               </div>
-              <button disabled title="Facebook page connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
-                <Plus size={12} /> Connect Page
+              <button disabled title="Facebook page connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
+                <Plus size={12} /> Connect blocked
               </button>
             </div>
             <div className="bg-[#0d1117]/40 border border-white/[0.05] rounded-lg overflow-hidden">
@@ -2158,8 +2199,8 @@ function MetaCard() {
                 <p className="text-[13px] text-slate-300 font-medium">Instagram Business Accounts</p>
                 <p className="text-[12px] text-slate-500 mt-0.5">Must be linked to a Facebook Page. Enables post publishing and UGC sync (tagged posts, stories).</p>
               </div>
-              <button disabled title="Instagram account connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
-                <Plus size={12} /> Connect Account
+              <button disabled title="Instagram account connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
+                <Plus size={12} /> Connect blocked
               </button>
             </div>
             <div className="bg-[#0d1117]/40 border border-white/[0.05] rounded-lg overflow-hidden">
@@ -2288,10 +2329,10 @@ function HootsuiteCard() {
           <Badge status={enabled ? "enabled" : "disabled"} />
           <button onClick={() => { setEnabled(!enabled); setTestResult(null); }} disabled title="Hootsuite provider enablement is blocked until DS approval is complete"
             className={`px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors ${
-              enabled ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15"
-                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
+              enabled ? "bg-red-500/8 text-red-400 border-red-500/15 opacity-50 cursor-not-allowed"
+                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 opacity-50 cursor-not-allowed"
             }`}>
-            {enabled ? "Disable" : "Enable Integration"}
+            {enabled ? "Disable blocked" : "Enable blocked"}
           </button>
         </div>
       </div>
@@ -2326,7 +2367,7 @@ function HootsuiteCard() {
                     {secretRevealed ? "hs_sec_4Tz8Kp1mQx9Nv3Wr..." : `hs_sec_4Tz${"•".repeat(20)}r9x`}
                   </div>
                   <button onClick={() => setSecretRevealed(!secretRevealed)} disabled title="Hootsuite client-secret reveal is blocked in this preview"
-                    className="p-2 text-slate-500 hover:text-slate-200 border border-white/[0.06] rounded bg-[#0d1117]/40">
+                    className="p-2 text-slate-500 border border-white/[0.06] rounded bg-[#0d1117]/40 opacity-50 cursor-not-allowed">
                     {secretRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
@@ -2335,14 +2376,14 @@ function HootsuiteCard() {
                 <div className="text-[10px] text-slate-700 font-mono uppercase tracking-wider mb-1">OAuth Status</div>
                 <div className="flex items-center gap-2">
                   <Badge status="inactive" label="not authorized" />
-                  <button disabled title="OAuth authorization is blocked until hosted secret ownership is approved" className="text-[11px] text-sky-400 hover:text-sky-300 transition-colors font-medium">Authorize via OAuth →</button>
+                  <button disabled title="OAuth authorization is blocked until hosted secret ownership is approved" className="text-[11px] text-sky-400 transition-colors font-medium opacity-50 cursor-not-allowed">OAuth blocked</button>
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-1">
                 <button onClick={handleTest} disabled title="Hootsuite connection tests are blocked until DS approval is complete"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium transition-colors opacity-50 cursor-not-allowed">
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
-                  {testing ? "Testing…" : "Test Connection"}
+                  {testing ? "Testing…" : "Test blocked"}
                 </button>
                 {testResult === "success" && <span className="text-[12px] text-emerald-400 flex items-center gap-1"><CheckCircle2 size={13} /> Connected · 240ms</span>}
                 {testResult === "error"   && <span className="text-[12px] text-red-400 flex items-center gap-1"><AlertCircle size={13} /> Enable integration first</span>}
@@ -2381,7 +2422,7 @@ function HootsuiteCard() {
                   Staff can compose, approve, and schedule across all at once.
                 </p>
               </div>
-              <button disabled title="Hootsuite stream creation is blocked until integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+              <button disabled title="Hootsuite stream creation is blocked until integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
                 <Plus size={12} /> Add Stream
               </button>
             </div>
@@ -2526,6 +2567,9 @@ function HootsuiteCard() {
 function IntegrationsPage() {
   const FEATURED_IDS = ["smileio", "meta", "hootsuite"];
   const coreIntegrations = INTEGRATIONS_DATA.filter((i) => !FEATURED_IDS.includes(i.id));
+  const disabledProviders = INTEGRATIONS_DATA.filter((integration) => integration.environment === "disabled").length;
+  const stagingProviders = INTEGRATIONS_DATA.filter((integration) => integration.environment === "staging").length;
+  const internalProviders = INTEGRATIONS_DATA.filter((integration) => integration.environment === "internal").length;
 
   return (
     <div className="p-6 space-y-6">
@@ -2535,6 +2579,16 @@ function IntegrationsPage() {
           These provider controls stay visible for DS review, but this integrations surface is preview-only. Connection tests, enablement, syncs, exports, and external writes remain blocked until the audited workflow is approved.
         </p>
       </div>
+
+      <AdminReviewPostureCard
+        title="Provider Review Posture"
+        summary="This page is for DS Admin comparison and launch-readiness review only. Providers stay visible by family, but connection tests, enablement, syncs, exports, and sends remain blocked until the audited integration workflow is approved."
+        items={[
+          { label: "Disabled", value: `${disabledProviders} providers have no live credentials or outbound path` },
+          { label: "Staging", value: `${stagingProviders} providers remain mock-safe or staging-only` },
+          { label: "Internal", value: `${internalProviders} provider surfaces stay DS-only for review` },
+        ]}
+      />
 
       {/* Smile.io featured */}
       <div>
@@ -2600,11 +2654,11 @@ function IntegrationsPage() {
                 </div>
               )}
               <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
-                <button disabled title="Integration tests are blocked until provider credentials are approved" className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">Test</button>
+                <button disabled title="Integration tests are blocked until provider credentials are approved" className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">Test blocked</button>
                 {int.enabled ? (
-                  <button disabled title="Provider logs are available only from the audited integration log surface" className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">View Logs</button>
+                  <button disabled title="Provider logs are available only from the audited integration log surface" className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] transition-colors opacity-50 cursor-not-allowed">View Logs</button>
                 ) : (
-                  <button disabled title="Provider enabling is blocked until DS approval is complete" className="px-2.5 py-1 bg-emerald-500/8 text-emerald-400 border border-emerald-500/15 rounded text-[11px] font-medium hover:bg-emerald-500/15 transition-colors">Enable</button>
+                  <button disabled title="Provider enabling is blocked until DS approval is complete" className="px-2.5 py-1 bg-emerald-500/8 text-emerald-400 border border-emerald-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">Enable blocked</button>
                 )}
               </div>
             </div>
@@ -2656,7 +2710,25 @@ function AuditLogsPage() {
           <option value="warning">Warning</option>
           <option value="error">Error</option>
         </select>
-        <span className="ml-auto text-[11px] text-slate-600 font-mono">{filtered.length} entries</span>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[11px] text-slate-600 font-mono">{filtered.length} entries</span>
+          <button
+            disabled
+            title="Audit export is blocked in this preview; use the audited evidence surfaces for live incident review"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <FileText size={11} />
+            Export Readback
+          </button>
+          <button
+            disabled
+            title="Incident runbook handoff is blocked in this preview"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 text-amber-300 border border-amber-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <Shield size={11} />
+            Open Runbook
+          </button>
+        </div>
       </div>
 
       <div className="bg-[#161b22] border border-white/[0.06] rounded-lg overflow-hidden">
@@ -2713,7 +2785,10 @@ function SystemHealthPage() {
     { name: "BigQuery Connector", status: "unknown" as HealthStatus, uptime: "n/a", latency: "n/a", note: "Warehouse exports disabled" },
   ];
 
-  const overall: HealthStatus = services.some((s) => s.status === "down") ? "down" : services.some((s) => s.status === "degraded") ? "degraded" : "healthy";
+  const healthyCount = services.filter((s) => s.status === "healthy").length;
+  const blockedCount = services.filter((s) => s.status === "unknown").length;
+  const degradedCount = services.filter((s) => s.status === "degraded" || s.status === "down").length;
+  const overall: HealthStatus = "unknown";
   const overallColors = { healthy: "bg-emerald-500/8 border-emerald-500/15 text-emerald-400", degraded: "bg-amber-500/8 border-amber-500/15 text-amber-400", down: "bg-red-500/8 border-red-500/15 text-red-400", unknown: "bg-slate-500/8 border-slate-500/15 text-slate-400" };
 
   return (
@@ -2725,20 +2800,52 @@ function SystemHealthPage() {
         </p>
       </div>
 
+      <AdminReviewPostureCard
+        title="Monitoring Review Posture"
+        summary="Treat this page as seeded monitoring readback, not live production observability. Healthy rows reflect preview posture only, while blocked integrations remain visible so DS Admin can review launch dependencies without implying active ops control."
+        items={[
+          { label: "Healthy in Preview", value: `${healthyCount} seeded services show nominal posture` },
+          { label: "Blocked / Unknown", value: `${blockedCount} services stay disconnected or readback-only` },
+          { label: "Degraded", value: `${degradedCount} services still need follow-up before any live claim` },
+        ]}
+      />
+
       <div className={`flex items-center gap-3 border rounded-lg px-4 py-3 ${overallColors[overall]}`}>
         <HealthDot status={overall} />
         <div>
           <div className="text-[13px] font-bold">
-            {overall === "healthy" ? "All Systems Operational" : overall === "degraded" ? "Partial Degradation Detected" : "System Outage"}
+            Seeded Monitoring Snapshot
           </div>
           <div className="text-[11px] opacity-60 mt-0.5">
-            {services.filter((s) => s.status === "healthy").length} of {services.length} services healthy
+            {healthyCount} of {services.length} services show healthy preview posture; refresh remains blocked in this shell
           </div>
         </div>
-        <button disabled title="System-health refresh is blocked in this static shell" className="ml-auto flex items-center gap-1.5 text-[12px] opacity-60 hover:opacity-100 transition-opacity">
-          <RefreshCw size={12} />
-          Refresh
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            disabled
+            title="System-health refresh is blocked in this static shell"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <RefreshCw size={11} />
+            Refresh
+          </button>
+          <button
+            disabled
+            title="Health-check retries are blocked in this preview shell"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <RotateCcw size={11} />
+            Retry Checks
+          </button>
+          <button
+            disabled
+            title="Monitoring exports are blocked in this preview shell"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <FileText size={11} />
+            Export Snapshot
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -2821,6 +2928,41 @@ function SettingsPage() {
             <span className="text-[13px] text-slate-400 font-mono">{s.value}</span>
           </div>
         ))}
+      </div>
+
+      <div className="bg-[#161b22] border border-white/[0.06] rounded-lg px-5 py-4 space-y-3">
+        <div>
+          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Preview-only admin ops</div>
+          <p className="text-[12px] text-slate-500 leading-relaxed mt-1">
+            Keep these controls visible for DS Admin parity review, but treat every config save, alert test, and settings export as blocked until the audited admin workflow is approved.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            disabled
+            title="Settings saves are blocked in this preview"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <CheckCircle2 size={11} />
+            Save Settings
+          </button>
+          <button
+            disabled
+            title="Alert test sends are blocked in this preview"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-300 border border-amber-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <Bell size={11} />
+            Test Alerts
+          </button>
+          <button
+            disabled
+            title="Settings export is blocked in this preview"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <FileText size={11} />
+            Export Settings
+          </button>
+        </div>
       </div>
 
       <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg p-4">
@@ -3011,6 +3153,8 @@ function ApiKeysPage() {
 
   const activeKeys = keys.filter((k) => k.status === "active");
   const inactiveKeys = keys.filter((k) => k.status === "inactive");
+  const internalKeys = keys.filter((k) => k.environment === "internal").length;
+  const disabledKeys = keys.filter((k) => k.environment === "disabled").length;
 
   const KeyCard = ({ k }: { k: typeof API_KEYS_DATA[0] }) => {
     const isRevealed = revealed[k.id];
@@ -3055,7 +3199,7 @@ function ApiKeysPage() {
                   }
                 }}
                 disabled
-                className="p-2 text-slate-500 hover:text-slate-200 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40"
+                className="p-2 text-slate-500 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40 opacity-50 cursor-not-allowed"
                 title="Key reveal is blocked in this preview"
               >
                 {isRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
@@ -3063,7 +3207,7 @@ function ApiKeysPage() {
               <button
                 onClick={() => gate({ type: "copy", id: k.id, key: k.key })}
                 disabled
-                className="p-2 text-slate-500 hover:text-slate-200 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40"
+                className="p-2 text-slate-500 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40 opacity-50 cursor-not-allowed"
                 title="Key copy is blocked in this preview"
               >
                 {isCopied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
@@ -3107,7 +3251,7 @@ function ApiKeysPage() {
                   onClick={() => gate({ type: "rotate", target: k })}
                   disabled
                   title="Key rotation is blocked in this preview"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                 >
                   <RotateCcw size={11} />
                   Rotate
@@ -3116,7 +3260,7 @@ function ApiKeysPage() {
                   onClick={() => gate({ type: "revoke", target: k })}
                   disabled
                   title="Key revocation is blocked in this preview"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium hover:bg-red-500/15 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                 >
                   <Trash2 size={11} />
                   Revoke
@@ -3142,6 +3286,16 @@ function ApiKeysPage() {
             API keys stay masked in this preview. Reveal, copy, rotate, and revoke controls remain visible for workflow review, but the audited secrets workflow is still blocked here.
           </p>
         </div>
+
+        <AdminReviewPostureCard
+          title="Secrets Review Posture"
+          summary="Use this page to confirm which credentials exist, which environments they belong to, and which workflows remain blocked. Key material stays masked and every sensitive action remains visible for review only."
+          items={[
+            { label: "Active", value: `${activeKeys.length} seeded active keys still stay masked here` },
+            { label: "Disabled", value: `${disabledKeys} keys belong to disabled provider paths` },
+            { label: "Internal", value: `${internalKeys} keys remain DS/internal review only` },
+          ]}
+        />
 
         {/* Active keys */}
         <div className="space-y-3">
@@ -3323,6 +3477,9 @@ function McpPage() {
   const [providers, setProviders] = useState(MCP_PROVIDERS_INIT);
   const [pending, setPending] = useState<{ id: string; field: "writeAccess" | "readAccess" | "connect" } | null>(null);
   const isSuperAdmin = CURRENT_USER_ROLE === "Super Admin";
+  const connectedProviders = providers.filter((provider) => provider.status === "connected").length;
+  const disconnectedProviders = providers.filter((provider) => provider.status === "disconnected").length;
+  const readOnlyProviders = providers.filter((provider) => provider.readAccess && !provider.writeAccess).length;
 
   const handleGateSuccess = () => {
     if (!pending) return;
@@ -3354,6 +3511,16 @@ function McpPage() {
             </p>
           </div>
         </div>
+
+        <AdminReviewPostureCard
+          title="MCP Review Posture"
+          summary="Keep MCP providers visible so DS Admin can review policy and deep-link fidelity, but treat every connection state as preview-only. Read access may be shown, while write access and connection changes remain blocked in this shell."
+          items={[
+            { label: "Connected", value: `${connectedProviders} providers show seeded connection posture` },
+            { label: "Read-only", value: `${readOnlyProviders} providers remain read-only by policy` },
+            { label: "Disconnected", value: `${disconnectedProviders} providers stay visible without activation` },
+          ]}
+        />
 
         {/* Provider Cards */}
         <div className="space-y-4">
@@ -3479,15 +3646,15 @@ function McpPage() {
                   <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
                     {isConnected ? (
                       <>
-                        <button disabled title="MCP connection tests require audited provider credentials" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+                        <button disabled title="MCP connection tests require audited provider credentials" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
                           <RefreshCw size={11} />
                           Test Connection
                         </button>
-                        <button disabled title="MCP logs are available only from the audited integration log surface" className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">
+                        <button disabled title="MCP logs are available only from the audited integration log surface" className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] transition-colors opacity-50 cursor-not-allowed">
                           <FileText size={11} />
                           View Logs
                         </button>
-                        <button disabled title="MCP disconnect is blocked until DS approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium hover:bg-red-500/15 transition-colors ml-auto">
+                        <button disabled title="MCP disconnect is blocked until DS approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed ml-auto">
                           Disconnect
                         </button>
                       </>
@@ -3496,7 +3663,7 @@ function McpPage() {
                         onClick={() => setPending({ id: pr.id, field: "connect" })}
                         disabled
                         title="MCP provider connections stay visible for policy review, but connection changes are blocked in this preview"
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-medium hover:bg-emerald-500/18 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                       >
                         Connect
                       </button>
@@ -3608,8 +3775,21 @@ export function FigmaAdminPanel({
   initialActive?: string;
   onBack?: () => void;
 }) {
-  const [active, setActive] = useState(initialActive);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const routeActiveParam = pathname.startsWith("/staff")
+    ? searchParams.get("adminView")
+    : searchParams.get("view");
+  const routeActive = routeActiveParam ? resolveAdminShellView(routeActiveParam) : null;
+  const active = routeActive ?? resolveAdminShellView(initialActive);
   const page = PAGES[active] ?? PAGES.overview;
+
+  const handleNav = (id: string) => {
+    router.replace(buildAdminShellHref(id, pathname, searchParams.toString()), {
+      scroll: false,
+    });
+  };
 
   const renderPage = () => {
     switch (active) {
@@ -3631,7 +3811,7 @@ export function FigmaAdminPanel({
 
   return (
     <div className="flex min-h-screen bg-[#0d1117] overflow-hidden" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
-      <Sidebar active={active} onNav={setActive} onBack={onBack} />
+      <Sidebar active={active} onNav={handleNav} onBack={onBack} />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
         <Header title={page.title} subtitle={page.subtitle} />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
@@ -3640,4 +3820,23 @@ export function FigmaAdminPanel({
       </div>
     </div>
   );
+}
+
+function resolveAdminShellView(view: string | null | undefined): string {
+  if (!view) return "overview";
+  return Object.prototype.hasOwnProperty.call(PAGES, view) ? view : "overview";
+}
+
+function buildAdminShellHref(active: string, pathname: string, search: string): string {
+  const params = new URLSearchParams(search);
+
+  if (pathname.startsWith("/staff")) {
+    params.set("view", "admin");
+    params.set("adminView", active);
+  } else {
+    params.set("view", active);
+  }
+
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }

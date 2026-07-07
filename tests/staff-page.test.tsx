@@ -126,13 +126,17 @@ describe("staff page", () => {
     expect(html).toContain("High School");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
-    expect(html).toContain("Export");
-    expect(html).toContain("pr-24");
-    expect(html).toContain("sm:pr-[15rem]");
+    expect(html).toContain("Export blocked");
+    expect(html).toContain("pr-[11rem]");
+    expect(html).toContain("sm:pr-[16rem]");
+    expect(html).toContain("lg:pr-[18rem]");
+    expect(html).toContain("xl:pr-[19rem]");
     expect(html).toContain("pointer-events-none");
-    expect(html).toContain("pointer-events-none ml-auto flex min-w-0 flex-none items-center justify-end gap-2 sm:gap-3");
+    expect(html).toContain(
+      "pointer-events-none ml-auto min-w-0 flex-none items-center justify-end hidden md:flex max-w-[8.5rem] lg:max-w-[10rem] xl:max-w-[11.5rem]",
+    );
     expect(html).toContain("truncate text-xs font-semibold text-red-300");
-    expect(html).toContain("hidden h-7 w-7 flex-shrink-0");
+    expect(html).not.toContain("w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-sidebar");
     expect(html).not.toContain(">TEST Chapters<");
     expect(html).not.toContain(">TEST Campaigns<");
     expect(html).not.toContain(">TEST Proof / UGC<");
@@ -270,6 +274,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Story link ingestion is blocked until proof-review writes are approved");
     expect(html).toContain("provider fetch and queue writes are blocked in this preview");
+    expect(html).toContain("Approved (2)");
     expect(html).toContain("TEST Rush Month tabling");
     expect(html).toContain("TEST Priya Nair");
     expect(source).toContain("TEST Best Practice: QR Lead Capture");
@@ -299,6 +304,26 @@ describe("staff page", () => {
     expect(html).toContain("Open Builder");
   });
 
+  it("keeps best-practice sharing controls visibly blocked inside the staff library surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "best_practices" }),
+      }),
+    );
+
+    expect(html).toContain("Best-practice sharing stays visible for review");
+    expect(html).toContain("feed publishing, coach outreach, and bookmarking remain blocked in this preview");
+    expect(html).toContain("TEST QR Code Lead Capture at Multi-Event Weekend");
+    expect(html).toContain("TEST Stanford University");
+  });
+
   it("keeps the admin handoff visible but blocked for non-admin staff", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -315,8 +340,9 @@ describe("staff page", () => {
 
     expect(html).toContain("Admin access blocked");
     expect(html).toContain("This Staff Command Center keeps the Admin handoff visible");
+    expect(html).toContain("admin preview route");
     expect(html).toContain("Current posture");
-    expect(html).not.toContain("Enter Admin Panel");
+    expect(html).not.toContain("Open Admin preview");
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
@@ -364,10 +390,12 @@ describe("staff page", () => {
 
     expect(html).toContain("Preview Survey");
     expect(html).toContain("Preview NPS Survey");
+    expect(html).toContain("Send blocked");
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
     expect(html).toContain("no note save, intervention write, or follow-up write runs from this drawer");
+    expect(html).toContain("disabled:cursor-not-allowed");
     expect(html).not.toContain(">Send NPS Survey<");
   });
 
@@ -385,10 +413,14 @@ describe("staff page", () => {
       }),
     );
 
-    expect(html).toContain("Restricted Access");
-    expect(html).toContain("Enter Admin Panel");
+    expect(html).toContain("Restricted Preview Access");
+    expect(html).toContain("Preview as");
+    expect(html).toContain("Open Admin preview");
     expect(html).toContain("DS Admin");
     expect(html).toContain("Super Admin");
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+    expect(source).toContain("Retry blocked");
+    expect(source).toContain("Previewing as");
   });
 
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {

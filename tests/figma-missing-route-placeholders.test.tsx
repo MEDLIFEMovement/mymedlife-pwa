@@ -6,9 +6,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
+let mockPathname = "/admin";
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/admin",
-  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => mockPathname,
+  useRouter: () => ({
+    replace: vi.fn(),
+  }),
+  useSearchParams: () => mockSearchParams,
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
   }),
@@ -44,6 +50,8 @@ function getSignedInActor(email: string) {
 
 describe("Figma missing route placeholders", () => {
   afterEach(() => {
+    mockPathname = "/admin";
+    mockSearchParams = new URLSearchParams();
     vi.clearAllMocks();
   });
 
@@ -86,15 +94,29 @@ describe("Figma missing route placeholders", () => {
 
     const modulesHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="modules" />);
     expect(modulesHtml).toContain("This module surface is preview-only.");
+    expect(modulesHtml).toContain("Module Review Posture");
+    expect(modulesHtml).toContain("disabled or emergency-disabled modules");
     expect(source).toContain("Module changes are blocked in this static admin shell; use the audited admin workflow after approval");
 
     const integrationsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="integrations" />);
     expect(integrationsHtml).toContain("this integrations surface is preview-only");
+    expect(integrationsHtml).toContain("Provider Review Posture");
+    expect(integrationsHtml).toContain("providers have no live credentials or outbound path");
     expect(integrationsHtml).toContain("Smile.io provider enablement is blocked until DS approval is complete");
     expect(integrationsHtml).toContain("Meta App Review and OAuth scope setup stay visible for DS review");
+    expect(integrationsHtml).toContain("Enable blocked");
+    expect(integrationsHtml).toContain("Test blocked");
+    expect(integrationsHtml).toContain("OAuth blocked");
+    expect(integrationsHtml).not.toContain("Enable Integration");
+    expect(integrationsHtml).not.toContain("Test Connection");
+    expect(source).toContain("Connect blocked");
+    expect(source).not.toContain("Connect Page");
+    expect(source).not.toContain("Connect Account");
     expect(source).toContain("Publishing remains blocked in this preview");
 
     const apiKeysHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="apikeys" />);
+    expect(apiKeysHtml).toContain("Secrets Review Posture");
+    expect(apiKeysHtml).toContain("seeded active keys still stay masked here");
     expect(apiKeysHtml).toContain("API keys stay masked in this preview");
     expect(apiKeysHtml).toContain("Key material stays masked in this preview until the audited secrets workflow is approved.");
     expect(source).toContain("Key rotation is blocked in this preview");
@@ -102,8 +124,25 @@ describe("Figma missing route placeholders", () => {
 
     const mcpHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="mcp" />);
     expect(mcpHtml).toContain("MCP Access Policy");
+    expect(mcpHtml).toContain("MCP Review Posture");
+    expect(mcpHtml).toContain("providers remain read-only by policy");
     expect(source).toContain("MCP write access is blocked in this preview");
     expect(source).toContain("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview");
+  });
+
+  it("honors DS Admin route-backed view params for direct deep-link review", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+
+    mockPathname = "/admin";
+    mockSearchParams = new URLSearchParams("view=mcp");
+    const mcpHtml = renderToStaticMarkup(<FigmaAdminPanel />);
+    expect(mcpHtml).toContain(">MCP Connections</h1>");
+    expect(mcpHtml).toContain("MCP Access Policy");
+
+    mockSearchParams = new URLSearchParams("view=apikeys");
+    const keysHtml = renderToStaticMarkup(<FigmaAdminPanel />);
+    expect(keysHtml).toContain(">API Keys</h1>");
+    expect(keysHtml).toContain("API keys stay masked in this preview");
   });
 
   it("keeps admin points policy controls visibly blocked instead of acting like a live editor", async () => {
@@ -126,6 +165,9 @@ describe("Figma missing route placeholders", () => {
     const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
 
     const healthHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="health" />);
+    expect(healthHtml).toContain("Monitoring Review Posture");
+    expect(healthHtml).toContain("Seeded Monitoring Snapshot");
+    expect(healthHtml).toContain("healthy preview posture");
     expect(healthHtml).toContain("This system-health panel is preview-only.");
     expect(healthHtml).toContain("System-health refresh is blocked in this static shell");
 
@@ -204,7 +246,7 @@ describe("Figma missing route placeholders", () => {
     const html = renderToStaticMarkup(await SltPrepPage());
 
     expect(html).not.toContain("Figma page missing - implementation blocked");
-    expect(html).toContain("Peru SLT");
+    expect(html).toContain("TEST Peru SLT");
     expect(html).toContain("What is complete, missing, or due soon?");
   });
 
@@ -225,5 +267,8 @@ describe("Figma missing route placeholders", () => {
     expect(html).not.toContain("Figma page missing - implementation blocked");
     expect(html).toContain("Complete next step");
     expect(html).toContain("Next deadline");
+    expect(html).toContain('href="/app/stories"');
+    expect(html).toContain('href="/app/points"');
+    expect(html).not.toContain('href="/rush-month/events"');
   });
 });

@@ -140,8 +140,9 @@ describe("leader page", () => {
     );
 
     expect(html).toContain("Event Performance");
-    expect(html).toContain("Create Event");
+    expect(html).toContain("Create Event Preview");
     expect(html).toContain("All Events — June 2025");
+    expect(html).toContain("attendance readback");
     expect(html).not.toContain("Chapter Metrics — June 2025");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Luma readback");
@@ -178,8 +179,11 @@ describe("leader page", () => {
     expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("Ranked Chapter Leaderboard");
     expect(html).toContain("Points Score");
-    expect(html).toContain("Organizational Average");
-    expect(html).toContain("Boston College vs. National");
+    expect(html).toContain("TEST benchmark preview.");
+    expect(html).toContain("TEST Organizational Average");
+    expect(html).toContain("TEST Boston College vs. National Preview");
+    expect(html).toContain("TEST National Leader Preview");
+    expect(html).toContain("TEST benchmark idea:");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Your Chapter");
     expect(html).not.toContain("Chapter Metrics — June 2025");
@@ -223,7 +227,7 @@ describe("leader page", () => {
     ["training", "Leadership Training"],
     ["values", "MEDLIFE Values"],
     ["leaders", "Current Leaders"],
-    ["create_event", "Create New Event"],
+    ["create_event", "Create Event Preview"],
     ["stories", "MEDLIFE Stories"],
   ])("keeps the %s leader view route-backed inside the restored Figma shell", async (view, expectedCopy) => {
     const actorModule = await import("@/services/local-actor-context");
@@ -248,10 +252,39 @@ describe("leader page", () => {
     expect(html).toContain(expectedCopy);
 
     if (view === "member_profile") {
-      expect(html).toContain("Promote to Officer");
-      expect(html).toContain("Assign Leadership Action");
-      expect(html).toContain("Nominate for E-Board");
-      expect(html).toContain("Add Note");
+      expect(html).toContain("Preview Promotion");
+      expect(html).toContain("Preview Leadership Action");
+      expect(html).toContain("Preview E-Board Succession");
+      expect(html).toContain("Preview Note");
+    }
+
+    if (view === "committees") {
+      const source = readFileSync(
+        join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
+        "utf8",
+      );
+      expect(html).toContain("Preview Committee Setup");
+      expect(source).toContain("Preview Chair Assignment");
+      expect(source).toContain("Preview Committee Review");
+    }
+
+    if (view === "succession") {
+      expect(html).toContain("Preview Candidate Nomination");
+      expect(html).toContain("Preview Transition Plan");
+      expect(html).toContain("TEST succession preview.");
+    }
+
+    if (view === "values") {
+      expect(html).toContain("Preview Values Interview");
+      expect(html).toContain("Preview Interview Scheduling");
+      expect(html).toContain("Preview Interview Form");
+      expect(html).toContain("TEST values preview.");
+    }
+
+    if (view === "training") {
+      expect(html).toContain("Preview Resource Intake");
+      expect(html).toContain("Preview Video");
+      expect(html).toContain("Preview Deck");
     }
   });
 
@@ -285,6 +318,9 @@ describe("leader page", () => {
       }),
     );
     expect(impactHtml).toContain("TEST impact preview.");
+    expect(impactHtml).toContain("Preview Impact Share");
+    expect(impactHtml).toContain("Preview Bridge Video");
+    expect(impactHtml).toContain("Preview Field Update");
     expect(impactHtml).toContain("Impact story sharing is blocked in this preview until feed-sharing approval is complete.");
     expect(impactHtml).toContain("Field-update submission is blocked in this preview until write approval is complete.");
     expect(impactHtml).toContain("TEST Rosa M.");
@@ -298,6 +334,7 @@ describe("leader page", () => {
       }),
     );
     expect(bridgeHtml).toContain("TEST bridge-video preview.");
+    expect(bridgeHtml).toContain("Preview Submission");
     expect(bridgeHtml).toContain("Bridge-video submission is blocked in this preview until write approval is complete.");
 
     const feedHtml = renderToStaticMarkup(
@@ -310,6 +347,8 @@ describe("leader page", () => {
     expect(feedHtml).toContain("TEST analytics preview.");
     expect(feedHtml).toContain("Feed sharing is blocked in this preview until staff approval is complete.");
     expect(feedHtml).toContain("Direct member outreach is blocked in this preview until messaging approval is complete.");
+    expect(feedHtml).toContain("Preview Feed Share");
+    expect(feedHtml).toContain("Preview Member Prompt");
     expect(feedHtml).toContain("TEST How to Run a Successful Info Night");
 
     const valuesHtml = renderToStaticMarkup(
@@ -319,9 +358,46 @@ describe("leader page", () => {
         }),
       }),
     );
+    expect(valuesHtml).toContain("TEST values preview.");
     expect(valuesHtml).toContain("Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
     expect(valuesHtml).toContain("Interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
     expect(valuesHtml).toContain("The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists.");
+
+    const successionHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "succession",
+        }),
+      }),
+    );
+    expect(successionHtml).toContain("TEST succession preview.");
+    expect(successionHtml).toContain("TEST Appoint Member Engagement chair");
+    expect(successionHtml).toContain("TEST President succession announced");
+
+    const trainingHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "training",
+        }),
+      }),
+    );
+    expect(trainingHtml).toContain("TEST training preview.");
+    expect(trainingHtml).toContain("TEST Featured Resources");
+    expect(trainingHtml).toContain("TEST How to Run Your First Committee as Chair");
+    expect(trainingHtml).toContain("TEST MEDLIFE Chapter Leadership Guide — Full Onboarding");
+    expect(trainingHtml).toContain("Preview Link");
+    expect(trainingHtml).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
+
+    const storiesHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "stories",
+        }),
+      }),
+    );
+    expect(storiesHtml).toContain("TEST stories preview.");
+    expect(storiesHtml).toContain("Preview Story Intake");
+    expect(storiesHtml).toContain("TEST MEDLIFE Stories preview");
   });
 
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
@@ -351,9 +427,26 @@ describe("leader page", () => {
     expect(source).toContain("Workspace switching is handled by the account menu above this shell.");
     expect(source).toContain("Committee chair assignment is blocked in this preview.");
     expect(source).toContain("Committee detail drill-in is not wired yet.");
+    expect(source).toContain("TEST benchmark preview. Sample chapter comparisons stay visible for review, but they do not count as live chapter rankings, rollout evidence, or production planning truth.");
+    expect(source).toContain("TEST Organizational Average");
+    expect(source).toContain("TEST Regional Average");
+    expect(source).toContain("TEST Boston College vs. National Preview");
+    expect(source).toContain("TEST National Leader Preview");
+    expect(source).toContain("TEST benchmark idea:");
+    expect(source).toContain("Open Bridge Video Previews");
+    expect(source).toContain("Member roster creation is blocked in this preview. Use the visible leaderboard only for TEST comparison review.");
     expect(source).toContain("TEST impact preview. Sample stories and metrics stay visible for review, but they do not count as live chapter impact or rollout evidence.");
+    expect(source).toContain("Preview Impact Share");
+    expect(source).toContain("Preview Bridge Video");
+    expect(source).toContain("Preview Field Update");
     expect(source).toContain("TEST bridge-video preview. Sample submissions stay visible for review, but no playback, featuring, or publishing is live.");
+    expect(source).toContain("Preview Submission");
+    expect(source).toContain("Preview Video");
+    expect(source).toContain("Preview Feed Share");
+    expect(source).toContain("Preview Feature");
+    expect(source).toContain("Preview →");
     expect(source).toContain("TEST analytics preview. Sample posts, engagement, and outreach cues stay visible for review, but they do not count as live feed evidence or messaging authority.");
+    expect(source).toContain("Preview Member Prompt");
     expect(source).toContain('subject:"TEST Rosa M."');
     expect(source).toContain('location:"TEST Pisac, Cusco Region"');
     expect(source).toContain("Bridge video sharing is blocked in this preview until staff approval is complete.");
@@ -370,11 +463,31 @@ describe("leader page", () => {
     expect(source).toContain("No live task was created, no reminders were sent, and no member feed changed in this preview.");
     expect(source).toContain("Promotion Preview Ready");
     expect(source).toContain("No live role, pipeline, or chapter visibility changed in this preview.");
+    expect(source).toContain("TEST promotion preview. Leadership development still depends on human review, so this flow only previews how a member could move up.");
+    expect(source).toContain("Preview role path");
+    expect(source).toContain("Confirm Values & Preview Promotion");
+    expect(source).toContain("TEST values interview completed in preview");
+    expect(source).toContain("Preview Leadership Action");
+    expect(source).toContain("Preview E-Board Succession");
+    expect(source).toContain("TEST strong E-Board candidate preview");
     expect(source).toContain("Transition Plan Preview Ready");
     expect(source).toContain("No live plan was activated, no nominees were notified, and no transition tasks were published from this preview.");
     expect(source).toContain("This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.");
     expect(source).toContain("Preview Plan");
+    expect(source).toContain("Preview Transition Plan");
+    expect(source).toContain("TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.");
+    expect(source).toContain("TEST Appoint Member Engagement chair");
+    expect(source).toContain("TEST Full E-Board transition complete");
+    expect(source).toContain("TEST values preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.");
+    expect(source).not.toContain("Activate Transition Plan");
     expect(source).toContain("Preview Promotion");
+    expect(source).toContain("Preview Candidate Nomination");
+    expect(source).toContain("Preview Transition Plan");
+    expect(source).toContain("Preview Values Interview");
+    expect(source).toContain("Preview Interview Scheduling");
+    expect(source).toContain("Preview Values Interview Form");
+    expect(source).toContain("No live invite, contact sync, form submission, or provider handoff is sent from this preview.");
+    expect(source).toContain("toTestLabel");
   });
 
   it("routes member-profile leadership actions into preview flows and blocks note writes honestly", () => {
@@ -391,5 +504,38 @@ describe("leader page", () => {
     expect(source).toContain("const [selectedMembers, setSelectedMembers] = useState<number[]>(initialMemberIds);");
     expect(source).toContain("const [selectedMemberId, setSelectedMemberId] = useState<number | null>(initialMemberId);");
     expect(source).toContain("Leader note saving is blocked in this preview until the audited note workflow is approved.");
+    expect(source).toContain("Preview Note");
+  });
+
+  it("keeps the leader training resources shell source-faithful while making preview-only states obvious", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-training-screen.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("Leadership & Resources Hub");
+    expect(source).toContain("TEST training preview. Sample leadership-development resources stay visible for review, but no publishing, playback, deck viewing, external opens, or chapter sharing is live.");
+    expect(source).toContain("TEST Featured Resources");
+    expect(source).toContain("All TEST Resources");
+    expect(source).toContain("TEST What Is Servant Leadership? A MEDLIFE Framework");
+    expect(source).toContain("TEST How to Run Your First Committee as Chair");
+    expect(source).toContain("TEST MEDLIFE Chapter Leadership Guide — Full Onboarding");
+    expect(source).toContain("TEST AshokaU — Social Innovation Leadership Resources");
+    expect(source).toContain("Preview Link");
+    expect(source).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
+    expect(source).not.toContain('href={r.url}');
+  });
+
+  it("keeps leader stories controls preview-safe and TEST-labeled instead of sounding live", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-stories-screen.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("Preview Story Intake");
+    expect(source).toContain("Preview Save");
+    expect(source).toContain("Preview Source on");
+    expect(source).toContain("TEST stories preview. Sample chapter, field, and student stories stay visible for review, but no save, source-open, publish, or feed sync action is live.");
+    expect(source).toContain("TEST MEDLIFE Stories preview — curated by staff · requires approval before publishing");
   });
 });

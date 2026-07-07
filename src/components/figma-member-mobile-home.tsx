@@ -13,7 +13,7 @@ import {
   ArrowRight, Plus, Flag, Activity, MapPin,
   Target, Zap, Eye, Settings,
   Share2, QrCode, Download, UserCheck, Copy,
-  Heart, ExternalLink, Play, Bookmark, Sparkles, ArrowLeft
+  Heart, ExternalLink, Play, Bookmark, Sparkles, ArrowLeft, Backpack
 } from "lucide-react";
 
 type Screen =
@@ -26,6 +26,15 @@ export type MemberMobileLaunchScreen = Extract<
   Screen,
   "home" | "events" | "points" | "stories" | "admin"
 >;
+
+type MemberSltPrepEntry = {
+  href: string;
+  tripLabel: string;
+  cityLabel: string;
+  countdownLabel: string;
+  readinessLabel: string;
+  nextStepLabel: string;
+};
 
 type Role = "student" | "leader" | "coach" | "admin";
 
@@ -275,7 +284,7 @@ function AlertBanner({
 function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen) => void }) {
   const items: { id: Screen | "profile"; label: string; Icon: typeof Home }[] = [
     { id: "home",    label: "Home",    Icon: Home },
-    { id: "stories", label: "Stories", Icon: Sparkles },
+    { id: "stories", label: "Stories", Icon: Heart },
     { id: "events",  label: "Events",  Icon: CalendarDays },
     { id: "points",  label: "Points",  Icon: Trophy },
     { id: "profile", label: "Profile", Icon: User },
@@ -312,7 +321,7 @@ function BottomNav({ active, navigate }: { active: Screen; navigate: (s: Screen)
 
         if (routeHref) {
           return (
-            <Link key={idx} href={routeHref} className={className}>
+            <Link key={idx} href={routeHref} className={className} aria-current={isActive ? "page" : undefined}>
               <Icon size={20} strokeWidth={strokeWidth} />
               <span>{label}</span>
             </Link>
@@ -363,9 +372,11 @@ function TopBar({
 function StudentHome({
   navigate,
   setRole,
+  sltPrepEntry,
 }: {
   navigate: (s: Screen) => void;
   setRole: (r: Role) => void;
+  sltPrepEntry?: MemberSltPrepEntry | null;
 }) {
   const allDesignations: UserDesignation[] = ["General Member", "E-Board", "Staff", "DS", "Sales", "Super Admin"];
   const [designation, setDesignation] = useState<UserDesignation>("General Member");
@@ -445,6 +456,35 @@ function StudentHome({
             </div>
           </div>
         </Link>
+
+        {sltPrepEntry ? (
+          <Link
+            href={sltPrepEntry.href}
+            className="mt-3 block rounded-2xl border border-white/15 bg-white/10 px-4 py-4 transition-transform hover:bg-white/15 active:scale-[0.98]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-amber-200 text-xs font-bold uppercase tracking-wide">SLT Prep</p>
+                <p className="mt-0.5 text-white text-base font-extrabold">{sltPrepEntry.tripLabel}</p>
+                <p className="mt-1 text-blue-100 text-xs leading-snug">{sltPrepEntry.cityLabel}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/80">
+                    {sltPrepEntry.countdownLabel}
+                  </span>
+                  <span className="rounded-full border border-amber-300/30 bg-amber-300/15 px-3 py-1 text-[11px] font-semibold text-amber-100">
+                    {sltPrepEntry.readinessLabel}
+                  </span>
+                </div>
+                <p className="mt-3 text-[11px] font-semibold text-white/72">
+                  {sltPrepEntry.nextStepLabel} →
+                </p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-300/15 text-amber-100">
+                <Backpack size={18} />
+              </div>
+            </div>
+          </Link>
+        ) : null}
       </div>
 
       <div className="px-4 pt-5 space-y-6">
@@ -1856,19 +1896,21 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 
 function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
   const badges = [
-    { name: "Rush Starter", desc: "Complete first Rush Month action", earned: true },
-    { name: "Connector", desc: "Invite 10+ members to a chapter event", earned: true },
-    { name: "Evidence Pro", desc: "3 approvals in a single week", earned: false },
-    { name: "Chapter MVP", desc: "Top 3 on leaderboard for 2 weeks", earned: false },
+    { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
+    { name: "TEST Connector", desc: "Invite 10+ TEST members to a TEST chapter event", earned: true },
+    { name: "TEST Evidence Pro", desc: "3 TEST approvals in a single week", earned: false },
+    { name: "TEST Chapter MVP", desc: "Top 3 on the TEST leaderboard for 2 weeks", earned: false },
   ];
 
   return (
     <div className="pb-24">
       {/* Header */}
       <div className="bg-primary px-5 pt-12 pb-8">
-        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">UCLA MEDLIFE</p>
+        <p className="text-blue-200 text-xs font-bold uppercase tracking-wide">TEST UCLA MEDLIFE</p>
         <h1 className="text-white text-2xl font-extrabold mt-1">Points & Recognition</h1>
-        <p className="text-blue-200 text-sm mt-1">Points come from meaningful action.</p>
+        <p className="text-blue-200 text-sm mt-1">
+          Preview-only TEST points come from route-backed member actions.
+        </p>
 
         <div className="mt-5 grid grid-cols-3 gap-3">
           {[
@@ -1929,7 +1971,7 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
 
         {/* Leaderboard */}
         <div>
-          <SLabel>Chapter Leaderboard — Rush Month</SLabel>
+          <SLabel>Chapter Leaderboard — TEST Rush Month</SLabel>
           <Card>
             {[
               { rank: 1, name: "TEST Aisha N.", role: "President", pts: 220 },
@@ -1966,9 +2008,9 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
           <SLabel>Recent Approved Actions</SLabel>
           <div className="space-y-2">
             {[
-              { action: "Share TEST Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago" },
-              { action: "Attend TEST Bruin Walk tabling shift", pts: 15, time: "Approved yesterday" },
-              { action: "Add 5 TEST leads to the chapter spreadsheet", pts: 25, time: "Approved 3d ago" },
+              { action: "Share TEST Rush Week flyer on Instagram", pts: 20, time: "Approved 2h ago in preview" },
+              { action: "Attend TEST Bruin Walk tabling shift", pts: 15, time: "Approved yesterday in preview" },
+              { action: "Add 5 TEST leads to the TEST chapter spreadsheet", pts: 25, time: "Approved 3d ago in preview" },
             ].map((a) => (
               <Card key={a.action} padding={false}>
                 <div className="flex items-center gap-3 p-4">
@@ -1993,8 +2035,9 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
             <div>
               <p className="text-sm font-bold text-foreground">How points work</p>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                Points are earned by completing and submitting evidence for assigned chapter actions.
-                They reflect real engagement — not just showing up, but contributing meaningfully to the mission.
+                TEST points in this member shell are a read-only preview of the event, RSVP,
+                attendance, and action loop. They do not write to a live leaderboard, rewards
+                system, or provider integration.
               </p>
               <Link
                 href="/app/events?source=points"
@@ -2649,6 +2692,10 @@ interface Story {
   isVideo?: boolean; embedUrl?: string; duration?: string; quote?: string; body?: string; filters: StoryFilter[];
 }
 
+function stripTestPrefix(value: string) {
+  return value.replace(/^TEST\s+/i, "").trim();
+}
+
 const stories: Story[] = [
   {
     id: 1, title: "TEST Students in Lima joined a Mobile Clinic this weekend",
@@ -2756,6 +2803,46 @@ const STORY_CATEGORIES: { filter: StoryFilter; emoji: string; short: string; col
   { filter: "Featured",       emoji: "⭐",  short: "Featured", color: "#D97706", bg: "#FEF3C7" },
 ];
 
+function resolveStoryFilter(value?: string | null): StoryFilter {
+  return STORY_FILTERS.find((filter) => filter === value) ?? "For You";
+}
+
+function getStoryById(value?: string | null) {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed)) {
+    return null;
+  }
+
+  return stories.find((story) => story.id === parsed) ?? null;
+}
+
+function buildStoriesHref({
+  filter,
+  storyId,
+}: {
+  filter: StoryFilter;
+  storyId?: number | null;
+}) {
+  const params = new URLSearchParams();
+  params.set("filter", filter);
+
+  if (typeof storyId === "number") {
+    params.set("story", String(storyId));
+  }
+
+  return `/app/stories?${params.toString()}`;
+}
+
+function getStoryPreviewHandle(chapter: string) {
+  const normalized = stripTestPrefix(chapter).toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return `TEST @${normalized || "medlife"}`;
+}
+
+function getStoryPreviewAvatarLabel(chapter: string) {
+  return stripTestPrefix(chapter).charAt(0).toUpperCase() || "M";
+}
+
 function SourceBadge({ source }: { source: StorySource }) {
   const cfg = sourceConfig[source];
   return (
@@ -2799,7 +2886,9 @@ function HeartBtn({ count, storyId, liked, onToggle }: { count: number; storyId:
       <span className="relative transition-transform duration-200">
         <Heart size={16} className="fill-transparent" />
       </span>
-      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px" }}>{count}</span>
+      <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "11px" }}>
+        {count.toLocaleString()} preview likes
+      </span>
     </button>
   );
 }
@@ -2995,7 +3084,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
               <div className="flex items-center gap-4">
                 <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
                 <span className="text-sm text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
-                  {story.views.toLocaleString()} views
+                  {story.views.toLocaleString()} preview views
                 </span>
               </div>
               <span className="text-sm text-muted-foreground">{story.date}</span>
@@ -3033,7 +3122,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
             <div className="mt-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
-                <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} views</span>
+                <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} preview views</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin size={11} /><span>{story.country}</span>
@@ -3087,7 +3176,7 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
             <HeartBtn count={story.likes} storyId={story.id} liked={liked} onToggle={onToggleLike} />
             {/* View count: larger text on mobile */}
             <span className="text-sm md:text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>
-              {story.views >= 1000 ? `${(story.views / 1000).toFixed(1)}k` : story.views} views
+              {story.views >= 1000 ? `${(story.views / 1000).toFixed(1)}k` : story.views} preview views
             </span>
           </div>
           <div className="flex items-center gap-1 text-sm md:text-xs text-muted-foreground">
@@ -3099,21 +3188,17 @@ function StoryCard({ story, liked, onToggleLike, onClick, featured }: {
   );
 }
 
-function StoryModal({ story, liked, onToggleLike, onClose }: {
-  story: Story; liked: boolean; onToggleLike: (id: number) => void; onClose: () => void;
+function StoryModal({ story, liked, onToggleLike, closeHref }: {
+  story: Story; liked: boolean; onToggleLike: (id: number) => void; closeHref: string;
 }) {
-  React.useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => { document.removeEventListener("keydown", handler); };
-  }, [onClose]);
   const cfg = sourceConfig[story.source];
+  const previewSourceLabel = `${cfg.label} preview`;
   return (
     /* ── Mobile: true full-screen story reader ── */
     <div className="fixed inset-0 z-50 flex flex-col bg-card sm:items-center sm:justify-center sm:p-6 sm:bg-foreground/40 sm:backdrop-blur-sm">
 
       {/* Desktop backdrop tap-to-close */}
-      <div className="absolute inset-0 hidden sm:block" onClick={onClose} />
+      <Link href={closeHref} aria-label="Close story reader" className="absolute inset-0 hidden sm:block" />
 
       {/* Reader container */}
       <div className="relative w-full h-full sm:max-w-2xl sm:h-auto sm:max-h-[90vh] sm:rounded-2xl sm:shadow-2xl bg-card overflow-hidden flex flex-col z-10">
@@ -3122,10 +3207,12 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
         {story.isVideo ? (
           <div className="flex-shrink-0 relative">
             <VideoPlayer story={story} />
-            <button onClick={onClose}
-              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white z-10">
+            <Link
+              href={closeHref}
+              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white z-10"
+            >
               <ArrowLeft size={18} />
-            </button>
+            </Link>
           </div>
         ) : (
           <div className="relative flex-shrink-0 bg-muted" style={{ aspectRatio: "16/9" }}>
@@ -3133,14 +3220,18 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
             {/* Close */}
-            <button onClick={onClose}
-              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors">
+            <Link
+              href={closeHref}
+              className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            >
               <ArrowLeft size={18} />
-            </button>
-            <button onClick={onClose}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm hidden sm:flex items-center justify-center text-white hover:bg-black/60 transition-colors">
+            </Link>
+            <Link
+              href={closeHref}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm hidden sm:flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            >
               <X size={16} />
-            </button>
+            </Link>
 
             {/* Source + tag badges bottom-left of image */}
             <div className="absolute bottom-3 left-4 flex items-center gap-2 flex-wrap">
@@ -3148,10 +3239,7 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
               {story.tag && <TagBadge tag={story.tag} />}
               {story.featured && !story.tag && <TagBadge tag="Featured" />}
             </div>
-            {story.duration && (
-              <span className="absolute bottom-3 right-4 bg-black/70 text-white text-xs px-2 py-0.5 rounded"
-                style={{ fontFamily: "'DM Mono', monospace" }}>{story.duration}</span>
-            )}
+            {story.duration && <span className="absolute bottom-3 right-4 bg-black/70 text-white text-xs px-2 py-0.5 rounded" style={{ fontFamily: "'DM Mono', monospace" }}>{story.duration}</span>}
           </div>
         )}
 
@@ -3207,37 +3295,48 @@ function StoryModal({ story, liked, onToggleLike, onClose }: {
               liked={liked}
               onToggle={onToggleLike}
             />
-            <span className="text-xs text-muted-foreground"
-              style={{ fontFamily: "'DM Mono', monospace" }}>
-              {story.views.toLocaleString()} views
-            </span>
+            <span className="text-xs text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>{story.views.toLocaleString()} preview views</span>
           </div>
           <div className="flex items-center gap-2">
-            <button disabled title="Story saving is blocked in this preview" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground px-3 py-2.5 rounded-xl hover:bg-muted transition-colors">
+            <button type="button" disabled title="Story saving is blocked in this preview" className="flex cursor-not-allowed items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm text-muted-foreground opacity-75">
               <Bookmark size={15} />
-              <span className="hidden sm:inline">Save</span>
+              <span className="hidden sm:inline">Save preview</span>
             </button>
-            <button type="button" disabled title="External source links are blocked in this preview until feed-sharing approval is complete"
-              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white opacity-75 cursor-not-allowed"
-              style={{ background: cfg.bg }}>
-              <ExternalLink size={14} /> {cfg.label}
+            <button type="button" disabled title="External source links are blocked in this preview until feed-sharing approval is complete" className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2.5 rounded-xl text-white opacity-75 cursor-not-allowed" style={{ background: cfg.bg }}>
+              <ExternalLink size={14} /> {previewSourceLabel}
             </button>
           </div>
+        </div>
+        <div className="border-t border-border bg-card px-5 pb-4">
+          <p className="pt-3 text-center text-[11px] text-muted-foreground" style={{ fontFamily: "'DM Mono', monospace" }}>Preview only - reactions, save preview, and source previews stay blocked in this reader.</p>
         </div>
       </div>
     </div>
   );
 }
 
-function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
-  const [activeFilter, setActiveFilter] = useState<StoryFilter>("For You");
-  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+function StoriesScreen({
+  navigate,
+  initialFilter,
+  initialStoryId,
+}: {
+  navigate: (s: Screen) => void;
+  initialFilter?: string | null;
+  initialStoryId?: string | null;
+}) {
+  const activeFilter = resolveStoryFilter(initialFilter);
+  const selectedStory = getStoryById(initialStoryId);
+
+  const selectFilter = (filter: StoryFilter) => {
+    window.location.assign(buildStoriesHref({ filter }));
+  };
 
   const toggleLike = (id: number) => {
     void id;
   };
 
   const filtered = stories.filter((s) => s.filters.includes(activeFilter));
+  const closeHref = buildStoriesHref({ filter: activeFilter });
 
   return (
     <>
@@ -3249,10 +3348,10 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                 className="text-xl font-bold text-black"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
-                MEDLIFE Stories
+                Stories
               </h1>
               <p className="mt-1 text-[11px] font-medium text-gray-400">
-                Preview-only student feed
+                MEDLIFE Stories · preview-only student feed
               </p>
             </div>
             <div className="flex items-center gap-1.5">
@@ -3263,8 +3362,11 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
           <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
             {STORY_FILTERS.map((f) => (
               <button
+                type="button"
                 key={f}
-                onClick={() => setActiveFilter(f)}
+                aria-label={`Apply story filter: ${f}`}
+                title={`Apply story filter: ${f}`}
+                onClick={() => selectFilter(f)}
                 className={cn(
                   "flex-shrink-0 px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border transition-all",
                   activeFilter === f
@@ -3286,7 +3388,8 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
         ) : (
           <div>
             {filtered.map((story) => {
-              const handle = story.chapter.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
+              const handle = getStoryPreviewHandle(story.chapter);
+              const storyHref = buildStoriesHref({ filter: activeFilter, storyId: story.id });
 
               return (
                 <div key={story.id} className="border-b border-gray-200">
@@ -3296,7 +3399,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                         className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
                         style={{ background: sourceConfig[story.source].bg.startsWith("linear") ? "#e6683c" : sourceConfig[story.source].bg }}
                       >
-                        {story.chapter[0]}
+                        {getStoryPreviewAvatarLabel(story.chapter)}
                       </div>
                       <div className="leading-tight">
                         <p className="text-[13px] font-semibold text-black">{handle}</p>
@@ -3313,10 +3416,10 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                     </button>
                   </div>
 
-                  <div
-                    className="relative w-full bg-gray-100 cursor-pointer"
+                  <Link
+                    href={storyHref}
+                    className="relative block w-full bg-gray-100 cursor-pointer"
                     style={{ aspectRatio: "1/1" }}
-                    onClick={() => setSelectedStory(story)}
                   >
                     <img
                       src={story.image}
@@ -3330,7 +3433,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </Link>
 
                   <div className="px-3 pt-2">
                     <div className="flex items-center">
@@ -3343,13 +3446,12 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                         >
                           <Heart size={26} className="text-black" />
                         </button>
-                        <button
-                          type="button"
-                          title="Open this story in the local review modal."
-                          onClick={() => setSelectedStory(story)}
+                        <Link
+                          href={storyHref}
+                          title="Open this story in the route-backed preview reader."
                         >
                           <MessageSquare size={24} className="text-black" />
-                        </button>
+                        </Link>
                         <button
                           type="button"
                           disabled
@@ -3378,12 +3480,19 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                       {story.title}
                     </p>
 
-                    <button
-                      onClick={() => setSelectedStory(story)}
+                    <Link
+                      href={storyHref}
                       className="text-[13px] text-gray-400 mt-0.5 block"
                     >
                       Read more
-                    </button>
+                    </Link>
+
+                    <p
+                      className="mt-1 text-[11px] text-gray-400"
+                      style={{ fontFamily: "'DM Mono', monospace" }}
+                    >
+                      Preview only - comments open the reader; shares and saves stay blocked.
+                    </p>
 
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1 pb-3">
                       {story.date}
@@ -3402,7 +3511,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
           story={selectedStory}
           liked={false}
           onToggleLike={toggleLike}
-          onClose={() => setSelectedStory(null)}
+          closeHref={closeHref}
         />
       )}
     </>
@@ -3415,8 +3524,14 @@ const STUDENT_SCREENS: Screen[] = ["home", "campaign", "action", "evidence", "co
 
 export function FigmaMemberMobileHome({
   initialScreen = "home",
+  sltPrepEntry = null,
+  initialStoriesFilter = null,
+  initialStoryId = null,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
+  sltPrepEntry?: MemberSltPrepEntry | null;
+  initialStoriesFilter?: string | null;
+  initialStoryId?: string | null;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3430,7 +3545,7 @@ export function FigmaMemberMobileHome({
 
   const content = () => {
     switch (screen) {
-      case "home": return <StudentHome navigate={navigate} setRole={setRole} />;
+      case "home": return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
       case "campaign": return <CampaignPage navigate={navigate} />;
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
@@ -3440,13 +3555,20 @@ export function FigmaMemberMobileHome({
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
       case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;
       case "checkin": return <CheckInScreen navigate={navigate} />;
-      case "stories": return <StoriesScreen navigate={navigate} />;
+      case "stories":
+        return (
+          <StoriesScreen
+            navigate={navigate}
+            initialFilter={initialStoriesFilter}
+            initialStoryId={initialStoryId}
+          />
+        );
       case "leader": return <LeadershipDashboard navigate={navigate} />;
       case "assign": return <AssignAction navigate={navigate} />;
       case "review": return <ReviewEvidence navigate={navigate} />;
       case "coach": return <CoachDashboard navigate={navigate} />;
       case "admin": return <AdminDashboard navigate={navigate} />;
-      default: return <StudentHome navigate={navigate} setRole={setRole} />;
+      default: return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
     }
   };
 
