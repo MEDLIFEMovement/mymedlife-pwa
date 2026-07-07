@@ -378,10 +378,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     await page.goto("/staff?view=admin");
     await expect(page).toHaveURL(/\/staff\?view=admin$/);
-    await expect(page.getByRole("heading", { name: "Restricted Access" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Restricted Preview Access" })).toBeVisible();
 
     await page.getByRole("radio", { name: "Super Admin" }).check();
-    await page.getByRole("button", { name: "Enter Admin Panel" }).click();
+    await page.getByRole("button", { name: "Open Admin preview" }).click();
 
     const adminSidebar = page.locator("aside").first();
     await expect(adminSidebar.getByRole("button", { name: "Command Center" })).toBeVisible();
