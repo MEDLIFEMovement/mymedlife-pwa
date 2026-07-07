@@ -178,8 +178,11 @@ describe("leader page", () => {
     expect(html).toContain("Chapter Leaderboard");
     expect(html).toContain("Ranked Chapter Leaderboard");
     expect(html).toContain("Points Score");
-    expect(html).toContain("Organizational Average");
-    expect(html).toContain("Boston College vs. National");
+    expect(html).toContain("TEST benchmark preview.");
+    expect(html).toContain("TEST Organizational Average");
+    expect(html).toContain("TEST Boston College vs. National Preview");
+    expect(html).toContain("TEST National Leader Preview");
+    expect(html).toContain("TEST benchmark idea:");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Your Chapter");
     expect(html).not.toContain("Chapter Metrics — June 2025");
@@ -351,6 +354,14 @@ describe("leader page", () => {
     expect(source).toContain("Workspace switching is handled by the account menu above this shell.");
     expect(source).toContain("Committee chair assignment is blocked in this preview.");
     expect(source).toContain("Committee detail drill-in is not wired yet.");
+    expect(source).toContain("TEST benchmark preview. Sample chapter comparisons stay visible for review, but they do not count as live chapter rankings, rollout evidence, or production planning truth.");
+    expect(source).toContain("TEST Organizational Average");
+    expect(source).toContain("TEST Regional Average");
+    expect(source).toContain("TEST Boston College vs. National Preview");
+    expect(source).toContain("TEST National Leader Preview");
+    expect(source).toContain("TEST benchmark idea:");
+    expect(source).toContain("Open Bridge Video Previews");
+    expect(source).toContain("Member roster creation is blocked in this preview. Use the visible leaderboard only for TEST comparison review.");
     expect(source).toContain("TEST impact preview. Sample stories and metrics stay visible for review, but they do not count as live chapter impact or rollout evidence.");
     expect(source).toContain("TEST bridge-video preview. Sample submissions stay visible for review, but no playback, featuring, or publishing is live.");
     expect(source).toContain("TEST analytics preview. Sample posts, engagement, and outreach cues stay visible for review, but they do not count as live feed evidence or messaging authority.");
