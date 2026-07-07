@@ -119,6 +119,9 @@ interface BestPractice {
 
 type Screen = "chapters" | "campaigns" | "events" | "ugc" | "reports" | "admin" | "best-practices" | "sops";
 
+const STAFF_HEADER_ACCOUNT_CLEARANCE = "pr-[11rem] sm:pr-[16rem] lg:pr-[18rem] xl:pr-[19rem]";
+const STAFF_HEADER_ALERT_VISIBILITY = "hidden md:flex max-w-[8.5rem] lg:max-w-[10rem] xl:max-w-[11.5rem]";
+
 /* ─────────────────────────────────────────────────────────── */
 /*  MOCK DATA                                                   */
 /* ─────────────────────────────────────────────────────────── */
@@ -1948,7 +1951,8 @@ function AdminRouteBlocked({ onBack }: { onBack: () => void }) {
           <p className="text-sm text-slate-400 leading-relaxed">
             This Staff Command Center keeps the Admin handoff visible, but only{" "}
             <span className="text-sky-400 font-semibold">DS Admin</span> and{" "}
-            <span className="text-sky-400 font-semibold">Super Admin</span> roles can open the admin preview route.
+            <span className="text-sky-400 font-semibold">Super Admin</span> roles can open the
+            admin preview route.
           </p>
         </div>
 
@@ -2105,7 +2109,7 @@ export function FigmaStaffCommandCenter({
     <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily:"'Plus Jakarta Sans', system-ui, sans-serif" }}>
       {/* Top Bar */}
       <header className="bg-sidebar border-b border-sidebar-border flex-shrink-0 z-30 relative">
-        <div className="flex h-12 items-center gap-4 px-5 pr-32 sm:gap-6 sm:pr-[19rem] lg:pr-[20rem] xl:pr-[21rem]">
+        <div className={`flex h-12 items-center gap-4 overflow-hidden px-5 sm:gap-6 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
           {/* Logo */}
           <a
             href={buildStaffShellHref("chapters", pathname, searchParams.toString())}
@@ -2145,7 +2149,7 @@ export function FigmaStaffCommandCenter({
           </nav>
 
           {/* Right */}
-          <div className="pointer-events-none ml-auto flex min-w-0 max-w-[10rem] flex-none items-center justify-end sm:max-w-[11rem] lg:max-w-[12rem] xl:max-w-[12.5rem]">
+          <div className={`pointer-events-none ml-auto min-w-0 flex-none items-center justify-end ${STAFF_HEADER_ALERT_VISIBILITY}`}>
             <div className="pointer-events-none flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1">
               <AlertTriangle className="w-3 h-3 text-red-400" />
               <span className="truncate text-xs font-semibold text-red-300">2 chapters need intervention</span>
@@ -2155,7 +2159,7 @@ export function FigmaStaffCommandCenter({
       </header>
 
       {/* Page Header */}
-      <div className="flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 pr-32 sm:pr-[19rem] lg:pr-[20rem] xl:pr-[21rem]">
+      <div className={`flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 ${STAFF_HEADER_ACCOUNT_CLEARANCE}`}>
         <div className="min-w-0">
           <h1 className="text-base font-bold text-foreground">{SCREEN_TITLES[activeScreen]}</h1>
           <div className="mt-0.5 text-xs text-muted-foreground">
@@ -2167,7 +2171,7 @@ export function FigmaStaffCommandCenter({
             {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
           </div>
         </div>
-        <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground md:block">Jun 17, 2026 · 14:41 UTC</div>
+        <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground xl:block">Jun 17, 2026 · 14:41 UTC</div>
       </div>
 
       {/* Content */}
