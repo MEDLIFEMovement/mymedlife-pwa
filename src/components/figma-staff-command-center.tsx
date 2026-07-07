@@ -2304,6 +2304,9 @@ function buildStaffCampaignHref(campaign: string, pathname: string, search: stri
 function buildStaffShellHref(screen: Screen, pathname: string, search: string): string {
   const params = new URLSearchParams(search);
   params.set("view", getStaffShellViewParam(screen));
+  if (screen !== "admin") {
+    params.delete("adminView");
+  }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;
 }

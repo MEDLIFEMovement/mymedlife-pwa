@@ -6,9 +6,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
 
+let mockPathname = "/admin";
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/admin",
-  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => mockPathname,
+  useRouter: () => ({
+    replace: vi.fn(),
+  }),
+  useSearchParams: () => mockSearchParams,
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
   }),
@@ -44,6 +50,8 @@ function getSignedInActor(email: string) {
 
 describe("Figma missing route placeholders", () => {
   afterEach(() => {
+    mockPathname = "/admin";
+    mockSearchParams = new URLSearchParams();
     vi.clearAllMocks();
   });
 
@@ -104,6 +112,21 @@ describe("Figma missing route placeholders", () => {
     expect(mcpHtml).toContain("MCP Access Policy");
     expect(source).toContain("MCP write access is blocked in this preview");
     expect(source).toContain("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview");
+  });
+
+  it("honors DS Admin route-backed view params for direct deep-link review", async () => {
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+
+    mockPathname = "/admin";
+    mockSearchParams = new URLSearchParams("view=mcp");
+    const mcpHtml = renderToStaticMarkup(<FigmaAdminPanel />);
+    expect(mcpHtml).toContain(">MCP Connections</h1>");
+    expect(mcpHtml).toContain("MCP Access Policy");
+
+    mockSearchParams = new URLSearchParams("view=apikeys");
+    const keysHtml = renderToStaticMarkup(<FigmaAdminPanel />);
+    expect(keysHtml).toContain(">API Keys</h1>");
+    expect(keysHtml).toContain("API keys stay masked in this preview");
   });
 
   it("keeps admin points policy controls visibly blocked instead of acting like a live editor", async () => {
