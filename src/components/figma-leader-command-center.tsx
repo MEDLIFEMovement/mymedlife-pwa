@@ -875,7 +875,19 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
 
 
 // ─── Screen 4: Member Profile ─────────────────────────────────────
-function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void }) {
+function ProfileScreen({
+  memberId,
+  onBack,
+  onAssignAction,
+  onPromote,
+  onOpenSuccession,
+}: {
+  memberId:number;
+  onBack:()=>void;
+  onAssignAction:(memberId: number)=>void;
+  onPromote:(memberId: number)=>void;
+  onOpenSuccession:(memberId: number)=>void;
+}) {
   const m = MEMBERS.find(x=>x.id===memberId) || MEMBERS[0];
   const wkData = [
     {w:"Apr W1",pts:Math.round(m.pts*0.06)},{w:"Apr W2",pts:Math.round(m.pts*0.08)},
@@ -963,9 +975,16 @@ function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void 
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Leadership Actions</div>
-            <Btn variant="primary"   className="w-full justify-start"><Star size={11}/>Promote to Officer</Btn>
-            <Btn variant="secondary" className="w-full justify-start"><Zap size={11}/>Assign Leadership Action</Btn>
-            <Btn variant="ghost"     className="w-full justify-start"><Flag size={11}/>Nominate for E-Board</Btn>
+            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Promote to Officer</Btn>
+            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Assign Leadership Action</Btn>
+            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Nominate for E-Board</Btn>
+            <Btn
+              variant="secondary"
+              className="w-full justify-start"
+              blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
+            >
+              <Edit size={11}/>Add Note
+            </Btn>
           </div>
         </div>
 
@@ -1014,7 +1033,12 @@ function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void 
           <div className="bg-white rounded-xl border border-slate-200 p-4">
             <div className="flex items-center justify-between mb-2">
               <SH>Coach & Leader Notes</SH>
-              <Btn variant="secondary"><Edit size={10}/>Add Note</Btn>
+              <Btn
+                variant="secondary"
+                blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
+              >
+                <Edit size={10}/>Add Note
+              </Btn>
             </div>
             <div className="bg-slate-50 rounded-lg p-3">
               <div className="text-[10px] text-slate-400 font-mono mb-1">Jun 8, 2025 — Sofia Reyes (President)</div>
@@ -3610,9 +3634,15 @@ const ACTION_TYPES = [
 const LEADER_PREVIEW_ONLY_COPY =
   "This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.";
 
-function AssignActionModal({ onClose }: { onClose: () => void }) {
+function AssignActionModal({
+  onClose,
+  initialMemberIds = [],
+}: {
+  onClose: () => void;
+  initialMemberIds?: number[];
+}) {
   const [step, setStep] = useState<1|2|3>(1);
-  const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<number[]>(initialMemberIds);
   const [selectedAction, setSelectedAction] = useState<string>("");
   const [dueDate, setDueDate] = useState("");
   const [pts, setPts] = useState(0);
@@ -3822,9 +3852,17 @@ const VALUES_CHECKS = [
   { id:"growth",    label:"Growth",                desc:"Actively seeks feedback, reflection, and improvement" },
 ];
 
-function PromoteLeaderModal({ onClose, onViewProfile }: { onClose: () => void; onViewProfile: (id: number) => void }) {
+function PromoteLeaderModal({
+  onClose,
+  onViewProfile,
+  initialMemberId = null,
+}: {
+  onClose: () => void;
+  onViewProfile: (id: number) => void;
+  initialMemberId?: number | null;
+}) {
   const [step, setStep] = useState<1|2|3>(1);
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(initialMemberId);
   const [newLevel, setNewLevel] = useState<string>("");
   const [valuesChecked, setValuesChecked] = useState<string[]>([]);
   const [interviewDone, setInterviewDone] = useState(false);
@@ -4102,6 +4140,8 @@ export function FigmaLeaderCommandCenter({
   const [showAssignAction, setShowAssignAction] = useState(false);
   const [showPromote, setShowPromote] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [assignActionMemberIds, setAssignActionMemberIds] = useState<number[]>([]);
+  const [promoteInitialMemberId, setPromoteInitialMemberId] = useState<number | null>(null);
 
   useEffect(() => {
     setScreen(queryScreen);
@@ -4123,6 +4163,21 @@ export function FigmaLeaderCommandCenter({
     setShowCreateEvent(true);
   };
 
+  const openAssignActionPreview = (memberIds: number[] = []) => {
+    setAssignActionMemberIds(memberIds);
+    setShowAssignAction(true);
+  };
+
+  const openPromotePreview = (memberId?: number) => {
+    setPromoteInitialMemberId(memberId ?? null);
+    setShowPromote(true);
+  };
+
+  const openSuccessionForMember = (memberId: number) => {
+    setSelectedId(memberId);
+    navigateToScreen("succession");
+  };
+
   const handleSelectMember = (id: number) => {
     setSelectedId(id);
     navigateToScreen("profile");
@@ -4131,8 +4186,25 @@ export function FigmaLeaderCommandCenter({
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100"
       style={{ fontFamily:"'Inter', system-ui, sans-serif" }}>
-      {showAssignAction && <AssignActionModal onClose={() => setShowAssignAction(false)}/>}
-      {showPromote && <PromoteLeaderModal onClose={() => setShowPromote(false)} onViewProfile={handleSelectMember}/>}
+      {showAssignAction && (
+        <AssignActionModal
+          initialMemberIds={assignActionMemberIds}
+          onClose={() => {
+            setShowAssignAction(false);
+            setAssignActionMemberIds([]);
+          }}
+        />
+      )}
+      {showPromote && (
+        <PromoteLeaderModal
+          initialMemberId={promoteInitialMemberId}
+          onClose={() => {
+            setShowPromote(false);
+            setPromoteInitialMemberId(null);
+          }}
+          onViewProfile={handleSelectMember}
+        />
+      )}
       <Sidebar active={screen} onNav={navigateToScreen}/>
       <main className="flex-1 overflow-y-auto min-w-0 flex flex-col">
         {/* Top bar */}
@@ -4159,11 +4231,19 @@ export function FigmaLeaderCommandCenter({
           )}
           {screen==="leaderboard" && <LeaderboardScreen onNavigate={navigateToScreen}/>}
           {screen==="members"     && <MembersScreen onSelectMember={handleSelectMember}/>}
-          {screen==="profile"     && <ProfileScreen memberId={selectedId} onBack={()=>navigateToScreen("members")}/>}
+          {screen==="profile"     && (
+            <ProfileScreen
+              memberId={selectedId}
+              onBack={()=>navigateToScreen("members")}
+              onAssignAction={(memberId) => openAssignActionPreview([memberId])}
+              onPromote={openPromotePreview}
+              onOpenSuccession={openSuccessionForMember}
+            />
+          )}
           {screen==="committees"  && (
             <CommitteesScreen
-              onAssignAction={() => setShowAssignAction(true)}
-              onPromote={() => setShowPromote(true)}
+              onAssignAction={() => openAssignActionPreview()}
+              onPromote={() => openPromotePreview()}
               onCreateEvent={handleCreateEvent}
             />
           )}
