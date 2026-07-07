@@ -3327,10 +3327,6 @@ function StoriesScreen({
   const activeFilter = resolveStoryFilter(initialFilter);
   const selectedStory = getStoryById(initialStoryId);
 
-  const selectFilter = (filter: StoryFilter) => {
-    window.location.assign(buildStoriesHref({ filter }));
-  };
-
   const toggleLike = (id: number) => {
     void id;
   };
@@ -3361,12 +3357,13 @@ function StoriesScreen({
           </div>
           <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
             {STORY_FILTERS.map((f) => (
-              <button
+              <Link
                 type="button"
                 key={f}
+                href={buildStoriesHref({ filter: f })}
                 aria-label={`Apply story filter: ${f}`}
                 title={`Apply story filter: ${f}`}
-                onClick={() => selectFilter(f)}
+                aria-current={activeFilter === f ? "page" : undefined}
                 className={cn(
                   "flex-shrink-0 px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border transition-all",
                   activeFilter === f
@@ -3375,7 +3372,7 @@ function StoriesScreen({
                 )}
               >
                 {f}
-              </button>
+              </Link>
             ))}
           </div>
         </div>

@@ -65,6 +65,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=2"');
     expect(html).toContain('aria-label="Apply story filter: Events"');
+    expect(html).toContain('href="/app/stories?filter=Events"');
+    expect(html).toContain('aria-current="page"');
     expect(html).toContain("Preview-only reaction. Likes are not saved, synced, or counted as production proof.");
     expect(html).toContain("preview likes");
     expect(html).toContain("Preview only - comments open the reader; shares and saves stay blocked.");
