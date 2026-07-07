@@ -281,6 +281,9 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(
       page.getByText("Survey sending stays blocked in this preview. Use the NPS buttons to review the chapter survey flow only."),
     ).toBeVisible();
+    await expect(
+      page.getByText("Chapter support notes stay visible for coach review, but no note save, intervention write, or follow-up write runs from this drawer in the current preview."),
+    ).toBeVisible();
   });
 
   test("clicks every staff command center menu item into its matching screen", async ({
