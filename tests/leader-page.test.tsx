@@ -143,7 +143,9 @@ describe("leader page", () => {
     expect(html).toContain("Create Event Preview");
     expect(html).toContain("All Events — June 2025");
     expect(html).toContain("attendance readback");
-    expect(html).toContain("Preview Lead");
+    expect(html).toContain("TEST event readback preview only.");
+    expect(html).toContain("Preview Owner");
+    expect(html).toContain("TEST RSVP vs. Attendance Readback");
     expect(html).not.toContain("Chapter Metrics — June 2025");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Luma readback");
@@ -513,14 +515,20 @@ describe("leader page", () => {
     expect(source).toContain("TEST reviewed Moving Mountains Kickoff event handoff preview");
     expect(source).toContain("TEST reviewed committee co-lead readiness preview");
     expect(source).toContain("Monitor whether each TEST committee is moving the chapter forward. Committee ownership, member review, and attendance follow-through stay preview-only in this shell.");
+    expect(source).toContain("Upcoming Event Previews");
+    expect(source).toContain("TEST RSVP previews");
     expect(source).toContain("Preview Follow-through");
     expect(source).toContain("Preview Succession Review");
-    expect(source).toContain("Preview Member Follow-through");
+    expect(source).toContain("Preview Committee Follow-through");
+    expect(source).toContain("Preview Next Event");
     expect(source).toContain("Keep chair coverage, member review, and attendance follow-through visible here without turning on live committee writes.");
     expect(source).toContain("Track TEST event execution previews, survey posture, committee follow-through, and chapter-wide attendance readback without turning on live event operations.");
-    expect(source).toContain("Preview Lead");
+    expect(source).toContain("TEST event readback preview only.");
+    expect(source).toContain("Preview Owner");
+    expect(source).toContain("TEST RSVP vs. Attendance Readback");
     expect(source).toContain("Event Score Preview —");
     expect(source).toContain("Preview Survey");
+    expect(source).toContain("Close Preview");
   });
 
   it("routes member-profile leadership actions into preview flows and blocks note writes honestly", () => {

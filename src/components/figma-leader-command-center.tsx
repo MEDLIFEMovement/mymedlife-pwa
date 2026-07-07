@@ -1206,10 +1206,10 @@ function CommitteesScreen({
                   {/* Upcoming events list */}
                   <div>
                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
-                      Upcoming Events ({c.upcoming.length})
+                      Upcoming Event Previews ({c.upcoming.length})
                     </div>
                     {c.upcoming.length === 0 ? (
-                      <div className="text-xs text-slate-400 italic">No TEST event previews scheduled. Review committee ownership before staging the next one.</div>
+                      <div className="text-xs text-slate-400 italic">No TEST event previews scheduled. Review committee ownership and attendance follow-through before staging the next one.</div>
                     ) : (
                       <div className="space-y-2">
                         {c.upcoming.map((ev, i) => (
@@ -1219,7 +1219,7 @@ function CommitteesScreen({
                               <div className="text-[10px] text-slate-400 font-mono">{ev.date}</div>
                             </div>
                             {ev.rsvp > 0 && (
-                              <span className="text-[10px] font-bold text-blue-600 ml-2 shrink-0">{ev.rsvp} RSVPs</span>
+                              <span className="text-[10px] font-bold text-blue-600 ml-2 shrink-0">{ev.rsvp} TEST RSVP previews</span>
                             )}
                           </div>
                         ))}
@@ -1285,8 +1285,8 @@ function CommitteesScreen({
                           <Plus size={10}/>Preview Chair Assignment
                         </Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={10}/>Preview Succession Review</Btn>
-                        <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Preview Member Follow-through</Btn>
-                        <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Create Event Preview</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Preview Committee Follow-through</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Preview Next Event</Btn>
                         <Btn
                           variant="ghost"
                           className="w-full justify-start"
@@ -1568,6 +1568,9 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
         </div>
         <Btn variant="primary" onClick={() => setShowCreate(true)}><Plus size={11}/>Create Event Preview</Btn>
       </div>
+      <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-900 leading-relaxed">
+        TEST event readback preview only. RSVP counts, attendance conversion, preview owners, and survey posture stay visible for review here, but they do not write back to live attendance, points, provider sends, or chapter operations.
+      </div>
 
       {/* Summary cards — now includes NPS */}
       <div className="grid grid-cols-6 gap-3">
@@ -1593,7 +1596,7 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
           <table className="w-full text-xs">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                {["Event","Date","Committee","RSVP","Attended","Att. Rate","Status","Event Score","Preview Lead"].map(h=>(
+                {["Event","Date","Committee","RSVP","Attended","Att. Rate","Status","Event Score","Preview Owner"].map(h=>(
                   <th key={h} className="px-3 py-2.5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -1659,7 +1662,7 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
                     <Eye size={10}/>Preview Survey
                   </Btn>
                   <Btn variant="ghost" onClick={() => setNpsEventId(null)}>
-                    <X size={10}/>Close
+                    <X size={10}/>Close Preview
                   </Btn>
                 </div>
               </div>
@@ -1677,7 +1680,7 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
       {/* Charts row */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <SH>RSVP vs. Actual Attendance</SH>
+          <SH>TEST RSVP vs. Attendance Readback</SH>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={chartData} margin={{top:8,right:8,left:-8,bottom:0}}>
               <CartesianGrid key="events-grid" strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)"/>
