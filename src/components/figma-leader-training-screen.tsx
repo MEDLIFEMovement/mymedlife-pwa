@@ -18,10 +18,11 @@ function Pill({ label, color="slate" }: { label:string; color?:string }) {
   return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${m[color]??m.slate}`}>{label}</span>;
 }
 
-function Btn({ children, variant="primary", onClick, className="" }: {
+function Btn({ children, variant="primary", onClick, className="", blockedTitle }: {
   children: React.ReactNode; variant?: "primary"|"secondary"|"ghost"|"danger";
-  onClick?: () => void; className?: string;
+  onClick?: () => void; className?: string; blockedTitle?: string;
 }) {
+  const isBlocked = !onClick;
   const base = "inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 transition-all cursor-pointer whitespace-nowrap";
   const v = {
     primary:   "bg-[#1A56E8] text-white hover:bg-blue-700 shadow-sm",
@@ -29,7 +30,20 @@ function Btn({ children, variant="primary", onClick, className="" }: {
     ghost:     "text-slate-500 hover:text-slate-800 hover:bg-slate-100",
     danger:    "bg-red-50 border border-red-200 text-red-700 hover:bg-red-100",
   }[variant];
-  return <button className={`${base} ${v} ${className}`} onClick={onClick}>{children}</button>;
+  return (
+    <button
+      className={`${base} ${v} ${isBlocked ? "opacity-70 cursor-not-allowed" : ""} ${className}`}
+      onClick={onClick}
+      disabled={isBlocked}
+      title={
+        isBlocked
+          ? blockedTitle ?? "This control stays visible for shell fidelity, but it is blocked in this preview."
+          : undefined
+      }
+    >
+      {children}
+    </button>
+  );
 }
 
 // ─── Leadership & Resources Hub ──────────────────────────────────────
@@ -256,7 +270,7 @@ export function TrainingScreen() {
             Videos, presentations, and external resources to develop MEDLIFE leaders.
           </p>
         </div>
-        <Btn variant="primary"><Plus size={11}/>Add Resource</Btn>
+        <Btn variant="primary" blockedTitle="Resource publishing is blocked in this preview until leadership-content approval is complete."><Plus size={11}/>Add Resource</Btn>
       </div>
 
       {/* Filters row */}
@@ -387,6 +401,9 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
             </a>
           ) : (
             <button
+              type="button"
+              disabled
+              title={r.type==="video" ? "Video playback is blocked in this preview." : "Deck viewing is blocked in this preview."}
               className="flex-1 flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl text-white cursor-pointer hover:opacity-90 transition-opacity"
               style={{ background: meta.color }}>
               {r.type==="video" ? <Play size={11}/> : <Upload size={11}/>}
@@ -404,9 +421,9 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
         {expanded && (
           <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Share this resource</div>
-            <Btn variant="secondary" className="w-full justify-start"><Bell size={10}/>Share to Chapter Feed</Btn>
-            <Btn variant="secondary" className="w-full justify-start"><Users size={10}/>Send to Committee</Btn>
-            <Btn variant="secondary" className="w-full justify-start"><Star size={10}/>Add to Leadership Reading List</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership resource sharing is blocked in this preview until feed approval is complete."><Bell size={10}/>Share to Chapter Feed</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Committee sends are blocked in this preview until messaging approval is complete."><Users size={10}/>Send to Committee</Btn>
+            <Btn variant="secondary" className="w-full justify-start" blockedTitle="Leadership reading-list saves are blocked in this preview until write approval is complete."><Star size={10}/>Add to Leadership Reading List</Btn>
           </div>
         )}
       </div>

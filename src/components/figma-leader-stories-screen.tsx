@@ -1,14 +1,15 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element, @typescript-eslint/no-unused-expressions, react/no-unescaped-entities */
+/* eslint-disable @next/next/no-img-element, react/no-unescaped-entities */
 
 import React, { useState, useEffect } from "react";
 import { Heart, ExternalLink, Play, MapPin, X, ArrowLeft, Bookmark, Sparkles, TrendingUp, Star } from "lucide-react";
 
-function Btn({ children, variant="primary", onClick, className="" }: {
+function Btn({ children, variant="primary", onClick, className="", blockedTitle }: {
   children: React.ReactNode; variant?: "primary"|"secondary"|"ghost"|"danger";
-  onClick?: () => void; className?: string;
+  onClick?: () => void; className?: string; blockedTitle?: string;
 }) {
+  const isBlocked = !onClick;
   const base = "inline-flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 transition-all cursor-pointer whitespace-nowrap";
   const v = {
     primary:   "bg-[#1A56E8] text-white hover:bg-blue-700 shadow-sm",
@@ -16,7 +17,20 @@ function Btn({ children, variant="primary", onClick, className="" }: {
     ghost:     "text-slate-500 hover:text-slate-800 hover:bg-slate-100",
     danger:    "bg-red-50 border border-red-200 text-red-700 hover:bg-red-100",
   }[variant];
-  return <button className={`${base} ${v} ${className}`} onClick={onClick}>{children}</button>;
+  return (
+    <button
+      className={`${base} ${v} ${isBlocked ? "opacity-70 cursor-not-allowed" : ""} ${className}`}
+      onClick={onClick}
+      disabled={isBlocked}
+      title={
+        isBlocked
+          ? blockedTitle ?? "This control stays visible for shell fidelity, but it is blocked in this preview."
+          : undefined
+      }
+    >
+      {children}
+    </button>
+  );
 }
 
 // ─── MEDLIFE Stories ─────────────────────────────────────────────
@@ -77,19 +91,22 @@ function TagBadgeStory({ tag }: { tag:string }) {
   );
 }
 
-function StoryHeartBtn({ count, id, liked, onToggle }: { count:number; id:number; liked:boolean; onToggle:(id:number)=>void }) {
-  const [burst,setBurst] = useState(false);
+function StoryHeartBtn({ count }: { count:number }) {
   return (
-    <button onClick={e=>{e.stopPropagation();onToggle(id);if(!liked){setBurst(true);setTimeout(()=>setBurst(false),400);}}}
-      className={`flex items-center gap-1.5 text-sm transition-all ${liked?"text-blue-600":"text-slate-400 hover:text-blue-600"}`}>
-      <Heart size={15} className={`transition-all ${liked?"fill-blue-600 stroke-blue-600":""} ${burst?"scale-125":""}`}/>
-      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}}>{liked?count+1:count}</span>
+    <button
+      type="button"
+      disabled
+      title="Story reactions stay visible for shell fidelity, but they are preview-only in this leadership view."
+      className="flex items-center gap-1.5 text-sm text-slate-400 opacity-80 cursor-not-allowed"
+    >
+      <Heart size={15}/>
+      <span style={{fontFamily:"'JetBrains Mono',monospace",fontSize:"11px"}}>{count}</span>
     </button>
   );
 }
 
-function MStoryCard({ story, liked, onToggle, onClick, hero }: {
-  story:MStory; liked:boolean; onToggle:(id:number)=>void; onClick:(s:MStory)=>void; hero?:boolean;
+function MStoryCard({ story, onClick, hero }: {
+  story:MStory; onClick:(s:MStory)=>void; hero?:boolean;
 }) {
   if (hero) return (
     <div onClick={()=>onClick(story)}
@@ -116,7 +133,7 @@ function MStoryCard({ story, liked, onToggle, onClick, hero }: {
           </div>
           <div className="mt-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <StoryHeartBtn count={story.likes} id={story.id} liked={liked} onToggle={onToggle}/>
+              <StoryHeartBtn count={story.likes}/>
               <span className="text-xs text-slate-400" style={{fontFamily:"'JetBrains Mono',monospace"}}>{story.views.toLocaleString()} views</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-slate-400">
@@ -146,7 +163,7 @@ function MStoryCard({ story, liked, onToggle, onClick, hero }: {
         <p className="text-xs text-slate-500 leading-relaxed flex-1 overflow-hidden">{story.caption}</p>
         <div className="flex items-center justify-between pt-2 border-t border-slate-100">
           <div className="flex items-center gap-3">
-            <StoryHeartBtn count={story.likes} id={story.id} liked={liked} onToggle={onToggle}/>
+            <StoryHeartBtn count={story.likes}/>
             <span className="text-[11px] text-slate-400" style={{fontFamily:"'JetBrains Mono',monospace"}}>{story.views>=1000?`${(story.views/1000).toFixed(1)}k`:story.views} views</span>
           </div>
           <div className="flex items-center gap-1 text-[11px] text-slate-400"><MapPin size={10}/><span>{story.country}</span></div>
@@ -156,7 +173,7 @@ function MStoryCard({ story, liked, onToggle, onClick, hero }: {
   );
 }
 
-function MStoryModal({ story, liked, onToggle, onClose }: { story:MStory; liked:boolean; onToggle:(id:number)=>void; onClose:()=>void }) {
+function MStoryModal({ story, onClose }: { story:MStory; onClose:()=>void }) {
   useEffect(()=>{
     const h=(e:KeyboardEvent)=>{if(e.key==="Escape")onClose();};
     document.addEventListener("keydown",h);
@@ -216,8 +233,8 @@ function MStoryModal({ story, liked, onToggle, onClose }: { story:MStory; liked:
 
         <div className="flex-shrink-0 p-5 border-t border-slate-100 flex items-center justify-between gap-3">
           <div className="flex items-center gap-4">
-            <StoryHeartBtn count={story.likes} id={story.id} liked={liked} onToggle={onToggle}/>
-            {liked&&<span className="text-xs text-slate-400 animate-pulse">Thanks for engaging ✦</span>}
+            <StoryHeartBtn count={story.likes}/>
+            <span className="text-xs text-slate-400">Reactions are preview-only in this leadership shell.</span>
           </div>
           <div className="flex items-center gap-2">
             <button disabled title="Story saving is blocked in this preview" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 cursor-pointer">
@@ -238,12 +255,7 @@ function MStoryModal({ story, liked, onToggle, onClose }: { story:MStory; liked:
 export function MedlifeStoriesScreen() {
   const allFilters: StoryTag[] = ["For You","My Chapter","Field Stories","Student Stories","Trip Moments","Events","Featured"];
   const [activeFilter, setActiveFilter] = useState<StoryTag>("For You");
-  const [likedIds, setLikedIds]         = useState<Set<number>>(new Set());
   const [selected, setSelected]         = useState<MStory|null>(null);
-
-  const toggleLike = (id:number) => setLikedIds(prev => {
-    const n = new Set(prev); n.has(id)?n.delete(id):n.add(id); return n;
-  });
 
   const filtered      = MSTORIES.filter(s=>s.filters.includes(activeFilter));
   const heroStory     = filtered.find(s=>s.featured);
@@ -251,7 +263,7 @@ export function MedlifeStoriesScreen() {
 
   return (
     <div className="space-y-6">
-      {selected&&<MStoryModal story={selected} liked={likedIds.has(selected.id)} onToggle={toggleLike} onClose={()=>setSelected(null)}/>}
+      {selected&&<MStoryModal story={selected} onClose={()=>setSelected(null)}/>}
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
@@ -263,7 +275,7 @@ export function MedlifeStoriesScreen() {
           <div className="flex items-center gap-1.5 text-xs text-slate-400" style={{fontFamily:"'JetBrains Mono',monospace"}}>
             <span className="w-2 h-2 rounded-full bg-[#3D7A5A] inline-block"/>Live from the field
           </div>
-          <Btn variant="primary"><Sparkles size={11}/>Add Story</Btn>
+          <Btn variant="primary" blockedTitle="Story publishing is blocked in this preview until proof and feed approvals are complete."><Sparkles size={11}/>Add Story</Btn>
         </div>
       </div>
 
@@ -286,9 +298,9 @@ export function MedlifeStoriesScreen() {
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-5">
-          {heroStory&&<MStoryCard story={heroStory} liked={likedIds.has(heroStory.id)} onToggle={toggleLike} onClick={setSelected} hero/>}
+          {heroStory&&<MStoryCard story={heroStory} onClick={setSelected} hero/>}
           {gridStories.map(s=>(
-            <MStoryCard key={s.id} story={s} liked={likedIds.has(s.id)} onToggle={toggleLike} onClick={setSelected}/>
+            <MStoryCard key={s.id} story={s} onClick={setSelected}/>
           ))}
         </div>
       )}
