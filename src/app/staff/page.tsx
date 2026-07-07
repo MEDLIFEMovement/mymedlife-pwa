@@ -52,6 +52,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
       <FigmaStaffCommandCenter
         canAccessAdminPanel={canAccessAdminWorkspace(actor)}
         initialView={resolvedSearchParams?.view}
+        initialCampaign={resolvedSearchParams?.campaign}
       />
     </>
   );
