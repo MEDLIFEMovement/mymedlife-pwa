@@ -66,6 +66,12 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("TEST @uconn");
     expect(html).toContain('href="/app/stories?filter=For+You&amp;story=1"');
     expect(html).toContain("preview likes");
+    expect(html).toContain('aria-current="page"');
+    expect(html).toContain(">Home<");
+    expect(html).toContain(">Stories<");
+    expect(html).toContain(">Events<");
+    expect(html).toContain(">Points<");
+    expect(html).toContain(">Profile<");
     expect(html).not.toContain("Live from the field");
     expect(html).not.toContain("Add Story");
     expect(html).not.toContain("stories published");
