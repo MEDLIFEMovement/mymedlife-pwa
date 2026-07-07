@@ -305,6 +305,17 @@ describe("leader page", () => {
     );
     expect(feedHtml).toContain("Feed sharing is blocked in this preview until staff approval is complete.");
     expect(feedHtml).toContain("Direct member outreach is blocked in this preview until messaging approval is complete.");
+
+    const valuesHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "values",
+        }),
+      }),
+    );
+    expect(valuesHtml).toContain("Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
+    expect(valuesHtml).toContain("Interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
+    expect(valuesHtml).toContain("The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists.");
   });
 
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
@@ -335,6 +346,7 @@ describe("leader page", () => {
     expect(source).toContain("Committee chair assignment is blocked in this preview.");
     expect(source).toContain("Committee detail drill-in is not wired yet.");
     expect(source).toContain("Bridge video sharing is blocked in this preview until staff approval is complete.");
+    expect(source).not.toContain('href="https://www.hubspot.com"');
   });
 
   it("keeps leader assignment, promotion, and succession outcomes preview-only instead of sounding live", () => {
