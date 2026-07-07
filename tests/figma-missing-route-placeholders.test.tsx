@@ -117,6 +117,9 @@ describe("Figma missing route placeholders", () => {
     expect(pointsHtml).toContain("Points System");
     expect(source).toContain("Points policy edits are blocked in this preview until the audited workflow is approved");
     expect(source).toContain("Global point defaults require the workflow-admin save path");
+    expect(source).toContain("Tier notifications, perks, and downstream sync stay preview-only until the audited loyalty workflow is approved.");
+    expect(source).toContain("Blocked — no in-app or push notification is sent from tier changes");
+    expect(source).toContain("Blocked — no lifecycle sync runs from tier changes");
   });
 
   it("keeps system health and settings visible without presenting them as live production ops controls", async () => {
