@@ -363,6 +363,11 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByText("MCP Access Policy")).toBeVisible();
     await expect(page.locator("aside").getByText("MCP Analytics")).toBeVisible();
     await expect(page.locator("aside").getByText("Account menu")).toBeVisible();
+
+    await page.locator("aside").getByRole("button", { name: "Settings", exact: true }).click();
+    await expect(
+      page.getByText("Keep these controls visible for DS Admin parity review, but treat every config save, alert test, and settings export as blocked until the audited admin workflow is approved."),
+    ).toBeVisible();
   });
 
   test("opens the embedded staff admin surface with the DS Admin menu family intact", async ({
