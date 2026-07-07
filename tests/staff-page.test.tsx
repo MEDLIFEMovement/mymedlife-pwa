@@ -329,6 +329,8 @@ describe("staff page", () => {
     expect(html).toContain("Preview NPS Survey");
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
+    expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
+    expect(html).toContain("no note save, intervention write, or follow-up write runs from this drawer");
     expect(html).not.toContain(">Send NPS Survey<");
   });
 

@@ -438,7 +438,6 @@ function NPSSurveyPreview({ onClose }: { onClose: () => void }) {
 /* ─────────────────────────────────────────────────────────── */
 
 export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; onClose: () => void }) {
-  const [note, setNote] = useState("");
   const [showSurvey, setShowSurvey] = useState(false);
 
   const recentEvents = [
@@ -618,12 +617,16 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
           <div>
             <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Coach Note</div>
             <textarea
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              placeholder={`Notes for ${chapter.name}…`}
+              readOnly
+              title="Coach notes stay preview-only in this chapter drawer"
+              value={`Coach notes stay preview-only in this chapter drawer. No note save, intervention status write, or follow-up task write runs for ${chapter.name} from this surface.`}
               className="w-full bg-muted/50 rounded-lg p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 border border-border"
               rows={3}
             />
+            <p className="mt-2 text-[10px] leading-relaxed text-amber-700">
+              Chapter support notes stay visible for coach review, but no note save,
+              intervention write, or follow-up write runs from this drawer in the current preview.
+            </p>
           </div>
         </div>
 
