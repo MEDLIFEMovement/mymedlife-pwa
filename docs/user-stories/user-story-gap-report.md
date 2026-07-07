@@ -6,6 +6,10 @@ Linear planning reference: MED-512
 Purpose: convert the story inventory into practical backlog and launch-truth
 guidance for viability review.
 
+Supporting delivery artifact: `docs/user-stories/delivery-backlog.md` decomposes
+the master inventory into PR-sized UI, data/safety, QA, rollout-evidence, and
+planning slices.
+
 ## Compact Backlog Table
 
 | ID | Persona | Route / surface | Current status | Main blocker |
