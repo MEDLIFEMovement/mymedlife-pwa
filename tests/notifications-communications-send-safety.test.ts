@@ -1,11 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
+import * as rolloutControls from "@/services/admin-rollout-controls-registry";
 import {
   formatNotificationsSendSafetyContract,
   getNotificationsSendSafetyContract,
 } from "@/services/notifications-communications-send-safety";
 
 describe("notifications and communications send safety", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("keeps all notification-looking surfaces out of production proof and live sends", () => {
     const contract = getNotificationsSendSafetyContract();
 
@@ -67,6 +72,34 @@ describe("notifications and communications send safety", () => {
     );
     expect(output).toContain(
       "Stop if a reviewer starts treating local/Test zero-send posture as production proof.",
+    );
+  });
+
+  it("fails closed when the n8n rollout control is missing", () => {
+    vi.spyOn(rolloutControls, "getFeatureFlagDefinition").mockReturnValue(null);
+
+    expect(() => getNotificationsSendSafetyContract()).toThrow(
+      "Missing n8n_send rollout control definition.",
+    );
+  });
+
+  it("fails closed when the n8n rollout control drifts from blocked defaults", () => {
+    vi.spyOn(rolloutControls, "getFeatureFlagDefinition").mockReturnValue({
+      key: "n8n_send",
+      label: "n8n sends",
+      description: "Bad drift",
+      category: "integrations",
+      controlsExternalWrite: true,
+      approvalPolicy: "production_confirmation",
+      defaultEnabledByEnvironment: {
+        local: true,
+        staging: false,
+        production: false,
+      },
+    });
+
+    expect(() => getNotificationsSendSafetyContract()).toThrow(
+      "n8n_send rollout control drifted away from the blocked default.",
     );
   });
 });
