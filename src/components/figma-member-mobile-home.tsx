@@ -3493,6 +3493,13 @@ function StoriesScreen({
                       Read more
                     </Link>
 
+                    <p
+                      className="mt-1 text-[11px] text-gray-400"
+                      style={{ fontFamily: "'DM Mono', monospace" }}
+                    >
+                      Preview only - comments open the reader; shares and saves stay blocked.
+                    </p>
+
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1 pb-3">
                       {story.date}
                     </p>

@@ -67,6 +67,7 @@ describe("member stories and profile pages", () => {
     expect(html).toContain('aria-label="Apply story filter: Events"');
     expect(html).toContain("Preview-only reaction. Likes are not saved, synced, or counted as production proof.");
     expect(html).toContain("preview likes");
+    expect(html).toContain("Preview only - comments open the reader; shares and saves stay blocked.");
     expect(html).toContain("Sharing is blocked in this preview until publishing approval is complete");
     expect(html).toContain("Saving stories is blocked in this preview");
     expect(html).toContain("Story options are blocked in this preview.");
