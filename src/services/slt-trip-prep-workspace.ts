@@ -21,7 +21,7 @@ export type SltTripPrepSectionLink = {
   tone: TripPrepAlertTone;
 };
 
-export const sltTripPrepSubnavItems: ReadonlyArray<{
+const studentSltTripPrepSubnavItems: ReadonlyArray<{
   href: string;
   label: string;
 }> = [
@@ -34,8 +34,28 @@ export const sltTripPrepSubnavItems: ReadonlyArray<{
   { href: "/slt-prep/timeline", label: "Timeline" },
   { href: "/slt-prep/notifications", label: "Alerts" },
   { href: "/slt-prep/profile", label: "Profile" },
-  { href: "/slt-prep/staff", label: "Staff" },
 ];
+
+const staffSltTripPrepSubnavItems: ReadonlyArray<{
+  href: string;
+  label: string;
+}> = [...studentSltTripPrepSubnavItems, { href: "/slt-prep/staff", label: "Staff" }];
+
+export function getSltTripPrepSubnavItems(
+  actor: Pick<LocalActorContext, "audience">,
+): ReadonlyArray<{
+  href: string;
+  label: string;
+}> {
+  switch (actor.audience) {
+    case "coach":
+    case "admin":
+    case "super_admin":
+      return staffSltTripPrepSubnavItems;
+    default:
+      return studentSltTripPrepSubnavItems;
+  }
+}
 
 export const sltTripPrepMobileQuickNavItems: ReadonlyArray<MobileNavigationItem> = [
   { href: "/", label: "Home", helper: "Today" },
