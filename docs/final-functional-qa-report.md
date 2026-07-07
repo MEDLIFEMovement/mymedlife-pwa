@@ -71,7 +71,7 @@ Local click-through for the launch-critical menu path is now pass for member mob
   - Primary admin menu click-through was verified for Overview, Users, Chapters, Modules, Luma Events, Points, Integrations, Audit Logs, System Health, API Keys, and Settings.
   - Route-level admin readback pages were verified for Users, Chapters, Luma, Audit Log, and Integration Outbox.
   - `/app/slt-prep` was verified with a traveler preview actor.
-  - MCP Connections was removed from the primary launch admin menu; MCP Analytics remains in the disabled module group.
+  - MCP Connections remains visible in the primary DS Admin menu as a blocked review surface; MCP Analytics remains in the disabled module group.
   - Footer identity row no longer looks like a fake logout control; logout is handled by the top-right account menu.
   - Unauthorized member access to `/admin` redirects to `/app`.
   - Top-right account menu logout returns to `/login`.
