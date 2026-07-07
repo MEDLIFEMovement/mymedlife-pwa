@@ -2034,8 +2034,8 @@ function MetaCard() {
           <Badge status={enabled ? "enabled" : "disabled"} />
           <button onClick={() => { setEnabled(!enabled); setTestResult(null); }} disabled title="Meta provider enablement is blocked until DS approval is complete"
             className={`px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors ${
-              enabled ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15"
-                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
+              enabled ? "bg-red-500/8 text-red-400 border-red-500/15 opacity-50 cursor-not-allowed"
+                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 opacity-50 cursor-not-allowed"
             }`}>
             {enabled ? "Disable" : "Enable Integration"}
           </button>
@@ -2076,7 +2076,7 @@ function MetaCard() {
                     {tokenRevealed ? "EAABwzLixnjYBO3ZBXk9pXm..." : `EAABwzLix${"•".repeat(20)}k4f2`}
                   </div>
                   <button onClick={() => setTokenRevealed(!tokenRevealed)} disabled title="Meta system token reveal is blocked in this preview"
-                    className="p-2 text-slate-500 hover:text-slate-200 border border-white/[0.06] rounded bg-[#0d1117]/40">
+                    className="p-2 text-slate-500 border border-white/[0.06] rounded bg-[#0d1117]/40 opacity-50 cursor-not-allowed">
                     {tokenRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
@@ -2087,7 +2087,7 @@ function MetaCard() {
               </div>
               <div className="flex items-center gap-3 pt-1">
                 <button onClick={handleTest} disabled title="Meta connection tests are blocked until DS approval is complete"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium transition-colors opacity-50 cursor-not-allowed">
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
                   {testing ? "Testing…" : "Test Connection"}
                 </button>
@@ -2140,7 +2140,7 @@ function MetaCard() {
                   chapter&apos;s page admins.
                 </p>
               </div>
-              <button disabled title="Facebook page connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+              <button disabled title="Facebook page connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
                 <Plus size={12} /> Connect Page
               </button>
             </div>
@@ -2199,7 +2199,7 @@ function MetaCard() {
                 <p className="text-[13px] text-slate-300 font-medium">Instagram Business Accounts</p>
                 <p className="text-[12px] text-slate-500 mt-0.5">Must be linked to a Facebook Page. Enables post publishing and UGC sync (tagged posts, stories).</p>
               </div>
-              <button disabled title="Instagram account connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+              <button disabled title="Instagram account connection is blocked until Meta integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
                 <Plus size={12} /> Connect Account
               </button>
             </div>
@@ -2329,8 +2329,8 @@ function HootsuiteCard() {
           <Badge status={enabled ? "enabled" : "disabled"} />
           <button onClick={() => { setEnabled(!enabled); setTestResult(null); }} disabled title="Hootsuite provider enablement is blocked until DS approval is complete"
             className={`px-3 py-1.5 rounded text-[12px] font-semibold border transition-colors ${
-              enabled ? "bg-red-500/8 text-red-400 border-red-500/15 hover:bg-red-500/15"
-                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 hover:bg-emerald-500/15"
+              enabled ? "bg-red-500/8 text-red-400 border-red-500/15 opacity-50 cursor-not-allowed"
+                      : "bg-emerald-500/8 text-emerald-400 border-emerald-500/15 opacity-50 cursor-not-allowed"
             }`}>
             {enabled ? "Disable" : "Enable Integration"}
           </button>
@@ -2367,7 +2367,7 @@ function HootsuiteCard() {
                     {secretRevealed ? "hs_sec_4Tz8Kp1mQx9Nv3Wr..." : `hs_sec_4Tz${"•".repeat(20)}r9x`}
                   </div>
                   <button onClick={() => setSecretRevealed(!secretRevealed)} disabled title="Hootsuite client-secret reveal is blocked in this preview"
-                    className="p-2 text-slate-500 hover:text-slate-200 border border-white/[0.06] rounded bg-[#0d1117]/40">
+                    className="p-2 text-slate-500 border border-white/[0.06] rounded bg-[#0d1117]/40 opacity-50 cursor-not-allowed">
                     {secretRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
                   </button>
                 </div>
@@ -2376,12 +2376,12 @@ function HootsuiteCard() {
                 <div className="text-[10px] text-slate-700 font-mono uppercase tracking-wider mb-1">OAuth Status</div>
                 <div className="flex items-center gap-2">
                   <Badge status="inactive" label="not authorized" />
-                  <button disabled title="OAuth authorization is blocked until hosted secret ownership is approved" className="text-[11px] text-sky-400 hover:text-sky-300 transition-colors font-medium">Authorize via OAuth →</button>
+                  <button disabled title="OAuth authorization is blocked until hosted secret ownership is approved" className="text-[11px] text-sky-400 transition-colors font-medium opacity-50 cursor-not-allowed">Authorize via OAuth →</button>
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-1">
                 <button onClick={handleTest} disabled title="Hootsuite connection tests are blocked until DS approval is complete"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium hover:bg-sky-500/18 transition-colors disabled:opacity-50">
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[12px] font-medium transition-colors opacity-50 cursor-not-allowed">
                   <RefreshCw size={12} className={testing ? "animate-spin" : ""} />
                   {testing ? "Testing…" : "Test Connection"}
                 </button>
@@ -2422,7 +2422,7 @@ function HootsuiteCard() {
                   Staff can compose, approve, and schedule across all at once.
                 </p>
               </div>
-              <button disabled title="Hootsuite stream creation is blocked until integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+              <button disabled title="Hootsuite stream creation is blocked until integration approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
                 <Plus size={12} /> Add Stream
               </button>
             </div>
@@ -2654,11 +2654,11 @@ function IntegrationsPage() {
                 </div>
               )}
               <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
-                <button disabled title="Integration tests are blocked until provider credentials are approved" className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">Test</button>
+                <button disabled title="Integration tests are blocked until provider credentials are approved" className="px-2.5 py-1 bg-sky-500/10 text-sky-400 border border-sky-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">Test</button>
                 {int.enabled ? (
-                  <button disabled title="Provider logs are available only from the audited integration log surface" className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">View Logs</button>
+                  <button disabled title="Provider logs are available only from the audited integration log surface" className="px-2.5 py-1 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] transition-colors opacity-50 cursor-not-allowed">View Logs</button>
                 ) : (
-                  <button disabled title="Provider enabling is blocked until DS approval is complete" className="px-2.5 py-1 bg-emerald-500/8 text-emerald-400 border border-emerald-500/15 rounded text-[11px] font-medium hover:bg-emerald-500/15 transition-colors">Enable</button>
+                  <button disabled title="Provider enabling is blocked until DS approval is complete" className="px-2.5 py-1 bg-emerald-500/8 text-emerald-400 border border-emerald-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">Enable</button>
                 )}
               </div>
             </div>
@@ -3124,7 +3124,7 @@ function ApiKeysPage() {
                   }
                 }}
                 disabled
-                className="p-2 text-slate-500 hover:text-slate-200 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40"
+                className="p-2 text-slate-500 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40 opacity-50 cursor-not-allowed"
                 title="Key reveal is blocked in this preview"
               >
                 {isRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
@@ -3132,7 +3132,7 @@ function ApiKeysPage() {
               <button
                 onClick={() => gate({ type: "copy", id: k.id, key: k.key })}
                 disabled
-                className="p-2 text-slate-500 hover:text-slate-200 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40"
+                className="p-2 text-slate-500 transition-colors border border-white/[0.06] rounded bg-[#0d1117]/40 opacity-50 cursor-not-allowed"
                 title="Key copy is blocked in this preview"
               >
                 {isCopied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
@@ -3176,7 +3176,7 @@ function ApiKeysPage() {
                   onClick={() => gate({ type: "rotate", target: k })}
                   disabled
                   title="Key rotation is blocked in this preview"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                 >
                   <RotateCcw size={11} />
                   Rotate
@@ -3185,7 +3185,7 @@ function ApiKeysPage() {
                   onClick={() => gate({ type: "revoke", target: k })}
                   disabled
                   title="Key revocation is blocked in this preview"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium hover:bg-red-500/15 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                 >
                   <Trash2 size={11} />
                   Revoke
@@ -3571,15 +3571,15 @@ function McpPage() {
                   <div className="flex gap-2 pt-1 border-t border-white/[0.04]">
                     {isConnected ? (
                       <>
-                        <button disabled title="MCP connection tests require audited provider credentials" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium hover:bg-sky-500/18 transition-colors">
+                        <button disabled title="MCP connection tests require audited provider credentials" className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed">
                           <RefreshCw size={11} />
                           Test Connection
                         </button>
-                        <button disabled title="MCP logs are available only from the audited integration log surface" className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] hover:bg-white/[0.07] transition-colors">
+                        <button disabled title="MCP logs are available only from the audited integration log surface" className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] transition-colors opacity-50 cursor-not-allowed">
                           <FileText size={11} />
                           View Logs
                         </button>
-                        <button disabled title="MCP disconnect is blocked until DS approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium hover:bg-red-500/15 transition-colors ml-auto">
+                        <button disabled title="MCP disconnect is blocked until DS approval is complete" className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/8 text-red-400 border border-red-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed ml-auto">
                           Disconnect
                         </button>
                       </>
@@ -3588,7 +3588,7 @@ function McpPage() {
                         onClick={() => setPending({ id: pr.id, field: "connect" })}
                         disabled
                         title="MCP provider connections stay visible for policy review, but connection changes are blocked in this preview"
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-medium hover:bg-emerald-500/18 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
                       >
                         Connect
                       </button>
