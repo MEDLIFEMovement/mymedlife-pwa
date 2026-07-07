@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { DataSourceNotice } from "@/components/data-source-notice";
 import {
+  ensureVisibleTestLabel,
   SltPrepMiniStat,
   SltPrepSectionCard,
   SltPrepTonePill,
@@ -69,7 +70,9 @@ export default async function SltPrepChecklistDetailPage({
                 <Link href="/slt-prep/checklist" className="text-sm font-semibold text-white/86">
                   ← Checklist
                 </Link>
-                <h1 className="text-lg font-semibold text-white">{workspace.item.title}</h1>
+                <h1 className="text-lg font-semibold text-white">
+                  {ensureVisibleTestLabel(workspace.item.title)}
+                </h1>
               </div>
             </div>
             <div className="px-5 py-5">
@@ -79,7 +82,7 @@ export default async function SltPrepChecklistDetailPage({
                     {workspace.item.category}
                   </p>
                   <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-                    {workspace.summary}
+                    {ensureVisibleTestLabel(workspace.summary)}
                   </p>
                 </div>
                 <SltPrepTonePill
@@ -90,9 +93,17 @@ export default async function SltPrepChecklistDetailPage({
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <SltPrepMiniStat label="Traveler" value={workspace.traveler.firstName} variant="light" />
+                <SltPrepMiniStat
+                  label="Traveler"
+                  value={ensureVisibleTestLabel(workspace.traveler.firstName)}
+                  variant="light"
+                />
                 <SltPrepMiniStat label="Due date" value={workspace.item.dueLabel} variant="light" />
-                <SltPrepMiniStat label="Owner" value={workspace.item.owner} variant="light" />
+                <SltPrepMiniStat
+                  label="Owner"
+                  value={ensureVisibleTestLabel(workspace.item.owner)}
+                  variant="light"
+                />
                 <SltPrepMiniStat
                   label="Readiness"
                   value={`${workspace.readinessScore}%`}
@@ -156,20 +167,24 @@ export default async function SltPrepChecklistDetailPage({
             <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
               <SltPrepSectionCard eyebrow="Why it matters" title="Context for this checkpoint" variant="light">
                 <div className="space-y-4">
-                  <p className="text-sm leading-6 text-slate-600">{workspace.item.whyItMatters}</p>
+                  <p className="text-sm leading-6 text-slate-600">
+                    {ensureVisibleTestLabel(workspace.item.whyItMatters)}
+                  </p>
                   <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                       Evidence requirement
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
-                      {workspace.item.evidenceRequirement}
+                      {ensureVisibleTestLabel(workspace.item.evidenceRequirement)}
                     </p>
                   </div>
                   <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
                       Next step
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{workspace.item.nextStep}</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      {ensureVisibleTestLabel(workspace.item.nextStep)}
+                    </p>
                   </div>
                 </div>
               </SltPrepSectionCard>

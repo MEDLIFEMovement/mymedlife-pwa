@@ -13,7 +13,7 @@ import {
   ArrowRight, Plus, Flag, Activity, MapPin,
   Target, Zap, Eye, Settings,
   Share2, QrCode, Download, UserCheck, Copy,
-  Heart, ExternalLink, Play, Bookmark, Sparkles, ArrowLeft
+  Heart, ExternalLink, Play, Bookmark, Sparkles, ArrowLeft, Backpack
 } from "lucide-react";
 
 type Screen =
@@ -26,6 +26,15 @@ export type MemberMobileLaunchScreen = Extract<
   Screen,
   "home" | "events" | "points" | "stories" | "admin"
 >;
+
+type MemberSltPrepEntry = {
+  href: string;
+  tripLabel: string;
+  cityLabel: string;
+  countdownLabel: string;
+  readinessLabel: string;
+  nextStepLabel: string;
+};
 
 type Role = "student" | "leader" | "coach" | "admin";
 
@@ -363,9 +372,11 @@ function TopBar({
 function StudentHome({
   navigate,
   setRole,
+  sltPrepEntry,
 }: {
   navigate: (s: Screen) => void;
   setRole: (r: Role) => void;
+  sltPrepEntry?: MemberSltPrepEntry | null;
 }) {
   const allDesignations: UserDesignation[] = ["General Member", "E-Board", "Staff", "DS", "Sales", "Super Admin"];
   const [designation, setDesignation] = useState<UserDesignation>("General Member");
@@ -445,6 +456,35 @@ function StudentHome({
             </div>
           </div>
         </Link>
+
+        {sltPrepEntry ? (
+          <Link
+            href={sltPrepEntry.href}
+            className="mt-3 block rounded-2xl border border-white/15 bg-white/10 px-4 py-4 transition-transform hover:bg-white/15 active:scale-[0.98]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-amber-200 text-xs font-bold uppercase tracking-wide">SLT Prep</p>
+                <p className="mt-0.5 text-white text-base font-extrabold">{sltPrepEntry.tripLabel}</p>
+                <p className="mt-1 text-blue-100 text-xs leading-snug">{sltPrepEntry.cityLabel}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold text-white/80">
+                    {sltPrepEntry.countdownLabel}
+                  </span>
+                  <span className="rounded-full border border-amber-300/30 bg-amber-300/15 px-3 py-1 text-[11px] font-semibold text-amber-100">
+                    {sltPrepEntry.readinessLabel}
+                  </span>
+                </div>
+                <p className="mt-3 text-[11px] font-semibold text-white/72">
+                  {sltPrepEntry.nextStepLabel} →
+                </p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-300/15 text-amber-100">
+                <Backpack size={18} />
+              </div>
+            </div>
+          </Link>
+        ) : null}
       </div>
 
       <div className="px-4 pt-5 space-y-6">
@@ -3415,8 +3455,10 @@ const STUDENT_SCREENS: Screen[] = ["home", "campaign", "action", "evidence", "co
 
 export function FigmaMemberMobileHome({
   initialScreen = "home",
+  sltPrepEntry = null,
 }: {
   initialScreen?: MemberMobileLaunchScreen;
+  sltPrepEntry?: MemberSltPrepEntry | null;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3430,7 +3472,7 @@ export function FigmaMemberMobileHome({
 
   const content = () => {
     switch (screen) {
-      case "home": return <StudentHome navigate={navigate} setRole={setRole} />;
+      case "home": return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
       case "campaign": return <CampaignPage navigate={navigate} />;
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
@@ -3446,7 +3488,7 @@ export function FigmaMemberMobileHome({
       case "review": return <ReviewEvidence navigate={navigate} />;
       case "coach": return <CoachDashboard navigate={navigate} />;
       case "admin": return <AdminDashboard navigate={navigate} />;
-      default: return <StudentHome navigate={navigate} setRole={setRole} />;
+      default: return <StudentHome navigate={navigate} setRole={setRole} sltPrepEntry={sltPrepEntry} />;
     }
   };
 
