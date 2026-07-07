@@ -322,9 +322,21 @@ describe("leader page", () => {
         }),
       }),
     );
+    expect(valuesHtml).toContain("TEST values preview.");
     expect(valuesHtml).toContain("Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
     expect(valuesHtml).toContain("Interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
     expect(valuesHtml).toContain("The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists.");
+
+    const successionHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "succession",
+        }),
+      }),
+    );
+    expect(successionHtml).toContain("TEST succession preview.");
+    expect(successionHtml).toContain("TEST Appoint Member Engagement chair");
+    expect(successionHtml).toContain("TEST President succession announced");
 
     const trainingHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -399,6 +411,12 @@ describe("leader page", () => {
     expect(source).toContain("No live plan was activated, no nominees were notified, and no transition tasks were published from this preview.");
     expect(source).toContain("This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.");
     expect(source).toContain("Preview Plan");
+    expect(source).toContain("Preview Transition Plan");
+    expect(source).toContain("TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.");
+    expect(source).toContain("TEST Appoint Member Engagement chair");
+    expect(source).toContain("TEST Full E-Board transition complete");
+    expect(source).toContain("TEST values preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.");
+    expect(source).not.toContain("Activate Transition Plan");
     expect(source).toContain("Preview Promotion");
   });
 
