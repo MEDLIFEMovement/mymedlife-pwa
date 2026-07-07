@@ -96,7 +96,7 @@ describe("leader page", () => {
 
     expect(html).toContain("Leadership Center");
     expect(html).toContain("Chapter Dashboard · Jun 2025");
-    expect(html).toContain("Boston College MEDLIFE");
+    expect(html).toContain("TEST Boston College MEDLIFE");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Create Event");
     expect(html).toContain("Chapter Metrics — June 2025");
@@ -179,7 +179,7 @@ describe("leader page", () => {
     expect(html).toContain("Points Score");
     expect(html).toContain("Organizational Average");
     expect(html).toContain("Boston College vs. National");
-    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Your Chapter");
     expect(html).not.toContain("Chapter Metrics — June 2025");
   });
@@ -245,6 +245,13 @@ describe("leader page", () => {
     );
 
     expect(html).toContain(expectedCopy);
+
+    if (view === "member_profile") {
+      expect(html).toContain("Promote to Officer");
+      expect(html).toContain("Assign Leadership Action");
+      expect(html).toContain("Nominate for E-Board");
+      expect(html).toContain("Add Note");
+    }
   });
 
   it("keeps blocked leader controls visibly honest inside the restored shell", async () => {
@@ -307,7 +314,7 @@ describe("leader page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(3950);
-    expect(lineCount).toBeLessThanOrEqual(4205);
+    expect(lineCount).toBeLessThanOrEqual(4325);
     expect(source).toContain('initialScreen = "home"');
     expect(source).toContain("const [screen, setScreen] = useState<Screen>(initialScreen);");
     expect(source).toContain("<Sidebar active={screen} onNav={navigateToScreen}/>");
@@ -343,5 +350,19 @@ describe("leader page", () => {
     expect(source).toContain("This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.");
     expect(source).toContain("Preview Plan");
     expect(source).toContain("Preview Promotion");
+  });
+
+  it("routes member-profile leadership actions into preview flows and blocks note writes honestly", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("onAssignAction={(memberId) => openAssignActionPreview([memberId])}");
+    expect(source).toContain("onPromote={openPromotePreview}");
+    expect(source).toContain("onOpenSuccession={openSuccessionForMember}");
+    expect(source).toContain("const [selectedMembers, setSelectedMembers] = useState<number[]>(initialMemberIds);");
+    expect(source).toContain("const [selectedMemberId, setSelectedMemberId] = useState<number | null>(initialMemberId);");
+    expect(source).toContain("Leader note saving is blocked in this preview until the audited note workflow is approved.");
   });
 });

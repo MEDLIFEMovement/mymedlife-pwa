@@ -35,101 +35,101 @@ const NAVY = "#07192E";
 
 // ─── Data ────────────────────────────────────────────────────────
 const MEMBERS = [
-  { id: 1, name: "Sofia Reyes",    initials: "SR", color: "#1A56E8", role: "President",            committee: "E-Board",           pts: 1240, ptsWk: 85,  ptsLast: 72,  evtCreated: 8,  evtAttended: 18, evtPct: 94, actions: 24, evidence: 19, bridge: 3, fundraising: 1200, slt: true,  volunteer: 12, engage: 94, lastActive: "Today",       values: "Values Aligned",        pipeline: "E-Board",          nextStep: "Mentor successors & submit bridge video" },
-  { id: 2, name: "Marcus Chen",    initials: "MC", color: "#7C3AED", role: "VP of Events",         committee: "E-Board",           pts: 1085, ptsWk: 67,  ptsLast: 81,  evtCreated: 11, evtAttended: 16, evtPct: 84, actions: 19, evidence: 15, bridge: 2, fundraising:  850, slt: true,  volunteer:  8, engage: 78, lastActive: "Today",       values: "Values Aligned",        pipeline: "E-Board",          nextStep: "Submit bridge video for events transition" },
-  { id: 3, name: "Amara Okonkwo",  initials: "AO", color: "#059669", role: "Fundraising Chair",    committee: "Fundraising",       pts:  920, ptsWk: 55,  ptsLast: 48,  evtCreated:  3, evtAttended: 14, evtPct: 73, actions: 18, evidence: 14, bridge: 1, fundraising: 2100, slt: false, volunteer:  5, engage: 65, lastActive: "Yesterday",   values: "Values Aligned",        pipeline: "Chair",            nextStep: "Strong E-Board candidate — nominate" },
-  { id: 4, name: "Jordan Kim",     initials: "JK", color: "#0891B2", role: "Recruitment Chair",    committee: "Recruitment",       pts:  875, ptsWk: 62,  ptsLast: 55,  evtCreated:  5, evtAttended: 15, evtPct: 78, actions: 16, evidence: 12, bridge: 2, fundraising:  400, slt: true,  volunteer:  9, engage: 82, lastActive: "Today",       values: "Values Aligned",        pipeline: "Chair candidate",  nextStep: "Promote to Chair — ready now" },
-  { id: 5, name: "Priya Sharma",   initials: "PS", color: "#DB2777", role: "Comms Chair",          committee: "Communications",    pts:  810, ptsWk: 48,  ptsLast: 52,  evtCreated:  2, evtAttended: 13, evtPct: 68, actions: 14, evidence: 11, bridge: 4, fundraising:  300, slt: false, volunteer:  4, engage: 91, lastActive: "Today",       values: "Values Aligned",        pipeline: "Chair",            nextStep: "Submit evidence for 3 open tasks" },
-  { id: 6, name: "DeShawn Williams",initials:"DW", color: "#D97706", role: "SLT Promotions Chair", committee: "SLT Promotion",     pts:  745, ptsWk: 71,  ptsLast: 45,  evtCreated:  4, evtAttended: 12, evtPct: 63, actions: 15, evidence: 10, bridge: 1, fundraising:  200, slt: true,  volunteer:  6, engage: 70, lastActive: "2 days ago",  values: "Values Aligned",        pipeline: "Chair",            nextStep: "Host SLT info session this week" },
-  { id: 7, name: "Elena Vasquez",  initials: "EV", color: "#16A34A", role: "Active Member",        committee: "Events",            pts:  680, ptsWk: 44,  ptsLast: 38,  evtCreated:  2, evtAttended: 11, evtPct: 57, actions: 12, evidence:  9, bridge: 0, fundraising:  150, slt: true,  volunteer:  7, engage: 60, lastActive: "Yesterday",   values: "Watch / needs coaching",pipeline: "Active contributor",nextStep: "Assign growth action before values interview" },
-  { id: 8, name: "Theo Nakamura",  initials: "TN", color: "#6366F1", role: "Active Member",        committee: "Recruitment",       pts:  620, ptsWk: 38,  ptsLast: 41,  evtCreated:  1, evtAttended: 10, evtPct: 52, actions: 10, evidence:  8, bridge: 1, fundraising:  100, slt: false, volunteer:  5, engage: 55, lastActive: "3 days ago",  values: "Needs interview",       pipeline: "Active contributor",nextStep: "Schedule values interview" },
-  { id: 9, name: "Nadia Osei",     initials: "NO", color: "#059669", role: "Active Member",        committee: "Service",           pts:  590, ptsWk: 42,  ptsLast: 35,  evtCreated:  1, evtAttended: 10, evtPct: 52, actions: 11, evidence:  9, bridge: 1, fundraising:  200, slt: true,  volunteer: 14, engage: 67, lastActive: "Yesterday",   values: "Values Aligned",        pipeline: "Chair candidate",  nextStep: "Interview for Service Committee Chair" },
-  { id:10, name: "Ryan O'Brien",   initials: "RO", color: "#0891B2", role: "Active Member",        committee: "Member Engagement", pts:  540, ptsWk: 33,  ptsLast: 29,  evtCreated:  2, evtAttended:  9, evtPct: 47, actions:  9, evidence:  7, bridge: 0, fundraising:  125, slt: false, volunteer:  3, engage: 58, lastActive: "3 days ago",  values: "Watch / needs coaching",pipeline: "Active contributor",nextStep: "Assign growth action" },
-  { id:11, name: "Aaliyah Brooks",  initials:"AB", color: "#7C3AED", role: "General Member",       committee: "Fundraising",       pts:  420, ptsWk: 25,  ptsLast: 18,  evtCreated:  0, evtAttended:  7, evtPct: 36, actions:  6, evidence:  4, bridge: 0, fundraising:   75, slt: false, volunteer:  2, engage: 40, lastActive: "1 week ago",  values: "Needs interview",       pipeline: "General member",   nextStep: "Complete first independent action" },
-  { id:12, name: "Caleb Torres",   initials: "CT", color: "#64748B", role: "General Member",       committee: "None",              pts:  310, ptsWk: 12,  ptsLast: 22,  evtCreated:  0, evtAttended:  5, evtPct: 26, actions:  4, evidence:  2, bridge: 0, fundraising:   25, slt: false, volunteer:  1, engage: 22, lastActive: "2 weeks ago", values: "Not yet ready",         pipeline: "General member",   nextStep: "Re-engage — reach out directly" },
+  { id: 1, name: "TEST Sofia Reyes",    initials: "SR", color: "#1A56E8", role: "President",            committee: "E-Board",           pts: 1240, ptsWk: 85,  ptsLast: 72,  evtCreated: 8,  evtAttended: 18, evtPct: 94, actions: 24, evidence: 19, bridge: 3, fundraising: 1200, slt: true,  volunteer: 12, engage: 94, lastActive: "Today",       values: "Values Aligned",        pipeline: "E-Board",          nextStep: "TEST mentor successors and submit bridge video" },
+  { id: 2, name: "TEST Marcus Chen",    initials: "MC", color: "#7C3AED", role: "VP of Events",         committee: "E-Board",           pts: 1085, ptsWk: 67,  ptsLast: 81,  evtCreated: 11, evtAttended: 16, evtPct: 84, actions: 19, evidence: 15, bridge: 2, fundraising:  850, slt: true,  volunteer:  8, engage: 78, lastActive: "Today",       values: "Values Aligned",        pipeline: "E-Board",          nextStep: "TEST submit bridge video for events transition" },
+  { id: 3, name: "TEST Amara Okonkwo",  initials: "AO", color: "#059669", role: "Fundraising Chair",    committee: "Fundraising",       pts:  920, ptsWk: 55,  ptsLast: 48,  evtCreated:  3, evtAttended: 14, evtPct: 73, actions: 18, evidence: 14, bridge: 1, fundraising: 2100, slt: false, volunteer:  5, engage: 65, lastActive: "Yesterday",   values: "Values Aligned",        pipeline: "Chair",            nextStep: "TEST strong E-Board candidate — nominate" },
+  { id: 4, name: "TEST Jordan Kim",     initials: "JK", color: "#0891B2", role: "Recruitment Chair",    committee: "Recruitment",       pts:  875, ptsWk: 62,  ptsLast: 55,  evtCreated:  5, evtAttended: 15, evtPct: 78, actions: 16, evidence: 12, bridge: 2, fundraising:  400, slt: true,  volunteer:  9, engage: 82, lastActive: "Today",       values: "Values Aligned",        pipeline: "Chair candidate",  nextStep: "TEST promote to Chair — ready now" },
+  { id: 5, name: "TEST Priya Sharma",   initials: "PS", color: "#DB2777", role: "Comms Chair",          committee: "Communications",    pts:  810, ptsWk: 48,  ptsLast: 52,  evtCreated:  2, evtAttended: 13, evtPct: 68, actions: 14, evidence: 11, bridge: 4, fundraising:  300, slt: false, volunteer:  4, engage: 91, lastActive: "Today",       values: "Values Aligned",        pipeline: "Chair",            nextStep: "TEST submit evidence for 3 open tasks" },
+  { id: 6, name: "TEST DeShawn Williams",initials:"DW", color: "#D97706", role: "SLT Promotions Chair", committee: "SLT Promotion",     pts:  745, ptsWk: 71,  ptsLast: 45,  evtCreated:  4, evtAttended: 12, evtPct: 63, actions: 15, evidence: 10, bridge: 1, fundraising:  200, slt: true,  volunteer:  6, engage: 70, lastActive: "2 days ago",  values: "Values Aligned",        pipeline: "Chair",            nextStep: "TEST host SLT info session this week" },
+  { id: 7, name: "TEST Elena Vasquez",  initials: "EV", color: "#16A34A", role: "Active Member",        committee: "Events",            pts:  680, ptsWk: 44,  ptsLast: 38,  evtCreated:  2, evtAttended: 11, evtPct: 57, actions: 12, evidence:  9, bridge: 0, fundraising:  150, slt: true,  volunteer:  7, engage: 60, lastActive: "Yesterday",   values: "Watch / needs coaching",pipeline: "Active contributor",nextStep: "TEST assign growth action before values interview" },
+  { id: 8, name: "TEST Theo Nakamura",  initials: "TN", color: "#6366F1", role: "Active Member",        committee: "Recruitment",       pts:  620, ptsWk: 38,  ptsLast: 41,  evtCreated:  1, evtAttended: 10, evtPct: 52, actions: 10, evidence:  8, bridge: 1, fundraising:  100, slt: false, volunteer:  5, engage: 55, lastActive: "3 days ago",  values: "Needs interview",       pipeline: "Active contributor",nextStep: "TEST schedule values interview" },
+  { id: 9, name: "TEST Nadia Osei",     initials: "NO", color: "#059669", role: "Active Member",        committee: "Service",           pts:  590, ptsWk: 42,  ptsLast: 35,  evtCreated:  1, evtAttended: 10, evtPct: 52, actions: 11, evidence:  9, bridge: 1, fundraising:  200, slt: true,  volunteer: 14, engage: 67, lastActive: "Yesterday",   values: "Values Aligned",        pipeline: "Chair candidate",  nextStep: "TEST interview for Service Committee Chair" },
+  { id:10, name: "TEST Ryan O'Brien",   initials: "RO", color: "#0891B2", role: "Active Member",        committee: "Member Engagement", pts:  540, ptsWk: 33,  ptsLast: 29,  evtCreated:  2, evtAttended:  9, evtPct: 47, actions:  9, evidence:  7, bridge: 0, fundraising:  125, slt: false, volunteer:  3, engage: 58, lastActive: "3 days ago",  values: "Watch / needs coaching",pipeline: "Active contributor",nextStep: "TEST assign growth action" },
+  { id:11, name: "TEST Aaliyah Brooks",  initials:"AB", color: "#7C3AED", role: "General Member",       committee: "Fundraising",       pts:  420, ptsWk: 25,  ptsLast: 18,  evtCreated:  0, evtAttended:  7, evtPct: 36, actions:  6, evidence:  4, bridge: 0, fundraising:   75, slt: false, volunteer:  2, engage: 40, lastActive: "1 week ago",  values: "Needs interview",       pipeline: "General member",   nextStep: "TEST complete first independent action" },
+  { id:12, name: "TEST Caleb Torres",   initials: "CT", color: "#64748B", role: "General Member",       committee: "None",              pts:  310, ptsWk: 12,  ptsLast: 22,  evtCreated:  0, evtAttended:  5, evtPct: 26, actions:  4, evidence:  2, bridge: 0, fundraising:   25, slt: false, volunteer:  1, engage: 22, lastActive: "2 weeks ago", values: "Not yet ready",         pipeline: "General member",   nextStep: "TEST re-engage — reach out directly" },
 ];
 
 const COMMITTEES = [
   {
-    id:1, name:"Recruitment & Membership Tracking", color:"#0891B2", chairs:["Jordan Kim"],
+    id:1, name:"TEST Recruitment & Membership Tracking", color:"#0891B2", chairs:["TEST Jordan Kim"],
     members:12, openActs:3, doneActs:14, bridge:2, pts:1840, kpi:82,
-    health:"Strong", rec:"Strong momentum — schedule next info session this week.",
+    health:"Strong", rec:"TEST momentum note: schedule next info session this week.",
     evtThisYear:14, evtLastMonth:3, evtLastWeek:1, evtNextWeek:1, evtNextMonth:3,
     upcoming:[
-      { name:"Fall Info Night", date:"Jun 22", rsvp:40 },
-      { name:"Tabling — Science Fair", date:"Jun 28", rsvp:0 },
-      { name:"New Member Orientation", date:"Jul 5", rsvp:25 },
+      { name:"TEST Fall Info Night", date:"Jun 22", rsvp:40 },
+      { name:"TEST Tabling - Science Fair", date:"Jun 28", rsvp:0 },
+      { name:"TEST New Member Orientation", date:"Jul 5", rsvp:25 },
     ],
   },
   {
-    id:2, name:"Fundraising", color:"#D97706", chairs:["Amara Okonkwo"],
+    id:2, name:"TEST Fundraising", color:"#D97706", chairs:["TEST Amara Okonkwo"],
     members:8, openActs:5, doneActs:9, bridge:1, pts:1220, kpi:61,
-    health:"Needs Attention", rec:"Activate 3 dormant members. Set a weekly fundraising check-in.",
+    health:"Needs Attention", rec:"TEST coaching note: activate 3 dormant members. Set a weekly fundraising check-in.",
     evtThisYear:8, evtLastMonth:2, evtLastWeek:1, evtNextWeek:0, evtNextMonth:1,
     upcoming:[
-      { name:"Bake Sale #2", date:"Jul 10", rsvp:18 },
+      { name:"TEST Bake Sale #2", date:"Jul 10", rsvp:18 },
     ],
   },
   {
-    id:3, name:"Service Learning Prep & Awareness", color:"#7C3AED", chairs:["DeShawn Williams"],
+    id:3, name:"TEST Service Learning Prep & Awareness", color:"#7C3AED", chairs:["TEST DeShawn Williams"],
     members:6, openActs:4, doneActs:8, bridge:1, pts:980, kpi:54,
-    health:"Needs Attention", rec:"Host SLT info session. Share a testimonial video to the chapter feed.",
+    health:"Needs Attention", rec:"TEST coaching note: host SLT info session. Share a testimonial video to the chapter feed.",
     evtThisYear:9, evtLastMonth:2, evtLastWeek:1, evtNextWeek:1, evtNextMonth:2,
     upcoming:[
-      { name:"SLT Alumni Q&A Night", date:"Jun 24", rsvp:22 },
-      { name:"MC22 Info Session", date:"Jul 12", rsvp:0 },
+      { name:"TEST SLT Alumni Q&A Night", date:"Jun 24", rsvp:22 },
+      { name:"TEST MC22 Info Session", date:"Jul 12", rsvp:0 },
     ],
   },
   {
-    id:4, name:"Marketing & Social Media", color:"#DB2777", chairs:["Priya Sharma"],
+    id:4, name:"TEST Marketing & Social Media", color:"#DB2777", chairs:["TEST Priya Sharma"],
     members:9, openActs:1, doneActs:16, bridge:4, pts:1540, kpi:78,
-    health:"Strong", rec:"Draft Moving Mountains social calendar. Align posts with event schedule.",
+    health:"Strong", rec:"TEST planning note: draft Moving Mountains social calendar. Align posts with event schedule.",
     evtThisYear:6, evtLastMonth:1, evtLastWeek:0, evtNextWeek:1, evtNextMonth:2,
     upcoming:[
-      { name:"Content Planning Session", date:"Jun 25", rsvp:12 },
-      { name:"Instagram Takeover", date:"Jul 9", rsvp:0 },
+      { name:"TEST Content Planning Session", date:"Jun 25", rsvp:12 },
+      { name:"TEST Instagram Takeover", date:"Jul 9", rsvp:0 },
     ],
   },
   {
-    id:5, name:"Team Bonding & Social Events", color:"#1A56E8", chairs:["Marcus Chen","Elena Vasquez"],
+    id:5, name:"TEST Team Bonding & Social Events", color:"#1A56E8", chairs:["TEST Marcus Chen","TEST Elena Vasquez"],
     members:14, openActs:2, doneActs:18, bridge:2, pts:2480, kpi:94,
-    health:"Strong", rec:"Keep event cadence strong — ensure engagement and follow-up after each event.",
+    health:"Strong", rec:"TEST planning note: keep event cadence strong and follow up after each event.",
     evtThisYear:22, evtLastMonth:5, evtLastWeek:2, evtNextWeek:2, evtNextMonth:5,
     upcoming:[
-      { name:"Chapter General Meeting", date:"Jun 22", rsvp:55 },
-      { name:"End-of-Year Celebration", date:"Jun 28", rsvp:62 },
-      { name:"Summer Kickoff", date:"Jul 8", rsvp:44 },
-      { name:"Leadership Mixer", date:"Jul 15", rsvp:30 },
+      { name:"TEST Chapter General Meeting", date:"Jun 22", rsvp:55 },
+      { name:"TEST End-of-Year Celebration", date:"Jun 28", rsvp:62 },
+      { name:"TEST Summer Kickoff", date:"Jul 8", rsvp:44 },
+      { name:"TEST Leadership Mixer", date:"Jul 15", rsvp:30 },
     ],
   },
   {
-    id:6, name:"Safe Homes", color:"#059669", chairs:["Nadia Osei"],
+    id:6, name:"TEST Safe Homes", color:"#059669", chairs:["TEST Nadia Osei"],
     members:7, openActs:3, doneActs:6, bridge:1, pts:720, kpi:48,
-    health:"Needs Attention", rec:"Confirm next Safe Homes awareness event. Assign evidence uploads to members.",
+    health:"Needs Attention", rec:"TEST coaching note: confirm next Safe Homes awareness event. Assign evidence uploads to members.",
     evtThisYear:7, evtLastMonth:1, evtLastWeek:0, evtNextWeek:1, evtNextMonth:2,
     upcoming:[
-      { name:"Safe Homes Awareness Night", date:"Jun 29", rsvp:20 },
-      { name:"Community Safety Walk", date:"Jul 13", rsvp:15 },
+      { name:"TEST Safe Homes Awareness Night", date:"Jun 29", rsvp:20 },
+      { name:"TEST Community Safety Walk", date:"Jul 13", rsvp:15 },
     ],
   },
   {
-    id:7, name:"Smiles Movement", color:"#F59E0B", chairs:[],
+    id:7, name:"TEST Smiles Movement", color:"#F59E0B", chairs:[],
     members:5, openActs:4, doneActs:3, bridge:0, pts:380, kpi:28,
-    health:"Inactive", rec:"Appoint a chair immediately. Plan first dental health awareness event.",
+    health:"Inactive", rec:"TEST coaching note: appoint a chair immediately and plan the first dental health awareness event.",
     evtThisYear:2, evtLastMonth:0, evtLastWeek:0, evtNextWeek:0, evtNextMonth:1,
     upcoming:[
-      { name:"Dental Health Pop-Up", date:"Jul 18", rsvp:0 },
+      { name:"TEST Dental Health Pop-Up", date:"Jul 18", rsvp:0 },
     ],
   },
   {
-    id:8, name:"MED Talks & Skills Sessions", color:"#6366F1", chairs:["Ryan O'Brien"],
+    id:8, name:"TEST MED Talks & Skills Sessions", color:"#6366F1", chairs:["TEST Ryan O'Brien"],
     members:8, openActs:2, doneActs:10, bridge:2, pts:890, kpi:58,
-    health:"Strong", rec:"Schedule next MED Talk speaker. Promote the skills session to pre-med members.",
+    health:"Strong", rec:"TEST planning note: schedule the next MED Talk speaker and promote the skills session to pre-med members.",
     evtThisYear:10, evtLastMonth:2, evtLastWeek:1, evtNextWeek:1, evtNextMonth:3,
     upcoming:[
-      { name:"MED Talk: Global Health 101", date:"Jun 23", rsvp:34 },
-      { name:"CPR & First Aid Skills Session", date:"Jul 7", rsvp:22 },
-      { name:"Med School Panel", date:"Jul 21", rsvp:28 },
+      { name:"TEST MED Talk: Global Health 101", date:"Jun 23", rsvp:34 },
+      { name:"TEST CPR & First Aid Skills Session", date:"Jul 7", rsvp:22 },
+      { name:"TEST Med School Panel", date:"Jul 21", rsvp:28 },
     ],
   },
 ];
@@ -196,23 +196,23 @@ function npsColor(score: number) {
 }
 
 const EVENTS = [
-  { id:1, name:"Moving Mountains Kickoff",   date:"Jun 10", committee:"Events",        rsvp:48, attended:39,   status:"Past",     proof:true,  followUp:"Done",    creator:"Marcus Chen",    nps: true  },
-  { id:2, name:"SLT Interest Meeting",        date:"Jun 12", committee:"SLT Promotion", rsvp:22, attended:18,   status:"Past",     proof:true,  followUp:"Pending", creator:"DeShawn Williams",nps: true  },
-  { id:3, name:"Tabling: Quad Recruitment",   date:"Jun 15", committee:"Recruitment",   rsvp: 0, attended:14,   status:"Past",     proof:false, followUp:"Overdue", creator:"Jordan Kim",      nps: true  },
-  { id:4, name:"Fundraising Bake Sale",       date:"Jun 17", committee:"Fundraising",   rsvp:30, attended:null, status:"Today",    proof:false, followUp:"Pending", creator:"Amara Okonkwo",   nps: false },
-  { id:5, name:"Community Meal Service",      date:"Jun 19", committee:"Service",       rsvp:16, attended:null, status:"Upcoming", proof:false, followUp:"—",       creator:"Nadia Osei",      nps: false },
-  { id:6, name:"Chapter General Meeting",     date:"Jun 22", committee:"Events",        rsvp:55, attended:null, status:"Upcoming", proof:false, followUp:"—",       creator:"Sofia Reyes",     nps: false },
-  { id:7, name:"Bridge Video Workshop",       date:"Jun 25", committee:"Comms",         rsvp:18, attended:null, status:"Upcoming", proof:false, followUp:"—",       creator:"Priya Sharma",    nps: false },
+  { id:1, name:"TEST Moving Mountains Kickoff",   date:"Jun 10", committee:"Events",        rsvp:48, attended:39,   status:"Past",     proof:true,  followUp:"Done",    creator:"TEST Marcus Chen",    nps: true  },
+  { id:2, name:"TEST SLT Interest Meeting",        date:"Jun 12", committee:"SLT Promotion", rsvp:22, attended:18,   status:"Past",     proof:true,  followUp:"Pending", creator:"TEST DeShawn Williams",nps: true  },
+  { id:3, name:"TEST Tabling: Quad Recruitment",   date:"Jun 15", committee:"Recruitment",   rsvp: 0, attended:14,   status:"Past",     proof:false, followUp:"Overdue", creator:"TEST Jordan Kim",      nps: true  },
+  { id:4, name:"TEST Fundraising Bake Sale",       date:"Jun 17", committee:"Fundraising",   rsvp:30, attended:null, status:"Today",    proof:false, followUp:"Pending", creator:"TEST Amara Okonkwo",   nps: false },
+  { id:5, name:"TEST Community Meal Service",      date:"Jun 19", committee:"Service",       rsvp:16, attended:null, status:"Upcoming", proof:false, followUp:"—",       creator:"TEST Nadia Osei",      nps: false },
+  { id:6, name:"TEST Chapter General Meeting",     date:"Jun 22", committee:"Events",        rsvp:55, attended:null, status:"Upcoming", proof:false, followUp:"—",       creator:"TEST Sofia Reyes",     nps: false },
+  { id:7, name:"TEST Bridge Video Workshop",       date:"Jun 25", committee:"Comms",         rsvp:18, attended:null, status:"Upcoming", proof:false, followUp:"—",       creator:"TEST Priya Sharma",    nps: false },
 ];
 
 const CHAPTERS = [
-  { rank:1, name:"UCLA MEDLIFE",           country:"USA",    region:"West",        events:18, members:112, attendance:79, evidence:34, bridge:14, funds:12400, slt:31, health:96, nps:72, leadConversion:68, npsEvents:14, insight:"Weekly SLT testimonial posts doubled sign-up rate" },
-  { rank:2, name:"McGill MEDLIFE",         country:"Canada", region:"Canada",      events:15, members: 94, attendance:81, evidence:28, bridge:11, funds: 9800, slt:38, health:93, nps:61, leadConversion:74, npsEvents:11, insight:"Chapter buddy system retains 40% more new members" },
-  { rank:3, name:"Boston College MEDLIFE", country:"USA",    region:"New England", events:12, members: 84, attendance:67, evidence:22, bridge: 9, funds: 8400, slt:18, health:87, nps:48, leadConversion:63, npsEvents: 3, insight:"Leading Moving Mountains in New England — #3 overall" },
-  { rank:4, name:"UT Austin MEDLIFE",      country:"USA",    region:"South",       events:14, members: 88, attendance:73, evidence:19, bridge: 7, funds: 7600, slt:22, health:84, nps:54, leadConversion:71, npsEvents:10, insight:"Event creation assigned as entry-level member action" },
-  { rank:5, name:"UBC MEDLIFE",            country:"Canada", region:"Canada",      events:11, members: 76, attendance:74, evidence:21, bridge: 8, funds: 6900, slt:25, health:82, nps:67, leadConversion:58, npsEvents: 9, insight:"Highest evidence-per-action rate in North America" },
-  { rank:6, name:"NYU MEDLIFE",            country:"USA",    region:"Mid-Atlantic", events:10, members: 68, attendance:71, evidence:17, bridge: 5, funds: 7100, slt:14, health:79, nps:39, leadConversion:55, npsEvents: 7, insight:"Fundraising up 40% month-over-month" },
-  { rank:7, name:"Emory MEDLIFE",          country:"USA",    region:"South",       events: 9, members: 61, attendance:69, evidence:14, bridge: 6, funds: 5200, slt:12, health:74, nps:31, leadConversion:49, npsEvents: 6, insight:"Bridge video leader per chapter size in Southeast" },
+  { rank:1, name:"TEST UCLA MEDLIFE",           country:"USA",    region:"West",        events:18, members:112, attendance:79, evidence:34, bridge:14, funds:12400, slt:31, health:96, nps:72, leadConversion:68, npsEvents:14, insight:"TEST weekly SLT testimonial posts doubled sign-up rate" },
+  { rank:2, name:"TEST McGill MEDLIFE",         country:"Canada", region:"Canada",      events:15, members: 94, attendance:81, evidence:28, bridge:11, funds: 9800, slt:38, health:93, nps:61, leadConversion:74, npsEvents:11, insight:"TEST chapter buddy system retains 40% more new members" },
+  { rank:3, name:"TEST Boston College MEDLIFE", country:"USA",    region:"New England", events:12, members: 84, attendance:67, evidence:22, bridge: 9, funds: 8400, slt:18, health:87, nps:48, leadConversion:63, npsEvents: 3, insight:"TEST leading Moving Mountains in New England — #3 overall" },
+  { rank:4, name:"TEST UT Austin MEDLIFE",      country:"USA",    region:"South",       events:14, members: 88, attendance:73, evidence:19, bridge: 7, funds: 7600, slt:22, health:84, nps:54, leadConversion:71, npsEvents:10, insight:"TEST event creation assigned as entry-level member action" },
+  { rank:5, name:"TEST UBC MEDLIFE",            country:"Canada", region:"Canada",      events:11, members: 76, attendance:74, evidence:21, bridge: 8, funds: 6900, slt:25, health:82, nps:67, leadConversion:58, npsEvents: 9, insight:"TEST highest evidence-per-action rate in North America" },
+  { rank:6, name:"TEST NYU MEDLIFE",            country:"USA",    region:"Mid-Atlantic", events:10, members: 68, attendance:71, evidence:17, bridge: 5, funds: 7100, slt:14, health:79, nps:39, leadConversion:55, npsEvents: 7, insight:"TEST fundraising up 40% month-over-month" },
+  { rank:7, name:"TEST Emory MEDLIFE",          country:"USA",    region:"South",       events: 9, members: 61, attendance:69, evidence:14, bridge: 6, funds: 5200, slt:12, health:74, nps:31, leadConversion:49, npsEvents: 6, insight:"TEST bridge video leader per chapter size in Southeast" },
 ];
 
 const REGIONS = ["All Regions","New England","Mid-Atlantic","South","Midwest","West","Canada","Puerto Rico","UK","Latin America","Worldwide"];
@@ -225,7 +225,7 @@ const WEEKLY_PTS = [
 
 const BRIDGE_VIDEOS = [
   {
-    id:1, title:"How to Run a Successful Info Night", author:"Sofia Reyes",
+    id:1, title:"TEST How to Run a Successful Info Night", author:"TEST Sofia Reyes",
     cat:"Recruitment", views:284, likes:41, comments:12, shares:9, chaptersUsing:6,
     date:"May 15", featured:true,
     photo:"photo-1758270704763-22072a90d3b6",
@@ -234,7 +234,7 @@ const BRIDGE_VIDEOS = [
     keyTakeaways:["Book the room 3 weeks in advance","Use a Google Form for sign-in — not a paper sheet","End with a clear next step: 'Join our GroupMe'","Follow up within 48 hours or conversion drops 60%"],
   },
   {
-    id:2, title:"Moving Mountains Fundraising Playbook", author:"Amara Okonkwo",
+    id:2, title:"TEST Moving Mountains Fundraising Playbook", author:"TEST Amara Okonkwo",
     cat:"Fundraising", views:198, likes:34, comments:8, shares:7, chaptersUsing:4,
     date:"May 22", featured:true,
     photo:"photo-1559027615-cd4628902d4a",
@@ -243,7 +243,7 @@ const BRIDGE_VIDEOS = [
     keyTakeaways:["Set weekly milestones, not just a semester goal","Post a live tracker on Instagram Stories every Friday","Use chapter-vs-committee competitions to motivate","Personal ask emails outperform generic posts 3:1"],
   },
   {
-    id:3, title:"How We Grew SLT Interest 3x in 6 Weeks", author:"DeShawn Williams",
+    id:3, title:"TEST How We Grew SLT Interest 3x in 6 Weeks", author:"TEST DeShawn Williams",
     cat:"SLT Promotion", views:156, likes:27, comments:5, shares:4, chaptersUsing:3,
     date:"Jun 2", featured:false,
     photo:"photo-1758270705518-b61b40527e76",
@@ -252,7 +252,7 @@ const BRIDGE_VIDEOS = [
     keyTakeaways:["Post one alumni testimonial every week","Host a 45-min SLT Q&A — attendance predicts sign-ups","Send a personal follow-up to every person who attended","Create a countdown to application deadline"],
   },
   {
-    id:4, title:"Committee Leadership Transition Guide", author:"Marcus Chen",
+    id:4, title:"TEST Committee Leadership Transition Guide", author:"TEST Marcus Chen",
     cat:"Leadership Transition", views:142, likes:22, comments:9, shares:6, chaptersUsing:5,
     date:"Jun 5", featured:false,
     photo:"photo-1758270705317-3ef6142d306f",
@@ -261,7 +261,7 @@ const BRIDGE_VIDEOS = [
     keyTakeaways:["Start transition 8 weeks before your last day","Create a written handoff doc — not just a verbal walkthrough","Run 3 shadow sessions before full handoff","Introduce successor to all key contacts personally"],
   },
   {
-    id:5, title:"Social Media Posting Strategy for MEDLIFE", author:"Priya Sharma",
+    id:5, title:"TEST Social Media Posting Strategy for MEDLIFE", author:"TEST Priya Sharma",
     cat:"Communications", views:119, likes:19, comments:4, shares:3, chaptersUsing:2,
     date:"Jun 8", featured:false,
     photo:"photo-1758270704840-0ac001215b55",
@@ -272,11 +272,11 @@ const BRIDGE_VIDEOS = [
 ];
 
 const FEED_POSTS = [
-  { id:1, type:"Bridge Video",  title:"How to Run a Successful Info Night",    author:"Sofia Reyes",    likes:41, comments:12, shares:9,  views:284, saves:18, actions:6,  rsvps:11, evidence:3, date:"Jun 10" },
-  { id:2, type:"Best Practice", title:"Moving Mountains Campaign Guide",        author:"MEDLIFE Staff",  likes:38, comments: 9, shares:14, views:312, saves:24, actions:8,  rsvps: 7, evidence:2, date:"Jun 8" },
-  { id:3, type:"Chapter Post",  title:"Our bake sale raised $840! Here's how", author:"Amara Okonkwo", likes:52, comments:18, shares:6,  views:184, saves: 5, actions:2,  rsvps: 0, evidence:1, date:"Jun 12" },
-  { id:4, type:"Bridge Video",  title:"Fundraising Playbook 2025",             author:"Amara Okonkwo", likes:34, comments: 8, shares:7,  views:198, saves:14, actions:5,  rsvps: 4, evidence:4, date:"Jun 5" },
-  { id:5, type:"Chapter Post",  title:"SLT info meeting recap — 18 signed up!",author:"DeShawn Williams",likes:29,comments: 7, shares:3,  views:142, saves: 6, actions:3,  rsvps: 9, evidence:1, date:"Jun 13" },
+  { id:1, type:"Bridge Video",  title:"TEST How to Run a Successful Info Night",    author:"TEST Sofia Reyes",    likes:41, comments:12, shares:9,  views:284, saves:18, actions:6,  rsvps:11, evidence:3, date:"Jun 10" },
+  { id:2, type:"Best Practice", title:"TEST Moving Mountains Campaign Guide",        author:"TEST MEDLIFE Staff",  likes:38, comments: 9, shares:14, views:312, saves:24, actions:8,  rsvps: 7, evidence:2, date:"Jun 8" },
+  { id:3, type:"Chapter Post",  title:"TEST Our bake sale raised $840! Here's how", author:"TEST Amara Okonkwo", likes:52, comments:18, shares:6,  views:184, saves: 5, actions:2,  rsvps: 0, evidence:1, date:"Jun 12" },
+  { id:4, type:"Bridge Video",  title:"TEST Fundraising Playbook 2025",             author:"TEST Amara Okonkwo", likes:34, comments: 8, shares:7,  views:198, saves:14, actions:5,  rsvps: 4, evidence:4, date:"Jun 5" },
+  { id:5, type:"Chapter Post",  title:"TEST SLT info meeting recap — 18 signed up!",author:"TEST DeShawn Williams",likes:29,comments: 7, shares:3,  views:142, saves: 6, actions:3,  rsvps: 9, evidence:1, date:"Jun 13" },
 ];
 
 // ─── Shared components ────────────────────────────────────────────
@@ -448,8 +448,8 @@ function HomeScreen({
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="text-[10px] font-mono text-blue-300 uppercase tracking-widest">Chapter Dashboard · Jun 2025</span>
             </div>
-            <h1 className="text-2xl font-black text-white mb-1">Boston College MEDLIFE</h1>
-            <p className="text-sm text-blue-200 mb-3">Sofia Reyes, President · New England Region</p>
+            <h1 className="text-2xl font-black text-white mb-1">TEST Boston College MEDLIFE</h1>
+            <p className="text-sm text-blue-200 mb-3">TEST Sofia Reyes, President · New England Region</p>
             <div className="flex gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-500/20 text-blue-200 rounded-full text-[11px] font-semibold border border-blue-500/30"><Flame size={10}/>Rush Month</span>
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500/20 text-amber-200 rounded-full text-[11px] font-semibold border border-amber-500/30"><Target size={10}/>Moving Mountains</span>
@@ -502,7 +502,7 @@ function HomeScreen({
           <Kard label="Attendance Rate"             value="67%"    sub="−4% vs last month"  trend="down" accent={YELLOW}  icon={Activity} />
           <Kard label="Tasks Completed"             value="156"    sub="+24 this week"      trend="up"   accent="#16A34A" icon={CheckCircle} />
           <Kard label="Points This Week"            value="1,480"  sub="+11% vs last week"  trend="up"   accent={YELLOW}  icon={Star} />
-          <Kard label="Moving Mountains Fundraising"value="$8,400" sub="70% of $12k goal"                accent="#16A34A" icon={Target} />
+          <Kard label="TEST Moving Mountains Fundraising"value="$8,400" sub="TEST 70% of $12k goal"      accent="#16A34A" icon={Target} />
           <Kard label="SLT Participants"            value="18"     sub="Signed up this cycle"             accent="#7C3AED" icon={Globe} />
           <Kard label="Volunteer Activities"        value="284"    sub="Hours of local impact"             accent="#DC2626" icon={Heart} />
         </div>
@@ -517,10 +517,10 @@ function HomeScreen({
           </div>
           <div className="space-y-2">
             {[
-              { msg:"Member Engagement committee has no chair — inactive for 3 weeks", hi:true },
-              { msg:"Fundraising committee has low activity — only 9 tasks completed this month", hi:false },
-              { msg:"No bridge videos submitted this month from 3 of 7 committees", hi:false },
-              { msg:"Follow-up overdue after 'Tabling: Quad Recruitment' (Jun 15)", hi:false },
+              { msg:"TEST Member Engagement committee has no chair - inactive for 3 weeks", hi:true },
+              { msg:"TEST Fundraising committee has low activity - only 9 tasks completed this month", hi:false },
+              { msg:"TEST no bridge videos submitted this month from 3 of 7 committees", hi:false },
+              { msg:"TEST follow-up overdue after 'TEST Tabling: Quad Recruitment' (Jun 15)", hi:false },
             ].map((a,i) => (
               <div key={i} className={`flex items-start gap-3 px-3 py-2.5 rounded-lg ${a.hi ? "bg-red-50 border border-red-100" : "bg-amber-50 border border-amber-100"}`}>
                 <AlertTriangle size={13} className={`${a.hi ? "text-red-500" : "text-amber-500"} mt-0.5 shrink-0`} />
@@ -550,7 +550,7 @@ function HomeScreen({
         {/* Legend */}
         <div className="flex items-center gap-5 mb-3">
           {[
-            { color:BLUE,      label:"Boston College" },
+            { color:BLUE,      label:"TEST Boston College" },
             { color:"#DC2626", label:"National Avg (~1,050 pts/wk)", dash:true },
             { color:"#7C3AED", label:"New England Avg (~890 pts/wk)", dash:true },
           ].map(item => (
@@ -576,7 +576,7 @@ function HomeScreen({
             <Tooltip contentStyle={{fontSize:11,borderRadius:8,border:"1px solid rgba(0,0,0,0.08)"}}/>
             <ReferenceLine key="nat-avg"  y={1050} stroke="#DC2626" strokeWidth={1.5} strokeDasharray="5 3" label={{ value:"Nat'l", position:"right", fontSize:9, fill:"#DC2626" }}/>
             <ReferenceLine key="reg-avg"  y={890}  stroke="#7C3AED" strokeWidth={1.5} strokeDasharray="5 3" label={{ value:"NE",   position:"right", fontSize:9, fill:"#7C3AED" }}/>
-            <Area key="home-pts" type="monotone" dataKey="pts" name="Boston College" stroke={BLUE} strokeWidth={2.5} fill="url(#g1)"/>
+            <Area key="home-pts" type="monotone" dataKey="pts" name="TEST Boston College" stroke={BLUE} strokeWidth={2.5} fill="url(#g1)"/>
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -616,7 +616,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
     { key:"funds"  as const, label:"Moving Mountains",     color:"#16A34A", icon:Target   },
   ];
 
-  const bc = CHAPTERS.find(c => c.name === "Boston College MEDLIFE")!;
+  const bc = CHAPTERS.find(c => c.name === "TEST Boston College MEDLIFE")!;
   const bcRegion = bc.region; // "New England"
 
   // Filter by region if selected
@@ -695,7 +695,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
 
         {/* BC vs national */}
         <div className={`rounded-2xl border p-5 text-center ${bcAbove ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}>
-          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Boston College vs. National</div>
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">TEST Boston College vs. National</div>
           <div className="flex items-center justify-center gap-3 mb-1">
             <span className="text-2xl font-black tabular-nums" style={{ color: active.color, fontFamily:"'JetBrains Mono',monospace" }}>
               {fmtVal(bcVal)}
@@ -768,7 +768,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
             </thead>
             <tbody>
               {sorted.map((chapter, index) => {
-                const isUs = chapter.name === "Boston College MEDLIFE";
+                const isUs = chapter.name === "TEST Boston College MEDLIFE";
                 const value = (chapter as any)[sortKey] as number;
 
                 return (
@@ -808,7 +808,7 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
       {/* Chapter rows */}
       <div className="space-y-2.5">
         {sorted.map((ch, idx) => {
-          const isUs = ch.name === "Boston College MEDLIFE";
+          const isUs = ch.name === "TEST Boston College MEDLIFE";
           const val  = (ch as any)[sortKey] as number;
           const pct  = maxVal > 0 ? (val / maxVal) * 100 : 0;
 
@@ -875,7 +875,19 @@ function LeaderboardScreen({ onNavigate }: { onNavigate: (s: Screen) => void }) 
 
 
 // ─── Screen 4: Member Profile ─────────────────────────────────────
-function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void }) {
+function ProfileScreen({
+  memberId,
+  onBack,
+  onAssignAction,
+  onPromote,
+  onOpenSuccession,
+}: {
+  memberId:number;
+  onBack:()=>void;
+  onAssignAction:(memberId: number)=>void;
+  onPromote:(memberId: number)=>void;
+  onOpenSuccession:(memberId: number)=>void;
+}) {
   const m = MEMBERS.find(x=>x.id===memberId) || MEMBERS[0];
   const wkData = [
     {w:"Apr W1",pts:Math.round(m.pts*0.06)},{w:"Apr W2",pts:Math.round(m.pts*0.08)},
@@ -896,12 +908,12 @@ function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void 
   const showRank      = chapterRank <= 20;
 
   const timeline = [
-    { date:"Jun 12", event:"Attended SLT Interest Meeting" },
-    { date:"Jun 10", event:"Created Moving Mountains Kickoff event" },
-    { date:"Jun 8",  event:"Submitted evidence for 3 actions" },
-    { date:"Jun 3",  event:"Completed fundraising action — $420 raised" },
-    { date:"May 29", event:"Promoted to committee co-lead" },
-    { date:"May 22", event:"Submitted bridge video: Info Night Guide" },
+    { date:"Jun 12", event:"TEST attended SLT Interest Meeting" },
+    { date:"Jun 10", event:"TEST created Moving Mountains Kickoff event" },
+    { date:"Jun 8",  event:"TEST submitted evidence for 3 actions" },
+    { date:"Jun 3",  event:"TEST completed fundraising action — $420 raised" },
+    { date:"May 29", event:"TEST promoted to committee co-lead" },
+    { date:"May 22", event:"TEST submitted bridge video: Info Night Guide" },
   ];
 
   return (
@@ -963,9 +975,16 @@ function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void 
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Leadership Actions</div>
-            <Btn variant="primary"   className="w-full justify-start"><Star size={11}/>Promote to Officer</Btn>
-            <Btn variant="secondary" className="w-full justify-start"><Zap size={11}/>Assign Leadership Action</Btn>
-            <Btn variant="ghost"     className="w-full justify-start"><Flag size={11}/>Nominate for E-Board</Btn>
+            <Btn variant="primary"   className="w-full justify-start" onClick={() => onPromote(m.id)}><Star size={11}/>Promote to Officer</Btn>
+            <Btn variant="secondary" className="w-full justify-start" onClick={() => onAssignAction(m.id)}><Zap size={11}/>Assign Leadership Action</Btn>
+            <Btn variant="ghost"     className="w-full justify-start" onClick={() => onOpenSuccession(m.id)}><Flag size={11}/>Nominate for E-Board</Btn>
+            <Btn
+              variant="secondary"
+              className="w-full justify-start"
+              blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
+            >
+              <Edit size={11}/>Add Note
+            </Btn>
           </div>
         </div>
 
@@ -1014,11 +1033,16 @@ function ProfileScreen({ memberId, onBack }: { memberId:number; onBack:()=>void 
           <div className="bg-white rounded-xl border border-slate-200 p-4">
             <div className="flex items-center justify-between mb-2">
               <SH>Coach & Leader Notes</SH>
-              <Btn variant="secondary"><Edit size={10}/>Add Note</Btn>
+              <Btn
+                variant="secondary"
+                blockedTitle="Leader note saving is blocked in this preview until the audited note workflow is approved."
+              >
+                <Edit size={10}/>Add Note
+              </Btn>
             </div>
             <div className="bg-slate-50 rounded-lg p-3">
-              <div className="text-[10px] text-slate-400 font-mono mb-1">Jun 8, 2025 — Sofia Reyes (President)</div>
-              <p className="text-xs text-slate-700 leading-relaxed">{m.name} is consistently one of the most dependable members of this chapter. Shows up, follows through, and brings others along. Values interview recommended before end of June. Strong candidate for a larger role next semester.</p>
+              <div className="text-[10px] text-slate-400 font-mono mb-1">Jun 8, 2025 — TEST Sofia Reyes (President)</div>
+              <p className="text-xs text-slate-700 leading-relaxed">TEST note: {m.name} is consistently one of the most dependable members of this chapter. Shows up, follows through, and brings others along. Values interview recommended before end of June. Strong candidate for a larger role next semester.</p>
             </div>
           </div>
         </div>
@@ -1317,7 +1341,7 @@ function NpsSurveyModal({ eventName, onClose }: { eventName: string; onClose: ()
           <div className="w-6 h-6 bg-[#1A56E8] rounded-md flex items-center justify-center">
             <span className="text-white text-[10px] font-black">M</span>
           </div>
-          <span className="text-[11px] font-semibold text-slate-500">Boston College MEDLIFE</span>
+          <span className="text-[11px] font-semibold text-slate-500">TEST Boston College MEDLIFE</span>
         </div>
         <h2 className="text-base font-black text-slate-900">Quick feedback on <span className="text-blue-600">{eventName}</span></h2>
         <p className="text-xs text-slate-400 mt-0.5">2 questions · takes 30 seconds</p>
@@ -1679,21 +1703,21 @@ const MOBILE_CLINICS = [
     id:"MC21", label:"MC21", location:"Cusco, Peru", year:2025, month:"Jan",
     color:"#1A56E8", flag:"🇵🇪",
     bcParticipants:6, totalPatients:187, medical:128, dental:42, pediatric:38, womens:22, projects:2,
-    description:"Six Boston College students traveled to the highlands of Cusco to support a five-day mobile clinic serving remote Andean communities with limited healthcare access.",
+    description:"TEST story: six Boston College students traveled to the highlands of Cusco to support a five-day mobile clinic serving remote Andean communities with limited healthcare access.",
     photo:"photo-1593460915132-fcb729cc4597",
   },
   {
     id:"MC20", label:"MC20", location:"Lima, Peru", year:2024, month:"Mar",
     color:"#7C3AED", flag:"🇵🇪",
     bcParticipants:7, totalPatients:142, medical:94, dental:34, pediatric:28, womens:18, projects:1,
-    description:"Seven members served a peri-urban community on the outskirts of Lima, providing medical, dental, and women's health screenings alongside a stairway infrastructure project.",
+    description:"TEST story: seven members served a peri-urban community on the outskirts of Lima, providing medical, dental, and women's health screenings alongside a stairway infrastructure project.",
     photo:"photo-1725153264822-ab95a6e81428",
   },
   {
     id:"MC19", label:"MC19", location:"Ayacucho, Peru", year:2023, month:"Aug",
     color:"#059669", flag:"🇵🇪",
     bcParticipants:4, totalPatients:91, medical:62, dental:22, pediatric:14, womens:8, projects:1,
-    description:"Four chapter members helped serve rural communities in the Ayacucho region, contributing to medical care and a community infrastructure project funded by Moving Mountains.",
+    description:"TEST story: four chapter members helped serve rural communities in the Ayacucho region, contributing to medical care and a community infrastructure project funded by Moving Mountains.",
     photo:"photo-1648959855771-5b604a638bcd",
   },
 ];
@@ -1724,7 +1748,7 @@ const FIELD_STORIES: FieldStory[] = [
     excerpt:"Rosa walked three hours from her highland village to reach the MC21 clinic. She had never received dental care.",
     full:"Rosa walked three hours from her village in the mountains above Pisac to reach the MC21 mobile clinic in Cusco. At 68, she had never received professional dental care. With the help of volunteer dentists and a BC student translator, she received two extractions and a full cleaning. Her daughter, who accompanied her, wept with gratitude. Rosa left holding a toothbrush — her first — and a follow-up care card. This is the moment we work toward.",
     stats:[{label:"Clinic",value:"MC21"},{label:"Visit type",value:"Dental"},{label:"Travel to clinic",value:"3 hours"},{label:"First visit",value:"Yes"}],
-    sharedBy:"Sofia Reyes", date:"Jan 18, 2025", tags:["Dental","Elder care","MC21"],
+    sharedBy:"TEST Sofia Reyes", date:"Jan 18, 2025", tags:["Dental","Elder care","MC21"],
   },
   {
     id:2, mc:"MC21", type:"patient", subject:"Miguel A.", age:"7",
@@ -1733,7 +1757,7 @@ const FIELD_STORIES: FieldStory[] = [
     excerpt:"Miguel's mother brought him to MC21 with persistent coughing. The checkup revealed a respiratory issue that required immediate referral.",
     full:"Miguel's mother had been worried about her son's persistent cough for months. She couldn't afford a clinic visit in the city. At MC21, our volunteer physicians identified signs of a lower respiratory infection that needed prompt antibiotic treatment. A referral was arranged with a partner clinic in Cusco city. Miguel received his first-ever pediatric examination — and his mother left with medication, a follow-up plan, and the knowledge that her son would be okay. Stories like Miguel's are why early intervention matters.",
     stats:[{label:"Clinic",value:"MC21"},{label:"Visit type",value:"Pediatric"},{label:"Follow-up needed",value:"Yes"},{label:"Referred",value:"Cusco Regional Hospital"}],
-    sharedBy:"Marcus Chen", date:"Jan 19, 2025", tags:["Pediatric","Referral","MC21"],
+    sharedBy:"TEST Marcus Chen", date:"Jan 19, 2025", tags:["Pediatric","Referral","MC21"],
   },
   {
     id:3, mc:"MC21", type:"project", subject:"Stairway Safety Project — Pisac",
@@ -1742,7 +1766,7 @@ const FIELD_STORIES: FieldStory[] = [
     excerpt:"MC21 volunteers and community members built 40 meters of safety stairs on a steep hillside used daily by over 200 residents.",
     full:"The hillside settlement above Pisac had no safe path connecting its upper and lower sections. Residents — including children and elders — navigated a steep, eroding slope daily. MC21 volunteers worked alongside community members over three days to construct 40 meters of reinforced earthen stairways with handrails. The project was funded in part by Moving Mountains donations from chapters across the MEDLIFE network. An estimated 200 residents now use the stairs daily. The community named the path 'El Camino de Salud' — the path of health.",
     stats:[{label:"Clinic",value:"MC21"},{label:"Project type",value:"Infrastructure"},{label:"Stairs built",value:"40 meters"},{label:"Beneficiaries",value:"200+"},{label:"Funded by",value:"Moving Mountains"}],
-    sharedBy:"DeShawn Williams", date:"Jan 20, 2025", tags:["Infrastructure","Community","MC21","Moving Mountains"],
+    sharedBy:"TEST DeShawn Williams", date:"Jan 20, 2025", tags:["Infrastructure","Community","MC21","Moving Mountains"],
   },
   {
     id:4, mc:"MC20", type:"patient", subject:"Carmen V.", age:"34",
@@ -1751,7 +1775,7 @@ const FIELD_STORIES: FieldStory[] = [
     excerpt:"Carmen almost didn't come. A neighbor told her about the clinic. What she learned that day may have saved her life.",
     full:"Carmen almost skipped the clinic. She felt healthy and assumed it wasn't necessary. But a neighbor told her the line was short and the doctors were kind. The women's health screening our team provided detected a cervical abnormality that required follow-up biopsy. Carmen was referred to a public hospital in Lima and has since begun treatment. She later sent a message through a community health worker: 'If I hadn't come that day, I would not have known.' This is preventive care working exactly as it should.",
     stats:[{label:"Clinic",value:"MC20"},{label:"Visit type",value:"Women's Health"},{label:"Follow-up",value:"Biopsy referral"},{label:"Outcome",value:"Treatment initiated"}],
-    sharedBy:"Priya Sharma", date:"Mar 12, 2024", tags:["Women's Health","Prevention","MC20"],
+    sharedBy:"TEST Priya Sharma", date:"Mar 12, 2024", tags:["Women's Health","Prevention","MC20"],
   },
   {
     id:5, mc:"MC20", type:"project", subject:"Community Health Education Mural",
@@ -1760,7 +1784,7 @@ const FIELD_STORIES: FieldStory[] = [
     excerpt:"Working with local artists and community leaders, MC20 volunteers created a health education mural that stays in the community long after the clinic ends.",
     full:"Mobile clinic days are powerful but temporary. The MC20 team partnered with local artists and the Villa El Salvador community council to design and paint a large health education mural on the wall of the community center. The mural covers hand hygiene, maternal nutrition, dental care, and when to seek medical attention. It was designed in collaboration with residents and is written in simple Spanish with illustrations. Over 1,200 people pass this mural daily. It is a reminder that MEDLIFE's work doesn't end when we leave.",
     stats:[{label:"Clinic",value:"MC20"},{label:"Project type",value:"Health Education"},{label:"Mural area",value:"12m × 4m"},{label:"Daily visibility",value:"1,200+ residents"}],
-    sharedBy:"Amara Okonkwo", date:"Mar 14, 2024", tags:["Education","Community","MC20"],
+    sharedBy:"TEST Amara Okonkwo", date:"Mar 14, 2024", tags:["Education","Community","MC20"],
   },
   {
     id:6, mc:"MC19", type:"patient", subject:"The Quispe Family",
@@ -1769,7 +1793,7 @@ const FIELD_STORIES: FieldStory[] = [
     excerpt:"A grandmother, her daughter, and granddaughter all received care at MC19 — the only medical attention any of them had received in years.",
     full:"Abuela Quispe, 74, came with her daughter Lucía, 42, and granddaughter Valentina, 9. None of them had seen a doctor in over three years. At MC19, all three received medical examinations. Abuela had unmanaged hypertension that was identified and referred for follow-up. Lucía received a women's health screening. Valentina received a pediatric checkup and vaccinations. The family left with medication, referral letters, and smiles. Three generations. One afternoon. This is what accessible healthcare looks like.",
     stats:[{label:"Clinic",value:"MC19"},{label:"Patients",value:"3 (1 family)"},{label:"Visit types",value:"Medical, Pediatric, Women's"},{label:"Referred",value:"Yes — Abuela Quispe"}],
-    sharedBy:"Nadia Osei", date:"Aug 9, 2023", tags:["Family","Multi-generational","MC19"],
+    sharedBy:"TEST Nadia Osei", date:"Aug 9, 2023", tags:["Family","Multi-generational","MC19"],
   },
 ];
 
@@ -2793,11 +2817,11 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
   );
 
   const gaps = [
-    { issue:"Member Engagement has no chair — inactive 3+ weeks",       urgency:"High",   action:"Appoint chair immediately; assign re-engagement action" },
-    { issue:"No Fundraising chair backup identified",                     urgency:"High",   action:"Identify a backup from current active Fundraising members" },
-    { issue:"President Sofia Reyes graduating May 2026",                  urgency:"Medium", action:"Begin succession planning — identify president candidate now" },
-    { issue:"No bridge videos submitted for leadership transitions",       urgency:"Medium", action:"Assign bridge video to all chairs before end of semester" },
-    { issue:"SLT Promotion committee under capacity (only 6 members)",    urgency:"Low",    action:"Add 2 members and set SLT promotion KPIs" },
+    { issue:"TEST Member Engagement has no chair — inactive 3+ weeks",    urgency:"High",   action:"TEST appoint chair immediately; assign re-engagement action" },
+    { issue:"TEST no Fundraising chair backup identified",                urgency:"High",   action:"TEST identify a backup from current active Fundraising members" },
+    { issue:"TEST President Sofia Reyes graduating May 2026",             urgency:"Medium", action:"TEST begin succession planning — identify president candidate now" },
+    { issue:"TEST no bridge videos submitted for leadership transitions", urgency:"Medium", action:"TEST assign bridge video to all chairs before end of semester" },
+    { issue:"TEST SLT Promotion committee under capacity (only 6 members)", urgency:"Low", action:"TEST add 2 members and set SLT promotion KPIs" },
   ];
   const pipeline = MEMBERS.filter(m=>["Chair candidate","Chair","E-Board"].includes(m.pipeline));
 
@@ -3126,29 +3150,29 @@ type NavGroup = { label: string; items: NavItem[] };
 // ─── Network member data (other chapters) ────────────────────────
 const NETWORK_MEMBERS = [
   // West
-  { id:101, name:"Alex Rivera",     chapter:"UCLA MEDLIFE",          region:"West",         color:"#1A56E8", pts:1580, ptsWk:92, evtCreated:10, evtAttended:21, actions:28 },
-  { id:102, name:"Priya Patel",     chapter:"UCLA MEDLIFE",          region:"West",         color:"#7C3AED", pts:1420, ptsWk:78, evtCreated:8,  evtAttended:19, actions:24 },
-  { id:103, name:"Keanu Makoa",     chapter:"UCLA MEDLIFE",          region:"West",         color:"#059669", pts:1190, ptsWk:65, evtCreated:7,  evtAttended:16, actions:21 },
+  { id:101, name:"TEST Alex Rivera",     chapter:"TEST UCLA MEDLIFE",      region:"West",         color:"#1A56E8", pts:1580, ptsWk:92, evtCreated:10, evtAttended:21, actions:28 },
+  { id:102, name:"TEST Priya Patel",     chapter:"TEST UCLA MEDLIFE",      region:"West",         color:"#7C3AED", pts:1420, ptsWk:78, evtCreated:8,  evtAttended:19, actions:24 },
+  { id:103, name:"TEST Keanu Makoa",     chapter:"TEST UCLA MEDLIFE",      region:"West",         color:"#059669", pts:1190, ptsWk:65, evtCreated:7,  evtAttended:16, actions:21 },
   // Canada
-  { id:201, name:"Sophie Tremblay", chapter:"McGill MEDLIFE",        region:"Canada",       color:"#DB2777", pts:1380, ptsWk:85, evtCreated:9,  evtAttended:18, actions:26 },
-  { id:202, name:"Liam Bouchard",   chapter:"McGill MEDLIFE",        region:"Canada",       color:"#D97706", pts:1260, ptsWk:74, evtCreated:8,  evtAttended:17, actions:23 },
-  { id:203, name:"Marie Dupont",    chapter:"UBC MEDLIFE",           region:"Canada",       color:"#0891B2", pts:1120, ptsWk:65, evtCreated:7,  evtAttended:14, actions:19 },
+  { id:201, name:"TEST Sophie Tremblay", chapter:"TEST McGill MEDLIFE",    region:"Canada",       color:"#DB2777", pts:1380, ptsWk:85, evtCreated:9,  evtAttended:18, actions:26 },
+  { id:202, name:"TEST Liam Bouchard",   chapter:"TEST McGill MEDLIFE",    region:"Canada",       color:"#D97706", pts:1260, ptsWk:74, evtCreated:8,  evtAttended:17, actions:23 },
+  { id:203, name:"TEST Marie Dupont",    chapter:"TEST UBC MEDLIFE",       region:"Canada",       color:"#0891B2", pts:1120, ptsWk:65, evtCreated:7,  evtAttended:14, actions:19 },
   // New England (BC + others)
-  { id:301, name:"Emma Bradford",   chapter:"MIT MEDLIFE",           region:"New England",  color:"#6366F1", pts:1180, ptsWk:68, evtCreated:6,  evtAttended:15, actions:20 },
-  { id:302, name:"Carlos Mendez",   chapter:"Northeastern MEDLIFE",  region:"New England",  color:"#16A34A", pts:1050, ptsWk:61, evtCreated:5,  evtAttended:13, actions:18 },
-  { id:303, name:"Nia Okafor",      chapter:"BU MEDLIFE",            region:"New England",  color:"#DC2626", pts:980,  ptsWk:57, evtCreated:4,  evtAttended:12, actions:16 },
+  { id:301, name:"TEST Emma Bradford",   chapter:"TEST MIT MEDLIFE",          region:"New England",  color:"#6366F1", pts:1180, ptsWk:68, evtCreated:6,  evtAttended:15, actions:20 },
+  { id:302, name:"TEST Carlos Mendez",   chapter:"TEST Northeastern MEDLIFE", region:"New England",  color:"#16A34A", pts:1050, ptsWk:61, evtCreated:5,  evtAttended:13, actions:18 },
+  { id:303, name:"TEST Nia Okafor",      chapter:"TEST BU MEDLIFE",           region:"New England",  color:"#DC2626", pts:980,  ptsWk:57, evtCreated:4,  evtAttended:12, actions:16 },
   // Mid-Atlantic
-  { id:401, name:"Jordan Walsh",    chapter:"NYU MEDLIFE",           region:"Mid-Atlantic", color:"#1A56E8", pts:1290, ptsWk:71, evtCreated:7,  evtAttended:16, actions:22 },
-  { id:402, name:"Fatima Al-Amin",  chapter:"NYU MEDLIFE",           region:"Mid-Atlantic", color:"#7C3AED", pts:1040, ptsWk:60, evtCreated:5,  evtAttended:13, actions:17 },
+  { id:401, name:"TEST Jordan Walsh",    chapter:"TEST NYU MEDLIFE",       region:"Mid-Atlantic", color:"#1A56E8", pts:1290, ptsWk:71, evtCreated:7,  evtAttended:16, actions:22 },
+  { id:402, name:"TEST Fatima Al-Amin",  chapter:"TEST NYU MEDLIFE",       region:"Mid-Atlantic", color:"#7C3AED", pts:1040, ptsWk:60, evtCreated:5,  evtAttended:13, actions:17 },
   // South
-  { id:501, name:"Aisha Johnson",   chapter:"Emory MEDLIFE",         region:"South",        color:"#059669", pts:980,  ptsWk:58, evtCreated:5,  evtAttended:12, actions:16 },
-  { id:502, name:"Wei Chen",        chapter:"UT Austin MEDLIFE",     region:"South",        color:"#D97706", pts:940,  ptsWk:55, evtCreated:4,  evtAttended:11, actions:15 },
+  { id:501, name:"TEST Aisha Johnson",   chapter:"TEST Emory MEDLIFE",     region:"South",        color:"#059669", pts:980,  ptsWk:58, evtCreated:5,  evtAttended:12, actions:16 },
+  { id:502, name:"TEST Wei Chen",        chapter:"TEST UT Austin MEDLIFE", region:"South",        color:"#D97706", pts:940,  ptsWk:55, evtCreated:4,  evtAttended:11, actions:15 },
 ];
 
 // Combined: BC members (from MEMBERS) adapted + network members
 function buildOrgLeaderboard() {
   const bcRows = MEMBERS.map(m => ({
-    id: m.id, name: m.name, chapter:"Boston College MEDLIFE",
+    id: m.id, name: m.name, chapter:"TEST Boston College MEDLIFE",
     region:"New England", color: m.color,
     pts: m.pts, ptsWk: m.ptsWk, evtCreated: m.evtCreated,
     evtAttended: m.evtAttended, actions: m.actions,
@@ -3160,12 +3184,12 @@ function buildOrgLeaderboard() {
 
 // ─── E-Board positions ────────────────────────────────────────────
 const EBOARD_ROLES = [
-  { role:"President",                  holder:"Sofia Reyes",     filled:true  },
-  { role:"VP of Events",               holder:"Marcus Chen",     filled:true  },
+  { role:"President",                  holder:"TEST Sofia Reyes",     filled:true  },
+  { role:"VP of Events",               holder:"TEST Marcus Chen",     filled:true  },
   { role:"VP of Membership",           holder:null,              filled:false },
-  { role:"VP of Fundraising",          holder:"Amara Okonkwo",   filled:true  },
-  { role:"VP of Communications",       holder:"Priya Sharma",    filled:true  },
-  { role:"VP of Service Learning",     holder:"DeShawn Williams",filled:true  },
+  { role:"VP of Fundraising",          holder:"TEST Amara Okonkwo",   filled:true  },
+  { role:"VP of Communications",       holder:"TEST Priya Sharma",    filled:true  },
+  { role:"VP of Service Learning",     holder:"TEST DeShawn Williams",filled:true  },
   { role:"Secretary",                  holder:null,              filled:false },
 ];
 
@@ -3185,7 +3209,7 @@ function LeadersScreen({ onSelectMember }: { onSelectMember:(id:number)=>void })
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-black text-slate-900">Current Leaders</h1>
-        <p className="text-sm text-slate-500 mt-1">Every E-Board position and Event Committee chair for Boston College MEDLIFE.</p>
+        <p className="text-sm text-slate-500 mt-1">Every E-Board position and Event Committee chair for TEST Boston College MEDLIFE.</p>
       </div>
 
       {/* E-Board */}
@@ -3348,9 +3372,9 @@ function MembersScreen({ onSelectMember }: { onSelectMember: (id:number)=>void }
           <Sparkles size={14} className="text-blue-500 mt-0.5 shrink-0"/>
           <span>
             {view==="regional"
-              ? <><strong>New England Region</strong> — members from Boston College, MIT, Northeastern, BU, and other New England chapters.</>
+              ? <><strong>New England Region</strong> — TEST members from Boston College, MIT, Northeastern, BU, and other New England chapters.</>
               : <><strong>Organizational Leaderboard</strong> — members from all MEDLIFE chapters globally, sorted by total points.</>}
-            {" "}Boston College members are <strong>highlighted</strong>.
+            {" "}TEST Boston College members are <strong>highlighted</strong>.
           </span>
         </div>
       )}
@@ -3552,9 +3576,9 @@ function UserProfileSwitcher() {
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full px-4 py-3.5 flex items-center gap-2.5 cursor-pointer hover:bg-white/5 transition-colors text-left">
-        <Avatar name="Sofia Reyes" color={BLUE} size={28}/>
+        <Avatar name="TEST Sofia Reyes" color={BLUE} size={28}/>
         <div className="min-w-0 flex-1">
-          <div className="text-white text-[11px] font-bold truncate">Sofia Reyes</div>
+          <div className="text-white text-[11px] font-bold truncate">TEST Sofia Reyes</div>
           <div className="text-blue-300/50 text-[10px]">{active.label}</div>
         </div>
         <ChevronUp size={12} className={`text-white/40 transition-transform ${open ? "" : "rotate-180"}`}/>
@@ -3610,9 +3634,15 @@ const ACTION_TYPES = [
 const LEADER_PREVIEW_ONLY_COPY =
   "This leader workflow stays visible for review, but it is preview-only until the audited write path is approved.";
 
-function AssignActionModal({ onClose }: { onClose: () => void }) {
+function AssignActionModal({
+  onClose,
+  initialMemberIds = [],
+}: {
+  onClose: () => void;
+  initialMemberIds?: number[];
+}) {
   const [step, setStep] = useState<1|2|3>(1);
-  const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<number[]>(initialMemberIds);
   const [selectedAction, setSelectedAction] = useState<string>("");
   const [dueDate, setDueDate] = useState("");
   const [pts, setPts] = useState(0);
@@ -3822,9 +3852,17 @@ const VALUES_CHECKS = [
   { id:"growth",    label:"Growth",                desc:"Actively seeks feedback, reflection, and improvement" },
 ];
 
-function PromoteLeaderModal({ onClose, onViewProfile }: { onClose: () => void; onViewProfile: (id: number) => void }) {
+function PromoteLeaderModal({
+  onClose,
+  onViewProfile,
+  initialMemberId = null,
+}: {
+  onClose: () => void;
+  onViewProfile: (id: number) => void;
+  initialMemberId?: number | null;
+}) {
   const [step, setStep] = useState<1|2|3>(1);
-  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<number | null>(initialMemberId);
   const [newLevel, setNewLevel] = useState<string>("");
   const [valuesChecked, setValuesChecked] = useState<string[]>([]);
   const [interviewDone, setInterviewDone] = useState(false);
@@ -4102,6 +4140,8 @@ export function FigmaLeaderCommandCenter({
   const [showAssignAction, setShowAssignAction] = useState(false);
   const [showPromote, setShowPromote] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [assignActionMemberIds, setAssignActionMemberIds] = useState<number[]>([]);
+  const [promoteInitialMemberId, setPromoteInitialMemberId] = useState<number | null>(null);
 
   useEffect(() => {
     setScreen(queryScreen);
@@ -4123,6 +4163,21 @@ export function FigmaLeaderCommandCenter({
     setShowCreateEvent(true);
   };
 
+  const openAssignActionPreview = (memberIds: number[] = []) => {
+    setAssignActionMemberIds(memberIds);
+    setShowAssignAction(true);
+  };
+
+  const openPromotePreview = (memberId?: number) => {
+    setPromoteInitialMemberId(memberId ?? null);
+    setShowPromote(true);
+  };
+
+  const openSuccessionForMember = (memberId: number) => {
+    setSelectedId(memberId);
+    navigateToScreen("succession");
+  };
+
   const handleSelectMember = (id: number) => {
     setSelectedId(id);
     navigateToScreen("profile");
@@ -4131,8 +4186,25 @@ export function FigmaLeaderCommandCenter({
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100"
       style={{ fontFamily:"'Inter', system-ui, sans-serif" }}>
-      {showAssignAction && <AssignActionModal onClose={() => setShowAssignAction(false)}/>}
-      {showPromote && <PromoteLeaderModal onClose={() => setShowPromote(false)} onViewProfile={handleSelectMember}/>}
+      {showAssignAction && (
+        <AssignActionModal
+          initialMemberIds={assignActionMemberIds}
+          onClose={() => {
+            setShowAssignAction(false);
+            setAssignActionMemberIds([]);
+          }}
+        />
+      )}
+      {showPromote && (
+        <PromoteLeaderModal
+          initialMemberId={promoteInitialMemberId}
+          onClose={() => {
+            setShowPromote(false);
+            setPromoteInitialMemberId(null);
+          }}
+          onViewProfile={handleSelectMember}
+        />
+      )}
       <Sidebar active={screen} onNav={navigateToScreen}/>
       <main className="flex-1 overflow-y-auto min-w-0 flex flex-col">
         {/* Top bar */}
@@ -4159,11 +4231,19 @@ export function FigmaLeaderCommandCenter({
           )}
           {screen==="leaderboard" && <LeaderboardScreen onNavigate={navigateToScreen}/>}
           {screen==="members"     && <MembersScreen onSelectMember={handleSelectMember}/>}
-          {screen==="profile"     && <ProfileScreen memberId={selectedId} onBack={()=>navigateToScreen("members")}/>}
+          {screen==="profile"     && (
+            <ProfileScreen
+              memberId={selectedId}
+              onBack={()=>navigateToScreen("members")}
+              onAssignAction={(memberId) => openAssignActionPreview([memberId])}
+              onPromote={openPromotePreview}
+              onOpenSuccession={openSuccessionForMember}
+            />
+          )}
           {screen==="committees"  && (
             <CommitteesScreen
-              onAssignAction={() => setShowAssignAction(true)}
-              onPromote={() => setShowPromote(true)}
+              onAssignAction={() => openAssignActionPreview()}
+              onPromote={() => openPromotePreview()}
               onCreateEvent={handleCreateEvent}
             />
           )}
