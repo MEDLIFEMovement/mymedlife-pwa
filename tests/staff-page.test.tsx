@@ -126,7 +126,7 @@ describe("staff page", () => {
     expect(html).toContain("High School");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
-    expect(html).toContain("Export");
+    expect(html).toContain("Export blocked");
     expect(html).toContain("pr-32");
     expect(html).toContain("sm:pr-[19rem]");
     expect(html).toContain("lg:pr-[20rem]");
@@ -389,10 +389,12 @@ describe("staff page", () => {
 
     expect(html).toContain("Preview Survey");
     expect(html).toContain("Preview NPS Survey");
+    expect(html).toContain("Send blocked");
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
     expect(html).toContain("no note save, intervention write, or follow-up write runs from this drawer");
+    expect(html).toContain("disabled:cursor-not-allowed");
     expect(html).not.toContain(">Send NPS Survey<");
   });
 
@@ -414,6 +416,7 @@ describe("staff page", () => {
     expect(html).toContain("Enter Admin Panel");
     expect(html).toContain("DS Admin");
     expect(html).toContain("Super Admin");
+    expect(readFileSync("src/components/figma-staff-command-center.tsx", "utf8")).toContain("Retry blocked");
   });
 
   it("keeps the local staff shell close to the 2,095-line Figma export while allowing route wiring", () => {
