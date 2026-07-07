@@ -23,12 +23,28 @@ export function MemberProfilePanel({
   studentHome,
   recognition,
 }: MemberProfilePanelProps) {
-  const firstName = displayName.split(" ")[0] ?? displayName;
+  const testDisplayName = ensureVisibleTestLabel(displayName);
+  const testChapterName = ensureVisibleTestLabel(chapterName);
+  const firstName = ensureVisibleTestLabel(displayName.split(" ")[0] ?? displayName);
   const visibleBadges = recognition.badges.slice(0, 4);
   const featuredHomeEvent = studentHome.primaryEvent;
+  const testFeaturedHomeEventTitle = featuredHomeEvent?.title
+    ? ensureVisibleTestLabel(featuredHomeEvent.title)
+    : null;
   const launchLaneEventsHref = getLaunchLaneMemberEventsHref("profile");
   const launchLanePointsHref = getLaunchLaneMemberPointsHref("profile");
-  const nextStepTitle = featuredHomeEvent?.title ?? "Open the next chapter event";
+  const nextStepTitle = testFeaturedHomeEventTitle ?? "Open the next chapter event";
+  const visibleIdentityRows = workspace.identityRows.map((row) => ({
+    ...row,
+    value:
+      row.label === "Name" || row.label === "Chapter scope"
+        ? ensureVisibleTestLabel(row.value)
+        : row.value,
+  }));
+  const visibleScopeRows = workspace.scopeRows.map((row) => ({
+    ...row,
+    value: row.label === "Chapter scope" ? ensureVisibleTestLabel(row.value) : row.value,
+  }));
 
   return (
     <section className="grid gap-4">
@@ -37,7 +53,7 @@ export function MemberProfilePanel({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[#2563eb]">
-                {chapterName}
+                {testChapterName}
               </p>
               <h1 className="mt-2 text-[2.25rem] font-semibold leading-none text-slate-950 sm:text-[2.6rem]">
                 Hi, {firstName}
@@ -58,10 +74,10 @@ export function MemberProfilePanel({
                   Profile snapshot
                 </p>
                 <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950">
-                  {displayName}
+                  {testDisplayName}
                 </h2>
                 <p className="mt-2 text-sm text-slate-600">
-                  {workspace.profileLabel} · {chapterName}
+                  {workspace.profileLabel} · {testChapterName}
                 </p>
               </div>
               <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#bfdbfe] bg-white text-xl font-semibold text-[#2563eb]">
@@ -89,7 +105,7 @@ export function MemberProfilePanel({
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <ProfileHeroCard
               label="Next event"
-              title={featuredHomeEvent?.title ?? "Open events"}
+              title={testFeaturedHomeEventTitle ?? "Open events"}
               detail={featuredHomeEvent?.timing ?? "See the next chapter moment"}
             />
             <ProfileHeroCard
@@ -119,7 +135,7 @@ export function MemberProfilePanel({
                 </p>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:w-[26rem]">
-                <ProfilePulseCard label="Next event" value={featuredHomeEvent?.title ?? "Open events"} />
+                <ProfilePulseCard label="Next event" value={testFeaturedHomeEventTitle ?? "Open events"} />
                 <ProfilePulseCard label="RSVP" value={featuredHomeEvent?.rsvpLabel ?? "Open"} />
                 <ProfilePulseCard
                   label="Attendance"
@@ -150,7 +166,7 @@ export function MemberProfilePanel({
           items={[
             {
               label: "Next event",
-              detail: featuredHomeEvent?.title ?? "Open events",
+              detail: testFeaturedHomeEventTitle ?? "Open events",
               tone: "blue",
             },
             {
@@ -208,7 +224,7 @@ export function MemberProfilePanel({
             Keep identity easy to trust.
           </h2>
           <div className="mt-4 grid gap-3">
-            {workspace.identityRows.map((row) => (
+            {visibleIdentityRows.map((row) => (
               <ProfileRowCard key={row.label} row={row} />
             ))}
           </div>
@@ -220,7 +236,7 @@ export function MemberProfilePanel({
             Where you fit in right now.
           </h2>
           <div className="mt-4 grid gap-3">
-            {workspace.scopeRows.map((row) => (
+            {visibleScopeRows.map((row) => (
               <ProfileRowCard key={row.label} row={row} />
             ))}
           </div>
@@ -252,6 +268,10 @@ export function MemberProfilePanel({
       </SurfacePanel>
     </section>
   );
+}
+
+function ensureVisibleTestLabel(value: string) {
+  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
 }
 
 function ProfileRowCard({

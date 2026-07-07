@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { redirect } from "next/navigation";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -37,6 +38,30 @@ function getSignedInActor(email: string) {
 }
 
 describe("member event detail route", () => {
+  it("parks unknown event ids back to the member events route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing unknown member event route."),
+    );
+    vi.mocked(redirect).mockImplementation((href: string) => {
+      throw new Error(`redirect:${href}`);
+    });
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+
+    await expect(
+      EventDetailPage({
+        params: Promise.resolve({ eventId: "missing-event" }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow("redirect:/app/events");
+  });
+
   it("renders the source-backed event detail shell on the standalone route", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
@@ -57,7 +82,7 @@ describe("member event detail route", () => {
     );
 
     expect(html).toContain("Event RSVP");
-    expect(html).toContain("Rush Month kickoff social");
+    expect(html).toContain("TEST Rush Month kickoff social");
     expect(html).toContain("Points Available");
     expect(html).toContain("preview link only");
     expect(html).toContain("Route-backed preview");
@@ -88,6 +113,32 @@ describe("member event detail route", () => {
     expect(html).toContain("Go to Check-In");
     expect(html).toContain("Route-backed preview only");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=home&amp;step=checkin"');
+  });
+
+  it("renders the check-in step with TEST-labeled preview event content", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing member check-in preview state."),
+    );
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+    const html = renderToStaticMarkup(
+      await EventDetailPage({
+        params: Promise.resolve({ eventId: "chapter-event-ucla-kickoff" }),
+        searchParams: Promise.resolve({ source: "events", step: "checkin" }),
+      }),
+    );
+
+    expect(html).toContain("Preview event QR code");
+    expect(html).toContain("TEST Rush Month kickoff social");
+    expect(html).toContain("This route only previews the next state.");
+    expect(html).toContain("Confirm Check-In");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=points"');
   });
 
   it("renders the points-impact step with chapter leaderboard context", async () => {

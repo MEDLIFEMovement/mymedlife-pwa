@@ -127,6 +127,10 @@ export default async function AppEventDetailPage({
   );
 }
 
+function ensureVisibleTestLabel(value: string) {
+  return /\bTEST\b/.test(value) ? value : `TEST ${value}`;
+}
+
 function EventDetailView({
   event,
   snapshot,
@@ -138,6 +142,9 @@ function EventDetailView({
 }) {
   const detailHref = buildEventStepHref(event.id, "detail", source);
   const rsvpHref = buildEventStepHref(event.id, "rsvp", source);
+  const visibleEventTitle = ensureVisibleTestLabel(event.title);
+  const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
+  const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
 
   return (
     <div className="pb-10">
@@ -169,11 +176,11 @@ function EventDetailView({
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex items-center gap-2">
               <Pill label={event.memberRsvpState === "registered" ? "RSVP'd" : "RSVP Open"} variant="green" />
-              <Pill label={snapshot.chapterName} variant="blue" />
+              <Pill label={visibleChapterName} variant="blue" />
             </div>
-            <h1 className="text-2xl font-extrabold leading-snug text-white">{event.title}</h1>
+            <h1 className="text-2xl font-extrabold leading-snug text-white">{visibleEventTitle}</h1>
             <p className="mt-1 text-sm text-blue-200">
-              {snapshot.chapterName} · {event.memberDateTimeLabel}
+              {visibleChapterName} · {event.memberDateTimeLabel}
             </p>
           </div>
         </div>
@@ -252,7 +259,7 @@ function EventDetailView({
               {snapshot.memberDateTimeLabel}
             </DetailRow>
             <DetailRow icon={<MapPin size={15} className="text-[#1b4b8e]" />}>
-              {snapshot.memberLocationLabel}
+              {visibleLocationLabel}
             </DetailRow>
             <DetailRow icon={<Users size={15} className="text-[#1b4b8e]" />}>
               Organized by <span className="font-semibold text-[#1b4b8e]">Chapter leadership</span>
@@ -323,6 +330,7 @@ function EventRsvpConfirmView({
   backHref: string;
   source?: string;
 }) {
+  const visibleLocationLabel = ensureVisibleTestLabel(snapshot.memberLocationLabel);
   return (
     <StepShell backHref={backHref} title="">
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
@@ -341,7 +349,7 @@ function EventRsvpConfirmView({
               {snapshot.memberDateTimeLabel}
             </DetailRow>
             <DetailRow icon={<MapPin size={14} className="text-[#1b4b8e]" />}>
-              {snapshot.memberLocationLabel}
+              {visibleLocationLabel}
             </DetailRow>
           </div>
         </Card>
@@ -389,6 +397,7 @@ function EventCheckInView({
   backHref: string;
   source?: string;
 }) {
+  const visibleEventTitle = ensureVisibleTestLabel(event.title);
   return (
     <StepShell backHref={backHref} title="Check In">
       <div className="flex flex-1 flex-col px-4 py-6">
@@ -396,7 +405,7 @@ function EventCheckInView({
           <div className="mb-2 flex items-center gap-2">
             <Pill label="RSVP'd" variant="green" />
           </div>
-          <h2 className="text-lg font-extrabold text-slate-950">{event.title}</h2>
+          <h2 className="text-lg font-extrabold text-slate-950">{visibleEventTitle}</h2>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
             <Clock size={13} />
             {snapshot.memberDateTimeLabel}
@@ -444,10 +453,11 @@ function EventPointsImpactView({
   backHref: string;
   source?: string;
 }) {
+  const visibleChapterName = ensureVisibleTestLabel(snapshot.chapterName);
   const chapterRows = [
-    { rank: "🥇", name: "Aisha N.", points: 220 },
-    { rank: "🥈", name: "Marcus T.", points: 185 },
-    { rank: "🥉", name: "You (Sofia R.)", points: 165, highlight: true },
+    { rank: "🥇", name: "TEST Aisha N.", points: 220 },
+    { rank: "🥈", name: "TEST Marcus T.", points: 185 },
+    { rank: "🥉", name: "You (TEST Sofia R.)", points: 165, highlight: true },
   ];
 
   return (
@@ -459,7 +469,7 @@ function EventPointsImpactView({
         <h1 className="mb-1 text-2xl font-extrabold text-slate-950">Checked in!</h1>
         <p className="mt-2 mb-1 text-4xl font-extrabold text-amber-500">+{event.pointsAwarded} points</p>
         <p className="mb-8 text-sm text-slate-600">
-          Local preview of the post-check-in state for {snapshot.chapterName}.
+          Local preview of the post-check-in state for {visibleChapterName}.
         </p>
 
         <Card className="mb-6 w-full border-[#dbeafe] bg-[#eff6ff] text-left">
