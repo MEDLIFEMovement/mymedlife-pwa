@@ -2086,7 +2086,7 @@ export function FigmaStaffCommandCenter({
     <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily:"'Plus Jakarta Sans', system-ui, sans-serif" }}>
       {/* Top Bar */}
       <header className="bg-sidebar border-b border-sidebar-border flex-shrink-0 z-30 relative">
-        <div className="flex items-center h-12 px-5 gap-6">
+        <div className="flex h-12 items-center gap-4 px-5 pr-24 sm:gap-6 sm:pr-[15rem]">
           {/* Logo */}
           <a
             href={buildStaffShellHref("chapters", pathname, searchParams.toString())}
@@ -2104,7 +2104,7 @@ export function FigmaStaffCommandCenter({
           </a>
 
           {/* Nav */}
-          <nav className="flex items-center gap-0.5 flex-1">
+          <nav className="flex min-w-0 flex-1 items-center gap-0.5">
             {NAV_ITEMS.map((item) => (
               <a
                 key={item.key}
@@ -2126,21 +2126,21 @@ export function FigmaStaffCommandCenter({
           </nav>
 
           {/* Right */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="flex items-center gap-1.5 bg-red-600/20 border border-red-500/30 px-2.5 py-1 rounded-lg">
+          <div className="pointer-events-none ml-auto flex min-w-0 flex-none items-center justify-end gap-2 sm:gap-3">
+            <div className="pointer-events-none flex min-w-0 max-w-[10.5rem] items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1 sm:max-w-[12rem] lg:max-w-none">
               <AlertTriangle className="w-3 h-3 text-red-400" />
-              <span className="text-red-300 text-xs font-semibold">2 chapters need intervention</span>
+              <span className="truncate text-xs font-semibold text-red-300">2 chapters need intervention</span>
             </div>
-            <div className="w-7 h-7 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-sidebar">JS</div>
+            <div className="hidden h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-sidebar lg:flex">JS</div>
           </div>
         </div>
       </header>
 
       {/* Page Header */}
-      <div className="bg-white border-b border-border px-6 py-3 flex items-center justify-between flex-shrink-0">
-        <div>
+      <div className="flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 pr-24 sm:pr-[15rem]">
+        <div className="min-w-0">
           <h1 className="text-base font-bold text-foreground">{SCREEN_TITLES[activeScreen]}</h1>
-          <div className="text-xs text-muted-foreground mt-0.5">
+          <div className="mt-0.5 text-xs text-muted-foreground">
             {activeScreen === "chapters" && `${CHAPTERS.length} chapters · Rush Month active · Last updated 2 min ago`}
             {activeScreen === "campaigns" && "7 campaigns active across all regions"}
             {activeScreen === "ugc" && `${UGC_CARDS.filter(c=>c.visibility==="pending").length} items pending review`}
@@ -2149,7 +2149,7 @@ export function FigmaStaffCommandCenter({
             {activeScreen === "sops" && (sopView === "builder" && sopCampaign ? `${sopCampaign.name} · ${sopCampaign.version}` : "Build, version, and publish campaign workflows — steps, roles, points, and comms")}
           </div>
         </div>
-        <div className="text-xs text-muted-foreground font-mono">Jun 17, 2026 · 14:41 UTC</div>
+        <div className="ml-4 hidden flex-shrink-0 text-xs font-mono text-muted-foreground md:block">Jun 17, 2026 · 14:41 UTC</div>
       </div>
 
       {/* Content */}
