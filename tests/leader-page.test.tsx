@@ -143,6 +143,7 @@ describe("leader page", () => {
     expect(html).toContain("Create Event Preview");
     expect(html).toContain("All Events — June 2025");
     expect(html).toContain("attendance readback");
+    expect(html).toContain("Preview Lead");
     expect(html).not.toContain("Chapter Metrics — June 2025");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Luma readback");
@@ -151,7 +152,8 @@ describe("leader page", () => {
       join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
       "utf8",
     );
-    expect(source).toContain("Preview survey");
+    expect(source).toContain("Preview Survey");
+    expect(source).toContain("Event Score Preview —");
     expect(source).toContain("Survey sending is blocked in this preview");
     expect(source).not.toContain(">Send survey");
   });
@@ -253,6 +255,7 @@ describe("leader page", () => {
 
     if (view === "member_profile") {
       expect(html).toContain("Preview Promotion");
+      expect(html).toContain("Preview Review Actions");
       expect(html).toContain("Preview Leadership Follow-through");
       expect(html).toContain("Preview E-Board Succession");
       expect(html).toContain("Preview Note");
@@ -491,7 +494,10 @@ describe("leader page", () => {
     expect(source).toContain("Preview Values Interview Form");
     expect(source).toContain("No live invite, contact sync, form submission, or provider handoff is sent from this preview.");
     expect(source).toContain("toTestLabel");
+    expect(source).toContain("Preview Review Actions");
+    expect(source).toContain("Leader Review Notes");
     expect(source).toContain("Review this TEST member's points, event follow-through, preview actions, blocked notes, and succession handoff posture.");
+    expect(source).toContain("TEST Service Committee Chair interview preview");
     expect(source).toContain("TEST reviewed Moving Mountains Kickoff event handoff preview");
     expect(source).toContain("TEST reviewed committee co-lead readiness preview");
     expect(source).toContain("Monitor whether each TEST committee is moving the chapter forward. Committee ownership, member review, and attendance follow-through stay preview-only in this shell.");
@@ -500,6 +506,9 @@ describe("leader page", () => {
     expect(source).toContain("Preview Member Follow-through");
     expect(source).toContain("Keep chair coverage, member review, and attendance follow-through visible here without turning on live committee writes.");
     expect(source).toContain("Track TEST event execution previews, survey posture, committee follow-through, and chapter-wide attendance readback without turning on live event operations.");
+    expect(source).toContain("Preview Lead");
+    expect(source).toContain("Event Score Preview —");
+    expect(source).toContain("Preview Survey");
   });
 
   it("routes member-profile leadership actions into preview flows and blocks note writes honestly", () => {
