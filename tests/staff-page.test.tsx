@@ -273,6 +273,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Story link ingestion is blocked until proof-review writes are approved");
     expect(html).toContain("provider fetch and queue writes are blocked in this preview");
+    expect(html).toContain("Approved (2)");
     expect(html).toContain("TEST Rush Month tabling");
     expect(html).toContain("TEST Priya Nair");
     expect(source).toContain("TEST Best Practice: QR Lead Capture");
@@ -300,6 +301,26 @@ describe("staff page", () => {
     expect(html).toContain("SOP duplication is blocked until template-write approval is complete");
     expect(html).toContain("SOP archiving is blocked until draft-live safety approval is complete");
     expect(html).toContain("Open Builder");
+  });
+
+  it("keeps best-practice sharing controls visibly blocked inside the staff library surface", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "best_practices" }),
+      }),
+    );
+
+    expect(html).toContain("Best-practice sharing stays visible for review");
+    expect(html).toContain("feed publishing, coach outreach, and bookmarking remain blocked in this preview");
+    expect(html).toContain("TEST QR Code Lead Capture at Multi-Event Weekend");
+    expect(html).toContain("TEST Stanford University");
   });
 
   it("keeps the admin handoff visible but blocked for non-admin staff", async () => {
