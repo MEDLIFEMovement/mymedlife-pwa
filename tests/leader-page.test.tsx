@@ -140,8 +140,9 @@ describe("leader page", () => {
     );
 
     expect(html).toContain("Event Performance");
-    expect(html).toContain("Create Event");
+    expect(html).toContain("Create Event Preview");
     expect(html).toContain("All Events — June 2025");
+    expect(html).toContain("attendance readback");
     expect(html).not.toContain("Chapter Metrics — June 2025");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Luma readback");
@@ -226,7 +227,7 @@ describe("leader page", () => {
     ["training", "Leadership Training"],
     ["values", "MEDLIFE Values"],
     ["leaders", "Current Leaders"],
-    ["create_event", "Create New Event"],
+    ["create_event", "Create Event Preview"],
     ["stories", "MEDLIFE Stories"],
   ])("keeps the %s leader view route-backed inside the restored Figma shell", async (view, expectedCopy) => {
     const actorModule = await import("@/services/local-actor-context");
@@ -255,6 +256,16 @@ describe("leader page", () => {
       expect(html).toContain("Preview Leadership Action");
       expect(html).toContain("Preview E-Board Succession");
       expect(html).toContain("Preview Note");
+    }
+
+    if (view === "committees") {
+      const source = readFileSync(
+        join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
+        "utf8",
+      );
+      expect(html).toContain("Preview Committee Setup");
+      expect(source).toContain("Preview Chair Assignment");
+      expect(source).toContain("Preview Committee Review");
     }
 
     if (view === "succession") {
