@@ -66,6 +66,30 @@ describe("production rollout roster import", () => {
     ).toThrow(/test or placeholder email data/);
   });
 
+  it("rejects Test and Figma sandbox roster values before generating rollout CSVs", () => {
+    expect(() =>
+      buildProductionRolloutRosterImport(
+        [
+          "email,displayName,chapterId,roleKey,status",
+          "sofia@medlifemovement.org,Test Sofia Alvarez,chapter-ucla,general_member,approved",
+        ].join("\n"),
+      ),
+    ).toThrow(
+      "roster CSV row 2 column displayName contains Test/Figma sandbox data (packet starts with Test); replace it with approved production rollout data.",
+    );
+
+    expect(() =>
+      buildProductionRolloutRosterImport(
+        [
+          "email,displayName,chapterId,roleKey,status,chapterName",
+          "sofia@medlifemovement.org,Sofia Torres,chapter-ucla,general_member,approved,source=figma_seed",
+        ].join("\n"),
+      ),
+    ).toThrow(
+      "roster CSV row 2 column chapterName contains Test/Figma sandbox data (packet contains figma_seed); replace it with approved production rollout data.",
+    );
+  });
+
   it("rejects conflicting duplicate rows instead of silently choosing a role", () => {
     expect(() =>
       buildProductionRolloutRosterImport(

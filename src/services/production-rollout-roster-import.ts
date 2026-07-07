@@ -1,3 +1,5 @@
+import { getFigmaOrTestSeedEvidenceReason } from "../data/figma-test-seed-map.ts";
+
 export type ProductionRolloutRosterImportResult = {
   usersCsv: string;
   membershipsCsv: string;
@@ -54,6 +56,9 @@ export function buildProductionRolloutRosterImport(
     validateRosterValue("roster", rowNumber, "chapterId", chapterId);
     validateRosterValue("roster", rowNumber, "roleKey", roleKey);
     validateRosterValue("roster", rowNumber, "status", status);
+    if (row.chapterName) {
+      validateRosterValue("roster", rowNumber, "chapterName", row.chapterName);
+    }
 
     if (!allowedRoleKeys.has(roleKey)) {
       throw new Error(
@@ -189,6 +194,13 @@ function validateRosterValue(
   if (/<[^>\n]+>/.test(value) || /\b(TODO|TBD|PLACEHOLDER)\b/i.test(value)) {
     throw new Error(
       `${tableName} CSV row ${rowNumber} column ${header} contains placeholder text; replace it with approved production rollout data.`,
+    );
+  }
+
+  const testSeedReason = getFigmaOrTestSeedEvidenceReason(value);
+  if (testSeedReason) {
+    throw new Error(
+      `${tableName} CSV row ${rowNumber} column ${header} contains Test/Figma sandbox data (${testSeedReason}); replace it with approved production rollout data.`,
     );
   }
 
