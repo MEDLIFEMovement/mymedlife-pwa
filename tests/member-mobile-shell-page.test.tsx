@@ -61,7 +61,11 @@ describe("member mobile shell routes", () => {
 
     expect(html).toContain("MEDLIFE Stories");
     expect(html).toContain("For You");
-    expect(html).toContain("curated by staff");
+    expect(html).toContain("Preview-only student feed");
+    expect(html).toContain("Preview");
+    expect(html).not.toContain("Live from the field");
+    expect(html).not.toContain("Add Story");
+    expect(html).not.toContain("stories published");
   });
 
   it("renders the Events route through the shared Figma member shell", async () => {

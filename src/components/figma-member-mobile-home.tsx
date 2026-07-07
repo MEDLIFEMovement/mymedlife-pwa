@@ -3238,28 +3238,28 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
   };
 
   const filtered = stories.filter((s) => s.filters.includes(activeFilter));
-  // Mobile-first single-column feed inside the phone frame.
-  // Desktop editorial grid is kept below but only visible on wide screens.
-  const featuredStory = filtered.find((s) => s.featured);
-  const gridStories = filtered.filter((s) => s.id !== featuredStory?.id);
 
   return (
     <>
-      {/* ── Mobile: Instagram-style feed ── */}
-      <div className="sm:hidden bg-white min-h-screen pb-24">
-
-        {/* App header — IG-style top bar */}
+      <div className="bg-white min-h-full pb-24" aria-label="MEDLIFE Stories">
         <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 pt-12 pb-2">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xl font-bold text-black" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Stories
-            </span>
+            <div className="leading-none">
+              <h1
+                className="text-xl font-bold text-black"
+                style={{ fontFamily: "'Playfair Display', serif" }}
+              >
+                MEDLIFE Stories
+              </h1>
+              <p className="mt-1 text-[11px] font-medium text-gray-400">
+                Preview-only student feed
+              </p>
+            </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-gray-400 text-xs">Live</span>
+              <span className="w-2 h-2 rounded-full bg-slate-400" />
+              <span className="text-gray-400 text-xs">Preview</span>
             </div>
           </div>
-          {/* Filter row */}
           <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
             {STORY_FILTERS.map((f) => (
               <button
@@ -3286,33 +3286,33 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
         ) : (
           <div>
             {filtered.map((story) => {
-              // derive a simple handle from chapter name
               const handle = story.chapter.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "");
 
               return (
                 <div key={story.id} className="border-b border-gray-200">
-
-                  {/* Username row — exactly like IG */}
                   <div className="flex items-center justify-between px-3 py-2.5">
                     <div className="flex items-center gap-2.5">
-                      {/* Avatar circle */}
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
                         style={{ background: sourceConfig[story.source].bg.startsWith("linear") ? "#e6683c" : sourceConfig[story.source].bg }}
                       >
                         {story.chapter[0]}
                       </div>
-                      {/* Username + source platform */}
                       <div className="leading-tight">
                         <p className="text-[13px] font-semibold text-black">{handle}</p>
                         <p className="text-[11px] text-gray-400">{sourceConfig[story.source].label}</p>
                       </div>
                     </div>
-                    {/* Options dots */}
-                    <button disabled title="Story options are blocked in this preview" className="text-black px-1 py-1 text-lg font-bold leading-none tracking-tighter">···</button>
+                    <button
+                      type="button"
+                      disabled
+                      title="Story options are blocked in this preview."
+                      className="text-black px-1 py-1 text-lg font-bold leading-none tracking-tighter cursor-not-allowed opacity-60"
+                    >
+                      ···
+                    </button>
                   </div>
 
-                  {/* Full-width image — NO border radius, NO text on it */}
                   <div
                     className="relative w-full bg-gray-100 cursor-pointer"
                     style={{ aspectRatio: "1/1" }}
@@ -3332,7 +3332,6 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                     )}
                   </div>
 
-                  {/* Action row — heart, comment, share left; bookmark right */}
                   <div className="px-3 pt-2">
                     <div className="flex items-center">
                       <div className="flex items-center gap-4 flex-1">
@@ -3342,10 +3341,7 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                           title="Preview-only reaction. Likes are not saved, synced, or counted as production proof."
                           className="cursor-not-allowed opacity-70"
                         >
-                          <Heart
-                            size={26}
-                            className="text-black"
-                          />
+                          <Heart size={26} className="text-black" />
                         </button>
                         <button
                           type="button"
@@ -3373,18 +3369,15 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                       </button>
                     </div>
 
-                    {/* Likes */}
                     <p className="text-[13px] font-semibold text-black mt-1.5 mb-1">
                       {story.likes.toLocaleString()} preview likes
                     </p>
 
-                    {/* Caption: bold username + story title */}
                     <p className="text-[13px] text-black leading-snug">
                       <span className="font-semibold">{handle} </span>
                       {story.title}
                     </p>
 
-                    {/* "Read story" link */}
                     <button
                       onClick={() => setSelectedStory(story)}
                       className="text-[13px] text-gray-400 mt-0.5 block"
@@ -3392,124 +3385,15 @@ function StoriesScreen({ navigate }: { navigate: (s: Screen) => void }) {
                       Read more
                     </button>
 
-                    {/* Timestamp */}
                     <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1 pb-3">
                       {story.date}
                     </p>
                   </div>
-
                 </div>
               );
             })}
           </div>
         )}
-      </div>
-
-      {/* ════════════════════════════════════════════════════════════════════
-          DESKTOP — editorial grid, light background
-          Shown only on screens sm (640px) and wider.
-         ════════════════════════════════════════════════════════════════════ */}
-      <div className="hidden sm:block min-h-screen bg-background">
-
-        {/* Header */}
-        <header className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border">
-          <div className="max-w-6xl mx-auto px-8 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate("home")}
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft size={16} /> Back
-              </button>
-              <ChevronRight size={14} className="text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">MEDLIFE Stories</span>
-            </div>
-            <button disabled title="Story creation is blocked until publishing approval is complete" className="flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
-              <Sparkles size={12} /> Add Story
-            </button>
-          </div>
-        </header>
-
-        {/* Page title */}
-        <div className="max-w-6xl mx-auto px-8 pt-10 pb-6">
-          <div className="flex flex-row items-end justify-between gap-4">
-            <div>
-              <h1
-                className="text-5xl font-semibold text-foreground leading-tight"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                MEDLIFE Stories
-              </h1>
-              <p className="mt-2 text-muted-foreground text-base max-w-md leading-relaxed">
-                See what's happening across chapters and communities — from the field, from students, from the heart.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-shrink-0" style={{ fontFamily: "'DM Mono', monospace" }}>
-              <span className="w-2 h-2 rounded-full bg-[#3D7A5A] inline-block" />
-              <span>Live from the field</span>
-            </div>
-          </div>
-
-          {/* Filter tabs */}
-          <div className="mt-6 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-            {STORY_FILTERS.map((f) => (
-              <button
-                key={f}
-                onClick={() => setActiveFilter(f)}
-                className={cn(
-                  "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border",
-                  activeFilter === f
-                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                    : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
-                )}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Editorial grid */}
-        <main className="max-w-6xl mx-auto px-8 pb-16">
-          {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center text-muted-foreground">
-                <Heart size={24} />
-              </div>
-              <p className="text-muted-foreground text-sm">No stories in this category yet.</p>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {featuredStory && (
-                <div className="col-span-2 lg:col-span-3">
-                  <StoryCard
-                    story={featuredStory}
-                    liked={false}
-                    onToggleLike={toggleLike}
-                    onClick={setSelectedStory}
-                    featured
-                  />
-                </div>
-              )}
-              {gridStories.map((story) => (
-                <StoryCard
-                  key={story.id}
-                  story={story}
-                  liked={false}
-                  onToggleLike={toggleLike}
-                  onClick={setSelectedStory}
-                />
-              ))}
-            </div>
-          )}
-          <div
-            className="mt-12 pt-8 border-t border-border flex items-center justify-between text-xs text-muted-foreground"
-            style={{ fontFamily: "'DM Mono', monospace" }}
-          >
-            <span>MEDLIFE Stories — curated by staff · not a public feed</span>
-            <span>{stories.length} stories published</span>
-          </div>
-        </main>
       </div>
 
       {/* Modal — shared between both versions */}
