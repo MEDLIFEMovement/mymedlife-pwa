@@ -158,27 +158,41 @@ describe("Figma missing route placeholders", () => {
     expect(source).toContain("Chapter event drill-in is handled by the staff events view");
   });
 
-  it("parks SLT Prep through /slt-prep during the events and points launch lane", async () => {
+  it("keeps /slt-prep visible as a source-confidence-limited traveler readiness preview", async () => {
     const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
       getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SLT Prep source-confidence preview."),
     );
 
     const { default: SltPrepPage } = await import("@/app/slt-prep/page");
+    const html = renderToStaticMarkup(await SltPrepPage());
 
-    await expect(SltPrepPage()).rejects.toThrow("NEXT_REDIRECT:/app/events");
+    expect(html).toContain("Figma page missing - implementation blocked");
+    expect(html).toContain("Sofia Alvarez");
+    expect(html).toContain("Current travel plan");
   });
 
-  it("parks the /app/slt-prep alias during the events and points launch lane", async () => {
+  it("keeps the /app/slt-prep alias on the same source-confidence-limited preview surface", async () => {
     const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
-      getSignedInActor("member.a@mymedlife.test"),
+      getSignedInActor("traveler.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing SLT Prep alias preview."),
     );
 
     const { default: AppSltPrepPage } = await import("@/app/app/slt-prep/page");
+    const html = renderToStaticMarkup(await AppSltPrepPage());
 
-    await expect(AppSltPrepPage()).rejects.toThrow("NEXT_REDIRECT:/app/events");
+    expect(html).toContain("Figma page missing - implementation blocked");
+    expect(html).toContain("Readiness");
+    expect(html).toContain("What needs attention right now?");
   });
 });

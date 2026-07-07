@@ -11,7 +11,7 @@ import {
 } from "@/services/events-points-launch-lane";
 import { getLeaderLaunchLaneCanonicalHref } from "@/services/leader-launch-lane";
 import { buildMemberLaunchLaneEventDetailHref } from "@/services/member-launch-lane-events";
-import { getActorSurfaceFamily } from "@/services/role-visibility";
+import { getActorSurfaceFamily, hasTravelerAccess } from "@/services/role-visibility";
 
 type ChapterRouteSearchParams = Record<string, string | undefined>;
 type LaunchLaneRouteFamily = "app" | "legacy";
@@ -186,7 +186,17 @@ export function getChapterMembersRouteRedirectHref(
 }
 
 export function getSltPrepRouteRedirectHref(actor: LocalActorContext): string {
-  return getLaunchLaneFocusHref(getActorSurfaceFamily(actor), "events");
+  const family = getActorSurfaceFamily(actor);
+
+  if (family === "ds_admin") {
+    return "/admin";
+  }
+
+  if (family === "coach" || family === "staff" || family === "super_admin") {
+    return "/slt-prep/staff";
+  }
+
+  return hasTravelerAccess(actor) ? "/app/slt-prep" : "/slt-prep";
 }
 
 function withQuery(baseHref: string, query: Record<string, string | undefined>) {

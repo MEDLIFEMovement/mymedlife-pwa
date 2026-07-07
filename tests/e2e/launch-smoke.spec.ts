@@ -388,7 +388,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await expect(page.getByRole("heading", { name: "Portfolio Overview" })).toBeVisible();
   });
 
-  test("loads route-level admin readback pages and parks the SLT Prep app alias", async ({
+  test("loads route-level admin readback pages and keeps the SLT Prep alias on its preview-safe shell", async ({
     context,
     page,
   }) => {
@@ -413,9 +413,10 @@ test.describe("myMEDLIFE launch route smoke", () => {
 
     await selectPreviewActor(context, "traveler.a@mymedlife.test");
     await page.goto("/app/slt-prep");
-    await expect(page).toHaveURL(/\/app\/events$/);
-    await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
-    await expect(page.getByText("Show up. Check in. Earn points.")).toBeVisible();
+    await expect(page).toHaveURL(/\/app\/slt-prep$/);
+    await expect(page.getByText("Figma page missing - implementation blocked")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sofia Alvarez" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Readiness checklist" })).toBeVisible();
   });
 
   test("blocks unauthorized admin URLs and logs out through the account menu", async ({
