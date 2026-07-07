@@ -3359,6 +3359,8 @@ function StoriesScreen({
               <Link
                 key={f}
                 href={buildStoriesHref({ filter: f })}
+                aria-label={`Story filter: ${f}`}
+                title={`Story filter: ${f}`}
                 className={cn(
                   "flex-shrink-0 px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap border transition-all",
                   activeFilter === f
