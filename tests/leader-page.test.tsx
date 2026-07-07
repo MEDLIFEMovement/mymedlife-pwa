@@ -99,12 +99,13 @@ describe("leader page", () => {
     expect(html).toContain("TEST Boston College MEDLIFE");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Create Event");
+    expect(html).toContain("Assign Task");
+    expect(html).toContain("Promote Emerging Leader");
+    expect(html).toContain("Share Bridge Video");
     expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Risk Alerts");
     expect(html).toContain("This Week&#x27;s Priority");
     expect(html).toContain("Weekly Points Trend");
-    expect(html).not.toContain("Assign Task");
-    expect(html).not.toContain("Promote Emerging Leader");
     expect(html).not.toContain("Leadership page not yet available");
     expect(html).toContain("Feed Analytics");
     expect(html).toContain("Member Leaderboard");
@@ -333,6 +334,7 @@ describe("leader page", () => {
     expect(source).toContain("Workspace switching is handled by the account menu above this shell.");
     expect(source).toContain("Committee chair assignment is blocked in this preview.");
     expect(source).toContain("Committee detail drill-in is not wired yet.");
+    expect(source).toContain("Bridge video sharing is blocked in this preview until staff approval is complete.");
   });
 
   it("keeps leader assignment, promotion, and succession outcomes preview-only instead of sounding live", () => {
@@ -361,6 +363,8 @@ describe("leader page", () => {
     expect(source).toContain("onAssignAction={(memberId) => openAssignActionPreview([memberId])}");
     expect(source).toContain("onPromote={openPromotePreview}");
     expect(source).toContain("onOpenSuccession={openSuccessionForMember}");
+    expect(source).toContain("onAssignAction={() => openAssignActionPreview()}");
+    expect(source).toContain("onPromote={() => openPromotePreview()}");
     expect(source).toContain("const [selectedMembers, setSelectedMembers] = useState<number[]>(initialMemberIds);");
     expect(source).toContain("const [selectedMemberId, setSelectedMemberId] = useState<number | null>(initialMemberId);");
     expect(source).toContain("Leader note saving is blocked in this preview until the audited note workflow is approved.");
