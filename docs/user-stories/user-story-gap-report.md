@@ -1,8 +1,8 @@
 # myMEDLIFE User Story Gap Report
 
-Date: 2026-07-07  
-Owner lane: myMEDLIFE #5, planning/docs only  
-Linear planning reference: MED-512  
+Date: 2026-07-07
+Owner lane: myMEDLIFE #5, planning/docs only
+Linear planning reference: MED-512
 Purpose: convert the story inventory into practical backlog and launch-truth
 guidance for viability review.
 

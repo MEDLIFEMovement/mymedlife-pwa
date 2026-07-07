@@ -1,8 +1,8 @@
 # myMEDLIFE Narrow Launch Delivery Backlog
 
-Date: 2026-07-07  
-Owner lane: myMEDLIFE #5, planning/docs only  
-Linear planning reference: MED-512  
+Date: 2026-07-07
+Owner lane: myMEDLIFE #5, planning/docs only
+Linear planning reference: MED-512
 Purpose: decompose the repo-truth story inventory into PR-sized delivery slices
 for the narrow launch lane without overstating production readiness.
 
