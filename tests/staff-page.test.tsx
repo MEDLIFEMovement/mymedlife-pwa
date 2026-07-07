@@ -281,7 +281,9 @@ describe("staff page", () => {
     expect(source).toContain("TEST Best Practice: QR Lead Capture");
     expect(source).toContain("External source links are blocked in this preview");
     expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
+    expect(source).toContain("Use the Admin tab for DS review of audit and blocked-control posture");
     expect(source).toContain("publishing and distribution actions remain blocked in this launch pass");
+    expect(source).toContain("Click any card to review consent and blocked actions, or use the Admin tab for DS preview.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
   });
 
@@ -345,7 +347,7 @@ describe("staff page", () => {
     expect(html).toContain("Current posture");
     expect(html).toContain("embedded admin preview from the staff workspace");
     expect(html).toContain("Return to chapters");
-    expect(html).not.toContain("Open Admin preview");
+    expect(html).not.toContain("Open embedded Admin preview");
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
@@ -395,6 +397,7 @@ describe("staff page", () => {
     expect(html).toContain("Preview NPS Survey");
     expect(html).toContain("Send blocked");
     expect(html).toContain("Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer.");
+    expect(html).toContain("Use the Admin tab for DS directory and audit review.");
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
@@ -419,7 +422,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Restricted Preview Access");
     expect(html).toContain("Preview as");
-    expect(html).toContain("Open Admin preview");
+    expect(html).toContain("Open embedded Admin preview");
     expect(html).toContain("DS Admin");
     expect(html).toContain("Super Admin");
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
