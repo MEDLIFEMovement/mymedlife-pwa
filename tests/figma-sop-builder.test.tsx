@@ -41,4 +41,20 @@ describe("figma sop builder", () => {
     expect(source).toContain("Publishing is blocked until draft-live safety approval is complete");
     expect(source).toContain("live SOP mutations remain blocked until the draft-live safety lane is approved");
   });
+
+  it("keeps communication triggers visible but blocked from live sends and provider actions", () => {
+    const html = renderToStaticMarkup(
+      <BuilderScreen campaign={draftCampaign} onBack={() => undefined} />,
+    );
+    const source = readFileSync("src/components/figma-sop-builder.tsx", "utf8");
+
+    expect(html).toContain("Comm Triggers");
+    expect(source).toContain("preview triggers");
+    expect(source).toContain("Adding communication triggers is blocked until provider-send approval is complete");
+    expect(source).toContain("Editing communication triggers is blocked until provider-send approval is complete");
+    expect(source).toContain("No HubSpot, push, feed, escalation, or internal message sends run from this preview");
+    expect(source).toContain("Preview only — HubSpot reminders stay blocked until provider-send approval");
+    expect(source).not.toContain("Orange-tagged triggers fire via HubSpot");
+    expect(source).not.toContain("Approval request email sent via HubSpot");
+  });
 });
