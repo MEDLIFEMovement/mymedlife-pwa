@@ -3211,7 +3211,13 @@ const EBOARD_ROLES = [
 ];
 
 // ─── Current Leaders Screen ───────────────────────────────────────
-function LeadersScreen({ onSelectMember }: { onSelectMember:(id:number)=>void }) {
+function LeadersScreen({
+  onSelectMember,
+  onNavigate,
+}: {
+  onSelectMember:(id:number)=>void;
+  onNavigate:(screen: Screen)=>void;
+}) {
   const memberByName = (name: string | null) =>
     name ? MEMBERS.find(m => m.name === name) : null;
 
@@ -3224,9 +3230,19 @@ function LeadersScreen({ onSelectMember }: { onSelectMember:(id:number)=>void })
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900">Current Leaders</h1>
-        <p className="text-sm text-slate-500 mt-1">Every E-Board position and Event Committee chair for TEST Boston College MEDLIFE.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900">Current Leaders</h1>
+          <p className="text-sm text-slate-500 mt-1">TEST leadership roster preview. E-Board coverage and committee ownership stay visible for review, but no appointment, promotion, vacancy fill, or notify flow goes live from this shell.</p>
+        </div>
+        <div className="flex gap-2">
+          <Btn variant="secondary" onClick={() => onNavigate("succession")}><GitBranch size={11}/>Preview Succession Review</Btn>
+          <Btn variant="secondary" onClick={() => onNavigate("values")}><Star size={11}/>Preview Values Review</Btn>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800">
+        TEST leader roster preview only. Role coverage, chair vacancies, and successor readiness stay route-backed for review here, but they do not activate live chapter ownership changes.
       </div>
 
       {/* E-Board */}
@@ -3255,7 +3271,7 @@ function LeadersScreen({ onSelectMember }: { onSelectMember:(id:number)=>void })
                     <div className="w-8 h-8 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center">
                       <Plus size={12} className="text-slate-300"/>
                     </div>
-                    <span className="text-xs text-slate-400 italic">Vacant</span>
+                    <span className="text-xs text-slate-400 italic">Preview vacancy only</span>
                   </div>
                 )}
               </div>
@@ -3305,7 +3321,7 @@ function LeadersScreen({ onSelectMember }: { onSelectMember:(id:number)=>void })
                         <div className="w-7 h-7 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center">
                           <Plus size={11} className="text-slate-300"/>
                         </div>
-                        <span className="text-xs italic">No chair assigned</span>
+                        <span className="text-xs italic">No chair assigned in TEST preview</span>
                       </div>
                     )}
                   </div>
@@ -4272,7 +4288,7 @@ export function FigmaLeaderCommandCenter({
           {screen==="feed"        && <FeedScreen/>}
           {screen==="training"    && <TrainingScreen/>}
           {screen==="values"      && <ValuesScreen/>}
-          {screen==="leaders"     && <LeadersScreen onSelectMember={handleSelectMember}/>}
+          {screen==="leaders"     && <LeadersScreen onSelectMember={handleSelectMember} onNavigate={navigateToScreen}/>}
           {screen==="create-event"&& <div className="p-0"><CreateEventForm onBack={() => navigateToScreen("events")}/></div>}
           {screen==="stories"     && <MedlifeStoriesScreen/>}
         </div>

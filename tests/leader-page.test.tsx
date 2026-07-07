@@ -289,6 +289,12 @@ describe("leader page", () => {
       expect(html).toContain("Preview Video");
       expect(html).toContain("Preview Deck");
     }
+
+    if (view === "leaders") {
+      expect(html).toContain("TEST leadership roster preview.");
+      expect(html).toContain("Preview Succession Review");
+      expect(html).toContain("Preview Values Review");
+    }
   });
 
   it("keeps blocked leader controls visibly honest inside the restored shell", async () => {
@@ -494,6 +500,12 @@ describe("leader page", () => {
     expect(source).toContain("Preview Values Interview Form");
     expect(source).toContain("No live invite, contact sync, form submission, or provider handoff is sent from this preview.");
     expect(source).toContain("toTestLabel");
+    expect(source).toContain("TEST leadership roster preview.");
+    expect(source).toContain("TEST leader roster preview only.");
+    expect(source).toContain("Preview Succession Review");
+    expect(source).toContain("Preview Values Review");
+    expect(source).toContain("Preview vacancy only");
+    expect(source).toContain("No chair assigned in TEST preview");
     expect(source).toContain("Preview Review Actions");
     expect(source).toContain("Leader Review Notes");
     expect(source).toContain("Review this TEST member's points, event follow-through, preview actions, blocked notes, and succession handoff posture.");
