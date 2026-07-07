@@ -104,7 +104,7 @@ describe("member mobile shell routes", () => {
     );
 
     const { default: PointsPage } = await import("@/app/app/points/page");
-    const html = renderToStaticMarkup(await PointsPage());
+    const html = renderToStaticMarkup(await PointsPage({}));
 
     expect(html).toContain("Points &amp; Recognition");
     expect(html).toContain("TEST UCLA MEDLIFE");
@@ -116,6 +116,25 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("TEST points in this member shell are a read-only preview");
     expect(html).toContain('href="/app/events?source=points"');
     expect(html).toContain("See how to earn more points");
+  });
+
+  it("keeps the points route honest about event-loop handoff context", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({ source: "events" }),
+      }),
+    );
+
+    expect(html).toContain("event check-in handoff");
+    expect(html).toContain("until attendance and points writes are approved");
+    expect(html).toContain('href="/app/events?source=points"');
   });
 
   it("keeps internal member preview states visibly marked as TEST content", () => {

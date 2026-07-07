@@ -84,6 +84,8 @@ function getMemberEventHomeDetailHref(eventId: number) {
   return getMemberEventDetailHref(eventId).replace("source=events", "source=home");
 }
 
+type PointsSource = "events" | "profile" | "points";
+
 // ─── Primitives ────────────────────────────────────────────────────────────
 
 function cn(...c: (string | undefined | false | null)[]) {
@@ -1894,13 +1896,19 @@ function AdminDashboard({ navigate }: { navigate: (s: Screen) => void }) {
 
 // ─── SCREEN 10 · Points + Leaderboard ────────────────────────────────────────
 
-function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
+function PointsLeaderboard({ navigate, source }: { navigate: (s: Screen) => void; source: PointsSource }) {
   const badges = [
     { name: "TEST Rush Starter", desc: "Complete your first TEST Rush Month action", earned: true },
     { name: "TEST Connector", desc: "Invite 10+ TEST members to a TEST chapter event", earned: true },
     { name: "TEST Evidence Pro", desc: "3 TEST approvals in a single week", earned: false },
     { name: "TEST Chapter MVP", desc: "Top 3 on the TEST leaderboard for 2 weeks", earned: false },
   ];
+  const readbackExplainer =
+    source === "events"
+      ? "TEST points in this member shell are a read-only preview of the event check-in handoff. They do not write to a live leaderboard, rewards system, or provider integration until attendance and points writes are approved."
+      : source === "profile"
+        ? "TEST points in this member shell are a read-only preview of the profile-to-recognition handoff. They do not write to a live leaderboard, rewards system, or provider integration."
+        : "TEST points in this member shell are a read-only preview of the event, RSVP, attendance, and action loop. They do not write to a live leaderboard, rewards system, or provider integration.";
 
   return (
     <div className="pb-24">
@@ -2035,9 +2043,7 @@ function PointsLeaderboard({ navigate }: { navigate: (s: Screen) => void }) {
             <div>
               <p className="text-sm font-bold text-foreground">How points work</p>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                TEST points in this member shell are a read-only preview of the event, RSVP,
-                attendance, and action loop. They do not write to a live leaderboard, rewards
-                system, or provider integration.
+                {readbackExplainer}
               </p>
               <Link
                 href="/app/events?source=points"
@@ -3528,11 +3534,13 @@ export function FigmaMemberMobileHome({
   sltPrepEntry = null,
   initialStoriesFilter = null,
   initialStoryId = null,
+  pointsSource = "points",
 }: {
   initialScreen?: MemberMobileLaunchScreen;
   sltPrepEntry?: MemberSltPrepEntry | null;
   initialStoriesFilter?: string | null;
   initialStoryId?: string | null;
+  pointsSource?: PointsSource;
 }) {
   const [screen, setScreen] = useState<Screen>(initialScreen);
   const [role, setRole] = useState<Role>("student");
@@ -3551,7 +3559,7 @@ export function FigmaMemberMobileHome({
       case "action": return <ActionDetail navigate={navigate} />;
       case "evidence": return <EvidenceSubmission navigate={navigate} />;
       case "confirm": return <Confirmation navigate={navigate} />;
-      case "points": return <PointsLeaderboard navigate={navigate} />;
+      case "points": return <PointsLeaderboard navigate={navigate} source={pointsSource} />; // case "points": return <PointsLeaderboard navigate={navigate} />;
       case "events": return <EventsScreen navigate={navigate} />;
       case "event-detail": return <EventDetailScreen navigate={navigate} />;
       case "rsvp-confirm": return <RsvpConfirmScreen navigate={navigate} />;
