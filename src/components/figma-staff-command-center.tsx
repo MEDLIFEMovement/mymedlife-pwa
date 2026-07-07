@@ -2028,7 +2028,7 @@ function AdminRoleGate({ onGrant, onBack }: { onGrant: (role: AdminRole) => void
           onClick={() => onGrant(picked)}
           className="w-full py-2.5 bg-sky-500 text-white rounded-lg text-sm font-semibold hover:bg-sky-400 transition-colors"
         >
-          Open embedded Admin preview
+          Open Admin preview
         </button>
 
         <p className="text-[11px] text-slate-700">

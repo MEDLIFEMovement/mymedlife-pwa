@@ -347,7 +347,7 @@ describe("staff page", () => {
     expect(html).toContain("Current posture");
     expect(html).toContain("embedded admin preview from the staff workspace");
     expect(html).toContain("Return to chapters");
-    expect(html).not.toContain("Open embedded Admin preview");
+    expect(html).not.toContain("Open Admin preview");
   });
 
   it("keeps chapter-detail NPS controls preview-only instead of implying a live send", () => {
@@ -422,7 +422,7 @@ describe("staff page", () => {
 
     expect(html).toContain("Restricted Preview Access");
     expect(html).toContain("Preview as");
-    expect(html).toContain("Open embedded Admin preview");
+    expect(html).toContain("Open Admin preview");
     expect(html).toContain("DS Admin");
     expect(html).toContain("Super Admin");
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
