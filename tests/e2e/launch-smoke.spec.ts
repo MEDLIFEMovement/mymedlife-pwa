@@ -170,7 +170,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
     await page.goto("/leader?view=overview");
     await page.getByRole("button", { name: "Create Event" }).first().click();
     await expect(page).toHaveURL(/\/leader\?view=events/);
-    await expect(page.getByRole("heading", { name: "Create New Event" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create Event Preview" })).toBeVisible();
   });
 
   test("clicks every student command center menu item into its matching screen", async ({
@@ -187,7 +187,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
       { label: "Member Profile", view: "member_profile", heading: "Member Profile" },
       { label: "Event Committees", view: "committees", heading: "Event Committees" },
       { label: "Event Performance", view: "events", heading: "Event Performance" },
-      { label: "Create Event", view: "create_event", heading: "Create New Event" },
+      { label: "Create Event", view: "create_event", heading: "Create Event Preview" },
       { label: "Impact", view: "impact", heading: "Impact Dashboard" },
       { label: "Bridge Videos", view: "bridge_videos", heading: "Bridge Video Hub" },
       { label: "MEDLIFE Stories", view: "stories", heading: "MEDLIFE Stories" },

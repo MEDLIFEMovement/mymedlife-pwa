@@ -46,10 +46,10 @@ const EVENT_TYPES = [
 ];
 
 const SHARE_CHANNELS = [
-  { id:"app",       label:"Chapter App Feed",  sub:"Notify all chapter members in myMEDLIFE",       icon:Bell,         color:"#1A56E8" },
-  { id:"instagram", label:"Instagram",         sub:"Post or Story template ready to share",          icon:Share2,       color:"#E1306C" },
-  { id:"email",     label:"Email",             sub:"Send to chapter member list",                    icon:Upload,       color:"#16A34A" },
-  { id:"whatsapp",  label:"Text / WhatsApp",   sub:"Send a message to chapter group or contacts",   icon:MessageSquare,color:"#25D366" },
+  { id:"app",       label:"Chapter App Feed",  sub:"Prepare a chapter feed preview in myMEDLIFE",   icon:Bell,         color:"#1A56E8" },
+  { id:"instagram", label:"Instagram",         sub:"Prepare a post or story preview template",       icon:Share2,       color:"#E1306C" },
+  { id:"email",     label:"Email",             sub:"Draft a chapter member email preview",           icon:Upload,       color:"#16A34A" },
+  { id:"whatsapp",  label:"Text / WhatsApp",   sub:"Draft message preview copy for contacts",        icon:MessageSquare,color:"#25D366" },
 ];
 
 // ── Shared form helpers ──
@@ -148,7 +148,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
             <ChevronRight size={13} className="rotate-180"/>Back to Events
           </button>
           <span className="text-slate-300">/</span>
-          <h1 className="text-xl font-black text-slate-900">Create New Event</h1>
+          <h1 className="text-xl font-black text-slate-900">Create Event Preview</h1>
         </div>
         <button
           disabled={!canPublish}
@@ -157,6 +157,10 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
           <Share2 size={14}/>Stage Event
           {shareChannels.length > 0 && <span className="bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{shareChannels.length}</span>}
         </button>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800">
+        This route stages TEST event previews only. Live publishing, RSVP sharing, attendance updates, points awards, and provider writes stay blocked from this shell.
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -191,7 +195,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
           <FormSection title="2. Event Details" required>
             <div className="space-y-3">
               <Field label="Event Name" required>
-                <input className={inputCls} placeholder="e.g. Moving Mountains Kickoff Night"
+                <input className={inputCls} placeholder="e.g. TEST Moving Mountains Kickoff Night"
                   value={name} onChange={e => setName(e.target.value)}/>
               </Field>
               <Field label="Description">
@@ -306,7 +310,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                       <div className="px-4 pb-4 border-t" style={{ borderColor: ch.color + "30" }}>
                         {ch.id === "app" && (
                           <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200">
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview — Chapter Feed Post</div>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Preview — TEST Chapter Feed Post</div>
                             <div className="flex items-start gap-2">
                               <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0" style={{ background: BLUE }}>M</div>
                               <div className="min-w-0">
@@ -357,7 +361,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                                 <span className="text-white text-[11px] font-semibold">Boston College MEDLIFE</span>
                               </div>
                               <div className="px-4 py-3 space-y-1.5">
-                                <div className="text-slate-400 text-[10px]">To: all chapter members (84 recipients)</div>
+                                <div className="text-slate-400 text-[10px]">To: TEST chapter member list preview (84 recipients)</div>
                                 <div className="font-bold text-slate-800">📣 New Event: {name || "[Event Name]"}</div>
                                 <div className="text-slate-500 text-[11px]">Hey MEDLIFE family — you're invited to <strong>{name || "our upcoming event"}</strong>{formattedDate ? ` on ${formattedDate}` : ""}!</div>
                                 {description && <div className="text-slate-500 text-[11px] italic">"{description.slice(0,100)}{description.length > 100 ? "…" : ""}"</div>}
@@ -366,7 +370,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                                   {timeRange && <span>⏰ {timeRange}</span>}
                                 </div>
                                 {(address || virtualLink) && <div className="text-[11px] text-slate-500">📍 {address || virtualLink}</div>}
-                                <button disabled title="Email RSVP links are preview-only until Luma sharing is approved" className="mt-2 px-3 py-1.5 bg-[#1A56E8] text-white text-[10px] font-bold rounded-lg">RSVP Now →</button>
+                                <button disabled title="Email RSVP links are preview-only until Luma sharing is approved" className="mt-2 px-3 py-1.5 bg-[#1A56E8] text-white text-[10px] font-bold rounded-lg">Preview RSVP Link →</button>
                               </div>
                             </div>
                           </div>
@@ -384,7 +388,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                               <div className="bg-white rounded-xl px-3 py-2.5 shadow-sm max-w-xs text-[11px] text-slate-700 leading-relaxed whitespace-pre-line">
                                 {waMsg || `Hey everyone! 👋\n\nNew event: ${name || "[Event Name]"}${formattedDate ? `\n📅 ${formattedDate}` : ""}${timeRange ? ` at ${timeRange}` : ""}${address ? `\n📍 ${address}` : ""}\n\nRSVP link: [link] 🙌`}
                               </div>
-                              <div className="text-right mt-1 text-[9px] text-slate-400">Sent via myMEDLIFE</div>
+                              <div className="text-right mt-1 text-[9px] text-slate-400">Preview only - no message sent</div>
                             </div>
                             <div className="flex gap-2">
                               <button disabled title="WhatsApp copy is blocked in this preview" className="flex-1 px-3 py-1.5 border border-slate-200 bg-white rounded-lg text-[11px] font-semibold text-slate-600 cursor-pointer hover:bg-slate-50 text-center">📋 Copy for WhatsApp</button>
@@ -449,7 +453,7 @@ export function CreateEventForm({ onBack }: { onBack: () => void }) {
                 {description && <p className="text-[11px] text-slate-500 leading-relaxed border-t border-slate-100 pt-3">{description}</p>}
                 {/* RSVP button */}
                 <button disabled title="Preview RSVP is blocked until the event is created" className="w-full py-2.5 rounded-xl font-bold text-xs text-white mt-1 cursor-default" style={{ background: chosenType?.color || BLUE }}>
-                  RSVP for This Event
+                  Preview RSVP Button
                 </button>
                 {/* Sharing summary */}
                 {shareChannels.length > 0 && (

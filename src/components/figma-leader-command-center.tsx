@@ -537,7 +537,7 @@ function HomeScreen({
         </div>
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <SH>This Week's Priority</SH>
-          <p className="text-xs text-slate-600 mt-2 mb-4 leading-relaxed">Publish the next Luma event, drive RSVPs, confirm attendance, and keep the chapter leaderboard moving.</p>
+          <p className="text-xs text-slate-600 mt-2 mb-4 leading-relaxed">Stage the next TEST event preview, review RSVP posture, preview attendance follow-through, and keep the chapter leaderboard moving.</p>
           <SH sub="">Quick Actions</SH>
           <div className="mt-2 space-y-1.5">
             <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={11}/>Create Event</Btn>
@@ -1086,9 +1086,9 @@ function CommitteesScreen({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Event Committees</h1>
-          <p className="text-sm text-slate-500 mt-1">Monitor whether each committee is moving the chapter forward — not just existing.</p>
+          <p className="text-sm text-slate-500 mt-1">Monitor whether each TEST committee is moving the chapter forward. Committee setup, chair changes, and operational follow-through stay preview-only in this shell.</p>
         </div>
-        <Btn variant="primary" blockedTitle="Committee creation is blocked in this preview."><Plus size={11}/>Add Committee</Btn>
+        <Btn variant="primary" blockedTitle="Committee creation is blocked in this preview."><Plus size={11}/>Preview Committee Setup</Btn>
       </div>
 
       {/* Summary cards — chapter-wide */}
@@ -1281,17 +1281,17 @@ function CommitteesScreen({
                           className="w-full justify-start"
                           blockedTitle="Committee chair assignment is blocked in this preview."
                         >
-                          <Plus size={10}/>Add Chair
+                          <Plus size={10}/>Preview Chair Assignment
                         </Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={10}/>Promote Member</Btn>
                         <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={10}/>Assign Task</Btn>
-                        <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Create Event</Btn>
+                        <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={10}/>Create Event Preview</Btn>
                         <Btn
                           variant="ghost"
                           className="w-full justify-start"
                           blockedTitle="Committee detail drill-in is not wired yet. Use this expanded committee card for the current preview context."
                         >
-                          <Eye size={10}/>Review Committee
+                          <Eye size={10}/>Preview Committee Review
                         </Btn>
                       </div>
                     </div>
@@ -1563,9 +1563,9 @@ function EventsScreen({ externalCreate, onExternalCreateHandled }: { externalCre
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900">Event Performance</h1>
-          <p className="text-sm text-slate-500 mt-1">Track event execution, scores, follow-up, and chapter-wide attendance.</p>
+          <p className="text-sm text-slate-500 mt-1">Track TEST event execution previews, survey posture, follow-up readiness, and chapter-wide attendance readback without turning on live event operations.</p>
         </div>
-        <Btn variant="primary" onClick={() => setShowCreate(true)}><Plus size={11}/>Create Event</Btn>
+        <Btn variant="primary" onClick={() => setShowCreate(true)}><Plus size={11}/>Create Event Preview</Btn>
       </div>
 
       {/* Summary cards — now includes NPS */}
