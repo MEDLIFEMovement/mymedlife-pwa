@@ -632,8 +632,8 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
 
         {/* Footer */}
         <div className="border-t border-border p-4 flex gap-2 flex-shrink-0">
-          <button disabled title="Content sending is blocked until external-send approval is complete" className="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5">
-            <Send className="w-3.5 h-3.5" /> Send Content
+          <button disabled title="Content sending is blocked until external-send approval is complete" className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary py-2 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50">
+            <Send className="w-3.5 h-3.5" /> Send blocked
           </button>
           <button
             onClick={() => setShowSurvey(true)}
@@ -642,7 +642,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
           >
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
-          <button disabled title="External chapter links are blocked in this preview" className="px-3 py-2 bg-muted text-foreground rounded-lg text-sm hover:bg-muted/70 transition-colors">
+          <button disabled title="External chapter links are blocked in this preview" className="rounded-lg bg-muted px-3 py-2 text-sm text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50">
             <ExternalLink className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -738,8 +738,8 @@ function PortfolioOverview({ onSelectChapter }: { onSelectChapter: (c: Chapter) 
           </select>
           <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
         </div>
-        <button disabled title="Export is blocked until reporting approval is complete" className="ml-auto flex items-center gap-1.5 px-3 py-2 bg-muted text-foreground rounded-lg text-xs font-semibold hover:bg-muted/70 transition-colors">
-          <Download className="w-3.5 h-3.5" /> Export
+        <button disabled title="Export is blocked until reporting approval is complete" className="ml-auto flex items-center gap-1.5 rounded-lg bg-muted px-3 py-2 text-xs font-semibold text-foreground transition-colors disabled:cursor-not-allowed disabled:opacity-50">
+          <Download className="w-3.5 h-3.5" /> Export blocked
         </button>
       </div>
 
@@ -1856,7 +1856,7 @@ function AdminHealth() {
             </div>
             <div className="flex gap-2">
               <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-semibold">{outbox.filter(o=>o.status==="failed").length} failed</span>
-              <button disabled title="Outbox retries are blocked until automation approval is complete" className="flex items-center gap-1 text-xs text-primary hover:underline"><RotateCcw className="w-3 h-3" /> Retry Failed</button>
+              <button disabled title="Outbox retries are blocked until automation approval is complete" className="flex items-center gap-1 text-xs font-medium text-primary disabled:cursor-not-allowed disabled:opacity-50"><RotateCcw className="w-3 h-3" /> Retry blocked</button>
             </div>
           </div>
           <div className="overflow-x-auto">
