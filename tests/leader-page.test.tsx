@@ -98,10 +98,12 @@ describe("leader page", () => {
     expect(html).toContain("Chapter Dashboard · Jun 2025");
     expect(html).toContain("TEST Boston College MEDLIFE");
     expect(html).toContain("College / University Chapter");
-    expect(html).toContain("Create Event");
-    expect(html).toContain("Assign Task");
-    expect(html).toContain("Promote Emerging Leader");
-    expect(html).toContain("Share Bridge Video");
+    expect(html).toContain("Create Event Preview");
+    expect(html).toContain("Preview Attendance Review");
+    expect(html).toContain("Preview Task Handoff");
+    expect(html).toContain("Preview Leader Promotion");
+    expect(html).toContain("Preview Bridge Video Handoff");
+    expect(html).toContain("TEST chapter-home quick actions stay inside preview and review routes only.");
     expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Risk Alerts");
     expect(html).toContain("This Week&#x27;s Priority");

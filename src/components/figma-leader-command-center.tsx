@@ -493,8 +493,8 @@ function HomeScreen({
             <div className="text-xs text-blue-200">3rd in New England · top 15% globally</div>
           </div>
           <div className="flex gap-2 pt-1">
-            <Btn variant="primary" onClick={onCreateEvent}><Plus size={11}/>Create Event</Btn>
-            <Btn variant="secondary" className="!bg-white/10 !border-white/20 !text-white hover:!bg-white/20" onClick={onOpenEvents}><CheckCircle size={11}/>Review Attendance</Btn>
+            <Btn variant="primary" onClick={onCreateEvent}><Plus size={11}/>Create Event Preview</Btn>
+            <Btn variant="secondary" className="!bg-white/10 !border-white/20 !text-white hover:!bg-white/20" onClick={onOpenEvents}><CheckCircle size={11}/>Preview Attendance Review</Btn>
           </div>
         </div>
       </div>
@@ -540,17 +540,20 @@ function HomeScreen({
           <p className="text-xs text-slate-600 mt-2 mb-4 leading-relaxed">Stage the next TEST event preview, review RSVP posture, preview attendance follow-through, and keep the chapter leaderboard moving.</p>
           <SH sub="">Quick Actions</SH>
           <div className="mt-2 space-y-1.5">
-            <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={11}/>Create Event</Btn>
-            <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={11}/>Assign Task</Btn>
-            <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={11}/>Promote Emerging Leader</Btn>
+            <Btn variant="secondary"  className="w-full justify-start" onClick={onCreateEvent}><Calendar size={11}/>Create Event Preview</Btn>
+            <Btn variant="secondary"  className="w-full justify-start" onClick={onAssignAction}><Zap size={11}/>Preview Task Handoff</Btn>
+            <Btn variant="secondary"  className="w-full justify-start" onClick={onPromote}><Star size={11}/>Preview Leader Promotion</Btn>
             <Btn
               variant="secondary"
               className="w-full justify-start"
               blockedTitle="Bridge video sharing is blocked in this preview until staff approval is complete."
             >
-              <Video size={11}/>Share Bridge Video
+              <Video size={11}/>Preview Bridge Video Handoff
             </Btn>
           </div>
+          <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+            TEST chapter-home quick actions stay inside preview and review routes only. They do not publish events, assign live chapter work, change leadership roles, or send bridge video updates from this shell.
+          </p>
         </div>
       </div>
 
