@@ -2842,8 +2842,8 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
           <p className="text-sm text-slate-500 mt-1">TEST succession preview. Candidate planning stays route-backed for review, but no nomination, transition, promotion, or notify flow goes live from this shell.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Nominate Candidate</Btn>
-          <Btn variant="primary"    onClick={() => setShowTransition(true)}><ArrowRight size={11}/>Start Transition Plan</Btn>
+          <Btn variant="secondary" onClick={() => setShowTransition(true)}><Flag size={11}/>Preview Candidate Nomination</Btn>
+          <Btn variant="primary"    onClick={() => setShowTransition(true)}><ArrowRight size={11}/>Preview Transition Plan</Btn>
         </div>
       </div>
 
@@ -2961,7 +2961,7 @@ function ValuesScreen() {
           blockedTitle="Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists."
           className="shadow-sm"
         >
-          <MessageSquare size={14}/>Values Alignment Interview
+          <MessageSquare size={14}/>Preview Values Interview
         </Btn>
       </div>
 
@@ -2998,7 +2998,7 @@ function ValuesScreen() {
                 blockedTitle="Interview scheduling is blocked in this preview until the approved leadership-review workflow exists."
                 className="!text-white !border-transparent"
               >
-                <MessageSquare size={11}/>Schedule Interview
+                <MessageSquare size={11}/>Preview Interview Scheduling
               </Btn>
             </div>
           </div>
@@ -3018,7 +3018,7 @@ function ValuesScreen() {
             blockedTitle="The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists."
             className="mt-3 !px-0 !py-0 !border-0 !bg-transparent !text-blue-300 hover:!bg-transparent hover:!text-white"
           >
-            <ExternalLink size={11}/>Open Values Alignment Interview Form →
+            <ExternalLink size={11}/>Preview Interview Form →
           </Btn>
         </div>
       </div>
