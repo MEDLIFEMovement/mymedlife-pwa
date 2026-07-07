@@ -325,6 +325,20 @@ describe("leader page", () => {
     expect(valuesHtml).toContain("Values interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
     expect(valuesHtml).toContain("Interview scheduling is blocked in this preview until the approved leadership-review workflow exists.");
     expect(valuesHtml).toContain("The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists.");
+
+    const trainingHtml = renderToStaticMarkup(
+      await LeaderPage({
+        searchParams: Promise.resolve({
+          view: "training",
+        }),
+      }),
+    );
+    expect(trainingHtml).toContain("TEST training preview.");
+    expect(trainingHtml).toContain("TEST Featured Resources");
+    expect(trainingHtml).toContain("TEST How to Run Your First Committee as Chair");
+    expect(trainingHtml).toContain("TEST MEDLIFE Chapter Leadership Guide — Full Onboarding");
+    expect(trainingHtml).toContain("Preview Link");
+    expect(trainingHtml).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
   });
 
   it("keeps the copied Figma leader shell close to the exported code size and state map", () => {
@@ -402,5 +416,24 @@ describe("leader page", () => {
     expect(source).toContain("const [selectedMembers, setSelectedMembers] = useState<number[]>(initialMemberIds);");
     expect(source).toContain("const [selectedMemberId, setSelectedMemberId] = useState<number | null>(initialMemberId);");
     expect(source).toContain("Leader note saving is blocked in this preview until the audited note workflow is approved.");
+  });
+
+  it("keeps the leader training resources shell source-faithful while making preview-only states obvious", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/components/figma-leader-training-screen.tsx"),
+      "utf8",
+    );
+
+    expect(source).toContain("Leadership & Resources Hub");
+    expect(source).toContain("TEST training preview. Sample leadership-development resources stay visible for review, but no publishing, playback, deck viewing, external opens, or chapter sharing is live.");
+    expect(source).toContain("TEST Featured Resources");
+    expect(source).toContain("All TEST Resources");
+    expect(source).toContain("TEST What Is Servant Leadership? A MEDLIFE Framework");
+    expect(source).toContain("TEST How to Run Your First Committee as Chair");
+    expect(source).toContain("TEST MEDLIFE Chapter Leadership Guide — Full Onboarding");
+    expect(source).toContain("TEST AshokaU — Social Innovation Leadership Resources");
+    expect(source).toContain("Preview Link");
+    expect(source).toContain("External resource opens are blocked in this preview until leadership-content approval is complete.");
+    expect(source).not.toContain('href={r.url}');
   });
 });
