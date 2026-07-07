@@ -2,8 +2,11 @@ import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { getToneClassName } from "@/components/slt-prep-primitives";
+import { mockSltTripTravelers } from "@/data/mock-slt-trip-prep";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
+import { getSltTripPrepWorkspace } from "@/services/slt-trip-prep-workspace";
 
 let mockPathname = "/slt-prep";
 
@@ -60,6 +63,9 @@ describe("SLT Prep routes", () => {
   afterEach(() => {
     mockPathname = "/slt-prep";
     vi.clearAllMocks();
+    vi.doUnmock("@/app/slt-prep/page-context");
+    vi.doUnmock("@/services/slt-trip-prep-workspace");
+    vi.resetModules();
   });
 
   it("redirects the /app/slt-prep alias to login when there is no signed-in session", async () => {
@@ -97,6 +103,82 @@ describe("SLT Prep routes", () => {
     expect(html).toContain("Completion preview");
     expect(html).toContain("Open admin packet");
     expect(html).toContain("Review payment status");
+  });
+
+  it("keeps the SLT overview blocked for DS Admin readers", async () => {
+    mockPathname = "/slt-prep";
+    await primeSignedInActor("ds.admin@mymedlife.test");
+
+    const { default: SltPrepPage } = await import("@/app/slt-prep/page");
+    const html = renderToStaticMarkup(await SltPrepPage());
+
+    expect(html).toContain("Trip prep is hidden for DS Admin");
+    expect(html).toContain("Open integration outbox");
+  });
+
+  it("renders the source-backed SLT overview fallback states when no deadline or meeting is active", async () => {
+    const actor = setSignedInActor("traveler.a@mymedlife.test");
+    const workspace = getSltTripPrepWorkspace(actor);
+
+    if (!workspace.traveler) {
+      throw new Error("Expected traveler preview workspace.");
+    }
+
+    const customWorkspace = {
+      ...workspace,
+      readiness: {
+        score: 100,
+        tone: "green" as const,
+        label: "100% ready • mostly on track",
+      },
+      traveler: {
+        ...workspace.traveler,
+        riskLevel: "low" as const,
+        alerts: [
+          {
+            ...workspace.traveler.alerts[0],
+            tone: "green" as const,
+            label: "All trip prep blockers are cleared",
+            summary: "The remaining surfaces stay visible, but no live traveler writes run here.",
+            dueLabel: "Cleared",
+            href: "/slt-prep/checklist",
+          },
+        ],
+        meetings: workspace.traveler.meetings.map((meeting) => ({
+          ...meeting,
+          status: "attended" as const,
+        })),
+        timeline: workspace.traveler.timeline.map((event) => ({
+          ...event,
+          status: "complete" as const,
+        })),
+        checklist: workspace.traveler.checklist.filter((item) => item.category !== "Preparation"),
+      },
+    };
+
+    vi.doMock("@/app/slt-prep/page-context", () => ({
+      getSltPrepPageContext: vi.fn().mockResolvedValue({
+        actor,
+        data: getMockReadOnlyAppData("Testing completed traveler SLT preview."),
+      }),
+    }));
+
+    vi.doMock("@/services/slt-trip-prep-workspace", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("@/services/slt-trip-prep-workspace")>();
+
+      return {
+        ...actual,
+        getSltTripPrepWorkspace: vi.fn(() => customWorkspace),
+      };
+    });
+
+    const { default: SltPrepPage } = await import("@/app/slt-prep/page");
+    const html = renderToStaticMarkup(await SltPrepPage());
+
+    expect(html).toContain("You&#x27;re on track");
+    expect(html).toContain("No open deadlines remain in this preview.");
+    expect(html).toContain("No upcoming pre-trip meetings are visible right now.");
+    expect(html).toContain("Future wired");
   });
 
   type SltPrepRoutePage = (props: {
@@ -197,4 +279,39 @@ describe("SLT Prep routes", () => {
       expect(html).toContain(text);
     },
   );
+
+  it.each([
+    ["medical-clearance", "Review form status"],
+    ["orientation-rsvp", "Open meeting status"],
+    ["extension-choice", "Review extensions"],
+    ["passport-proof", "Open traveler profile"],
+  ])(
+    "routes checklist detail action copy honestly for %s",
+    async (itemId, expectedLabel) => {
+      mockPathname = `/slt-prep/checklist/${itemId}`;
+      await primeSignedInActor("traveler.a@mymedlife.test");
+
+      const { default: ChecklistDetailPage } = await import(
+        "@/app/slt-prep/checklist/[itemId]/page"
+      );
+      const html = renderToStaticMarkup(
+        await ChecklistDetailPage({
+          params: Promise.resolve({ itemId }),
+          searchParams: Promise.resolve({}),
+        }),
+      );
+
+      expect(html).toContain(expectedLabel);
+    },
+  );
+
+  it("keeps the green preview tone class available for completed SLT states", () => {
+    expect(getToneClassName("green")).toBe(
+      "border-emerald-300/30 bg-emerald-300/15 text-emerald-100",
+    );
+    expect(getToneClassName("green", "light")).toBe(
+      "border-emerald-200 bg-emerald-50 text-emerald-700",
+    );
+    expect(mockSltTripTravelers[0]?.alerts[2]?.tone).toBe("green");
+  });
 });
