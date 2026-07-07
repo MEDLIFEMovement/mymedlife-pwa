@@ -628,8 +628,7 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
               rows={3}
             />
             <p className="mt-2 text-[10px] leading-relaxed text-amber-700">
-              Chapter support notes stay visible for coach review, but no note save,
-              intervention write, or follow-up write runs from this drawer in the current preview.
+              Chapter support notes stay visible for coach review. Next step: use Admin review for DS directory, audit, and blocked-control follow-up before requesting any write path.
             </p>
           </div>
         </div>
@@ -646,8 +645,8 @@ export function ChapterDetailDrawer({ chapter, onClose }: { chapter: Chapter; on
           >
             <Star className="w-3.5 h-3.5" /> Preview NPS Survey
           </button>
-          <a href="/staff?view=admin&adminView=chapters" title="Open the embedded Admin preview for DS directory and audit review" className="rounded-lg bg-muted px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted/70">
-            <Shield className="w-3.5 h-3.5" />
+          <a href="/staff?view=admin&adminView=chapters" title="Open the embedded Admin preview for DS directory and audit review" className="rounded-lg bg-muted px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70">
+            Admin review
           </a>
         </div>
       </div>
@@ -1621,7 +1620,7 @@ function ProofUGCQueue() {
                   ))}
                 </div>
                 <p className="text-[10px] text-amber-700 mt-2 leading-relaxed">
-                  Share targets stay visible for moderation review. Use the Admin tab for DS review of audit and blocked-control posture; publishing and distribution actions remain blocked in this launch pass.
+                  Share targets stay visible for moderation review. Next step: finish consent and coach context here, then open Admin review for audit and blocked-control posture before any publishing request.
                 </p>
               </div>
 
@@ -1651,8 +1650,7 @@ function ProofUGCQueue() {
                   rows={3}
                 />
                 <p className="mt-1.5 text-[10px] leading-relaxed text-amber-700">
-                  Context drafting stays visible for review, but no coach note, moderation note,
-                  or caption save runs from this queue.
+                  Context drafting stays visible for review, but no coach note, moderation note, or caption save runs from this queue until Admin review approves the next step.
                 </p>
               </div>
             </div>
