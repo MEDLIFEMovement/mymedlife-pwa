@@ -86,8 +86,12 @@ describe("member event detail route", () => {
     expect(html).toContain("Points Available");
     expect(html).toContain("preview link only");
     expect(html).toContain("Route-backed preview");
+    expect(html).toContain("Review the full TEST event loop here");
     expect(html).toContain("Add to Calendar");
     expect(html).toContain("Share");
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=checkin"');
+    expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=points"');
   });
 
   it("renders the RSVP confirmation step as a route-backed preview state", async () => {
