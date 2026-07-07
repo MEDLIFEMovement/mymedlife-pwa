@@ -1835,8 +1835,8 @@ function ImpactScreen() {
           <p className="text-sm text-slate-500 mt-1">TEST impact preview. Sample stories and metrics stay visible for review, but they do not count as live chapter impact or rollout evidence.</p>
         </div>
         <div className="flex gap-2">
-          <Btn variant="secondary" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Share Impact Story</Btn>
-          <Btn variant="primary" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video size={11}/>Create Bridge Video</Btn>
+          <Btn variant="secondary" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Preview Impact Share</Btn>
+          <Btn variant="primary" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video size={11}/>Preview Bridge Video</Btn>
         </div>
       </div>
 
@@ -1852,7 +1852,7 @@ function ImpactScreen() {
             <div className="text-4xl font-black mb-0.5">{s.n}</div>
             <div className="text-sm font-semibold opacity-80 mb-3">{s.label}</div>
             <p className="text-xs leading-relaxed opacity-75 mb-4">{s.story}</p>
-            <button disabled title="Impact sharing is blocked in this preview until feed-sharing approval is complete" className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Share →</button>
+            <button disabled title="Impact sharing is blocked in this preview until feed-sharing approval is complete" className="text-[11px] font-semibold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">Preview Share →</button>
           </div>
         ))}
       </div>
@@ -1938,7 +1938,7 @@ function ImpactScreen() {
                 </button>
               )}
             </div>
-            <Btn variant="primary" blockedTitle="Field-update submission is blocked in this preview until write approval is complete."><Plus size={11}/>Submit Field Update</Btn>
+            <Btn variant="primary" blockedTitle="Field-update submission is blocked in this preview until write approval is complete."><Plus size={11}/>Preview Field Update</Btn>
           </div>
         </div>
 
@@ -2092,9 +2092,9 @@ function ImpactScreen() {
 
               {/* Share actions */}
               <div className="flex gap-2 pt-1">
-                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Share to Chapter Feed</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video  size={11}/>Create Bridge Video</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Presentation export is blocked in this preview."><Upload size={11}/>Add to Presentation</Btn>
+                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Impact story sharing is blocked in this preview until feed-sharing approval is complete."><Share2 size={11}/>Preview Chapter Feed Share</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge-video creation is blocked in this preview until submission writes are approved."><Video  size={11}/>Preview Bridge Video</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Presentation export is blocked in this preview."><Upload size={11}/>Preview Presentation Add</Btn>
               </div>
             </div>
           </div>
@@ -2198,9 +2198,9 @@ function BridgeScreen() {
 
               {/* Actions */}
               <div className="flex gap-2 pt-1">
-                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Bridge video playback is blocked in this preview."><Play    size={11}/>Watch Video</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge video sharing is blocked in this preview until staff approval is complete."><Share2  size={11}/>Share to Feed</Btn>
-                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Featuring a bridge video is blocked in this preview until staff approval is complete."><Star    size={11}/>Feature</Btn>
+                <Btn variant="primary"   className="flex-1 justify-center" blockedTitle="Bridge video playback is blocked in this preview."><Play    size={11}/>Preview Video</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Bridge video sharing is blocked in this preview until staff approval is complete."><Share2  size={11}/>Preview Feed Share</Btn>
+                <Btn variant="secondary" className="flex-1 justify-center" blockedTitle="Featuring a bridge video is blocked in this preview until staff approval is complete."><Star    size={11}/>Preview Feature</Btn>
               </div>
               <div className="flex items-start gap-2.5 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-xl">
                 <Shield size={13} className="text-amber-500 mt-0.5 shrink-0"/>
@@ -2217,7 +2217,7 @@ function BridgeScreen() {
           <h1 className="text-2xl font-black text-slate-900">Bridge Video Hub</h1>
           <p className="text-sm text-slate-500 mt-1 italic">TEST bridge-video preview. Sample submissions stay visible for review, but no playback, featuring, or publishing is live.</p>
         </div>
-        <Btn variant="primary" blockedTitle="Bridge-video submission is blocked in this preview until write approval is complete."><Upload size={11}/>Submit for Approval</Btn>
+        <Btn variant="primary" blockedTitle="Bridge-video submission is blocked in this preview until write approval is complete."><Upload size={11}/>Preview Submission</Btn>
       </div>
 
       {/* Approval notice */}

@@ -288,6 +288,9 @@ describe("leader page", () => {
       }),
     );
     expect(impactHtml).toContain("TEST impact preview.");
+    expect(impactHtml).toContain("Preview Impact Share");
+    expect(impactHtml).toContain("Preview Bridge Video");
+    expect(impactHtml).toContain("Preview Field Update");
     expect(impactHtml).toContain("Impact story sharing is blocked in this preview until feed-sharing approval is complete.");
     expect(impactHtml).toContain("Field-update submission is blocked in this preview until write approval is complete.");
     expect(impactHtml).toContain("TEST Rosa M.");
@@ -301,6 +304,7 @@ describe("leader page", () => {
       }),
     );
     expect(bridgeHtml).toContain("TEST bridge-video preview.");
+    expect(bridgeHtml).toContain("Preview Submission");
     expect(bridgeHtml).toContain("Bridge-video submission is blocked in this preview until write approval is complete.");
 
     const feedHtml = renderToStaticMarkup(
@@ -389,7 +393,14 @@ describe("leader page", () => {
     expect(source).toContain("Open Bridge Video Previews");
     expect(source).toContain("Member roster creation is blocked in this preview. Use the visible leaderboard only for TEST comparison review.");
     expect(source).toContain("TEST impact preview. Sample stories and metrics stay visible for review, but they do not count as live chapter impact or rollout evidence.");
+    expect(source).toContain("Preview Impact Share");
+    expect(source).toContain("Preview Bridge Video");
+    expect(source).toContain("Preview Field Update");
     expect(source).toContain("TEST bridge-video preview. Sample submissions stay visible for review, but no playback, featuring, or publishing is live.");
+    expect(source).toContain("Preview Submission");
+    expect(source).toContain("Preview Video");
+    expect(source).toContain("Preview Feed Share");
+    expect(source).toContain("Preview Feature");
     expect(source).toContain("TEST analytics preview. Sample posts, engagement, and outreach cues stay visible for review, but they do not count as live feed evidence or messaging authority.");
     expect(source).toContain('subject:"TEST Rosa M."');
     expect(source).toContain('location:"TEST Pisac, Cusco Region"');
