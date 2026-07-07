@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { redirect } from "next/navigation";
 
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { getMockReadOnlyAppData } from "@/services/read-only-app-data";
@@ -37,6 +38,30 @@ function getSignedInActor(email: string) {
 }
 
 describe("member event detail route", () => {
+  it("parks unknown event ids back to the member events route", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing unknown member event route."),
+    );
+    vi.mocked(redirect).mockImplementation((href: string) => {
+      throw new Error(`redirect:${href}`);
+    });
+
+    const { default: EventDetailPage } = await import("@/app/app/events/[eventId]/page");
+
+    await expect(
+      EventDetailPage({
+        params: Promise.resolve({ eventId: "missing-event" }),
+        searchParams: Promise.resolve({}),
+      }),
+    ).rejects.toThrow("redirect:/app/events");
+  });
+
   it("renders the source-backed event detail shell on the standalone route", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
