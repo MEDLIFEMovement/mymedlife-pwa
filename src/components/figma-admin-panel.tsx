@@ -2930,6 +2930,41 @@ function SettingsPage() {
         ))}
       </div>
 
+      <div className="bg-[#161b22] border border-white/[0.06] rounded-lg px-5 py-4 space-y-3">
+        <div>
+          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">Preview-only admin ops</div>
+          <p className="text-[12px] text-slate-500 leading-relaxed mt-1">
+            Keep these controls visible for DS Admin parity review, but treat every config save, alert test, and settings export as blocked until the audited admin workflow is approved.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            disabled
+            title="Settings saves are blocked in this preview"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <CheckCircle2 size={11} />
+            Save Settings
+          </button>
+          <button
+            disabled
+            title="Alert test sends are blocked in this preview"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-300 border border-amber-500/15 rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <Bell size={11} />
+            Test Alerts
+          </button>
+          <button
+            disabled
+            title="Settings export is blocked in this preview"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.04] text-slate-400 border border-white/[0.08] rounded text-[11px] font-medium transition-colors opacity-50 cursor-not-allowed"
+          >
+            <FileText size={11} />
+            Export Settings
+          </button>
+        </div>
+      </div>
+
       <div className="flex items-start gap-3 bg-amber-500/8 border border-amber-500/15 rounded-lg p-4">
         <Shield size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
         <div>
