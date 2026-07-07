@@ -94,15 +94,21 @@ describe("Figma missing route placeholders", () => {
 
     const modulesHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="modules" />);
     expect(modulesHtml).toContain("This module surface is preview-only.");
+    expect(modulesHtml).toContain("Module Review Posture");
+    expect(modulesHtml).toContain("disabled or emergency-disabled modules");
     expect(source).toContain("Module changes are blocked in this static admin shell; use the audited admin workflow after approval");
 
     const integrationsHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="integrations" />);
     expect(integrationsHtml).toContain("this integrations surface is preview-only");
+    expect(integrationsHtml).toContain("Provider Review Posture");
+    expect(integrationsHtml).toContain("providers have no live credentials or outbound path");
     expect(integrationsHtml).toContain("Smile.io provider enablement is blocked until DS approval is complete");
     expect(integrationsHtml).toContain("Meta App Review and OAuth scope setup stay visible for DS review");
     expect(source).toContain("Publishing remains blocked in this preview");
 
     const apiKeysHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="apikeys" />);
+    expect(apiKeysHtml).toContain("Secrets Review Posture");
+    expect(apiKeysHtml).toContain("seeded active keys still stay masked here");
     expect(apiKeysHtml).toContain("API keys stay masked in this preview");
     expect(apiKeysHtml).toContain("Key material stays masked in this preview until the audited secrets workflow is approved.");
     expect(source).toContain("Key rotation is blocked in this preview");
@@ -110,6 +116,8 @@ describe("Figma missing route placeholders", () => {
 
     const mcpHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="mcp" />);
     expect(mcpHtml).toContain("MCP Access Policy");
+    expect(mcpHtml).toContain("MCP Review Posture");
+    expect(mcpHtml).toContain("providers remain read-only by policy");
     expect(source).toContain("MCP write access is blocked in this preview");
     expect(source).toContain("MCP provider connections stay visible for policy review, but connection changes are blocked in this preview");
   });
@@ -149,6 +157,9 @@ describe("Figma missing route placeholders", () => {
     const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
 
     const healthHtml = renderToStaticMarkup(<FigmaAdminPanel initialActive="health" />);
+    expect(healthHtml).toContain("Monitoring Review Posture");
+    expect(healthHtml).toContain("Seeded Monitoring Snapshot");
+    expect(healthHtml).toContain("healthy preview posture");
     expect(healthHtml).toContain("This system-health panel is preview-only.");
     expect(healthHtml).toContain("System-health refresh is blocked in this static shell");
 
