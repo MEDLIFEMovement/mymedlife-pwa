@@ -83,7 +83,10 @@ describe("member stories and profile pages", () => {
     const { default: ProfilePage } = await import("@/app/profile/page");
     const html = renderToStaticMarkup(await ProfilePage());
 
-    expect(html).toContain("Hi, Sofia");
+    expect(html).toContain("Hi, TEST Sofia");
+    expect(html).toContain("TEST Sofia Alvarez");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("TEST Rush Month kickoff social");
     expect(html).toContain("Read-only profile");
     expect(html).toContain("No profile save runs from this route.");
     expect(html).toContain("No join request, role approval, membership change, or coach assignment runs from this route.");

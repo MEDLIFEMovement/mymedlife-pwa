@@ -55,14 +55,14 @@ describe("home page", () => {
     const { default: HomePage } = await import("@/app/app/page");
     const html = renderToStaticMarkup(await HomePage({}));
 
-    expect(html).toContain("Hi, Sofia");
-    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("Hi, TEST Sofia");
+    expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Start next action");
     expect(html).toContain("My Points · Rush Month");
     expect(html).toContain("MEDLIFE Stories");
     expect(html).toContain("Upcoming Events");
-    expect(html).toContain("Intro GBM");
-    expect(html).toContain("Tabling at Bruin Walk");
+    expect(html).toContain("TEST Intro GBM");
+    expect(html).toContain("TEST Tabling at Bruin Walk");
     expect(html).toContain("Active Campaign");
     expect(html).toContain("Rush Month");
     expect(html).toContain("Chapter Leaderboard");
@@ -91,8 +91,8 @@ describe("home page", () => {
     const { default: HomePage } = await import("@/app/app/page");
     const html = renderToStaticMarkup(await HomePage({}));
 
-    expect(html).toContain("Hi, Sofia");
-    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("Hi, TEST Sofia");
+    expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("Upcoming Events");
     expect(html).toContain("Start next action");
     expect(html).not.toContain("Open SLT Prep");

@@ -80,7 +80,7 @@ describe("member mobile shell routes", () => {
 
     expect(html).toContain(">Events<");
     expect(html).toContain("Show up. Check in. Earn points.");
-    expect(html).toContain("Intro GBM");
+    expect(html).toContain("TEST Intro GBM");
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events&amp;step=rsvp"');
     expect(html).toContain('href="/app/events/chapter-event-ucla-kickoff?source=events"');
     expect(html).toContain('href="/app/events/chapter-event-lakeside-welcome?source=events"');
