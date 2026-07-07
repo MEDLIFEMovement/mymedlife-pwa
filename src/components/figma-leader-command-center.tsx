@@ -357,6 +357,10 @@ function healthPill(h: string) {
   return <Pill label={h} color={map[h] ?? "slate"} />;
 }
 
+function toTestLabel(name: string) {
+  return name.startsWith("TEST ") ? name : `TEST ${name}`;
+}
+
 /** Primary / secondary / ghost button */
 function Btn({ children, variant="primary", onClick, className="", blockedTitle }: {
   children: React.ReactNode; variant?: "primary"|"secondary"|"ghost"|"danger";
@@ -2423,7 +2427,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
         <p className="text-sm text-slate-500 leading-relaxed">
           Review how the <strong className="text-slate-800">{role.label}</strong> transition plan would read once the audited transition workflow is approved.
           {nominees.length > 0 && <> {nominees.length} candidate{nominees.length > 1 ? "s" : ""} nominated.</>}
-          {primaryMember && <> Primary: <strong className="text-slate-800">{primaryMember.name}</strong>.</>}
+          {primaryMember && <> Primary: <strong className="text-slate-800">{toTestLabel(primaryMember.name)}</strong>.</>}
           {formattedTarget && ` Target date: ${formattedTarget}.`}
         </p>
         <p className="text-xs text-slate-400 mt-2">No live plan was activated, no nominees were notified, and no transition tasks were published from this preview.</p>
@@ -2439,7 +2443,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
         {primaryId && (
           <button onClick={() => onViewProfile(primaryId)}
             className="px-5 py-2.5 text-sm font-bold rounded-xl cursor-pointer text-white hover:opacity-90" style={{ background: role.color }}>
-            View {primaryMember?.name.split(" ")[0]}'s Profile
+            View {primaryMember ? toTestLabel(primaryMember.name).split(" ")[1] : "TEST"}'s Profile
           </button>
         )}
       </div>
@@ -2713,7 +2717,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
                 <div className="flex justify-between">
                   <span className="text-slate-400">Primary</span>
                   <span className="font-semibold text-slate-800">
-                    {primaryMember ? primaryMember.name.split(" ")[0] : "—"}
+                    {primaryMember ? toTestLabel(primaryMember.name).split(" ")[1] : "—"}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -2730,7 +2734,7 @@ function TransitionPlanBuilder({ onBack, onViewProfile }: { onBack: () => void; 
                 <div className="flex items-center gap-2.5">
                   <Avatar name={primaryMember.name} color={primaryMember.color} size={36}/>
                   <div>
-                    <div className="text-sm font-black text-slate-900">{primaryMember.name}</div>
+                    <div className="text-sm font-black text-slate-900">{toTestLabel(primaryMember.name)}</div>
                     <div className="text-xs text-slate-400">{primaryMember.role}</div>
                   </div>
                 </div>
@@ -2887,7 +2891,7 @@ function SuccessionScreen({ onNavigate, onSelectMember }: { onNavigate:(s:Screen
                     <span className="text-[11px] font-black text-slate-400 w-6 text-center shrink-0" style={{fontFamily:"'JetBrains Mono',monospace"}}>#{idx+1}</span>
                     <Avatar name={m.name} color={m.color} size={24}/>
                     <div>
-                      <div className="text-xs font-semibold text-slate-800">{m.name}</div>
+                      <div className="text-xs font-semibold text-slate-800">{toTestLabel(m.name)}</div>
                       <div className="text-[10px] text-slate-400">{m.committee} · {m.pts.toLocaleString()} pts</div>
                     </div>
                   </div>
@@ -3013,12 +3017,13 @@ function ValuesScreen() {
           <p className="text-xs text-blue-200 leading-relaxed">
             The Values Alignment Interview is a structured conversation between a chapter leader and a candidate for Chair or E-Board. It is not a test — it is a chance to understand who someone is, what drives them, and whether they are ready to lead with character, fire, and growth. Use this preview guidance to understand the review standard while the actual scheduling and submission workflow stays blocked.
           </p>
+          <p className="text-[11px] text-blue-300 mt-2">No live invite, contact sync, form submission, or provider handoff is sent from this preview.</p>
           <Btn
             variant="ghost"
             blockedTitle="The Values Alignment Interview form is blocked in this preview until the approved leadership-review workflow exists."
             className="mt-3 !px-0 !py-0 !border-0 !bg-transparent !text-blue-300 hover:!bg-transparent hover:!text-white"
           >
-            <ExternalLink size={11}/>Preview Interview Form →
+            <ExternalLink size={11}/>Preview Interview Form<span className="sr-only"> Preview Values Interview Form</span> →
           </Btn>
         </div>
       </div>

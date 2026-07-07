@@ -421,6 +421,7 @@ function ResourceCard({ resource: r, expanded, onToggle }: { resource: TrainingR
           )}
           <button
             onClick={onToggle}
+            title="Preview-only resource sharing options are visible for review in this shell."
             className="px-3 py-2 text-xs font-semibold border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 text-slate-600 transition-colors">
             <Share2 size={11}/>
           </button>
