@@ -2086,7 +2086,7 @@ export function FigmaStaffCommandCenter({
     <div className="min-h-screen bg-background flex flex-col" style={{ fontFamily:"'Plus Jakarta Sans', system-ui, sans-serif" }}>
       {/* Top Bar */}
       <header className="bg-sidebar border-b border-sidebar-border flex-shrink-0 z-30 relative">
-        <div className="flex h-12 items-center gap-4 px-5 pr-24 sm:gap-6 sm:pr-[15rem]">
+        <div className="flex h-12 items-center gap-4 px-5 pr-28 sm:gap-6 sm:pr-[18rem] lg:pr-[19rem]">
           {/* Logo */}
           <a
             href={buildStaffShellHref("chapters", pathname, searchParams.toString())}
@@ -2126,8 +2126,8 @@ export function FigmaStaffCommandCenter({
           </nav>
 
           {/* Right */}
-          <div className="pointer-events-none ml-auto flex min-w-0 flex-none items-center justify-end gap-2 sm:gap-3">
-            <div className="pointer-events-none flex min-w-0 max-w-[10.5rem] items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1 sm:max-w-[12rem] lg:max-w-none">
+          <div className="pointer-events-none ml-auto flex min-w-0 max-w-[11.5rem] flex-none items-center justify-end gap-2 sm:max-w-[12.5rem] sm:gap-3 lg:max-w-[13rem] xl:max-w-[14rem]">
+            <div className="pointer-events-none flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-600/20 px-2.5 py-1">
               <AlertTriangle className="w-3 h-3 text-red-400" />
               <span className="truncate text-xs font-semibold text-red-300">2 chapters need intervention</span>
             </div>
@@ -2137,7 +2137,7 @@ export function FigmaStaffCommandCenter({
       </header>
 
       {/* Page Header */}
-      <div className="flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 pr-24 sm:pr-[15rem]">
+      <div className="flex flex-shrink-0 items-center justify-between border-b border-border bg-white px-6 py-3 pr-28 sm:pr-[18rem] lg:pr-[19rem]">
         <div className="min-w-0">
           <h1 className="text-base font-bold text-foreground">{SCREEN_TITLES[activeScreen]}</h1>
           <div className="mt-0.5 text-xs text-muted-foreground">
