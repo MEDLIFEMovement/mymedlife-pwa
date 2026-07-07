@@ -224,6 +224,29 @@ describe("staff page", () => {
     expect(source).toContain('"/staff?view=proof_ugc"');
   });
 
+  it("opens the requested staff campaign tab when a route-backed campaign query is provided", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({ view: "campaigns", campaign: "social-media" }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("Instagram TY");
+    expect(html).toContain("TikTok YoY");
+    expect(html).toContain("Open proof / UGC lane");
+    expect(html).not.toContain("Events TY");
+    expect(source).toContain('params.set("campaign", getStaffCampaignParam(campaign));');
+    expect(source).toContain('case "social-media":');
+  });
+
   it("keeps proof review submission and sharing controls visibly blocked inside the UGC surface", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -367,7 +390,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2245);
+    expect(lineCount).toBeLessThanOrEqual(2335);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

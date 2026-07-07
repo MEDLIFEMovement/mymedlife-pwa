@@ -869,8 +869,16 @@ function PctBadge({ pct, lyPct }: { pct: number; lyPct: number }) {
   );
 }
 
-function CampaignOps() {
-  const [activeCampaign, setActiveCampaign] = useState("Rush Month");
+type CampaignOpsProps = {
+  initialCampaign?: string | null;
+};
+
+function CampaignOps({ initialCampaign = null }: CampaignOpsProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const requestedCampaign = searchParams.get("campaign") ?? initialCampaign;
+  const activeCampaign = resolveStaffCampaignTab(requestedCampaign);
   const [regionFilter, setRegionFilter] = useState("all");
   const [coachFilter, setCoachFilter]   = useState("all");
   const [showRiskTooltip, setShowRiskTooltip] = useState(false);
@@ -925,12 +933,21 @@ function CampaignOps() {
     return reasons.join(" · ");
   };
 
+  const handleCampaignChange = (campaign: string) => {
+    setRegionFilter("all");
+    setCoachFilter("all");
+    router.replace(
+      buildStaffCampaignHref(campaign, pathname, searchParams.toString()),
+      { scroll: false },
+    );
+  };
+
   return (
     <div className="flex flex-col gap-5">
       {/* Campaign Tabs */}
       <div className="flex gap-2 flex-wrap">
         {CAMPAIGNS.map(c => (
-          <button key={c} onClick={() => { setActiveCampaign(c); setRegionFilter("all"); setCoachFilter("all"); }}
+          <button key={c} onClick={() => handleCampaignChange(c)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
               activeCampaign === c
                 ? "bg-primary text-white shadow-sm"
@@ -2033,11 +2050,13 @@ const SCREEN_TITLES: Record<Screen, string> = {
 type FigmaStaffCommandCenterProps = {
   canAccessAdminPanel?: boolean;
   initialView?: string;
+  initialCampaign?: string | null;
 };
 
 export function FigmaStaffCommandCenter({
   canAccessAdminPanel = false,
   initialView,
+  initialCampaign = null,
 }: FigmaStaffCommandCenterProps = {}) {
   const router = useRouter();
   const pathname = usePathname();
@@ -2164,7 +2183,7 @@ export function FigmaStaffCommandCenter({
             {activeScreen === "chapters" && <PortfolioOverview onSelectChapter={handleSelectChapter} />}
             {activeScreen === "events" && <StaffLaunchEventsOperations chapters={CHAPTERS} />}
             {activeScreen === "reports" && <StaffLaunchOrganizationLeaderboard chapters={CHAPTERS} />}
-            {activeScreen === "campaigns" && <CampaignOps />}
+            {activeScreen === "campaigns" && <CampaignOps initialCampaign={initialCampaign} />}
             {activeScreen === "ugc" && <ProofUGCQueue />}
             {activeScreen === "best-practices" && <BestPracticesLibrary />}
           </div>
@@ -2230,6 +2249,56 @@ function getStaffShellViewParam(screen: Screen): string {
     default:
       return screen;
   }
+}
+
+function resolveStaffCampaignTab(campaign: string | null) {
+  switch (campaign) {
+    case "rush-month":
+      return "Rush Month";
+    case "slt-promotion":
+      return "SLT Promotion";
+    case "moving-mountains":
+      return "Moving Mountains";
+    case "chapter-events":
+      return "Chapter Events";
+    case "leadership-transition":
+      return "Leadership Transition";
+    case "planning-goal-setting":
+      return "Chapter Organization and Planning";
+    case "social-media":
+      return "Social Media";
+    default:
+      return "Rush Month";
+  }
+}
+
+function getStaffCampaignParam(campaign: string) {
+  switch (campaign) {
+    case "Rush Month":
+      return "rush-month";
+    case "SLT Promotion":
+      return "slt-promotion";
+    case "Moving Mountains":
+      return "moving-mountains";
+    case "Chapter Events":
+      return "chapter-events";
+    case "Leadership Transition":
+      return "leadership-transition";
+    case "Chapter Organization and Planning":
+      return "planning-goal-setting";
+    case "Social Media":
+      return "social-media";
+    default:
+      return "rush-month";
+  }
+}
+
+function buildStaffCampaignHref(campaign: string, pathname: string, search: string) {
+  const params = new URLSearchParams(search);
+  params.set("view", "campaigns");
+  params.set("campaign", getStaffCampaignParam(campaign));
+  const query = params.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
 
 function buildStaffShellHref(screen: Screen, pathname: string, search: string): string {
