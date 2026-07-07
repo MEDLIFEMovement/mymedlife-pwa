@@ -470,6 +470,13 @@ describe("leader page", () => {
     expect(source).toContain("TEST values preview. Three values guide every MEDLIFE leader, but no interview, nomination, promotion, or approval decision becomes live from this shell.");
     expect(source).not.toContain("Activate Transition Plan");
     expect(source).toContain("Preview Promotion");
+    expect(source).toContain("Preview Candidate Nomination");
+    expect(source).toContain("Preview Transition Plan");
+    expect(source).toContain("Preview Values Interview");
+    expect(source).toContain("Preview Interview Scheduling");
+    expect(source).toContain("Preview Values Interview Form");
+    expect(source).toContain("No live invite, contact sync, form submission, or provider handoff is sent from this preview.");
+    expect(source).toContain("toTestLabel");
   });
 
   it("routes member-profile leadership actions into preview flows and blocks note writes honestly", () => {
