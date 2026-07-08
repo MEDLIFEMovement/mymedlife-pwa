@@ -132,6 +132,7 @@ describe("Figma missing route placeholders", () => {
 
   it("honors DS Admin route-backed view params for direct deep-link review", async () => {
     const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const source = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
 
     mockPathname = "/admin";
     mockSearchParams = new URLSearchParams("view=mcp");
@@ -143,6 +144,8 @@ describe("Figma missing route placeholders", () => {
     const keysHtml = renderToStaticMarkup(<FigmaAdminPanel />);
     expect(keysHtml).toContain(">API Keys</h1>");
     expect(keysHtml).toContain("API keys stay masked in this preview");
+    expect(source).toContain("Rotate blocked");
+    expect(source).toContain("Revoke blocked");
   });
 
   it("keeps admin points policy controls visibly blocked instead of acting like a live editor", async () => {
