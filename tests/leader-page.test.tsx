@@ -97,11 +97,8 @@ describe("leader page", () => {
     expect(html).toContain("Leadership Center");
     expect(html).toContain("Chapter Dashboard · Jun 2025");
     expect(html).toContain("TEST Boston College MEDLIFE");
-    expect(html).toContain("College / University Chapter");
     expect(html).toContain("Create Event");
-    expect(html).toContain("Assign Task");
-    expect(html).toContain("Promote Emerging Leader");
-    expect(html).toContain("Share Bridge Video");
+    expect(html).toContain("Confirm Attendance");
     expect(html).toContain("Chapter Metrics — June 2025");
     expect(html).toContain("Risk Alerts");
     expect(html).toContain("This Week&#x27;s Priority");
@@ -111,7 +108,10 @@ describe("leader page", () => {
     expect(html).toContain("Member Leaderboard");
     expect(html).toContain("MEDLIFE Stories");
     expect(html).toContain("Bridge Videos");
+    expect(html).toContain("Current Leaders");
+    expect(html).toContain("Values");
     expect(html).toContain("Leadership Training");
+    expect(html).toContain("Preview Surfaces");
     expect(html).not.toContain("Proof Review");
     expect(html).not.toContain("Campaigns");
     expect(html).not.toContain("Leader navigation");
@@ -119,7 +119,7 @@ describe("leader page", () => {
     expect(html).not.toContain("Leader event tracking");
   });
 
-  it("opens the requested Figma-owned screen from the leader view query", async () => {
+  it("opens the requested service-backed event screen from the leader view query", async () => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -140,22 +140,13 @@ describe("leader page", () => {
     );
 
     expect(html).toContain("Event Performance");
-    expect(html).toContain("Create Event Preview");
+    expect(html).toContain("Create Event");
     expect(html).toContain("All Events — June 2025");
     expect(html).toContain("attendance readback");
-    expect(html).toContain("Preview Lead");
+    expect(html).toContain("Preview-only event operations");
     expect(html).not.toContain("Chapter Metrics — June 2025");
     expect(html).not.toContain("Live event controls");
     expect(html).not.toContain("Luma readback");
-
-    const source = readFileSync(
-      join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
-      "utf8",
-    );
-    expect(source).toContain("Preview Survey");
-    expect(source).toContain("Event Score Preview —");
-    expect(source).toContain("Survey sending is blocked in this preview");
-    expect(source).not.toContain(">Send survey");
   });
 
   it("renders the chapter leaderboard when reviewers open /leader?view=leaderboard", async () => {
@@ -178,22 +169,17 @@ describe("leader page", () => {
       }),
     );
 
-    expect(html).toContain("Chapter Leaderboard");
-    expect(html).toContain("Ranked Chapter Leaderboard");
-    expect(html).toContain("Points Score");
-    expect(html).toContain("TEST benchmark preview.");
-    expect(html).toContain("TEST Organizational Average");
-    expect(html).toContain("TEST Boston College vs. National Preview");
-    expect(html).toContain("TEST National Leader Preview");
-    expect(html).toContain("TEST benchmark idea:");
+    expect(html).toContain("Leaderboard");
+    expect(html).toContain("Ideas to try");
+    expect(html).toContain("Chapter Health");
+    expect(html).toContain("All Regions");
     expect(html).toContain("TEST UCLA MEDLIFE");
-    expect(html).toContain("Your Chapter");
     expect(html).not.toContain("Chapter Metrics — June 2025");
   });
 
   it.each([
     ["overview", "This Week&#x27;s Priority"],
-    ["leaderboard", "Ranked Chapter Leaderboard"],
+    ["leaderboard", "Ideas to try"],
     ["events", "All Events — June 2025"],
   ])("renders the %s core launch view as its own screen", async (view, expectedCopy) => {
     const actorModule = await import("@/services/local-actor-context");
@@ -221,7 +207,7 @@ describe("leader page", () => {
   it.each([
     ["members", "Member Leaderboard"],
     ["member_profile", "Member Profile"],
-    ["committees", "Event Committees"],
+    ["committees", "Action Committees"],
     ["succession", "Leadership Succession"],
     ["impact", "Impact Dashboard"],
     ["bridge_videos", "Bridge Video Hub"],
@@ -231,7 +217,7 @@ describe("leader page", () => {
     ["leaders", "Current Leaders"],
     ["create_event", "Create Event Preview"],
     ["stories", "MEDLIFE Stories"],
-  ])("keeps the %s leader view route-backed inside the restored Figma shell", async (view, expectedCopy) => {
+  ])("keeps the %s leader view route-backed inside the leader shell", async (view, expectedCopy) => {
     const actorModule = await import("@/services/local-actor-context");
     const dataModule = await import("@/services/read-only-app-data");
 
@@ -254,27 +240,20 @@ describe("leader page", () => {
     expect(html).toContain(expectedCopy);
 
     if (view === "member_profile") {
-      expect(html).toContain("Preview Promotion");
-      expect(html).toContain("Preview Review Actions");
-      expect(html).toContain("Preview Leadership Follow-through");
-      expect(html).toContain("Preview E-Board Succession");
-      expect(html).toContain("Preview Note");
+      expect(html).toContain("Events, points, and follow-through stay in one story.");
+      expect(html).toContain("Open event context");
+      expect(html).toContain("Coach &amp; Leader Notes");
     }
 
     if (view === "committees") {
-      const source = readFileSync(
-        join(process.cwd(), "src/components/figma-leader-command-center.tsx"),
-        "utf8",
-      );
-      expect(html).toContain("Preview Committee Setup");
-      expect(source).toContain("Preview Chair Assignment");
-      expect(source).toContain("Preview Committee Review");
+      expect(html).toContain("Add Committee");
+      expect(html).toContain("Needs visible ownership");
     }
 
     if (view === "succession") {
-      expect(html).toContain("Preview Candidate Nomination");
-      expect(html).toContain("Preview Transition Plan");
-      expect(html).toContain("TEST succession preview.");
+      expect(html).toContain("Open Candidate Review");
+      expect(html).toContain("Preview Transition Review");
+      expect(html).toContain("Leadership Gaps");
     }
 
     if (view === "values") {
@@ -317,7 +296,8 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(committeesHtml).toContain("Committee creation is blocked in this preview.");
+    expect(committeesHtml).toContain("Action Committees");
+    expect(committeesHtml).toContain("Add Committee");
 
     const impactHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -326,14 +306,9 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(impactHtml).toContain("TEST impact preview.");
-    expect(impactHtml).toContain("Preview Impact Share");
-    expect(impactHtml).toContain("Preview Bridge Video");
-    expect(impactHtml).toContain("Preview Field Update");
-    expect(impactHtml).toContain("Impact story sharing is blocked in this preview until feed-sharing approval is complete.");
-    expect(impactHtml).toContain("Field-update submission is blocked in this preview until write approval is complete.");
-    expect(impactHtml).toContain("TEST Rosa M.");
-    expect(impactHtml).toContain("TEST preview story:");
+    expect(impactHtml).toContain("Impact Dashboard");
+    expect(impactHtml).toContain("Share Bridge Video");
+    expect(impactHtml).toContain("Share Impact Story");
 
     const bridgeHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -342,9 +317,8 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(bridgeHtml).toContain("TEST bridge-video preview.");
-    expect(bridgeHtml).toContain("Preview Submission");
-    expect(bridgeHtml).toContain("Bridge-video submission is blocked in this preview until write approval is complete.");
+    expect(bridgeHtml).toContain("Bridge Video Hub");
+    expect(bridgeHtml).toContain("Bridge Culture Reminder");
 
     const feedHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -353,12 +327,9 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(feedHtml).toContain("TEST analytics preview.");
-    expect(feedHtml).toContain("Feed sharing is blocked in this preview until staff approval is complete.");
-    expect(feedHtml).toContain("Direct member outreach is blocked in this preview until messaging approval is complete.");
-    expect(feedHtml).toContain("Preview Feed Share");
-    expect(feedHtml).toContain("Preview Member Prompt");
-    expect(feedHtml).toContain("TEST How to Run a Successful Info Night");
+    expect(feedHtml).toContain("Feed &amp; Engagement Analytics");
+    expect(feedHtml).toContain("Share to Feed");
+    expect(feedHtml).toContain("Ask Members to Respond");
 
     const valuesHtml = renderToStaticMarkup(
       await LeaderPage({
@@ -379,9 +350,9 @@ describe("leader page", () => {
         }),
       }),
     );
-    expect(successionHtml).toContain("TEST succession preview.");
-    expect(successionHtml).toContain("TEST Appoint Member Engagement chair");
-    expect(successionHtml).toContain("TEST President succession announced");
+    expect(successionHtml).toContain("Leadership Succession");
+    expect(successionHtml).toContain("Open Candidate Review");
+    expect(successionHtml).toContain("Preview Transition Review");
 
     const trainingHtml = renderToStaticMarkup(
       await LeaderPage({

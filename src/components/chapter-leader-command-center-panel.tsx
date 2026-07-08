@@ -22,6 +22,7 @@ import {
   type ChapterLeaderCommandCenterSuccessionCandidate,
   type ChapterLeaderCommandCenterView,
 } from "@/services/chapter-leader-command-center";
+import { buildLeaderCommandCenterHrefForScreen } from "@/services/leader-command-center-routing";
 
 type ChapterLeaderCommandCenterPanelProps = {
   commandCenter: ChapterLeaderCommandCenter;
@@ -110,6 +111,28 @@ export function ChapterLeaderCommandCenterPanel({
       }),
       helper: "Open the member pipeline",
       tone: "secondary",
+    },
+  ];
+  const previewRouteLinks = [
+    {
+      label: "Create Event",
+      href: buildLeaderCommandCenterHrefForScreen("create-event"),
+    },
+    {
+      label: "MEDLIFE Stories",
+      href: buildLeaderCommandCenterHrefForScreen("stories"),
+    },
+    {
+      label: "Current Leaders",
+      href: buildLeaderCommandCenterHrefForScreen("leaders"),
+    },
+    {
+      label: "Values",
+      href: buildLeaderCommandCenterHrefForScreen("values"),
+    },
+    {
+      label: "Leadership Training",
+      href: buildLeaderCommandCenterHrefForScreen("training"),
     },
   ];
   const dashboardHeading = getDashboardHeading(commandCenter.eventsOverview.monthLabel);
@@ -256,6 +279,23 @@ export function ChapterLeaderCommandCenterPanel({
                   </div>
                 </div>
               ))}
+              <div>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/60">
+                  Preview Surfaces
+                </p>
+                <div className="mt-2 grid gap-2">
+                  {previewRouteLinks.map((route) => (
+                    <div key={route.label} className="relative">
+                      <Link
+                        href={route.href}
+                        className="block rounded-[1rem] border border-[#254064] bg-[#13294c] px-3 py-2.5 text-sm font-semibold text-[#dbeafe] transition hover:border-[#7fb5ff] hover:bg-[#19345f] hover:text-white"
+                      >
+                        {route.label}
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </nav>
           </div>
           <div className="mt-4 border-t border-white/10 pt-4">
@@ -361,7 +401,7 @@ export function ChapterLeaderCommandCenterPanel({
               </div>
             </section>
 
-            <SectionCard eyebrow="Leadership Metrics" title={getChapterMetricsHeading(commandCenter)}>
+          <SectionCard eyebrow="Chapter Metrics" title={getChapterMetricsHeading(commandCenter)}>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {commandCenter.metrics.map((metric) => (
                   <ToplineMetricCard
@@ -674,13 +714,13 @@ function renderView(
             <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
               <div className="max-w-3xl">
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Member Pipeline
+                  Member Leaderboard
                 </p>
                 <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
-                  Member Pipeline
+                  Member Leaderboard
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Identify future leaders through action, consistency, and character - not popularity.
+                  Review TEST member momentum, values posture, and follow-through without turning on live roster mutation.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -1274,10 +1314,10 @@ function renderView(
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div>
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  Events
+                  Event Performance
                 </p>
                 <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-slate-950 sm:text-[1.9rem]">
-                  Events
+                  Event Performance
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   Review TEST event creation, RSVP posture, attendance readback, proof follow-through,
@@ -2568,7 +2608,7 @@ function QuickActionLink({
 }
 
 function getChapterMetricsHeading(commandCenter: ChapterLeaderCommandCenter) {
-  return `Leadership Metrics — ${expandMonthLabel(commandCenter.eventsOverview.monthLabel)}`;
+  return `Chapter Metrics — ${expandMonthLabel(commandCenter.eventsOverview.monthLabel)}`;
 }
 
 function expandMonthLabel(monthLabel: string) {
