@@ -52,19 +52,25 @@ describe("admin management pages", () => {
 
     expect(html).toContain("User Access Management");
     expect(html).toContain("Search name or email");
+    expect(html).toContain("TEST Sofia Alvarez");
+    expect(html).toContain("TEST Sofia, TEST coach, medlife.test");
     expect(html).toContain("sofia.alvarez@mymedlife.test");
     expect(html).toContain("General Student App");
     expect(html).toContain("Promote / demote role");
     expect(html).toContain("Return to General Student App only");
-    expect(html).toContain("Deactivate user blocked");
+    expect(html).toContain("Apply preview filters");
+    expect(html).toContain("Deactivate user (blocked)");
     expect(html).toContain("Delete user safeguard");
     expect(html).toContain("Audit record preview");
     expect(html).toContain("Server-backed access changes");
     expect(html).toContain("admin_change_user_access");
-    expect(html).toContain("Save chapter role blocked");
-    expect(html).toContain("Assign staff role blocked");
-    expect(html).toContain("Assign coach portfolio blocked");
+    expect(html).toContain("Save chapter role (blocked)");
+    expect(html).toContain("Assign staff role (blocked)");
+    expect(html).toContain("Assign coach portfolio (blocked)");
     expect(html).toContain("Admin writes locked");
+    expect(html).toContain(
+      "This review shell keeps every write verb visibly blocked until the audited local write path is available.",
+    );
     expect(html).toContain(
       "This admin access change is blocked until audited local Supabase writes are approved.",
     );
@@ -84,7 +90,7 @@ describe("admin management pages", () => {
       }),
     );
 
-    expect(html).toContain("Ivy Invite");
+    expect(html).toContain("TEST Ivy Invite");
     expect(html).toContain("ivy.invite@mymedlife.test");
     expect(html).not.toContain("sofia.alvarez@mymedlife.test");
   });
@@ -116,22 +122,32 @@ describe("admin management pages", () => {
     );
 
     expect(html).toContain("Chapter Management");
-    expect(html).toContain("UCLA MEDLIFE");
+    expect(html).toContain("TEST UCLA MEDLIFE");
+    expect(html).toContain("TEST UCLA");
+    expect(html).toContain("TEST West Coast");
+    expect(html).toContain("TEST UCLA, TEST Boston, TEST Howard");
     expect(html).toContain("Chapter type");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
     expect(html).toContain("Edit chapter ownership and modules");
-    expect(html).toContain("Archive chapter blocked");
+    expect(html).toContain("Apply preview filters");
+    expect(html).toContain("Archive chapter (blocked)");
     expect(html).toContain("Soft delete chapter");
     expect(html).toContain("Hard delete safeguard");
     expect(html).toContain("chapter_has_active_data");
     expect(html).toContain("Server-backed chapter changes");
     expect(html).toContain("admin_manage_chapter");
-    expect(html).toContain("Create chapter blocked");
-    expect(html).toContain("Save chapter profile blocked");
-    expect(html).toContain("Assign coach blocked");
-    expect(html).toContain("Assign student leader blocked");
+    expect(html).toContain("Create chapter (blocked)");
+    expect(html).toContain("TEST Pilot MEDLIFE");
+    expect(html).toContain("TEST Pilot University");
+    expect(html).toContain("TEST West Coast");
+    expect(html).toContain("Save chapter profile (blocked)");
+    expect(html).toContain("Assign coach (blocked)");
+    expect(html).toContain("Assign student leader (blocked)");
     expect(html).toContain("write_disabled");
+    expect(html).toContain(
+      "This review shell keeps chapter mutation verbs visibly blocked until the audited local write path is approved.",
+    );
     expect(html).toContain(
       "This chapter-management change is blocked until audited local Supabase writes are approved.",
     );
@@ -192,8 +208,8 @@ describe("admin management pages", () => {
     expect(html).toContain("Remove staff role");
     expect(html).toContain("Assign coach portfolio");
     expect(html).toContain("Deactivate user");
-    expect(html).not.toContain("Save chapter role blocked");
-    expect(html).not.toContain("Deactivate user blocked");
+    expect(html).not.toContain("Save chapter role (blocked)");
+    expect(html).not.toContain("Deactivate user (blocked)");
     expect(html).not.toContain(
       "This admin access change is blocked until audited local Supabase writes are approved.",
     );
@@ -265,8 +281,8 @@ describe("admin management pages", () => {
     expect(html).toContain("Assign student leader");
     expect(html).toContain("Remove student leader");
     expect(html).toContain("Archive chapter");
-    expect(html).not.toContain("Create chapter blocked");
-    expect(html).not.toContain("Archive chapter blocked");
+    expect(html).not.toContain("Create chapter (blocked)");
+    expect(html).not.toContain("Archive chapter (blocked)");
     expect(html).not.toContain(
       "This chapter-management change is blocked until audited local Supabase writes are approved.",
     );
