@@ -10,8 +10,8 @@ type AppPointsPageProps = {
   }>;
 };
 
-function getPointsSource(source?: string): "events" | "profile" | "points" {
-  if (source === "events" || source === "profile" || source === "points") {
+function getPointsSource(source?: string): "events" | "home" | "profile" | "points" {
+  if (source === "events" || source === "home" || source === "profile" || source === "points") {
     return source;
   }
 

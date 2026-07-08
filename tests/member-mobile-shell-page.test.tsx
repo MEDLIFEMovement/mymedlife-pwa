@@ -159,7 +159,7 @@ describe("member mobile shell routes", () => {
     expect(html).toContain("See how to earn more points");
   });
 
-  it("keeps the points route honest about event-loop handoff context", async () => {
+  it("keeps the member points route connected to the event loop when opened from an event detail handoff", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
@@ -173,12 +173,12 @@ describe("member mobile shell routes", () => {
       }),
     );
 
-    expect(html).toContain("Opened from the TEST event loop");
-    expect(html).toContain("RSVP, attendance, and points loop visible");
+    expect(html).toContain("Back to the TEST event loop");
     expect(html).toContain('href="/app/events?source=points"');
+    expect(html).toContain("without claiming a live award sync");
   });
 
-  it("keeps the points route tied to the profile walkthrough when opened from profile", async () => {
+  it("keeps the member points route connected to the profile walkthrough when opened from profile", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
     vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
@@ -192,9 +192,28 @@ describe("member mobile shell routes", () => {
       }),
     );
 
-    expect(html).toContain("Opened from your TEST profile");
-    expect(html).toContain("profile-to-points handoff stays route-backed and read-only");
-    expect(html).toContain('href="/app/events?source=profile"');
+    expect(html).toContain("Back to your TEST profile");
+    expect(html).toContain('href="/profile"');
+    expect(html).toContain("pretending profile writes are live");
+  });
+
+  it("keeps the member points route connected to the home walkthrough when opened from home", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("member.a@mymedlife.test"),
+    );
+
+    const { default: PointsPage } = await import("@/app/app/points/page");
+    const html = renderToStaticMarkup(
+      await PointsPage({
+        searchParams: Promise.resolve({ source: "home" }),
+      }),
+    );
+
+    expect(html).toContain("Opened from the TEST home walkthrough");
+    expect(html).toContain("Continue from home into events");
+    expect(html).toContain('href="/app/events?source=home"');
   });
 
   it("keeps internal member preview states visibly marked as TEST content", () => {
