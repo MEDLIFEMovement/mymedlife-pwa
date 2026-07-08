@@ -290,7 +290,8 @@ describe("staff page", () => {
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
     expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\");");
-    expect(source).toContain("buildStaffAdminProofHref(pathname, searchParams.toString(), selectedCard.id)");
+    expect(source).toContain("buildStaffAdminProofHref(");
+    expect(source).toContain("selectedCard.chapter");
     expect(source).toContain("buildStaffProofHref(pathname, searchParams.toString(), selectedCard.id)");
     expect(source).toContain("const genericProofAdminHref = buildStaffAdminProofHref(pathname, searchParams.toString());");
     expect(source).toContain("const genericProofQueueHref = buildStaffProofHref(pathname, searchParams.toString());");
@@ -374,6 +375,7 @@ describe("staff page", () => {
     expect(source).toContain("buildStaffAdminProofHref");
     expect(source).toContain('params.set("returnView", "proof_ugc");');
     expect(source).toContain('params.set("ugcCard", cardId);');
+    expect(source).toContain('params.set("chapterContext", chapterContext);');
     expect(source).toContain('params.delete("ugcCard");');
     expect(source).toContain("resolveStaffAdminReturnScreen");
     expect(source).toContain('if (screen === "ugc") return "Proof / UGC";');
@@ -472,7 +474,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2525);
+    expect(lineCount).toBeLessThanOrEqual(2555);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");

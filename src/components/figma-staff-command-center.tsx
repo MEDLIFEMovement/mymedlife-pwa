@@ -1636,7 +1636,12 @@ function ProofUGCQueue() {
               <div className="mt-1 text-[10px] leading-relaxed text-sky-700">Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 <a
-                  href={buildStaffAdminProofHref(pathname, searchParams.toString(), selectedCard.id)}
+                  href={buildStaffAdminProofHref(
+                    pathname,
+                    searchParams.toString(),
+                    selectedCard.id,
+                    selectedCard.chapter,
+                  )}
                   className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-semibold text-sky-700 hover:bg-sky-100"
                 >
                   <Shield className="w-3 h-3" /> Open Admin preview
@@ -2505,7 +2510,12 @@ function buildStaffProofHref(pathname: string, search: string, cardId?: string |
   return query ? `${pathname}?${query}` : pathname;
 }
 
-function buildStaffAdminProofHref(pathname: string, search: string, cardId?: string | null): string {
+function buildStaffAdminProofHref(
+  pathname: string,
+  search: string,
+  cardId?: string | null,
+  chapterContext?: string | null,
+): string {
   const params = new URLSearchParams(search);
   params.set("view", "admin");
   params.set("adminView", "audit");
@@ -2515,6 +2525,11 @@ function buildStaffAdminProofHref(pathname: string, search: string, cardId?: str
     params.set("ugcCard", cardId);
   } else {
     params.delete("ugcCard");
+  }
+  if (chapterContext) {
+    params.set("chapterContext", chapterContext);
+  } else {
+    params.delete("chapterContext");
   }
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;

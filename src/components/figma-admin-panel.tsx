@@ -233,14 +233,16 @@ function Sidebar({
   onNav,
   onBack,
   backLabel = "staff preview",
+  chapterContext,
 }: {
   active: string;
   onNav: (id: string) => void;
   onBack?: () => void;
   backLabel?: string;
+  chapterContext?: string | null;
 }) {
   const isEmbeddedPreview = Boolean(onBack);
-  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel);
+  const embeddedReviewCopy = getEmbeddedAdminReviewCopy(backLabel, chapterContext);
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-[#090d12] border-r border-white/[0.05] flex flex-col z-40">
@@ -261,6 +263,11 @@ function Sidebar({
             <div className="mt-1 inline-flex items-center rounded-full border border-sky-500/15 bg-sky-500/10 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-[0.14em] text-sky-300">
               {embeddedReviewCopy.badge}
             </div>
+            {chapterContext ? (
+              <div className="mt-1 text-[10px] leading-tight text-slate-500 group-hover:text-slate-300">
+                {`Chapter context: ${chapterContext}`}
+              </div>
+            ) : null}
           </div>
         </button>
       )}
@@ -342,7 +349,7 @@ function Sidebar({
   );
 }
 
-function getEmbeddedAdminReviewCopy(backLabel: string) {
+function getEmbeddedAdminReviewCopy(backLabel: string, chapterContext?: string | null) {
   const normalized = backLabel.trim().toLowerCase();
 
   if (normalized === "proof / ugc") {
@@ -350,7 +357,9 @@ function getEmbeddedAdminReviewCopy(backLabel: string) {
       badge: "Proof review handoff",
       label: "Embedded Proof Review",
       footer:
-        "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
+        chapterContext
+          ? `Return with Command Center after this Proof / UGC review pass for ${chapterContext}, or use the top-right menu to switch workspaces or log out.`
+          : "Return with Command Center after this Proof / UGC review pass, or use the top-right menu to switch workspaces or log out.",
       tag: "Proof review",
     };
   }
@@ -3853,6 +3862,7 @@ export function FigmaAdminPanel({
     : searchParams.get("view");
   const routeActive = routeActiveParam ? resolveAdminShellView(routeActiveParam) : null;
   const active = routeActive ?? resolveAdminShellView(initialActive);
+  const embeddedChapterContext = pathname.startsWith("/staff") ? searchParams.get("chapterContext") : null;
   const page = PAGES[active] ?? PAGES.overview;
 
   const handleNav = (id: string) => {
@@ -3881,7 +3891,13 @@ export function FigmaAdminPanel({
 
   return (
     <div className="flex min-h-screen bg-[#0d1117] overflow-hidden" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
-      <Sidebar active={active} onNav={handleNav} onBack={onBack} backLabel={embeddedBackLabel} />
+      <Sidebar
+        active={active}
+        onNav={handleNav}
+        onBack={onBack}
+        backLabel={embeddedBackLabel}
+        chapterContext={embeddedChapterContext}
+      />
       <div className="ml-[220px] flex-1 flex flex-col min-h-0 overflow-hidden">
         <Header title={page.title} subtitle={page.subtitle} isEmbeddedPreview={Boolean(onBack)} />
         <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#0d1117]">
