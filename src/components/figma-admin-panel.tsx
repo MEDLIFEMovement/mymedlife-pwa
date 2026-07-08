@@ -232,6 +232,7 @@ function Sidebar({
   active,
   onNav,
   onBack,
+  backHref,
   backLabel = "staff preview",
   chapterContext,
   proofQueueContext,
@@ -239,6 +240,7 @@ function Sidebar({
   active: string;
   onNav: (id: string) => void;
   onBack?: () => void;
+  backHref?: string;
   backLabel?: string;
   chapterContext?: string | null;
   proofQueueContext?: string | null;
@@ -250,8 +252,13 @@ function Sidebar({
   return (
     <aside className="fixed left-0 top-0 h-screen w-[220px] bg-[#090d12] border-r border-white/[0.05] flex flex-col z-40">
       {onBack && (
-        <button
-          onClick={onBack}
+        <a
+          href={backHref ?? "#"}
+          onClick={(event) => {
+            if (!onBack) return;
+            event.preventDefault();
+            onBack();
+          }}
           aria-label="Command Center"
           className="flex w-full items-start gap-2 border-b border-white/[0.05] px-4 py-3 text-left text-slate-300 transition-colors hover:bg-white/[0.02] hover:text-white group"
         >
@@ -277,7 +284,7 @@ function Sidebar({
               </div>
             ) : null}
           </div>
-        </button>
+        </a>
       )}
       <div className="px-4 py-5 border-b border-white/[0.05]">
         <div className="flex items-center gap-2.5">
@@ -3922,10 +3929,12 @@ export function FigmaAdminPanel({
   initialActive = "overview",
   onBack,
   embeddedBackLabel = "staff preview",
+  embeddedBackHref,
 }: {
   initialActive?: string;
   onBack?: () => void;
   embeddedBackLabel?: string;
+  embeddedBackHref?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -3971,6 +3980,7 @@ export function FigmaAdminPanel({
         active={active}
         onNav={handleNav}
         onBack={onBack}
+        backHref={embeddedBackHref}
         backLabel={embeddedBackLabel}
         chapterContext={embeddedChapterContext}
         proofQueueContext={embeddedProofQueueContext}

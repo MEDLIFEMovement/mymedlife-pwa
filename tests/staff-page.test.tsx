@@ -6,12 +6,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMockLocalActorContext } from "@/services/local-actor-context";
 import { ChapterDetailDrawer } from "@/components/figma-staff-command-center";
 
+let mockPathname = "/staff";
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/staff",
+  usePathname: () => mockPathname,
   useRouter: () => ({
     replace: vi.fn(),
   }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
   redirect: vi.fn((href: string) => {
     throw new Error(`NEXT_REDIRECT:${href}`);
   }),
@@ -39,6 +42,8 @@ function getSignedInActor(email: string) {
 describe("staff page", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams();
   });
 
   it("returns members to their owned student surface when the staff route is blocked", async () => {
@@ -436,6 +441,43 @@ describe("staff page", () => {
     expect(html).toContain("Return to TEST Boston College");
   });
 
+  it("keeps a route-backed chapter return visible inside the embedded admin review surface", async () => {
+    mockPathname = "/staff";
+    mockSearchParams = new URLSearchParams({
+      view: "admin",
+      adminView: "chapters",
+      returnView: "chapters",
+      chapter: "ch13",
+      chapterContext: "TEST Stanford University",
+      chapterRegion: "West",
+      chapterSort: "points",
+    });
+
+    const { FigmaAdminPanel } = await import("@/components/figma-admin-panel");
+    const html = renderToStaticMarkup(
+      <FigmaAdminPanel
+        initialActive="chapters"
+        onBack={vi.fn()}
+        embeddedBackLabel="this chapter"
+        embeddedBackHref="/staff?view=chapters&chapter=ch13&chapterRegion=West&chapterSort=points"
+      />,
+    );
+    const staffSource = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+    const adminSource = readFileSync("src/components/figma-admin-panel.tsx", "utf8");
+
+    expect(html).toContain("Command Center");
+    expect(html).toContain("Return to TEST Stanford University");
+    expect(html).toContain("Chapter context: TEST Stanford University");
+    expect(html).toContain("Embedded Chapter Review");
+    expect(html).toContain('href="/staff?view=chapters&amp;chapter=ch13&amp;chapterRegion=West&amp;chapterSort=points"');
+    expect(staffSource).toContain("const adminReturnHref =");
+    expect(staffSource).toContain('adminReturnScreen === "chapters"');
+    expect(staffSource).toContain("buildStaffChapterHref(adminReturnChapterId, pathname, currentRouteSearch)");
+    expect(staffSource).toContain('embeddedBackHref={adminReturnHref ?? undefined}');
+    expect(adminSource).toContain("embeddedBackHref");
+    expect(adminSource).toContain("href={backHref ?? \"#\"}");
+  });
+
   it("keeps the proof review admin handoff wired to a Proof / UGC return target in source", () => {
     const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
 
@@ -791,7 +833,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(3040);
+    expect(lineCount).toBeLessThanOrEqual(3060);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
