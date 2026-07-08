@@ -9,7 +9,6 @@ import {
   Share2,
   Shield,
 } from "lucide-react";
-import { getLaunchLaneMemberPointsHref } from "@/services/events-points-launch-lane";
 import type { MvpMemberHome } from "@/services/mvp-event-tracking-workspace";
 import type { ProfileWorkspace } from "@/services/profile-workspace";
 import type { MemberRecognitionSummary } from "@/services/member-recognition";
@@ -34,7 +33,7 @@ export function MemberProfilePanel({
   studentHome,
   recognition,
 }: MemberProfilePanelProps) {
-  const launchLanePointsHref = getLaunchLaneMemberPointsHref("profile");
+  const launchLanePointsHref = "/app/points?source=profile";
   const testDisplayName = ensureVisibleTestLabel(displayName);
   const testChapterName = ensureVisibleTestLabel(chapterName);
   const visibleBadges = getProfileBadges(recognition);
