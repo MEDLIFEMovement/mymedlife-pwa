@@ -195,11 +195,11 @@ describe("Figma missing route placeholders", () => {
     mockSearchParams = new URLSearchParams("view=admin&adminView=settings");
 
     const html = renderToStaticMarkup(
-      <FigmaAdminPanel initialActive="settings" onBack={() => {}} />,
+      <FigmaAdminPanel initialActive="settings" onBack={() => {}} embeddedBackLabel="chapters" />,
     );
 
     expect(html).toContain("Command Center");
-    expect(html).toContain("Return to staff preview");
+    expect(html).toContain("Return to chapters");
     expect(html).toContain("Staff review handoff");
     expect(html).toContain("Embedded Admin Review");
     expect(html).toContain("Staff review");
