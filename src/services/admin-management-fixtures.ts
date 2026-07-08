@@ -3,7 +3,7 @@ import type { ManagedChapter, ManagedUser } from "@/services/admin-management";
 export const managedUserFixtures: ManagedUser[] = [
   {
     id: "user-sofia",
-    name: "Sofia Alvarez",
+    name: "TEST Sofia Alvarez",
     email: "sofia.alvarez@mymedlife.test",
     status: "active",
     chapterMemberships: [{ chapterId: "chapter-ucla", roleKey: "General Member" }],
@@ -13,7 +13,7 @@ export const managedUserFixtures: ManagedUser[] = [
   },
   {
     id: "user-casey",
-    name: "Casey Chair",
+    name: "TEST Casey Chair",
     email: "casey.chair@mymedlife.test",
     status: "active",
     chapterMemberships: [
@@ -25,7 +25,7 @@ export const managedUserFixtures: ManagedUser[] = [
   },
   {
     id: "user-priya",
-    name: "Priya President",
+    name: "TEST Priya President",
     email: "priya.president@mymedlife.test",
     status: "active",
     chapterMemberships: [{ chapterId: "chapter-boston", roleKey: "President / VP" }],
@@ -35,7 +35,7 @@ export const managedUserFixtures: ManagedUser[] = [
   },
   {
     id: "user-cam",
-    name: "Cam Coach",
+    name: "TEST Cam Coach",
     email: "cam.coach@mymedlife.test",
     status: "active",
     chapterMemberships: [],
@@ -45,7 +45,7 @@ export const managedUserFixtures: ManagedUser[] = [
   },
   {
     id: "user-sky",
-    name: "Sky Sales Coach",
+    name: "TEST Sky Sales Coach",
     email: "sky.sales@mymedlife.test",
     status: "active",
     chapterMemberships: [],
@@ -55,7 +55,7 @@ export const managedUserFixtures: ManagedUser[] = [
   },
   {
     id: "user-gina",
-    name: "Gina General Staff",
+    name: "TEST Gina General Staff",
     email: "gina.staff@mymedlife.test",
     status: "active",
     chapterMemberships: [],
@@ -65,7 +65,7 @@ export const managedUserFixtures: ManagedUser[] = [
   },
   {
     id: "user-dee",
-    name: "Dee Systems",
+    name: "TEST Dee Systems",
     email: "dee.systems@mymedlife.test",
     status: "active",
     chapterMemberships: [],
@@ -75,7 +75,7 @@ export const managedUserFixtures: ManagedUser[] = [
   },
   {
     id: "user-sam",
-    name: "Sam Super",
+    name: "TEST Sam Super",
     email: "sam.super@mymedlife.test",
     status: "active",
     chapterMemberships: [],
@@ -85,7 +85,7 @@ export const managedUserFixtures: ManagedUser[] = [
   },
   {
     id: "user-ivy",
-    name: "Ivy Invite",
+    name: "TEST Ivy Invite",
     email: "ivy.invite@mymedlife.test",
     status: "pending",
     chapterMemberships: [{ chapterId: "chapter-howard", roleKey: "General Member" }],
@@ -98,9 +98,9 @@ export const managedUserFixtures: ManagedUser[] = [
 export const managedChapterFixtures: ManagedChapter[] = [
   {
     id: "chapter-ucla",
-    name: "UCLA MEDLIFE",
-    school: "UCLA",
-    region: "West Coast",
+    name: "TEST UCLA MEDLIFE",
+    school: "TEST UCLA",
+    region: "TEST West Coast",
     chapterType: "college_university",
     status: "active",
     coachOwnerId: "user-cam",
@@ -113,9 +113,9 @@ export const managedChapterFixtures: ManagedChapter[] = [
   },
   {
     id: "chapter-boston",
-    name: "Boston College MEDLIFE",
-    school: "Boston College",
-    region: "Northeast",
+    name: "TEST Boston College MEDLIFE",
+    school: "TEST Boston College",
+    region: "TEST Northeast",
     chapterType: "college_university",
     status: "active",
     coachOwnerId: "user-cam",
@@ -128,9 +128,9 @@ export const managedChapterFixtures: ManagedChapter[] = [
   },
   {
     id: "chapter-howard",
-    name: "Howard University MEDLIFE",
-    school: "Howard University",
-    region: "DC-Metro",
+    name: "TEST Howard University MEDLIFE",
+    school: "TEST Howard University",
+    region: "TEST DC-Metro",
     chapterType: "college_university",
     status: "active",
     coachOwnerId: "user-sky",
@@ -143,9 +143,9 @@ export const managedChapterFixtures: ManagedChapter[] = [
   },
   {
     id: "chapter-michigan",
-    name: "Michigan State MEDLIFE",
-    school: "Michigan State University",
-    region: "Midwest",
+    name: "TEST Michigan State MEDLIFE",
+    school: "TEST Michigan State University",
+    region: "TEST Midwest",
     chapterType: "needs_review",
     status: "disabled",
     coachOwnerId: null,

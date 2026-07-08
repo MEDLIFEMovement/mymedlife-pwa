@@ -276,7 +276,7 @@ export function AdminUsersManagementPanel({
               <input
                 className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
                 name="q"
-                placeholder="sofia, coach, medlife.test"
+                placeholder="TEST Sofia, TEST coach, medlife.test"
                 type="search"
                 defaultValue={query}
               />

@@ -53,6 +53,7 @@ describe("admin management pages", () => {
     expect(html).toContain("User Access Management");
     expect(html).toContain("Search name or email");
     expect(html).toContain("TEST Sofia Alvarez");
+    expect(html).toContain("TEST Sofia, TEST coach, medlife.test");
     expect(html).toContain("sofia.alvarez@mymedlife.test");
     expect(html).toContain("General Student App");
     expect(html).toContain("Promote / demote role");
@@ -123,6 +124,8 @@ describe("admin management pages", () => {
     expect(html).toContain("Chapter Management");
     expect(html).toContain("TEST UCLA MEDLIFE");
     expect(html).toContain("TEST UCLA");
+    expect(html).toContain("TEST West Coast");
+    expect(html).toContain("TEST UCLA, TEST Boston, TEST Howard");
     expect(html).toContain("Chapter type");
     expect(html).toContain("College / University Chapter");
     expect(html).toContain("Needs Review");
@@ -135,6 +138,9 @@ describe("admin management pages", () => {
     expect(html).toContain("Server-backed chapter changes");
     expect(html).toContain("admin_manage_chapter");
     expect(html).toContain("Create chapter (blocked)");
+    expect(html).toContain("TEST Pilot MEDLIFE");
+    expect(html).toContain("TEST Pilot University");
+    expect(html).toContain("TEST West Coast");
     expect(html).toContain("Save chapter profile (blocked)");
     expect(html).toContain("Assign coach (blocked)");
     expect(html).toContain("Assign student leader (blocked)");

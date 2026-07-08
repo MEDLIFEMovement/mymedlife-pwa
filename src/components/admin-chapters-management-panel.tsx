@@ -175,7 +175,7 @@ export function AdminChaptersManagementPanel({
               <input
                 className="w-full rounded border border-white/10 bg-[#0d1117] px-3 py-2 text-sm text-slate-100"
                 name="q"
-                placeholder="UCLA, Boston, Howard"
+                placeholder="TEST UCLA, TEST Boston, TEST Howard"
                 type="search"
                 defaultValue={query}
               />
@@ -451,9 +451,9 @@ function ChapterCreateForm({
       operation="create_chapter"
       title="Create chapter"
     >
-      <FormInput disabled={disabled} label="Chapter name" name="name" placeholder="Test Pilot MEDLIFE" />
-      <FormInput disabled={disabled} label="School" name="campus" placeholder="Test Pilot University" />
-      <FormInput disabled={disabled} label="Region / portfolio" name="region" placeholder="West Coast" />
+      <FormInput disabled={disabled} label="Chapter name" name="name" placeholder="TEST Pilot MEDLIFE" />
+      <FormInput disabled={disabled} label="School" name="campus" placeholder="TEST Pilot University" />
+      <FormInput disabled={disabled} label="Region / portfolio" name="region" placeholder="TEST West Coast" />
       <SelectField
         disabled={disabled}
         label="Chapter type"
