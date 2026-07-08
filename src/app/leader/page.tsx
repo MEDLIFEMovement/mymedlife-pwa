@@ -72,15 +72,18 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
     redirect(getLandingRouteForActor(actor));
   }
 
-  const canonicalHref = getLeaderLaunchLaneCanonicalHref({
-    view: resolvedSearchParams?.view,
-  });
+  const requestedView = resolvedSearchParams?.view ?? "overview";
+  const canonicalHref =
+    requestedView === "attendance"
+      ? null
+      : getLeaderLaunchLaneCanonicalHref({
+          view: resolvedSearchParams?.view,
+        });
 
   if (canonicalHref) {
     redirect(canonicalHref);
   }
 
-  const requestedView = resolvedSearchParams?.view ?? "overview";
   const requestedSource = (() => {
     switch (resolvedSearchParams?.source) {
       case "overview":
@@ -94,6 +97,39 @@ export default async function LeaderPage({ searchParams }: LeaderPageProps) {
         return null;
     }
   })();
+
+  if (requestedView === "attendance") {
+    redirect(
+      buildChapterLeaderCommandCenterHref("events", {
+        source: requestedSource,
+        memberId: resolvedSearchParams?.member,
+        eventCommitteeFilter: resolvedSearchParams?.eventCommittee as
+          | "all"
+          | "events"
+          | "slt_promotion"
+          | "recruitment"
+          | "fundraising"
+          | "service"
+          | "comms"
+          | undefined,
+        pipelineFilter: resolvedSearchParams?.pipeline as
+          | "all"
+          | "e_board"
+          | "chair"
+          | "chair_candidate"
+          | "active_contributor"
+          | "general_member"
+          | "follow_up"
+          | undefined,
+        searchQuery: resolvedSearchParams?.q,
+        eventId: resolvedSearchParams?.event,
+        quickAction:
+          resolvedSearchParams?.quickAction === "assign_action"
+            ? "assign_action"
+            : undefined,
+      }),
+    );
+  }
 
   if (requestedView === "create_event") {
     redirect(

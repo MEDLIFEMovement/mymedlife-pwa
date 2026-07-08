@@ -204,6 +204,37 @@ describe("leader page", () => {
     expect(html).toContain(expectedCopy);
   });
 
+  it("routes attendance into the service-backed events lane so leader event review stays canonical", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+    const dataModule = await import("@/services/read-only-app-data");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("leader.a@mymedlife.test"),
+    );
+    vi.mocked(dataModule.getReadOnlyAppData).mockResolvedValue(
+      getMockReadOnlyAppData("Testing leader attendance continuity redirect."),
+    );
+
+    const { default: LeaderPage } = await import("@/app/leader/page");
+
+    await expect(
+      LeaderPage({
+        searchParams: Promise.resolve({
+          view: "attendance",
+          source: "overview",
+          member: "member-ivy",
+          eventCommittee: "events",
+          event: "bc-event-moving-mountains-kickoff",
+          pipeline: "follow_up",
+          q: "Ivy",
+          quickAction: "assign_action",
+        }),
+      }),
+    ).rejects.toThrow(
+      "NEXT_REDIRECT:/leader?view=events&source=overview&member=member-ivy&eventCommittee=events&event=bc-event-moving-mountains-kickoff&pipeline=follow_up&q=Ivy&quickAction=assign_action",
+    );
+  });
+
   it.each([
     ["members", "Member Leaderboard"],
     ["member_profile", "Member Profile"],
