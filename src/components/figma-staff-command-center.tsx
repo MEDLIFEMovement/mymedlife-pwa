@@ -1412,17 +1412,22 @@ type ProofQueueStatusFilter = "all" | "pending" | "approved" | "rejected";
 function ProofUGCQueue({
   initialStatusFilter = "all",
   initialPlatformFilter = "all",
+  initialSelectedCardId = null,
+  initialRouteSearch = "",
 }: {
   initialStatusFilter?: ProofQueueStatusFilter;
   initialPlatformFilter?: Platform | "all";
+  initialSelectedCardId?: string | null;
+  initialRouteSearch?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [linkInput, setLinkInput] = useState("");
+  const currentSearch = searchParams.toString() || initialRouteSearch;
   const statusFilter = resolveProofQueueStatusFilter(searchParams.get("proofStatus"), initialStatusFilter);
   const platformFilter = resolveProofQueuePlatformFilter(searchParams.get("proofPlatform"), initialPlatformFilter);
-  const selectedCardId = searchParams.get("ugcCard");
+  const selectedCardId = searchParams.get("ugcCard") ?? initialSelectedCardId;
   const selectedCard = selectedCardId
     ? UGC_CARDS.find((card) => card.id === selectedCardId) ?? null
     : null;
@@ -1435,13 +1440,13 @@ function ProofUGCQueue({
   });
 
   const pendingCount = UGC_CARDS.filter(c => c.visibility === "pending").length;
-  const genericProofQueueHref = buildStaffProofHref(pathname, searchParams.toString());
-  const genericProofAdminHref = buildStaffAdminProofHref(pathname, searchParams.toString());
+  const genericProofQueueHref = buildStaffProofHref(pathname, currentSearch);
+  const genericProofAdminHref = buildStaffAdminProofHref(pathname, currentSearch);
   const handleFilterChange = (
     nextStatusFilter: ProofQueueStatusFilter,
     nextPlatformFilter: Platform | "all",
   ) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(currentSearch);
 
     if (nextStatusFilter === "all") {
       params.delete("proofStatus");
@@ -1581,7 +1586,7 @@ function ProofUGCQueue({
                 key={card.id}
                 onClick={() =>
                   router.replace(
-                    buildStaffProofHref(pathname, searchParams.toString(), isSelected ? null : card.id),
+                    buildStaffProofHref(pathname, currentSearch, isSelected ? null : card.id),
                     { scroll: false },
                   )
                 }
@@ -1716,7 +1721,7 @@ function ProofUGCQueue({
                 <a
                   href={buildStaffAdminProofHref(
                     pathname,
-                    searchParams.toString(),
+                    currentSearch,
                     selectedCard.id,
                     selectedCard.chapter,
                   )}
@@ -1725,7 +1730,7 @@ function ProofUGCQueue({
                   <Shield className="w-3 h-3" /> Open Admin preview
                 </a>
                 <a
-                  href={buildStaffProofHref(pathname, searchParams.toString(), selectedCard.id)}
+                  href={buildStaffProofHref(pathname, currentSearch, selectedCard.id)}
                   className="inline-flex items-center gap-1 rounded-full border border-border bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-700 hover:bg-slate-100"
                 >
                   <ArrowLeft className="w-3 h-3" /> Return to Proof / UGC
@@ -2474,6 +2479,8 @@ export function FigmaStaffCommandCenter({
               <ProofUGCQueue
                 initialStatusFilter={initialProofStatusFilter}
                 initialPlatformFilter={initialProofPlatformFilter}
+                initialSelectedCardId={getRouteParam("ugcCard")}
+                initialRouteSearch={initialRouteSearch}
               />
             )}
             {activeScreen === "best-practices" && <BestPracticesLibrary />}

@@ -289,7 +289,7 @@ describe("staff page", () => {
     expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for embedded DS audit readback and blocked-control posture before any publishing request.");
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
-    expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\");");
+    expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\") ?? initialSelectedCardId;");
     expect(source).toContain("resolveProofQueueStatusFilter(searchParams.get(\"proofStatus\"), initialStatusFilter)");
     expect(source).toContain("resolveProofQueuePlatformFilter(searchParams.get(\"proofPlatform\"), initialPlatformFilter)");
     expect(source).toContain("handleFilterChange(");
@@ -299,9 +299,10 @@ describe("staff page", () => {
     expect(source).toContain("matchesProofQueueFilters(selectedCard, nextStatusFilter, nextPlatformFilter)");
     expect(source).toContain("buildStaffAdminProofHref(");
     expect(source).toContain("selectedCard.chapter");
-    expect(source).toContain("buildStaffProofHref(pathname, searchParams.toString(), selectedCard.id)");
-    expect(source).toContain("const genericProofAdminHref = buildStaffAdminProofHref(pathname, searchParams.toString());");
-    expect(source).toContain("const genericProofQueueHref = buildStaffProofHref(pathname, searchParams.toString());");
+    expect(source).toContain("const currentSearch = searchParams.toString() || initialRouteSearch;");
+    expect(source).toContain("buildStaffProofHref(pathname, currentSearch, selectedCard.id)");
+    expect(source).toContain("const genericProofAdminHref = buildStaffAdminProofHref(pathname, currentSearch);");
+    expect(source).toContain("const genericProofQueueHref = buildStaffProofHref(pathname, currentSearch);");
     expect(source).toContain("Open Admin preview");
     expect(source).toContain("Return to Proof / UGC");
     expect(source).toContain("Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.");
@@ -547,6 +548,34 @@ describe("staff page", () => {
     expect(html).toContain("Return to Proof / UGC");
   });
 
+  it("keeps proof queue filter context on the proof-to-admin handoff from first render", async () => {
+    const actorModule = await import("@/services/local-actor-context");
+
+    vi.mocked(actorModule.getLocalActorContext).mockResolvedValue(
+      getSignedInActor("general.staff@mymedlife.test"),
+    );
+
+    const { default: StaffPage } = await import("@/app/staff/page");
+    const html = renderToStaticMarkup(
+      await StaffPage({
+        searchParams: Promise.resolve({
+          view: "proof_ugc",
+          ugcCard: "ugc4",
+          proofStatus: "pending",
+          proofPlatform: "instagram",
+        }),
+      }),
+    );
+    const source = readFileSync("src/components/figma-staff-command-center.tsx", "utf8");
+
+    expect(html).toContain("TEST Stanford University");
+    expect(html).toContain("Return to Proof / UGC");
+    expect(html).toContain('href="/staff?view=admin&amp;ugcCard=ugc4&amp;proofStatus=pending&amp;proofPlatform=instagram&amp;adminView=audit&amp;returnView=proof_ugc&amp;chapterContext=TEST+Stanford+University"');
+    expect(source).toContain("const currentSearch = searchParams.toString() || initialRouteSearch;");
+    expect(source).toContain('initialSelectedCardId={getRouteParam("ugcCard")}');
+    expect(source).toContain("const selectedCardId = searchParams.get(\"ugcCard\") ?? initialSelectedCardId;");
+  });
+
   it("keeps chapter portfolio filter context route-backed for the chapter review loop", async () => {
     const actorModule = await import("@/services/local-actor-context");
 
@@ -611,7 +640,7 @@ describe("staff page", () => {
     const lineCount = source.split("\n").length;
 
     expect(lineCount).toBeGreaterThanOrEqual(2170);
-    expect(lineCount).toBeLessThanOrEqual(2790);
+    expect(lineCount).toBeLessThanOrEqual(2810);
     expect(source).toContain("type Screen = \"chapters\" | \"campaigns\" | \"events\" | \"ugc\" | \"reports\" | \"admin\" | \"best-practices\" | \"sops\";");
     expect(source).toContain("const NAV_ITEMS");
     expect(source).toContain("function PortfolioOverview");
