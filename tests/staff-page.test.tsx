@@ -286,13 +286,14 @@ describe("staff page", () => {
     expect(source).toContain("TEST Best Practice: QR Lead Capture");
     expect(source).toContain("External source links are blocked in this preview");
     expect(source).toContain("Proof sharing is blocked until feed publishing approval is complete");
-    expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for DS audit readback and blocked-control posture before any publishing request.");
+    expect(source).toContain("Next step: finish consent and coach context here, then open Admin preview for embedded DS audit readback and blocked-control posture before any publishing request.");
     expect(source).toContain("DS Admin audit handoff");
     expect(source).toContain("Next step: review consent and blocked actions here, then open the Admin preview for DS audit readback before any publishing or coach-note approval request.");
     expect(source).toContain('href="/staff?view=admin&adminView=audit"');
     expect(source).toContain("Open Admin preview");
+    expect(source).toContain("Embedded Admin review keeps DS directory, audit logs, and blocked controls in the same command-center walkthrough.");
     expect(source).toContain("Admin review approves the next step");
-    expect(source).toContain("Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback.");
+    expect(source).toContain("Click any card to review consent and blocked actions, or open the Admin preview for DS audit readback without leaving the Staff Command Center.");
     expect(source).toContain("Caption and coach-note drafting stays local-only in this preview");
   });
 
@@ -406,13 +407,13 @@ describe("staff page", () => {
     expect(html).toContain("Preview NPS Survey");
     expect(html).toContain("Send blocked");
     expect(html).toContain("Preview readback only - no chapter writes, owner changes, or outreach sends run from this drawer.");
-    expect(html).toContain("Use the Admin tab for DS directory and audit review.");
+    expect(html).toContain("Use the Admin preview for DS directory and audit review.");
     expect(html).toContain("Survey sending stays blocked in this preview");
     expect(html).toContain("Survey sending is blocked in this preview");
     expect(html).toContain("Coach notes stay preview-only in this chapter drawer");
-    expect(html).toContain("Next step: use Admin review for DS directory, audit, and blocked-control follow-up before requesting any write path.");
+    expect(html).toContain("Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path.");
     expect(html).toContain('href="/staff?view=admin&amp;adminView=chapters"');
-    expect(html).toContain("Admin review");
+    expect(html).toContain("Open Admin preview");
     expect(html).toContain("No note save, intervention status write, or follow-up task write runs for Boston College from this surface.");
     expect(html).toContain("disabled:cursor-not-allowed");
     expect(html).not.toContain(">Send NPS Survey<");
