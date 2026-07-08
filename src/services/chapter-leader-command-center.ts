@@ -1422,6 +1422,12 @@ export function getChapterLeaderCommandCenter(
     recognition.leaderboard,
     data.source.mode,
     selectedView === "succession" && !requestedMemberId ? null : selectedMember?.id ?? null,
+    {
+      source: selectedSource,
+      feedPostId: selectedFeedPostId,
+      filter: selectedPipelineFilter,
+      searchQuery: pipelineSearchQuery,
+    },
   );
   const navigationMemberId = getNavigationMemberId({
     requestedMemberId,
@@ -5464,6 +5470,12 @@ function getSuccessionCandidates(
   leaderboard: LeaderboardRow[],
   sourceMode: ReadOnlyAppData["source"]["mode"],
   selectedMemberId: string | null,
+  context: {
+    source: ChapterLeaderCommandCenterSource | null;
+    feedPostId: string | null;
+    filter: ChapterLeaderPipelineFilter;
+    searchQuery: string;
+  },
 ): ChapterLeaderCommandCenterSuccessionCandidate[] {
   if (sourceMode === "mock") {
     return [
@@ -5478,6 +5490,10 @@ function getSuccessionCandidates(
         reason: "Current president who needs a visible successor plan before graduation.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-leo",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.filter,
+          searchQuery: context.searchQuery,
         }),
         isSelected: selectedMemberId === "member-leo",
       },
@@ -5492,6 +5508,10 @@ function getSuccessionCandidates(
         reason: "Already carrying chapter operations and positioned to mentor event successors.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-zara",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.filter,
+          searchQuery: context.searchQuery,
         }),
         isSelected: selectedMemberId === "member-zara",
       },
@@ -5506,6 +5526,10 @@ function getSuccessionCandidates(
         reason: "Strong fundraiser who still needs a named backup and transition notes.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-nina",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.filter,
+          searchQuery: context.searchQuery,
         }),
         isSelected: selectedMemberId === "member-nina",
       },
@@ -5520,6 +5544,10 @@ function getSuccessionCandidates(
         reason: "Visible recruitment owner who could step into a larger lane with coaching.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-ivy",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.filter,
+          searchQuery: context.searchQuery,
         }),
         isSelected: selectedMemberId === "member-ivy",
       },
@@ -5534,6 +5562,10 @@ function getSuccessionCandidates(
         reason: "Welcoming recruiter who needs one owned lane before stepping into a larger chapter role.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-maya",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.filter,
+          searchQuery: context.searchQuery,
         }),
         isSelected: selectedMemberId === "member-maya",
       },
@@ -5548,6 +5580,10 @@ function getSuccessionCandidates(
         reason: "Mission-aligned service leader who needs more visible evidence and succession reps.",
         href: buildChapterLeaderCommandCenterHref("succession", {
           memberId: "member-omar",
+          source: context.source,
+          feedPostId: context.feedPostId,
+          pipelineFilter: context.filter,
+          searchQuery: context.searchQuery,
         }),
         isSelected: selectedMemberId === "member-omar",
       },
@@ -5571,6 +5607,10 @@ function getSuccessionCandidates(
       reason: `${getMemberRecognitionLabel(member, leaderboard)} ${member.nextStep}`,
       href: buildChapterLeaderCommandCenterHref("succession", {
         memberId: member.id,
+        source: context.source,
+        feedPostId: context.feedPostId,
+        pipelineFilter: context.filter,
+        searchQuery: context.searchQuery,
       }),
       isSelected: member.id === selectedMemberId,
     }))
