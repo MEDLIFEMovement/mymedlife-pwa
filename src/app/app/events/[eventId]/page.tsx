@@ -14,8 +14,10 @@ import {
   UserCheck,
 } from "lucide-react";
 
-import { WorkspaceAccountMenu } from "@/components/workspace-account-menu";
-import { WorkspacePreviewBanner } from "@/components/workspace-preview-banner";
+import {
+  MemberBottomNav,
+  type MemberBottomNavTab,
+} from "@/components/member-bottom-nav";
 import { getLaunchLaneMemberPointsHref } from "@/services/events-points-launch-lane";
 import { getLandingRouteForActor } from "@/services/landing-route";
 import {
@@ -31,7 +33,6 @@ import { getLocalActorContext } from "@/services/local-actor-context";
 import { getReadOnlyAppData } from "@/services/read-only-app-data";
 import { canAccessMemberWorkspace } from "@/services/role-visibility";
 import { getStaticRouteMetadata } from "@/services/static-route-metadata";
-import { isPreviewWorkspaceAccess } from "@/services/workspace-access";
 
 type AppEventDetailPageProps = {
   params: Promise<{
@@ -84,15 +85,12 @@ export default async function AppEventDetailPage({
         : step === "checkin"
           ? buildEventStepHref(eventId, "rsvp", resolvedSearchParams.source)
           : buildEventStepHref(eventId, "checkin", resolvedSearchParams.source);
+  const activeTab = getEventDetailActiveTab(step);
 
   return (
-    <>
-      <WorkspaceAccountMenu actor={actor} currentWorkspace="student_app" />
-      {isPreviewWorkspaceAccess(actor, "student_app") ? (
-        <WorkspacePreviewBanner workspaceLabel="the General Student App" />
-      ) : null}
-      <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">
-        <div className="mx-auto w-full max-w-[430px] min-h-screen overflow-hidden bg-white md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
+    <main className="min-h-screen bg-[#d6e0f0] px-0 py-0 text-[#10223f] md:px-4 md:py-8">
+      <div className="mx-auto flex min-h-screen w-full max-w-[430px] flex-col overflow-hidden bg-white md:min-h-0 md:rounded-[44px] md:border-4 md:border-white/40 md:shadow-2xl">
+        <div className="flex-1 overflow-y-auto pb-24">
           {step === "detail" ? (
             <EventDetailView
               event={event}
@@ -122,8 +120,9 @@ export default async function AppEventDetailPage({
             />
           )}
         </div>
-      </main>
-    </>
+        <MemberBottomNav activeTab={activeTab} />
+      </div>
+    </main>
   );
 }
 
@@ -703,6 +702,10 @@ function Card({
   className?: string;
 }) {
   return <div className={`rounded-2xl border border-slate-200 bg-white p-4 ${className}`}>{children}</div>;
+}
+
+function getEventDetailActiveTab(step: EventDetailStep): MemberBottomNavTab {
+  return step === "points" ? "points" : "events";
 }
 
 function getEventDetailStep(step: string | undefined): EventDetailStep {
