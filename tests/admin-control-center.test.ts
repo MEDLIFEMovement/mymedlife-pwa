@@ -48,6 +48,9 @@ describe("admin control center", () => {
   it("exposes read-only master data inventory for admin review", () => {
     const data = getMockReadOnlyAppData("Testing admin master data inventory.");
     const summary = getAdminControlCenterSummary(data);
+    const expectedChapterName = `TEST ${data.chapter.name}`;
+    const expectedCampusName = `TEST ${data.chapter.campus}`;
+    const expectedCoachName = `TEST ${data.chapter.coachName}`;
 
     expect(summary.masterDataInventory.mutationControlsEnabled).toBe(0);
     expect(summary.masterDataInventory.externalWritesExpected).toBe(0);
@@ -56,8 +59,9 @@ describe("admin control center", () => {
     expect(summary.masterDataInventory.chapters).toEqual([
       expect.objectContaining({
         id: data.chapter.id,
-        name: data.chapter.name,
-        campus: data.chapter.campus,
+        name: expectedChapterName,
+        campus: expectedCampusName,
+        coachName: expectedCoachName,
         status: "mock_only",
       }),
     ]);
@@ -75,7 +79,7 @@ describe("admin control center", () => {
     );
     expect(summary.masterDataInventory.users.find((user) => user.email === "leader.a@mymedlife.test")).toEqual(
       expect.objectContaining({
-        displayName: "Priya President",
+        displayName: "TEST Priya President",
         audience: "chapter_leader",
         chapterRoles: ["President / VP"],
         status: "mock_only",
@@ -230,10 +234,60 @@ describe("admin control center", () => {
     );
   });
 
-  it("renders route-backed review handoffs with blocked preview cues", () => {
+  it("keeps TEST demo labels stable when seeded admin data is already prefixed", () => {
+    const data = getMockReadOnlyAppData("Testing pre-labeled admin control center.");
     const summary = getAdminControlCenterSummary(
-      getMockReadOnlyAppData("Testing admin control center review handoffs."),
+      {
+        ...data,
+        chapter: {
+          ...data.chapter,
+          name: "TEST UCLA MEDLIFE",
+          campus: "TEST UCLA",
+          coachName: "TEST Renato Coach",
+        },
+      },
+      [
+        {
+          ...localActorOptions[4],
+          displayName: "TEST Priya President",
+          chapterNames: ["TEST UCLA MEDLIFE"],
+        },
+      ],
     );
+
+    expect(summary.areas.find((area) => area.key === "users")).toEqual(
+      expect.objectContaining({
+        primaryMetric: "1 TEST users",
+        nextAction: expect.stringContaining("Replace TEST users"),
+      }),
+    );
+    expect(summary.areas.find((area) => area.key === "chapters")).toEqual(
+      expect.objectContaining({
+        primaryMetric: "1 TEST chapter",
+        detail: "TEST UCLA MEDLIFE is the current local chapter scope.",
+      }),
+    );
+    expect(summary.masterDataInventory.users[0]).toEqual(
+      expect.objectContaining({
+        displayName: "TEST Priya President",
+        chapterNames: ["TEST UCLA MEDLIFE"],
+      }),
+    );
+    expect(summary.masterDataInventory.chapters[0]).toEqual(
+      expect.objectContaining({
+        name: "TEST UCLA MEDLIFE",
+        campus: "TEST UCLA",
+        coachName: "TEST Renato Coach",
+      }),
+    );
+  });
+
+  it("renders route-backed review handoffs with blocked preview cues", () => {
+    const data = getMockReadOnlyAppData("Testing admin control center review handoffs.");
+    const summary = getAdminControlCenterSummary(data);
+    const expectedChapterName = `TEST ${data.chapter.name}`;
+    const expectedCampusName = `TEST ${data.chapter.campus}`;
+    const expectedCoachName = `TEST ${data.chapter.coachName}`;
 
     const html = renderToStaticMarkup(
       React.createElement(AdminControlCenterPanel, { summary }),
@@ -242,6 +296,12 @@ describe("admin control center", () => {
     expect(html).toContain("Read-only preview");
     expect(html).toContain("Blocked production writes");
     expect(html).toContain("Blocked external sends");
+    expect(html).toContain("TEST users");
+    expect(html).toContain("Read-only admin view of TEST users, role coverage, TEST chapter scope,");
+    expect(html).toContain("TEST Priya President");
+    expect(html).toContain(expectedChapterName);
+    expect(html).toContain(`${expectedCampusName} / ${data.chapter.region}`);
+    expect(html).toContain(`Coach: ${expectedCoachName}.`);
     expect(html).toContain("Treat every route from this control center as a DS Admin review handoff.");
     expect(html).toContain("no write, export, retry, or provider action runs from here.");
     expect(html).toContain("Open inventory review");

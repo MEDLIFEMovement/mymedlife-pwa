@@ -131,6 +131,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("Read-only profile");
     expect(html).toContain("No profile save runs from this route.");
     expect(html).toContain("No join request, role approval, membership change, or coach assignment runs from this route.");
+    expect(html).toContain('href="/app"');
+    expect(html).toContain("Back to Home");
     expect(html).toContain('href="/app/stories"');
     expect(html).toContain('href="/app/events?source=profile"');
     expect(html).toContain('href="/app/points?source=profile"');
@@ -236,6 +238,8 @@ describe("member stories and profile pages", () => {
     expect(html).toContain("TEST Sofia Alvarez");
     expect(html).not.toContain("TEST TEST Sofia");
     expect(html).toContain("Open the next chapter event");
+    expect(html).toContain("Back to Home");
+    expect(html).toContain('href="/app"');
     expect(html).toContain("Open events");
     expect(html).toContain("member.a@mymedlife.test");
     expect(html).toContain("None");
