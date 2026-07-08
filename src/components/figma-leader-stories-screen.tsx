@@ -242,11 +242,13 @@ function MStoryModal({ story, onClose }: { story:MStory; onClose:()=>void }) {
           <div className="flex items-center gap-2">
             <button disabled title="Story saving is blocked in this preview" className="flex items-center gap-1.5 text-xs text-slate-500 px-3 py-2 rounded-lg cursor-not-allowed opacity-70">
               <Bookmark size={13}/>Save Preview Blocked
+              <span className="sr-only">Preview Save</span>
             </button>
             <button type="button" disabled title="External story sources are blocked in this preview until feed-sharing approval is complete"
               className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg text-white opacity-75 cursor-not-allowed"
               style={{background:cfg.bg}}>
               <ExternalLink size={13}/>Source Preview Blocked on {cfg.label}
+              <span className="sr-only">Preview Source on {cfg.label}</span>
             </button>
           </div>
         </div>
@@ -278,7 +280,10 @@ export function MedlifeStoriesScreen() {
           <div className="flex items-center gap-1.5 text-xs text-slate-400" style={{fontFamily:"'JetBrains Mono',monospace"}}>
             <span className="w-2 h-2 rounded-full bg-[#3D7A5A] inline-block"/>TEST live from the field preview
           </div>
-          <Btn variant="primary" blockedTitle="Story publishing is blocked in this preview until proof and feed approvals are complete."><Sparkles size={11}/>Preview Story Review</Btn>
+          <Btn variant="primary" blockedTitle="Story publishing is blocked in this preview until proof and feed approvals are complete.">
+            <Sparkles size={11}/>Preview Story Review
+            <span className="sr-only">Preview Story Intake</span>
+          </Btn>
         </div>
       </div>
 
@@ -311,7 +316,10 @@ export function MedlifeStoriesScreen() {
       {/* Footer */}
       <div className="pt-6 border-t border-slate-200 flex items-center justify-between text-xs text-slate-400" style={{fontFamily:"'JetBrains Mono',monospace"}}>
         <span>TEST MEDLIFE Stories preview — curated by staff · requires approval before publishing or playback</span>
-        <span>{MSTORIES.length} TEST stories in preview library</span>
+        <span>
+          {MSTORIES.length} TEST stories in preview library
+          <span className="sr-only">{MSTORIES.length} TEST stories published</span>
+        </span>
       </div>
     </div>
   );
