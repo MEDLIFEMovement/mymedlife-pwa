@@ -109,9 +109,11 @@ describe("leader page", () => {
     expect(html).toContain("MEDLIFE Stories");
     expect(html).toContain("Bridge Videos");
     expect(html).toContain("Current Leaders");
-    expect(html).toContain("Values");
+    expect(html).toContain("Event Operations");
+    expect(html).toContain("Create Event Preview");
+    expect(html).toContain("MEDLIFE Values");
     expect(html).toContain("Leadership Training");
-    expect(html).toContain("Preview Surfaces");
+    expect(html).not.toContain("Preview Surfaces");
     expect(html).not.toContain("Proof Review");
     expect(html).not.toContain("Campaigns");
     expect(html).not.toContain("Leader navigation");
