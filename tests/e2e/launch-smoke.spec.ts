@@ -295,7 +295,7 @@ test.describe("myMEDLIFE launch route smoke", () => {
       page.getByText("Survey sending stays blocked in this preview. Use the NPS buttons to review the chapter survey flow only."),
     ).toBeVisible();
     await expect(
-      page.getByText("Chapter support notes stay visible for coach review. Next step: use Admin review for DS directory, audit, and blocked-control follow-up before requesting any write path."),
+      page.getByText("Chapter support notes stay visible for coach review. Next step: open the Admin preview for DS directory readback, audit, and blocked-control follow-through before requesting any write path."),
     ).toBeVisible();
   });
 
